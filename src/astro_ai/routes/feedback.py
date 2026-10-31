@@ -100,21 +100,25 @@ async def submit_feedback(
             # show and what makes the record honest. Escaping belongs where the
             # markup is built, and any future consumer must do its own.
             #
-            # DO NOT read this as "the Telegram path is safe". An earlier version of
-            # this comment said `notify._escape_md` already escapes all three fields;
-            # QA disproved it. `_escape_md` does not escape its own escape character
-            # (`'\\' in ('_','*','`','[')` is False) and `notify.py:105` sends
-            # `parse_mode: "Markdown"`, so a payload can still break out there. That is
-            # #387, deliberately out of this diff's scope -- it is a different sink with
-            # a different mechanism, and widening a security diff hurts review. This
-            # change makes the EMAIL body safe and claims nothing about Telegram.
+            # The Telegram path is NOT protected by this escape, and does not need
+            # to be: since #387 `notify._send_async` sends plain text with no
+            # `parse_mode`, so there is no markup for a visitor to forge. (Until
+            # then `notify._escape_md` skipped its own backslash and the message
+            # was parsed as legacy Markdown, so `\\[x](url)` produced a live
+            # link.) Do not HTML-escape for Telegram -- it would show `&lt;` to
+            # the owner -- and do not re-add a parse mode there.
             msg = _html.escape(entry["message"] or "")
             page = _html.escape(entry["page"] or "") or "unknown page"
             frm = _html.escape(entry["email"] or "") or "(anonymous)"
+            # `white-space:pre-wrap` on the blockquote keeps the visitor's line
+            # breaks (#388): a bare \n in HTML collapses to one space, so a
+            # steps/expected/actual report arrived as a single run-on paragraph.
+            # It composes with the escape above -- no nl2br, no markup to forge.
+            # Inline, because mail clients never see a stylesheet.
             html = (
                 f"<p><strong>{label}</strong> via {page}</p>"
                 f"<blockquote style='border-left:3px solid #9E2B25;padding:8px 12px;"
-                f"margin:8px 0;background:#FAF6EF;'>{msg}</blockquote>"
+                f"margin:8px 0;background:#FAF6EF;white-space:pre-wrap;'>{msg}</blockquote>"
                 f"<p style='font-size:12px;color:#6B6259;'>"
                 f"From: {frm}<br>"
                 f"At: {_html.escape(str(entry['ts']))}<br>"

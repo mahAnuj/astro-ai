@@ -214,12 +214,9 @@ def test_the_sweep_is_not_vacuous(swept):
 def test_no_rule_anywhere_cites_a_book_the_repo_does_not_hold(swept):
     """The exhaustive form of the first page test.
 
-    BPHS is the one this is named for. The other unheld compendia in
-    `_manglik_cancellations()` are the same defect class and are NOT asserted
-    against here — they are disclosed in `scripts/verify_rule_citations.py`'s
-    `_UNHELD_ATTRIBUTIONS` ledger and remain open on #216. Asserting them here
-    would mean fixing them in this commit, which is not what was scoped; a
-    test that pretends otherwise is worse than the ledger.
+    BPHS is the one this is named for. The four compendia that
+    `_manglik_cancellations()` used to cite are asserted against separately,
+    below, since #398 slice 10 fixed them.
     """
     offenders = [(slug, src) for slug, src in swept
                  if "parashara" in src.lower() or "BPHS" in src]
@@ -227,6 +224,23 @@ def test_no_rule_anywhere_cites_a_book_the_repo_does_not_hold(swept):
         f"these rules still cite Brihat Parashara Hora Shastra, which is not in "
         f"data/ and is not registered in scripts/fetch_corpus.py: {sorted(offenders)}"
     )
+
+
+def test_no_manglik_rule_names_a_book_the_repo_does_not_hold(swept):
+    """The four books `_manglik_cancellations()` used to cite on result.html.
+
+    Jataka Parijata, Jataka Chandrika, Phaladeepika and Muhurtha Chintamani are
+    not in data/ and not in `scripts/fetch_corpus.py`'s registry
+    (vedic_reference.md 1.6.2: "citation defect, #216 class"). result.html prints
+    `{{ rule.source }}` beside each cancellation, so a book name there tells the
+    reader the rule can be checked in a book nobody here can open - and the
+    owner's 2026-10-17 rule is that no book or author is named in user-facing
+    output (#398 slice 10). The labels now say what grahas.md 12.4 supports.
+    """
+    unheld = ("jataka", "phaladeep", "muhurt", "mansagari", "chintamani")
+    offenders = sorted((slug, src) for slug, src in swept
+                       if any(u in src.lower() for u in unheld))
+    assert not offenders, f"these rules name an unheld book again: {offenders}"
 
 
 def test_every_rule_says_something_about_where_it_came_from(swept):

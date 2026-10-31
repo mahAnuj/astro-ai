@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}Manglik Dosh Check for {{ details.name or 'you' }} — Shubh Bhagya{% endblock %}
-{% block meta_description %}Instant Manglik Dosh check with the classical cancellation rules applied. See exactly why your chart is Manglik, Cancelled, or clean — and what to do next.{% endblock %}
+{% block meta_description %}Instant Manglik Dosh check that shows which commonly listed cancellations applied. See why your chart is Manglik, Cancelled or clean, and what to do next.{% endblock %}
 
 {% block content %}
 {% set active_page = "" %}
 {% set tool_name = "Manglik Dosh Check" %}
-{% set tool_desc = "Free Manglik Dosh checker with classical cancellation rules applied automatically." %}
+{% set tool_desc = "Free Manglik Dosh checker that shows which cancellation rules applied to your chart." %}
 {% set tool_url = "/manglik-check" %}
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
@@ -82,7 +82,7 @@
       </a>
       <a href="/learn/manglik-dosh/" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
         <div class="font-semibold text-bhagya-sindoor mb-0.5">Read the full Manglik Dosh guide →</div>
-        <div class="text-sm text-bhagya-muted">Depth: all six qualifying houses, every classical cancellation rule, and the remedies that actually work.</div>
+        <div class="text-sm text-bhagya-muted">Depth: the six qualifying houses, the cancellation rules the tradition repeats (and where the sources differ), and the remedies that actually work.</div>
       </a>
     </div>
   </section>
@@ -111,9 +111,11 @@
      and the "comparable severity" band are defined once, in matching.py:
      _SEVERITY_GRADING_SENTENCE and _COMPARABILITY_BAND_SENTENCE — restated
      here in this page's voice because a single-chart disclosure has no partner
-     in context. If the rule changes there, change this paragraph too. #}
+     in context. If the rule changes there, change this paragraph too.
+     The severity ladder is editorial, not classical (#429) — this paragraph used
+     to credit it to four books we do not hold. Do not name a source for it. #}
   <div class="text-xs text-bhagya-muted leading-relaxed">
-    <p><strong>Classical basis:</strong> Manglik Dosh rules are compiled from Jataka Parijata, Phaladeepika, Jataka Chandrika, and Muhurtha Chintamani (per P.V.R. Narasimha Rao's Jagannath Hora rule-set). The 6 qualifying houses (1, 2, 4, 7, 8, 12) are counted from three frames — Lagna, Moon and Venus — with severity graded 7th or 8th high, 1st, 4th or 12th moderate, 2nd alone low, and one grade lower when only the Venus frame qualifies. Cancellation rules that need only this chart — Cancer/Leo Lagna Yogakaraka exclusion, Mars in own sign or exaltation, Jupiter conjunction/aspect — are applied to this chart automatically; any that fire are listed above. Cancellation by matching with another Manglik needs both charts, so it is decided on the compatibility page rather than here, and only between partners of comparable severity: classical texts require comparability but do not define the band, so Bhagya treats equal or adjacent grades as comparable and a low-versus-high pairing as not comparable. Astronomical positions computed via Swiss Ephemeris (pyswisseph) in sidereal Lahiri ayanamsa, matching classical Vedic tradition.</p>
+    <p><strong>Basis:</strong> The 6 qualifying houses (1, 2, 4, 7, 8, 12) counted from three frames — Lagna, Moon and Venus — are the commonly taught Manglik Dosh rule, applied here as a compiled rule-set rather than read first-hand from the source texts, and sources differ on which houses count. The severity grade is Bhagya's own editorial weighting, not a classical grading: 7th or 8th high, 1st, 4th or 12th moderate, 2nd alone low, and one grade lower when only the Venus frame qualifies. Only the 7th and 8th being the most serious has support in the texts we hold; the rest of that ladder does not. Cancellation rules that need only this chart — Cancer/Leo Lagna Yogakaraka exclusion, Mars in own sign or exaltation, Jupiter conjunction/aspect — are applied to this chart automatically; any that fire are listed above. Cancellation by matching with another Manglik needs both charts, so it is decided on the compatibility page rather than here, and only between partners of comparable severity: classical texts require comparability but do not define the band, so Bhagya treats equal or adjacent grades as comparable and a low-versus-high pairing as not comparable. Astronomical positions computed via Swiss Ephemeris (pyswisseph) in sidereal Lahiri ayanamsa, matching classical Vedic tradition.</p>
   </div>
 
   <div class="text-center">

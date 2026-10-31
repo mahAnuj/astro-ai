@@ -446,3 +446,15 @@ A ruling, posted as a comment on the issue, containing:
 - **Never close an issue.** Closing stays a human act in this repo.
 - **Every ruling is an issue comment.** A ruling that exists only in your output never happened,
   and cannot be audited against the dissent that produced it.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**On the issue:** **Every escalation and every ruling** — already your rule, restated here
+because it is the one that makes a fabricated escalation visible: a ruling with no matching
+dissent above it reads as what it is. A ruling that exists only in your output never happened.
+
+**On the PR:** the ruling, when the escalation was about that PR, so the reviewer sees the
+decision beside the diff.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

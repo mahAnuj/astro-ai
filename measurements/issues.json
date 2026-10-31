@@ -1,27 +1,27 @@
 {
-  "generated_at": "2026-10-27T16:12:23Z",
+  "generated_at": "2026-10-31T00:24:03Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 127,
-  "with_ask": 58,
+  "open": 136,
+  "with_ask": 57,
   "by_area": {
-    "UNCLASSIFIED": 54,
-    "INFRA": 12,
+    "UNCLASSIFIED": 50,
+    "INFRA": 15,
+    "UI": 12,
     "REDESIGN": 10,
-    "UI": 8,
+    "NUMEROLOGY": 7,
     "FEATURE": 7,
+    "BUG": 3,
     "SEO": 3,
     "SECURITY": 3,
-    "NUMEROLOGY": 3,
+    "MEASURE": 2,
     "CONTENT": 2,
     "DETECT_STALLS": 2,
     "AGENT-MERGE": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "CHORE": 2,
-    "BUG": 2,
     "PRIVACY": 1,
-    "MEASURE": 1,
     "REPO": 1,
     "CHART": 1,
     "GATES": 1,
@@ -35,21 +35,299 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 41,
-    "untyped": 34,
+    "bug": 38,
+    "untyped": 38,
     "enhancement": 27,
-    "correctness": 8,
+    "correctness": 12,
+    "design": 8,
     "chore": 7,
-    "design": 7,
-    "ui": 3
+    "ui": 6
   },
   "by_priority": {
-    "unset": 81,
-    "medium": 23,
-    "high": 23
+    "unset": 91,
+    "high": 23,
+    "medium": 21,
+    "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 610,
+      "title": "chief-cleared is documented as releasing a prompts/knowledge PR but no workflow reads it; agent-merge's boundary step re-holds it",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-30T18:25:45Z",
+      "updated": "2026-10-30T18:25:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 605,
+      "title": "test_rashifal_day_detail.py module-scoped fixture bypasses _offline_geocode and hits Nominatim, so gates goes red on a 429",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-30T15:39:52Z",
+      "updated": "2026-10-30T15:39:52Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 604,
+      "title": "needs-human-review does not hold a PR: agent-merge reads it only in the sweep filter, so an edge-triggered run still merges",
+      "ask": "A needs-human-review check in the same chain as boundary, so it binds on every trigger rather than only in the sweep — and correct :402 to name only the defences that exist.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:high",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-30T15:03:21Z",
+      "updated": "2026-10-30T15:03:21Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 602,
+      "title": "agent-work gates guard: an empty $sha makes the API return every run in the repo, suppressing the #322 rescue",
+      "ask": "An engineer may prefer head_sha=${sha:-0000000000000000000000000000000000000000} so an empty value can only ever match nothing.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "category:technical",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-30T11:09:16Z",
+      "updated": "2026-10-30T11:09:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 597,
+      "title": "[UI] /kundli on mobile: the first form field sits 138px under the tab bar — / keeps the same form wholly in the fold",
+      "ask": "",
+      "area": "UI",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "design-proposal",
+        "page:kundli",
+        "effort:s",
+        "risk:low"
+      ],
+      "created": "2026-10-29T23:50:53Z",
+      "updated": "2026-10-29T23:51:02Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 596,
+      "title": "[UI] Six form controls (subscribe modal, feedback widget, /learn search) have a placeholder and no accessible name",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-10-29T23:50:33Z",
+      "updated": "2026-10-29T23:50:39Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 595,
+      "title": "[UI] /numerology result: 38 text nodes under 12px, down to 9px on the Lo Shu grid — not on #366's checklist",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-10-29T23:50:32Z",
+      "updated": "2026-10-29T23:50:32Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 594,
+      "title": "[UI] Top /learn landing article uses the raw path \"/dasha\" as link text",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-10-29T23:50:30Z",
+      "updated": "2026-10-29T23:50:30Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 593,
+      "title": "[BUG] /panchang shows yesterday's date, weekday and tithi from 00:00 to 05:30 IST while the home strip shows today's",
+      "ask": "",
+      "area": "BUG",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:low"
+      ],
+      "created": "2026-10-29T23:50:13Z",
+      "updated": "2026-10-29T23:50:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 584,
+      "title": "numerology: 0-100 compatibility and Bhagya scores rest on invented weights, and the compound tiers contradict Cheiro on 28, 49 and 13",
+      "ask": "",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-10-28T23:12:41Z",
+      "updated": "2026-10-28T23:12:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 583,
+      "title": "numerology: Life Path 'Strong/Cautious months' for 2-9 trace to nothing in the corpus; four disagree with Cheiro",
+      "ask": "",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-10-28T23:12:01Z",
+      "updated": "2026-10-28T23:12:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 582,
+      "title": "numerology: master numbers and Karmic Debt contradict the page's own Cheiro compound row — Cheiro vs Kumar needs a ruling",
+      "ask": "Declare, don't change.",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-10-28T23:11:39Z",
+      "updated": "2026-10-28T23:11:39Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 581,
+      "title": "numerology: name compound sums every letter; Cheiro adds each word's single number — 8 of his 9 stated results do not reproduce",
+      "ask": "",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-10-28T23:11:01Z",
+      "updated": "2026-10-28T23:11:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 580,
+      "title": "[INFRA] detect_stalls counts stalls no cycle can act on as OBLIGED, so the steward is accused of inaction it correctly took",
+      "ask": "",
+      "area": "INFRA",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "category:technical"
+      ],
+      "created": "2026-10-28T17:55:23Z",
+      "updated": "2026-10-29T18:33:49Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 577,
+      "title": "verify_conflict_markers: the 8 MiB truncation and the 7-wide blockquote are absent from the gate's own 'what this lets through' lists",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-28T11:11:25Z",
+      "updated": "2026-10-30T11:26:24Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 570,
+      "title": "[MEASURE] No event records a click on an in-article tool link, so #276, #329 and #521 can only be scored through pages/session",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-28T00:17:18Z",
+      "updated": "2026-10-28T00:17:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 568,
+      "title": "[INFRA] agent-infra authenticates as agent-analytics, which holds no Cloud Build / Cloud Run / Scheduler roles — export-before-edit is impossible",
+      "ask": "Editing the trigger needs a Cloud Build editor role.",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-27T23:00:50Z",
+      "updated": "2026-10-27T23:00:50Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 567,
+      "title": "[INFRA] rashifal-generate's 3 h margin to the Groq fallback is smaller than GitHub's cron lag: 1 of 3 runs published after warm-rashifal",
+      "ask": "Move the cron earlier and off the :00 mark (public-repo cron is queued hardest at the top of the hour), e.g.",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-27T23:00:16Z",
+      "updated": "2026-10-27T23:00:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 560,
       "title": "qa-on-green writes its 'dispatched at <sha>' marker before the dispatch, so a dispatch deferred for a cycle in flight is never retried (#551, #549 stranded)",
@@ -61,7 +339,7 @@
         "bug"
       ],
       "created": "2026-10-27T15:12:04Z",
-      "updated": "2026-10-27T15:12:04Z",
+      "updated": "2026-10-29T15:55:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -110,10 +388,10 @@
         "chore",
         "qa-fail",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-26T05:05:03Z",
-      "updated": "2026-10-26T16:46:44Z",
+      "updated": "2026-10-30T18:25:42Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -208,23 +486,6 @@
       "needs_evidence": true
     },
     {
-      "number": 510,
-      "title": "/admin/ops: the column glossaries are walls of 12px text on a phone — 2,394 chars in one paragraph",
-      "ask": "Cut those and the panel starts reading as more certain than it is.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:medium"
-      ],
-      "created": "2026-10-24T00:00:21Z",
-      "updated": "2026-10-24T00:00:21Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 508,
       "title": "[SEO] /matching ranks 4.3 on 336 impressions and got 0 clicks — title/meta test (2026-09-23..10-20)",
       "ask": "",
@@ -260,23 +521,6 @@
       "labels": [],
       "created": "2026-10-23T19:06:26Z",
       "updated": "2026-10-23T19:06:26Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 495,
-      "title": "loop-outcomes reports working loops as BROKEN: collectors-only runs and every partial/ PR",
-      "ask": "REPORT_PATH[\"agent-measure\"] = \"measurements/latest.md\" and classify_report_loop demands a commit touching it from every successful run.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:high"
-      ],
-      "created": "2026-10-23T04:48:24Z",
-      "updated": "2026-10-23T04:48:24Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -322,22 +566,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-21T17:59:35Z",
-      "updated": "2026-10-26T04:39:07Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 468,
-      "title": "Three more product-added remedies presented as classical or ranked — including a 'Classical' heading whose first bullet is the addition and third is the line #451 fixed",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-10-21T05:41:01Z",
-      "updated": "2026-10-21T05:41:47Z",
+      "updated": "2026-10-27T20:52:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -369,21 +598,6 @@
       ],
       "created": "2026-10-21T04:49:46Z",
       "updated": "2026-10-21T04:49:46Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 465,
-      "title": "Mercury and Jupiter pages call the Vishnu Sahasranama 'the universal safe practice' — remedies.md gives that role to the Sri Yantra and never cites that hymn (#398 follow-on)",
-      "ask": "Deity sourced, practice generic, no \"classical\" attached to the hymn.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-10-21T04:49:13Z",
-      "updated": "2026-10-21T04:49:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -444,10 +658,10 @@
       "labels": [
         "bug",
         "qa-fail",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-21T04:44:34Z",
-      "updated": "2026-10-26T17:51:44Z",
+      "updated": "2026-10-30T18:25:43Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -525,10 +739,13 @@
       "priority": "medium",
       "labels": [
         "category:technical",
-        "priority:medium"
+        "priority:medium",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-20T10:12:38Z",
-      "updated": "2026-10-20T10:12:38Z",
+      "updated": "2026-10-30T17:51:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -628,24 +845,6 @@
       "needs_evidence": false
     },
     {
-      "number": 430,
-      "title": "Sade Sati phase names: the engine says arohini/avarohini, knowledge/ and the articles say Arambha/Uttara, and all four names are absent from every book in data/",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "severity:medium",
-        "priority:medium",
-        "astrology-correctness"
-      ],
-      "created": "2026-10-20T02:24:53Z",
-      "updated": "2026-10-20T02:34:25Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 429,
       "title": "chart: the Manglik severity ladder is UNSOURCED, and its \"1st house = moderate\" tier is counter-indicated by the only corpus source that lists the houses",
       "ask": "",
@@ -655,10 +854,13 @@
       "labels": [
         "severity:medium",
         "priority:medium",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-20T02:24:10Z",
-      "updated": "2026-10-20T02:34:09Z",
+      "updated": "2026-10-28T17:49:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -803,10 +1005,10 @@
         "priority:high",
         "qa-fail",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-27T02:32:23Z",
+      "updated": "2026-10-30T17:33:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -858,57 +1060,6 @@
       "needs_evidence": false
     },
     {
-      "number": 389,
-      "title": "verify_no_relaxation reports 'mutations kept (182 -> 183)' — that is not a count of mutations",
-      "ask": "Or, if the substring proxy is wanted for robustness against an ast failure, rename the line so it does not claim to be a count — e.g.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-10-16T08:43:47Z",
-      "updated": "2026-10-27T15:31:31Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 388,
-      "title": "Multi-line feedback arrives as one run-on paragraph in the owner's email",
-      "ask": "Add white-space:pre-wrap; to the blockquote's existing inline style in src/astro_ai/routes/feedback.py.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-10-16T08:43:45Z",
-      "updated": "2026-10-16T08:43:45Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 387,
-      "title": "notify._escape_md does not escape its own escape character — a visitor can forge Markdown in the owner's Telegram",
-      "ask": "Drop parse_mode for visitor-supplied text.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-16T08:43:42Z",
-      "updated": "2026-10-27T04:08:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 386,
       "title": "verify_no_relaxation's phrase check reads HEAD, so a local run reports a floor it did not check",
       "ask": "The second is one string and cannot change the gate's verdict; the first is more useful locally but changes what the gate measures, so it needs a mutation row.",
@@ -916,10 +1067,11 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "provenance:trusted"
       ],
       "created": "2026-10-16T05:59:26Z",
-      "updated": "2026-10-16T05:59:26Z",
+      "updated": "2026-10-30T17:00:19Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -939,24 +1091,6 @@
       "needs_evidence": false
     },
     {
-      "number": 384,
-      "title": "No gate greps tracked files for merge-conflict markers — ARCHITECTURE.md shipped with a live conflict block",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-fail",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-16T03:48:40Z",
-      "updated": "2026-10-26T17:50:56Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 382,
       "title": "[UI] Subscribe modal covers the /matching and /numerology result on a first visit — the htmx swap counts as visit 2",
       "ask": "",
@@ -969,7 +1103,7 @@
         "page:matching"
       ],
       "created": "2026-10-15T22:59:04Z",
-      "updated": "2026-10-15T22:59:04Z",
+      "updated": "2026-10-29T23:50:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -985,7 +1119,7 @@
         "skill:ui-fixer"
       ],
       "created": "2026-10-15T22:59:03Z",
-      "updated": "2026-10-15T22:59:03Z",
+      "updated": "2026-10-29T23:50:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1002,7 +1136,7 @@
         "page:kundli"
       ],
       "created": "2026-10-15T22:59:01Z",
-      "updated": "2026-10-15T23:00:36Z",
+      "updated": "2026-10-29T23:50:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1018,7 +1152,7 @@
         "skill:ui-fixer"
       ],
       "created": "2026-10-15T22:59:00Z",
-      "updated": "2026-10-15T22:59:00Z",
+      "updated": "2026-10-29T23:50:55Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1195,7 +1329,7 @@
         "chore"
       ],
       "created": "2026-10-13T23:19:23Z",
-      "updated": "2026-10-20T22:18:52Z",
+      "updated": "2026-10-27T23:00:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1318,7 +1452,7 @@
         "chore"
       ],
       "created": "2026-10-08T06:16:12Z",
-      "updated": "2026-10-08T07:15:25Z",
+      "updated": "2026-10-27T23:00:31Z",
       "blocked": false,
       "needs_evidence": false
     },

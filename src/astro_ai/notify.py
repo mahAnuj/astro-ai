@@ -39,6 +39,13 @@ These formatters STILL carry PII, and templates/privacy.html discloses it:
   - muhurat_computed   city + signed-in email
 This is the site owner's private bot chat, not a public group; the bot token
 grants send-only permission.
+
+PLAIN TEXT, NOT MARKDOWN (#387). `_send_async` sends no `parse_mode`, and the
+formatters below carry no markup. These messages interpolate visitor-supplied
+strings, and while they were parsed as legacy Markdown the escape helper did not
+escape its own backslash -- so a visitor could forge a clickable link inside an
+alert the owner trusts. Do not re-add a parse mode: tests/test_notify_plain_text.py
+fails if anything does.
 """
 
 from __future__ import annotations
@@ -99,10 +106,17 @@ def _dedup_ok(dedup_key: str) -> bool:
 async def _send_async(token: str, chat_id: str, text: str) -> None:
     """POST to Telegram sendMessage. Log-and-swallow on failure."""
     url = f"https://api.telegram.org/bot{token}/sendMessage"
+    # No parse_mode, deliberately (#387). `text` carries visitor-supplied
+    # feedback, questions and emails. As legacy Markdown it was escaped by
+    # prefixing `_ * ` [` with a backslash -- but never the backslash itself,
+    # so `\[x](http://evil.test)` arrived as `\\[x](...)`: one literal
+    # backslash and a LIVE link in an alert that looks like the site's own.
+    # That escape is sound only if `\` escapes in this parse mode, and if it
+    # does not then it escaped nothing to begin with. Plain text cannot be
+    # spoofed either way; it costs only bold on the owner's own labels.
     payload = {
         "chat_id": chat_id,
         "text": text,
-        "parse_mode": "Markdown",
         "disable_web_page_preview": True,
     }
     try:
@@ -137,17 +151,10 @@ def notify(text: str, *, dedup_key: str = "") -> None:
 
 # ─── Event formatters ────────────────────────────────────────────────
 #
-# Each format_X returns a Telegram-friendly Markdown string. Keep messages
+# Each formatter returns PLAIN TEXT -- no markup, no escapes (#387). Visitor
+# text is interpolated verbatim, which is safe only because `_send_async` asks
+# for no parse mode; re-adding one re-opens the forgery it closed. Keep messages
 # terse enough to be scannable in the phone notification preview.
-
-
-def _escape_md(s: str) -> str:
-    """Escape Telegram Markdown special chars in user-supplied strings."""
-    if not s:
-        return ""
-    for ch in ("_", "*", "`", "["):
-        s = s.replace(ch, "\\" + ch)
-    return s
 
 
 def chart_rashis(chart) -> tuple[str, str, str]:
@@ -159,7 +166,7 @@ def chart_rashis(chart) -> tuple[str, str, str]:
 
 
 def _rashi_line(lagna: str, moon: str, sun: str) -> str:
-    bits = [f"{k}={_escape_md(v)}" for k, v in
+    bits = [f"{k}={v}" for k, v in
             (("lagna", lagna), ("moon", moon), ("sun", sun)) if v]
     return "📊 " + " · ".join(bits) if bits else ""
 
@@ -171,7 +178,7 @@ def _cost_line(lang: str, model: str, tokens: Optional[int],
     provider returned no usage block."""
     bits = [lang] if lang else []
     if model:
-        bits.append(f"🤖 {_escape_md(model)}")
+        bits.append(f"🤖 {model}")
     if tokens is not None:
         bits.append(f"{tokens:,} tok")
     if latency_s is not None:
@@ -196,7 +203,7 @@ def kundli_generated(
     birth detail or email sits in the in-memory dict either.
     """
     notify(
-        _compose("🕉  *Kundli generated*", _rashi_line(lagna, moon, sun),
+        _compose("🕉  Kundli generated", _rashi_line(lagna, moon, sun),
                  _cost_line(lang, model, tokens, latency_s, cache),
                  f"🔖 {key}" if key else ""),
         dedup_key=f"kundli:{key}",
@@ -211,11 +218,11 @@ def matching_done(
 ) -> None:
     """/matching POST → Ashtakoot matching complete. No names or dates (#255)."""
     moons = " · ".join(
-        f"{k}={_escape_md(v)}" for k, v in
+        f"{k}={v}" for k, v in
         (("groom moon", groom_moon), ("bride moon", bride_moon)) if v)
     notify(
-        _compose("💍  *Kundli matching*",
-                 f"⭐ Ashtakoot: *{total_score}*",
+        _compose("💍  Kundli matching",
+                 f"⭐ Ashtakoot: {total_score}",
                  f"📊 {moons}" if moons else "",
                  _cost_line(lang, model, tokens, latency_s, cache),
                  f"🔖 {groom_key} · {bride_key}"),
@@ -232,14 +239,14 @@ def ask_submitted(
     if len(trimmed) > 240:
         trimmed = trimmed[:240] + "…"
     parts = [
-        "❓  *Ask question*",
-        f"📝 {_escape_md(trimmed)}",
+        "❓  Ask question",
+        f"📝 {trimmed}",
         f"🏷 {category} · lang={lang}",
     ]
     if user_email:
-        parts.append(f"✉️ {_escape_md(user_email)}")
+        parts.append(f"✉️ {user_email}")
     if model:
-        parts.append(f"🤖 {_escape_md(model)}")
+        parts.append(f"🤖 {model}")
     dedup = f"ask:{user_email}:{trimmed[:80]}"
     notify("\n".join(parts), dedup_key=dedup)
 
@@ -247,9 +254,9 @@ def ask_submitted(
 def new_signin(*, email: str, name: str, first_time: bool) -> None:
     """/auth/google → user signed in."""
     parts = [
-        "🔐  *" + ("New user signed up" if first_time else "User signed in") + "*",
-        f"👤 {_escape_md(name) or '_(no name)_'}",
-        f"✉️ {_escape_md(email)}",
+        "🔐  " + ("New user signed up" if first_time else "User signed in"),
+        f"👤 {name or '(no name)'}",
+        f"✉️ {email or ''}",
     ]
     dedup = f"signin:{email}"
     notify("\n".join(parts), dedup_key=dedup)
@@ -258,8 +265,8 @@ def new_signin(*, email: str, name: str, first_time: bool) -> None:
 def subscribed(*, email: str, source: str, lang: str) -> None:
     """/subscribe POST → email newsletter opt-in."""
     parts = [
-        "📬  *Newsletter subscribe*",
-        f"✉️ {_escape_md(email)}",
+        "📬  Newsletter subscribe",
+        f"✉️ {email or ''}",
         f"📍 source={source} · lang={lang}",
     ]
     dedup = f"subscribe:{email}"
@@ -275,12 +282,12 @@ def feedback_submitted(*, type: str, message: str, page: str = "", email: str = 
         trimmed = trimmed[:300] + "…"
     parts = [
         f"{label}",
-        f"📝 {_escape_md(trimmed) or '_(no message)_'}",
+        f"📝 {trimmed or '(no message)'}",
     ]
     if page:
-        parts.append(f"📄 page={_escape_md(page)}")
+        parts.append(f"📄 page={page}")
     if email:
-        parts.append(f"✉️ {_escape_md(email)}")
+        parts.append(f"✉️ {email}")
     dedup = f"feedback:{email or 'anon'}:{trimmed[:80]}"
     notify("\n".join(parts), dedup_key=dedup)
 
@@ -296,10 +303,10 @@ def dosha_checked(
     place, name or email (#255); `key` is `identity.short_key(...)`.
     """
     icon = {"Manglik": "🔥", "Sade Sati": "🪐", "Kaal Sarp": "🐍"}.get(dosha_type, "🔮")
-    status = "*present*" if is_present else "clear"
+    status = "present" if is_present else "clear"
     notify(
-        _compose(f"{icon}  *{dosha_type} check*",
-                 f"📊 {status}" + (f" · {_escape_md(extra)}" if extra else ""),
+        _compose(f"{icon}  {dosha_type} check",
+                 f"📊 {status}" + (f" · {extra}" if extra else ""),
                  _rashi_line(lagna, moon, sun),
                  f"🔖 {key}" if key else ""),
         dedup_key=f"dosha:{dosha_type}:{key}",
@@ -312,12 +319,12 @@ def muhurat_computed(
 ) -> None:
     """/muhurat POST → event-type muhurat search completed."""
     parts = [
-        "📅  *Muhurat search*",
-        f"🎯 {_escape_md(event_type)} in {_escape_md(city)}",
+        "📅  Muhurat search",
+        f"🎯 {event_type or ''} in {city or ''}",
         f"📊 {good_count} auspicious of {days_range} days",
     ]
     if user_email:
-        parts.append(f"✉️ {_escape_md(user_email)}")
+        parts.append(f"✉️ {user_email}")
     dedup = f"muhurat:{event_type}:{user_email or city}"
     notify("\n".join(parts), dedup_key=dedup)
 
@@ -326,8 +333,8 @@ def numerology_computed(*, system: str, life_path: int, key: str) -> None:
     """/numerology POST → numerology reading generated. No name or date (#255);
     `key` is `identity.short_key(identity_key(name, birth_date))`."""
     notify(
-        _compose("🔢  *Numerology reading*",
-                 f"🛤 life path *{life_path}* · system={_escape_md(system)}",
+        _compose("🔢  Numerology reading",
+                 f"🛤 life path {life_path} · system={system or ''}",
                  f"🔖 {key}" if key else ""),
         dedup_key=f"numerology:{key}",
     )
@@ -355,21 +362,19 @@ def error_seen(
         msg = msg[:500] + "…"
 
     parts = [
-        f"🚨  *Error: {_escape_md(source)}*",
-        f"⚠️ `{error_type}`",
-        f"💬 {_escape_md(msg)}",
+        f"🚨  Error: {source or ''}",
+        f"⚠️ {error_type}",
+        f"💬 {msg}",
     ]
     if method or path:
-        parts.append(f"🌐 {method or '?'} {_escape_md(path)}")
+        parts.append(f"🌐 {method or '?'} {path or ''}")
     if user_email:
-        parts.append(f"✉️ {_escape_md(user_email)}")
+        parts.append(f"✉️ {user_email}")
     if traceback_str:
-        # Use a code block. Escape backticks so nesting doesn't break markdown.
         tb_trimmed = traceback_str.strip()
         if len(tb_trimmed) > 1500:
             tb_trimmed = "…" + tb_trimmed[-1500:]
-        tb_trimmed = tb_trimmed.replace("`", "'")
-        parts.append("```\n" + tb_trimmed + "\n```")
+        parts.append(tb_trimmed)
 
     # Dedup by (source, error type, path) within 3 seconds. If the same LLM
     # provider is 429-ing 20 users in a burst, you get ONE alert, not 20.

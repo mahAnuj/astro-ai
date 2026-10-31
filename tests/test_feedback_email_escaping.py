@@ -97,3 +97,14 @@ def test_storage_keeps_the_raw_text(monkeypatch, sent):
         feedback_route.submit_feedback(_Req(), type="problem", message=PAYLOAD,
                                        email="", page=""))
     assert captured["message"] == PAYLOAD
+
+
+def test_a_multi_line_message_keeps_its_line_breaks_in_the_owners_mail(monkeypatch, sent):
+    # #388: a bare "\n" inside a <blockquote> collapses to one space in every mail
+    # client, so a steps/expected/actual report arrived as one run-on paragraph.
+    # The break must survive AND stay inert -- pre-wrap, not nl2br.
+    body = _submit(monkeypatch, sent, message="line1\nline2<br>x")
+    block = body[body.index("<blockquote"):body.index("</blockquote>")]
+    assert "white-space:pre-wrap" in block.split(">", 1)[0]
+    assert "line1\nline2" in block
+    assert "<br>" not in block and "line2&lt;br&gt;x" in block

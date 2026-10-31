@@ -1,22 +1,76 @@
-## 2026-10-23 — sync
+## 2026-10-30 — sync
+Read from: `gh issue view --comments`, issue events API, PR bodies, `gh run list`, live `/health`.
+Not read: AGENT_STATUS.md, BACKLOG.md (last scan 2026-08-25). No SYNC_LOG.md exists in the tree, so
+"blocked 2x" is taken from the 2026-10-23 sync comments (#493, #505, #279), not from a log.
+Checkout is shallow (1 commit): "merged this week" comes from `gh pr list`, not `git log`.
 
-decisions:    #446 REOPENED (closed on merge of #448 with parts 2 and 4 undone and part 3's QA FAIL unaddressed — `ARCHITECTURE.md:758` still says "strictly stronger"; same shape as #405→#446, #447 open on it)
-              #485 folded into #392 (same defect — chief's 10-22 ruling already calls it a duplicate); #457/#502/#503 are the same file, fold into the one cycle
-              #278 stays folded into #279 (poppler half landed, `pr-gates.yml:157`)
-              #426 (wrong Saturn/Jupiter dates, 3rd-ranked band page) — Standing ruling 3: "corrected or qualified, never left standing because the page earns traffic" — no escalation, ruling answers it
-escalated:    none to chief (0 of 3 used). Checked: #426, #429, #430 → Ruling 3; #392 → Ruling 4 cl.3 already decided. The one real conflict is not chief's: chief ruled "dispatch a cycle at #392", and the owner's own provenance rule (`resolve_provenance.py`, bot author = OUTSIDER, no allowlist) refused it 2 min later. A ruling cannot cure that; only a human label can.
-              → HUMAN: #505 (new, `needs-human-review`) for #279; `provenance:trusted` on #392, #426, #490
-missed:       none declarable. #311/#329/#276 UNSCORED/INCONCLUSIVE ≥9 days — no export splits a page at its deploy date (#490, bot-authored, unbuildable). #124 (shipped 10-07) window closes ~11-04 with no per-page reader. #329: 3 organic sessions vs a floor of 10 — the metric, not the link, is the problem (idea untested, not wrong; measurement wrong).
-              analyst scores this week: #400 HIT (count only), #397 PASS (first clause), #396 PASS (first clause), #373 PARTIAL, #374 UNSCORED (window ends 10-24) — behavioural clauses all "not checked"
-blocked 2x:   #279 — THREE syncs (10-09, 10-16, 10-23), 0 assignees, 0 movement since 10-16. CI now holds 0/8 books (was 1/8). Costs: #402 (rank 1) not startable, QA runs without `data/`, citation mutation likely NOT EXERCISED. → #505 filed.
-              #392 — outsider-labelled since 10-16; steward woke on it every run for a week; chief's one dispatch burned (agent-work run 39818019465 green, built nothing). First sync to name it; if unlabeled at 10-30 → needs-human-review issue.
-              #402 — waits on #279 + #399 (no loader) + Arudha/D-24 extraction; nobody assigned to any.
-closure audit: 20 closed since 10-16.
-              evidence-backed (14): #452 #449 #473 #372 #476 #405 #400 #408 #397 #373 #393 #374* #421 #442   (*analyst UNSCORED, rescore ≥10-24)
-              thin, stands (4): #409 (XSS fix in tree + serving build f8696b5 contains #425; no probe sent), #493 (effect unobserved — read 10-25 prioritise + 10-26 discover runs; discover's last run 10-19 FAILED), #472 (tests-only, macOS unverifiable here), #394 (merged with `qa-fail` still on PR; collector reasons 2–3 remain in `collect_loop_measurements.py:135,372` but tile now reads API via `ops_today.py` — not probed, /admin 401)
-              residual w/o home (1): #396 — closed on merge of #410 while round 8 FAIL (L-1 tooltip, 8/12 mutants surviving) is still in tree (`admin_dashboard.html:257,323`) → propose one issue at /prioritise
-              reopened (1): #446
-pattern:      5 PRs merged by hand this week with `qa-fail` still on them (#425 #410 #454 #455 #448); label is write-only (#406), so the label no longer separates "failed" from "failed and fixed". 4 of the 5 closed their issue on merge with no comment.
-              Machinery vs objective (Ruling 6): of 20 closures only 4 touch visitors (#409 #408 #397 #373); 0 are SEO/content against #267. 21 of 116 open issues are bot-authored (20 `app/claude`, 1 `app/github-actions`) and none can be built by the loop.
-carried:      ~110 open unchanged. BACKLOG.md last prioritise run 10-18 (next 10-25). Prior-sync items still open: #124 (proposed closure 10-09; thesis unscored, needs 11-04), #278 (→#279), #361 (reopened 10-16; qa-pass + needs-human-review), #355 residuals.
-note:         No SYNC_LOG.md exists in the tree; prior syncs (10-09, 10-16) live only as issue comments. This record is at /tmp/report.md as instructed; not committed. Local clone is shallow (1 commit), so "merged this week" in /tmp/week.txt lists only #504 — merges were read from `gh pr view` instead (#494 #481 #482 #487 #480 #474 #455 #454 #448 #443 #428 #425 #412 #410).
+Week: 78 PRs merged (43 measurement, 21 owner, 14 loop). 136 open issues (30 filed this week, 57 untouched >14d).
+Production serves `ff861450` (= #609 merge) per `/health`, so every merge before it is live.
+
+decisions:
+  - #362 — closure is wrong, propose REOPEN. Closed by owner 2026-10-24T00:00:50Z, one second after PR #492 merged.
+    #492 said `refs #362` and "deliberately does not close #362". The last cycle comment lists what is still open:
+    A2 (eval), Part B (PR-author provenance + `gate:prompt` label), AC4-6, AC8. No open issue carries any of it
+    (searched titles; #327/#230 are adjacent, not these). That work is now orphaned. Not reopened by me: the
+    close was an owner act, not close-on-evidence or project-manager. Owner call: reopen #362, or file the remainder.
+  - #515 — same shape, propose REOPEN. Closed by owner at the merge second of #516 (2026-10-24T09:22:10Z).
+    #516's body: "refs #513, #514, #515 — all three stay open", titled PARTIAL / unverified in production.
+    #513 and #514 are still open; only #515 was closed. Analyst scored it NOT SCOREABLE on 10-25, 10-28 and 10-29
+    (0 post-deploy days of data; rescore on/after 2026-11-21). A thesis with an unmeasured outcome is not closed.
+  - #493 — closure stands, but the check set last sync is only half answered. 10-23 sync said: read the next
+    `agent-prioritise` (10-25) and `agent-discover` (10-26) runs; reopen if green with no report. Neither is green:
+      prioritise 10-25 FAILURE (exit 1 before any report; `measurements/prioritise/` still holds only 10-08.md)
+      discover 10-26 FAILURE in `persist` ("could not enable auto-merge") — but `measurements/discover/2026-10-26.md`
+      exists, so the dispatch now works; the failure is #557 (open), not #493.
+    The "empty run goes red" half of #493 is observed working. "prioritise writes a non-empty report" is not:
+    no prioritise report since 10-08 despite a 10-18 success. Needs an owner: someone to read run 40225736898.
+  - Closure audit, 15 closed in the last 7 days. None is the #143 failure (a bare "fixed"). Breakdown:
+      close-on-evidence: #388 — all three facts present (PR #600, verify-production success on c932a8bc,
+        /health build_sha = c932a8bc). Clean.
+      project-manager: none this week.
+      keyword auto-close at merge (not either mechanism): #495, #607 — closed by github-actions[bot] at the merge
+        second, while agent-merge's own comment on each says "Not closing this". The comment is false.
+        Substance is fine (scripts/.claude only, never ships; #607's merge commit is the one `/health` reports).
+        Same class PR #562 taught `loop-outcomes` to excuse. Defect is the contradictory comment, not the closure.
+      owner closes at merge, no closing comment: #384, #387, #430, #493. #384 (scripts-only) fine. #387 and #430
+        shipped under src/ and verify-production was green on 7e075538 / 2949686f, but nothing on the issue says so.
+        #430's "left undone" item 3 (Gate 8 gap, cache-version-bump guard "worth its own issue") — I found no issue.
+      owner "Audited complete 2026-10-30" batch, five closes in 12 seconds (17:25:09–20): #573, #510, #468, #465,
+        #389. Comments name file:line, but only #389 quotes command output. I spot-checked from the
+        tree: #510 `q-fold` present (17); #468 saturn/ketu wording matches the comment, `festival_registry` in
+        verify_natal_prompt.py; #465 no "universal/classical/safe" on Vishnu Sahasranama, Sri Yantra keeps it.
+        All consistent. NOT checked by me: #573's four criteria, #389's live 'rows 533 -> 535' output
+        (`uv run` printed nothing here).
+      owner decision: #505 — decision recorded verbatim, defect fixed by #507 (merged). Clean.
+      #472 (10-22, test-only macOS fix) and #394 closed with 0 comments; low stakes, not reopened.
+
+escalated:   none. Candidate contradiction checked and already ruled:
+  - #518 (qa-pass, routes /learn traffic to /kundli /matching /numerology, 0 tokens, corpus n/a) vs open UNSOURCED
+    findings on those tools (#581-#584 numerology; #429 Manglik; #175 Vashya). chief.md Standing ruling 3:
+    "Authenticity wins on the claim; traffic wins on the roadmap … What to build next is ranked on traffic.
+    What is already shipped is ranked on truth." So #518 may proceed and the claims are fixed on their own issues.
+    Not escalated; no escalation budget spent (0 of 3 used).
+  - #508 (/matching title/meta test) — no open UNSOURCED finding against /matching's copy (#397 closed). No conflict.
+
+missed:
+  - #515 / #516 — cannot score. Metric 1 (forbidden-planet share 31.0% → <5%) is a blob measurement nobody has taken;
+    metric 2 has 2 post-deploy days. Idea vs execution: undeterminable until 2026-11-21. Baseline: 0 organic
+    sessions to /rashifal*, GSC /rashifal 130 impressions, 0 clicks, position 10.2.
+  - No shipped thesis scored a miss this week.
+
+blocked 2x:
+  - #279 (CI corpus) — owner ruled on 10-23 (#505): CI never needs data/; #507 merged. #279 itself still open with
+    `needs-human-review`, untouched 7 days. Its own last comment says it can close as won't-do under the ruling
+    "— that is the owner's call". Second consecutive sync with no owner action. PROPOSED CLOSURE: close #279 as
+    won't-do under the 10-23 ruling, unless something other than citations reads data/ in CI.
+  - #362 remainder (A2 eval, Part B) — see decisions; blocked on nobody because nothing tracks it.
+    If not reopened or refiled by next sync it files `needs-human-review`.
+
+carried:
+  - Open PRs with `qa-fail`: #606, #564, #550, #544 (open 0-4 days; #564/#550/#544 updated 10-30 18:25Z).
+    Not diagnosed here; steward owns it. Next sync: any still `qa-fail` with no new commit.
+  - Four numerology UNSOURCED issues #581-#584 (filed 10-28, unworked) and #429 (Manglik ladder): shipped
+    claims, ranked on truth per ruling 3. Highest-severity class this loop produces; none has a PR.
+  - 57 issues untouched >14d; BACKLOG.md 2 months stale (36 vs 136 open) — /prioritise's job.
+  - Worth a human look (new, not filed): agent-merge's "Not closing this" comment is emitted even when the PR carries
+    `closes #N` and GitHub closes it in the same second. Either gate the comment or drop the sentence.

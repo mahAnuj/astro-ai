@@ -363,6 +363,120 @@ GATE7_SAMPLES = {
           "Rahu & Ketu in their friendly rashis",
           "both Rahu/Ketu placed in friendly signs",
           "Cancellation: Rahu and Ketu are in its friendly sign and Jupiter is in a kendra"),
+    # X. Books nobody here holds named for the Manglik doctrine or Kumbh Vivah (#398 slice 9).
+    # The first two are the manglik-remedies callout and the manglik-dosh sentence as they stood.
+    "X": ("Jataka Parijata, Muhurtha Chintamani, Phaladeepika (Manglik doctrine + cancellation). Hanuman Chalisa "
+          "attributed to Tulsidas (16th c). Kumbh Vivah + Peepal Vivah \u2014 modern folk-remedial practice, "
+          "not attested in BPHS / Mansagari / Phaladeepika.",
+          "This is cultural practice, not scripture \u2014 it does not appear in BPHS, Mansagari, or Phaladeepika.",
+          "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS)",
+          "Jataka Parijata and Muhurta Chintamani (Mangal Dosha doctrine)",
+          "Phaladeepika, Mansagari: Manglik cancellation rules",
+          "Jataka Chandrika / Phaladeepika for Kuja dosha",
+          "Muhurtha Chintamani, Jataka Parijata and Phaladeepika \u2014 Manglik doctrine",
+          "Peepal Vivah is not found in Brihat Parashara Hora Shastra",
+          "Kumbh Vivah is nowhere mentioned in Mansagari",
+          "Kumbh Vivah, a pot-marriage ritual, is not listed in the Phaladeepika",
+          "Banana-tree marriage does not appear in BPHS",
+          "folk-remedial practice, never attested in Jataka Parijata",
+          # Kumbh / Peepal Vivah itself called classical, over a callout that says it is not.
+          "Classical remedy for severe uncancelled Manglik BEFORE marriage: Kumbh Vivah (marriage to a kumbh)",
+          "Classical tradition prescribes it for severe uncancelled Manglik before marriage \u2014 marriage to a "
+          "clay pot (kumbh) or peepal tree",
+          "Classical remedy for Manglik: Peepal Vivah",
+          "Kumbh Vivah is a classical remedy for severe Manglik",
+          "Peepal Vivah, the classical ritual for uncancelled Mangal dosha",
+          # QA round 1, D1: mars-remedies.html:139 said this and the gate stayed green, because
+          # the book list sat in the SENTENCE AFTER the practice and every window stopped at the
+          # full stop. Spellings below were written against that, not against the first fix.
+          "Kumbh Vivah (a symbolic pre-marriage ceremony) \u2014 <strong>this is regional folk practice, "
+          "not scripture</strong>. It does not appear in BPHS, Mansagari, or Phaladeepika.",
+          "Kumbh Vivah is a folk ritual. It is absent from BPHS and Mansagari.",
+          "Marrying a Manglik to a pot is a village custom. It has no basis in Phaladeepika.",
+          "Kumbh Vivah is regional folk practice, not scripture.\nIt does not appear in Jataka Parijata or Mansagari.",
+          "Neither BPHS nor Mansagari mentions Kumbh Vivah.",
+          "BPHS, Mansagari and Phaladeepika say nothing about Kumbh Vivah.",
+          "You will not find Kumbh Vivah in Mansagari.",
+          "Kumbh Vivah is folk practice, not scripture. Phaladeepika is silent on it.",
+          "Kumbh Vivah is an oral tradition. None of BPHS, Mansagari or Phaladeepika has it.",
+          "Kumbh Vivah is folk practice, not scripture. It is not part of BPHS, Mansagari or Phaladeepika.",
+          "Peepal Vivah is a village custom. No trace of it exists in Phaladeepika.",
+          "Kumbh Vivah is one of the classical rituals for Manglik.",
+          "Kumbh Vivah is prescribed in classical texts for severe Manglik.",
+          "Classical remedy for Mangal dosha: marriage to a peepal tree before the wedding.",
+          # The same defect on the age-28 claim, found by D1(b)'s sweep of the live tree: a CLAIM TO HAVE
+          # CHECKED books nobody here holds (manglik-dosh.html, with the <em> tags a template carries).
+          "This is <strong>modern folk tradition, not classical scripture</strong>. We checked: <em>Phaladeepika</em>, "
+          "<em>Brihat Parashara Hora Shastra</em>, <em>Mansagari</em>, and <em>Jataka Parijata</em> contain no such verse.",
+          "We searched Phaladeepika and Mansagari for it and found nothing.",
+          "Manglik Dosh 'weakens after age 28'. This is modern folk tradition, not classical scripture \u2014 there is no "
+          "such verse in Phaladeepika, Brihat Parashara Hora Shastra, Mansagari, or Jataka Parijata.",
+          "'Weakens after age 28' is folk tradition, NOT classical scripture (not in BPHS, Phaladeepika, Mansagari, Jataka Parijata)",
+          "Kumbh Vivah is folk practice, not scripture. It is not found in <em>BPHS</em> or <em>Mansagari</em>."),
+    # Y. The Aditya Hridaya Stotra given a Ramayana kanda and a sage (#398 slice 9). The first three
+    # are the surya-sun-remedies body, its FAQ and the surya-sun-in-vedic-astrology bullet as they stood.
+    "Y": ("The Aditya Hridaya Stotra is a Sanskrit hymn from the Ramayana (Yuddha Kanda) \u2014 Agastya Rishi "
+          "taught it to Rama on the battlefield to invoke Surya's power before slaying Ravana.",
+          "A Sanskrit hymn from the Ramayana (Yuddha Kanda) where Agastya Rishi taught it to Rama on the battlefield.",
+          "Aditya Hridayam Stotra \u2014 a powerful hymn from the Ramayana in praise of Sun, taught to Rama before "
+          "his final battle.",
+          "Aditya Hridaya is from the Yuddha Kand",
+          "Aditya Hrudayam, Yuddhakanda, verse 4",
+          "Sage Agasti taught Rama this stotra",
+          "Rama received it from Agastya",
+          "Ravana was defeated after Agastya's counsel to Rama",
+          "Aditya Hridayam appears in Valmiki's account of the war",
+          "The Aditya Hridaya Stotra is recited in the Ramayana",
+          "Ramayana's hymn to the Sun, Aditya Hridayam",
+          "Valmiki gave the Aditya Hridaya Stotra",
+          # Agastya and Rama together only count WITH a verb of teaching or giving (QA round 1, D2);
+          # these are the spellings of that, in both orders and with the possessive.
+          "Agastya taught the Aditya Hridayam to Rama.",
+          "Rama learned the hymn from the sage Agastya.",
+          "Agastya's advice to Rama was to chant the Aditya Hridayam.",
+          "Rama chanted the Aditya Hridayam on Agastya's instruction.",
+          "The hymn was given to Raghava by Agastya.",
+          "Rama recited the Aditya Hridayam as Agastya had told him.",
+          "Agastya recited the Sun hymn to Rama.",
+          "The Aditya Hridayam, from the epic Ramayana, is a Sun hymn."),
+    # Z. A Manglik cancellation rule given to a book nobody here holds, or "over a dozen" of them
+    # (#398 slice 10). The first ten are the manglik-dosh / mangal-mars / index / learn_registry
+    # sentences as they stood, with the <em> tags a template carries blanked as the gate sees them.
+    "Z": ("Brihat Parashara Hora Shastra and Phaladeepika both mention Mars in these houses as a marital concern. "
+          "But both texts immediately follow with extensive lists of cancellation rules (called parihara).",
+          "The classical texts give over a dozen ways Manglik Dosh weakens or cancels entirely.",
+          "Classical texts (Mansagari, Jataka Parijata, Phaladeepika) list over a dozen cancellation rules that most "
+          "online calculators ignore.",
+          "the malefic effect drops dramatically (per Jataka Parijata).",
+          "a debilitated Mars lacks the strength to disturb (per Jataka Chandrika).",
+          "Jataka Parijata additionally cancels Manglik when Mars sits in any movable sign (Chara rashi).",
+          "Per Phaladeepika, this mitigates (not always fully cancels) the dosha.",
+          "Three forms all cancel per Phaladeepika:",
+          "Both cancel per Phaladeepika and modern compatibility practice.",
+          "Per Jataka Parijata and Muhurtha Chintamani, a Yogakaraka cannot simultaneously be the source of a major dosha.",
+          "Classical texts list over a dozen cancellation rules \u2014 a lot of people labelled Manglik actually aren't.",
+          "a debilitated Mars in a Manglik house actually cancels the Manglik dosha per classical rule (Jataka Chandrika)",
+          # other books, other word orders, the count without the books
+          "Mars in its own sign cancels Manglik dosha, according to Jataka Parijata.",
+          "As per Phaladeepika, Jupiter's aspect on Mars cancels the dosha.",
+          "Muhurtha Chintamani gives the Cancer Lagna Yogakaraka exemption from Manglik.",
+          "Mansagari lists several cancellation rules for Mangal Dosh.",
+          "BPHS describes how the dosha is cancelled when Jupiter aspects Mars.",
+          "Jataka Chandrika says a debilitated Mars cancels the dosha.",
+          "Cancellation by Jupiter's aspect is taught in Phaladeepika.",
+          "Mars conjunct Jupiter cancels the dosha (Jataka Parijata).",
+          "Venus conjunct Mars mitigates it, as given in Phaladeepika.",
+          "Parihara for Kuja dosha as listed in Jataka Parijata and Phaladeepika.",
+          "The texts (Phaladeepika, Jataka Parijata) both list cancellation rules for Manglik.",
+          "Classical sources such as Mansagari and Jataka Parijata list the cancellation rules.",
+          "More than a dozen cancellation rules are listed for Manglik dosha.",
+          "There are over twelve ways Mangal Dosh is cancelled.",
+          "A dozen ways Manglik dosha cancels have been recorded.",
+          "Both texts follow with a long list of cancellation conditions.",
+          "Mars exalted in Capricorn cancels Manglik per Brihat Parashara Hora Shastra.",
+          "Per Muhurta Chintamani, the Yogakaraka rule excludes Cancer and Leo Lagnas from the dosha.",
+          "The Yogakaraka exemption is stated in Jataka Parijata and Muhurtha Chintamani.",
+          "Phaladeepika mentions Mars in these houses as harmful to marriage."),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -527,7 +641,6 @@ GATE7_LEGAL = (
     "Classical sources cited\nKumbh Vivah + Peepal Vivah \u2014 modern folk-remedial practice.",
     "Sources and traditions\nThe Somvar vrats and silver are devotional and family tradition that we have not "
     "traced to a classical text.",
-    "The Aditya Hridaya Stotra is a hymn from the Ramayana (Yuddha Kanda).",
     # QA round 1 (D2): three correct sentences the first T and U patterns flagged.
     "Saturn rules sesame seeds, Rahu rules black gram daal.",
     "Pitru dosh with Rahu: tarpan with black sesame",
@@ -540,6 +653,81 @@ GATE7_LEGAL = (
     # D4: the callout wording that replaced "the standard planet-by-planet remedy lists".
     "The Beej mantra in its widely-accepted seed form follows one modern textbook's planet-by-planet "
     "remedy table.",
+    # Slice 9. The shipped replacement text, and the neighbours the new patterns must leave alone.
+    "Sources and traditions\nThe Manglik rules themselves are not settled in the modern books we have checked. "
+    "One author says the dosha is not found in the standard texts and rejects the usual cancellations; another "
+    "lists a few antidotes and adds that much importance need not be given to it. Kumbh Vivah and Peepal Vivah "
+    "in particular are folk-remedial practices; we have found no classical source for them.",
+    "This is cultural practice, not scripture \u2014 we have found no classical source for it.",
+    "A folk-remedial practice for severe uncancelled Manglik BEFORE marriage (we have found no classical source "
+    "for it): Kumbh Vivah (marriage to a kumbh \u2014 clay pot)",
+    "It is a folk-remedial practice, not a classical one (we have found no classical source for it), offered for "
+    "severe uncancelled Manglik before marriage \u2014 marriage to a clay pot (kumbh) or peepal tree",
+    "Classical tradition recommends Manglik-Manglik matching, with one condition that most retellings drop.",
+    "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice; no classical source found)",
+    "Pitru Dosh is less systematic in the core classical canon (Brihat Parashara Hora Shastra, Phaladeepika, "
+    "Jataka Parijata) than Mangal Dosh or Sade Sati.",
+    "Dhana Yogas: Classical texts (BPHS, Phaladeepika, Saravali) list dozens.",
+    "The Aditya Hridaya Stotra is a Sanskrit hymn in praise of the Sun, and a long-standing Sun devotion. "
+    "Devotional tradition links it to Rama's final battle with Ravana.",
+    "The Sun-praise hymn Rama recited before defeating Ravana.",
+    "Aditya Hridayam recitation. The classical Sun stotra Rama received before his final battle with Ravana.",
+    "Hanuman was born under a Mars-influenced lagna in Ramayana lore.",
+    "Sundarakanda recitation \u2014 the fifth book of the Ramayana, entirely about Hanuman's adventures.",
+    "Ramayana and the Ramcharitmanas place the birth in the madhyahna hours.",
+    # Slice 9 QA round 1, D2: correct text the first X and Y fired on. A sentence that DENIES
+    # classical status is the correct one; "classical remedy for Manglik" is legal when the
+    # remedy is Hanuman worship; two names in one sentence are not a teaching claim.
+    "Kumbh Vivah is not a classical practice; it is folk tradition.",
+    "Classical remedy for Manglik is Hanuman worship.",
+    "Rama and Agastya appear in many regional tales.",
+    "Peepal Vivah is not a classical rite.",
+    "Peepal Vivah is not a classical ritual, and no classical text we hold prescribes it.",
+    "Kumbh Vivah has no classical source that we have found.",
+    "There is no classical remedy called Kumbh Vivah.",
+    "Classical remedy for severe Manglik: Hanuman worship. Kumbh Vivah is folk practice.",
+    "The classical remedy for Manglik is matching with another Manglik of comparable severity.",
+    "Kumbh Vivah is folk, whereas Hanuman worship is a classical practice.",
+    "Classical texts do not prescribe Kumbh Vivah.",
+    "Rama visited the hermitage of Agastya during his exile.",
+    "Agastya and Rama both appear in the Ramayana.",
+    "BPHS is not in data/, so we do not cite it.",
+    "This is modern folk tradition, not classical scripture. We have found no classical source for it. It may still resonate as wisdom.",
+    "We checked the chart's Mars placement from the Lagna, the Moon and Venus.",
+    # the wording slice 9 replaced it with, as it now ships (templates and summaries)
+    "It is a folk-remedial practice, not a classical one (we have found no classical source for it).",
+    "Kumbh Vivah is regional folk practice, not scripture; we have found no classical source for it.",
+    "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice; no classical source found)",
+    # Slice 10. The shipped wording, and neighbours Z must leave alone: a comparison that names the
+    # books, a sentence about the matching feature, a Kaal Sarp denial, and a rule with no book.
+    "The tradition reads Mars in these houses as a marital concern. But it comes with a long set of "
+    "cancellation rules (called parihara). The dosha isn't a flat yes/no.",
+    "The rules themselves are not settled, and the modern books we checked are more cautious than the websites "
+    "that repeat them. One author says the dosha is not found in the standard texts.",
+    "The tradition repeats a number of ways Manglik Dosh is said to weaken or cancel entirely, and the sources do "
+    "not agree on them.",
+    "the malefic effect is said to drop dramatically \u2014 a widely repeated rule.",
+    "Some lists go further and count any movable sign (Chara rashi), so Mars in Libra also cancels.",
+    "The tradition says this mitigates (not always fully cancels) the dosha.",
+    "Jupiter (Guru) is the cancellation the tradition cites most often. Three forms are commonly listed.",
+    "Both are commonly listed as cancelling; the modern textbook we checked does not list Venus among its antidotes.",
+    "The reasoning commonly given is that a Yogakaraka cannot simultaneously be the source of a major dosha. "
+    "The modern textbook we checked does not state this exclusion in these terms.",
+    "The tradition repeats many cancellation rules \u2014 a lot of people labelled Manglik actually aren't.",
+    "Mars debilitated in a Manglik house cancels the dosha under a commonly repeated rule (not every source gives it).",
+    "It says the dosha is cancelled when both partners are Manglik, and counteracted by the conjunction of Mars "
+    "with Jupiter or with the Moon.",
+    "Includes Manglik compatibility per BPHS.",
+    "Pitru Dosh is less systematic in the core canon (BPHS, Phaladeepika, Jataka Parijata) than Mangal Dosh or Sade Sati.",
+    "Kaal Sarp Dosh is not defined in BPHS, Phaladeepika or Jataka Parijata.",
+    "Phaladeepika notes that Mercury's strength often determines how smoothly life runs.",
+    "Brihat Parashara Hora Shastra calls Mercury the son of the Moon, youthful and well-versed in speech.",
+    "The four Sade Sati cancellations are listed in a dozen online calculators.",
+    "A dozen planets were tested for the dosha in Jataka Parijata.",
+    "Dhana Yogas: BPHS lists many wealth combinations, Phaladeepika adds more.",
+    "Classical texts (BPHS, Phaladeepika, Saravali) list dozens of yogas.",
+    "Mars in own sign is a Ruchaka Yoga when in a kendra (Rao, section 11.4).",
+    "Per Rao, the Mars gem is red coral.",
 )
 
 # The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk
@@ -547,6 +735,51 @@ GATE7_LEGAL = (
 _HONEST = ("Many people recite the Hanuman Chalisa on Saturdays through a hard Saturn period; "
            "that is a popular tradition, not a classical Saturn assignment. The classical road "
            "to Hanuman runs through Mars carrying Saturnine influence.")
+
+
+def gate8_mutations() -> tuple[int, int]:
+    """#430: re-break each Sade Sati phase-name surface and require Gate 8 red."""
+    caught = missed = 0
+    lines = gate.sade_sati_prompt_lines()
+    titles = gate.sade_sati_panel_titles()
+    ref = gate.sade_sati_reference()
+
+    def run(**kw):
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            ok = gate.gate_8_sade_sati_phase_names(**kw)
+        return ok
+
+    def expect(label: str, ok: bool, want_green: bool):
+        nonlocal caught, missed
+        if ok == want_green:
+            caught += 1
+        else:
+            missed += 1
+            print(f"  MISSED  sade-sati-names  {label}: expected "
+                  f"{'green' if want_green else 'red'}, went {'green' if ok else 'red'}")
+
+    expect("CONTROL (real tree)", run(), True)
+    for label, old, new in (
+        ("prompt rising (arohini)", "rising phase", "rising phase (arohini)"),
+        ("prompt setting (avarohini)", "setting phase", "setting phase (Avarohini)"),
+        ("prompt invented label", "peak phase (madhya)", "peak phase (shikhara)"),
+    ):
+        expect(label, run(prompt_lines=[ln.replace(old, new) for ln in lines]), False)
+    for key, new in (
+        ("en:sade_sati_rising_title", "Rising Phase (Arohini)"),
+        ("en:sade_sati_setting_title", "Setting Phase (Avarohini)"),
+        ("hi:sade_sati_rising_title", "आरोही चरण (आरोहिणी)"),
+        ("hi:sade_sati_setting_title", "अवरोही चरण (अवरोहिणी)"),
+        ("en:sade_sati_peak_title", "Peak Phase (Shikhara)"),
+    ):
+        expect(f"panel {key}", run(panel_titles=[(k, new if k == key else t) for k, t in titles]), False)
+    # Unchanged legal text stays green, and a gate with nothing to scan fails.
+    expect("peak (madhya) is written in the reference", run(reference=ref), True)
+    expect("empty reference", run(reference=""), False)
+    expect("no prompt lines", run(prompt_lines=[]), False)
+    expect("no panel titles", run(panel_titles=[]), False)
+    return caught, missed
 
 
 def gate7_mutations() -> tuple[int, int]:
@@ -831,6 +1064,22 @@ def main() -> int:
         gate.SESAME_AS_RAHU: (("financial-struggles", "For Rahu-related unstable wealth: Rahu mantra, donating black sesame"),
                               ("rahu-remedies", "Rahu: offer sesame seeds"),
                               (None, "black til for Rahu")),
+        # Slice 9. The first row of X is the claim as it stood in manglik-remedies' summary.
+        gate.MANGLIK_UNHELD_BOOKS: (("manglik-remedies", "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS)"),
+                                    ("manglik-dosh", "Jataka Parijata, Muhurtha Chintamani, Phaladeepika (Manglik doctrine + cancellation)"),
+                                    (None, "Kumbh Vivah is not found in Mansagari"),
+                                    ("mars-remedies", "Kumbh Vivah \u2014 regional folk practice, not scripture. It does not appear in BPHS, Mansagari, or Phaladeepika."),
+                                    (None, "Kumbh Vivah is a folk ritual. Phaladeepika, Mansagari and BPHS do not mention it."),
+                                    ("manglik-dosh", "\u2022 'Weakens after age 28' is folk tradition, NOT classical scripture (not in BPHS, Phaladeepika, Mansagari, Jataka Parijata)")),
+        gate.HYMN_CHAPTER_ATTRIBUTION: (("surya-sun-remedies", "Aditya Hridaya Stotra, a hymn from the Ramayana (Yuddha Kanda)"),
+                                        (None, "Agastya taught Rama the Aditya Hridayam"),
+                                        (None, "Aditya Hridayam from Valmiki's Ramayana")),
+        # Slice 10. No summary said any of this when the slice began; these are the page sentences
+        # as they would reach a summary if someone copied them in.
+        gate.MANGLIK_RULE_TO_BOOK: (("manglik-dosh", "Cancellations (any ONE cancels): Jupiter aspect on Mars per Phaladeepika"),
+                                    (None, "Classical texts (Mansagari, Jataka Parijata, Phaladeepika) list over a dozen cancellation rules"),
+                                    (None, "Cancer/Leo Lagna Yogakaraka exemption (Jataka Parijata, Muhurtha Chintamani)"),
+                                    ("mangal-mars-in-vedic-astrology", "Debilitated Mars cancels Manglik (per Jataka Chandrika)")),
     }
     first = real[0][0]
     for pattern, _why in gate.SUMMARY_FORBIDDEN:
@@ -863,6 +1112,17 @@ def main() -> int:
         ("rahu-remedies", "Saturday charity (black gram/urad daal, blue clothes, coconut)"),
         ("saturn-remedies", "Saturn charity: sesame/iron/mustard-oil, Shani Beej mantra"),
         ("kundali-matching-ashtakoot-guna-milan", "Hasta (Antya), Anuradha (Madhya), Saturn-Jupiter temperaments"),
+        # Slice 9: the replacement wording, a comparison that names the books, and the folk Rama framing.
+        ("manglik-remedies", "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice; no classical source found)"),
+        ("pitru-dosh", "less systematic than Mangal Dosh (Brihat Parashara Hora Shastra, Phaladeepika, Jataka Parijata) or Sade Sati"),
+        ("surya-sun-remedies", "Aditya Hridaya Stotra recitation; devotional tradition links it to Rama's battle with Ravana"),
+        # Slice 9 QA round 1, D2: a sentence that denies classical status, and two names in one sentence.
+        ("manglik-remedies", "Kumbh Vivah is not a classical practice; it is folk tradition"),
+        ("manglik-remedies", "Classical remedy for Manglik is Hanuman worship"),
+        ("surya-sun-remedies", "Rama and Agastya appear in many regional tales"),
+        # Slice 10: the replacement wording, and a comparison that names the books.
+        ("manglik-dosh", "Cancellations (any ONE cancels): Jupiter aspect on Mars, widely repeated in the tradition; sources differ"),
+        ("pitru-dosh", "less systematic than Mangal Dosh (Brihat Parashara Hora Shastra, Phaladeepika, Jataka Parijata)"),
     ):
         mutated = [(slug, text + ("\n• " + legal if slug == target else "")) for slug, text in real]
         with redirect_stdout(io.StringIO()):
@@ -882,6 +1142,10 @@ def main() -> int:
     c7, m7 = gate7_mutations()
     caught += c7
     missed += m7
+
+    c8, m8 = gate8_mutations()
+    caught += c8
+    missed += m8
 
     lines = original.splitlines(keepends=True)
     unprotected = [
