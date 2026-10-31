@@ -113,7 +113,15 @@ jobs:
             muhurat.py, numerology.py or matching.py. File issues; Engineering
             implements.
           claude_args: |
-            --max-turns 80
+            # 150, not 80 (#605-adjacent, 2026-10-31). The 2026-10-28 run
+            # died with "Reached maximum number of turns (80)" and its
+            # workflow had not changed since 10-08, so this was the only one
+            # of the four red loops that was genuinely broken. Corpus mining
+            # is turn-hungry: it greps data/, reads knowledge/, and writes a
+            # sourced entry per finding. `agent-work`, the loop that actually
+            # completes, has run at 150 since it was raised for the same
+            # reason -- matching it rather than guessing a middle number.
+            --max-turns 150
             --effort high
             --allowedTools "Read,Write,Glob,Grep,TodoWrite,Skill,WebFetch,Bash"
             --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*),Edit(src/astro_ai/chart.py),Edit(src/astro_ai/muhurat.py),Edit(src/astro_ai/numerology.py),Edit(src/astro_ai/matching.py)"
