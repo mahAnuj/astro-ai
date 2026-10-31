@@ -3533,6 +3533,71 @@ MUTATIONS = [
      "",
      "test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so"),
 
+    # --- #384: the merge-conflict marker gate -------------------------------
+    # ARCHITECTURE.md reached main carrying a live conflict block and all 27
+    # gates passed over it. These rows are the properties of the gate that
+    # replaced that silence; each one, broken, is a marker that ships again.
+    #
+    # THREE OF THESE REPLACE ROWS THAT PINNED THE BLINDNESS AS CORRECT. The
+    # first version matched exactly seven marker characters and read file
+    # content from the working tree, and had a row asserting that a wider run
+    # must PASS -- so the suite would have gone red on the fix. A mutation row
+    # is only as good as the premise under it.
+    ("#384: the scanner drops git's diff3/zdiff3 base marker",
+     "scripts/verify_conflict_markers.py",
+     "DIRECTIONAL_CHARS = (OURS[0], BASE[0], THEIRS[0])",
+     "DIRECTIONAL_CHARS = (OURS[0], THEIRS[0])",
+     "test_the_diff3_base_marker_alone_turns_the_gate_red"),
+
+    ("#384: the width goes back to EXACTLY seven, which `conflict-marker-size` defeats",
+     "scripts/verify_conflict_markers.py",
+     "        if len(run) >= MARKER_MIN:\n",
+     "        if len(run) == MARKER_MIN:\n",
+     "test_a_real_conflict_at_a_non_default_width_turns_the_gate_red"),
+
+    ("#384: a wide run stops counting even with a same-width companion beside it",
+     "scripts/verify_conflict_markers.py",
+     "        if w == MARKER_MIN or len(chars_at_width[w]) > 1:\n",
+     "        if w == MARKER_MIN:\n",
+     "test_a_wide_block_is_caught_once_its_companion_is_there"),
+
+    # Pointed at the CONTEXT test, not the setext one. A file holding only a
+    # separator never reaches `markers()` -- the pre-filter in `scan()` looks
+    # for the directional characters first -- so the setext test could not see
+    # this mutation at all. Measured, not assumed: the row read MISSED until it
+    # was repointed and the context test taught to count.
+    ("#384: the separator becomes a trigger, so every setext heading blocks a PR",
+     "scripts/verify_conflict_markers.py",
+     "        if ch == SEPARATOR_CHAR:\n            continue\n",
+     "        if False:\n            continue\n",
+     "test_the_separator_is_reported_as_context_in_a_condemned_file"),
+
+    ("#384: the gate reads the working tree again instead of the staged content",
+     "scripts/verify_conflict_markers.py",
+     "        data = content.get(sha)\n",
+     "        data = (root / rel).read_bytes() if (root / rel).exists() else None\n",
+     "test_the_gate_reads_the_index_not_the_working_tree"),
+
+    # NO ROW FOR `stage != "0"`, and the absence is deliberate. Dropping that
+    # filter reads like a gate and is not one: an unmerged path's stage 1/2/3
+    # blobs are the PRE-merge sides, which carry no markers -- the markers exist
+    # only in the working tree while the merge is live. Scanning the extra
+    # stages therefore reports nothing new, the named test stays green, and the
+    # row would have been a row that pins nothing. The filter stays for the
+    # duplicate-path count it prevents; `test_an_unmerged_index_entry_is_skipped
+    # _not_reported` documents the behaviour without pretending to gate it.
+
+    ("#384: a condemned file no longer reports the separator line as context",
+     "scripts/verify_conflict_markers.py",
+     "        for n, line in separators(texts[rel]):\n",
+     "        for n, line in []:\n",
+     "test_the_separator_is_reported_as_context_in_a_condemned_file"),
+
+    ("#384: the gate stops noticing that it excluded its own source from the scan",
+     "scripts/verify_conflict_markers.py",
+     "if mine and mine in tracked_files(root) and mine not in scanned:",
+     "if mine and mine in tracked_files(root) and False:",
+     "test_a_gate_that_excluded_its_own_source_exits_two"),
     # #573. The dispatch was unconditional, so EVERY cycle attached a second
     # `PR gates` run to the head SHA -- the one run agent-merge dedups to as
     # the latest, and the one run its `if:` refuses as a trigger (#352). The
@@ -3708,6 +3773,80 @@ MUTATIONS = [
      "**CORRECTED 2026-10-30 (#398), by saying both rather than deleting either**",
      "**Flagged, not corrected** \u2014 the resolution is probably to say both",
      "test_the_knowledge_ledger_no_longer_says_flagged_not_corrected"),
+    # --- #450: single-flight on the two live caches. Each row removes ONE
+    # piece of the serialisation; the suite must notice every piece. --------
+    ("#450: the backlog read is not serialised (N cold renders spend N)",
+     "src/astro_ai/ops_data.py",
+     "    with _live_lock:\n        return _live_issues_locked(objective)",
+     "    return _live_issues_locked(objective)",
+     "test_concurrent_cold_backlog_reads_spend_one_request"),
+
+    ("#450: the today read is not serialised (N cold renders spend N)",
+     "src/astro_ai/ops_data.py",
+     "    with _today_lock:\n        return _live_today_locked(day_start, day)",
+     "    return _live_today_locked(day_start, day)",
+     "test_concurrent_cold_today_reads_spend_one_renders_worth"),
+
+    ("#450: the backlog waiter does not re-check the cache once it has the lock",
+     "src/astro_ai/ops_data.py",
+     "    hit = _issues_fresh(now)\n    if hit:\n        return hit[1]\n    try:",
+     "    try:",
+     "test_concurrent_cold_backlog_reads_spend_one_request"),
+
+    ("#450: the today waiter does not re-check the cache once it has the lock",
+     "src/astro_ai/ops_data.py",
+     "    hit = _today_fresh(day, now)\n    if hit:\n        return hit[2]\n    try:",
+     "    try:",
+     "test_concurrent_cold_today_reads_spend_one_renders_worth"),
+
+    ("#450: the two caches share one lock (a slow backlog read blocks the tiles)",
+     "src/astro_ai/ops_data.py",
+     "_today_lock = threading.Lock()",
+     "_today_lock = _live_lock",
+     "test_one_cache_being_filled_does_not_block_the_other"),
+
+    ("#450: the today lock is taken and never released (a waiter hangs)",
+     "src/astro_ai/ops_data.py",
+     "    with _today_lock:\n        return _live_today_locked(day_start, day)",
+     "    _today_lock.acquire()\n    return _live_today_locked(day_start, day)",
+     "test_a_failing_first_today_read_is_cached_and_the_lock_released"),
+    # --- #607: every agent definition says where its output goes ---
+    # The rule was stated once in CLAUDE.md, pointed at a gitignored file, and
+    # 12 of 15 definitions ended up with no instruction to write anywhere
+    # durable. These rows re-break each class so the gate cannot rot back out.
+    ("#607 trail: an agent definition loses the output-goes section",
+     ".claude/agents/engineer.md",
+     "  `>>` only \u2014 never `>`, never Write, never Edit on that file.\n\n## Where your output goes",
+     "  `>>` only \u2014 never `>`, never Write, never Edit on that file.\n\n## Notes",
+     "test_every_agent_names_where_its_output_goes"),
+
+    # The SYMMETRIC row. Its absence is why the issue-side check shipped
+    # near-vacuous: `"issue" in block` was always true because the section
+    # heading says "the issue is durable". QA on #609 inverted an agent's
+    # issue instruction, left the heading intact, and the gate said `ok`.
+    ("#607 trail: an agent names the PR but not the issue",
+     ".claude/agents/infra-lead.md",
+     "**On the issue:**",
+     "Keep it in your own output:",
+     "test_every_agent_names_both_the_issue_and_the_pr"),
+
+    ("#607 trail: an agent names the issue but not the PR",
+     ".claude/agents/qa.md",
+     "**On the PR:** the full verdict comment first, then record the label with",
+     "Also, eventually, somewhere: the full verdict comment first, then the label with",
+     "test_every_agent_names_both_the_issue_and_the_pr"),
+
+    ("#607 trail: an agent is told the heartbeat file is the record",
+     ".claude/agents/architect.md",
+     "`AGENT_STATUS.md` is a **local heartbeat only** \u2014 it is gitignored, so nothing in it",
+     "`AGENT_STATUS.md` is where the trail belongs \u2014 append to it, and nothing in it",
+     "test_no_agent_is_told_the_heartbeat_file_is_the_record"),
+
+    ("#607 trail: CLAUDE.md drops the three-surfaces section",
+     "CLAUDE.md",
+     "nothing else. Every agent must leave a visible trail.\n\n### The three surfaces",
+     "nothing else. Every agent must leave a visible trail.\n\n### Leaving a trail",
+     "test_claude_md_no_longer_presents_the_gitignored_file_as_the_record"),
 
 ]
 
@@ -3839,6 +3978,18 @@ def _worker_sandbox():
         shutil.copytree(ROOT / sub, sandbox / sub,
                         ignore=shutil.ignore_patterns("__pycache__", "*.pyc",
                                                       "worktrees"))
+    # ROOT-LEVEL FILES TOO (#607). The loop above copies directories, so until
+    # now nothing at the repo root existed in the sandbox -- and that is the
+    # same hole `.claude` had before 2026-10-25, with the same two
+    # consequences the comment below records: a row naming `CLAUDE.md` dies
+    # with FileNotFoundError, and any test that READS it fails to import in
+    # the sandbox, which reports rc=2 on every row INCLUDING CONTROL and
+    # blinds the whole harness. Observed on PR #609: one bad row made the
+    # sweep print "CONTROL FAILED -- every verdict above is worthless".
+    for f in _SANDBOX_FILES:
+        src = ROOT / f
+        if src.exists():
+            shutil.copy2(src, sandbox / f)
     _SANDBOXES.path = sandbox
     yield sandbox
 
@@ -3857,6 +4008,11 @@ _SANDBOX_DIRS: list[str] = []
 # of it when this was measured, and copying it per sandbox would make the sweep
 # unrunnable rather than merely slow.
 _SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude")
+# Repo-root FILES the sandbox needs. `CLAUDE.md` is load-bearing behaviour in this
+# repo the same way `.claude/` is -- it is loaded into every session, several gates
+# and tests read it, and a mutation row targeting it could not run at all before
+# #607. Keep this list short: every entry is copied into every worker sandbox.
+_SANDBOX_FILES = ("CLAUDE.md",)
 
 
 def _drop_worker_sandbox() -> None:
@@ -4049,6 +4205,23 @@ def _preflight_anchors() -> list[str]:
         path = ROOT / rel
         if not path.exists():
             problems.append(f"{label}: {rel} does not exist")
+            continue
+        # THE SANDBOX MUST CONTAIN IT (#607). Existing in the repo is not
+        # enough: the sweep runs each row in a copy that holds only
+        # `_SANDBOX_SUBDIRS` plus `_SANDBOX_FILES`, so a row naming anything
+        # else dies with FileNotFoundError mid-sweep -- and, worse, a TEST
+        # that reads such a path fails to import in the sandbox, which reports
+        # rc=2 on every row including CONTROL and blinds the whole harness.
+        # Observed on PR #609, where one such row made the sweep print
+        # "CONTROL FAILED -- every verdict above is worthless" after 40
+        # minutes. This check is free and says so before anything is spent.
+        top = pathlib.PurePosixPath(rel).parts[0]
+        if top not in _SANDBOX_SUBDIRS and rel not in _SANDBOX_FILES:
+            problems.append(
+                f"{label}: {rel} is outside the sandbox — the sweep copies "
+                f"{list(_SANDBOX_SUBDIRS)} and {list(_SANDBOX_FILES)}, so this "
+                f"row cannot run. Add it to _SANDBOX_FILES/_SANDBOX_SUBDIRS or "
+                f"drop the row deliberately.")
             continue
         src = path.read_text(encoding="utf-8")
         n = src.count(old)

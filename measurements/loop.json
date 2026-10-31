@@ -1,6 +1,20 @@
 {
-  "generated_at": "2026-10-30T11:11:13Z",
+  "generated_at": "2026-10-31T00:23:59Z",
   "rows": [
+    {
+      "run": 41094535728,
+      "workflow": "agent-work",
+      "date": "2026-10-30",
+      "started": "2026-10-30T16:57:28Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 63.2,
+      "issue": 450,
+      "pr": 608,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt"
+    },
     {
       "run": 40993804625,
       "workflow": "agent-work",
@@ -11,8 +25,8 @@
       "minutes": 14.1,
       "issue": 398,
       "pr": 590,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt"
     },
     {
@@ -39,8 +53,8 @@
       "minutes": 70.2,
       "issue": 398,
       "pr": 590,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt"
     },
     {

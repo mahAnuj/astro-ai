@@ -204,3 +204,16 @@ A findings table — rule, location, classification, source, correct value — o
 user impact. A wrong rule on a shipped calculator outranks a missing citation. Then the
 issue numbers filed. State plainly what you could not verify and why; an honest gap is a
 result.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**On the issue:** **Every finding goes on the issue, with its citation.** A finding that exists only in your
+output never happened. State the verdict (WRONG / UNSOURCED / CONTESTED / CORRECT), the file
+and line of the rule, and the `knowledge/` section and line range that settles it — or
+`[UNSOURCED]` if the corpus does not carry it. Never invent a citation to fill the field.
+
+**On the PR:** if a PR touches a rule you audited, comment with the verdict and the citation,
+so the reviewer sees the provenance beside the diff.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.
