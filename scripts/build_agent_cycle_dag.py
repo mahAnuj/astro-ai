@@ -56,6 +56,7 @@ from __future__ import annotations
 
 import collections
 import json
+from datetime import datetime  # noqa: E402  -- see _instant
 import pathlib
 import re
 import sys
@@ -120,8 +121,14 @@ def _deps(wf: str) -> list[str]:
     if not f.exists():
         return []
     body = f.read_text()
+    # `[a-z_]+` excluded digits, so `scripts/fetch_ga4.py` -- referenced by
+    # agent-discover and agent-measure -- was invisible, and a fix landing
+    # there would not have moved either loop out of `red`. `.claude/` matters
+    # more: an agent loop is most often fixed by editing its own prompt or
+    # agent definition, and those were in no surface at all.
     return [f".github/workflows/{wf}"] + sorted(
-        set(re.findall(r"scripts/[a-z_]+\.(?:sh|py)", body)))
+        set(re.findall(r"scripts/[\w.-]+\.(?:sh|py)", body))
+        | set(re.findall(r"\.claude/[\w/.-]+\.md", body)))
 
 
 def _last_change(paths: list[str]) -> str:
@@ -129,9 +136,23 @@ def _last_change(paths: list[str]) -> str:
     if not paths:
         return ""
     import subprocess
+    # %cI is LOCAL time (+05:30 here) and agents.json is UTC (...Z), so a
+    # string compare opened a 5.5-hour window in which a still-broken loop
+    # badges `fixed?` -- the direction that HIDES a problem. %cI is kept for
+    # display; the comparison below uses instants.
     r = subprocess.run(("git", "log", "-1", "--format=%cI", "--", *paths),
                        cwd=ROOT, capture_output=True, text=True)
     return r.stdout.strip()
+
+
+def _instant(iso: str):
+    """Parse an ISO stamp to an aware datetime, or None."""
+    if not iso:
+        return None
+    try:
+        return datetime.fromisoformat(iso.replace("Z", "+00:00"))
+    except ValueError:
+        return None
 
 
 def build() -> dict:
@@ -163,7 +184,8 @@ def build() -> dict:
             health = "reporting"
         elif raw in ("red", "amber") and concl != "success":
             since = _last_change(_deps(wf))
-            if since and last and since > last:
+            a, b = _instant(since), _instant(last)
+            if a and b and a > b:
                 health = "fixed?"
         return {
             "wf": wf,
@@ -188,7 +210,9 @@ def build() -> dict:
     members = [m for m in members if m]
     if members:
         worst = "green"
-        for rank in ("red", "amber", "running", "unknown"):
+        # `fixed?` and `reporting` were in neither the rank list nor the
+        # default, so a weekly node whose members had ALL failed badged green.
+        for rank in ("red", "amber", "fixed?", "reporting", "running", "unknown"):
             if any(m["health"] == rank for m in members):
                 worst = rank
                 break
