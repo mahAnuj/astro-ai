@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-31T00:24:03Z",
+  "generated_at": "2026-10-31T07:59:27Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
   "open": 136,
@@ -11,12 +11,12 @@
     "REDESIGN": 10,
     "NUMEROLOGY": 7,
     "FEATURE": 7,
+    "DETECT_STALLS": 3,
     "BUG": 3,
     "SEO": 3,
     "SECURITY": 3,
     "MEASURE": 2,
     "CONTENT": 2,
-    "DETECT_STALLS": 2,
     "AGENT-MERGE": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
@@ -27,7 +27,6 @@
     "GATES": 1,
     "ASK": 1,
     "ARCHITECTURE": 1,
-    "PROMPTS": 1,
     "KUNDLI": 1,
     "TASK": 1,
     "BLOCKER": 1,
@@ -44,13 +43,44 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 91,
-    "high": 23,
+    "unset": 92,
+    "high": 22,
     "medium": 21,
     "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 618,
+      "title": "The production verifier POSTs real user forms, so every verify fires an owner Telegram alert — 4-6 identical ones a day",
+      "ask": "Scope it deliberately to the no-PII diagnostic alerts only.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:medium",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-31T07:09:19Z",
+      "updated": "2026-10-31T07:09:19Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 616,
+      "title": "detect_stalls: a green qa-pass PR that later became CONFLICTING is reported mergeable-but-open, routing it to 'diagnose the gate' instead of 'merge main in'",
+      "ask": "Test pr.get(\"mergeable\") == \"CONFLICTING\" before the qa-pass and green branch and emit pr-conflicting for it, so a conflicted PR is routed to the cycle that merges main in",
+      "area": "DETECT_STALLS",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-31T02:25:29Z",
+      "updated": "2026-10-31T02:25:40Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 610,
       "title": "chief-cleared is documented as releasing a prompts/knowledge PR but no workflow reads it; agent-merge's boundary step re-holds it",
@@ -446,7 +476,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-10-25T13:58:09Z",
+      "updated": "2026-10-31T02:26:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -520,7 +550,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-23T19:06:26Z",
-      "updated": "2026-10-23T19:06:26Z",
+      "updated": "2026-10-31T02:25:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -727,25 +757,6 @@
       "labels": [],
       "created": "2026-10-20T16:03:10Z",
       "updated": "2026-10-20T16:05:41Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 450,
-      "title": "ops_data.snapshot: asyncio.to_thread removes the loop's serialisation, so two concurrent renders can each spend the full API budget",
-      "ask": "Serve stale while revalidating — return the previous snapshot immediately and refresh in one background task.",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "medium",
-      "labels": [
-        "category:technical",
-        "priority:medium",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-20T10:12:38Z",
-      "updated": "2026-10-30T17:51:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -990,25 +1001,6 @@
       ],
       "created": "2026-10-17T07:17:17Z",
       "updated": "2026-10-17T07:17:17Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 398,
-      "title": "prompts: natal.txt assigns Mars's remedies to the Sun and Saturn, and attributes a D-9 rule to Parashara that the corpus does not carry",
-      "ask": "Correct the prompt text to the corpus, or mark a claim as the product's own convention rather than",
-      "area": "PROMPTS",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "qa-fail",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-30T17:33:06Z",
       "blocked": false,
       "needs_evidence": false
     },
