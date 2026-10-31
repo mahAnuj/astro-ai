@@ -40,11 +40,48 @@ on:
   # show up as runs that never happened, with nothing to say why — the same
   # class of invisible failure as #322.
   #
-  # Raise this again only once #335 can show WHY half the cycles produce
-  # nothing. Rate before yield is how you buy more of what you cannot see.
+  # RAISED 2 -> 6 ON 2026-11-01, and the condition above is what licenses it.
+  #
+  # The condition was "once #335 can show WHY half the cycles produce nothing",
+  # and the specific worry was the 1-3 minute run -- the loop finding nothing
+  # eligible and stopping. Re-measured 2026-11-01 over the last 18 runs:
+  #
+  #   runs lasting under 4 minutes       0 of 18   (was 5 of 11 failures)
+  #   runs that merged a PR             10 of 18   = 56%
+  #   loop-outcomes' standing figure     3 of 32   =  9%  (report of 2026-10-27)
+  #
+  # So the mode this comment was written against is GONE: every one of the last
+  # 18 runs found eligible work and did it. Yield went 9% -> 56%. "Rate before
+  # yield" was the right rule and the yield arrived first.
+  #
+  # THE QUEUE-DROP HAZARD BELOW IS STILL RESPECTED. `concurrency` does not
+  # cancel, a second run QUEUES, and GitHub keeps only one pending run per
+  # group and silently drops the rest -- so the spacing has to exceed the
+  # longest cycle. Longest observed is 76 minutes; the tightest gap here is 3
+  # hours. Measured median is 18 minutes. That is >2x headroom on the worst
+  # case, which is why this is 6 and not the ~20 the wall clock would allow.
+  #
+  # SLOTS CHOSEN TO AVOID THE SHARED CLAUDE MAX 5h CAP, not GitHub concurrency
+  # (different workflows never block each other). The cap-consuming crons are
+  # `agent-measure` 21:00 and 02:00, `agent-steward` 09:00 and 15:00, and the
+  # weeklies in the 18:00-20:00 band. `agent-measure`'s 05,08,11,14,17,20 legs
+  # are the deterministic collectors -- zero LLM calls -- so they do not
+  # contend and are not avoided here.
+  #
+  # WHAT IS STILL NOT EXPLAINED, stated rather than glossed: 8 of 18 runs did
+  # real work and merged nothing, and no PR of theirs is still open, so they
+  # are not simply in flight. `show_full_output` is added below for exactly
+  # that -- without it a run that produces nothing leaves a cost, a turn count
+  # and a silence. That is the remaining half of #335.
+  #
+  # Raising this further should wait on reading what that output says.
   schedule:
     - cron: "0 23 * * *"   # 04:30 IST, after the rolling cap resets
-    - cron: "0 11 * * *"   # 16:30 IST, twelve hours on
+    - cron: "0 3 * * *"    # 08:30 IST
+    - cron: "0 7 * * *"    # 12:30 IST
+    - cron: "0 11 * * *"   # 16:30 IST
+    - cron: "0 14 * * *"   # 19:30 IST
+    - cron: "0 17 * * *"   # 22:30 IST
   workflow_dispatch:
     inputs:
       issue:
@@ -148,6 +185,16 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # THIS IS THE REMAINING HALF OF #335, and the schedule above depends
+          # on it. The action's default hides the agent's output ("Running
+          # Claude Code via SDK (full output hidden for security)"), so a run
+          # that merges nothing leaves only a cost, a turn count and a silence
+          # -- which is precisely why "WHY half the cycles produce nothing"
+          # could not be answered. Enabled on `agent-prioritise` first (#624)
+          # and it worked: the input is accepted and applied.
+          #
+          # The repo is PUBLIC, so this log is public.
+          show_full_output: "true"
           # WITHOUT THIS, EVERY DISPATCH FROM A WORKFLOW DIES IN 1.5 SECONDS.
           # The action refuses a run whose actor is a Bot:
           #
