@@ -60,6 +60,27 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # WITHOUT THIS, A LOOP CANNOT DIAGNOSE ITS OWN FAILURE.
+          #
+          # The action's default hides the agent's output: "Running Claude Code
+          # via SDK (full output hidden for security)". So when a run produces
+          # nothing, the only evidence left is the result JSON -- a turn count,
+          # a duration and a cost. Measured on run 41204804846: the action step
+          # SUCCEEDED (`is_error: false`, `permission_denials_count: 0`) after
+          # 2 turns in 17s, wrote no /tmp/report.md, and "Publish the queue"
+          # correctly failed the job with "No queue written". Why the agent
+          # stopped after two turns is unanswerable from the log. A successful
+          # run of this same loop takes 14-31 turns.
+          #
+          # That is almost certainly the same wall behind `loop-outcomes`'
+          # standing finding that `agent-work` concluded success with no PR and
+          # no cannot-reproduce/needs-evidence trace on 29 of 32 runs: the loop
+          # reports a cost and a silence, and nobody can see which.
+          #
+          # The repo is PUBLIC, so this log is public. It is enabled here only,
+          # not across the other nine agent loops, because this is the loop
+          # being diagnosed -- widen it only after reading what one run prints.
+          show_full_output: "true"
           prompt: |
             /prioritise
 
