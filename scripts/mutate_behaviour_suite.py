@@ -3665,6 +3665,31 @@ MUTATIONS = [
      "    elif {4, 12} & qualifying:",
      "test_severity_grades_are_unchanged"),
 
+    # --- #429: the matching page's severity sentence says the ladder is Bhagya's own ---
+    ("#429 matching: the severity sentence presents the ladder as graded doctrine again",
+     "src/astro_ai/matching.py",
+     '"Severity here is an internal weighting, not a classical grade: counting "\n    "the houses Mars occupies from the Lagna, the Moon and Venus, 7th or 8th "',
+     '"Severity here is graded from the houses Mars occupies counted from the "\n    "Lagna, the Moon and Venus: 7th or 8th "',
+     "test_every_severity_note_discloses_the_ladder_is_not_classical"),
+
+    ("#429 matching: the severity sentence hands the model the word 'editorial'",
+     "src/astro_ai/matching.py",
+     '"Severity here is an internal weighting, not a classical grade: counting "',
+     '"Severity here is an editorial weighting, not a classical grade: counting "',
+     "test_severity_note_does_not_invite_the_model_to_say_editorial"),
+
+    ("#429 matching: the sentence says the 2nd house is moderate, the ladder says low",
+     "src/astro_ai/matching.py",
+     "2nd alone low",
+     "2nd alone moderate",
+     "test_sentence_ladder_agrees_with_compute_manglik_details"),
+
+    ("#429 matching: the sentence drops the Venus-axis downgrade the ladder applies",
+     "src/astro_ai/matching.py",
+     "when only the Venus-axis count qualifies.",
+     "when counted from any axis.",
+     "test_sentence_still_states_the_venus_axis_downgrade_and_its_three_frames"),
+
     # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
     ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
      "src/astro_ai/chart.py",

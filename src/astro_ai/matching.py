@@ -466,11 +466,18 @@ _BRANCH_COMPATIBLE: dict[str, bool] = {
 # Lagna, Moon and Venus axes, then drop one notch when only the Venus axis
 # qualified. Defined once, referenced by all three Manglik branches — two copies
 # of one fact is the class of bug this module was fixed to remove.
+#
+# The ladder is Bhagya's own weighting, not a classical grade: no book held in
+# data/ states it (#429; chart.py carries the same statement at the ladder, and
+# format_manglik_for_prompt and the /manglik-check page disclose it since #579).
+# This sentence reaches the matching page AND the LLM, so it makes the same
+# disclosure as the LLM line there and must NOT contain "editorial" — handed that word the
+# model writes it into the reading as a disclaimer; the page paragraph owns it.
 _SEVERITY_GRADING_SENTENCE = (
-    "Severity here is graded from the houses Mars occupies counted from the "
-    "Lagna, the Moon and Venus: 7th or 8th is high, 1st, 4th or 12th moderate, "
-    "2nd alone low — and one grade lower when only the Venus-axis count "
-    "qualifies."
+    "Severity here is an internal weighting, not a classical grade: counting "
+    "the houses Mars occupies from the Lagna, the Moon and Venus, 7th or 8th "
+    "is high, 1st, 4th or 12th moderate, 2nd alone low — and one grade lower "
+    "when only the Venus-axis count qualifies."
 )
 
 # Where Bhagya draws the "comparable severity" band. Only meaningful when both
