@@ -105,8 +105,11 @@ the failing one succeeded 26 seconds later. **It is intermittent** — so a sing
 closed it falsely, and a single page load would have left it open and misdescribed.
 
 ```bash
-uv run python scripts/validate_issue.py <n> --samples 5
+uv run python scripts/validate_issue.py <n> --samples 5 --repo "$GH_REPO"
 ```
+
+`--repo` is required for a `shell` `repro:` (the executor resolves the issue author's
+permission before running anything). See *Shell repros* below for what its verdicts mean.
 
 - **Does not reproduce in 5 samples** → **close it**, with every request and response in the
   closing comment, and label `cannot-reproduce`.
@@ -126,9 +129,9 @@ uv run python scripts/validate_issue.py <n> --samples 5
   would be true of production and false of the repository.
 
   This is not hypothetical: every PR in the 2026-10-20 queue (#410, #418, #419, #425) is an
-  unmerged feature whose issue production cannot demonstrate either way. Most return `NO-REPRO`
-  (exit 3) and are safe by accident; a feature that happens to have an executable `repro:` would
-  have been closed.
+  unmerged feature whose issue production cannot demonstrate either way. Most carry a shell `repro:`
+  (or none) and cannot return `CANNOT-REPRODUCE` — a shell verdict never exits 1 — but a feature
+  with an `http` `repro:` would have been closed.
 
   Granted 2026-10-08: five probes against live production, with varied inputs, is stronger
   evidence than any claim in a comment — and it is the same standard `project-manager` closes
@@ -174,6 +177,30 @@ is unchanged — *do not take the issue's word for it* — only the method is:
 Comment with whatever you used. A premise established by reading is still established; a premise
 assumed because an issue asserts it is not. Stop only when you **cannot** establish it at all —
 then label `needs-evidence` and move on.
+
+### Shell repros — added with #543 (PR #544)
+
+A `repro:` that is a shell command (`grep -c ... -> 16`) is now **executed**, behind an allow-list
+of read-only commands and flags and only for an issue whose **body** was written by an
+`admin`/`write` author. Its verdicts are not the http ones, because the two dialects state
+opposite things: an http repro states the *healthy* state, a shell repro the state *as found*.
+
+| verdict | exit | meaning |
+|---|---|---|
+| `MATCHES-STATED` | 0 | the premise still holds as the issue recorded it. **Not** "REPRODUCES" — same exit code, different claim |
+| `DIFFERS` | 5 | the premise has drifted — read the output before ranking. **Never close on it**; it can mean fixed, moved, or an elided `repro:` line |
+| `UNSCORED` / `NON-DETERMINISTIC` | 5 | nothing comparable was stated, or two runs disagreed — a human reads the output |
+| `INCONCLUSIVE` | 4 | the command could not run |
+| `REFUSED` | 6 | not executed, with the reason printed: not on the allow-list, a bare shell operator, an untrusted/unresolved author, or the newest `repro:` is in a comment. Rewrite the `repro:`; do not skip it |
+
+**The http dialect is not byte-for-byte what it was.** `parse_repro` now reads the newest `repro:`
+of EITHER dialect, so: two adjacent `repro:` lines resolve to the *last* (before, the first); an
+`http` line followed by a newer shell line yields no http spec (before, the stale http line was
+probed); and a `- **repro:** GET ...` line now parses (before, it was `NO-REPRO`). A plain
+`repro: GET /x -> 200 ...` parses to the same spec as before.
+
+**A shell verdict can never close an issue**: only `CANNOT-REPRODUCE` (exit 1) does, and the shell
+path cannot print it. `NO-REPRO` (exit 3) still means no `repro:` line exists at all.
 
 ## Step 1 — eligibility
 
