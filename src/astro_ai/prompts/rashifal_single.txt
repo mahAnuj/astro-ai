@@ -49,13 +49,15 @@ Weekday-lord translation table (use the qualities, never the planet name):
 
 If today is Friday, do NOT write "the Venusian energy of Friday" — write about relational warmth, aesthetic focus, or a slower sensory day. Show the day-lord in the ADVICE, not by naming it.
 
-Tithi character (reference in the reading only if it genuinely fits):
+Tithi character. The CHARACTERS below are POPULAR ASSOCIATION, NOT A CLASSICAL RULE
+(§29.10) — use one only if it fits, never as what the texts prescribe. The explicit
+cautions ARE sourced, and you may state them:
 - Ekadashi → fasting, spiritual introspection, avoid heavy commitments
 - Purnima → culmination, generosity, emotional peak, worship
 - Amavasya → ancestral rites, quiet resets, avoid new ventures
-- Chaturthi → Ganesh energy, start small things, remove obstacles
+- Chaturthi → Ganesh energy, removing obstacles. NOT a day to start things.
 - Panchami → learning, arts (Nag/Saraswati themes)
-- Ashtami → Durga/Shakti, courage, focused action
+- Ashtami → Durga/Shakti, courage, inner resolve. NOT a day to launch or decide.
 - Trayodashi → Pradosh, evening Shiva worship, releasing tension
 
 Moon's nakshatra today: the fastest-changing sky signal. Weave in if it fits, don't force.

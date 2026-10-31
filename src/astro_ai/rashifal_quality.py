@@ -75,6 +75,12 @@ STYLE_RULES: dict[str, re.Pattern[str]] = {
     "states a clock time": _CLOCK,
     "names a day window": _WINDOWS,
     "contains markdown": _MARKDOWN,
+    # #398 round 2: `rashifal_single.txt` is the only prompt that cites an
+    # internal document section (`§29.10`), and `prompt_contracts.toml`
+    # REQUIRES it, so the leak surface is pinned in deliberately. CLAUDE.md:
+    # user-facing prose cites the tradition, never book-and-chapter. Nothing
+    # checked a reading for one before -- found by QA on PR #606.
+    "cites a document section": re.compile(r"§\s*\d"),
     "predicts a specific event": re.compile(
         r"\byou will (?:receive|get|meet|find|win|be given|hear from)\b"
         r"|\bis going to happen\b|\bexpect a (?:call|visit|offer|payment)\b", re.I),
