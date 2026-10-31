@@ -3533,6 +3533,95 @@ MUTATIONS = [
      "",
      "test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so"),
 
+    ("#461: pr-gates stops running on pushes to main, so a red main is invisible",
+     ".github/workflows/pr-gates.yml",
+     "  push:\n    branches: [main]\n",
+     "",
+     "test_pr_gates_runs_on_pushes_to_main"),
+
+    ("#461: a main run becomes cancellable again, so the breaking commit leaves no verdict",
+     ".github/workflows/pr-gates.yml",
+     "  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}\n",
+     "  cancel-in-progress: true\n",
+     "test_a_main_run_is_not_cancelled_by_the_next_push"),
+    ("#461: the red-main reporter tests for `failure`, so a cancelled or timed-out main reports nothing",
+     ".github/workflows/main-red-report.yml",
+     "      github.event.workflow_run.conclusion != 'skipped'\n",
+     "      github.event.workflow_run.conclusion == 'failure'\n",
+     "test_the_reporter_fires_on_cancelled_and_timed_out_not_only_on_failure"),
+
+    ("#461: the sentinel is looked up with GitHub search again, which strips `[ ] -` and matches #461 itself",
+     ".github/workflows/main-red-report.yml",
+     "          sentinels=$(printf '%s' \"$issues\" \\\n"
+     "                        | jq -r '[.[] | select(.title | startswith(\"[main-red] \"))] | .[].number')\n",
+     "          sentinels=$(gh issue list --repo \"$GH_REPO\" --state open \\\n"
+     "                        --search '\"[main-red]\" in:title' \\\n"
+     "                        --json number --jq '.[0].number // empty')\n",
+     "test_the_sentinel_lookup_does_not_match_the_issue_it_closes"),
+
+    ("#461: the per-SHA dedup drops the backticks, so a bare hex run in the thread silences a real red commit",
+     ".github/workflows/main-red-report.yml",
+     "            if grep -qF -- \"\\`$short\\`\" <<<\"$bodies\"; then\n",
+     "            if grep -qF -- \"$short\" <<<\"$bodies\"; then\n",
+     "test_a_bare_hex_run_in_the_thread_does_not_suppress_a_report"),
+
+    # QA round 2 found this one. `grep -q` exits at the first match, the
+    # upstream `gh` dies of SIGPIPE, and `pipefail` makes the PIPELINE 141 --
+    # so the dedup took the false branch and double-posted. It only shows on a
+    # thread bigger than the pipe buffer, which is why the small-fixture
+    # idempotence test stayed green while the real thing was broken.
+    # QA round 2 found this. `grep -q` exits at the FIRST match, the upstream
+    # `gh` then dies of SIGPIPE, and `pipefail` makes the PIPELINE 141 -- so the
+    # dedup took the false branch and double-posted a SHA already recorded. It
+    # only shows on a thread bigger than the pipe buffer, which is exactly why
+    # the small-fixture idempotence test stayed green while the real thing was
+    # broken. The mutation has to restore the WHOLE piped form: an earlier
+    # attempt only added `| cat` inside the command substitution, where nothing
+    # exits early, and was measured MISSED.
+    ("#461: the dedup reads the thread through a pipe again, so pipefail + grep -q double-posts",
+     ".github/workflows/main-red-report.yml",
+     '            bodies=$(gh issue view "$existing" --repo "$GH_REPO" \\\n'
+     '                       --json body,comments \\\n'
+     "                       --jq '[.body] + [.comments[].body] | .[]')\n"
+     '            # The backticks are part of the match, so a bare hex run elsewhere\n'
+     '            # in the thread cannot suppress a real report.\n'
+     '            if grep -qF -- "\\`$short\\`" <<<"$bodies"; then\n',
+     '            if gh issue view "$existing" --repo "$GH_REPO" \\\n'
+     '                 --json body,comments \\\n'
+     "                 --jq '[.body] + [.comments[].body] | .[]' \\\n"
+     '                 | grep -qF -- "\\`$short\\`"; then\n',
+     "test_the_dedup_survives_a_large_comment_thread"),
+
+    ("#461: a green main stops closing the sentinel, so a stale one collects the next unrelated red main",
+     ".github/workflows/main-red-report.yml",
+     "              gh issue close \"$n\" --repo \"$GH_REPO\"\n",
+     "",
+     "test_a_green_main_closes_the_open_sentinel"),
+
+    ("#461: only the first open sentinel is closed on green, leaving the rest stale",
+     ".github/workflows/main-red-report.yml",
+     "            for n in $sentinels; do\n",
+     "            for n in $(printf '%s' \"$sentinels\" | head -n 1); do\n",
+     "test_every_open_sentinel_is_closed_not_just_the_first"),
+
+    ("#461: the dedup reads comments only, so the SHA that OPENED the sentinel is reported twice",
+     ".github/workflows/main-red-report.yml",
+     '                       --json body,comments \\\n'
+     "                       --jq '[.body] + [.comments[].body] | .[]')\n",
+     "                       --json comments --jq '.comments[].body')\n",
+     "test_the_sha_that_opened_the_sentinel_is_not_reported_twice"),
+
+    ("#461: the first sentinel is taken through a pipe into `head`, the same pipefail+SIGPIPE class",
+     ".github/workflows/main-red-report.yml",
+     "          existing=${sentinels%%$'\\n'*}\n",
+     '          existing=$(printf \'%s\' "$sentinels" | head -n 1)\n',
+     "test_no_pipeline_feeds_an_early_exiting_reader"),
+
+    ("#461: the reporter moves back inside pr-gates, where it cannot report its own job being killed",
+     ".github/workflows/pr-gates.yml",
+     "permissions:\n  contents: read\n",
+     "permissions:\n  contents: read\n  issues: write\n",
+     "test_pr_gates_has_no_reporter_step_and_cannot_write_issues"),
     # --- #384: the merge-conflict marker gate -------------------------------
     # ARCHITECTURE.md reached main carrying a live conflict block and all 27
     # gates passed over it. These rows are the properties of the gate that
@@ -3872,6 +3961,28 @@ MUTATIONS = [
      "nothing else. Every agent must leave a visible trail.\n\n### The three surfaces",
      "nothing else. Every agent must leave a visible trail.\n\n### Leaving a trail",
      "test_claude_md_no_longer_presents_the_gitignored_file_as_the_record"),
+
+
+    # --- #461 round 5: the marker gate and the concurrency block ---
+    # Both are load-bearing and neither had a row. QA deleted the whole
+    # `concurrency:` block and all 65 tests stayed green.
+    ("#461 r5: the marker gates the RED path too, silencing every red main",
+     ".github/workflows/main-red-report.yml",
+     '          if [ "$CONCLUSION" = success ]; then\n            if [ "$asserted" = "absent" ]; then',
+     '          if true; then\n            if [ "$asserted" = "absent" ]; then',
+     "test_the_marker_gates_only_the_green_path"),
+
+    ("#461 r5: a green run with no gates closes the sentinel again",
+     ".github/workflows/main-red-report.yml",
+     '            if [ "$asserted" != "success" ]; then',
+     '            if false; then',
+     "test_a_green_run_that_skipped_every_gate_does_not_close_the_sentinel"),
+
+    ("#461 r5: the reporter loses its concurrency group",
+     ".github/workflows/main-red-report.yml",
+     "concurrency:\n  group: main-red-report\n  cancel-in-progress: false\n",
+     "",
+     "test_the_reporter_is_serialised"),
 
 ]
 

@@ -98,7 +98,7 @@ DEFAULT_DIR = ROOT / ".github" / "workflows"
 
 # Pinned so a workflow cannot be deleted or renamed out of the sweep silently.
 # Raise it when adding one.
-EXPECTED_WORKFLOWS = 17   # +qa-on-green.yml, 2026-10-25
+EXPECTED_WORKFLOWS = 18   # +main-red-report.yml, 2026-10-28
 
 # Triggers whose default `types` omit `ready_for_review`.
 PR_TRIGGERS = ("pull_request", "pull_request_target")

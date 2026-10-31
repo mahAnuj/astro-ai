@@ -305,7 +305,11 @@ def test_pr_gates_still_skips_its_expensive_steps_for_a_measurements_only_diff()
     """
     import re
     text = (WORKFLOWS / "pr-gates.yml").read_text()
-    m = re.search(r"if echo \"\$changed\" \| grep -qE '([^']+)'", text)
+    # Herestring since #461 round 4 -- `echo | grep -q` was a SIGPIPE shape
+    # under `pipefail`. The PATTERN is what this test pins, not the plumbing,
+    # so it accepts either form rather than breaking on a safety fix.
+    m = (re.search(r"grep -qE '([^']+)' <<<\"\$changed\"", text)
+         or re.search(r"if echo \"\$changed\" \| grep -qE '([^']+)'", text))
     assert m, "the scope step's pattern moved; this test is the only thing pinning it"
     pattern = re.compile(m.group(1))
     for p in ("measurements/loop.json", "measurements/latest.md",
