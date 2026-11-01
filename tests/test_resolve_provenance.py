@@ -507,3 +507,32 @@ def test_a_bad_repo_or_issue_number_is_unresolved_not_a_crash():
     assert rp.main(["7", "--repo", "not a repo; id"], gh=fake) == 2
     assert rp.main(["0", "--repo", REPO], gh=fake) == 2
     assert fake.calls == []
+
+
+def test_an_uppercase_bot_suffix_is_unresolved_not_trusted():
+    """CORRECTING A CLAIM THIS PR SHIPPED, found by the independent QA round
+    on #654.
+
+    `is_self_app` folds case before stripping `[bot]`, and the docstring said
+    that "handles `CLAUDE[BOT]`". It does not: `_LOGIN` accepts only a
+    lowercase suffix, so `normalise_login` returns None and `classify` answers
+    UNRESOLVED before `is_self_app` is reached.
+
+    UNRESOLVED is the correct verdict and the safe one -- "we could not tell,
+    STOP", never a default in either direction -- so the behaviour was always
+    right and only the stated reason was wrong. Pinned here so the claim and
+    the code cannot drift apart again, which is this repo's most frequent
+    defect class.
+    """
+    assert rp.normalise_login("CLAUDE[BOT]") is None
+    fake = FakeGh(author=("CLAUDE[BOT]", True))
+    assert verdict(fake) == rp.UNRESOLVED
+    assert fake.permission_calls() == []
+
+
+def test_the_renderings_that_ARE_recognised_are_the_ones_measured():
+    """The independent round probed 31 logins and found TRUSTED for exactly
+    five, all with `is_bot=true`. These are those five; the near-misses live in
+    test_every_bot_but_this_repos_own_app_is_an_outsider."""
+    for login in ("app/claude", "claude[bot]", "app/claude[bot]", "Claude", "app/CLAUDE"):
+        assert verdict(FakeGh(author=(login, True))) == rp.TRUSTED, login

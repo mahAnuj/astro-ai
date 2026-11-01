@@ -111,7 +111,18 @@ def is_self_app(login: str) -> bool:
 
     CASE-INSENSITIVE because GitHub logins are. `Claude` and `claude` are the
     SAME ACCOUNT, so folding case is not a widening; comparing exactly would
-    make the gate depend on how an API chose to capitalise today.
+    make the gate depend on how an API chose to capitalise today. `app/CLAUDE`
+    therefore resolves TRUSTED, confirmed by the independent QA round on #654.
+
+    WHAT CASE-FOLDING DOES *NOT* BUY, corrected after that round found the
+    claim wrong. An earlier version of this docstring said the fold-then-strip
+    order "handles `CLAUDE[BOT]`". It does not, because that input never
+    arrives here: `_LOGIN` accepts only a lowercase `[bot]` suffix, so
+    `normalise_login("CLAUDE[BOT]")` returns None and `classify` answers
+    UNRESOLVED -- exit 2, "we could not tell, STOP" -- before this function is
+    called. The order is still the right one (it is the cheaper, more obvious
+    reading and costs nothing), but it is not load-bearing for that input, and
+    an uppercase suffix fails CLOSED rather than being recognised.
     """
     if not isinstance(login, str):
         return False
