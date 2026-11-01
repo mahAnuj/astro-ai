@@ -4206,6 +4206,71 @@ MUTATIONS = [
      'if probe.suppresses_owner_alert(request, "kundli_generated"):',
      'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
 
+    # ---- chief defaults to PROCEED, and knows the system (owner, 2026-11-01)
+    #
+    # Measured: on PR #649 chief was woken 0.0h after the qa-fail, restated the
+    # steward's conclusion from two minutes earlier, and produced no act. On
+    # #642 it ruled twice in one day, the second re-deriving the first.
+    #
+    # A PROMPT'S failure mode is a plausible ruling, not an exception -- so the
+    # rows here guard CONSISTENCY. An earlier chief.md shipped line 117
+    # permitting what line 130 forbade, and a reader resolves a contradiction
+    # by picking, which makes a contradicted rule no rule at all.
+
+    ('chief: the non-negotiable forbids the PROCEED default two sections above it',
+     '.claude/agents/chief.md',
+     '- **Proceed, choose between what was presented, or return `insufficient-evidence`.** Never a\n  third OPTION',
+     '- **Choose between what was presented, or return `insufficient-evidence`.** Never a third option.\n  <!--',
+     'test_the_three_places_that_enumerate_outcomes_all_allow_proceeding'),
+
+    ('chief: the ladder loses its terminal rung, so nothing says when to stop',
+     '.claude/agents/chief.md',
+     '5. **Otherwise: proceed.** Importance is not a reason to intervene.',
+     '5. **Otherwise: consider carefully.** Importance is a reason to intervene.',
+     'test_the_ladder_is_ordered_and_ends_in_proceed'),
+
+    ('chief: proceeding stops being distinguished from inventing an option',
+     '.claude/agents/chief.md',
+     '**`proceed` is not a third OPTION; it is declining to intervene.**',
+     '**`proceed` is one of the options you may pick.**',
+     'test_proceeding_is_distinguished_from_inventing_an_option'),
+
+    ('chief: a proceed ruling must satisfy the six-bullet shape again',
+     '.claude/agents/chief.md',
+     '**A `proceed` ruling is SHORTER, deliberately.**',
+     '**A `proceed` ruling is reported in full, like any other.**',
+     'test_the_three_places_that_enumerate_outcomes_all_allow_proceeding'),
+
+    ('chief: it rules on a PR without reading the diff',
+     '.claude/agents/chief.md',
+     '**If an escalation names a PR, read `gh pr diff <n>` before deciding.**',
+     '**If an escalation names a PR, the labels and check conclusions are enough.**',
+     'test_it_is_told_to_read_the_pr_diff_before_ruling'),
+
+    ('chief: it regenerates the measurement it is meant to read',
+     '.claude/agents/chief.md',
+     'cat measurements/agents.json                     # is each loop ALIVE',
+     'uv run python scripts/collect_agent_performance.py   # is each loop ALIVE',
+     'test_it_reads_the_measurement_and_never_regenerates_it'),
+
+    ('chief: a red main stops outranking the escalation in front of it',
+     '.claude/agents/chief.md',
+     '**A red `main` outranks everything in front of you.**',
+     '**A red `main` is one input among several.**',
+     'test_a_red_main_outranks_the_escalation'),
+
+    ('chief: the objective reverts to caution, so PROCEED loses its reason',
+     '.claude/agents/chief.md',
+     'caution is not the objective',
+     'caution is the objective',
+     'test_the_objective_is_turnaround_not_caution'),
+
+    ('chief: gains a Write tool, so the read-only rule becomes a request',
+     '.claude/agents/chief.md',
+     'tools: Agent, Read, Grep, Glob, Bash, WebFetch',
+     'tools: Agent, Read, Write, Grep, Glob, Bash, WebFetch',
+     'test_chief_has_no_write_tool_so_the_read_only_rule_is_enforceable'),
+
     # ---- the PR-scoped QA dispatch -----------------------------------------
     #
     # Measured 2026-11-01: four of the five green PRs then open had received
