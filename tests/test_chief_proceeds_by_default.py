@@ -147,8 +147,35 @@ def test_it_reads_the_measurement_and_never_regenerates_it():
         "collect_agent_performance.py` WRITES", ""), "a collector is still invoked"
 
 
-def test_a_red_main_outranks_the_escalation():
-    assert "A red `main` outranks everything in front of you" in SRC
+def test_a_red_main_is_reported_but_does_not_stop_the_ruling():
+    """This started as "a red `main` outranks everything in front of you" and
+    that was a HALTING HAZARD, which is the thing this whole PR exists to
+    remove: chief cannot push, so it cannot fix a red `main`, and a rule
+    redirecting it there would stop it ruling on what it was actually woken
+    for. Report it, then rule anyway."""
+    flat = " ".join(SRC.split())
+    assert "say so in one line and then rule anyway" in flat
+    assert "A red `main` outranks everything in front of you" not in flat, (
+        "the halting form of this rule is back"
+    )
+    assert "you cannot push, so you cannot fix it" in flat
+
+
+def test_it_does_not_rule_twice_on_the_same_head():
+    """MEASURED 2026-11-01 on PR #642: chief ruled THREE times on the unchanged
+    SHA `668f35bd` — "second look", "third look" — same conclusion each time.
+    `qa-on-green` has had a per-head guard from the start and calls it "the
+    reason this workflow is safe to run on every green"; chief had none."""
+    assert any(h.startswith("One ruling per head") for h in
+               [ln[4:].strip() for ln in SRC.splitlines() if ln.startswith("### ")]), \
+        "the per-head guard section is missing"
+    flat = " ".join(SRC.split())
+    assert "do not rule again. Say nothing." in flat
+    assert "Same head, same conclusion → write nothing" in flat
+    assert "New head → rule freely" in flat, (
+        "without this the guard would silence a legitimate fresh reading"
+    )
+    assert "A comment is not an act" in flat
 
 
 # --- 4. every command it is told to run must exist --------------------------
@@ -185,17 +212,30 @@ def test_every_measurement_file_chief_is_told_to_read_exists():
     assert not missing, f"chief.md names measurements that do not exist: {missing}"
 
 
-def test_the_role_table_names_only_agents_that_exist():
-    """The 'what the other agents are doing' table is only useful if the roles
-    are real; a renamed agent would otherwise leave chief grepping for a marker
-    nobody writes."""
+def test_the_roles_are_pointed_at_not_restated():
+    """A 31-row table listing all fifteen roles and their comment markers was
+    written and then REMOVED, deliberately.
+
+    It restated what `.claude/agents/*.md` already defines, so a renamed agent
+    or a reworded marker would have left chief grepping for something nobody
+    writes — and it needed a test of its own to stay honest, which is the tell.
+    This repo's own rule, stated in `CLAUDE.md` after #531/#534 removed six
+    copies of one coupling: grep for every copy before believing a fix is done.
+    A copy of fifteen definitions is fifteen things that rot.
+
+    What replaced it is a pointer plus the one non-obvious fact — `dev-lead`'s
+    comment names which agents ran.
+    """
     body = SECTIONS["Your memory, and how to load it"]
-    table = [ln for ln in body.splitlines() if ln.startswith("| `")]
-    assert len(table) >= 8, f"the role table shrank to {len(table)} rows"
-    known = {p.stem for p in (ROOT / ".claude" / "agents").glob("*.md")}
-    for ln in table:
-        for role in re.findall(r"`([a-z-]+)`", ln.split("|")[1]):
-            assert role in known, f"{role!r} is not an agent definition"
+    assert "they are not restated here" in " ".join(body.split())
+    assert "dev-lead" in body, "the one genuinely non-obvious pointer is gone"
+    assert "#607" in body, "the rule that makes the issue thread the record"
+    rows = [ln for ln in body.splitlines()
+            if ln.startswith("| `") and "agents/" not in ln]
+    assert len(rows) == 0, (
+        f"the role table is back ({len(rows)} rows); point at the definitions "
+        "instead of copying them"
+    )
 
 
 def test_the_objective_is_turnaround_not_caution():

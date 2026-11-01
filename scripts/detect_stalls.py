@@ -446,7 +446,30 @@ def find_stalls(hours: float) -> list[dict]:
             # this out of chief's lap: it is work, not a decision.
             fail_age = qa_fail_age(n)
             head_age = head_pushed_hours_ago(n)
-            if fail_age is None or head_age is None:
+            if fail_age is not None and fail_age < hours:
+                # A FRESH VERDICT IS NOT A STALL, and this floor is the whole
+                # fix for a loop that fed itself.
+                #
+                # Measured 2026-11-01 on PR #649. QA wrote `qa-fail` at 16:39.
+                # This detector reported `qa-fail-unaddressed` at 16:41 with
+                # fail_age 0.0h; that kind is in `obliged`, so
+                # `agent-steward.yml:306` demanded proof of an action; the
+                # steward correctly had none to take two minutes after a
+                # verdict; `:322` read `cycles=0, issues=0` and woke chief;
+                # chief ruled "not a stall, normal operation" and produced no
+                # act. THREE invocations, structurally guaranteed, for a PR
+                # nobody could have fixed yet.
+                #
+                # Every other threshold in this file is `hours`, and the verdict
+                # age was the one quantity compared against nothing. A fix needs
+                # time to be written, and until that time has passed the absence
+                # of one is not information.
+                #
+                # Reported, never silent: a suppressed finding that nobody can
+                # see is how a detector starts lying by omission.
+                print(f"  (PR #{n}: qa-fail is {fail_age:.1f}h old, under the "
+                      f"{hours:.0f}h floor — not yet a stall)")
+            elif fail_age is None or head_age is None:
                 # Could not read one of the two. Report it rather than guessing
                 # a direction -- a wrong guess here dispatches the wrong agent
                 # and burns a full cycle on it.

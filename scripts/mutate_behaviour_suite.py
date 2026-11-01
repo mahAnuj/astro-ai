@@ -1051,10 +1051,15 @@ MUTATIONS = [
      "an `issue/*` branch with an owning issue",
      "test_the_dispatch_rule_never_requires_an_issue_slash_branch"),
 
+    # RE-ANCHORED 2026-11-01. The bullet this watched said "a dispatch needs an
+    # issue to aim at", which stopped being true when the steward learned
+    # `pr=<n>`; the preflight failed at zero matches, which is the net working.
+    # The RULE is unchanged and is still #531's: who OPENED the PR is never the
+    # test. Only the surrounding bullet moved.
     ("the steward stands down on a PR the owner opened (the 21h stall)",
      ".claude/agents/steward.md",
-     "- A PR the detector could not name an owning issue for",
-     "- A PR a human opened is not this loop's.\n#",
+     "**Who OPENED the PR is not the test** (#531)",
+     "A PR a human opened is not this loop's (#531)",
      "test_the_dispatch_rule_never_refuses_a_pr_for_who_opened_it"),
 
     # chief's copy of the same rule. It is the LAST gate: `steward-ineffective`
@@ -4253,12 +4258,6 @@ MUTATIONS = [
      'uv run python scripts/collect_agent_performance.py   # is each loop ALIVE',
      'test_it_reads_the_measurement_and_never_regenerates_it'),
 
-    ('chief: a red main stops outranking the escalation in front of it',
-     '.claude/agents/chief.md',
-     '**A red `main` outranks everything in front of you.**',
-     '**A red `main` is one input among several.**',
-     'test_a_red_main_outranks_the_escalation'),
-
     ('chief: the objective reverts to caution, so PROCEED loses its reason',
      '.claude/agents/chief.md',
      'caution is not the objective',
@@ -4270,6 +4269,62 @@ MUTATIONS = [
      'tools: Agent, Read, Grep, Glob, Bash, WebFetch',
      'tools: Agent, Read, Write, Grep, Glob, Bash, WebFetch',
      'test_chief_has_no_write_tool_so_the_read_only_rule_is_enforceable'),
+
+    # ---- the loop stops spending invocations on no-ops (owner, 2026-11-01) --
+    #
+    # Measured: 26 comments across four PRs, of which six were the steward's
+    # and five chief's, and all eleven produced NO ACT. chief ruled three times
+    # on one unchanged SHA. The engine was a chain, not a misjudgement:
+    # detect_stalls marked a 0.0h-old qa-fail OBLIGED -> agent-steward demanded
+    # proof of an action -> the steward had none to take -> chief was woken.
+
+    ('no-op loop: a verdict written minutes ago is a stall again',
+     'scripts/detect_stalls.py',
+     '            if fail_age is not None and fail_age < hours:',
+     '            if fail_age is not None and fail_age < 0:',
+     'test_a_verdict_written_minutes_ago_is_not_a_stall'),
+
+    ('no-op loop: the floor swallows a REAL unaddressed verdict too',
+     'scripts/detect_stalls.py',
+     '            if fail_age is not None and fail_age < hours:',
+     '            if fail_age is not None and fail_age < 10000:',
+     'test_an_old_unaddressed_verdict_is_still_a_stall'),
+
+    ('no-op loop: an unreadable verdict time is treated as a fresh one',
+     'scripts/detect_stalls.py',
+     '            if fail_age is not None and fail_age < hours:',
+     '            if fail_age is None or fail_age < hours:',
+     'test_an_unreadable_verdict_time_is_still_reported'),
+
+    ('no-op loop: the suppressed finding stops being reported',
+     'scripts/detect_stalls.py',
+     '                print(f"  (PR #{n}: qa-fail is {fail_age:.1f}h old, under the "',
+     '                pass  # (f"  (PR #{n}: qa-fail is {fail_age:.1f}h old, under the "',
+     'test_the_suppression_is_reported_and_not_silent'),
+
+    ("no-op loop: the steward's ruling line forgets the pr= form again",
+     '.claude/agents/steward.md',
+     'write **one** line, exactly `issue=<n>` **or** `pr=<n>`, to',
+     'write **one** line, exactly `issue=<n>`, to',
+     'test_the_steward_can_dispatch_a_pr_scoped_round'),
+
+    ('no-op loop: chief rules twice on the same head again',
+     '.claude/agents/chief.md',
+     '**If you have already ruled on this PR at this same head commit, do not rule again. Say nothing.**',
+     '**A second look at the same head is always worth writing down.**',
+     'test_it_does_not_rule_twice_on_the_same_head'),
+
+    ('no-op loop: a red main halts chief instead of being reported',
+     '.claude/agents/chief.md',
+     '**If `main` is red, say so in one line and then rule anyway.**',
+     '**A red `main` outranks everything in front of you.**',
+     'test_a_red_main_is_reported_but_does_not_stop_the_ruling'),
+
+    ("no-op loop: the steward's quiet run comments on every PR again",
+     '.claude/agents/steward.md',
+     '**If the detector\'s findings are all of the above, produce nothing — including no PR\ncomment.**',
+     '**If the detector\'s findings are all of the above, say so and produce nothing.**',
+     'test_a_quiet_steward_run_writes_no_pr_comment'),
 
     # ---- the PR-scoped QA dispatch -----------------------------------------
     #
