@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-31T23:59:31Z",
+  "generated_at": "2026-11-01T08:43:30Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 128,
-  "with_ask": 53,
+  "open": 130,
+  "with_ask": 55,
   "by_area": {
-    "UNCLASSIFIED": 46,
+    "UNCLASSIFIED": 48,
     "INFRA": 15,
     "UI": 12,
     "REDESIGN": 10,
@@ -33,22 +33,91 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 35,
-    "untyped": 35,
+    "untyped": 38,
+    "bug": 33,
     "enhancement": 27,
     "correctness": 11,
     "design": 8,
-    "ui": 6,
-    "chore": 6
+    "chore": 7,
+    "ui": 6
   },
   "by_priority": {
-    "unset": 89,
+    "unset": 92,
     "medium": 20,
-    "high": 18,
+    "high": 17,
     "low": 1
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 648,
+      "title": "Four accuracy defects left by #642's conflict reclassification — including a dead arm whose replacement detail is wrong for the case it inherited",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-01T06:22:14Z",
+      "updated": "2026-11-01T06:22:14Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 644,
+      "title": "agent-work's safety net re-opens a PR for a branch that was just merged — it asks 'is there an open PR' when it means 'has this work landed'",
+      "ask": "Has this work landed?",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-01T04:08:02Z",
+      "updated": "2026-11-01T04:08:02Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 641,
+      "title": "The `priority:` label is vestigial: written by nobody, read by one dashboard counter",
+      "ask": "PR #639 originally shipped two findings on top of this (triage-debt, high-priority-stalled) and both were removed, because a threshold on a number nothing writes fires forever — a",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-01T03:07:58Z",
+      "updated": "2026-11-01T03:07:58Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 634,
+      "title": "Three inaccurate claims left by #629: an invented check_suite trigger, a test name that asserts more than the code does, and a justification contradicted 250 lines up",
+      "ask": "QA noted (OBS-1) that ordering the new needs-human-review arm ahead of qa-pass means the Trust boundary step is no longer reached on the second and later runs of a boundary PR",
+      "area": "UNCLASSIFIED",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-01T00:11:05Z",
+      "updated": "2026-11-01T00:11:05Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 633,
+      "title": "The cycle agent can merge a needs-human-review PR or strip the label — agent-work denies none of the gh pr write verbs that steward and chief both deny",
+      "ask": "Bash(gh pr merge:),Bash(gh pr review:),Bash(gh pr edit:),Bash(gh pr close:),Bash(gh issue close:*)",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-01T00:10:33Z",
+      "updated": "2026-11-01T00:10:33Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 628,
       "title": "/admin/ops misreports loop health two ways: loop-outcomes' contract exit reads as a failure, and a weekly loop's failure is invisible 6 days in 7",
@@ -57,10 +126,13 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:independent"
       ],
       "created": "2026-10-31T19:57:13Z",
-      "updated": "2026-10-31T19:57:13Z",
+      "updated": "2026-11-01T03:38:52Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -75,10 +147,12 @@
         "bug",
         "category:technical",
         "priority:medium",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-31T07:09:19Z",
-      "updated": "2026-10-31T07:09:19Z",
+      "updated": "2026-11-01T04:58:09Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -89,24 +163,11 @@
       "area": "DETECT_STALLS",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
-      "created": "2026-10-31T02:25:29Z",
-      "updated": "2026-10-31T02:25:40Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 610,
-      "title": "chief-cleared is documented as releasing a prompts/knowledge PR but no workflow reads it; agent-merge's boundary step re-holds it",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
       "labels": [
-        "bug"
+        "provenance:outsider"
       ],
-      "created": "2026-10-30T18:25:45Z",
-      "updated": "2026-10-30T18:25:45Z",
+      "created": "2026-10-31T02:25:29Z",
+      "updated": "2026-11-01T03:24:19Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -120,41 +181,6 @@
       "labels": [],
       "created": "2026-10-30T15:39:52Z",
       "updated": "2026-10-30T15:39:52Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 604,
-      "title": "needs-human-review does not hold a PR: agent-merge reads it only in the sweep filter, so an edge-triggered run still merges",
-      "ask": "A needs-human-review check in the same chain as boundary, so it binds on every trigger rather than only in the sweep — and correct :402 to name only the defences that exist.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:high",
-        "provenance:trusted"
-      ],
-      "created": "2026-10-30T15:03:21Z",
-      "updated": "2026-10-31T19:43:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 602,
-      "title": "agent-work gates guard: an empty $sha makes the API return every run in the repo, suppressing the #322 rescue",
-      "ask": "An engineer may prefer head_sha=${sha:-0000000000000000000000000000000000000000} so an empty value can only ever match nothing.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "category:technical",
-        "provenance:trusted"
-      ],
-      "created": "2026-10-30T11:09:16Z",
-      "updated": "2026-10-30T11:09:16Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1858,10 +1884,13 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-fail",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-10-17T07:02:19Z",
+      "updated": "2026-11-01T02:37:43Z",
       "blocked": false,
       "needs_evidence": false
     },
