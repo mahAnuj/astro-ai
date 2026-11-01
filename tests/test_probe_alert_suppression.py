@@ -306,3 +306,70 @@ def test_a_WRONG_probe_value_on_a_real_route_still_alerts(client, sink):
     client.post("/numerology", data=_PROBE_FORM,
                 headers={probe.PROBE_HEADER: "some-other-caller"})
     assert len(sink) == 1, "an unrecognised probe value suppressed the alert"
+
+
+# --------------------------- kundli, through a REAL request (QA finding, #618)
+#
+# QA flipped `if not probe.suppresses_owner_alert(request, "kundli_generated")`
+# to `if probe.suppresses_owner_alert(...)` and all 44 tests above stayed green:
+# the kundli cases were source greps, which the comment at the top of the
+# request-level block already says cannot see an inversion. That inversion would
+# silence every real visitor's alert and page the owner on the probe -- the
+# opposite of the fix. These drive the route the verifier actually reaches:
+# POST /reading -> 303 -> GET /kundli, with the header on both legs.
+
+def _natal_body() -> str:
+    """A reading `_cached` will RETAIN: natal's floor is 800 chars and 2 headings.
+
+    Not for the alert -- the alert fires on any fresh generation -- but a body the
+    cache refuses to keep is regenerated on every request, which would make the
+    second request in a test look "fresh" for the wrong reason.
+    """
+    filler = "The chart favours patient, deliberate work this season. "
+    return "## Personality\n" + filler * 10 + "\n\n## Career\n" + filler * 10 + "\n"
+
+
+_KUNDLI_FORM = {"name": "Probe Seeker", "birth_date": "1990-04-12",
+                "birth_time": "14:35", "birth_place": "Mumbai, India"}
+
+
+def _kundli_render(client, stub_llm, headers=None):
+    """Drive POST /reading then GET /kundli; return the final response.
+
+    Cache isolation: `conftest._isolate_sqlite_cache` points the reading cache at
+    a per-test tmp file, so the same birth data in every test below is still a
+    cache MISS here and `was_cached` is False. That is what makes the alert
+    reachable at all; a warm cache would hide it and any assertion on `sink`
+    would pass for the wrong reason. The same data is deliberately reused so the
+    three tests differ only in the header.
+    """
+    stub_llm(_natal_body())
+    post = client.post("/reading", data=_KUNDLI_FORM, headers=headers or {},
+                       follow_redirects=False)
+    assert post.status_code == 303, post.status_code
+    # The cookie jar carries the chart; the header is sent again because the
+    # verifier sends it on every request it makes.
+    resp = client.get("/kundli", headers=headers or {})
+    assert resp.status_code == 200, "the probe must still get its page"
+    assert "patient, deliberate work" in resp.text, "the stubbed reading did not render"
+    return resp
+
+
+def test_a_probe_kundli_render_fires_NO_owner_alert(client, sink, stub_llm):
+    """The #618 defect on its second route: the verifier's kundli alert."""
+    _kundli_render(client, stub_llm, {probe.PROBE_HEADER: probe.PROBE_VALUE})
+    assert sink == [], f"the probe still alerted: {sink}"
+
+
+def test_a_normal_kundli_render_STILL_fires_exactly_one_alert(client, sink, stub_llm):
+    """The half an inverted kundli guard breaks, which no grep can see."""
+    _kundli_render(client, stub_llm)
+    assert len(sink) == 1, f"a real kundli generation sent {len(sink)} alerts: {sink}"
+    # `notify.kundli_generated` is the only formatter that can have produced it.
+    assert "kundli" in sink[0][0].lower(), sink[0][0]
+
+
+def test_a_WRONG_probe_value_on_kundli_still_alerts(client, sink, stub_llm):
+    """The route inherits the helper's exactness here too."""
+    _kundli_render(client, stub_llm, {probe.PROBE_HEADER: "some-other-caller"})
+    assert len(sink) == 1, "an unrecognised probe value suppressed the kundli alert"

@@ -4095,8 +4095,9 @@ MUTATIONS = [
     # The header is UNAUTHENTICATED, so the allow-list is the whole safety
     # argument: anyone may send it, which is fine for a diagnostic plus an
     # 8-hex key and not fine for a question, an email or a name. Rows 1 and 2
-    # attack the scope; row 4 attacks the call site, which no source-grep test
-    # can protect because an inverted guard keeps the asserted string.
+    # attack the scope; row 4 attacks the numerology call site and the last row
+    # the kundli one, which no source-grep test can protect because an inverted
+    # guard keeps the asserted string.
 
     ('#618: the allow-list is inverted, so PII-carrying alerts suppress',
      'src/astro_ai/probe.py',
@@ -4127,6 +4128,12 @@ MUTATIONS = [
      '    "numerology_computed",\n})',
      '})',
      'test_the_allow_list_matches_what_notify_documents'),
+
+    ('#618: the kundli guard is inverted -- only probes get alerted',
+     'src/astro_ai/routes/kundli.py',
+     'if not probe.suppresses_owner_alert(request, "kundli_generated"):',
+     'if probe.suppresses_owner_alert(request, "kundli_generated"):',
+     'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
 
 ]
 
