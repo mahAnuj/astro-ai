@@ -3622,6 +3622,23 @@ MUTATIONS = [
      "permissions:\n  contents: read\n",
      "permissions:\n  contents: read\n  issues: write\n",
      "test_pr_gates_has_no_reporter_step_and_cannot_write_issues"),
+
+    # ---- #604 / #602: two guards that read plausible state and did not guard.
+    # Both are the class #550 round 5 belonged to: the input is well formed and
+    # means something other than what the code assumed, so nothing errors.
+    ("#604: needs-human-review stops holding a PR on the edge-triggered path",
+     ".github/workflows/agent-merge.yml",
+     '            *,needs-human-review,*)\n'
+     '              echo "::notice::needs-human-review is set',
+     '            *,never-matches-any-label,*)\n'
+     '              echo "::notice::needs-human-review is set',
+     "test_needs_human_review_blocks_the_edge_triggered_path"),
+
+    ("#602: an empty head SHA reaches the runs query, so GitHub returns every run in the repo",
+     ".github/workflows/agent-work.yml",
+     "          sha=${sha:-$(git rev-parse HEAD)}\n",
+     "          sha=${sha}\n",
+     "test_an_empty_head_sha_never_reaches_the_query"),
     # --- #384: the merge-conflict marker gate -------------------------------
     # ARCHITECTURE.md reached main carrying a live conflict block and all 27
     # gates passed over it. These rows are the properties of the gate that
