@@ -207,6 +207,41 @@ NOT_LOOP_WORKFLOWS = (
     "rashifal-generate.yml",
 )
 
+#: A workflow whose NON-ZERO EXIT IS ITS CONTRACT, not its failure (#628).
+#:
+#: `loop-outcomes.yml:22` documents its own exit codes: "0 all OK/IDLE; 1
+#: something BROKEN". So exit 1 means it found something to report, which is
+#: the whole point of the job -- and GitHub records that as `conclusion:
+#: failure`, because GitHub cannot know the difference.
+#:
+#: WHAT THIS COST, measured 2026-10-31: 4 of 4 runs of `loop-outcomes` in the
+#: window concluded `failure`, and this module counted every one as a loop
+#: failure. `/admin/ops` therefore showed a red delivery tile every week on a
+#: workflow that was working correctly -- and a tile that is red when nothing
+#: is wrong is a tile nobody reads, which is the exact failure mode the
+#: `SUCCEEDED_CONCLUSIONS` comment below was written to prevent one layer up.
+#:
+#: `scripts/build_agent_cycle_dag.py` already knew this and had its own copy of
+#: the set, which is why the DAG page showed `loop-outcomes` as `reporting`
+#: while this module showed it as failed. Two surfaces, one fact, two answers.
+#: It is declared HERE and imported there, rather than the other way round,
+#: because this module ships in the app image and `scripts/` does not.
+#:
+#: NARROW ON PURPOSE: only `failure` is the contract. `startup_failure`,
+#: `timed_out`, `cancelled` and `action_required` on one of these workflows are
+#: real failures -- the job did not run, or did not finish, and found nothing
+#: either way. A set membership test alone would have swallowed those.
+#:
+#: `rashifal-generate.yml` has the same property and is handled differently --
+#: it is not a loop leg at all, so it sits in `NOT_LOOP_WORKFLOWS` above. The
+#: distinction is worth keeping: that workflow's health is a count of published
+#: readings, while `loop-outcomes` IS a loop leg whose health is whether it ran.
+CONTRACT_NONZERO = frozenset({"loop-outcomes.yml"})
+
+#: The one conclusion `CONTRACT_NONZERO` excuses. See that comment for why it
+#: is not "anything non-success".
+CONTRACT_NONZERO_CONCLUSION = "failure"
+
 #: A run that ended in one of these DID its job. Everything else is a failure.
 #:
 #: AN ALLOW-LIST OF FAILURES WAS THE WRONG WAY ROUND, and this module already
@@ -380,6 +415,11 @@ def fetch_today(repo: str, day_start: datetime, *,
         # conclusion is excluded here rather than in the set, because "has not
         # finished" is a different kind of thing from "finished badly".
         if concl is None or concl in SUCCEEDED_CONCLUSIONS:
+            continue
+        # A workflow whose job is to exit non-zero when it finds something.
+        # Checked against ONE conclusion, not the whole non-success range: a
+        # `startup_failure` here is still a leg that produced nothing.
+        if path in CONTRACT_NONZERO and concl == CONTRACT_NONZERO_CONCLUSION:
             continue
         if (r.get("created_at") or "") < since:
             continue
