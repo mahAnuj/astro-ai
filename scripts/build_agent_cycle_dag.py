@@ -112,7 +112,17 @@ WEEKLY = ("agent-discover.yml", "agent-infra.yml", "agent-research.yml",
 HEALTHS = {"green", "amber", "red", "fixed?", "running", "reporting", "unknown"}
 
 # Exit 1 is this workflow's documented contract, not a failure.
-CONTRACT_NONZERO = {"loop-outcomes.yml"}
+#
+# IMPORTED, NOT RESTATED (#628). This set lived here as a literal while
+# `src/astro_ai/ops_today.py` had no equivalent at all, so the DAG page showed
+# `loop-outcomes` as `reporting` and `/admin/ops` counted the same runs as loop
+# failures -- one fact, two surfaces, two answers, for weeks. A second literal
+# would have fixed the count and left the next divergence free to happen, so
+# the declaration moved to `ops_today` (which ships in the app image; this
+# script does not) and this is now a reference to it.
+# `tests/test_ops_dag_agree.py` fails if the two stop being the same object.
+sys.path.insert(0, str(ROOT / "src"))
+from astro_ai.ops_today import CONTRACT_NONZERO  # noqa: E402
 
 
 def _deps(wf: str) -> list[str]:

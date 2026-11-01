@@ -4041,6 +4041,35 @@ MUTATIONS = [
      '"not_covered": [list(n) for n in NOT_COVERED]}, indent=2))',
      '"not_covered": []}, indent=2))',
      "test_json_output_carries_findings_unreadable_AND_the_blind_spots"),
+    # --- ops/DAG agree on what a failure is (#628) ---------------------------
+    # One fact with two consumers. The DAG had the set, `ops_today` did not, so
+    # the DAG page read `loop-outcomes` as `reporting` while /admin/ops counted
+    # the same runs as loop failures -- for weeks. These rows guard the fix's
+    # two halves: the excuse exists, and it is ONE conclusion wide.
+
+    ("#628: the contract excuse covers every conclusion, not just exit 1",
+     "src/astro_ai/ops_today.py",
+     "if path in CONTRACT_NONZERO and concl == CONTRACT_NONZERO_CONCLUSION:",
+     "if path in CONTRACT_NONZERO:",
+     "test_loop_outcomes_failing_ANY_OTHER_WAY_still_counts"),
+
+    ("#628: nothing is excused, so a correct loop-outcomes run reads as failed",
+     "src/astro_ai/ops_today.py",
+     'CONTRACT_NONZERO = frozenset({"loop-outcomes.yml"})',
+     "CONTRACT_NONZERO = frozenset()",
+     "test_loop_outcomes_exiting_NON_ZERO_is_not_a_loop_failure"),
+
+    ("#628: the excused conclusion is the one that means 'never started'",
+     "src/astro_ai/ops_today.py",
+     'CONTRACT_NONZERO_CONCLUSION = "failure"',
+     'CONTRACT_NONZERO_CONCLUSION = "startup_failure"',
+     "test_the_excused_conclusion_is_one_value_not_a_range"),
+
+    ("#628: the DAG goes back to its own literal, free to drift again",
+     "scripts/build_agent_cycle_dag.py",
+     "from astro_ai.ops_today import CONTRACT_NONZERO  # noqa: E402",
+     'CONTRACT_NONZERO = {"loop-outcomes.yml"}',
+     "test_both_surfaces_read_the_SAME_object"),
     # --- chief clears the whole trust boundary (#610) ------------------------
     # The grant's two halves are the label being READ at all (nothing read it
     # before, so `chief.md` documented a release that did not happen) and the
