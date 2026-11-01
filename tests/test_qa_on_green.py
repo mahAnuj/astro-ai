@@ -204,6 +204,138 @@ def test_a_branch_with_no_owning_issue_yields_nothing(branch):
     assert _issue_for(branch) == ""
 
 
+def _target_fragment() -> str:
+    """The real derive-and-fall-back lines, lifted out of the workflow.
+
+    Lifted rather than restated. A copy of this logic in the test would pass
+    while the workflow was broken, which is the failure mode the whole file
+    exists to avoid.
+    """
+    lines = PICK.splitlines()
+    start = next(i for i, ln in enumerate(lines)
+                 if ln.strip().startswith("issue=$(printf"))
+    end = next(i for i, ln in enumerate(lines[start:], start)
+               if ln.strip() == "fi")
+    return "\n".join(lines[start:end + 1])
+
+
+def _target_for(branch: str, num: str = "999") -> str:
+    """What the dispatch would actually aim at, by executing the workflow."""
+    script = f'HEAD_BRANCH="$1"\nnum="$2"\n{_target_fragment()}\nprintf "%s" "$target"'
+    p = subprocess.run(["bash", "-c", script, "bash", branch, num],
+                       capture_output=True, text=True,
+                       env={"PATH": "/usr/bin:/bin"})
+    assert p.returncode == 0, p.stderr
+    return p.stdout.strip()
+
+
+@pytest.mark.parametrize("branch,issue", [
+    ("issue/523-per-area-day-ratings", "523"),
+    ("partial/475-cached-token-header-measure", "475"),
+    ("fix/515-claude-cannot-write-to-tmp", "515"),
+])
+def test_a_numbered_branch_still_aims_at_its_issue(branch, issue):
+    """The richer aim, and it must not regress: an issue-aimed cycle reads the
+    issue and can finish work that is not built yet. The PR fallback only ever
+    buys a verdict."""
+    assert _target_for(branch) == f"issue={issue}"
+
+
+@pytest.mark.parametrize("branch", [
+    # The four green PRs this fallback was built for, measured 2026-11-01.
+    "feat/ops-watcher-detector",        # #639, no issue reference anywhere
+    "fix/mutation-row-floor-total",     # #647
+    "fix/qa-verdict-mode-diagnostic",   # #649
+    "fix/carrier-pr-scoped-ruling",     # #650
+    "chore/hand-edit",
+])
+def test_an_unnumbered_branch_aims_at_the_pr_instead_of_declining(branch):
+    """THE DEFECT, EXECUTED.
+
+    Until 2026-11-01 this path exited 0 on "a dispatch needs one to aim at",
+    and that morning it was holding four of the five green PRs then open at
+    zero dispatches apiece. `agent-merge` merges on `qa-pass`,
+    `scripts/qa_verdict.sh` is its only writer, and the only thing that runs it
+    is a dispatched round -- so declining here is a PR that can never merge.
+    """
+    assert _target_for(branch, "639") == "pr=639"
+
+
+@pytest.mark.parametrize("branch", [
+    "measurements/40140256532-1", "measurements/39867786023-1", "main",
+])
+def test_a_measurement_branch_never_becomes_an_issue_target(branch):
+    """The widening `^[a-z]+/(\\d+)` would read run id 40140256532 as issue
+    40140256532, ~8 times a day. The fallback makes that MORE tempting, not
+    less -- so it is pinned here as well as at the sed."""
+    got = _target_for(branch, "700")
+    assert got == "pr=700", got
+    assert not got.startswith("issue="), (
+        f"{branch} produced {got}; a run id is not an issue number"
+    )
+
+
+def test_the_target_is_never_guessed_from_the_pr_body():
+    """MEASURED 2026-11-01 on the two real PRs, which is why this is forbidden
+    rather than merely not done.
+
+      * #639 `feat/ops-watcher-detector` carries no issue reference of any
+        kind -- no closing keyword, no `refs #N`, and an empty
+        `closingIssuesReferences`. A body fallback does literally nothing.
+      * #647's body yields `638` and `640`, and BOTH ARE PULL REQUESTS (#638
+        merged, #640 closed); its only `refs` number, #389, is closed.
+
+    `gh issue view <pr>` answers for a pull request, so a body-scraped aim
+    sails through an openness check and then points a ~50-minute cycle at a
+    number lifted from prose. The PR number is already in hand and is never
+    ambiguous, so there is nothing to gain by guessing.
+    """
+    for forbidden in ("closingIssuesReferences", "closes #", "refs #",
+                      "Closes #", "Refs #", "fixes #"):
+        assert forbidden not in RUNS, (
+            f"{forbidden!r} appears in a run block; the dispatch aim must come "
+            "from the branch name or the PR number, never the body"
+        )
+
+    # The PR's own `body` must never be fetched. `.comments[].body` IS fetched
+    # and must stay -- that is the loop guard's memory -- so this looks at the
+    # requested FIELDS rather than at the string `body`, which is the
+    # difference between the two.
+    for fields in re.findall(r"--json ([A-Za-z,]+)", RUNS):
+        assert "body" not in fields.split(","), (
+            f"`--json {fields}` requests the PR body; the measured reason it "
+            "may not be used is in this test's docstring"
+        )
+
+
+def test_the_carrier_receives_the_target_verbatim():
+    """The carrier parses `issue=<n>` and `pr=<n>` strictly and checks a
+    DIFFERENT API for each. This step must therefore hand the ruling over
+    unaltered and make no claim about which form it is."""
+    run = _step("Carry out the dispatch")["run"]
+    assert 'printf \'%s\\n\' "$TARGET"' in run, (
+        "the ruling is no longer written verbatim; re-prefixing it with "
+        "`issue=` is exactly the mutation that makes a PR number be looked up "
+        "as an issue"
+    )
+    assert "issue=%s" not in run, "the carrier file must not hard-code `issue=`"
+
+
+def test_the_target_crossing_a_step_boundary_is_kind_equals_digits():
+    """Only `issue=<n>` / `pr=<n>` goes through GITHUB_OUTPUT, never prose. A
+    free-text output is a sink, and the branch name reaches this step from a
+    head this repo did not necessarily write."""
+    assert 'echo "target=$target"' in PICK
+    assert 'echo "aim=' not in PICK, (
+        "the human-readable aim must be re-derived in the step that prints it, "
+        "not passed as free text through GITHUB_OUTPUT"
+    )
+    comment = _step("Record the dispatch on the PR")["run"]
+    assert 'case "$TARGET" in' in comment, (
+        "the comment no longer derives its own wording from the target"
+    )
+
+
 def test_the_sed_uses_a_portable_dialect():
     """BSD sed (macOS) treats `\\|` as a literal, so a GNU-style alternation
     matches NOTHING, and `|` cannot be the `s` delimiter when the regex uses

@@ -238,10 +238,28 @@ What has NOT changed, and why it matters more now than before:
   `agent-work`, `detect_stalls.py`, `steward.md` ×2 and `agent-steward.yml` ×2.
 - **A green PR gets its QA round immediately, not in four hours — `qa-on-green.yml`,
   added 2026-10-25.** `workflow_run` on `PR gates` completing: if the PR is open, its
-  author is in `AGENT_AUTHORS`, the head still matches what was gated, it carries no
-  `qa-pass`/`qa-fail`/`needs-human-review`, its diff misses `.github/workflows/**` and its
-  branch names an owning issue, it dispatches one cycle through the shared
+  author is in `AGENT_AUTHORS`, the head still matches what was gated and it carries no
+  `qa-pass`/`qa-fail`/`needs-human-review`, it dispatches one cycle through the shared
   `scripts/dispatch_cycle.sh`.
+
+  **What it aims the dispatch at, since 2026-11-01, and the branch name is no longer a
+  precondition.** `issue/<n>-`, `partial/<n>-` and `fix/<n>-` yield `issue=<n>` and the
+  cycle can finish unbuilt work; any other branch falls back to `pr=<num>` and the cycle
+  runs a QA round on the PR itself (`agent-cycle.md` **Step 0c**, which skips the Step 0a
+  issue-provenance check because there is no issue to check). It was a precondition until
+  that date, and measured that morning it was holding **four of the five green PRs then
+  open** — #639, #647, #649, #650 — at zero dispatches and zero comments apiece. Green,
+  unlabelled and unmergeable, because `agent-merge` merges on `qa-pass` and
+  `scripts/qa_verdict.sh` is its only writer.
+
+  **The aim is never scraped from the PR body.** Measured on those same PRs: #639 carries
+  no issue reference of any kind, and #647's body yields `638` and `640`, both of which are
+  pull requests. `gh issue view` answers for a PR number, so a body-scraped aim passes an
+  openness check and then points a ~50-minute cycle at a number lifted from prose.
+
+  A diff touching `.github/workflows/**` is **judged, not refused** (#637): the App token
+  has no `workflows` permission so no commit can be pushed to that branch, but a round can
+  still rule on it and write the verdict.
 
   Nothing previously treated "the gates passed" as a reason to run QA. QA lives inside
   `/agent-cycle`, and a cycle started only two ways: the twice-daily `agent-work` cron, or
