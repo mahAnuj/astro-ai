@@ -187,13 +187,15 @@ What has NOT changed, and why it matters more now than before:
   unchanged, and `qa:*` is not in its exclusion list, so provenance cannot accidentally block a
   merge or become a second thing that must be spelled right for one to happen.
 
-  **`steward` still may not touch either label** (`steward.md`), and `chief` still cannot grant
-  merge authority to anything (`chief.md`) — that is not a label and never was.
+  **`steward` still may not touch either label** (`steward.md`). The clause that stood here
+  until 2026-11-01 — "`chief` still cannot grant merge authority to anything" — has been
+  replaced by the grant below, which is the only version in force.
 - **Branch, then merge — never a direct commit to `main`.** Not as ceremony: a PR is what
   makes `pr-gates` run at all. A direct push to `main` would deploy with no gate between
   the agent and production, on a site with no staging.
-- **A PR touching the trust boundary is held for a human (#354).** The repo is public, so
-  `agent-merge` labels `needs-human-review` and leaves open any PR that changes
+- **A PR touching the trust boundary is held for `chief` to rule on (#354, rerouted
+  2026-11-01).** The repo is public, so `agent-merge` labels `needs-human-review` and
+  leaves open any PR that changes
   `src/astro_ai/prompts/`, `src/astro_ai/knowledge/`, `.github/workflows/`, `events.py`,
   `notify.py`, `email_sender.py` or `storage.py`. The loop still pushes and merges
   everything else. The list is the `TRUST_BOUNDARY` env var in `agent-merge.yml`.
@@ -212,8 +214,9 @@ What has NOT changed, and why it matters more now than before:
   **Two consequences to know.** The owner's own branches are now in scope where they were
   silently excluded before — everything downstream still applies, so this grants no
   exemption, it only stops the job ignoring the PR. And a branch name no longer holds
-  anything back: to hold a PR for a human, use `needs-human-review`, which the sweep and
-  the label check both refuse. The branch name's one remaining job is to keep
+  anything back: to hold a PR out of the unattended path, use `needs-human-review`, which
+  the sweep and the label check both refuse — and which since 2026-11-01 routes the
+  decision to `chief`, not to the owner. The branch name's one remaining job is to keep
   `close-on-evidence` off an issue that is not finished.
 - **What the STEWARD will dispatch a cycle for is decided the same way — changed
   2026-10-25, hours after the above.** Fixing the merge gate was not enough: the steward's
@@ -298,6 +301,80 @@ If this permission is ever narrowed again, edit this block rather than relying o
 conversation — the same instruction the 2026-08-16 grant carries, for the same reason.
 - **Do not infer standing permission from a previous push.** One approval is not a
   policy — only the explicit grant recorded below is.
+
+#### `chief` decides every `needs-human-review` PR — granted by the user 2026-11-01
+
+The user's words, verbatim, across three messages: *"why can't chief grant merge authority,
+that is what chief is for. Chief should have privelege to do anything even on my behalf, give
+that power to chief agent"*; *"do not hold chief for TRUST_BOUNDARY as well. I want the loop
+to not hold on me"*; *"anything that is labeled as needs-human-review, should be decided by
+chief"*.
+
+So **`needs-human-review` no longer means "the owner decides". It means "`chief` decides".**
+A PR touching the #354 trust boundary is still labelled and still held out of the merge sweep,
+because there has to be something to decide — but the decision is routed to `chief`, for every
+boundary path, `.github/workflows/`, `notify.py`, `email_sender.py`, `storage.py` and
+`events.py` included. `CHIEF_DECIDABLE` in `detect_stalls.py` is now `BOUNDARY`, so the steward
+dispatches `chief` for every such hold instead of reporting "A HUMAN decides this one".
+
+**What the grant does NOT include, and this is the part that keeps it meaningful:**
+
+- **It clears a HOLD, never a VERDICT.** `agent-merge`'s boundary step is reached only after
+  `gates`, `qa` and `size` have each passed. `qa-pass` is still required, `qa-fail` still
+  refuses, and the gates still decide. A `chief` that could skip those would not be merge
+  authority; it would be a hole in `pr-gates`.
+- **The clearance is SHA-BOUND, and `agent-merge` checks it.** `chief` must post a ruling
+  comment containing the literal `chief-cleared at <full head sha>` **before** adding the
+  `chief-cleared` label, and both are required. An unbound label cost this repo twice in one
+  week: #609 merged on a `qa-pass` left over from an earlier commit, and #564 sat held by a
+  stale `qa-fail` after its defect was fixed. A clearance does not survive a push.
+- **The ruling comment comes first**, for the reason `qa.md` already gives: a label with no
+  ruling above it is the fabrication shape this repo has been burned by twice.
+- **Irreversible actions still stop and ask** — data migration, destructive storage, anything
+  touching subscriber records. That carve-out is about reversibility, not trust: a wrong merge
+  is one `git revert`, a deleted subscriber is gone. The grant is about who clears a *hold on a
+  mergeable PR*; it says nothing about an action no revert undoes, and this file's existing rule
+  on those is untouched.
+
+**The argument this grant overrides**, recorded rather than deleted, because the next reader
+deserves it: `chief.md` was built unable to hand out authority precisely because a `dev-lead`
+twice wrote `USER AUTHORISED PUSH this turn` into a file and then cited its own line as the
+authorization — the pattern this file names as *write the justification down, then treat the
+writing as the fact*. An agent whose job is to grant permission when others are stuck is that
+pattern with a job title. And `detect_stalls.py` carried: *"The other five are not decidable by
+an agent for blast radius, not seniority: a workflow edit can grant the loop powers, and
+email/notify reach real people."* The user has read both and overridden them.
+
+One limit no grant can move: the App token has no `workflows` permission (#421), so `chief` can
+**merge** a `.github/workflows/` PR that a human or a top-level session pushed, and still cannot
+**author** one.
+
+**`chief` owns the queue, not just the decision — granted the same day.** The user's words:
+*"go ahead and also give chief the [authority] to own such issues/blockers"*. Every PR and issue
+carrying `needs-human-review` is `chief`'s queue, and **the list of things it may hand back to
+the owner is closed**:
+
+| # | The act | Why no agent can do it |
+| --- | --- | --- |
+| 1 | Authoring a file under `.github/workflows/` | The App token is refused the `workflows` permission (#421) — the push is rejected. Merging such a PR is NOT on this list: `agent-merge` merges with `github.token`. |
+| 2 | Editing anything under `.claude/` | An agent may not author its own definition. |
+| 3 | Granting a scope, a secret or a permission | `verify_no_relaxation.py` rules 8 and 9 are red on it by construction, and a red relaxation gate is never `chief`'s to rule on. |
+| 4 | A product or revenue decision | Which school a reading follows, whether a feature ships, what is charged for. |
+| 5 | A legal, licensing or privacy commitment | #279, and any copy promising a user something about their data. |
+
+Anything not on that list is `chief`'s, and *"ask the owner"* is not an available ruling. When
+`chief` does route one, it names which of the five and states the owner's single act in the
+first sentence — *"merge PR #631"*, not *"this needs a human"*. Most of what has reached a
+person in this repo's history was one merge described in four paragraphs.
+
+**What makes this safe rather than merely unblocked.** The blast-radius argument did not stop
+being true; it moved from *who decides* to *what a gate catches*. Two invariants were added to
+`scripts/verify_no_relaxation.py` for exactly this grant: a workflow's `permissions:` may not
+widen (a wholly new block fails closed), and `TRUST_BOUNDARY` may not lose an entry. `chief.md`
+is written against them by name.
+
+If this permission is ever narrowed again, edit this block rather than relying on the
+conversation.
 
 #### Standing permission for QA'd work — granted by the user 2026-08-16
 
