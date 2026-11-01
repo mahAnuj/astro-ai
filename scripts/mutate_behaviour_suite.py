@@ -3796,6 +3796,25 @@ MUTATIONS = [
      "when counted from any axis.",
      "test_sentence_still_states_the_venus_axis_downgrade_and_its_three_frames"),
 
+    # --- #177: the matching verdict bands are Bhagya's own, and the page says so ---
+    ("#177: the result page stops rendering the band disclosure beside the legend",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ t(lang, 'matching_bands_note') }}",
+     "{{ '' }}",
+     "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: the English disclosure drops the 'not a classical grading' statement",
+     "src/astro_ai/i18n.py",
+     "Bhagya's own reading of the 36-point total, not a classical grading.",
+     "Bhagya's own reading of the 36-point total.",
+     "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: a disclosure edit moves a grade (Madhyam floor 24 -> 25)",
+     "src/astro_ai/matching.py",
+     "    if total >= 24:\n        return \"Madhyam\"",
+     "    if total >= 25:\n        return \"Madhyam\"",
+     "test_the_disclosure_moves_no_grade"),
+
     # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
     ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
      "src/astro_ai/chart.py",
