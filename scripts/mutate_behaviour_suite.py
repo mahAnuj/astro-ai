@@ -3796,6 +3796,37 @@ MUTATIONS = [
      "when counted from any axis.",
      "test_sentence_still_states_the_venus_axis_downgrade_and_its_three_frames"),
 
+    # --- #177: the matching verdict bands are Bhagya's own, and the page says so ---
+    ("#177: the result page stops rendering the band disclosure beside the legend",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ t(lang, 'matching_bands_note') }}",
+     "{{ '' }}",
+     "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: the English disclosure drops the 'not drawn from the classical texts we hold' statement",
+     "src/astro_ai/i18n.py",
+     "Bhagya's own reading of the 36-point total and are not drawn from the classical texts we hold.",
+     "Bhagya's own reading of the 36-point total.",
+     "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: the learn article calls the 30+ band classical again",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "Widely read as an ideal match.",
+     "Classical texts consider this an ideal match.",
+     "test_no_page_calls_the_cutoffs_classical"),
+
+    ("#177: the registry FAQ calls the 18/24/30 guidance classical again",
+     "src/astro_ai/learn_registry.py",
+     "A widely quoted rule of thumb is 18+ acceptable",
+     "The classical guidance: 18+ acceptable",
+     "test_registry_faq_and_summary_do_not_call_the_cutoffs_classical"),
+
+    ("#177: a disclosure edit moves a grade (Madhyam floor 24 -> 25)",
+     "src/astro_ai/matching.py",
+     "    if total >= 24:\n        return \"Madhyam\"",
+     "    if total >= 25:\n        return \"Madhyam\"",
+     "test_the_disclosure_moves_no_grade"),
+
     # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
     ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
      "src/astro_ai/chart.py",
