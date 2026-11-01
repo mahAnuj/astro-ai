@@ -4167,6 +4167,29 @@ MUTATIONS = [
      'echo "1. \\`chief\\` rules on it', 'echo "1. Someone rules on it',
      "test_the_hold_comment_tells_the_reader_about_the_chief_route"),
 
+    # --- a conflict is work, not a gate defect (#616) ------------------------
+    # `green` is check HISTORY on the head SHA, so it survives `main` moving
+    # underneath the branch. Order is the whole fix, and these rows prove both
+    # directions of it: the conflict must be SEEN, and UNKNOWN must not be
+    # mistaken for it.
+
+    ('#616: the conflict branch never matches, so a conflict reads as a gate defect',
+     "scripts/detect_stalls.py",
+     'elif pr.get("mergeable") == "CONFLICTING":',
+     'elif pr.get("mergeable") == "NEVER":',
+     'test_a_green_qa_pass_pr_that_CONFLICTED_is_not_called_a_gate_defect'),
+
+    ('#616: the test becomes a negation, so a freshly pushed UNKNOWN reads as conflicting',
+     "scripts/detect_stalls.py",
+     'elif pr.get("mergeable") == "CONFLICTING":',
+     'elif pr.get("mergeable") != "MERGEABLE":',
+     'test_anything_that_is_not_exactly_CONFLICTING_is_not_treated_as_conflicting'),
+
+    ('#616: the finding drops `conflicting`, so the routing table cannot match it',
+     "scripts/detect_stalls.py",
+     '                conflicting=True,\n                checks=checks, labels=sorted(labels), agent_pushable=pushable))\n        elif "qa-pass" in labels',
+     '                checks=checks, labels=sorted(labels), agent_pushable=pushable))\n        elif "qa-pass" in labels',
+     'test_the_finding_carries_conflicting_true_so_the_routing_table_matches'),
     # --- the probe header suppresses four alerts and no others (#618) --------
     # The header is UNAUTHENTICATED, so the allow-list is the whole safety
     # argument: anyone may send it, which is fine for a diagnostic plus an
