@@ -338,5 +338,8 @@ def test_the_release_block_sits_AFTER_the_gate_chain_steps():
     reachable without `gates` and `qa` having passed — which would make chief a
     hole in `pr-gates` rather than merge authority. `verify_no_relaxation.py`
     rule 5 guards the chain; this asserts THIS step is on it.
+    `verify_workflow_permissions.py` (PR #636) guards the other half -- that a
+    workflow edit cannot widen a permission or shrink the boundary -- and
+    `chief.md` names both.
     """
     assert _boundary_step()["if"] == "steps.size.outputs.ok == 'true'"

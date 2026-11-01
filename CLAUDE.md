@@ -358,7 +358,7 @@ the owner is closed**:
 | --- | --- | --- |
 | 1 | Authoring a file under `.github/workflows/` | The App token is refused the `workflows` permission (#421) — the push is rejected. Merging such a PR is NOT on this list: `agent-merge` merges with `github.token`. |
 | 2 | Editing anything under `.claude/` | An agent may not author its own definition. |
-| 3 | Granting a scope, a secret or a permission | `verify_no_relaxation.py` rules 8 and 9 are red on it by construction, and a red relaxation gate is never `chief`'s to rule on. |
+| 3 | Granting a scope, a secret or a permission | `verify_workflow_permissions.py` is red on it by construction, and a red run of it is never `chief`'s to rule on. |
 | 4 | A product or revenue decision | Which school a reading follows, whether a feature ships, what is charged for. |
 | 5 | A legal, licensing or privacy commitment | #279, and any copy promising a user something about their data. |
 
@@ -369,9 +369,12 @@ person in this repo's history was one merge described in four paragraphs.
 
 **What makes this safe rather than merely unblocked.** The blast-radius argument did not stop
 being true; it moved from *who decides* to *what a gate catches*. Two invariants were added to
-`scripts/verify_no_relaxation.py` for exactly this grant: a workflow's `permissions:` may not
-widen (a wholly new block fails closed), and `TRUST_BOUNDARY` may not lose an entry. `chief.md`
-is written against them by name.
+`scripts/verify_workflow_permissions.py`, a gate written for exactly this grant: a workflow's
+`permissions:` may not widen (a wholly new block fails closed), and `TRUST_BOUNDARY` may not
+lose an entry. `chief.md` is written against it by name. It is a separate file from
+`verify_no_relaxation.py` because that gate's rule 7 refuses to land alongside any other file,
+its own tests included — so a tested addition to it is not expressible in one PR. The rule was
+respected rather than narrowed.
 
 If this permission is ever narrowed again, edit this block rather than relying on the
 conversation.

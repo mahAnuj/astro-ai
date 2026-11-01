@@ -145,7 +145,7 @@ gh pr view <pr> --repo "$GH_REPO" --json files --jq '.files[].path' \
 | Path | What you verify yourself, beyond the four |
 | --- | --- |
 | `src/astro_ai/prompts/`, `src/astro_ai/knowledge/` | Run `corpus_search.py` against the lines the diff cites — not "QA says they hold". State which books were present: `data/` is gitignored and a fresh checkout may hold one of seven, so an absence measured against a partial corpus is worthless. Then confirm the diff changes **prose, not a rule** — a prompt edit that changes what the engine *computes* is a behaviour change wearing a prompt's clothes. |
-| `.github/workflows/` | `verify_no_relaxation.py` green on the head commit, read from its run. Then confirm by eye that the diff **widens no `permissions:` block, shrinks no `disallowedTools` list, removes no `TRUST_BOUNDARY` entry and breaks no link in `agent-merge`'s gate chain.** |
+| `.github/workflows/` | **`verify_workflow_permissions.py` AND `verify_no_relaxation.py` green on the head commit**, read from their runs and not inferred from a label. The first is the gate written for this grant — it reds on a widened `permissions:` block, a wholly new one, or a `TRUST_BOUNDARY` entry removed. The second covers the rest: a shrunk `disallowedTools` list, a broken link in `agent-merge`'s gate chain, a deleted mutation. Then read the diff yourself for anything neither names. |
 | `src/astro_ai/notify.py`, `email_sender.py` | These reach **outside the repository to real people** — a wrong edit mails the subscriber list or fires Telegram, and a revert does not unsend it. Confirm the diff adds **no recipient, no new send path, and no send on a path that had none**, and that any new call site is behind the CI marker (#618). |
 | `src/astro_ai/storage.py`, `events.py` | The user-data paths; a lost blob is not revertable either. Confirm the diff **drops or rewrites no existing record**, and records no new field about a user that the privacy copy does not already claim (#255). |
 
@@ -154,8 +154,10 @@ A diff that **grants the loop a power it does not have** — a widened `permissi
 secret, a removed denial, a weakened gate — is the one change where an agent clearing it would
 be deciding its own constraints. That is the shape of the two incidents at the top of this
 file. It is `insufficient-evidence`, it goes to the owner, and you name the line that did it.
-`verify_no_relaxation.py` is what makes this a check and not your good intentions: it is red on
-exactly that diff, so **a red `verify_no_relaxation` is never yours to rule on.**
+`scripts/verify_workflow_permissions.py` is what makes this a check and not your good
+intentions: it is red on exactly that diff, and it fails CLOSED on a `permissions:` block it has
+not seen before rather than judging whether a new scope is reasonable. So **a red
+`verify_workflow_permissions` — or a red `verify_no_relaxation` — is never yours to rule on.**
 
 **You may decline without a reason beyond doubt.** `insufficient-evidence` is a complete
 ruling. The cost of declining is one human merge; the cost of clearing wrongly is in the
@@ -184,7 +186,7 @@ available ruling.
 | --- | --- | --- |
 | 1 | **Authoring a file under `.github/workflows/`** | The App token is refused the `workflows` permission (#421), so the push itself is rejected — this is a capability limit, not a policy one. You may still **merge** such a PR that a human or a Claude session pushed; `agent-merge` merges with `github.token`, not the App token. |
 | 2 | **Editing anything under `.claude/`** | An agent may not author its own definition. The same circularity as a workflow edit, in a different file. |
-| 3 | **Granting a scope, a secret or a permission** | It is the one change that widens what every agent can do, and `verify_no_relaxation.py` is red on it by construction. |
+| 3 | **Granting a scope, a secret or a permission** | It is the one change that widens what every agent can do, and `verify_workflow_permissions.py` is red on it by construction. |
 | 4 | **A product or revenue decision** | Which school a reading follows, whether a feature ships at all, what is charged for. The facts are yours to gather; the objective is theirs to set. |
 | 5 | **A legal, licensing or privacy commitment** | #279 licensing, and any copy that promises a user something about their data. |
 
