@@ -1314,11 +1314,16 @@ MUTATIONS = [
      "    if False:",
      "test_a_bot_applied_override_is_ignored"),
 
+    # RE-ANCHORED 2026-11-01 (#642). The branch this row watched gained the
+    # self-App exception, so `if is_bot:\n        base = OUTSIDER` ceased to
+    # exist and the preflight failed at zero matches -- which is the net
+    # working. The RULE is unchanged and still the one worth guarding: a bot
+    # author defaults to OUTSIDER. Only the default moved down a level.
     ("#361: a bot author is treated as trusted (no allowlist, and no default either)",
      "scripts/resolve_provenance.py",
-     "    if is_bot:\n        base = OUTSIDER",
-     "    if is_bot:\n        base = TRUSTED",
-     "test_a_bot_author_is_an_outsider_whatever_its_permission"),
+     "            base = OUTSIDER\n            ev.append(\"permission  : not consulted -- a bot author is untrusted by rule \"",
+     "            base = TRUSTED\n            ev.append(\"permission  : not consulted -- a bot author is untrusted by rule \"",
+     "test_every_bot_but_this_repos_own_app_is_an_outsider"),
 
     ("#361: a 403 / 5xx collapses into 'outsider' instead of stopping (could-not-ask != no)",
      "scripts/resolve_provenance.py",
@@ -4205,6 +4210,46 @@ MUTATIONS = [
      'if not probe.suppresses_owner_alert(request, "kundli_generated"):',
      'if probe.suppresses_owner_alert(request, "kundli_generated"):',
      'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
+
+    # ---- #642: the loop may work the issues it filed itself ----------------
+    #
+    # Measured 2026-11-01: 40 of the 130 open issues were filed by this repo's
+    # own App and Step 0a refused every one. PR #642 was dispatched twice and
+    # died both times on #616, an issue the loop had filed itself.
+    #
+    # BOTH DIRECTIONS MATTER MORE THAN USUAL HERE. Widening the exception
+    # trusts other people's bots; losing it restores the stall for ~31% of the
+    # backlog. A suite catching only the first would bless the second.
+
+    ('#642: the self-App exception widens to any bot whose name contains it',
+     'scripts/resolve_provenance.py',
+     '    return folded == SELF_APP.casefold()',
+     '    return SELF_APP.casefold() in folded',
+     'test_every_bot_but_this_repos_own_app_is_an_outsider'),
+
+    ('#642: the exception is gone and the loop stalls on its own issues again',
+     'scripts/resolve_provenance.py',
+     '            base = TRUSTED\n            ev.append(f"permission  : not consulted',
+     '            base = OUTSIDER\n            ev.append(f"permission  : not consulted',
+     'test_this_repos_own_app_is_trusted'),
+
+    ('#642: case is compared raw, so a rendering change restores the stall',
+     'scripts/resolve_provenance.py',
+     '    folded = login.casefold()',
+     '    folded = login',
+     'test_this_repos_own_app_is_trusted'),
+
+    ('#642: the [bot] rendering stops being recognised',
+     'scripts/resolve_provenance.py',
+     '    suffix = "[bot]"',
+     '    suffix = "[robot]"',
+     'test_this_repos_own_app_is_trusted'),
+
+    ('#642: a HUMAN sharing the App name skips the permission check',
+     'scripts/resolve_provenance.py',
+     '    if is_bot:\n        # Permission is still not consulted for ANY bot',
+     '    if is_bot or is_self_app(login):\n        # Permission is still not consulted for ANY bot',
+     'test_a_HUMAN_named_claude_is_still_judged_on_permission'),
 
     # ---- the PR-scoped QA dispatch -----------------------------------------
     #
