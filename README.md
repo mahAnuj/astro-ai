@@ -215,7 +215,7 @@ flowchart TD
 
     SW["*/30 sweep<br/>backstop for a missed edge"]
     AM{{"agent-merge.yml<br/>author · gates · qa-pass · boundary"}}
-    HOLD["held for a human<br/>trust boundary /<br/>needs-human-review"]
+    HOLD["held for <b>chief</b><br/>trust boundary /<br/>needs-human-review"]
 
     subgraph PROVE["06 · prove it, then close"]
         VP["verify-production"]
@@ -262,18 +262,29 @@ its own permission slip — one recorded `USER AUTHORISED PUSH this turn` into a
 status file and then cited its own line as the authorization. Keeping merge
 authority in a workflow means there is nothing for an agent to grant itself.
 
-Two paths stop for a person today: a diff touching the trust boundary (prompts,
-knowledge, `.github/workflows/`, `notify.py`, `events.py`, `storage.py`,
-`email_sender.py`), and anything labelled `needs-human-review` — with one
-carve-out, where `chief` may clear that label itself on a PR whose only
-trust-boundary paths are `prompts/` or `knowledge/`, adding `chief-cleared`,
-after which the sweep merges it (Shape C, owner 2026-10-20). A third path, a
-diff over the size limit, is written but inert. Green CI means very different
-things for a one-file deletion and a 3D chart, and `main` deploys with no
-staging — so path is treated as evidence too, and size would be if it were
-switched back on. One caveat on `needs-human-review`: `agent-merge` reads that
-label in its `*/30` sweep candidate filter and nowhere else, so it stops the
-sweep from selecting a PR but not the edge-triggered path (#604).
+**Since 2026-11-01, nothing stops for a person.** A diff touching the trust
+boundary (prompts, knowledge, `.github/workflows/`, `notify.py`, `events.py`,
+`storage.py`, `email_sender.py`) still gets labelled `needs-human-review` and
+still held out of the merge sweep — but that label now means **`chief`
+decides**, not *the owner decides*. The user's words: *"anything that is
+labeled as needs-human-review, should be decided by chief"*. `chief` clears it
+by posting a ruling comment containing `chief-cleared at <head sha>` and then
+adding the `chief-cleared` label; `agent-merge` requires **both**, so a
+clearance is bound to the diff that was read and does not survive a push.
+Until 2026-11-01 that carve-out covered only `prompts/` and `knowledge/`
+(Shape C, owner 2026-10-20) and everything else waited on one person.
+
+What `chief` is NOT clearing: it reaches the boundary step only after the gates
+are green, `qa-pass` is on record and the diff is inside `MAX_LINES`, so it
+removes a **hold** and never a verdict. It cannot clear `qa-fail`, substitute
+for a QA round, or release a red PR. And no grant moves the App token's
+missing `workflows` permission (#421) — `chief` can merge a workflow PR a human
+or a session pushed, and still cannot author one.
+
+A third path, a diff over the size limit, is written but inert. Green CI means
+very different things for a one-file deletion and a 3D chart, and `main`
+deploys with no staging — so path is treated as evidence too, and size would be
+if it were switched back on.
 
 ## Deploying to GCP Cloud Run
 

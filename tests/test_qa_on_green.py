@@ -32,6 +32,7 @@ day for a round that takes fifteen minutes.
 """
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 import tempfile
@@ -257,11 +258,91 @@ def test_it_declines_a_pr_that_is_already_routed(label, why):
     assert f'*",{label},"*)' in PICK, f"{label} is no longer declined ({why})"
 
 
-def test_it_declines_a_workflow_touching_diff():
-    """The App token has no `workflows` permission, so a cycle cannot update
-    such a branch (#442/#315); dispatching one burns ~50 minutes to reproduce
-    the same stop."""
-    assert '.github/workflows/' in PICK and "startswith" in PICK
+def test_a_workflow_touching_diff_IS_JUDGED_and_no_longer_declined():
+    """THE #610 CHANGE, and the old test asserted the opposite of it.
+
+    Until 2026-11-01 this step exited on such a diff -- "the App token cannot
+    push that branch. A human has to." That reasoning conflated *cannot fix*
+    with *cannot judge*, and the consequence was not "a human handles it": it
+    was that nothing ever wrote `qa-pass`, which `agent-merge` will not merge
+    without. PR #631 sat green, unlabelled and unmergeable for a day on that
+    line.
+
+    The test that stood here passed on `'.github/workflows/' in PICK`, which
+    is still true after the behaviour inverted -- a substring assertion so
+    loose it could not tell decline from dispatch. That is #634's BUG-2 class,
+    and this replacement asserts the branch's effect instead of its vocabulary.
+    """
+    assert "judge_only=true" in _code(PICK), "the judge-only flag is gone"
+    # `_code`, not PICK: the new comment block QUOTES the deleted lines so the
+    # next reader can see what changed, and a raw scan would match that
+    # rationale. The file's own `_code` exists for exactly this -- "a guard
+    # that fires on its own rationale is noise".
+    assert "A human has to" not in _code(PICK), (
+        "the old decline is back; a workflow PR gets no verdict and so cannot merge")
+    assert "A human has to" in PICK, (
+        "the comment no longer records what this step used to do, so the next "
+        "reader cannot tell this was a deliberate inversion")
+
+
+def test_judge_only_defaults_to_false_before_anything_tests_the_diff():
+    """Fail toward the NORMAL cycle, not toward judge-only.
+
+    An unset flag that defaulted to judge-only would silently stop every cycle
+    from pushing -- a repo-wide outage that looks like success.
+    """
+    code = _code(PICK)
+    assert "judge_only=false" in code
+    assert code.index("judge_only=false") < code.index("judge_only=true")
+
+
+def test_the_judge_only_flag_is_an_output_of_the_pick_step():
+    assert 'echo "judge_only=$judge_only"' in PICK
+
+
+def test_the_dispatch_comment_receives_the_flag_as_an_env_var():
+    """A value interpolated into `run:` instead of passed through `env:` is the
+    injection shape this workflow's own tests already police elsewhere."""
+    env = _step("Record the dispatch on the PR").get("env") or {}
+    assert env.get("JUDGE_ONLY") == "${{ steps.pick.outputs.judge_only }}"
+
+
+def test_the_RULE_lives_in_agent_cycle_md_and_the_comment_only_reminds():
+    """A rule an agent must obey cannot be sourced from the artefact under review.
+
+    The PR comment is data the cycle reads. If the comment were the only place
+    the no-push rule existed, anyone who could comment on the PR could lift it.
+    """
+    cycle = (WF.parent.parent.parent / ".claude" / "commands" / "agent-cycle.md")
+    text = cycle.read_text(encoding="utf-8")
+    assert "JUDGE-ONLY" in text, "agent-cycle.md does not carry the rule"
+    assert "you cannot push to this branch" in text
+    assert "agent-cycle.md" in PICK, "the comment does not point at the authority"
+
+
+def test_the_workflow_path_predicate_actually_matches_a_workflow_file():
+    """Runs the step's own jq expression through real jq.
+
+    A substring assertion cannot tell whether the predicate works; this repo
+    has already shipped a `startswith` against the wrong field. Both arms are
+    checked, because a predicate that matched everything would pass the
+    positive case alone.
+    """
+    m = re.search(r"jq -e '([^']+)'", PICK)
+    assert m, "the files predicate is no longer a single-quoted jq expression"
+    expr = m.group(1)
+
+    def _matches(paths):
+        payload = json.dumps([{"files": [{"path": q} for q in paths]}])
+        r = subprocess.run(["jq", "-e", expr], input=payload,
+                           capture_output=True, text=True)
+        return r.returncode == 0
+
+    assert _matches([".github/workflows/agent-work.yml"])
+    assert _matches(["src/astro_ai/chart.py", ".github/workflows/agent-merge.yml"])
+    assert not _matches(["src/astro_ai/chart.py", "tests/test_x.py"])
+    assert not _matches(["docs/.github/workflows/not-really.yml"]), (
+        "the predicate matched a path that merely CONTAINS the prefix")
 
 
 def test_it_refuses_to_act_on_a_stale_green():
