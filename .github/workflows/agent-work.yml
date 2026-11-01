@@ -9,7 +9,27 @@
 # rolling cap — by 04:30 the day's accrued usage from prior sessions has reset
 # cleanly."
 #
-# 23:00 UTC is 04:30 IST, the same post-reset window that already works.
+# A CRON HOUR IN THIS FILE IS NOT WHEN THE RUN HAPPENS. Measured 2026-11-01
+# over the last 30 scheduled `agent-work` runs (2026-10-17 to 2026-11-01, two
+# crons a day, 30 of 30 expected fires present -- none dropped):
+#
+#   delay from the declared hour   min +1h42m   median +3h19m   max +6h21m
+#
+# NOT ONE run started within 100 minutes of its cron. The delay is also
+# hour-dependent rather than random: the 23:00 leg lands +1h42m..+3h27m, the
+# 11:00 leg +3h05m..+6h21m, which is GitHub's own queue depth at those hours
+# and not something this file can influence.
+#
+# So the claim that stood here until 2026-11-01 -- "23:00 UTC is 04:30 IST, the
+# same post-reset window that already works" -- was false in practice. The
+# 23:00 cron lands at 07:30 IST on the median, three hours past the window the
+# quota argument was built on. The quota reasoning above is still right; what
+# was wrong is the belief that naming an hour buys it. It does not, and nothing
+# in GitHub Actions does: a scheduled workflow is best-effort.
+#
+# This is recorded rather than compensated for. Declaring 20:00 to "land at
+# 23:00" would be fitting a constant to a spread of 4h39m, and the next load
+# pattern would make it wrong in the other direction.
 #
 # ONE ISSUE PER RUN
 # -----------------
@@ -40,11 +60,63 @@ on:
   # show up as runs that never happened, with nothing to say why — the same
   # class of invisible failure as #322.
   #
-  # Raise this again only once #335 can show WHY half the cycles produce
-  # nothing. Rate before yield is how you buy more of what you cannot see.
+  # RAISED 2 -> 6 ON 2026-11-01, and the condition above is what licenses it.
+  #
+  # The condition was "once #335 can show WHY half the cycles produce nothing",
+  # and the specific worry was the 1-3 minute run -- the loop finding nothing
+  # eligible and stopping. Re-measured 2026-11-01 over the last 18 runs:
+  #
+  #   runs lasting under 4 minutes       0 of 18   (was 5 of 11 failures)
+  #   runs that merged a PR             10 of 18   = 56%
+  #   loop-outcomes' standing figure     3 of 32   =  9%  (report of 2026-10-27)
+  #
+  # So the mode this comment was written against is GONE: every one of the last
+  # 18 runs found eligible work and did it. Yield went 9% -> 56%. "Rate before
+  # yield" was the right rule and the yield arrived first.
+  #
+  # THE QUEUE-DROP HAZARD, AND WHY THE SPACING IS EVEN. `concurrency` does not
+  # cancel, a second run QUEUES, and GitHub keeps only one pending run per
+  # group and silently drops the rest -- so the spacing has to exceed the
+  # longest cycle. Longest observed is 76 minutes, median 18.
+  #
+  # Four hours apart, evenly, and the evenness is the point. The first draft of
+  # this list had gaps of 4,4,4,3,3,6 hours, chosen to read neatly in IST --
+  # which, given the measured delay spread of 4h39m documented at the top of
+  # this file, is spacing chosen against a clock that does not apply. Two
+  # declared times 3 hours apart can arrive in either order, or together, and a
+  # collision does not fail: it is dropped in silence, which is the one outcome
+  # that leaves nothing to read afterwards.
+  #
+  # Even 4-hour spacing cannot rule a collision out either -- the spread is
+  # wider than the gap. It minimises it, and a dropped fire costs one cycle
+  # rather than corrupting anything. Said plainly because the honest version of
+  # this schedule is "about six a day", not six at known times.
+  #
+  # SLOTS CHOSEN TO AVOID THE SHARED CLAUDE MAX 5h CAP, not GitHub concurrency
+  # (different workflows never block each other). The cap-consuming crons are
+  # `agent-measure` 21:00 and 02:00, `agent-steward` 09:00 and 15:00, and the
+  # weeklies in the 18:00-20:00 band. `agent-measure`'s 05,08,11,14,17,20 legs
+  # are the deterministic collectors -- zero LLM calls -- so they do not
+  # contend and are not avoided here.
+  #
+  # WHAT IS STILL NOT EXPLAINED, stated rather than glossed: 8 of 18 runs did
+  # real work and merged nothing, and no PR of theirs is still open, so they
+  # are not simply in flight. `show_full_output` is added below for exactly
+  # that -- without it a run that produces nothing leaves a cost, a turn count
+  # and a silence. That is the remaining half of #335.
+  #
+  # Raising this further should wait on reading what that output says.
   schedule:
-    - cron: "0 23 * * *"   # 04:30 IST, after the rolling cap resets
-    - cron: "0 11 * * *"   # 16:30 IST, twelve hours on
+    # Every 4 hours. The IST times a reader expects are NOT noted against each
+    # line on purpose: see the measurement at the top of this file -- the
+    # median run starts 3h19m after its cron, so an IST annotation here would
+    # be a comment that is wrong twice a day.
+    - cron: "0 23 * * *"
+    - cron: "0 3 * * *"
+    - cron: "0 7 * * *"
+    - cron: "0 11 * * *"
+    - cron: "0 15 * * *"
+    - cron: "0 19 * * *"
   workflow_dispatch:
     inputs:
       issue:
@@ -148,6 +220,16 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # THIS IS THE REMAINING HALF OF #335, and the schedule above depends
+          # on it. The action's default hides the agent's output ("Running
+          # Claude Code via SDK (full output hidden for security)"), so a run
+          # that merges nothing leaves only a cost, a turn count and a silence
+          # -- which is precisely why "WHY half the cycles produce nothing"
+          # could not be answered. Enabled on `agent-prioritise` first (#624)
+          # and it worked: the input is accepted and applied.
+          #
+          # The repo is PUBLIC, so this log is public.
+          show_full_output: "true"
           # WITHOUT THIS, EVERY DISPATCH FROM A WORKFLOW DIES IN 1.5 SECONDS.
           # The action refuses a run whose actor is a Bot:
           #

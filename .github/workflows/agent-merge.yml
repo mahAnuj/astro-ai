@@ -606,6 +606,8 @@ jobs:
         if: steps.size.outputs.ok == 'true'
         env:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
+          # For binding a `chief-cleared` ruling to the commit it was made on.
+          PR_SHA: ${{ steps.pr.outputs.sha }}
         run: |
           # Prints the matching entry and returns 0 if $1 is protected.
           # Kept a pure function of ($1, $TRUST_BOUNDARY) so a test can lift it
@@ -650,7 +652,59 @@ jobs:
             exit 0
           fi
 
-          echo "::notice::trust boundary touched — holding PR #$PR_NUMBER for a human"
+          # CHIEF MAY RELEASE THIS HOLD -- granted by the user 2026-11-01 (#610).
+          #
+          # The user's words, verbatim: "why can't chief grant merge authority,
+          # that is what chief is for. Chief should have privelege to do anything
+          # even on my behalf, give that power to chief agent".
+          #
+          # Before this, `chief.md` said chief could add `chief-cleared` and "the
+          # existing sweep then merges it" -- and NOTHING read the label here, so
+          # the PR was released from `detect_stalls.py`'s stall report and still
+          # held by this step. It vanished from the one surface that would have
+          # said it was stuck, which is worse than either half alone (#610).
+          #
+          # WHAT THIS DOES NOT BYPASS. This step is reached only after `gates`,
+          # `qa` and `size` have each passed, so a ruling clears the BOUNDARY
+          # HOLD and nothing else: `qa-pass` is still required, `qa-fail` still
+          # refuses, and the gates still decide. A chief that could skip those
+          # would not be merge authority, it would be a hole in `pr-gates`.
+          #
+          # SHA-BOUND, and this half is load-bearing. An unbound label has cost
+          # this repo twice in one week: #609 merged on a `qa-pass` left from an
+          # earlier commit, and #564 sat held by a stale `qa-fail` after the
+          # defect was fixed. A label cannot say WHICH commit it is about, so a
+          # clearance granted on one diff would silently cover whatever was
+          # pushed next. The ruling COMMENT must name this head SHA, which makes
+          # a push invalidate the clearance by construction.
+          #
+          # The comment also has to come FIRST, for `qa.md`'s reason: a label
+          # with no ruling above it is the fabrication shape this repo has been
+          # burned by twice, and it is the only thing that makes a ruling
+          # auditable after the fact.
+          labels=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" \
+                     --json labels --jq '[.labels[].name] | join(",")')
+          case ",$labels," in
+            *,chief-cleared,*)
+              ruled=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json comments \
+                        --jq "[.comments[]\
+                               | select(.body | contains(\"chief-cleared at $PR_SHA\"))]\
+                              | length" 2>/dev/null || echo 0)
+              # Anything non-numeric counts as zero, so an API hiccup falls toward
+              # KEEPING the hold rather than releasing it.
+              case "$ruled" in ''|*[!0-9]*) ruled=0 ;; esac
+              if [ "$ruled" -gt 0 ]; then
+                echo "::notice::chief ruled on $PR_SHA and cleared the boundary hold"
+                sed 's/^/  cleared: /' /tmp/pr-protected.txt
+                echo "ok=true" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              echo "::notice::chief-cleared is present but no ruling comment names" \
+                   "$PR_SHA — a clearance does not carry across a push, so the hold stands"
+              ;;
+          esac
+
+          echo "::notice::trust boundary touched — holding PR #$PR_NUMBER for chief to rule on"
           sed 's/^/  /' /tmp/pr-protected.txt
 
           # Idempotent: this job fires on every label and every gate run, so
@@ -663,7 +717,7 @@ jobs:
           esac
 
           {
-            echo "Gates are green and QA passed, but this PR changes the trust boundary, so \`agent-merge\` will not merge it unattended. It stays open for a human."
+            echo "Gates are green and QA passed, but this PR changes the trust boundary, so \`agent-merge\` will not merge it unattended. It stays open for \`chief\` to rule on."
             echo
             if [ -s /tmp/pr-protected.txt ]; then
               echo "Matched (file, then the protected entry it fell under):"
@@ -679,7 +733,12 @@ jobs:
             fi
             echo "Why: these paths decide what the product tells users (\`prompts/\`), what agents treat as authority (\`knowledge/\`), what the gates are (\`.github/workflows/\`), and what is recorded about, sent about, or stored about a user (\`events.py\`, \`notify.py\`, \`email_sender.py\`, \`storage.py\`). See #354."
             echo
-            echo "To land it: review, then merge by hand. Removing the label does not release it; the next run puts it back."
+            echo "To land it, either route is valid:"
+            echo
+            echo "1. \`chief\` rules on it — a comment containing \`chief-cleared at $PR_SHA\`, posted BEFORE it adds the \`chief-cleared\` label. This step then releases the hold on its next run and the sweep merges on its own \`qa-pass\` check. The ruling is bound to THIS commit: a push invalidates it and chief rules again."
+            echo "2. A human reviews and merges by hand."
+            echo
+            echo "Removing \`needs-human-review\` on its own does not release anything; the next run puts it back. The label is a record, not the lock — the lock is this path check."
           } > /tmp/pr-comment.md
           gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body-file /tmp/pr-comment.md
           gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-label "needs-human-review"

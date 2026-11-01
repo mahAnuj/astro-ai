@@ -124,10 +124,32 @@ BOUNDARY = ("src/astro_ai/prompts/", "src/astro_ai/knowledge/",
             "src/astro_ai/notify.py", "src/astro_ai/email_sender.py",
             "src/astro_ai/storage.py")
 
-#: The only two chief may rule on (chief.md Shape C). The other five are not
-#: decidable by an agent for blast radius, not seniority: a workflow edit can
-#: grant the loop powers, and email/notify reach real people.
-CHIEF_DECIDABLE = ("src/astro_ai/prompts/", "src/astro_ai/knowledge/")
+#: WIDENED TO THE WHOLE BOUNDARY -- granted by the user 2026-11-01 (#610).
+#:
+#: The user's words, verbatim: "do not hold chief for TRUST_BOUNDARY as well.
+#: I want the loop to not hold on me".
+#:
+#: It was `("src/astro_ai/prompts/", "src/astro_ai/knowledge/")` -- chief.md's
+#: Shape C -- with this reasoning: "The other five are not decidable by an
+#: agent for blast radius, not seniority: a workflow edit can grant the loop
+#: powers, and email/notify reach real people." That reasoning is recorded
+#: rather than deleted, because it is the argument against this grant and the
+#: user has overridden it knowingly.
+#:
+#: WHY THIS CONSTANT AND NOT JUST `agent-merge`. Honouring `chief-cleared` at
+#: the merge gate is necessary and NOT sufficient: nothing would ever ASK chief
+#: to rule. This tuple is what decides whether a boundary hold is reported
+#: `boundary-hold-clearable` (the steward dispatches chief) or
+#: a `human-only` kind that said "A HUMAN decides this one", so leaving it
+#: narrow would route every workflow, notify and email PR to the owner and the
+#: loop would still hold on them -- which is the thing being fixed. That arm is
+#: gone entirely since the 2026-11-01 grant; see the `needs-human-review`
+#: branch below.
+#:
+#: One real limit survives and no grant can move it: the App token has no
+#: `workflows` permission (#421), so chief can MERGE a `.github/workflows/` PR
+#: a human or a session pushed and still cannot author one.
+CHIEF_DECIDABLE = BOUNDARY
 
 
 def boundary_paths(pr: int) -> set[str]:
@@ -289,32 +311,53 @@ def find_stalls(hours: float) -> list[dict]:
                                checks=checks, labels=sorted(labels), agent_pushable=pushable))
         elif ("needs-human-review" in labels and "qa-pass" in labels
               and "qa-fail" not in labels and "chief-cleared" not in labels and green):
-            # A TRUST-BOUNDARY HOLD, AND WHETHER CHIEF MAY CLEAR IT (Shape C,
-            # owner 2026-10-20). `agent-merge` excludes `needs-human-review`
-            # from its sweep and nothing else ever removed it, so every such PR
-            # waited on one person: #412 sat 59h this way carrying an
-            # independent qa-pass and green gates.
+            # `needs-human-review` MEANS "CHIEF DECIDES" -- user, 2026-11-01.
             #
-            # The detector CLASSIFIES rather than just reporting, because chief
-            # may rule on prompts/ and knowledge/ only. Handing it a workflow or
-            # email_sender PR would mean the first thing chief does on waking is
-            # decline — every 30 minutes, forever — which is the treadmill
-            # `agent_pushable` above was written to end.
+            # Their words, verbatim: "anything that is labeled as
+            # needs-human-review, should be decided by chief".
+            #
+            # So the label's MEANING changed, not its mechanism. It still holds
+            # the merge -- there has to be something to decide -- but the
+            # decision is routed to chief instead of to the owner. The label
+            # keeps its name deliberately: it is spelled in `agent-merge.yml`'s
+            # sweep filter, its `QA verdict` step, `agent-work.yml`,
+            # `steward.md`, `chief.md`, `README.md` and here, and this repo has
+            # already paid for one rule living in six places (the `issue/*`
+            # branch-name coupling, 2026-10-25). Renaming it is a separate
+            # change from granting the authority.
+            #
+            # THERE IS NO LONGER A `human-only` ARM. It was reached when a
+            # boundary path fell outside chief's Shape C, and before that when
+            # `CHIEF_DECIDABLE` was prompts/ and knowledge/ only. Both of those
+            # routed work to one person, which is what #610 and this grant
+            # exist to stop. `kind` keeps the name `boundary-hold-clearable`
+            # for the same reason the label does -- `steward.md` and
+            # `agent-steward.yml` both match on it.
+            #
+            # WHAT WAS GIVEN UP, recorded rather than deleted, because it is
+            # the argument against this grant: "The other five are not
+            # decidable by an agent for blast radius, not seniority: a workflow
+            # edit can grant the loop powers, and email/notify reach real
+            # people." The owner has overridden that knowingly.
+            #
+            # An UNREADABLE diff still routes to chief rather than to the
+            # owner. `boundary_paths` returns an empty set on any failure, and
+            # chief's documented `insufficient-evidence` return is the right
+            # answer to a diff it cannot read -- recorded as a ruling comment,
+            # which is what keeps it auditable and stops it being re-decided
+            # silently every sweep.
             bpaths = boundary_paths(n)
-            decidable = bool(bpaths) and all(q.startswith(CHIEF_DECIDABLE) for q in bpaths)
             stalls.append(dict(
-                kind="boundary-hold-clearable" if decidable else "boundary-hold-human-only",
+                kind="boundary-hold-clearable",
                 pr=n, issue=issue, age_h=round(age, 1),
-                detail=((f"needs-human-review for {age:.0f}h with qa-pass and green gates; "
-                         f"every boundary path is prompts/ or knowledge/ "
-                         f"({', '.join(sorted(bpaths))}) — chief may rule Shape C")
-                        if decidable else
-                        (f"needs-human-review for {age:.0f}h with qa-pass and green gates, but "
-                         f"it touches {', '.join(sorted(bpaths)) or 'paths that could not be read'} "
-                         f"— outside chief's Shape C scope. A HUMAN decides this one.")),
+                detail=(f"needs-human-review for {age:.0f}h with qa-pass and green gates; "
+                        f"CHIEF decides this one (user grant 2026-11-01) — it touches "
+                        f"{', '.join(sorted(bpaths)) or 'paths that could not be read'}. "
+                        f"A ruling comment naming the head SHA plus `chief-cleared` "
+                        f"releases it; the clearance does not survive a push."),
                 boundary_paths=sorted(bpaths),
                 checks=checks, labels=sorted(labels),
-                agent_pushable=pushable if decidable else False))
+                agent_pushable=pushable))
         elif "qa-pass" in labels and "qa-fail" not in labels and green:
             # Every merge condition satisfied. If it is still open, the gate
             # read something it did not anticipate. (PR #319, nine hours.)
@@ -502,11 +545,30 @@ def find_stalls(hours: float) -> list[dict]:
                         "repeating the diagnosis."),
                 checks=st["checks"], labels=st["labels"]))
 
-    # A stall no agent can clear. Reported, but NOT as `steward-ineffective`:
-    # the steward is not ineffective for declining work it is structurally
-    # refused. Distinguishing these is chief's recommendation 2 from the
-    # 2026-10-11 ruling, and it is what stops the same un-dispatchable PR
-    # waking chief twice a day forever.
+    # A stall whose BRANCH no agent can update. Reported, but NOT as
+    # `steward-ineffective`: the steward is not ineffective for declining work
+    # it is structurally refused. Distinguishing these is chief's
+    # recommendation 2 from the 2026-10-11 ruling, and it is what stops the
+    # same un-pushable PR waking chief twice a day forever.
+    #
+    # WHAT IS AND IS NOT IRREDUCIBLE HERE -- narrowed 2026-11-01 (#610).
+    # The App token is refused the `workflows` permission, so AUTHORING a
+    # commit on such a branch is genuinely impossible for any agent. Nothing
+    # else about these PRs is:
+    #
+    #   judging the diff   a QA round reads and labels; it pushes nothing, so
+    #                      the refused permission never comes into it. The old
+    #                      detail said "a human records the verdict", which was
+    #                      never true -- `qa_verdict.sh` writes the label with
+    #                      `github.token`.
+    #   clearing the hold  chief's, since the user widened Shape C to the whole
+    #                      boundary on 2026-11-01.
+    #   merging            `agent-merge` merges with `github.token`, NOT the
+    #                      App token, and that token carries `contents: write`.
+    #
+    # So this kind means one thing only: if the diff needs CHANGING, a human or
+    # a Claude session has to push it. Saying more than that is what kept three
+    # green PRs waiting on a person for a permission that was never in the way.
     for st in list(stalls):
         if st["kind"] in STEWARD_CLEARABLE and (st["age_h"] or 0) > 18 \
                 and not st.get("agent_pushable", True):
@@ -514,9 +576,12 @@ def find_stalls(hours: float) -> list[dict]:
                 kind="human-owned-stall", pr=st["pr"], issue=st["issue"],
                 age_h=st["age_h"],
                 detail=(f"PR #{st['pr']} has been `{st['kind']}` for {st['age_h']:.0f}h and "
-                        "NO agent can clear it: its diff touches `.github/workflows/**`, "
-                        "which the App's token is refused on. Do not dispatch a cycle. "
-                        "A human updates the branch and records the verdict."),
+                        "its diff touches `.github/workflows/**`, which the App's token is "
+                        "refused on, so no agent can PUSH to this branch. That is the only "
+                        "irreducible part. ROUTE TO CHIEF: a QA round can still judge the "
+                        "diff and `qa_verdict.sh` can still label it, and chief clears the "
+                        "boundary hold and lets `agent-merge` take it. Escalate to a human "
+                        "only if the diff itself has to change."),
                 checks=st["checks"], labels=st["labels"], agent_pushable=False))
 
     # A dead trigger leg. agent-merge's `workflow_run` leg failed 100% of the

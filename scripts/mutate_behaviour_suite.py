@@ -4030,6 +4030,66 @@ MUTATIONS = [
      "from astro_ai.ops_today import CONTRACT_NONZERO  # noqa: E402",
      'CONTRACT_NONZERO = {"loop-outcomes.yml"}',
      "test_both_surfaces_read_the_SAME_object"),
+    # --- chief clears the whole trust boundary (#610) ------------------------
+    # The grant's two halves are the label being READ at all (nothing read it
+    # before, so `chief.md` documented a release that did not happen) and the
+    # ruling being bound to a SHA (an unbound label cost this repo #609 and
+    # #564 in one week). A hole in either turns "chief has merge authority"
+    # into "any label merges a boundary PR".
+
+    ("#610: the ruling is matched without its SHA, so it survives a push",
+     ".github/workflows/agent-merge.yml",
+     'contains(\\"chief-cleared at $PR_SHA\\")',
+     'contains(\\"chief-cleared\\")',
+     "test_a_ruling_on_a_DIFFERENT_commit_does_not_release"),
+
+    ("#610: a non-numeric comment count falls toward RELEASING the hold",
+     ".github/workflows/agent-merge.yml",
+     "case \"$ruled\" in ''|*[!0-9]*) ruled=0 ;; esac",
+     "case \"$ruled\" in ''|*[!0-9]*) ruled=1 ;; esac",
+     "test_a_NON_NUMERIC_comment_count_keeps_the_hold"),
+
+    ("#610: the label alone releases the hold, with no ruling comment",
+     ".github/workflows/agent-merge.yml",
+     'if [ "$ruled" -gt 0 ]; then',
+     'if [ "$ruled" -ge 0 ]; then',
+     "test_the_label_ALONE_does_not_release"),
+
+    ("#610: chief-cleared is never recognised, so the grant does nothing",
+     ".github/workflows/agent-merge.yml",
+     "*,chief-cleared,*)", "*,chief-was-here,*)",
+     "test_chief_releases_the_hold_on_EVERY_boundary_path"),
+
+    ("#610: a judge-only round is refused again, so no workflow PR gets a verdict",
+     ".github/workflows/qa-on-green.yml",
+     "            judge_only=true\n", "            exit 0\n",
+     "test_a_workflow_touching_diff_IS_JUDGED_and_no_longer_declined"),
+
+    ("#610: judge-only becomes the DEFAULT, so no cycle ever pushes again",
+     ".github/workflows/qa-on-green.yml",
+     "          judge_only=false\n", "          judge_only=true\n",
+     "test_judge_only_defaults_to_false_before_anything_tests_the_diff"),
+
+    ("#610: the flag never reaches the dispatch comment",
+     ".github/workflows/qa-on-green.yml",
+     "          JUDGE_ONLY: ${{ steps.pick.outputs.judge_only }}\n", "",
+     "test_the_dispatch_comment_receives_the_flag_as_an_env_var"),
+
+    ("#610: the no-push rule leaves agent-cycle.md and lives only in a PR comment",
+     ".claude/commands/agent-cycle.md",
+     "you cannot push to this branch", "you probably cannot push to this branch",
+     "test_the_RULE_lives_in_agent_cycle_md_and_the_comment_only_reminds"),
+
+    ("#610: the boundary step stops depending on `size`, bypassing gates and QA",
+     ".github/workflows/agent-merge.yml",
+     "        id: boundary\n        if: steps.size.outputs.ok == 'true'",
+     "        id: boundary\n        if: always()",
+     "test_the_release_block_sits_AFTER_the_gate_chain_steps"),
+
+    ("#610: the hold comment names only the human route, hiding chief's",
+     ".github/workflows/agent-merge.yml",
+     'echo "1. \\`chief\\` rules on it', 'echo "1. Someone rules on it',
+     "test_the_hold_comment_tells_the_reader_about_the_chief_route"),
 
 ]
 
