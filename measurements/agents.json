@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-31T23:59:31Z",
+  "generated_at": "2026-11-01T11:41:20Z",
   "repo": "mahAnuj/astro-ai",
   "window_days": 30,
   "loops": [
@@ -10,7 +10,7 @@
         "00 20 * * 4"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-31T20:26:51Z",
+      "schedule_since": "2026-11-01T11:15:25Z",
       "slots_due": 0,
       "runs_scheduled": 4,
       "runs_total": 5,
@@ -26,7 +26,7 @@
         "00 20 * * 1"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-31T20:26:51Z",
+      "schedule_since": "2026-11-01T11:15:25Z",
       "slots_due": 0,
       "runs_scheduled": 3,
       "runs_total": 5,
@@ -42,7 +42,7 @@
         "00 19 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-31T20:26:51Z",
+      "schedule_since": "2026-11-01T11:15:25Z",
       "slots_due": 0,
       "runs_scheduled": 3,
       "runs_total": 5,
@@ -58,9 +58,9 @@
       "cadence_error": "only a fixed minute and hour are supported: '0 5,8,11,14,17,20 * * *'",
       "schedule_since": null,
       "slots_due": null,
-      "runs_scheduled": 97,
+      "runs_scheduled": 99,
       "runs_total": 100,
-      "last_run": "2026-10-31T23:55:20Z",
+      "last_run": "2026-11-01T11:41:08Z",
       "last_conclusion": "in_progress",
       "last_run_health": "running",
       "verdict": "on-demand"
@@ -72,9 +72,9 @@
       "cadence_error": "only a fixed minute and hour are supported: '*/30 * * * *'",
       "schedule_since": null,
       "slots_due": null,
-      "runs_scheduled": 7,
+      "runs_scheduled": 1,
       "runs_total": 100,
-      "last_run": "2026-10-31T23:34:53Z",
+      "last_run": "2026-11-01T11:15:16Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -86,7 +86,7 @@
         "00 17 * * 0"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-31T20:26:51Z",
+      "schedule_since": "2026-11-01T11:15:25Z",
       "slots_due": 0,
       "runs_scheduled": 3,
       "runs_total": 9,
@@ -102,7 +102,7 @@
         "00 19 * * 3"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-31T20:26:51Z",
+      "schedule_since": "2026-11-01T11:15:25Z",
       "slots_due": 0,
       "runs_scheduled": 3,
       "runs_total": 3,
@@ -119,8 +119,8 @@
       "schedule_since": null,
       "slots_due": null,
       "runs_scheduled": 34,
-      "runs_total": 76,
-      "last_run": "2026-10-31T16:17:17Z",
+      "runs_total": 78,
+      "last_run": "2026-11-01T10:32:54Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -132,7 +132,7 @@
         "00 18 * * 5"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-31T20:26:51Z",
+      "schedule_since": "2026-11-01T11:15:25Z",
       "slots_due": 0,
       "runs_scheduled": 4,
       "runs_total": 4,
@@ -146,17 +146,21 @@
       "display": "Agent work",
       "cadence": [
         "00 23 * * *",
-        "00 11 * * *"
+        "00 03 * * *",
+        "00 07 * * *",
+        "00 11 * * *",
+        "00 15 * * *",
+        "00 19 * * *"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-31T20:26:51Z",
-      "slots_due": 1,
+      "schedule_since": "2026-11-01T11:15:25Z",
+      "slots_due": 0,
       "runs_scheduled": 42,
-      "runs_total": 97,
-      "last_run": "2026-10-31T15:57:51Z",
+      "runs_total": 100,
+      "last_run": "2026-11-01T10:35:40Z",
       "last_conclusion": "success",
       "last_run_health": "green",
-      "verdict": "ok"
+      "verdict": "not-due-yet"
     },
     {
       "workflow": "close-on-evidence.yml",
@@ -167,7 +171,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-10-31T19:45:19Z",
+      "last_run": "2026-11-01T11:20:28Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -179,7 +183,7 @@
         "30 03 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-31T20:26:51Z",
+      "schedule_since": "2026-11-01T11:15:25Z",
       "slots_due": 0,
       "runs_scheduled": 3,
       "runs_total": 4,
@@ -196,8 +200,8 @@
       "schedule_since": null,
       "slots_due": null,
       "runs_scheduled": 0,
-      "runs_total": 9,
-      "last_run": "2026-10-31T20:32:03Z",
+      "runs_total": 52,
+      "last_run": "2026-11-01T11:15:16Z",
       "last_conclusion": "skipped",
       "last_run_health": "amber",
       "verdict": "on-demand"
@@ -211,7 +215,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-10-31T20:27:28Z",
+      "last_run": "2026-11-01T11:07:33Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -225,7 +229,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-10-31T20:32:03Z",
+      "last_run": "2026-11-01T11:15:16Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -237,14 +241,14 @@
         "00 22 * * *"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-31T20:26:51Z",
-      "slots_due": 1,
-      "runs_scheduled": 7,
-      "runs_total": 10,
-      "last_run": "2026-10-31T01:27:46Z",
+      "schedule_since": "2026-11-01T11:15:25Z",
+      "slots_due": 0,
+      "runs_scheduled": 8,
+      "runs_total": 11,
+      "last_run": "2026-11-01T00:50:55Z",
       "last_conclusion": "success",
       "last_run_health": "green",
-      "verdict": "ok"
+      "verdict": "not-due-yet"
     },
     {
       "workflow": "verify-build.yml",
@@ -255,7 +259,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-10-31T20:27:28Z",
+      "last_run": "2026-11-01T11:07:33Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -267,11 +271,11 @@
         "17 06 * * 1"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-31T20:26:51Z",
+      "schedule_since": "2026-11-01T11:15:25Z",
       "slots_due": 0,
-      "runs_scheduled": 4,
+      "runs_scheduled": 3,
       "runs_total": 100,
-      "last_run": "2026-10-31T19:39:04Z",
+      "last_run": "2026-11-01T11:15:30Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "not-due-yet"
@@ -391,27 +395,28 @@
   ],
   "delivery": {
     "ok": true,
-    "cycles": 97,
+    "cycles": 105,
     "outcomes": {
-      "shipped": 50,
-      "nothing": 28,
-      "failed": 15,
-      "unknown": 4
+      "shipped": 53,
+      "nothing": 31,
+      "failed": 16,
+      "unknown": 4,
+      "pr open": 1
     },
-    "yield_pct": 52,
-    "median_minutes": 33.0,
-    "minutes_total": 3810.8,
-    "minutes_per_shipped": 76.2
+    "yield_pct": 50,
+    "median_minutes": 32.1,
+    "minutes_total": 3994.2,
+    "minutes_per_shipped": 75.4
   },
   "agents": {
     "window_days": 30,
-    "comments_total": 817,
-    "comments_by_agents": 518,
-    "comments_by_automation": 114,
+    "comments_total": 869,
+    "comments_by_agents": 541,
+    "comments_by_automation": 137,
     "by_agent": {
-      "qa": 103,
-      "steward": 100,
-      "agent-cycle": 96,
+      "qa": 112,
+      "steward": 107,
+      "agent-cycle": 101,
       "analyst": 71,
       "chief": 34,
       "infra-lead": 6,
@@ -419,8 +424,8 @@
       "engineer": 2,
       "project-manager": 1
     },
-    "unmatched_count": 103,
-    "unmatched_pct": 20,
+    "unmatched_count": 105,
+    "unmatched_pct": 19,
     "unmatched_sample": [
       {
         "issue": "272",
@@ -464,9 +469,9 @@
       }
     ],
     "qa": {
-      "issues_with_a_verdict": 60,
-      "issues_reaching_pass": 51,
-      "first_submission_failed": 25,
+      "issues_with_a_verdict": 65,
+      "issues_reaching_pass": 56,
+      "first_submission_failed": 27,
       "first_submission_fail_pct": 42,
       "rounds_per_issue": {
         "536": [
@@ -574,6 +579,14 @@
         ],
         "608": [
           "PASS",
+          "PASS"
+        ],
+        "635": [
+          "FAIL",
+          "PASS"
+        ],
+        "645": [
+          "FAIL",
           "PASS"
         ],
         "299": [
@@ -688,6 +701,15 @@
           "PASS"
         ],
         "626": [
+          "PASS"
+        ],
+        "638": [
+          "PASS"
+        ],
+        "646": [
+          "PASS"
+        ],
+        "653": [
           "PASS"
         ]
       },

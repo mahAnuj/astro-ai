@@ -2389,8 +2389,8 @@ MUTATIONS = [
     # ---- #442: the steward can dispatch, and a merge is not a refix ---------
     ("#442: the carrier stops refusing a lenient dispatch line",
      "scripts/dispatch_cycle.sh",
-     "grep -oE '^issue=[0-9]+$'",
-     "grep -oE 'issue=[0-9]+'",
+     "grep -oE '^(issue|pr)=[0-9]+$'",
+     "grep -oE '(issue|pr)=[0-9]+'",
      "test_anything_but_issue_equals_digits_is_refused"),
     ("#442: the carrier stops treating an unreadable concurrency check as busy",
      "scripts/dispatch_cycle.sh",
@@ -3796,6 +3796,37 @@ MUTATIONS = [
      "when counted from any axis.",
      "test_sentence_still_states_the_venus_axis_downgrade_and_its_three_frames"),
 
+    # --- #177: the matching verdict bands are Bhagya's own, and the page says so ---
+    ("#177: the result page stops rendering the band disclosure beside the legend",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ t(lang, 'matching_bands_note') }}",
+     "{{ '' }}",
+     "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: the English disclosure drops the 'not drawn from the classical texts we hold' statement",
+     "src/astro_ai/i18n.py",
+     "Bhagya's own reading of the 36-point total and are not drawn from the classical texts we hold.",
+     "Bhagya's own reading of the 36-point total.",
+     "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: the learn article calls the 30+ band classical again",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "Widely read as an ideal match.",
+     "Classical texts consider this an ideal match.",
+     "test_no_page_calls_the_cutoffs_classical"),
+
+    ("#177: the registry FAQ calls the 18/24/30 guidance classical again",
+     "src/astro_ai/learn_registry.py",
+     "A widely quoted rule of thumb is 18+ acceptable",
+     "The classical guidance: 18+ acceptable",
+     "test_registry_faq_and_summary_do_not_call_the_cutoffs_classical"),
+
+    ("#177: a disclosure edit moves a grade (Madhyam floor 24 -> 25)",
+     "src/astro_ai/matching.py",
+     "    if total >= 24:\n        return \"Madhyam\"",
+     "    if total >= 25:\n        return \"Madhyam\"",
+     "test_the_disclosure_moves_no_grade"),
+
     # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
     ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
      "src/astro_ai/chart.py",
@@ -4175,6 +4206,161 @@ MUTATIONS = [
      '        print("This is NOT a pass: an unverified diff may be granting a power.")\n        return 2\n    try:',
      '        print("This is NOT a pass: an unverified diff may be granting a power.")\n        return 0\n    try:',
      'test_no_usable_base_exits_2_and_says_it_is_NOT_a_pass'),
+    # --- the probe header suppresses four alerts and no others (#618) --------
+    # The header is UNAUTHENTICATED, so the allow-list is the whole safety
+    # argument: anyone may send it, which is fine for a diagnostic plus an
+    # 8-hex key and not fine for a question, an email or a name. Rows 1 and 2
+    # attack the scope; row 4 attacks the numerology call site and the last row
+    # the kundli one, which no source-grep test can protect because an inverted
+    # guard keeps the asserted string.
+
+    ('#618: the allow-list is inverted, so PII-carrying alerts suppress',
+     'src/astro_ai/probe.py',
+     '    if event not in SUPPRESSIBLE:',
+     '    if event in SUPPRESSIBLE:',
+     'test_a_PII_carrying_alert_is_never_suppressed'),
+
+    ("#618: any probe header value suppresses, not just this caller's",
+     'src/astro_ai/probe.py',
+     'return request.headers.get(PROBE_HEADER) == PROBE_VALUE',
+     'return request.headers.get(PROBE_HEADER) is not None',
+     'test_only_the_EXACT_value_suppresses'),
+
+    ('#618: an unusable request raises instead of alerting',
+     'src/astro_ai/probe.py',
+     '    except Exception:',
+     '    except KeyError:',
+     'test_an_unusable_request_sends_the_alert_rather_than_raising'),
+
+    ('#618: the numerology guard is inverted -- only probes get alerted',
+     'src/astro_ai/routes/numerology.py',
+     'if not probe.suppresses_owner_alert(request, "numerology_computed"):',
+     'if probe.suppresses_owner_alert(request, "numerology_computed"):',
+     'test_a_normal_POST_to_numerology_STILL_fires_the_alert'),
+
+    ('#618: the allow-list silently loses an entry',
+     'src/astro_ai/probe.py',
+     '    "numerology_computed",\n})',
+     '})',
+     'test_the_allow_list_matches_what_notify_documents'),
+
+    ('#618: the kundli guard is inverted -- only probes get alerted',
+     'src/astro_ai/routes/kundli.py',
+     'if not probe.suppresses_owner_alert(request, "kundli_generated"):',
+     'if probe.suppresses_owner_alert(request, "kundli_generated"):',
+     'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
+
+    # ---- the PR-scoped QA dispatch -----------------------------------------
+    #
+    # Measured 2026-11-01: four of the five green PRs then open had received
+    # ZERO QA dispatches, because `qa-on-green` required an issue number in the
+    # branch name and theirs had none. `agent-merge` merges on `qa-pass` and
+    # `scripts/qa_verdict.sh` is its only writer, and the only thing that runs
+    # it is a dispatched round -- so the loop could not finish its own work.
+    #
+    # Rows run in BOTH directions deliberately. A guard that only caught the
+    # permissive mutation would bless a change that bricks the six-a-day cron,
+    # which is the one thing here that currently works.
+
+    # THE SUBTLEST ONE AVAILABLE, and the reason this row exists at all. The
+    # number spaces overlap: `gh issue view 639` ANSWERS for pull request #639.
+    # So a `pr=` ruling relabelled `issue=` would pass the carrier's openness
+    # check, dispatch a cycle at "issue" 639, and the cycle would read a pull
+    # request as its specification.
+    ('qa-on-green aims a PR ruling at the issue number space',
+     '.github/workflows/qa-on-green.yml',
+     'target="pr=$num"',
+     'target="issue=$num"',
+     'test_an_unnumbered_branch_aims_at_the_pr_instead_of_declining'),
+
+    # The fallback inverted: numbered branches get the PR form and unnumbered
+    # ones get `issue=` with nothing after it.
+    ('qa-on-green inverts the fallback and loses the owning issue',
+     '.github/workflows/qa-on-green.yml',
+     'if [ -n "$issue" ]; then\n            target="issue=$issue"',
+     'if [ -z "$issue" ]; then\n            target="issue=$issue"',
+     'test_a_numbered_branch_still_aims_at_its_issue'),
+
+    # The carrier file re-acquires the hard-coded prefix it had before, so
+    # every ruling becomes `issue=issue=N` or `issue=pr=N` and the strict
+    # parse refuses all of them. Inert, not dangerous -- and invisible.
+    ('qa-on-green re-prefixes the ruling the carrier already carries',
+     '.github/workflows/qa-on-green.yml',
+     "printf '%s\\n' \"$TARGET\"",
+     "printf 'issue=%s\\n' \"$TARGET\"",
+     'test_the_carrier_receives_the_target_verbatim'),
+
+    # The PR body becomes a source for the aim. Measured on the two real PRs:
+    # #639 has no issue reference of any kind, and #647's body yields 638 and
+    # 640, which are both pull requests.
+    ('qa-on-green starts reading the PR body it must never read',
+     '.github/workflows/qa-on-green.yml',
+     '--json comments',
+     '--json comments,body',
+     'test_the_target_is_never_guessed_from_the_pr_body'),
+
+    # agent-work: the composing step becomes dead code and a `pr=` dispatch
+    # silently runs an ordinary cycle with no argument -- ranking the backlog
+    # instead of judging the PR, at full cost, reported as a success.
+    ('agent-work reads the raw input again and ignores the composed argument',
+     '.github/workflows/agent-work.yml',
+     '/agent-cycle ${{ steps.args.outputs.args }}',
+     '/agent-cycle ${{ github.event.inputs.issue }}',
+     'test_the_prompt_reads_the_composed_output_and_not_the_raw_input'),
+
+    # THE BRICK-THE-LOOP DIRECTION. A `schedule` fire has no `inputs` object,
+    # both expressions render empty, and `set -u` aborts the step -- so all six
+    # crons a day die before the agent starts. This is why the composition is a
+    # `run:` step a test can execute rather than a prompt expression.
+    ('agent-work loses the unset-safe default and every cron fire dies',
+     '.github/workflows/agent-work.yml',
+     'issue="${ISSUE:-}"',
+     'issue="$ISSUE"',
+     'test_a_scheduled_fire_with_no_inputs_at_all_composes_an_empty_argument'),
+
+    # Both inputs at once stops being refused. Picking one hides the
+    # dispatcher's bug behind a ~50-minute run that reads as a success.
+    ('agent-work accepts an issue and a PR at once and picks one',
+     '.github/workflows/agent-work.yml',
+     'refusing rather than choosing."\n            exit 1',
+     'refusing rather than choosing."\n            :',
+     'test_both_inputs_at_once_is_refused_not_resolved'),
+
+    # The shape check widens, so a cycle can be aimed at a non-number.
+    ('agent-work stops requiring the dispatch target to be a number',
+     '.github/workflows/agent-work.yml',
+     '*[!0-9]*)\n                echo "::error::',
+     '*[!0-9a-z]*)\n                echo "::error::',
+     'test_a_non_numeric_input_is_refused'),
+    # --- the carrier learns a second ruling form: pr= (#639, #647) ----------
+    # A QA ROUND NEEDS A PR, NOT AN ISSUE. These rows guard the two halves that
+    # can go wrong quietly: dispatching a `pr=` ruling under the `issue` key,
+    # and reading a PR's state with `gh issue view` -- which ANSWERS, because
+    # the number spaces overlap, so the wrong object's state would pass.
+
+    ('#639: a pr= ruling is dispatched under the issue key',
+     'scripts/dispatch_cycle.sh',
+     'gh workflow run agent-work.yml --repo "$GH_REPO" -f "$kind=$target"',
+     'gh workflow run agent-work.yml --repo "$GH_REPO" -f issue="$target"',
+     'test_the_real_dispatch_composes_the_key_it_was_given'),
+
+    ("#639: a pr= ruling's state is read with gh issue view, which answers",
+     'scripts/dispatch_cycle.sh',
+     '    state=$(gh pr view "$target" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)',
+     '    state=$(gh issue view "$target" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)',
+     'test_a_pr_ruling_is_checked_with_pr_view_and_NOT_issue_view'),
+
+    ('#639: an issue= ruling naming a pull request is accepted',
+     'scripts/dispatch_cycle.sh',
+     '      */pull/*)',
+     '      */never-matches/*)',
+     'test_an_issue_ruling_that_names_a_PULL_REQUEST_is_refused'),
+
+    ('#639: the dispatched kind is not exported, so a round reads as a cycle',
+     'scripts/dispatch_cycle.sh',
+     '  echo "DISPATCHED_KIND=$kind" >> "$GITHUB_ENV"',
+     '  :',
+     'test_the_dispatched_kind_is_exported_beside_the_number'),
 
 ]
 
