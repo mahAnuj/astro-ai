@@ -4013,11 +4013,11 @@ MUTATIONS = [
      'return {"<unparseable>": 2}', 'return {"<unparseable>": 0}',
      "test_an_unrecognised_permissions_shape_ranks_as_WIDE_not_as_absent"),
 
-    ("wf_permissions: a job's permissions overwrite the top-level block",
+    ("wf_permissions: a job's own block is written to the top-level key instead",
      "scripts/verify_workflow_permissions.py",
-     'out[f"jobs.{jid}"] = normalise_perms(job["permissions"])',
-     'out["<top-level>"] = normalise_perms(job["permissions"])',
-     "test_top_level_and_job_permissions_are_reported_separately"),
+     'if isinstance(job, dict) and "permissions" in job:\n            out[f"jobs.{jid}"] = normalise_perms(job["permissions"])\n        elif top is not _MISSING:',
+     'if isinstance(job, dict) and "permissions" in job:\n            out["<top-level>"] = normalise_perms(job["permissions"])\n        elif top is not _MISSING:',
+     "test_effective_jobs_resolves_own_then_top_level_then_repo_default"),
 
     ("wf_permissions: the TRUST_BOUNDARY block never ends, swallowing env keys",
      "scripts/verify_workflow_permissions.py",
@@ -4145,6 +4145,36 @@ MUTATIONS = [
      ".github/workflows/agent-merge.yml",
      'echo "1. \\`chief\\` rules on it', 'echo "1. Someone rules on it',
      "test_the_hold_comment_tells_the_reader_about_the_chief_route"),
+
+    # --- effective-permissions check 1, after the independent round (#610) ---
+    # The first draft compared DECLARED blocks, so a new job with no block of
+    # its own inherited `agent-merge.yml`'s whole write set and the gate printed
+    # PASS -- live on the shipped file, with 8 workflows exposed. These rows
+    # guard the fix and the two false reds fixed alongside it.
+
+    ('#610: check 1 reverts to declared blocks, so an inheriting job is invisible',
+     "scripts/verify_workflow_permissions.py",
+     '            after = effective_jobs(yaml.safe_load(a_txt))',
+     '            after = perm_blocks(yaml.safe_load(a_txt))',
+     'test_a_NEW_JOB_WITH_NO_BLOCK_inheriting_a_broad_top_level_is_caught'),
+
+    ('#610: a workflow declaring no permissions ranks as granting nothing',
+     "scripts/verify_workflow_permissions.py",
+     '            out[f"jobs.{jid}"] = {REPO_DEFAULT: 2}',
+     '            out[f"jobs.{jid}"] = {}',
+     'test_a_NEW_WORKFLOW_declaring_no_permissions_anywhere_is_caught'),
+
+    ('#610: the <all> fallback is dropped, so tightening write-all reds falsely',
+     "scripts/verify_workflow_permissions.py",
+     '    if "<all>" in block:\n        return block["<all>"]',
+     '    if False:\n        return block["<all>"]',
+     'test_TIGHTENING_write_all_to_a_narrow_mapping_is_not_a_false_red'),
+
+    ('#610: no usable base returns 0 instead of 2 -- did-not-run reads as passed',
+     "scripts/verify_workflow_permissions.py",
+     '        print("This is NOT a pass: an unverified diff may be granting a power.")\n        return 2\n    try:',
+     '        print("This is NOT a pass: an unverified diff may be granting a power.")\n        return 0\n    try:',
+     'test_no_usable_base_exits_2_and_says_it_is_NOT_a_pass'),
 
 ]
 

@@ -22,14 +22,37 @@ judge whether a new scope is reasonable.
 
 WHAT IT CHECKS, each against the merge base
 
-  1. A workflow's `permissions:` may not WIDEN.
-     Top-level and per-job blocks are compared separately, because a job block
-     OVERRIDES the top-level one rather than adding to it — merging them would
-     both miss a widening and invent one. An omitted scope is `none` (GitHub
-     never inherits one), so a scope merely APPEARING is a widening. A wholly
-     new block — a new workflow file, or a new job in an existing one — fails,
-     because a new block is how a power gets added without touching an old one.
-     A workflow that cannot be parsed fails rather than being skipped.
+  1. No JOB's EFFECTIVE permissions may WIDEN.
+     The unit is the job, not the declared block, and that distinction is the
+     whole of this check. A job's effective permissions are its own
+     `permissions:` if it declares one, ELSE the workflow's top-level block,
+     ELSE the repository default.
+
+     THE FIRST DRAFT COMPARED DECLARED BLOCKS AND HAD A HOLE WIDE ENOUGH TO
+     DRIVE THROUGH. `agent-merge.yml` carries a top-level
+     `contents/pull-requests/issues: write, actions: write` and its one job
+     declares nothing, so appending a second job gained the entire write set
+     while adding ZERO new blocks — and the gate printed PASS. Eight of this
+     repo's workflows are top-level-only and so were all exposed. Found by the
+     independent round on this gate's own PR, demonstrated against the shipped
+     file with a job that called `gh api -X PUT .../branches/main/protection`.
+
+     Consequences of keying on the job instead:
+       * a NEW job fails closed, because it gains whatever it inherits
+       * a job whose own narrow block is DELETED under a broader top-level one
+         is a widening, and is now caught
+       * a workflow declaring nothing anywhere ranks `<repo-default>` WIDE,
+         because that default is an admin toggle outside git which no gate can
+         see. Measured 2026-11-01: `default_workflow_permissions: read`. It can
+         be flipped to write without any diff.
+       * a top-level widening under jobs that all declare their own block is NOT
+         flagged, correctly — nothing can reach it.
+
+     An omitted scope is `none` (GitHub never inherits one), so a scope merely
+     APPEARING is a widening. `write-all` is normalised to an `<all>` scope and
+     consulted as a FALLBACK rank, so tightening `write-all` to a narrow
+     mapping reads as the narrowing it is. A workflow that cannot be parsed
+     fails rather than being skipped.
 
   2. `TRUST_BOUNDARY` in `agent-merge.yml` may not lose an entry.
      Removing a path does not relax a number or a phrase; it takes a whole
@@ -119,8 +142,24 @@ def normalise_perms(block: object) -> dict[str, int]:
     return {"<unparseable>": 2}
 
 
+#: A workflow that declares no `permissions:` anywhere runs with the REPOSITORY
+#: DEFAULT. That is an admin toggle outside git -- measured 2026-11-01 as
+#: `default_workflow_permissions: read` -- so it can be flipped to write with no
+#: diff and no gate able to see it. Represented by a sentinel that ranks WIDE,
+#: which makes such a workflow fail closed rather than silently inherit
+#: whatever the toggle says today.
+REPO_DEFAULT = "<repo-default>"
+
+_MISSING = object()
+
+
 def perm_blocks(doc: object) -> dict[str, dict[str, int]]:
-    """Every `permissions:` mapping in a parsed workflow, keyed by where it sits."""
+    """Every DECLARED `permissions:` mapping, keyed by where it sits.
+
+    Retained because it answers "what does this file say", which the tests
+    assert directly. Check 1 does NOT use it: a declared block is not what a
+    job runs with. See `effective_jobs`.
+    """
     if not isinstance(doc, dict):
         return {}
     out: dict[str, dict[str, int]] = {}
@@ -132,6 +171,49 @@ def perm_blocks(doc: object) -> dict[str, dict[str, int]]:
             if isinstance(job, dict) and "permissions" in job:
                 out[f"jobs.{jid}"] = normalise_perms(job["permissions"])
     return out
+
+
+def effective_jobs(doc: object) -> dict[str, dict[str, int]]:
+    """Every JOB's EFFECTIVE permissions -- what the job's token actually gets.
+
+    A job block OVERRIDES the top-level one rather than adding to it, so the
+    resolution is a choice and not a merge: own block, else top-level, else the
+    repository default sentinel.
+
+    Keyed by `jobs.<id>` only. There is deliberately no `<top-level>` entry: a
+    top-level block that every job overrides grants nothing, and flagging it
+    would be a false red -- the kind that teaches the loop its reds are noise.
+    """
+    if not isinstance(doc, dict):
+        return {}
+    jobs = doc.get("jobs")
+    if not isinstance(jobs, dict):
+        return {}
+    top = doc.get("permissions", _MISSING)
+    out: dict[str, dict[str, int]] = {}
+    for jid, job in jobs.items():
+        if isinstance(job, dict) and "permissions" in job:
+            out[f"jobs.{jid}"] = normalise_perms(job["permissions"])
+        elif top is not _MISSING:
+            out[f"jobs.{jid}"] = normalise_perms(top)
+        else:
+            out[f"jobs.{jid}"] = {REPO_DEFAULT: 2}
+    return out
+
+
+def rank_of(block: dict[str, int], scope: str) -> int:
+    """This block's rank for `scope`, honouring a `write-all`/`read-all` shorthand.
+
+    Without the `<all>` fallback, tightening `permissions: write-all` to
+    `{contents: read}` read as `contents` going none -> read -- a WIDENING
+    reported on a genuine narrowing. A gate that reds when you tighten is a
+    gate that gets switched off.
+    """
+    if scope in block:
+        return block[scope]
+    if "<all>" in block:
+        return block["<all>"]
+    return 0
 
 
 def trust_boundary(text: str) -> set[str]:
@@ -209,8 +291,8 @@ def main(argv: list[str]) -> int:
             print(f"  ok   deleted            {path}")
             continue
         try:
-            after = perm_blocks(yaml.safe_load(a_txt))
-            before = perm_blocks(yaml.safe_load(b_txt)) if b_txt is not None else {}
+            after = effective_jobs(yaml.safe_load(a_txt))
+            before = effective_jobs(yaml.safe_load(b_txt)) if b_txt is not None else {}
         except yaml.YAMLError as exc:
             bad.append(f"{path}: cannot be parsed as YAML ({exc.__class__.__name__}), so its "
                        f"`permissions:` cannot be compared. An unreadable gate is not a pass.")
@@ -221,12 +303,15 @@ def main(argv: list[str]) -> int:
                 granted = sorted(k for k, v in a_block.items() if v > 0)
                 if granted:
                     bad.append(
-                        f"{path}: `permissions:` at `{where}` is new, granting "
-                        f"{', '.join(granted)}. A new block is how a power gets added without "
-                        f"widening an old one, so this gate does not judge it — a human does.")
+                        f"{path}: `{where}` is new, and effectively grants "
+                        f"{', '.join(granted)}. A new job gains whatever it inherits without "
+                        f"adding any block, so this gate does not judge it — a human does.")
                 continue
-            for scope, rank in a_block.items():
-                was = b_block.get(scope, 0)
+            # The UNION of both sides' scopes, consulted through `rank_of`.
+            # Walking only `a_block` missed nothing, but walking it with a plain
+            # `.get(scope, 0)` mishandled `<all>` on the base side.
+            for scope in sorted(set(a_block) | set(b_block)):
+                was, rank = rank_of(b_block, scope), rank_of(a_block, scope)
                 if rank > was:
                     bad.append(
                         f"{path}: `permissions:` at `{where}` widens `{scope}` "
@@ -234,7 +319,7 @@ def main(argv: list[str]) -> int:
                         f"Granting the loop a scope it did not have is the one change an agent "
                         f"clearing it would be deciding its own constraints.")
         if not any(b.startswith(path) for b in bad):
-            print(f"  ok   permissions held  {path} ({len(after)} block(s))")
+            print(f"  ok   permissions held  {path} ({len(after)} job(s))")
 
     # 2. TRUST_BOUNDARY may not lose an entry
     if AGENT_MERGE in wf_changed:

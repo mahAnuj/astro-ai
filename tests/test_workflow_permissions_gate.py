@@ -304,14 +304,28 @@ def test_check_1_goes_red_rather_than_quiet_on_a_workflow_it_cannot_parse(
     This is the single most likely way to get a widening past check 1: make the
     file unparseable and let the `except` swallow it.
     """
+    # THE FIXTURE IS A SECOND FILE, NOT agent-merge.yml, and that is the
+    # whole point of this case. The first version made agent-merge.yml itself
+    # unparseable -- which ALSO destroys its `TRUST_BOUNDARY` block, so check 2
+    # returned 1 whatever check 1 did. Proved vacuous by the independent round:
+    # with the `bad.append` for a parse failure swapped for a `print`, that
+    # version still passed. This file's own header names the trap -- "a gate
+    # validated by a rule other than the one under test is a vacuous pass" --
+    # and the first draft walked into it.
+    other = ".github/workflows/agent-other.yml"
     root = _repo(
         tmp_path,
-        {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY)},
-        {AM: "permissions:\n  contents: write\n  - this is not valid yaml\n\t\tat all:\n"},
+        {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY),
+         other: _agent_merge(READ_TOP, JOB_READ, BOUNDARY)},
+        {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY),
+         other: "permissions:\n  contents: write\n  - not valid yaml\n\t\tat all:\n"},
     )
     rc, out = _run(root, monkeypatch, capsys)
     assert rc == 1, out
     assert "cannot be parsed as YAML" in out
+    assert other in out
+    assert "boundary intact" not in out, (
+        "agent-merge.yml is not in this diff, so check 2 cannot be the reason for the red")
 
 
 # --------------------------------------------------------------------------
@@ -445,8 +459,166 @@ def test_the_gates_docstring_registers_both_checks():
     file's own account of what it checks.
     """
     doc = GATE_PATH.read_text(encoding="utf-8")
-    assert "A workflow's `permissions:` may not WIDEN" in doc
+    assert "No JOB's EFFECTIVE permissions may WIDEN" in doc
     assert "`TRUST_BOUNDARY` in `agent-merge.yml` may not lose an entry" in doc
-    assert "fails\nCLOSED on a permissions block it has never seen before" in doc, (
-        "the docstring no longer records that a NEW block fails, which is the "
+    assert "a NEW job fails closed, because it gains whatever it inherits" in doc, (
+        "the docstring no longer records that a new JOB fails closed, which is the "
         "decision a reader is most likely to mistake for a bug")
+    assert "ranks `<repo-default>` WIDE" in doc, (
+        "the docstring no longer records why a workflow declaring nothing fails")
+
+# ------------------------- the hole the independent round found (HIGH)
+
+def test_a_NEW_JOB_WITH_NO_BLOCK_inheriting_a_broad_top_level_is_caught(
+        tmp_path, monkeypatch, capsys):
+    """THE DEFECT. Declared blocks were the wrong unit; jobs are the right one.
+
+    `agent-merge.yml` carries a top-level write set and its one job declares
+    nothing, so appending a second job gained the ENTIRE write set while adding
+    zero new blocks — and the first draft printed PASS. Eight of this repo's
+    workflows are top-level-only and were all exposed. Demonstrated against the
+    shipped file by the independent round, with a job calling
+    `gh api -X PUT .../branches/main/protection`.
+    """
+    before = _agent_merge(WRITE_TOP, "", BOUNDARY).replace("    permissions:\n", "")
+    after = before + ("  exfil:\n"
+                      "    runs-on: ubuntu-latest\n"
+                      "    steps:\n"
+                      "      - run: gh api -X PUT /repos/o/r/branches/main/protection\n")
+    root = _repo(tmp_path, {AM: before}, {AM: after})
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 1, f"a job inheriting the top-level write set passed:\n{out}"
+    assert "jobs.exfil" in out and "is new" in out
+    assert "contents" in out, "the finding does not name what the new job inherits"
+
+
+def test_a_NEW_WORKFLOW_declaring_no_permissions_anywhere_is_caught(
+        tmp_path, monkeypatch, capsys):
+    """It runs with the repository default — an admin toggle outside git.
+
+    Measured 2026-11-01: `default_workflow_permissions: read`. That is a
+    setting no gate can see and no diff records, and flipping it converts every
+    permissionless workflow to write. So it ranks WIDE rather than being read
+    as harmless.
+    """
+    sneak = ".github/workflows/sneak.yml"
+    root = _repo(
+        tmp_path,
+        {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY)},
+        {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY),
+         sneak: ("name: Sneak\non:\n  pull_request:\njobs:\n  x:\n"
+                 "    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n")},
+    )
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 1, f"a workflow with no permissions at all passed:\n{out}"
+    assert "jobs.x" in out and "repo-default" in out
+
+
+def test_DELETING_a_jobs_narrow_block_under_a_broader_top_level_is_a_widening(
+        tmp_path, monkeypatch, capsys):
+    """A one-line deletion takes the job from `read` to the top-level grant.
+
+    A removed block is usually a narrowing, which is why the first draft only
+    walked the blocks present at HEAD — true only when there is nothing broader
+    above it.
+    """
+    root = _repo(
+        tmp_path,
+        {AM: _agent_merge(WRITE_TOP, JOB_READ, BOUNDARY)},
+        {AM: _agent_merge(WRITE_TOP, JOB_READ, BOUNDARY).replace(
+            "    permissions:\n      contents: read\n", "")},
+    )
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 1, f"deleting a narrow job block under a write top-level passed:\n{out}"
+    assert "jobs.merge" in out and "widens" in out
+
+
+def test_a_TOP_LEVEL_widening_that_every_job_overrides_is_NOT_flagged(
+        tmp_path, monkeypatch, capsys):
+    """Nothing can reach it, so flagging it would be a false red.
+
+    False reds are the disabling pressure that matters here: a gate that reds
+    on a change with no effect teaches the loop its reds are noise.
+    """
+    root = _repo(
+        tmp_path,
+        {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY)},
+        {AM: _agent_merge(WRITE_TOP, JOB_READ, BOUNDARY)},
+    )
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 0, f"a top-level widening the only job overrides was flagged:\n{out}"
+
+
+def test_TIGHTENING_write_all_to_a_narrow_mapping_is_not_a_false_red(
+        tmp_path, monkeypatch, capsys):
+    """`<all>` is consulted as a FALLBACK rank, not as a scope name.
+
+    Without that, `write-all` -> `{contents: read}` read as `contents` going
+    none -> read: a widening reported on a genuine narrowing. Found by the
+    independent round.
+    """
+    broad = _agent_merge(READ_TOP, JOB_READ, BOUNDARY).replace(
+        "    permissions:\n      contents: read\n", "    permissions: write-all\n")
+    root = _repo(tmp_path, {AM: broad}, {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY)})
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 0, f"tightening write-all to a narrow mapping was reported as widening:\n{out}"
+
+
+def test_write_all_REPLACING_a_narrow_mapping_is_still_caught(
+        tmp_path, monkeypatch, capsys):
+    """The other direction of the same fallback. Both or neither."""
+    broad = _agent_merge(READ_TOP, JOB_READ, BOUNDARY).replace(
+        "    permissions:\n      contents: read\n", "    permissions: write-all\n")
+    root = _repo(tmp_path, {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY)}, {AM: broad})
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 1, out
+
+
+def test_rank_of_falls_back_to_the_all_sentinel():
+    assert gate.rank_of({"<all>": 2}, "contents") == 2
+    assert gate.rank_of({"<all>": 1}, "anything") == 1
+    assert gate.rank_of({"contents": 1, "<all>": 2}, "contents") == 1, "explicit beats <all>"
+    assert gate.rank_of({}, "contents") == 0
+
+
+def test_effective_jobs_resolves_own_then_top_level_then_repo_default():
+    own = {"jobs": {"a": {"permissions": {"issues": "write"}}},
+           "permissions": {"contents": "read"}}
+    assert gate.effective_jobs(own) == {"jobs.a": {"issues": 2}}, "own block must WIN, not merge"
+    inherit = {"jobs": {"a": {}}, "permissions": {"contents": "write"}}
+    assert gate.effective_jobs(inherit) == {"jobs.a": {"contents": 2}}
+    neither = {"jobs": {"a": {}}}
+    assert gate.effective_jobs(neither) == {"jobs.a": {gate.REPO_DEFAULT: 2}}
+
+
+def test_there_is_no_top_level_entry_in_the_effective_view():
+    """Keyed by job only. A `<top-level>` entry would double-count and would
+    red a top-level change that no job can reach."""
+    doc = {"permissions": {"contents": "write"}, "jobs": {"a": {}}}
+    assert list(gate.effective_jobs(doc)) == ["jobs.a"]
+
+
+# --------------------------------------------- the exit-code contract (AC 6)
+
+def test_no_usable_base_exits_2_and_says_it_is_NOT_a_pass(tmp_path, monkeypatch, capsys):
+    """Nothing pinned this before, and `pr-gates.yml` reads exactly this code
+    to tell "did not run" from "passed".
+
+    Proved unpinned by the independent round: changing `return 2` to `return 0`
+    left all 41 tests green.
+    """
+    root = tmp_path / "lonely"
+    root.mkdir()
+    subprocess.run(("git", "init", "-q", "-b", "only", str(root)), check=True, timeout=60)
+    (root / "f.txt").write_text("x")
+    subprocess.run(("git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@t",
+                    "-c", "commit.gpgsign=false", "add", "-A"), check=True, timeout=60)
+    subprocess.run(("git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@t",
+                    "-c", "commit.gpgsign=false", "commit", "-q", "-m", "one"),
+                   check=True, timeout=60)
+    monkeypatch.chdir(root)
+    rc = gate.main(["verify_workflow_permissions.py", "--base", "nope"])
+    out = capsys.readouterr().out
+    assert rc == 2, out
+    assert "COULD NOT VERIFY (exit 2)" in out
+    assert "NOT a pass" in out
