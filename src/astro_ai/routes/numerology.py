@@ -25,7 +25,7 @@ import logging
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 
-from astro_ai import notify
+from astro_ai import notify, probe
 from astro_ai.identity import identity_key, short_key
 from astro_ai.routes.deps import _ask_cta_ctx, _lang, templates
 from astro_ai.routes.llm_support import _fire_error_alert
@@ -125,10 +125,19 @@ async def numerology_calculate(
         )
     try:
         # Name and birth date go in only as a keyed hash (#255).
-        notify.numerology_computed(
-            system=reading.system, life_path=int(reading.life_path),
-            key=short_key(identity_key(reading.name, birth_date)),
-        )
+        #
+        # The production verifier POSTs this form on every push to `main` --
+        # 4-6 times a day, with a hardcoded input, so the alert was
+        # byte-identical every time (#618). It identifies itself with
+        # `X-Bhagya-Probe` and this alert is one of the four `notify.py`
+        # documents as PII-free, so it is suppressible. The decision lives in
+        # `probe.py`, not here: two copies of an allow-list is how one of them
+        # ends up out of step with `notify.py`.
+        if not probe.suppresses_owner_alert(request, "numerology_computed"):
+            notify.numerology_computed(
+                system=reading.system, life_path=int(reading.life_path),
+                key=short_key(identity_key(reading.name, birth_date)),
+            )
     except Exception:
         pass
     # Numerology-only Bhagya Score — separate from the chart-based one on

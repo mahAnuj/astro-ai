@@ -29,7 +29,7 @@ from datetime import date
 from fastapi import APIRouter, Form, Request, Response
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
-from astro_ai import cache, email_sender, events, notify, snapshots, users
+from astro_ai import cache, email_sender, events, notify, probe, snapshots, users
 from astro_ai.identity import identity_key, short_key
 from astro_ai.profiling import coarse_profile
 from astro_ai import providers as llm_providers
@@ -280,12 +280,23 @@ async def _render_natal_for(request: Request, details: BirthDetails,
         _id_full = identity_key(
             details.name, details.birth_date, details.birth_time, details.birth_place)
         _model = llm_providers.last_used_model()
-        notify.kundli_generated(
-            lagna=_lagna, moon=_moon, sun=_sun, lang=lang,
-            key=short_key(_id_full), model=_model,
-            tokens=llm_providers.last_used_tokens(),
-            latency_s=_generated["secs"],
-        )
+        # The production verifier reaches this through POST /reading -> 303 ->
+        # GET /kundli with a cookie jar, on every push to `main` (#618). It
+        # declares itself with `X-Bhagya-Probe`, and this alert is one of the
+        # four `notify.py` documents as PII-free, so it is suppressible. The
+        # allow-list lives in `probe.py` and is not restated here.
+        #
+        # `events.record` below is DELIBERATELY NOT suppressed: it is the
+        # activity log, not the alert channel, and the fix is scoped to the
+        # thing that was paging a person. That the probe also shows up as a
+        # `form_kundli` event is a separate question (#618 notes it).
+        if not probe.suppresses_owner_alert(request, "kundli_generated"):
+            notify.kundli_generated(
+                lagna=_lagna, moon=_moon, sun=_sun, lang=lang,
+                key=short_key(_id_full), model=_model,
+                tokens=llm_providers.last_used_tokens(),
+                latency_s=_generated["secs"],
+            )
         events.record(
             type="form_kundli",
             email=(_u_natal.email if _u_natal else ""),
