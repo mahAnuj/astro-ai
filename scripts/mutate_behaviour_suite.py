@@ -4001,6 +4001,62 @@ MUTATIONS = [
      "",
      "test_the_reporter_is_serialised"),
 
+    # --- verify_no_relaxation rules 8 and 9 (#610) ---------------------------
+    # These nine rows carry more weight than most. `chief.md` cites this gate
+    # by name as what makes clearing a `.github/workflows/` PR non-circular now
+    # that the user widened Shape C to the whole trust boundary, so a hole in
+    # rule 8 or 9 is not one missing check — it is the only thing between an
+    # agent and its own constraints.
+
+    ("no_relaxation: an unknown permissions value ranks as ABSENT, not wide",
+     "scripts/verify_no_relaxation.py",
+     'return {"<unparseable>": 2}', 'return {"<unparseable>": 0}',
+     "test_an_unrecognised_permissions_shape_ranks_as_WIDE_not_as_absent"),
+
+    ("no_relaxation: a job's permissions overwrite the top-level block",
+     "scripts/verify_no_relaxation.py",
+     'out[f"jobs.{jid}"] = _normalise_perms(job["permissions"])',
+     'out["<top-level>"] = _normalise_perms(job["permissions"])',
+     "test_top_level_and_job_permissions_are_reported_separately"),
+
+    ("no_relaxation: the TRUST_BOUNDARY block never ends, swallowing env keys",
+     "scripts/verify_no_relaxation.py",
+     "if len(nxt) - len(nxt.lstrip()) <= indent:", "if False:",
+     "test_the_block_ends_at_the_first_line_that_dedents"),
+
+    ("no_relaxation: an unparseable workflow is swallowed instead of failing",
+     "scripts/verify_no_relaxation.py",
+     'bad.append(f"{path}: cannot be parsed as YAML ({exc.__class__.__name__}), so its "',
+     'pass  # MUTANT: swallow it. The line below is now a bare expression.\n            (',
+     "test_rule_8_goes_red_rather_than_quiet_on_a_workflow_it_cannot_parse"),
+
+    ("no_relaxation: a brand-new permissions block grants nothing, apparently",
+     "scripts/verify_no_relaxation.py",
+     "granted = sorted(k for k, v in a_block.items() if v > 0)",
+     "granted = []",
+     "test_rule_8_goes_red_on_a_permissions_block_that_is_entirely_new"),
+
+    ("no_relaxation: a widened scope is never above the threshold",
+     "scripts/verify_no_relaxation.py",
+     "if rank > was:", "if rank > was + 9:",
+     "test_rule_8_goes_red_when_a_job_block_widens"),
+
+    ("no_relaxation: write-all is compared as a scope name, not as <all>",
+     "scripts/verify_no_relaxation.py",
+     'return {"<all>": _SCOPE_RANK.get(block.split("-", 1)[0], 2)}',
+     'return {"<all>": 0}',
+     "test_rule_8_goes_red_on_write_all_replacing_a_narrow_block"),
+
+    ("no_relaxation: TRUST_BOUNDARY compares the diff the wrong way round",
+     "scripts/verify_no_relaxation.py",
+     "elif lost := sorted(b_tb - a_tb):", "elif lost := sorted(a_tb - b_tb):",
+     "test_rule_9_goes_red_when_a_boundary_path_is_removed"),
+
+    ("no_relaxation: a deleted TRUST_BOUNDARY block reads as nothing lost",
+     "scripts/verify_no_relaxation.py",
+     "if b_tb and not a_tb:", "if a_tb and not b_tb:",
+     "test_rule_9_goes_red_when_the_whole_block_disappears"),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

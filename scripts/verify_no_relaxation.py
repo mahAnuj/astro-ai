@@ -38,6 +38,21 @@ WHAT IT CHECKS, each against the merge base
      makes a single removed line unable to skip a condition)
   6. `qa-pass` / `qa-fail` handling in agent-merge stays present
   7. THIS FILE may not be edited in the same diff as anything it guards
+  8. A workflow's `permissions:` may not WIDEN   (added 2026-11-01, #610)
+  9. `TRUST_BOUNDARY` may not lose an entry      (added 2026-11-01, #610)
+
+RULES 8 AND 9 ARE WHAT MAKE `chief` CLEARING A WORKFLOW PR NON-CIRCULAR.
+Until 2026-11-01 a `.github/workflows/` PR was held for the owner, and the
+stated reason was blast radius: "a workflow edit can grant the loop new powers
+or disable the gates that constrain every other agent." The user then widened
+chief's Shape C to the whole trust boundary — *"I want the loop to not hold on
+me"* — which moved that risk from "a human looks at it" to "a gate catches it".
+
+These two rules are that gate. `chief.md` is written against them: a red
+`verify_no_relaxation` is never chief's to rule on, it is `insufficient-evidence`
+and it goes to the owner. So if these two checks are weak, the whole grant is
+weak, and that is why rule 8 fails CLOSED on a permissions block it has never
+seen before rather than trying to judge whether the new scope is reasonable.
 
 Rule 7 is the one that keeps the rest honest. A change to the detector of
 relaxations is the single change a human should look at, so it is allowed —
@@ -58,6 +73,78 @@ import ast
 import re
 import subprocess
 import sys
+
+import yaml
+
+#: GitHub's permission ladder. An omitted scope is `none`, never inherited, so
+#: absence ranks 0 and "scope appeared at all" is a widening like any other.
+_SCOPE_RANK = {"none": 0, "read": 1, "write": 2}
+_SCOPE_NAME = {0: "none", 1: "read", 2: "write"}
+
+
+def _normalise_perms(block: object) -> dict[str, int]:
+    """A workflow `permissions:` value as {scope: rank}.
+
+    Four shapes occur in practice and all four must map onto the same ladder:
+      permissions:              -> {} (an empty value revokes everything)
+      permissions: write-all    -> every scope at write, as `<all>`
+      permissions: {}           -> {}
+      permissions: {a: write}   -> {"a": 2}
+    An unrecognised value ranks 2 rather than 0, so a shape this function has
+    not met is treated as the widest thing it could be.
+    """
+    if block is None:
+        return {}
+    if isinstance(block, str):
+        return {"<all>": _SCOPE_RANK.get(block.split("-", 1)[0], 2)}
+    if isinstance(block, dict):
+        return {str(k): _SCOPE_RANK.get(str(v), 2) for k, v in block.items()}
+    return {"<unparseable>": 2}
+
+
+def _perm_blocks(doc: object) -> dict[str, dict[str, int]]:
+    """Every `permissions:` mapping in a parsed workflow, keyed by where it sits.
+
+    Top-level and per-job are compared SEPARATELY and never merged: a job block
+    overrides the top-level one entirely rather than adding to it, so summing
+    them would both miss a widening and invent one.
+    """
+    if not isinstance(doc, dict):
+        return {}
+    out: dict[str, dict[str, int]] = {}
+    if "permissions" in doc:
+        out["<top-level>"] = _normalise_perms(doc["permissions"])
+    jobs = doc.get("jobs")
+    if isinstance(jobs, dict):
+        for jid, job in jobs.items():
+            if isinstance(job, dict) and "permissions" in job:
+                out[f"jobs.{jid}"] = _normalise_perms(job["permissions"])
+    return out
+
+
+def _trust_boundary(text: str) -> set[str]:
+    """The paths in agent-merge's `TRUST_BOUNDARY: |` block.
+
+    Read from the raw text rather than from parsed YAML on purpose: the block
+    sits under `env:` inside a job, and a diff that breaks the YAML should fail
+    rule 8's parse with a clear message rather than make this one quietly return
+    an empty set — which would read as "nothing was lost".
+    """
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        m = re.match(r"^(\s*)TRUST_BOUNDARY:\s*\|\s*$", line)
+        if not m:
+            continue
+        indent = len(m.group(1))
+        paths = set()
+        for nxt in lines[i + 1:]:
+            if not nxt.strip():
+                continue
+            if len(nxt) - len(nxt.lstrip()) <= indent:
+                break
+            paths.add(nxt.strip())
+        return paths
+    return set()
 
 SELF = "scripts/verify_no_relaxation.py"
 
@@ -296,6 +383,71 @@ def main(argv: list[str]) -> int:
                            f"it carries is one an agent is tempted to soften rather than keep.")
         else:
             print(f"  ok   phrases floored   {path} ({len(needed_list)})")
+
+    # 8. A workflow's `permissions:` may not widen.
+    #
+    # WHY THIS FAILS CLOSED ON A BLOCK IT HAS NOT SEEN BEFORE. A brand-new
+    # `permissions:` mapping -- a new workflow file, or a new job in an existing
+    # one -- is reported as a weakening even though nothing shrank, because a new
+    # block is the obvious way to grant a power without touching an old one. The
+    # cost of that strictness is bounded and already paid: the App token is
+    # refused the `workflows` permission, so EVERY change under
+    # `.github/workflows/` already comes from a human or a Claude session and
+    # already needs one merge. Failing here costs that same merge and buys a
+    # check that cannot be talked around.
+    wf_changed = [c for c in changed
+                  if c.startswith(".github/workflows/") and c.endswith((".yml", ".yaml"))]
+    for path in wf_changed:
+        a_txt, b_txt = at("HEAD", path), at(base, path)
+        if a_txt is None:
+            continue            # deleted; the EXPECTED_WORKFLOWS floor owns that
+        try:
+            after = _perm_blocks(yaml.safe_load(a_txt))
+            before = _perm_blocks(yaml.safe_load(b_txt)) if b_txt is not None else {}
+        except yaml.YAMLError as exc:
+            bad.append(f"{path}: cannot be parsed as YAML ({exc.__class__.__name__}), so its "
+                       f"`permissions:` cannot be compared. An unreadable gate is not a pass.")
+            continue
+        for where, a_block in after.items():
+            b_block = before.get(where)
+            if b_block is None:
+                granted = sorted(k for k, v in a_block.items() if v > 0)
+                if granted:
+                    bad.append(
+                        f"{path}: `permissions:` at `{where}` is new, granting "
+                        f"{', '.join(granted)}. A new block is how a power gets added without "
+                        f"widening an old one, so this gate does not judge it — a human does.")
+                continue
+            for scope, rank in a_block.items():
+                was = b_block.get(scope, 0)
+                if rank > was:
+                    bad.append(
+                        f"{path}: `permissions:` at `{where}` widens `{scope}` "
+                        f"({_SCOPE_NAME.get(was, was)} -> {_SCOPE_NAME.get(rank, rank)}). "
+                        f"Granting the loop a scope it did not have is the one change an agent "
+                        f"clearing it would be deciding its own constraints.")
+        if not any(b.startswith(path) for b in bad):
+            print(f"  ok   permissions held  {path} ({len(after)} block(s))")
+
+    # 9. `TRUST_BOUNDARY` may not lose an entry.
+    #
+    # It is the list of paths `agent-merge` holds for review. Removing one is not
+    # a relaxation of a number or a phrase — it silently takes a whole class of
+    # diff out of the hold, and the PR that did it would look like a tidy-up.
+    # ADDING an entry is fine and deliberately unchecked: a wider boundary holds
+    # more, never less.
+    if am in changed:
+        a_tb = _trust_boundary(at("HEAD", am) or "")
+        b_tb = _trust_boundary(at(base, am) or "")
+        if b_tb and not a_tb:
+            bad.append(f"{am}: the `TRUST_BOUNDARY` block is gone. Every boundary path it "
+                       f"listed is now unheld, and `chief` has nothing left to clear.")
+        elif lost := sorted(b_tb - a_tb):
+            bad.append(f"{am}: `TRUST_BOUNDARY` lost {', '.join(lost)}. A path removed from "
+                       f"the boundary stops being held at all — that is wider than anything "
+                       f"`chief` was granted, which only clears a hold case by case.")
+        elif b_tb:
+            print(f"  ok   boundary intact    {am} ({len(a_tb)} path(s))")
 
     print()
     if bad:
