@@ -25,10 +25,17 @@ hands the action only two env vars of its own; and this script already prefers
 would reject every in-cycle PASS the loop makes and **stop it merging** -- the
 one part of this system that works unattended today.
 
-So this commit ships the DIAGNOSTIC and not the refusal: the mode is printed on
-every run, read from a real `agent-work` log, and only then enforced. These
-tests pin the reading, the naming of the variables, and -- most importantly --
-that nothing yet refuses anything.
+So this commit ships the DIAGNOSTIC and not the refusal: the mode is printed,
+read from a real `agent-work` log, and only then enforced. These tests pin the
+reading, the naming of the variables, and -- most importantly -- that nothing
+yet refuses anything.
+
+PRINTED BEFORE THE FIRST EXIT, which the QA round on this PR had to point out.
+The line used to sit beside the end-of-run summary, after the exits for a bad
+argument (2), an unreadable PR (1) and a stale `--sha` (3) -- so a run that
+died early left NO reading at all, and the one thing this diagnostic exists to
+settle is what a REAL loop run reports. A loop run that exits 2 on a typo is
+exactly the run whose mode is still worth knowing.
 
 NOTHING HERE SKIPS. `scripts/verify_behaviour.py` fails the suite on any skip or
 xfail, by design, so a case that cannot assert must not exist.
@@ -148,8 +155,34 @@ def test_the_line_NAMES_the_variables_it_read(tmp_path):
     """
     r = _run(tmp_path, env_extra={"GITHUB_ACTIONS": "true"})
     assert "GITHUB_ACTIONS=true" in r.stdout
-    assert "GITHUB_RUN_ID=" in r.stdout
+    # `GITHUB_RUN_ID=` alone was the assertion, and the QA round on PR #649
+    # showed what it bought: mutating the field's VALUE to anything at all --
+    # it tried `:+x` -- passed all 24 tests, because the prefix survives any
+    # right-hand side. The value is the whole fact here; assert it.
+    assert "GITHUB_RUN_ID=unset" in r.stdout, r.stdout
     assert "CI=" in r.stdout
+
+
+def test_the_run_id_is_reported_as_SET_when_it_is_set(tmp_path):
+    """The other half, and the one the refusal in A2 will read.
+
+    `mode=loop` requires GITHUB_ACTIONS=true AND a non-empty GITHUB_RUN_ID, so
+    "which of the two was missing" is only answerable if the field distinguishes
+    set from unset. A test asserting the bare prefix cannot tell them apart.
+    """
+    r = _run(tmp_path, env_extra=LOOP)
+    assert "GITHUB_RUN_ID=set" in r.stdout, r.stdout
+    assert "GITHUB_RUN_ID=unset" not in r.stdout
+
+
+def test_an_empty_run_id_reads_as_unset_not_as_set(tmp_path):
+    """`GITHUB_ACTIONS=true` with `GITHUB_RUN_ID=` is top-level by the rule, and
+    the diagnostic has to agree with the rule it is diagnosing -- otherwise the
+    log would say `mode=top-level GITHUB_RUN_ID=set`, which is incoherent and
+    is exactly the ambiguity this field exists to remove."""
+    r = _run(tmp_path, env_extra={"GITHUB_ACTIONS": "true", "GITHUB_RUN_ID": ""})
+    assert "mode=top-level" in r.stdout
+    assert "GITHUB_RUN_ID=unset" in r.stdout, r.stdout
 
 
 def test_an_unset_variable_is_reported_as_unset_not_as_blank(tmp_path):
@@ -248,3 +281,49 @@ def test_there_is_no_env_escape_hatch_yet():
     src = SCRIPT.read_text(encoding="utf-8")
     for bad in ("ALLOW_IN_CYCLE", "QA_VERDICT_FORCE", "SKIP_PROVENANCE", "--force"):
         assert bad not in src, f"{bad} exists in the script"
+
+
+# ------------------------------------- the reading survives an early exit
+
+@pytest.mark.parametrize("args,why,code", [
+    (["--pr", "abc", "--verdict", "PASS"], "a non-numeric --pr", 2),
+    (["--verdict", "BOGUS", "--pr", "1"], "an invalid verdict", 2),
+    (["--pr", "1", "--verdict", "PASS", "--provenance", "nope"], "a bad provenance", 2),
+])
+def test_the_mode_is_reported_even_when_the_run_exits_early(tmp_path, args, why, code):
+    """THE QA ROUND'S FIRST FINDING ON THIS PR, executed.
+
+    The line used to sit beside the end-of-run summary, after the exits for a
+    bad argument, an unreadable PR and a stale `--sha`. So the runs that died
+    early -- `{why}` here -- left NO mode reading at all.
+
+    That matters because the whole plan is to read `mode=` out of ONE real
+    `agent-work` log and only then ship the refusal. A loop run that exits 2 on
+    a typo is exactly the run whose mode is still worth knowing, and under the
+    old placement it answered nothing either way.
+    """
+    env = dict(os.environ)
+    for k in ("GITHUB_ACTIONS", "GITHUB_RUN_ID", "CI"):
+        env.pop(k, None)
+    env.update(LOOP)
+    env["GH_REPO"] = "owner/repo"
+    env["PATH"] = f"{_fake_gh(tmp_path)}:{env['PATH']}"
+    r = subprocess.run(["bash", str(SCRIPT), *args],
+                       capture_output=True, text=True, env=env, timeout=300)
+    assert r.returncode == code, (r.returncode, r.stdout, r.stderr)
+    assert "mode=loop" in r.stdout, (
+        f"no mode reading after exiting on {why}; stdout={r.stdout!r}"
+    )
+
+
+def test_the_mode_is_printed_before_the_argument_parsing():
+    """Static, and it is what makes the cases above hold for exits this file
+    does not enumerate. The reading has to be emitted where no later `exit` can
+    suppress it, which means before the `while` that parses arguments."""
+    src = SCRIPT.read_text(encoding="utf-8")
+    first_echo = src.index('echo "qa_verdict: mode=$MODE"')
+    parse = src.index("while [ $# -gt 0 ]")
+    assert first_echo < parse, (
+        "the mode line is emitted after argument parsing begins, so an early "
+        "exit suppresses it again"
+    )

@@ -4197,11 +4197,29 @@ MUTATIONS = [
      'GITHUB_ACTIONS=${GITHUB_ACTIONS:-}',
      'test_an_unset_variable_is_reported_as_unset_not_as_blank'),
 
+    # RE-ANCHORED in round 2. `${GITHUB_RUN_ID:+set}` was replaced by an
+    # explicit set/unset, because `:+` rendered an UNSET id as an empty string
+    # -- indistinguishable from set-to-empty, which the QA round flagged as a
+    # non-blocking ambiguity. The rule is unchanged: the VALUE never appears.
     ('qa_verdict: the run id value is printed into every log line',
      'scripts/qa_verdict.sh',
-     'GITHUB_RUN_ID=${GITHUB_RUN_ID:+set}',
-     'GITHUB_RUN_ID=${GITHUB_RUN_ID:-}',
+     'echo set || echo unset)',
+     'echo "${GITHUB_RUN_ID}" || echo unset)',
      'test_the_run_id_VALUE_is_not_printed'),
+
+    # ---- round 2 on #649, from the independent QA round's two findings -----
+
+    ('#649 r2: the mode line moves back after the exits, so a failed run reports nothing',
+     'scripts/qa_verdict.sh',
+     'echo "qa_verdict: mode=$MODE" \\',
+     ': "qa_verdict: mode=$MODE" \\',
+     'test_the_mode_is_reported_even_when_the_run_exits_early'),
+
+    ('#649 r2: an unset run id reads as set, so mode=top-level contradicts its own evidence',
+     'scripts/qa_verdict.sh',
+     '&& echo set || echo unset)',
+     '&& echo set || echo set)',
+     'test_an_empty_run_id_reads_as_unset_not_as_set'),
     # ---- the PR-scoped QA dispatch -----------------------------------------
     #
     # Measured 2026-11-01: four of the five green PRs then open had received
