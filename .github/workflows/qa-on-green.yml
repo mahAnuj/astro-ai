@@ -144,13 +144,42 @@ jobs:
               say "PR #$num carries \`needs-human-review\` — someone has been told."; exit 0 ;;
           esac
 
-          # A cycle cannot update a branch whose diff touches these: the Claude
-          # App's token has no `workflows` permission and the push is refused
-          # (#442/#315). Dispatching one spends ~50 Actions minutes to reproduce
-          # the same stop.
+          # A JUDGING ROUND IS STILL POSSIBLE ON A BRANCH NOBODY CAN PUSH (#610).
+          #
+          # A cycle cannot push to a branch whose diff touches
+          # `.github/workflows/`: the Claude App's token is refused the
+          # `workflows` permission and the push itself is rejected (#442/#315).
+          # Until 2026-11-01 this step read that as "a human has to" and exited:
+          #
+          #   say "... the App token cannot push that branch. A human has to."
+          #   exit 0
+          #
+          # WHICH WITHHELD THE ONE LABEL THAT MATTERS. `agent-merge`'s `QA
+          # verdict` step merges nothing without `qa-pass`, so exiting here did
+          # not route a workflow PR to a human — it made the PR unmergeable by
+          # anything, including a human running the sweep, until someone labelled
+          # it by hand. Measured on PR #631: gates green since 2026-10-31T20:27,
+          # no labels, no comments, `agent-merge` printing "no qa-pass label yet"
+          # on every sweep.
+          #
+          # The refusal is on the PUSH and on nothing else:
+          #   * a QA round READS the diff and writes a label
+          #   * `qa_verdict.sh` writes that label with `github.token`
+          #   * `agent-merge` merges with `github.token` too
+          # None of those three is the App token. So the round runs; what it may
+          # not do is push a fix, and `.claude/commands/agent-cycle.md` Step 2.5
+          # carries that rule where the agent will actually read it. On a defect
+          # the round writes `qa-fail` and puts the patch in a comment for chief
+          # or a human session to apply.
+          #
+          # This does NOT let the loop merge its own gates unattended. Such a PR
+          # still carries `needs-human-review` from `agent-merge`'s boundary
+          # step, which only chief can clear, and only with
+          # `verify_no_relaxation.py` green — the gate that is red by
+          # construction on a widened permission or a weakened check.
+          judge_only=false
           if jq -e '.[0].files[] | select(.path | startswith(".github/workflows/"))' <<<"$pr" >/dev/null 2>&1; then
-            say "PR #$num touches \`.github/workflows/**\` — the App token cannot push that branch. A human has to."
-            exit 0
+            judge_only=true
           fi
 
           # The issue to aim the dispatch at. `issue/`, `partial/` and `fix/`
@@ -181,9 +210,14 @@ jobs:
             echo "pr=$num"
             echo "issue=$issue"
             echo "head=$head"
+            echo "judge_only=$judge_only"
             echo "go=true"
           } >> "$GITHUB_OUTPUT"
-          say "PR #$num (issue #$issue) at \`${head:0:7}\`: gates green, no verdict — dispatching a cycle."
+          if [ "$judge_only" = true ]; then
+            say "PR #$num (issue #$issue) at \`${head:0:7}\`: gates green, no verdict — dispatching a JUDGE-ONLY round (the branch touches \`.github/workflows/\`, so the round may label it but not push to it)."
+          else
+            say "PR #$num (issue #$issue) at \`${head:0:7}\`: gates green, no verdict — dispatching a cycle."
+          fi
 
       # Say it on the PR BEFORE dispatching, not after. The comment is the loop
       # guard's only memory, and a dispatch that happened without one would be
@@ -196,12 +230,23 @@ jobs:
           PR_NUMBER: ${{ steps.pick.outputs.pr }}
           PR_HEAD: ${{ steps.pick.outputs.head }}
           ISSUE: ${{ steps.pick.outputs.issue }}
+          JUDGE_ONLY: ${{ steps.pick.outputs.judge_only }}
         run: |
           set -uo pipefail
+          # The judge-only paragraph is a REMINDER, not the rule. The rule lives
+          # in `.claude/commands/agent-cycle.md` Step 2.5, because a comment on a
+          # PR is data the agent reads and a rule it must obey cannot be sourced
+          # from the artefact under review. If the two ever disagree,
+          # agent-cycle.md wins.
+          if [ "$JUDGE_ONLY" = true ]; then
+            scope="**This is a JUDGE-ONLY round.** The diff touches \`.github/workflows/\`, and the App token the cycle runs under is refused the \`workflows\` permission, so no commit can be pushed to this branch. Run the QA round, write the verdict, and stop. On a defect, write \`qa-fail\` and put the patch in a comment — do not attempt to apply it. See \`agent-cycle.md\` Step 2.5."
+          else
+            scope="\`/agent-cycle\` Step 2.5 adopts this branch and PR rather than starting over."
+          fi
           gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body \
             "qa-on-green: dispatched at $PR_HEAD
 
-          Both gates are green on this head and no QA round has ruled on it, so a cycle is being dispatched at #$ISSUE to run one. \`/agent-cycle\` Step 2.5 adopts this branch and PR rather than starting over.
+          Both gates are green on this head and no QA round has ruled on it, so a cycle is being dispatched at #$ISSUE to run one. $scope
 
           This is mechanical, not a judgment: no model ran, and nothing here applied, removed or read a verdict label. Only \`scripts/qa_verdict.sh\` writes those. One dispatch per commit — a new push earns another, this one does not."
 

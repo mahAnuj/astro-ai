@@ -273,6 +273,41 @@ notices is the bill.
 If you deliberately discard earlier work — the design was wrong, the branch is stale against a
 moved `main` — say which and why. Discarding is a legitimate choice; discarding silently is not.
 
+### A JUDGE-ONLY round — when the branch touches `.github/workflows/`
+
+**Check this before you dispatch anyone.**
+
+```bash
+gh pr view <pr> --repo "$GH_REPO" --json files --jq '.files[].path' | grep -q '^\.github/workflows/' \
+  && echo "JUDGE-ONLY" || echo "normal cycle"
+```
+
+If it prints `JUDGE-ONLY`, **you cannot push to this branch and neither can any agent you
+dispatch.** The App token this cycle runs under is refused the `workflows` permission, and git
+rejects the push itself — this is a capability limit, not a rule you are being asked to respect.
+Attempting it wastes the round and ends with the branch unchanged either way.
+
+**What you still do, in full:**
+
+1. **Dispatch the QA round.** It reads the diff and judges it against the issue's acceptance
+   criteria exactly as it would on any other PR. Reading is not pushing.
+2. **Record the verdict** with `scripts/qa_verdict.sh` (Step 3.5). That script writes the label
+   with `github.token`, not the App token, so it works here. **This is the point of the round:**
+   `agent-merge` merges nothing without `qa-pass`, so a workflow PR that gets no verdict is not
+   "waiting for a human" — it is unmergeable by anyone until someone labels it by hand. PR #631
+   sat green and unjudged for a day on exactly that.
+3. **On a FAIL, write `qa-fail` and put the patch in a comment.** A fenced diff, applied by
+   nobody. Then stop. Do not switch to the branch, do not commit, do not try the push "to see".
+
+**What you must not do:** dispatch an engineer, or claim in the trail that a fix was applied.
+A comment saying a patch was applied when the push was refused is the failure mode this repo has
+recorded three times, most recently in #634.
+
+**Who takes it from here.** The PR also carries `needs-human-review` from `agent-merge`'s
+boundary step. `chief` clears that — the user widened Shape C to the whole trust boundary on
+2026-11-01 — and `agent-merge` then merges on its own `qa-pass` check. Escalate to a human only
+if the diff itself has to change, and say which line. That is the one irreducible act here.
+
 ## Step 3 — build it
 
 Follow `/bug` or `/feature` internals exactly, whichever fits. In particular:
