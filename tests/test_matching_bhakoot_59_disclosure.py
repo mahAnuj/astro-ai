@@ -201,3 +201,32 @@ def test_the_convention_text_names_no_book():
         for book in ("Muhurta", "Muhurtha", "Chintamani", "Jataka", "Parashara", "Raman",
                      "मुहूर्त", "चिन्तामणि", "चिंतामणि", "पराशर"):
             assert book not in text, (lang, text)
+
+
+# --- the "How this total was reached" row must not call a 5/9 cancellation classical ---
+#
+# QA round 1 on #656 (2d5114b): the strip and the koota note were fixed, but
+# matching_result.html's totals footnote still said "cancelled by the classical
+# conditions" for a cancelled 5/9 pair, on the same page as the strip saying the
+# opposite. The claim checks above only read the two note strings, so nothing saw it.
+
+def _flat(html):
+    return re.sub(r"\s+", " ", _html.unescape(html))
+
+
+@pytest.mark.parametrize("lang", ["en", "hi"])
+def test_totals_footnote_does_not_call_a_five_nine_cancellation_classical(
+        client, stub_llm, lang):
+    assert _guna(FIVE_NINE).bhakoot_dosha.cancelled is True   # the footnote renders
+    page = _flat(_post(client, stub_llm, FIVE_NINE, lang))
+    assert "cancelled by the classical conditions" not in page
+    assert "cancelled by the conditions Bhagya applies to it" in page
+
+
+def test_totals_footnote_keeps_its_wording_for_a_sourced_distance(client, stub_llm):
+    # 6/8 is in the text we hold, so its cancellation stays "classical" -- exactly
+    # when it is cancelled, as on origin/main.
+    cancelled = _guna(SIX_EIGHT).bhakoot_dosha.cancelled
+    page = _flat(_post(client, stub_llm, SIX_EIGHT))
+    assert ("cancelled by the classical conditions" in page) is cancelled
+    assert "conditions Bhagya applies to it" not in page
