@@ -2389,8 +2389,8 @@ MUTATIONS = [
     # ---- #442: the steward can dispatch, and a merge is not a refix ---------
     ("#442: the carrier stops refusing a lenient dispatch line",
      "scripts/dispatch_cycle.sh",
-     "grep -oE '^issue=[0-9]+$'",
-     "grep -oE 'issue=[0-9]+'",
+     "grep -oE '^(issue|pr)=[0-9]+$'",
+     "grep -oE '(issue|pr)=[0-9]+'",
      "test_anything_but_issue_equals_digits_is_refused"),
     ("#442: the carrier stops treating an unreadable concurrency check as busy",
      "scripts/dispatch_cycle.sh",
@@ -4171,6 +4171,35 @@ MUTATIONS = [
      'GITHUB_RUN_ID=${GITHUB_RUN_ID:+set}',
      'GITHUB_RUN_ID=${GITHUB_RUN_ID:-}',
      'test_the_run_id_VALUE_is_not_printed'),
+    # --- the carrier learns a second ruling form: pr= (#639, #647) ----------
+    # A QA ROUND NEEDS A PR, NOT AN ISSUE. These rows guard the two halves that
+    # can go wrong quietly: dispatching a `pr=` ruling under the `issue` key,
+    # and reading a PR's state with `gh issue view` -- which ANSWERS, because
+    # the number spaces overlap, so the wrong object's state would pass.
+
+    ('#639: a pr= ruling is dispatched under the issue key',
+     'scripts/dispatch_cycle.sh',
+     'gh workflow run agent-work.yml --repo "$GH_REPO" -f "$kind=$target"',
+     'gh workflow run agent-work.yml --repo "$GH_REPO" -f issue="$target"',
+     'test_the_real_dispatch_composes_the_key_it_was_given'),
+
+    ("#639: a pr= ruling's state is read with gh issue view, which answers",
+     'scripts/dispatch_cycle.sh',
+     '    state=$(gh pr view "$target" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)',
+     '    state=$(gh issue view "$target" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)',
+     'test_a_pr_ruling_is_checked_with_pr_view_and_NOT_issue_view'),
+
+    ('#639: an issue= ruling naming a pull request is accepted',
+     'scripts/dispatch_cycle.sh',
+     '      */pull/*)',
+     '      */never-matches/*)',
+     'test_an_issue_ruling_that_names_a_PULL_REQUEST_is_refused'),
+
+    ('#639: the dispatched kind is not exported, so a round reads as a cycle',
+     'scripts/dispatch_cycle.sh',
+     '  echo "DISPATCHED_KIND=$kind" >> "$GITHUB_ENV"',
+     '  :',
+     'test_the_dispatched_kind_is_exported_beside_the_number'),
 
 ]
 
