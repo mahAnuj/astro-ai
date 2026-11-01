@@ -358,9 +358,56 @@ def find_stalls(hours: float) -> list[dict]:
                 boundary_paths=sorted(bpaths),
                 checks=checks, labels=sorted(labels),
                 agent_pushable=pushable))
+        elif pr.get("mergeable") == "CONFLICTING":
+            # CONFLICTING IS TESTED BEFORE `qa-pass and green` (#616), and the
+            # order is the whole fix.
+            #
+            # `green` is computed from check runs on the HEAD SHA, which are
+            # HISTORY: they stay green after `main` moves underneath the branch
+            # and the PR becomes CONFLICTING. So a PR that was green with
+            # `qa-pass` and then conflicted satisfied the branch below, and the
+            # branch below says "the merge GATE has a defect".
+            #
+            # The routing table sends the two kinds to OPPOSITE actions:
+            #   mergeable-but-open  do not touch the PR, diagnose the gate,
+            #                       file an issue
+            #   pr-conflicting      dispatch a cycle and run
+            #                       scripts/merge_main_into_branch.py --push
+            #
+            # Measured on PR #608 (head 0880a6a) 2026-10-31: CONFLICTING/DIRTY,
+            # labels qa-pass + qa:in-cycle, both gates green from 2026-10-30,
+            # reported `mergeable-but-open` with no mention of the conflict.
+            # `git merge-tree --write-tree --name-only origin/main <branch>`
+            # conflicted in exactly one file, `scripts/mutate_behaviour_suite.py`
+            # -- a mechanical class `merge_main_into_branch.py` handles. The gate
+            # was CORRECT (`agent-merge` skips a CONFLICTING PR by design,
+            # #403); the stall was plain unresolved conflict, and the steward
+            # was sent to diagnose a gate that had nothing wrong with it.
+            #
+            # The CONFLICTING test that already existed sits under
+            # `elif not checks:` below, and that branch is only reached when
+            # NOTHING ever ran. A PR with green history and a later conflict
+            # never gets there.
+            #
+            # Emitted with `conflicting=True` and the same `kind` as that
+            # branch, so `steward.md`'s routing table needs no new row: one
+            # cause, one kind, one action, whatever the check history says.
+            stalls.append(dict(
+                kind="pr-conflicting", pr=n, issue=issue, age_h=round(age, 1),
+                detail=(f"CONFLICTING for {age:.0f}h. Its checks may still read green -- they "
+                        f"are history on the head SHA and `main` has moved since -- so this is "
+                        f"NOT a gate defect: `agent-merge` skips a conflicting PR by design "
+                        f"(#403). Resolvable by scripts/merge_main_into_branch.py unless the "
+                        f"conflict is in a source file, which it refuses. A push that resolves "
+                        f"it makes a new head, so a `qa-pass` bound to the old SHA needs a "
+                        f"fresh round -- which is correct."),
+                conflicting=True,
+                checks=checks, labels=sorted(labels), agent_pushable=pushable))
         elif "qa-pass" in labels and "qa-fail" not in labels and green:
-            # Every merge condition satisfied. If it is still open, the gate
-            # read something it did not anticipate. (PR #319, nine hours.)
+            # Every merge condition satisfied, AND the PR is not conflicting --
+            # the branch above now takes that case (#616). If it is still open,
+            # the gate read something it did not anticipate. (PR #319, nine
+            # hours.)
             stalls.append(dict(kind="mergeable-but-open", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"qa-pass, every latest check green, open {age:.0f}h",
                                checks=checks, labels=sorted(labels), agent_pushable=pushable))
