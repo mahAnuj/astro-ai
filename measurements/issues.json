@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-01T11:41:20Z",
+  "generated_at": "2026-11-01T18:45:16Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 130,
-  "with_ask": 55,
+  "open": 131,
+  "with_ask": 56,
   "by_area": {
-    "UNCLASSIFIED": 48,
+    "UNCLASSIFIED": 49,
     "INFRA": 15,
     "UI": 12,
     "REDESIGN": 10,
@@ -33,7 +33,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 38,
+    "untyped": 39,
     "bug": 33,
     "enhancement": 27,
     "correctness": 11,
@@ -42,13 +42,26 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 92,
+    "unset": 93,
     "medium": 20,
     "high": 17,
     "low": 1
   },
-  "blocked": 8,
+  "blocked": 9,
   "rows": [
+    {
+      "number": 657,
+      "title": "qa-on-green aims at the branch-named issue without checking it is open, so a green PR whose issue already closed is refused every time and never gets a QA round (#636)",
+      "ask": "In the pick step, after deriving issue, run gh issue view \"$issue\" --json state --jq .state and fall back to target=\"pr=$num\" unless it is OPEN.",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-01T16:31:28Z",
+      "updated": "2026-11-01T16:31:28Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 648,
       "title": "Four accuracy defects left by #642's conflict reclassification — including a dead arm whose replacement detail is wrong for the case it inherited",
@@ -407,11 +420,12 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "needs-human-review"
       ],
       "created": "2026-10-27T15:12:04Z",
-      "updated": "2026-11-01T10:35:20Z",
-      "blocked": false,
+      "updated": "2026-11-01T16:24:16Z",
+      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -497,7 +511,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-10-31T02:26:13Z",
+      "updated": "2026-11-01T17:24:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -558,7 +572,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-23T19:06:27Z",
-      "updated": "2026-10-24T17:55:39Z",
+      "updated": "2026-11-01T15:17:39Z",
       "blocked": false,
       "needs_evidence": false
     },
