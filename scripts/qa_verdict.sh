@@ -68,7 +68,79 @@
 #      asserting a verdict about code QA never saw)
 #   4  an API call failed and the transition is INCOMPLETE -- read the output,
 #      because this is the partial state the script exists to prevent
+#
+# A `qa_verdict: mode=` line on STDERR says whether this run looks like the
+# loop or like a top-level session, and names the variables it read. It is
+# printed as soon as the mode is known -- BEFORE the exits for a bad argument,
+# an unreadable PR or a stale `--sha` -- so every run leaves the reading,
+# including one that then fails. The summary line at the end repeats the mode
+# beside the provenance, where a reader of the outcome wants it.
 set -euo pipefail
+
+# WHICH CONTEXT IS RECORDING THIS VERDICT, and why the script needs to know.
+#
+# `--provenance` defaults to the WEAKER claim, `in-cycle`, because qa.md says
+# "If you cannot tell which you are, you are qa:in-cycle". That default is right
+# for the loop and wrong for a top-level session: a session that simply omits
+# the flag records `qa:in-cycle` on work it may well have written itself, and
+# nothing anywhere notices. The owner ruled on 2026-11-01 that a top-level
+# session may record a verdict ONLY with `--provenance independent`.
+#
+# THIS COMMIT ADDS THE DIAGNOSTIC AND NOT THE REFUSAL, deliberately. Whether
+# these variables reach a script run by the agent inside `claude-code-action`
+# is not established: no agent-invoked script in this repo reads a `GITHUB_*`
+# variable, and `agent-work.yml` hands the action only two env vars of its own
+# while this script already falls back to `gh repo view` rather than trusting
+# `$GITHUB_REPOSITORY`. If the assumption is wrong, a refusal here would reject
+# every in-cycle PASS the loop makes and stop it merging -- the one part of this
+# system that currently works unattended. So the mode is PRINTED first, read
+# from a real `agent-work` log, and only then enforced.
+#
+# TWO VARIABLES, BOTH REQUIRED. GitHub sets both in the environment of every
+# step. Requiring the pair means a stray `export GITHUB_ACTIONS=true` in a shell
+# profile is not on its own enough to claim to be the loop.
+#
+# `$CI` IS DELIBERATELY NOT CONSULTED. It is the one of the three that is not
+# GitHub's: every local tool that fancies it sets it, and so do pre-commit and
+# `act`. Reading it would widen "I am the loop" to any machine with a
+# conventional environment variable.
+#
+# This is not, and cannot be, a security boundary: a caller holding Bash can
+# write `GITHUB_ACTIONS=true GITHUB_RUN_ID=1 scripts/qa_verdict.sh ...` in one
+# line. What it can do is make the weaker claim impossible to make BY ACCIDENT
+# or BY DEFAULT. The real boundary is unchanged and lives elsewhere: this script
+# is the only writer of these labels, and the permission system decides who may
+# run it.
+IN_LOOP=0
+if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then
+  IN_LOOP=1
+fi
+MODE=top-level
+[ "$IN_LOOP" = 1 ] && MODE=loop
+
+# EMITTED HERE, BEFORE THE FIRST EXIT, and that placement is the whole point.
+#
+# Found by the QA round on PR #649 (2026-11-01): this line used to live beside
+# the summary at the end, after the exits for a bad argument (2), an unreadable
+# PR (1) and a stale `--sha` (3). So a run that died early left NO mode reading
+# at all -- and the reason this diagnostic exists is to settle, from one real
+# `agent-work` log, whether GITHUB_ACTIONS and GITHUB_RUN_ID reach a script run
+# inside `claude-code-action`. A loop run that exits 2 on a typo is exactly the
+# run whose mode we would still want to know.
+#
+# On stdout, where the rest of this script's reporting goes and where the
+# tests read it; an Actions log merges both streams anyway, so stderr would buy
+# nothing and split the output of one run across two places. `--dry-run`
+# reaches it too, because it is printed before anything is read.
+#
+# The variables are NAMED, not just their conclusion: a line saying only
+# `mode=top-level` inside a runner leaves the reader guessing which was missing.
+# `GITHUB_RUN_ID` is reported set/unset rather than echoed -- a run id is not a
+# secret, but the shape is what the rule reads and the value would be noise.
+echo "qa_verdict: mode=$MODE" \
+     "(GITHUB_ACTIONS=${GITHUB_ACTIONS:-unset}" \
+     "GITHUB_RUN_ID=$([ -n "${GITHUB_RUN_ID:-}" ] && echo set || echo unset)" \
+     "CI=${CI:-unset})"
 
 PR=""; ISSUE=""; VERDICT=""; SHA=""; NOTE=""; PROV="in-cycle"; DRY=0
 while [ $# -gt 0 ]; do
@@ -177,6 +249,11 @@ if [ "$ISSUE" != none ]; then
 fi
 
 echo "qa_verdict: PR #$PR ($BRANCH @ ${HEAD:0:7}) verdict=$VERDICT issue=$ISSUE"
+# The mode is REPEATED here beside the provenance, which is the pairing a
+# reader of the outcome wants: "a top-level session recorded an in-cycle PASS"
+# is one fact, not two. The authoritative early reading is on stderr above,
+# printed before any exit could suppress it.
+echo "qa_verdict: mode=$MODE provenance=$PROV"
 echo "  PR labels now: ${pr_have:-none}"
 echo "  PR change:     ${pr_flags:-none needed}"
 [ "$ISSUE" = none ] || echo "  issue change:  ${issue_flags:-none needed}"

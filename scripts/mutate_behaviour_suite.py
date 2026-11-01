@@ -4206,6 +4206,60 @@ MUTATIONS = [
      'if probe.suppresses_owner_alert(request, "kundli_generated"):',
      'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
 
+    # --- qa_verdict learns which context is recording the verdict -----------
+    # FIRST MUTATION ROWS THIS SCRIPT HAS EVER HAD. It writes `qa-pass`, which
+    # is the sole merge trigger, and until now it was the only gate-critical
+    # script with no behaviour test and no row. These guard the DIAGNOSTIC; the
+    # refusal it precedes lands separately, after a real agent-work log
+    # confirms the reading.
+
+    ('qa_verdict: one runner variable is enough to claim to be the loop',
+     'scripts/qa_verdict.sh',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ]; then',
+     'test_half_the_runner_evidence_is_not_the_loop'),
+
+    ('qa_verdict: $CI is read as the loop',
+     'scripts/qa_verdict.sh',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then',
+     'if [ -n "${CI:-}" ]; then',
+     'test_CI_is_deliberately_not_consulted'),
+
+    ('qa_verdict: the mode is reported inverted',
+     'scripts/qa_verdict.sh',
+     '[ "$IN_LOOP" = 1 ] && MODE=loop',
+     '[ "$IN_LOOP" = 0 ] && MODE=loop',
+     'test_the_loop_is_read_as_the_loop'),
+
+    ('qa_verdict: an unset runner variable is reported as blank, not unset',
+     'scripts/qa_verdict.sh',
+     'GITHUB_ACTIONS=${GITHUB_ACTIONS:-unset}',
+     'GITHUB_ACTIONS=${GITHUB_ACTIONS:-}',
+     'test_an_unset_variable_is_reported_as_unset_not_as_blank'),
+
+    # RE-ANCHORED in round 2. `${GITHUB_RUN_ID:+set}` was replaced by an
+    # explicit set/unset, because `:+` rendered an UNSET id as an empty string
+    # -- indistinguishable from set-to-empty, which the QA round flagged as a
+    # non-blocking ambiguity. The rule is unchanged: the VALUE never appears.
+    ('qa_verdict: the run id value is printed into every log line',
+     'scripts/qa_verdict.sh',
+     'echo set || echo unset)',
+     'echo "${GITHUB_RUN_ID}" || echo unset)',
+     'test_the_run_id_VALUE_is_not_printed'),
+
+    # ---- round 2 on #649, from the independent QA round's two findings -----
+
+    ('#649 r2: the mode line moves back after the exits, so a failed run reports nothing',
+     'scripts/qa_verdict.sh',
+     'echo "qa_verdict: mode=$MODE" \\',
+     ': "qa_verdict: mode=$MODE" \\',
+     'test_the_mode_is_reported_even_when_the_run_exits_early'),
+
+    ('#649 r2: an unset run id reads as set, so mode=top-level contradicts its own evidence',
+     'scripts/qa_verdict.sh',
+     '&& echo set || echo unset)',
+     '&& echo set || echo set)',
+     'test_an_empty_run_id_reads_as_unset_not_as_set'),
     # ---- the PR-scoped QA dispatch -----------------------------------------
     #
     # Measured 2026-11-01: four of the five green PRs then open had received
