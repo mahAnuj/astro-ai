@@ -59,15 +59,23 @@ def _pr(number: int, *, hours: float, labels: list[str]) -> dict:
     }
 
 
-def _run(monkeypatch, prs, *, fail_age: float, head_age: float, hours: float = 4):
-    """`find_stalls` with the two ages it reads from the API controlled."""
+def _run(monkeypatch, prs, *, fail_age: float, head_age: float, hours: float = 4,
+         split: tuple[int, int] = (0, 1)):
+    """`find_stalls` with the three API reads it makes controlled.
+
+    `split` is `(non_merge, merge)` commits since the verdict, and it is a
+    PARAMETER rather than a fixture constant because the default `(0, 1)` --
+    merges only -- is the "still unaddressed" case. Hard-coding it made a test
+    that meant to check a landed FIX assert against a merge, and pass for the
+    wrong reason.
+    """
     import json as _json
     monkeypatch.setattr(detect_stalls, "latest_checks",
                         lambda sha: {"gates": "success"})
     monkeypatch.setattr(detect_stalls, "agent_pushable", lambda n: True)
     monkeypatch.setattr(detect_stalls, "qa_fail_age", lambda n: fail_age)
     monkeypatch.setattr(detect_stalls, "head_pushed_hours_ago", lambda n: head_age)
-    monkeypatch.setattr(detect_stalls, "post_verdict_commits", lambda n, a: (0, 1))
+    monkeypatch.setattr(detect_stalls, "post_verdict_commits", lambda n, a: split)
 
     def gh(*args):
         if args[0] == "pr" and args[1] == "list":
@@ -159,3 +167,57 @@ def test_an_unreadable_verdict_time_is_still_reported(monkeypatch):
     stalls = _run(monkeypatch, [_pr(703, hours=40, labels=["qa-fail"])],
                   fail_age=None, head_age=35)
     assert "qa-fail-unreadable" in _kinds(stalls), _kinds(stalls)
+
+
+# --- the floor's PLACEMENT, which was wrong when it first landed ------------
+
+def test_a_fix_pushed_inside_the_window_is_reported_immediately(monkeypatch):
+    """THE REGRESSION #659 SHIPPED, executed.
+
+    The floor's premise is "nobody could have fixed it yet". When a fix HAS
+    landed the premise is false, so the floor must not apply -- but it sat
+    FIRST in the if/elif chain, ahead of the `head_age < fail_age` arm, and
+    suppressed the finding for the whole window.
+
+    The cost was not noise, it was silence on every path at once:
+    `qa-on-green` declines a `qa-fail` PR by design, the steward runs twice a
+    day, and this detector was the only thing left that could notice a fix had
+    landed. Measured on PRs #649 and #654, whose round-2 fixes went up ~2h
+    after their verdicts.
+
+    `fail_age=1` with `head_age=0.2` is a fix pushed 48 minutes after a verdict
+    written an hour ago -- well inside a 4h floor.
+    """
+    stalls = _run(monkeypatch, [_pr(649, hours=9, labels=["qa-fail"])],
+                  fail_age=1.0, head_age=0.2, split=(1, 0))   # one real fix commit
+    assert "qa-fail-refixed" in _kinds(stalls), (
+        f"a landed fix was suppressed by the freshness floor: {_kinds(stalls)}"
+    )
+
+
+def test_merges_pushed_inside_the_window_still_read_as_unaddressed(monkeypatch):
+    """The other half of the landed-fix arm must survive too: a merge forward
+    is not a fix, and it must not be reported as one just because it is new."""
+    stalls = _run(monkeypatch, [_pr(650, hours=9, labels=["qa-fail"])],
+                  fail_age=1.0, head_age=0.2, split=(0, 2))   # two merges, no fix
+    assert "qa-fail-unaddressed" in _kinds(stalls), _kinds(stalls)
+
+
+def test_the_floor_is_reached_only_after_the_landed_fix_arm():
+    """Static, and it is what makes the two cases above hold for shapes this
+    file does not enumerate: the chain's ORDER is the guarantee."""
+    landed = SRC.index("elif head_age < fail_age:")
+    floor = SRC.index("elif fail_age < hours:")
+    assert landed < floor, (
+        "the freshness floor is tested before the landed-fix arm again; a fix "
+        "pushed inside the window will be suppressed for the whole window"
+    )
+
+
+def test_the_floor_says_that_nothing_was_pushed(monkeypatch, capsys):
+    """The message has to state the premise it is relying on, or the next
+    reader cannot tell this from "a fix landed and we ignored it"."""
+    _run(monkeypatch, [_pr(651, hours=9, labels=["qa-fail"])],
+         fail_age=0.5, head_age=9)
+    out = capsys.readouterr().out
+    assert "nothing pushed" in out, out
