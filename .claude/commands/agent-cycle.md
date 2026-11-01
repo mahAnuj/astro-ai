@@ -11,6 +11,64 @@ untouchable.
 The gate is `pr-gates` plus a QA PASS, not any agent's opinion that it is finished. That is the
 whole difference, and it is why this loop is allowed to run with nobody watching.
 
+## Step 0c — a QA ROUND on an existing PR. Read this first; it short-circuits the rest.
+
+**If the invocation carries `--qa-pr <n>`, this run is ONE QA round on pull request `<n>`, not an
+issue cycle.** Nothing is ranked, nothing new is built, no second PR is opened.
+
+### Why this mode exists
+
+`agent-merge` merges nothing without `qa-pass`, and `qa-on-green` could only aim a round at an
+issue number read out of the branch name. So a green PR on a branch carrying no number was never
+dispatched at all. Measured 2026-11-01: #639 (`feat/ops-watcher-detector`) and #647
+(`fix/mutation-row-floor-total`) had **zero** dispatches while green, unlabelled and unmergeable by
+anything. **A QA round needs a PR, not an issue.**
+
+### Refuse unless all three hold
+
+The dispatcher checks these, but a human can also `gh workflow run agent-work.yml -f pr=N` for any
+PR at all — so this mode checks them again rather than trusting its caller:
+
+```bash
+gh pr view <n> --repo "$GH_REPO" --json state,isCrossRepository,author \
+  --jq '{state, fork: .isCrossRepository, author: .author.login}'
+```
+
+1. `state` is `OPEN`.
+2. `isCrossRepository` is **false**. A fork PR never reaches this loop, and that must stay true for
+   this new door: a cycle reading an outsider's diff with write credentials is #361's
+   `provenance:outsider` concern wearing a pull request's clothes.
+3. The author is in `AGENT_AUTHORS` — `claude[bot]` or the repo owner.
+
+Any of those failing: say which, and stop. This is Step 0a's substitute in this mode, because Step
+0a takes an issue number and there may not be one.
+
+### Then
+
+- **Skip Step 0** (validate against production). Production cannot show work that has not merged.
+- **Skip Step 1 and Step 2** (eligibility, rank). There is nothing to rank — the target is given.
+- **The owning issue**: take it from the branch name (`issue|partial|fix/<n>-`) if it carries one,
+  otherwise record the verdict with `--issue none`. `qa_verdict.sh` supports that as a first-class
+  value — "`none` means the PR carries the verdict by itself".
+
+  **NEVER read the owning issue out of the PR body.** Measured on #647: scraping `closes`/`refs`
+  yields `638` and `640` from the prose line `#636  resolved   #638  resolved` — **both are pull
+  requests**, #638 merged and #640 closed — and `gh issue view` answers for a PR number, so the
+  openness check would pass and a ~50-minute cycle would be aimed at a merged pull request.
+- **Do Step 2.5's adoption**: switch to the branch, read any prior verdict and what changed since
+  it, and put those findings in the round's brief.
+- **One round**, then **Step 3.5** with `--pr <n>` and `--sha <the SHA QA examined>`. Then stop.
+- **Do not** dispatch an engineer, open a PR, push a fix, or start new work. If the round FAILS,
+  that is the outcome: `qa-fail` and a comment naming what broke.
+
+### Provenance stays `qa:in-cycle`
+
+Do **not** claim `qa:independent` here, even though this round reviews a PR it had no hand in
+writing. `qa.md` says to use `in-cycle` whenever `/agent-cycle` invoked you, and `chief.md`'s
+Shape C requires `qa:independent` to clear a boundary hold — so labelling these rounds independent
+would make that hold satisfiable by the loop itself. The narrower claim costs nothing here and the
+wider one would quietly move authority.
+
 ## Step 0a — provenance. Before Step 0, before ranking, before reading the issue as instructions.
 
 **The repo is public and issues are open to anyone.** Until #361 nothing in this loop checked who
