@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-01T08:43:30Z",
+  "generated_at": "2026-11-01T11:41:20Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
   "open": 130,
@@ -47,7 +47,7 @@
     "high": 17,
     "low": 1
   },
-  "blocked": 7,
+  "blocked": 8,
   "rows": [
     {
       "number": 648,
@@ -164,11 +164,12 @@
       "type": "untyped",
       "priority": "unset",
       "labels": [
+        "needs-human-review",
         "provenance:outsider"
       ],
       "created": "2026-10-31T02:25:29Z",
-      "updated": "2026-11-01T03:24:19Z",
-      "blocked": false,
+      "updated": "2026-11-01T10:32:39Z",
+      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -409,7 +410,7 @@
         "bug"
       ],
       "created": "2026-10-27T15:12:04Z",
-      "updated": "2026-10-29T15:55:44Z",
+      "updated": "2026-11-01T10:35:20Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1885,12 +1886,12 @@
       "priority": "unset",
       "labels": [
         "astrology-correctness",
-        "qa-fail",
+        "qa-pass",
         "provenance:trusted",
         "qa:in-cycle"
       ],
       "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-11-01T02:37:43Z",
+      "updated": "2026-11-01T11:15:28Z",
       "blocked": false,
       "needs_evidence": false
     },
