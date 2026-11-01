@@ -166,6 +166,49 @@ def test_every_loop_leg_counts_as_a_failure_not_just_agent_work(monkeypatch):
     assert {f["workflow"] for f in got["failed"]} == {"agent-measure", "agent-work"}
 
 
+def test_loop_outcomes_exiting_NON_ZERO_is_not_a_loop_failure(monkeypatch):
+    """#628. Exit 1 is that workflow's documented contract, not its failure.
+
+    `loop-outcomes.yml:22` says so in its own header: "0 all OK/IDLE; 1
+    something BROKEN". GitHub records exit 1 as `conclusion: failure` because
+    it cannot know the difference, and this module counted all 4 of its runs
+    in the 2026-10-31 window as loop failures -- a red delivery tile every
+    week on a workflow that was working. `build_agent_cycle_dag.py` had the
+    set and showed the same runs as `reporting`; one fact, two answers.
+    """
+    _stub(monkeypatch, [], [
+        _run(1, "loop-outcomes.yml", "failure", "2026-10-18T03:00:00Z"),
+    ])
+    assert ops_today.fetch_today("x/y", DAY_START, timeout=1)["failed"] == []
+
+
+@pytest.mark.parametrize("concl", ["startup_failure", "timed_out", "cancelled",
+                                   "action_required", "stale"])
+def test_loop_outcomes_failing_ANY_OTHER_WAY_still_counts(concl, monkeypatch):
+    """The excuse is one conclusion wide, and this is why it has to be.
+
+    A set-membership test alone -- `path in CONTRACT_NONZERO: continue` --
+    would swallow all five of these. Every one of them is a leg that did not
+    run or did not finish, so it found nothing and reported nothing, which is
+    precisely the outage this tile exists to notice. Excusing them would put
+    the blind spot back one layer deeper than where it started.
+    """
+    _stub(monkeypatch, [], [_run(1, "loop-outcomes.yml", concl, "2026-10-18T03:00:00Z")])
+    got = ops_today.fetch_today("x/y", DAY_START, timeout=1)
+    assert [f["conclusion"] for f in got["failed"]] == [concl]
+
+
+def test_a_workflow_NOT_in_the_contract_set_still_fails_on_exit_one(monkeypatch):
+    """The control. The excuse is per workflow, not per conclusion.
+
+    Without this, a bug that excused `failure` for everything would pass every
+    assertion above.
+    """
+    _stub(monkeypatch, [], [_run(1, "agent-work.yml", "failure", "2026-10-18T03:00:00Z")])
+    got = ops_today.fetch_today("x/y", DAY_START, timeout=1)
+    assert {f["workflow"] for f in got["failed"]} == {"agent-work"}
+
+
 def test_a_red_pr_gate_is_not_a_loop_failure(monkeypatch):
     """A gate going red is the gate working.
 
