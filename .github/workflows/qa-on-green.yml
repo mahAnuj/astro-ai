@@ -182,15 +182,44 @@ jobs:
             judge_only=true
           fi
 
-          # The issue to aim the dispatch at. `issue/`, `partial/` and `fix/`
-          # carry one by construction (agent-cycle.md Step 4); `measurements/`
-          # does NOT, and `^[a-z]+/(\d+)` would read run id 40140256532 as an
-          # issue number ~8 times a day. BSD sed: `-E`, and `#` as the delimiter
-          # because `|` is the alternation operator.
+          # WHAT THE DISPATCH AIMS AT, and since 2026-11-01 it is two things.
+          #
+          # `issue/`, `partial/` and `fix/` carry an owning issue by
+          # construction (agent-cycle.md Step 4), and that is the richer aim:
+          # the cycle reads the issue, adopts the branch at Step 2.5, and can
+          # finish work that is not built yet. `measurements/` carries no
+          # number, and the obvious widening `^[a-z]+/(\d+)` would read run id
+          # 40140256532 as an issue ~8 times a day -- so the sed stays narrow.
+          # BSD sed: `-E`, and `#` as the delimiter because `|` is the
+          # alternation operator.
+          #
+          # WITH NO NUMBER, AIM AT THE PR ITSELF. What is wanted here is a QA
+          # ROUND, and a round needs a PR; an issue is a convenience, not a
+          # requirement. `qa_verdict.sh` has always agreed -- it turns the same
+          # non-match into `ISSUE=none` and records the verdict anyway.
+          #
+          # Until 2026-11-01 this branch exited 0 on "a dispatch needs one to
+          # aim at", and measured that morning it was holding FOUR of the five
+          # green PRs then open, with zero dispatches and zero comments between
+          # them: #639 `feat/ops-watcher-detector`, #647
+          # `fix/mutation-row-floor-total`, #649 and #650. Green, unlabelled and
+          # unmergeable for as long as they stayed open, because `agent-merge`
+          # merges on `qa-pass` and `scripts/qa_verdict.sh` is its only writer.
+          #
+          # THE AIM IS NEVER SCRAPED FROM THE PR BODY, measured on those same
+          # PRs. #639 carries no issue reference of any kind, so a body fallback
+          # does literally nothing for it. #647's body yields `638` and `640`,
+          # and both are PULL REQUESTS -- #638 merged, #640 closed. `gh issue
+          # view` answers for a PR number, so a body-scraped aim would sail
+          # through an openness check and point a ~50-minute cycle at a number
+          # lifted from prose. tests/test_qa_on_green.py pins this shut.
           issue=$(printf '%s' "$HEAD_BRANCH" | sed -nE 's#^(issue|partial|fix)/([0-9]+).*#\2#p')
-          if [ -z "$issue" ]; then
-            say "No owning issue in the branch name \`$HEAD_BRANCH\` — a dispatch needs one to aim at."
-            exit 0
+          if [ -n "$issue" ]; then
+            target="issue=$issue"
+            aim="issue #$issue"
+          else
+            target="pr=$num"
+            aim="PR #$num itself — \`$HEAD_BRANCH\` names no owning issue, so the round judges the diff"
           fi
 
           # THE LOOP GUARD, and it is the reason this workflow is safe to run on
@@ -209,14 +238,18 @@ jobs:
           {
             echo "pr=$num"
             echo "issue=$issue"
+            # `kind=digits`, nothing else. The later steps derive their own
+            # wording from this rather than receiving prose through
+            # GITHUB_OUTPUT, where a free-text value is a sink.
+            echo "target=$target"
             echo "head=$head"
             echo "judge_only=$judge_only"
             echo "go=true"
           } >> "$GITHUB_OUTPUT"
           if [ "$judge_only" = true ]; then
-            say "PR #$num (issue #$issue) at \`${head:0:7}\`: gates green, no verdict — dispatching a JUDGE-ONLY round (the branch touches \`.github/workflows/\`, so the round may label it but not push to it)."
+            say "PR #$num (aimed at $aim) at \`${head:0:7}\`: gates green, no verdict — dispatching a JUDGE-ONLY round (the branch touches \`.github/workflows/\`, so the round may label it but not push to it)."
           else
-            say "PR #$num (issue #$issue) at \`${head:0:7}\`: gates green, no verdict — dispatching a cycle."
+            say "PR #$num (aimed at $aim) at \`${head:0:7}\`: gates green, no verdict — dispatching a cycle."
           fi
 
       # Say it on the PR BEFORE dispatching, not after. The comment is the loop
@@ -229,10 +262,18 @@ jobs:
           GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ steps.pick.outputs.pr }}
           PR_HEAD: ${{ steps.pick.outputs.head }}
-          ISSUE: ${{ steps.pick.outputs.issue }}
+          TARGET: ${{ steps.pick.outputs.target }}
           JUDGE_ONLY: ${{ steps.pick.outputs.judge_only }}
         run: |
           set -uo pipefail
+          # The aim is re-derived from the `kind=digits` output rather than
+          # passed as prose, so nothing free-text crosses a step boundary.
+          case "$TARGET" in
+            issue=*)
+              aim="#${TARGET#issue=}" ;;
+            *)
+              aim="this PR itself, because its branch names no owning issue. The round judges the diff and records its verdict with \`--issue none\`, which \`qa_verdict.sh\` has always accepted." ;;
+          esac
           # The judge-only paragraph is a REMINDER, not the rule. The rule lives
           # in `.claude/commands/agent-cycle.md` Step 2.5, because a comment on a
           # PR is data the agent reads and a rule it must obey cannot be sourced
@@ -246,7 +287,7 @@ jobs:
           gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body \
             "qa-on-green: dispatched at $PR_HEAD
 
-          Both gates are green on this head and no QA round has ruled on it, so a cycle is being dispatched at #$ISSUE to run one. $scope
+          Both gates are green on this head and no QA round has ruled on it, so a cycle is being dispatched at $aim to run one. $scope
 
           This is mechanical, not a judgment: no model ran, and nothing here applied, removed or read a verdict label. Only \`scripts/qa_verdict.sh\` writes those. One dispatch per commit — a new push earns another, this one does not."
 
@@ -262,8 +303,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          ISSUE: ${{ steps.pick.outputs.issue }}
+          TARGET: ${{ steps.pick.outputs.target }}
         run: |
           set -uo pipefail
-          printf 'issue=%s\n' "$ISSUE" > /tmp/qa-on-green-dispatch.txt
+          # `issue=<n>` or `pr=<n>`. The carrier parses the form strictly and
+          # checks the right API for each -- `gh issue view` for an issue,
+          # `gh pr view --json state` for a PR -- so this step hands it the
+          # ruling verbatim and makes no claim about which one it is.
+          printf '%s\n' "$TARGET" > /tmp/qa-on-green-dispatch.txt
           bash scripts/dispatch_cycle.sh /tmp/qa-on-green-dispatch.txt qa-on-green

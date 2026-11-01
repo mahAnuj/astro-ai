@@ -3796,6 +3796,37 @@ MUTATIONS = [
      "when counted from any axis.",
      "test_sentence_still_states_the_venus_axis_downgrade_and_its_three_frames"),
 
+    # --- #177: the matching verdict bands are Bhagya's own, and the page says so ---
+    ("#177: the result page stops rendering the band disclosure beside the legend",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ t(lang, 'matching_bands_note') }}",
+     "{{ '' }}",
+     "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: the English disclosure drops the 'not drawn from the classical texts we hold' statement",
+     "src/astro_ai/i18n.py",
+     "Bhagya's own reading of the 36-point total and are not drawn from the classical texts we hold.",
+     "Bhagya's own reading of the 36-point total.",
+     "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: the learn article calls the 30+ band classical again",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "Widely read as an ideal match.",
+     "Classical texts consider this an ideal match.",
+     "test_no_page_calls_the_cutoffs_classical"),
+
+    ("#177: the registry FAQ calls the 18/24/30 guidance classical again",
+     "src/astro_ai/learn_registry.py",
+     "A widely quoted rule of thumb is 18+ acceptable",
+     "The classical guidance: 18+ acceptable",
+     "test_registry_faq_and_summary_do_not_call_the_cutoffs_classical"),
+
+    ("#177: a disclosure edit moves a grade (Madhyam floor 24 -> 25)",
+     "src/astro_ai/matching.py",
+     "    if total >= 24:\n        return \"Madhyam\"",
+     "    if total >= 25:\n        return \"Madhyam\"",
+     "test_the_disclosure_moves_no_grade"),
+
     # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
     ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
      "src/astro_ai/chart.py",
@@ -4171,6 +4202,88 @@ MUTATIONS = [
      'GITHUB_RUN_ID=${GITHUB_RUN_ID:+set}',
      'GITHUB_RUN_ID=${GITHUB_RUN_ID:-}',
      'test_the_run_id_VALUE_is_not_printed'),
+    # ---- the PR-scoped QA dispatch -----------------------------------------
+    #
+    # Measured 2026-11-01: four of the five green PRs then open had received
+    # ZERO QA dispatches, because `qa-on-green` required an issue number in the
+    # branch name and theirs had none. `agent-merge` merges on `qa-pass` and
+    # `scripts/qa_verdict.sh` is its only writer, and the only thing that runs
+    # it is a dispatched round -- so the loop could not finish its own work.
+    #
+    # Rows run in BOTH directions deliberately. A guard that only caught the
+    # permissive mutation would bless a change that bricks the six-a-day cron,
+    # which is the one thing here that currently works.
+
+    # THE SUBTLEST ONE AVAILABLE, and the reason this row exists at all. The
+    # number spaces overlap: `gh issue view 639` ANSWERS for pull request #639.
+    # So a `pr=` ruling relabelled `issue=` would pass the carrier's openness
+    # check, dispatch a cycle at "issue" 639, and the cycle would read a pull
+    # request as its specification.
+    ('qa-on-green aims a PR ruling at the issue number space',
+     '.github/workflows/qa-on-green.yml',
+     'target="pr=$num"',
+     'target="issue=$num"',
+     'test_an_unnumbered_branch_aims_at_the_pr_instead_of_declining'),
+
+    # The fallback inverted: numbered branches get the PR form and unnumbered
+    # ones get `issue=` with nothing after it.
+    ('qa-on-green inverts the fallback and loses the owning issue',
+     '.github/workflows/qa-on-green.yml',
+     'if [ -n "$issue" ]; then\n            target="issue=$issue"',
+     'if [ -z "$issue" ]; then\n            target="issue=$issue"',
+     'test_a_numbered_branch_still_aims_at_its_issue'),
+
+    # The carrier file re-acquires the hard-coded prefix it had before, so
+    # every ruling becomes `issue=issue=N` or `issue=pr=N` and the strict
+    # parse refuses all of them. Inert, not dangerous -- and invisible.
+    ('qa-on-green re-prefixes the ruling the carrier already carries',
+     '.github/workflows/qa-on-green.yml',
+     "printf '%s\\n' \"$TARGET\"",
+     "printf 'issue=%s\\n' \"$TARGET\"",
+     'test_the_carrier_receives_the_target_verbatim'),
+
+    # The PR body becomes a source for the aim. Measured on the two real PRs:
+    # #639 has no issue reference of any kind, and #647's body yields 638 and
+    # 640, which are both pull requests.
+    ('qa-on-green starts reading the PR body it must never read',
+     '.github/workflows/qa-on-green.yml',
+     '--json comments',
+     '--json comments,body',
+     'test_the_target_is_never_guessed_from_the_pr_body'),
+
+    # agent-work: the composing step becomes dead code and a `pr=` dispatch
+    # silently runs an ordinary cycle with no argument -- ranking the backlog
+    # instead of judging the PR, at full cost, reported as a success.
+    ('agent-work reads the raw input again and ignores the composed argument',
+     '.github/workflows/agent-work.yml',
+     '/agent-cycle ${{ steps.args.outputs.args }}',
+     '/agent-cycle ${{ github.event.inputs.issue }}',
+     'test_the_prompt_reads_the_composed_output_and_not_the_raw_input'),
+
+    # THE BRICK-THE-LOOP DIRECTION. A `schedule` fire has no `inputs` object,
+    # both expressions render empty, and `set -u` aborts the step -- so all six
+    # crons a day die before the agent starts. This is why the composition is a
+    # `run:` step a test can execute rather than a prompt expression.
+    ('agent-work loses the unset-safe default and every cron fire dies',
+     '.github/workflows/agent-work.yml',
+     'issue="${ISSUE:-}"',
+     'issue="$ISSUE"',
+     'test_a_scheduled_fire_with_no_inputs_at_all_composes_an_empty_argument'),
+
+    # Both inputs at once stops being refused. Picking one hides the
+    # dispatcher's bug behind a ~50-minute run that reads as a success.
+    ('agent-work accepts an issue and a PR at once and picks one',
+     '.github/workflows/agent-work.yml',
+     'refusing rather than choosing."\n            exit 1',
+     'refusing rather than choosing."\n            :',
+     'test_both_inputs_at_once_is_refused_not_resolved'),
+
+    # The shape check widens, so a cycle can be aimed at a non-number.
+    ('agent-work stops requiring the dispatch target to be a number',
+     '.github/workflows/agent-work.yml',
+     '*[!0-9]*)\n                echo "::error::',
+     '*[!0-9a-z]*)\n                echo "::error::',
+     'test_a_non_numeric_input_is_refused'),
     # --- the carrier learns a second ruling form: pr= (#639, #647) ----------
     # A QA ROUND NEEDS A PR, NOT AN ISSUE. These rows guard the two halves that
     # can go wrong quietly: dispatching a `pr=` ruling under the `issue` key,

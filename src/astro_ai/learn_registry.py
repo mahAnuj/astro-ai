@@ -543,7 +543,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "What is Ashtakoot Guna Milan?",
-                "a": "Ashtakoot (eight factors) Guna Milan (matching of gunas) is the classical Vedic system for checking marriage compatibility between two Kundlis. It scores compatibility on 8 factors totalling 36 points. The classical guidance: 18+ acceptable (Avara), 24+ good (Madhyam), 30+ excellent (Uttam). Below 18 traditionally advises against marriage — though modern practice weighs individual factors, especially Nadi, more than the raw total.",
+                "a": "Ashtakoot (eight factors) Guna Milan (matching of gunas) is the classical Vedic system for checking marriage compatibility between two Kundlis. It scores compatibility on 8 factors totalling 36 points. A widely quoted rule of thumb is 18+ acceptable (Avara), 24+ good (Madhyam), 30+ excellent (Uttam). Those cut-offs are Bhagya's own reading of the 36-point total rather than something drawn from the classical texts we hold. Below 18 is commonly advised against — though modern practice weighs individual factors, especially Nadi, more than the raw total.",
             },
             {
                 "q": "What are the 8 kootas that get matched?",
@@ -565,7 +565,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n'
             '• 8 kootas (categories), 36 total gunas — measures compatibility between two birth Moons\n'
-            '• Threshold: 18+ gunas = acceptable, 24+ = good, 30+ = excellent match\n'
+            '• Commonly quoted rule of thumb (our own bands): 18+ gunas = acceptable, 24+ = good, 30+ = excellent match\n'
             '• 8 kootas: Varna (spiritual), Vashya (attraction), Tara (health), Yoni (physical), Graha Maitri (mental), Gana (temperament), Bhakoot (family), Nadi (progeny)\n'
             '• Nadi Dosha (0/8 on Nadi) and Bhakoot Dosha have specific cancellations — do NOT reject a match on these alone\n'
             '• Guna Milan is one factor — also check Manglik status, 7th house condition of both charts, D-9 Navamsha compatibility\n'
