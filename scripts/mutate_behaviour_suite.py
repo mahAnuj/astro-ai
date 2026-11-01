@@ -4008,22 +4008,6 @@ MUTATIONS = [
     # FALSE one gets the watcher muted -- and then the real finding is muted
     # with it. Every threshold row below is the false-positive direction.
 
-    ("#ops-watch: triage debt fires AT the threshold, not above it",
-     "scripts/detect_ops_regressions.py",
-     "if pct > TRIAGE_DEBT_PCT:", "if pct >= TRIAGE_DEBT_PCT:",
-     "test_triage_debt_fires_only_ABOVE_the_threshold"),
-
-    ("#ops-watch: an empty backlog divides by zero and reports 'could not run'",
-     "scripts/detect_ops_regressions.py",
-     "if isinstance(total, int) and total > 0:",
-     "if isinstance(total, int) and total >= 0:",
-     "test_triage_debt_does_not_divide_by_zero_on_an_empty_backlog"),
-
-    ("#ops-watch: a high-priority count holding steady stops being reported",
-     "scripts/detect_ops_regressions.py",
-     "if n_high and n_high >= b_high:", "if n_high and n_high > b_high:",
-     "test_high_priority_is_reported_when_it_does_not_FALL"),
-
     ("#ops-watch: the backlog comparison runs the wrong way round",
      "scripts/detect_ops_regressions.py",
      'if isinstance(base.get("open"), int) and newest["open"] > base["open"]:',

@@ -29,20 +29,41 @@ across rather than restated: "Silence means checked-and-clear, never
 not-checked. A source that could not be read emits its own alert rather than
 contributing nothing, so an empty strip can be trusted."
 
-TWO THINGS NOTHING ALERTS ON ANYWHERE, found while writing this
+WHAT IS NOT WATCHED HERE, AND THE CORRECTION THAT PRODUCED THIS LIST
 
-Of the six concerns named, four have an alert in `_alerts()` and two have none:
+The first draft of this script carried two more findings, `triage-debt` and
+`high-priority-stalled`, both derived from `issues.json`'s `by_priority`. The
+owner asked whether `agent-prioritise` already writes those labels. Checking
+properly showed the first draft's reasoning was wrong, so both are gone:
 
-  cache hit ratio    `ops_data` computes `hits` and `misses` (line ~1306) and
-                     raises nothing on a collapse. The number is rendered; no
-                     threshold reads it.
-  high-priority      `issues.json` carries `by_priority`, and `_alerts()` reads
-  backlog            `issues` only for a snapshot-fallback staleness warning.
-                     Neither the COUNT nor its TREND raises anything.
+  * `/prioritise` dispatches `project-manager`, whose declared tools are
+    `Read, Grep, Glob, Bash, WebFetch` -- no write path at all. It produces a
+    RANKED REPORT at `measurements/prioritise/latest.md`, not labels, and that
+    report IS consumed: `project-manager.md:26` reads it first on every later
+    run, and `/agent-cycle` Step 2 re-dispatches that agent. RANKING HAPPENS.
+    It just does not happen through a label.
+  * `project-manager` reads every open issue and is told "do not rank from
+    issue titles". It does not filter on `priority:` either. So the claim the
+    first draft shipped -- 89 of 128 unlabelled means ranking sees only 39 --
+    was false.
+  * The ONLY consumer of a `priority:` label is
+    `issue_backlog.derive_priority()`, which exists to produce the dashboard's
+    `by_priority` counter. Nothing routes, ranks or gates on it.
 
-The second is this script's `high-priority-stalled` and `triage-debt`
-findings — derivable from committed data, so they land here. The first is not:
-it needs the GCS usage doc, so it stays a gap and `--coverage` says so.
+So the label is vestigial: written by nobody, read by one counter. A weekly
+finding about it would have been a false alarm every week -- the precise
+failure this file's test module argues against, shipped inside the detector
+itself. It is worth one issue, once, not a recurring alert, and it is filed
+that way.
+
+Watching "a high-priority issue is not getting fixed" needs a signal the loop
+actually uses, which means the ranked queue rather than the label. That is not
+machine-readable today -- `latest.md` is an agent's prose -- and inventing a
+parser for it here would be guessing.
+
+CACHE HIT RATIO is a genuine gap and stays in `NOT_COVERED`: `ops_data`
+computes `hits` and `misses` (~line 1306) and raises nothing at any threshold.
+The number is rendered and never judged. It needs the GCS usage doc.
 
 EXIT CODES
   0  nothing found
@@ -63,12 +84,6 @@ from datetime import datetime, timedelta, timezone
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 MEASUREMENTS = ROOT / "measurements"
-
-#: Over half the backlog carrying no `priority:` label means `project-manager`
-#: ranks from a minority of it. Measured 2026-11-01 on `origin/main`: 89 of 128
-#: open issues unset, 70%. Set at 50 rather than at today's value so the
-#: finding clears when triage catches up instead of being redefined upward.
-TRIAGE_DEBT_PCT = 50
 
 #: A week. Both trend findings compare the newest committed snapshot against
 #: the oldest one at least this old, so a single bad day cannot fire either.
@@ -102,6 +117,9 @@ NOT_COVERED = (
     ("daily token ceiling", "ops_data._alerts", "GCS usage doc"),
     ("cache hit ratio", "NOTHING — computed, never alerted on",
      "GCS usage doc; see this file's header"),
+    ("whether a high-priority issue is getting fixed",
+     "NOTHING — and the `priority:` label cannot answer it",
+     "the loop ranks from measurements/prioritise/latest.md, which is prose"),
 )
 
 
@@ -206,19 +224,13 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
         unreadable.append(f"issues.json ({exc.__class__.__name__})")
         return findings, unreadable
 
-    pri = issues.get("by_priority") or {}
-    total = issues.get("open")
-    unset = pri.get("unset") or 0
-    if isinstance(total, int) and total > 0:
-        pct = round(unset * 100 / total)
-        if pct > TRIAGE_DEBT_PCT:
-            add("triage-debt", "amber",
-                f"{pct}% of the backlog has no priority label",
-                f"{unset} of {total} open issues carry no `priority:` label, so "
-                f"`project-manager` ranks from the other {total - unset}. Nothing "
-                f"in `.github/workflows/`, `.claude/` or `scripts/` writes one.",
-                "/admin/ops")
-
+    # NO FINDING IS DERIVED FROM `by_priority`, deliberately, and the first
+    # draft of this file got that wrong. See the module header: the label is
+    # written by nobody and read by one dashboard counter, so a threshold on it
+    # fires forever on a number the loop never consults. `project-manager`
+    # ranks from `measurements/prioritise/latest.md` and the issues themselves,
+    # and is told "do not rank from issue titles" -- it does not filter on a
+    # label either.
     hist = issue_history(TREND_DAYS)
     if len(hist) < 2:
         unreadable.append(
@@ -245,16 +257,6 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
             "Filing faster than closing. This is not automatically wrong -- "
             "discovery finding real work looks the same -- but it is the number "
             "the objective is judged on.", "/admin/ops")
-
-    b_high = (base.get("by_priority") or {}).get("high") or 0
-    n_high = pri.get("high") or 0
-    if n_high and n_high >= b_high:
-        add("high-priority-stalled", "red",
-            f"{n_high} `priority:high` issues, {'up from' if n_high > b_high else 'unchanged at'} "
-            f"{b_high} {days}d ago",
-            "The loop ran in that window. High-priority work not falling means "
-            "ranking is not reaching it -- which is a different problem from the "
-            "loop being broken, and no tile distinguishes them.", "/admin/ops")
 
     return findings, unreadable
 

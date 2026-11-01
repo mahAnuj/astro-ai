@@ -128,34 +128,6 @@ def _kinds(findings) -> set[str]:
     return {f["kind"] for f in findings}
 
 
-# ----------------------------------------------------------- triage debt
-
-@pytest.mark.parametrize("unset,total,fires", [
-    (89, 128, True),    # live 2026-11-01: 70%
-    (65, 128, True),    # 51%
-    (64, 128, False),   # 50% — AT the threshold, not over it
-    (10, 128, False),
-])
-def test_triage_debt_fires_only_ABOVE_the_threshold(unset, total, fires,
-                                                    tmp_path, monkeypatch):
-    f, _ = _find(tmp_path, monkeypatch, _agents(),
-                 [(8, _issues(open_=total, unset=unset)),
-                  (0, _issues(open_=total, unset=unset))])
-    assert ("triage-debt" in _kinds(f)) is fires, f
-
-
-def test_triage_debt_does_not_divide_by_zero_on_an_empty_backlog(tmp_path, monkeypatch):
-    """An empty backlog is the goal, not a finding.
-
-    `unset * 100 / total` with total 0 would raise, and an exception here exits
-    2 — a detector reporting "could not run" on the best possible state.
-    """
-    f, u = _find(tmp_path, monkeypatch, _agents(),
-                 [(8, _issues(open_=0, unset=0, high=0)),
-                  (0, _issues(open_=0, unset=0, high=0))])
-    assert "triage-debt" not in _kinds(f)
-
-
 # ------------------------------------------------------- backlog trend
 
 def test_a_rising_backlog_over_the_window_is_reported(tmp_path, monkeypatch):
@@ -191,31 +163,6 @@ def test_a_ONE_DAY_rise_does_not_fire_the_trend(tmp_path, monkeypatch):
 def test_a_history_with_one_revision_is_UNREADABLE_not_clean(tmp_path, monkeypatch):
     f, u = _find(tmp_path, monkeypatch, _agents(), [(0, _issues())])
     assert any("a trend needs two" in x for x in u), u
-
-
-# -------------------------------------------------- high-priority stall
-
-@pytest.mark.parametrize("before,after,fires,word", [
-    (18, 22, True, "up from"),
-    (18, 18, True, "unchanged at"),
-    (22, 18, False, ""),
-    (0, 0, False, ""),      # none at all is not a stall
-])
-def test_high_priority_is_reported_when_it_does_not_FALL(before, after, fires, word,
-                                                         tmp_path, monkeypatch):
-    """`issues.json` has carried `by_priority` all along and nothing read it.
-
-    `ops_data._alerts()` touches `issues` only for a snapshot-staleness
-    warning, so neither the high-priority COUNT nor its TREND raised anything
-    anywhere before this script.
-    """
-    f, _ = _find(tmp_path, monkeypatch, _agents(),
-                 [(8, _issues(high=before)), (0, _issues(high=after))])
-    hits = [x for x in f if x["kind"] == "high-priority-stalled"]
-    assert bool(hits) is fires, f
-    if fires:
-        assert word in hits[0]["title"]
-        assert hits[0]["level"] == "red"
 
 
 # ------------------------------------------------------- loop liveness
@@ -331,6 +278,47 @@ def test_a_clean_state_exits_0_and_says_the_sources_were_READABLE(
     assert "every source was readable" in out
 
 
+# ------------------------------------- the correction, guarded both ways
+
+def test_NO_finding_is_derived_from_the_priority_LABEL(tmp_path, monkeypatch):
+    """The first draft shipped two findings built on `by_priority`. Both were wrong.
+
+    Asked whether `agent-prioritise` already writes those labels, the answer is
+    that it ranks but does not label: `/prioritise` dispatches
+    `project-manager`, whose tools are `Read, Grep, Glob, Bash, WebFetch`, and
+    it writes `measurements/prioritise/latest.md` -- a ranked report, which
+    `project-manager.md:26` then reads first on every later run. Ranking
+    happens; it does not happen through a label.
+
+    And `project-manager` reads every open issue without filtering on
+    `priority:`, so "89 of 128 unlabelled means ranking sees 39" was false. The
+    only consumer of the label is `issue_backlog.derive_priority()`, feeding one
+    dashboard counter.
+
+    A threshold on a number nothing writes and nothing reads fires forever.
+    This asserts the removal rather than trusting it: a backlog that is 100%
+    unlabelled with a steady high count must produce NO finding.
+    """
+    f, _ = _find(tmp_path, monkeypatch, _agents(),
+                 [(8, _issues(open_=128, unset=128, high=40)),
+                  (0, _issues(open_=128, unset=128, high=40))])
+    assert f == [], f"a by_priority finding came back: {f}"
+
+
+def test_the_label_being_unread_is_recorded_as_a_BLIND_SPOT_not_a_finding(tmp_path, monkeypatch):
+    """It is worth one issue, once -- not an alert every run.
+
+    Keeping it in `NOT_COVERED` is what stops the next reader rebuilding the
+    finding this test exists to prevent.
+    """
+    concerns = {c for c, _, _ in det.NOT_COVERED}
+    assert any("high-priority issue is getting fixed" in c for c in concerns)
+    entry = next(e for e in det.NOT_COVERED if "high-priority" in e[0])
+    assert "cannot answer it" in entry[1]
+    assert "prioritise/latest.md" in entry[2], (
+        "the blind spot does not name the signal that WOULD answer it")
+
+
 # ------------------------------------------------- the declared blind spots
 
 def test_coverage_names_the_product_checks_this_script_cannot_see():
@@ -378,12 +366,12 @@ def test_json_output_carries_findings_unreadable_AND_the_blind_spots(
     were green.
     """
     root = _repo(tmp_path, _agents(),
-                 [(8, _issues(open_=123, unset=89)), (0, _issues(open_=128, unset=89))])
+                 [(8, _issues(open_=123)), (0, _issues(open_=128))])
     monkeypatch.setattr(det, "ROOT", root)
     monkeypatch.setattr(det, "MEASUREMENTS", root / "measurements")
     monkeypatch.chdir(root)
     det.main(["detect_ops_regressions.py", "--json"])
     doc = json.loads(capsys.readouterr().out)
     assert {"findings", "unreadable", "not_covered"} <= set(doc)
-    assert {"triage-debt", "backlog-growing"} <= {f["kind"] for f in doc["findings"]}
+    assert "backlog-growing" in {f["kind"] for f in doc["findings"]}
     assert len(doc["not_covered"]) == len(det.NOT_COVERED)
