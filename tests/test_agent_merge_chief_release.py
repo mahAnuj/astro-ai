@@ -319,10 +319,16 @@ def test_the_hold_comment_tells_the_reader_about_the_chief_route():
     to a person after the machine route was built — which is the whole of #610.
     """
     run = _boundary_step()["run"]
+    # The chief route by name, FIRST and numbered. The mutation harness found
+    # the earlier version of this test mis-pointed: its row's mutant replaced
+    # `chief` with `Someone` in this very line and the test went on passing,
+    # because it asserted the SHA phrasing and the human route and never the
+    # one thing its name promises.
+    assert "\\`chief\\` rules on it" in run, (
+        "the hold comment no longer names chief as the first route")
     assert "chief-cleared at $PR_SHA" in run
     assert "A human reviews and merges by hand" in run
-    assert "Removing \\`needs-human-review\\` on its own does not release anything" in run \
-        or "Removing `needs-human-review` on its own does not release anything" in run
+    assert "Removing \\`needs-human-review\\` on its own does not release anything" in run
 
 
 def test_the_release_block_sits_AFTER_the_gate_chain_steps():
