@@ -1051,10 +1051,15 @@ MUTATIONS = [
      "an `issue/*` branch with an owning issue",
      "test_the_dispatch_rule_never_requires_an_issue_slash_branch"),
 
+    # RE-ANCHORED 2026-11-01. The bullet this watched said "a dispatch needs an
+    # issue to aim at", which stopped being true when the steward learned
+    # `pr=<n>`; the preflight failed at zero matches, which is the net working.
+    # The RULE is unchanged and is still #531's: who OPENED the PR is never the
+    # test. Only the surrounding bullet moved.
     ("the steward stands down on a PR the owner opened (the 21h stall)",
      ".claude/agents/steward.md",
-     "- A PR the detector could not name an owning issue for",
-     "- A PR a human opened is not this loop's.\n#",
+     "**Who OPENED the PR is not the test** (#531)",
+     "A PR a human opened is not this loop's (#531)",
      "test_the_dispatch_rule_never_refuses_a_pr_for_who_opened_it"),
 
     # chief's copy of the same rule. It is the LAST gate: `steward-ineffective`
@@ -4205,6 +4210,163 @@ MUTATIONS = [
      'if not probe.suppresses_owner_alert(request, "kundli_generated"):',
      'if probe.suppresses_owner_alert(request, "kundli_generated"):',
      'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
+
+    # ---- chief defaults to PROCEED, and knows the system (owner, 2026-11-01)
+    #
+    # Measured: on PR #649 chief was woken 0.0h after the qa-fail, restated the
+    # steward's conclusion from two minutes earlier, and produced no act. On
+    # #642 it ruled twice in one day, the second re-deriving the first.
+    #
+    # A PROMPT'S failure mode is a plausible ruling, not an exception -- so the
+    # rows here guard CONSISTENCY. An earlier chief.md shipped line 117
+    # permitting what line 130 forbade, and a reader resolves a contradiction
+    # by picking, which makes a contradicted rule no rule at all.
+
+    ('chief: the non-negotiable forbids the PROCEED default two sections above it',
+     '.claude/agents/chief.md',
+     '- **Proceed, choose between what was presented, or return `insufficient-evidence`.** Never a\n  third OPTION',
+     '- **Choose between what was presented, or return `insufficient-evidence`.** Never a third option.\n  <!--',
+     'test_the_three_places_that_enumerate_outcomes_all_allow_proceeding'),
+
+    ('chief: the ladder loses its terminal rung, so nothing says when to stop',
+     '.claude/agents/chief.md',
+     '5. **Otherwise: proceed.** Importance is not a reason to intervene.',
+     '5. **Otherwise: consider carefully.** Importance is a reason to intervene.',
+     'test_the_ladder_is_ordered_and_ends_in_proceed'),
+
+    ('chief: proceeding stops being distinguished from inventing an option',
+     '.claude/agents/chief.md',
+     '**`proceed` is not a third OPTION; it is declining to intervene.**',
+     '**`proceed` is one of the options you may pick.**',
+     'test_proceeding_is_distinguished_from_inventing_an_option'),
+
+    ('chief: a proceed ruling must satisfy the six-bullet shape again',
+     '.claude/agents/chief.md',
+     '**A `proceed` ruling is SHORTER, deliberately.**',
+     '**A `proceed` ruling is reported in full, like any other.**',
+     'test_the_three_places_that_enumerate_outcomes_all_allow_proceeding'),
+
+    ('chief: it rules on a PR without reading the diff',
+     '.claude/agents/chief.md',
+     '**If an escalation names a PR, read `gh pr diff <n>` before deciding.**',
+     '**If an escalation names a PR, the labels and check conclusions are enough.**',
+     'test_it_is_told_to_read_the_pr_diff_before_ruling'),
+
+    ('chief: it regenerates the measurement it is meant to read',
+     '.claude/agents/chief.md',
+     'cat measurements/agents.json                     # is each loop ALIVE',
+     'uv run python scripts/collect_agent_performance.py   # is each loop ALIVE',
+     'test_it_reads_the_measurement_and_never_regenerates_it'),
+
+    ('chief: the objective reverts to caution, so PROCEED loses its reason',
+     '.claude/agents/chief.md',
+     'caution is not the objective',
+     'caution is the objective',
+     'test_the_objective_is_turnaround_not_caution'),
+
+    ('chief: gains a Write tool, so the read-only rule becomes a request',
+     '.claude/agents/chief.md',
+     'tools: Agent, Read, Grep, Glob, Bash, WebFetch',
+     'tools: Agent, Read, Write, Grep, Glob, Bash, WebFetch',
+     'test_chief_has_no_write_tool_so_the_read_only_rule_is_enforceable'),
+
+    # ---- the loop stops spending invocations on no-ops (owner, 2026-11-01) --
+    #
+    # Measured: 26 comments across four PRs, of which six were the steward's
+    # and five chief's, and all eleven produced NO ACT. chief ruled three times
+    # on one unchanged SHA. The engine was a chain, not a misjudgement:
+    # detect_stalls marked a 0.0h-old qa-fail OBLIGED -> agent-steward demanded
+    # proof of an action -> the steward had none to take -> chief was woken.
+
+    ('no-op loop: a verdict written minutes ago is a stall again',
+     'scripts/detect_stalls.py',
+     '            if fail_age is not None and fail_age < hours:',
+     '            if fail_age is not None and fail_age < 0:',
+     'test_a_verdict_written_minutes_ago_is_not_a_stall'),
+
+    ('no-op loop: the floor swallows a REAL unaddressed verdict too',
+     'scripts/detect_stalls.py',
+     '            if fail_age is not None and fail_age < hours:',
+     '            if fail_age is not None and fail_age < 10000:',
+     'test_an_old_unaddressed_verdict_is_still_a_stall'),
+
+    ('no-op loop: an unreadable verdict time is treated as a fresh one',
+     'scripts/detect_stalls.py',
+     '            if fail_age is not None and fail_age < hours:',
+     '            if fail_age is None or fail_age < hours:',
+     'test_an_unreadable_verdict_time_is_still_reported'),
+
+    # The MUTANT MUST STAY SYNTACTICALLY VALID. The first version of this row
+    # replaced only the opening line of a two-line `print(...)`, which left the
+    # continuation string dangling: the sweep reported `NON-TEST FAILURE rc=2`,
+    # not CAUGHT. A row that breaks the parse proves nothing about the test --
+    # it proves Python can detect a SyntaxError.
+    ('no-op loop: the suppressed finding stops being reported',
+     'scripts/detect_stalls.py',
+     '                print(f"  (PR #{n}: qa-fail is {fail_age:.1f}h old, under the "\n                      f"{hours:.0f}h floor — not yet a stall)")',
+     '                pass',
+     'test_the_suppression_is_reported_and_not_silent'),
+
+    ("no-op loop: the steward's ruling line forgets the pr= form again",
+     '.claude/agents/steward.md',
+     'write **one** line, exactly `issue=<n>` **or** `pr=<n>`, to',
+     'write **one** line, exactly `issue=<n>`, to',
+     'test_the_steward_can_dispatch_a_pr_scoped_round'),
+
+    ('no-op loop: chief rules twice on the same head again',
+     '.claude/agents/chief.md',
+     '**If you have already ruled on this PR at this same head commit, do not rule again. Say nothing.**',
+     '**A second look at the same head is always worth writing down.**',
+     'test_it_does_not_rule_twice_on_the_same_head'),
+
+    ('no-op loop: a red main halts chief instead of being reported',
+     '.claude/agents/chief.md',
+     '**If `main` is red, say so in one line and then rule anyway.**',
+     '**A red `main` outranks everything in front of you.**',
+     'test_a_red_main_is_reported_but_does_not_stop_the_ruling'),
+
+    ("no-op loop: the steward's quiet run comments on every PR again",
+     '.claude/agents/steward.md',
+     '**If the detector\'s findings are all of the above, produce nothing — including no PR\ncomment.**',
+     '**If the detector\'s findings are all of the above, say so and produce nothing.**',
+     'test_a_quiet_steward_run_writes_no_pr_comment'),
+
+    # The third link in the no-op chain, and the one in a workflow file.
+    ('no-op loop: an in-flight cycle stops counting, so chief is woken anyway',
+     '.github/workflows/agent-steward.yml',
+     '          if [ "$inflight" -gt 0 ]; then',
+     '          if [ "$inflight" -gt 99999 ]; then',
+     'test_a_cycle_already_in_flight_does_not_wake_chief'),
+
+    ('no-op loop: in-flight excuses a REAL inaction too',
+     '.github/workflows/agent-steward.yml',
+     "[.[] | select(.status == \"in_progress\" or .status == \"queued\")] | length",
+     "[.[]] | length",
+     'test_a_steward_that_did_nothing_with_nothing_running_still_wakes_chief'),
+
+    ('no-op loop: standing down is reported as the steward having acted',
+     '.github/workflows/agent-steward.yml',
+     'so standing down was correct. Not waking chief."',
+     'so the steward acted. Not waking chief."',
+     'test_it_says_standing_down_rather_than_claiming_the_steward_acted'),
+
+    ("no-op loop: chief's ruling file forgets the pr= form again",
+     '.github/workflows/agent-steward.yml',
+     '`issue=<number>` OR `pr=<number>`, and nothing else.',
+     '`issue=<number>`, and nothing else.',
+     'test_chief_may_dispatch_a_pr_scoped_round'),
+
+    ('no-op loop: chief is told again to stand down with no owning issue',
+     '.claude/agents/chief.md',
+     '**"The detector named no owning issue" is no longer a reason to stand down.**',
+     '**A PR with no owning issue is not yours to dispatch.**',
+     'test_chief_may_dispatch_a_pr_scoped_round'),
+
+    ('no-op loop: chief may dispatch a workflows PR the App token cannot push',
+     '.claude/agents/chief.md',
+     'Still no line, deliberately, for a PR a cycle cannot clear: a diff touching',
+     'A line is fine for any open PR, including a diff touching',
+     'test_chief_is_still_refused_the_cases_a_cycle_cannot_clear'),
 
     # ---- the PR-scoped QA dispatch -----------------------------------------
     #

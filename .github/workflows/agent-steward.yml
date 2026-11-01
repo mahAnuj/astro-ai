@@ -312,14 +312,40 @@ jobs:
             exit 0
           fi
 
-          # Any evidence of action taken since this run began.
-          cycles=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 10 \
-                     --json createdAt --jq "[.[] | select(.createdAt > \"$SINCE\")] | length" 2>/dev/null || echo 0)
+          # Any evidence of action taken since this run began -- PLUS a cycle
+          # that was already running when it began.
+          #
+          # THE IN-FLIGHT CASE IS WHY THIS WOKE CHIEF FOR NOTHING. The steward's
+          # own guard 1 says: "Is a cycle already running or queued? If anything
+          # is in_progress or queued, dispatch nothing and say so." So the
+          # steward correctly stands down -- and this step, counting only runs
+          # CREATED since `$SINCE`, saw `cycles=0` and could not tell that from
+          # a steward that simply failed. It then woke chief, which also had
+          # nothing to do.
+          #
+          # Measured 2026-11-01: 26 comments across four PRs, of which the
+          # steward's six and chief's five produced no act. This is the third
+          # link in that chain (#580); the other two are the verdict-age floor
+          # in detect_stalls.py and the per-head guards in both prompts.
+          #
+          # An in-flight cycle is the system working, not the watcher failing.
+          runs=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 10 \
+                   --json createdAt,status 2>/dev/null || echo '[]')
+          cycles=$(jq "[.[] | select(.createdAt > \"$SINCE\")] | length" <<<"$runs" 2>/dev/null || echo 0)
+          inflight=$(jq '[.[] | select(.status == "in_progress" or .status == "queued")] | length' \
+                       <<<"$runs" 2>/dev/null || echo 0)
+          cycles=${cycles:-0}; inflight=${inflight:-0}
+          echo "cycles since $SINCE=$cycles, already in flight=$inflight"
           issues=$(gh issue list --repo "$GH_REPO" --state all --limit 20 \
                      --json createdAt --jq "[.[] | select(.createdAt > \"$SINCE\")] | length" 2>/dev/null || echo 0)
           echo "since $SINCE: cycles dispatched=$cycles, issues filed=$issues"
 
-          if [ "$cycles" -gt 0 ] || [ "$issues" -gt 0 ]; then
+          if [ "$inflight" -gt 0 ]; then
+            # Not "the steward acted" -- "there was nothing for it to do", which
+            # is a different fact and is reported as one.
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::$inflight cycle(s) already in flight — the steward's own guard 1 forbids a second dispatch, so standing down was correct. Not waking chief."
+          elif [ "$cycles" -gt 0 ] || [ "$issues" -gt 0 ]; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
             echo "::notice::the steward acted — $cycles cycle(s), $issues issue(s)"
           else
@@ -372,14 +398,29 @@ jobs:
             **If you rule that a cycle should be dispatched, do not hand the
             command to a human — record it and a later step runs it.** Write
             `/tmp/chief-dispatch.txt` containing AT MOST ONE line, exactly
-            `issue=<number>`, and nothing else. No line means no dispatch, and
-            that is a legitimate ruling — #315's case is exactly it. Do not
-            write a line for a PR a cycle cannot clear -- one whose diff touches
-            `.github/workflows/**` (the App token has no `workflows` permission),
-            or one the detector could not name an owning issue for, or one
-            authored by neither `claude[bot]` nor the repository owner -- and do
-            not write one to be safe: the step cannot tell a considered dispatch from a
-            hedge, and a wasted cycle is ~50 Actions minutes under clause 1.
+            `issue=<number>` OR `pr=<number>`, and nothing else.
+
+            `pr=<number>` since 2026-11-01 (#650, #653). It aims a QA ROUND at
+            the PR itself and needs no owning issue; `issue=<number>` aims a
+            full cycle that can also build. Measured that day: you ruled on
+            three green PRs with "no dispatch (no `issue=` line exists to
+            write)" because their branches carried no number -- and all three
+            were dispatchable as `pr=`. Two merged unattended within minutes of
+            finally getting a round.
+
+            No line means no dispatch, and that is a legitimate ruling — #315's
+            case is exactly it. Do not write a line for a PR a cycle cannot
+            clear -- one whose diff touches `.github/workflows/**` (the App
+            token has no `workflows` permission), or one
+            authored by neither `claude[bot]` nor the repository owner.
+            And do not write one to be
+            safe: the step cannot tell a considered dispatch from a hedge, and a
+            wasted cycle is ~50 Actions minutes under clause 1.
+
+            **"The detector named no owning issue" is NO LONGER a reason to
+            stand down.** It was until that date, and it is the sentence that
+            left four green, unmergeable PRs waiting while you wrote rulings
+            about them.
 
             You do not need to check whether a cycle is already running. The
             step checks that itself, with a credential that can actually read
