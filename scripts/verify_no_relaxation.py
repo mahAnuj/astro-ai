@@ -129,7 +129,16 @@ def _in_harness(path: str) -> bool:
     """
     if not path.endswith(".py"):
         return False
-    return path.startswith("scripts/mutations/") or "mutate_" in path
+    # ANCHORED to `scripts/`, not a substring match on `mutate_` anywhere in
+    # the path. The first draft used `"mutate_" in path`, which is correct for
+    # all five harness files today and wrong the moment someone adds
+    # `tests/test_mutate_behaviour_suite.py` -- the obvious name, and the split
+    # that motivated this rule plausibly adds it. Two effects, and the second
+    # is the one that matters: `note` noise for an uncountable test file, and a
+    # `MUTATIONS = [...]` FIXTURE inside a test counted into the production
+    # total, where it could offset a real deletion. Found by the independent
+    # round on this PR.
+    return path.startswith("scripts/mutations/") or path.startswith("scripts/mutate_")
 
 
 def harness_rows(ref: str) -> tuple[int | None, list[str]]:
