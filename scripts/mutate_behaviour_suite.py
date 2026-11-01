@@ -4001,6 +4001,35 @@ MUTATIONS = [
      "",
      "test_the_reporter_is_serialised"),
 
+    # --- ops/DAG agree on what a failure is (#628) ---------------------------
+    # One fact with two consumers. The DAG had the set, `ops_today` did not, so
+    # the DAG page read `loop-outcomes` as `reporting` while /admin/ops counted
+    # the same runs as loop failures -- for weeks. These rows guard the fix's
+    # two halves: the excuse exists, and it is ONE conclusion wide.
+
+    ("#628: the contract excuse covers every conclusion, not just exit 1",
+     "src/astro_ai/ops_today.py",
+     "if path in CONTRACT_NONZERO and concl == CONTRACT_NONZERO_CONCLUSION:",
+     "if path in CONTRACT_NONZERO:",
+     "test_loop_outcomes_failing_ANY_OTHER_WAY_still_counts"),
+
+    ("#628: nothing is excused, so a correct loop-outcomes run reads as failed",
+     "src/astro_ai/ops_today.py",
+     'CONTRACT_NONZERO = frozenset({"loop-outcomes.yml"})',
+     "CONTRACT_NONZERO = frozenset()",
+     "test_loop_outcomes_exiting_NON_ZERO_is_not_a_loop_failure"),
+
+    ("#628: the excused conclusion is the one that means 'never started'",
+     "src/astro_ai/ops_today.py",
+     'CONTRACT_NONZERO_CONCLUSION = "failure"',
+     'CONTRACT_NONZERO_CONCLUSION = "startup_failure"',
+     "test_the_excused_conclusion_is_one_value_not_a_range"),
+
+    ("#628: the DAG goes back to its own literal, free to drift again",
+     "scripts/build_agent_cycle_dag.py",
+     "from astro_ai.ops_today import CONTRACT_NONZERO  # noqa: E402",
+     'CONTRACT_NONZERO = {"loop-outcomes.yml"}',
+     "test_both_surfaces_read_the_SAME_object"),
     # --- chief clears the whole trust boundary (#610) ------------------------
     # The grant's two halves are the label being READ at all (nothing read it
     # before, so `chief.md` documented a release that did not happen) and the
@@ -4085,6 +4114,49 @@ MUTATIONS = [
      '                conflicting=True,\n                checks=checks, labels=sorted(labels), agent_pushable=pushable))\n        elif "qa-pass" in labels',
      '                checks=checks, labels=sorted(labels), agent_pushable=pushable))\n        elif "qa-pass" in labels',
      'test_the_finding_carries_conflicting_true_so_the_routing_table_matches'),
+    # --- the probe header suppresses four alerts and no others (#618) --------
+    # The header is UNAUTHENTICATED, so the allow-list is the whole safety
+    # argument: anyone may send it, which is fine for a diagnostic plus an
+    # 8-hex key and not fine for a question, an email or a name. Rows 1 and 2
+    # attack the scope; row 4 attacks the numerology call site and the last row
+    # the kundli one, which no source-grep test can protect because an inverted
+    # guard keeps the asserted string.
+
+    ('#618: the allow-list is inverted, so PII-carrying alerts suppress',
+     'src/astro_ai/probe.py',
+     '    if event not in SUPPRESSIBLE:',
+     '    if event in SUPPRESSIBLE:',
+     'test_a_PII_carrying_alert_is_never_suppressed'),
+
+    ("#618: any probe header value suppresses, not just this caller's",
+     'src/astro_ai/probe.py',
+     'return request.headers.get(PROBE_HEADER) == PROBE_VALUE',
+     'return request.headers.get(PROBE_HEADER) is not None',
+     'test_only_the_EXACT_value_suppresses'),
+
+    ('#618: an unusable request raises instead of alerting',
+     'src/astro_ai/probe.py',
+     '    except Exception:',
+     '    except KeyError:',
+     'test_an_unusable_request_sends_the_alert_rather_than_raising'),
+
+    ('#618: the numerology guard is inverted -- only probes get alerted',
+     'src/astro_ai/routes/numerology.py',
+     'if not probe.suppresses_owner_alert(request, "numerology_computed"):',
+     'if probe.suppresses_owner_alert(request, "numerology_computed"):',
+     'test_a_normal_POST_to_numerology_STILL_fires_the_alert'),
+
+    ('#618: the allow-list silently loses an entry',
+     'src/astro_ai/probe.py',
+     '    "numerology_computed",\n})',
+     '})',
+     'test_the_allow_list_matches_what_notify_documents'),
+
+    ('#618: the kundli guard is inverted -- only probes get alerted',
+     'src/astro_ai/routes/kundli.py',
+     'if not probe.suppresses_owner_alert(request, "kundli_generated"):',
+     'if probe.suppresses_owner_alert(request, "kundli_generated"):',
+     'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
 
 ]
 
