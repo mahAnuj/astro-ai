@@ -4289,10 +4289,20 @@ MUTATIONS = [
     # landed-fix arm suppresses a fix for the whole window -- and every other
     # path is silent too (`qa-on-green` declines a `qa-fail` PR, the steward
     # runs twice a day).
+    #
+    # THE MUTANT MUST MOVE THE FLOOR AHEAD OF THE LANDED-FIX ARM. The first
+    # version of this row edited the floor's own `elif` (the arm AFTER the
+    # landed-fix one), so its added term could never decide anything: the mutant
+    # behaved identically to the original, the named test stayed green, and the
+    # row only went red through a string-presence side effect in the static
+    # ordering test. Mutating the landed-fix arm itself to also require the
+    # window to have elapsed re-creates #659's suppression -- a fix pushed
+    # inside the window falls through to the floor -- and the named test goes
+    # red on an assertion.
     ('no-op loop: the freshness floor runs before the landed-fix arm again',
      'scripts/detect_stalls.py',
-     '            elif fail_age < hours:',
-     '            elif fail_age < hours or head_age < fail_age:',
+     '            elif head_age < fail_age:',
+     '            elif head_age < fail_age and fail_age >= hours:',
      'test_a_fix_pushed_inside_the_window_is_reported_immediately'),
 
     ('no-op loop: the floor swallows a REAL unaddressed verdict too',
@@ -4301,7 +4311,7 @@ MUTATIONS = [
      '            elif fail_age < 10000:',
      'test_an_old_unaddressed_verdict_is_still_a_stall'),
 
-    ('no-op loop: an unreadable verdict time is treated as a fresh one',
+    ('no-op loop: an unreadable verdict time is reported as unaddressed',
      'scripts/detect_stalls.py',
      '                    kind="qa-fail-unreadable", pr=n, issue=issue, age_h=round(age, 1),',
      '                    kind="qa-fail-unaddressed", pr=n, issue=issue, age_h=round(age, 1),',
