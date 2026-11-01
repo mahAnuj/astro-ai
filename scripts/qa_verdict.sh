@@ -68,7 +68,53 @@
 #      asserting a verdict about code QA never saw)
 #   4  an API call failed and the transition is INCOMPLETE -- read the output,
 #      because this is the partial state the script exists to prevent
+#
+# The `mode=` field on the summary line below says whether this run looks like
+# the loop or like a top-level session, and names the variables it read. It is
+# reported on every run, including `--dry-run`, so a wrong reading diagnoses
+# itself from one log rather than needing a second investigation.
 set -euo pipefail
+
+# WHICH CONTEXT IS RECORDING THIS VERDICT, and why the script needs to know.
+#
+# `--provenance` defaults to the WEAKER claim, `in-cycle`, because qa.md says
+# "If you cannot tell which you are, you are qa:in-cycle". That default is right
+# for the loop and wrong for a top-level session: a session that simply omits
+# the flag records `qa:in-cycle` on work it may well have written itself, and
+# nothing anywhere notices. The owner ruled on 2026-11-01 that a top-level
+# session may record a verdict ONLY with `--provenance independent`.
+#
+# THIS COMMIT ADDS THE DIAGNOSTIC AND NOT THE REFUSAL, deliberately. Whether
+# these variables reach a script run by the agent inside `claude-code-action`
+# is not established: no agent-invoked script in this repo reads a `GITHUB_*`
+# variable, and `agent-work.yml` hands the action only two env vars of its own
+# while this script already falls back to `gh repo view` rather than trusting
+# `$GITHUB_REPOSITORY`. If the assumption is wrong, a refusal here would reject
+# every in-cycle PASS the loop makes and stop it merging -- the one part of this
+# system that currently works unattended. So the mode is PRINTED first, read
+# from a real `agent-work` log, and only then enforced.
+#
+# TWO VARIABLES, BOTH REQUIRED. GitHub sets both in the environment of every
+# step. Requiring the pair means a stray `export GITHUB_ACTIONS=true` in a shell
+# profile is not on its own enough to claim to be the loop.
+#
+# `$CI` IS DELIBERATELY NOT CONSULTED. It is the one of the three that is not
+# GitHub's: every local tool that fancies it sets it, and so do pre-commit and
+# `act`. Reading it would widen "I am the loop" to any machine with a
+# conventional environment variable.
+#
+# This is not, and cannot be, a security boundary: a caller holding Bash can
+# write `GITHUB_ACTIONS=true GITHUB_RUN_ID=1 scripts/qa_verdict.sh ...` in one
+# line. What it can do is make the weaker claim impossible to make BY ACCIDENT
+# or BY DEFAULT. The real boundary is unchanged and lives elsewhere: this script
+# is the only writer of these labels, and the permission system decides who may
+# run it.
+IN_LOOP=0
+if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then
+  IN_LOOP=1
+fi
+MODE=top-level
+[ "$IN_LOOP" = 1 ] && MODE=loop
 
 PR=""; ISSUE=""; VERDICT=""; SHA=""; NOTE=""; PROV="in-cycle"; DRY=0
 while [ $# -gt 0 ]; do
@@ -177,6 +223,11 @@ if [ "$ISSUE" != none ]; then
 fi
 
 echo "qa_verdict: PR #$PR ($BRANCH @ ${HEAD:0:7}) verdict=$VERDICT issue=$ISSUE"
+# The variables are NAMED, not just their conclusion. A line that said only
+# `mode=top-level` inside a runner would leave the reader guessing which of the
+# two was missing.
+echo "qa_verdict: mode=$MODE provenance=$PROV" \
+     "(GITHUB_ACTIONS=${GITHUB_ACTIONS:-unset} GITHUB_RUN_ID=${GITHUB_RUN_ID:+set} CI=${CI:-unset})"
 echo "  PR labels now: ${pr_have:-none}"
 echo "  PR change:     ${pr_flags:-none needed}"
 [ "$ISSUE" = none ] || echo "  issue change:  ${issue_flags:-none needed}"

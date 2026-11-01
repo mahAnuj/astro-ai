@@ -4135,6 +4135,43 @@ MUTATIONS = [
      'if probe.suppresses_owner_alert(request, "kundli_generated"):',
      'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
 
+    # --- qa_verdict learns which context is recording the verdict -----------
+    # FIRST MUTATION ROWS THIS SCRIPT HAS EVER HAD. It writes `qa-pass`, which
+    # is the sole merge trigger, and until now it was the only gate-critical
+    # script with no behaviour test and no row. These guard the DIAGNOSTIC; the
+    # refusal it precedes lands separately, after a real agent-work log
+    # confirms the reading.
+
+    ('qa_verdict: one runner variable is enough to claim to be the loop',
+     'scripts/qa_verdict.sh',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ]; then',
+     'test_half_the_runner_evidence_is_not_the_loop'),
+
+    ('qa_verdict: $CI is read as the loop',
+     'scripts/qa_verdict.sh',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then',
+     'if [ -n "${CI:-}" ]; then',
+     'test_CI_is_deliberately_not_consulted'),
+
+    ('qa_verdict: the mode is reported inverted',
+     'scripts/qa_verdict.sh',
+     '[ "$IN_LOOP" = 1 ] && MODE=loop',
+     '[ "$IN_LOOP" = 0 ] && MODE=loop',
+     'test_the_loop_is_read_as_the_loop'),
+
+    ('qa_verdict: an unset runner variable is reported as blank, not unset',
+     'scripts/qa_verdict.sh',
+     'GITHUB_ACTIONS=${GITHUB_ACTIONS:-unset}',
+     'GITHUB_ACTIONS=${GITHUB_ACTIONS:-}',
+     'test_an_unset_variable_is_reported_as_unset_not_as_blank'),
+
+    ('qa_verdict: the run id value is printed into every log line',
+     'scripts/qa_verdict.sh',
+     'GITHUB_RUN_ID=${GITHUB_RUN_ID:+set}',
+     'GITHUB_RUN_ID=${GITHUB_RUN_ID:-}',
+     'test_the_run_id_VALUE_is_not_printed'),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
