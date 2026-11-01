@@ -3803,11 +3803,23 @@ MUTATIONS = [
      "{{ '' }}",
      "test_result_page_discloses_the_bands_are_not_classical"),
 
-    ("#177: the English disclosure drops the 'not a classical grading' statement",
+    ("#177: the English disclosure drops the 'not drawn from the classical texts we hold' statement",
      "src/astro_ai/i18n.py",
-     "Bhagya's own reading of the 36-point total, not a classical grading.",
+     "Bhagya's own reading of the 36-point total and are not drawn from the classical texts we hold.",
      "Bhagya's own reading of the 36-point total.",
      "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: the learn article calls the 30+ band classical again",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "Widely read as an ideal match.",
+     "Classical texts consider this an ideal match.",
+     "test_no_page_calls_the_cutoffs_classical"),
+
+    ("#177: the registry FAQ calls the 18/24/30 guidance classical again",
+     "src/astro_ai/learn_registry.py",
+     "A widely quoted rule of thumb is 18+ acceptable",
+     "The classical guidance: 18+ acceptable",
+     "test_registry_faq_and_summary_do_not_call_the_cutoffs_classical"),
 
     ("#177: a disclosure edit moves a grade (Madhyam floor 24 -> 25)",
      "src/astro_ai/matching.py",
