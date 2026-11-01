@@ -1,33 +1,34 @@
-"""Rules 8 and 9 of `scripts/verify_no_relaxation.py`: a workflow's
-`permissions:` may not widen, and `TRUST_BOUNDARY` may not lose a path (#610).
+"""`scripts/verify_workflow_permissions.py`: a workflow may not gain a power (#610).
 
-WHY THESE TWO RULES CARRY SO MUCH. Until 2026-11-01 a `.github/workflows/` PR
+WHY THESE TWO CHECKS CARRY SO MUCH. Until 2026-11-01 a `.github/workflows/` PR
 was held for the repo owner, and the reason stated in `chief.md` was blast
-radius: "a workflow edit can grant the loop new powers, read secrets, or disable
-the gates that constrain every other agent." The user then widened `chief`'s
-Shape C to the whole trust boundary — *"I want the loop to not hold on me"* —
-which converts that risk from "a human reads it" into "a gate catches it".
+radius: "a workflow edit can grant the loop new powers, read secrets, or
+disable the gates that constrain every other agent." The user then widened
+`chief`'s Shape C to the whole trust boundary — *"I want the loop to not hold
+on me"* — which converts that risk from "a human reads it" into "a gate catches
+it".
 
-`chief.md` is now written against these two rules by name: a red
-`verify_no_relaxation` is never chief's to rule on. So a hole here is not one
-missing check, it is the only thing standing between an agent and its own
-constraints. That is why every case below asserts the gate goes RED, and why
-the narrowing cases exist too — a gate that fails on everything would be
-"safe" and useless, and would be quietly disabled within a week.
+`chief.md` is written against this gate by name: a red run here is never
+chief's to rule on. So a hole is not one missing check, it is the only thing
+standing between an agent and its own constraints. That is why every case below
+asserts the gate goes RED — and why the narrowing cases exist too. A gate that
+reds on everything would be "safe" and useless, and would be quietly disabled
+within a week.
 
 EVERY END-TO-END CASE RUNS AGAINST A REAL TEMPORARY GIT REPOSITORY with two
 commits, because the gate's whole subject is a DIFF: it reads `git show
 <base>:<path>` on both sides. A fixture of loose files would exercise only the
 exit-2 "no usable base" path and prove nothing.
 
-`REQUIRED_SUBSTRINGS` IS EMPTIED IN EVERY END-TO-END CASE, deliberately. Rule 7
-checks phrases in files like `.claude/commands/agent-cycle.md` on every run,
-whether or not they are in the diff — so in a temp repo that holds only a
-workflow file it reports them all missing and the gate goes red for the wrong
-reason. The gate's own source records this exact trap from the other side: "A
-gate validated by a rule other than the one under test is a vacuous pass, which
-is the defect this whole repo keeps finding." `test_the_harness_isolates_rules_8_and_9`
-proves the isolation is real rather than assumed.
+NOTHING IS MONKEYPATCHED OUT, and that is a property of where this gate lives
+rather than of these tests. The first draft put these two checks inside
+`verify_no_relaxation.py`, whose other rules read files like
+`.claude/commands/agent-cycle.md` on every run — so in a temp repo holding one
+workflow it reported them all missing and went red for the wrong reason, and
+every adversarial case here had to disable rule 7 to mean anything. That gate's
+own source names the trap from the other side: "A gate validated by a rule
+other than the one under test is a vacuous pass, which is the defect this whole
+repo keeps finding." A standalone gate removes the trap instead of managing it.
 
 NOTHING HERE SKIPS. `scripts/verify_behaviour.py` fails the suite on any skip or
 xfail, by design, so a case that cannot assert must not exist.
@@ -42,11 +43,11 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-GATE_PATH = ROOT / "scripts" / "verify_no_relaxation.py"
+GATE_PATH = ROOT / "scripts" / "verify_workflow_permissions.py"
 
-_spec = importlib.util.spec_from_file_location("verify_no_relaxation", GATE_PATH)
+_spec = importlib.util.spec_from_file_location("verify_workflow_permissions", GATE_PATH)
 gate = importlib.util.module_from_spec(_spec)
-sys.modules["verify_no_relaxation"] = gate
+sys.modules["verify_workflow_permissions"] = gate
 _spec.loader.exec_module(gate)
 
 AM = ".github/workflows/agent-merge.yml"
@@ -69,26 +70,14 @@ def _agent_merge(top: str, job: str, boundary: tuple[str, ...]) -> str:
         "      TRUST_BOUNDARY: |\n"
         f"{tb}"
         "      OTHER: after-the-block\n"
-        # The `own -> gates -> qa -> size` chain is carried verbatim because
-        # rules 5 and 6 run on any diff that touches this path and would red
-        # every case below on a fixture that omitted it — the "passed for the
-        # wrong reason" trap, in the direction that hides a real green.
+        # One step, and nothing is faked around it. The earlier draft of this
+        # fixture carried agent-merge's whole `own -> gates -> qa -> size`
+        # chain, because the checks then lived inside `verify_no_relaxation.py`
+        # and its rules 5 and 6 reddened every case on a fixture without one.
+        # Moving these two checks into their own gate deleted that requirement
+        # rather than working around it.
         "    steps:\n"
-        "      - name: Who wrote it\n"
-        "        id: own\n"
-        "        run: echo ok=true >> \"$GITHUB_OUTPUT\"\n"
-        "      - name: Checks\n"
-        "        id: gates\n"
-        "        if: steps.own.outputs.ok == 'true'\n"
-        "        run: echo ok=true >> \"$GITHUB_OUTPUT\"\n"
-        "      - name: QA verdict\n"
-        "        id: qa\n"
-        "        if: steps.gates.outputs.ok == 'true'\n"
-        "        run: echo qa-pass qa-fail\n"
-        "      - name: Size and path limits\n"
-        "        id: size\n"
-        "        if: steps.qa.outputs.ok == 'true'\n"
-        "        run: echo ok=true >> \"$GITHUB_OUTPUT\"\n"
+        "      - run: echo one\n"
     )
 
 
@@ -134,8 +123,7 @@ def _repo(tmp_path: Path, before: dict[str, str], after: dict[str, str]) -> Path
 
 def _run(root: Path, monkeypatch, capsys) -> tuple[int, str]:
     monkeypatch.chdir(root)
-    monkeypatch.setattr(gate, "REQUIRED_SUBSTRINGS", {})   # see the module docstring
-    rc = gate.main(["verify_no_relaxation.py", "--base", "base"])
+    rc = gate.main(["verify_workflow_permissions.py", "--base", "base"])
     return rc, capsys.readouterr().out
 
 
@@ -154,7 +142,7 @@ def _run(root: Path, monkeypatch, capsys) -> tuple[int, str]:
     ({"contents": "write", "issues": "read"}, {"contents": 2, "issues": 1}),
 ])
 def test_normalise_perms_maps_each_shape_onto_the_ladder(value, expected):
-    assert gate._normalise_perms(value) == expected
+    assert gate.normalise_perms(value) == expected
 
 
 @pytest.mark.parametrize("weird", ["banana", {"contents": "banana"}, ["contents"], 7])
@@ -166,7 +154,7 @@ def test_an_unrecognised_permissions_shape_ranks_as_WIDE_not_as_absent(weird):
     a tightening. Ranking it 2 can only produce a false red, which costs one
     human merge; the other direction costs the grant.
     """
-    assert max(gate._normalise_perms(weird).values()) == 2
+    assert max(gate.normalise_perms(weird).values()) == 2
 
 
 # --------------------------------------------------------------------------
@@ -176,7 +164,7 @@ def test_an_unrecognised_permissions_shape_ranks_as_WIDE_not_as_absent(weird):
 def test_top_level_and_job_permissions_are_reported_separately():
     doc = {"permissions": {"contents": "read"},
            "jobs": {"merge": {"permissions": {"issues": "write"}}}}
-    assert gate._perm_blocks(doc) == {
+    assert gate.perm_blocks(doc) == {
         "<top-level>": {"contents": 1},
         "jobs.merge": {"issues": 2},
     }
@@ -191,19 +179,19 @@ def test_job_permissions_are_not_merged_into_the_top_level_block():
     """
     doc = {"permissions": {"contents": "write"},
            "jobs": {"a": {"permissions": {"contents": "read"}}}}
-    blocks = gate._perm_blocks(doc)
+    blocks = gate.perm_blocks(doc)
     assert blocks["<top-level>"] == {"contents": 2}
     assert blocks["jobs.a"] == {"contents": 1}
 
 
 @pytest.mark.parametrize("doc", [None, "a string", ["a", "list"], 3, {"jobs": "not-a-dict"}])
 def test_a_document_with_no_permissions_anywhere_yields_no_blocks(doc):
-    assert gate._perm_blocks(doc) == {}
+    assert gate.perm_blocks(doc) == {}
 
 
 def test_a_job_without_its_own_permissions_contributes_no_block():
     doc = {"jobs": {"merge": {"runs-on": "ubuntu-latest"}}}
-    assert gate._perm_blocks(doc) == {}
+    assert gate.perm_blocks(doc) == {}
 
 
 # --------------------------------------------------------------------------
@@ -216,7 +204,7 @@ def test_the_boundary_is_read_from_the_SHIPPED_agent_merge_file():
     A parser proved only against hand-written YAML is the shape of defect this
     repo keeps finding: it passes until the real file's indentation differs.
     """
-    paths = gate._trust_boundary((ROOT / AM).read_text(encoding="utf-8"))
+    paths = gate.trust_boundary((ROOT / AM).read_text(encoding="utf-8"))
     assert ".github/workflows/" in paths
     assert "src/astro_ai/prompts/" in paths
     assert "src/astro_ai/notify.py" in paths
@@ -225,21 +213,21 @@ def test_the_boundary_is_read_from_the_SHIPPED_agent_merge_file():
 
 def test_the_block_ends_at_the_first_line_that_dedents():
     text = _agent_merge(READ_TOP, JOB_READ, BOUNDARY)
-    assert gate._trust_boundary(text) == set(BOUNDARY)
-    assert "OTHER: after-the-block" not in str(gate._trust_boundary(text))
+    assert gate.trust_boundary(text) == set(BOUNDARY)
+    assert "OTHER: after-the-block" not in str(gate.trust_boundary(text))
 
 
 def test_a_blank_line_inside_the_block_does_not_end_it():
     text = ("    env:\n      TRUST_BOUNDARY: |\n        a/\n\n        b/\n      NEXT: x\n")
-    assert gate._trust_boundary(text) == {"a/", "b/"}
+    assert gate.trust_boundary(text) == {"a/", "b/"}
 
 
 def test_no_block_at_all_reads_as_an_empty_set():
-    assert gate._trust_boundary("name: x\njobs: {}\n") == set()
+    assert gate.trust_boundary("name: x\njobs: {}\n") == set()
 
 
 # --------------------------------------------------------------------------
-# Rule 8, end to end — a widening goes RED
+# Check 1, end to end — a widening goes RED
 # --------------------------------------------------------------------------
 
 @pytest.mark.parametrize("before_job,after_job,why", [
@@ -247,7 +235,7 @@ def test_no_block_at_all_reads_as_an_empty_set():
     (JOB_READ, "      contents: read\n      issues: write\n", "a scope appeared"),
     ("      contents: none\n", JOB_READ, "none -> read"),
 ])
-def test_rule_8_goes_red_when_a_job_block_widens(before_job, after_job, why,
+def test_check_1_goes_red_when_a_job_block_widens(before_job, after_job, why,
                                                  tmp_path, monkeypatch, capsys):
     root = _repo(
         tmp_path,
@@ -259,7 +247,7 @@ def test_rule_8_goes_red_when_a_job_block_widens(before_job, after_job, why,
     assert "jobs.merge" in out and "permissions" in out
 
 
-def test_rule_8_goes_red_on_write_all_replacing_a_narrow_block(tmp_path, monkeypatch, capsys):
+def test_check_1_goes_red_on_write_all_replacing_a_narrow_block(tmp_path, monkeypatch, capsys):
     """`write-all` is the shortest possible way to grant everything.
 
     It is a STRING where a mapping was, so a comparison that only walked keys
@@ -275,7 +263,7 @@ def test_rule_8_goes_red_on_write_all_replacing_a_narrow_block(tmp_path, monkeyp
     assert "<all>" in out
 
 
-def test_rule_8_goes_red_on_a_permissions_block_that_is_entirely_new(tmp_path, monkeypatch, capsys):
+def test_check_1_goes_red_on_a_permissions_block_that_is_entirely_new(tmp_path, monkeypatch, capsys):
     """A new block grants without widening anything, so it must fail closed.
 
     The cost is bounded and already paid: the App token is refused the
@@ -296,7 +284,7 @@ def test_rule_8_goes_red_on_a_permissions_block_that_is_entirely_new(tmp_path, m
     assert "jobs.second" in out and "is new" in out
 
 
-def test_rule_8_goes_red_on_a_brand_new_workflow_file(tmp_path, monkeypatch, capsys):
+def test_check_1_goes_red_on_a_brand_new_workflow_file(tmp_path, monkeypatch, capsys):
     other = ".github/workflows/agent-newthing.yml"
     root = _repo(
         tmp_path,
@@ -309,11 +297,11 @@ def test_rule_8_goes_red_on_a_brand_new_workflow_file(tmp_path, monkeypatch, cap
     assert other in out
 
 
-def test_rule_8_goes_red_rather_than_quiet_on_a_workflow_it_cannot_parse(
+def test_check_1_goes_red_rather_than_quiet_on_a_workflow_it_cannot_parse(
         tmp_path, monkeypatch, capsys):
     """An unreadable gate is not a pass.
 
-    This is the single most likely way to get a widening past rule 8: make the
+    This is the single most likely way to get a widening past check 1: make the
     file unparseable and let the `except` swallow it.
     """
     root = _repo(
@@ -327,7 +315,7 @@ def test_rule_8_goes_red_rather_than_quiet_on_a_workflow_it_cannot_parse(
 
 
 # --------------------------------------------------------------------------
-# Rule 8 — the other direction. A gate that reds on everything gets disabled.
+# Check 1 — the other direction. A gate that reds on everything gets disabled.
 # --------------------------------------------------------------------------
 
 @pytest.mark.parametrize("before_job,after_job,what", [
@@ -335,7 +323,7 @@ def test_rule_8_goes_red_rather_than_quiet_on_a_workflow_it_cannot_parse(
     (JOB_WRITE, "      contents: none\n", "write -> none"),
     ("      contents: write\n      issues: write\n", JOB_WRITE, "a scope removed"),
 ])
-def test_rule_8_stays_green_when_permissions_narrow_or_hold(before_job, after_job, what,
+def test_check_1_stays_green_when_permissions_narrow_or_hold(before_job, after_job, what,
                                                             tmp_path, monkeypatch, capsys):
     root = _repo(
         tmp_path,
@@ -348,11 +336,12 @@ def test_rule_8_stays_green_when_permissions_narrow_or_hold(before_job, after_jo
 
 
 def test_a_workflow_that_is_not_in_the_diff_is_not_judged(tmp_path, monkeypatch, capsys):
-    """Rule 8 is diff-scoped, and that is deliberate for THIS rule.
+    """Diff-scoped on purpose, and it says so rather than printing nothing.
 
-    Rule 7 is not, because a phrase's absence is a fact about HEAD. A
-    permissions widening is a fact about a CHANGE, and judging an untouched
-    file would red every PR in the repo on the first pre-existing broad scope.
+    A widening is a fact about a CHANGE, so judging untouched files would red
+    every PR in the repo on the first pre-existing broad scope. The output has
+    to distinguish "looked and found nothing" from "did not look": a silent 0
+    is the shape this repo keeps mistaking for a pass.
     """
     root = _repo(
         tmp_path,
@@ -362,13 +351,14 @@ def test_a_workflow_that_is_not_in_the_diff_is_not_judged(tmp_path, monkeypatch,
     rc, out = _run(root, monkeypatch, capsys)
     assert rc == 0, out
     assert "permissions held" not in out
+    assert "no workflow file changed" in out
 
 
 # --------------------------------------------------------------------------
-# Rule 9 — TRUST_BOUNDARY
+# Check 2 — TRUST_BOUNDARY
 # --------------------------------------------------------------------------
 
-def test_rule_9_goes_red_when_a_boundary_path_is_removed(tmp_path, monkeypatch, capsys):
+def test_check_2_goes_red_when_a_boundary_path_is_removed(tmp_path, monkeypatch, capsys):
     root = _repo(
         tmp_path,
         {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY)},
@@ -380,7 +370,7 @@ def test_rule_9_goes_red_when_a_boundary_path_is_removed(tmp_path, monkeypatch, 
     assert "`TRUST_BOUNDARY` lost .github/workflows/" in out
 
 
-def test_rule_9_goes_red_when_the_whole_block_disappears(tmp_path, monkeypatch, capsys):
+def test_check_2_goes_red_when_the_whole_block_disappears(tmp_path, monkeypatch, capsys):
     before = _agent_merge(READ_TOP, JOB_READ, BOUNDARY)
     after = "\n".join(l for l in before.splitlines()
                       if "TRUST_BOUNDARY" not in l and l.strip() not in BOUNDARY) + "\n"
@@ -390,7 +380,7 @@ def test_rule_9_goes_red_when_the_whole_block_disappears(tmp_path, monkeypatch, 
     assert "`TRUST_BOUNDARY` block is gone" in out
 
 
-def test_rule_9_stays_green_when_the_boundary_GROWS(tmp_path, monkeypatch, capsys):
+def test_check_2_stays_green_when_the_boundary_GROWS(tmp_path, monkeypatch, capsys):
     """A wider boundary holds more, never less, so it is not a relaxation.
 
     Checking it would punish the safest change available to this file.
@@ -405,7 +395,7 @@ def test_rule_9_stays_green_when_the_boundary_GROWS(tmp_path, monkeypatch, capsy
     assert "boundary intact" in out
 
 
-def test_rule_9_reports_a_removal_even_when_another_path_is_added(tmp_path, monkeypatch, capsys):
+def test_check_2_reports_a_removal_even_when_another_path_is_added(tmp_path, monkeypatch, capsys):
     """Swapping one path for another keeps the COUNT identical.
 
     A length comparison would pass this, which is why the rule uses a set
@@ -426,18 +416,19 @@ def test_rule_9_reports_a_removal_even_when_another_path_is_added(tmp_path, monk
 # The harness itself
 # --------------------------------------------------------------------------
 
-def test_the_harness_isolates_rules_8_and_9(tmp_path, monkeypatch, capsys):
-    """Proves the clean case is clean BECAUSE rules 8 and 9 passed.
+def test_a_workflow_changed_without_touching_either_subject_passes_AND_SAYS_SO(
+        tmp_path, monkeypatch, capsys):
+    """The baseline, and it has to be green for the right reason.
 
-    Without emptying `REQUIRED_SUBSTRINGS` the gate reds in a temp repo on
-    missing phrase files, so every red case above would pass for the wrong
-    reason. This asserts the baseline is green and names the two rules that
-    reported.
+    Every red case above is only evidence if the clean case is clean BECAUSE
+    both checks ran and reported. A gate that printed nothing and returned 0
+    would satisfy `rc == 0` while checking neither, so this asserts both
+    report lines are present.
     """
     root = _repo(
         tmp_path,
         {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY)},
-        {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY).replace("echo qa-pass", "echo  qa-pass")},
+        {AM: _agent_merge(READ_TOP, JOB_READ, BOUNDARY).replace("echo one", "echo  one")},
     )
     rc, out = _run(root, monkeypatch, capsys)
     assert rc == 0, out
@@ -446,13 +437,16 @@ def test_the_harness_isolates_rules_8_and_9(tmp_path, monkeypatch, capsys):
     assert "PASS" in out
 
 
-def test_the_gates_docstring_registers_both_new_rules():
-    """A rule the docstring does not list is a rule the next reader will delete.
+def test_the_gates_docstring_registers_both_checks():
+    """A check the docstring does not list is a check the next reader will delete.
 
-    `chief.md` cites `verify_no_relaxation.py` by name as the thing that makes
-    its workflow-clearing grant non-circular; that citation is only as good as
-    this file's own account of what it checks.
+    `chief.md` cites this gate by name as the thing that makes its
+    workflow-clearing grant non-circular; that citation is only as good as this
+    file's own account of what it checks.
     """
     doc = GATE_PATH.read_text(encoding="utf-8")
-    assert "8. A workflow's `permissions:` may not WIDEN" in doc
-    assert "9. `TRUST_BOUNDARY` may not lose an entry" in doc
+    assert "A workflow's `permissions:` may not WIDEN" in doc
+    assert "`TRUST_BOUNDARY` in `agent-merge.yml` may not lose an entry" in doc
+    assert "fails\nCLOSED on a permissions block it has never seen before" in doc, (
+        "the docstring no longer records that a NEW block fails, which is the "
+        "decision a reader is most likely to mistake for a bug")
