@@ -4032,6 +4032,61 @@ MUTATIONS = [
      "",
      "test_the_reporter_is_serialised"),
 
+    # --- verify_workflow_permissions, checks 1 and 2 (#610) ------------------
+    # These nine rows carry more weight than most. `chief.md` cites this gate
+    # by name as what makes clearing a `.github/workflows/` PR non-circular now
+    # that the user widened Shape C to the whole trust boundary, so a hole in
+    # either check is not one missing check — it is the only thing between an
+    # agent and its own constraints.
+
+    ("wf_permissions: an unknown permissions value ranks as ABSENT, not wide",
+     "scripts/verify_workflow_permissions.py",
+     'return {"<unparseable>": 2}', 'return {"<unparseable>": 0}',
+     "test_an_unrecognised_permissions_shape_ranks_as_WIDE_not_as_absent"),
+
+    ("wf_permissions: a job's own block is written to the top-level key instead",
+     "scripts/verify_workflow_permissions.py",
+     'if isinstance(job, dict) and "permissions" in job:\n            out[f"jobs.{jid}"] = normalise_perms(job["permissions"])\n        elif top is not _MISSING:',
+     'if isinstance(job, dict) and "permissions" in job:\n            out["<top-level>"] = normalise_perms(job["permissions"])\n        elif top is not _MISSING:',
+     "test_effective_jobs_resolves_own_then_top_level_then_repo_default"),
+
+    ("wf_permissions: the TRUST_BOUNDARY block never ends, swallowing env keys",
+     "scripts/verify_workflow_permissions.py",
+     "if len(nxt) - len(nxt.lstrip()) <= indent:", "if False:",
+     "test_the_block_ends_at_the_first_line_that_dedents"),
+
+    ("wf_permissions: an unparseable workflow is swallowed instead of failing",
+     "scripts/verify_workflow_permissions.py",
+     'bad.append(f"{path}: cannot be parsed as YAML ({exc.__class__.__name__}), so its "',
+     'pass  # MUTANT: swallow it. The line below is now a bare expression.\n            (',
+     "test_check_1_goes_red_rather_than_quiet_on_a_workflow_it_cannot_parse"),
+
+    ("wf_permissions: a brand-new permissions block grants nothing, apparently",
+     "scripts/verify_workflow_permissions.py",
+     "granted = sorted(k for k, v in a_block.items() if v > 0)",
+     "granted = []",
+     "test_check_1_goes_red_on_a_permissions_block_that_is_entirely_new"),
+
+    ("wf_permissions: a widened scope is never above the threshold",
+     "scripts/verify_workflow_permissions.py",
+     "if rank > was:", "if rank > was + 9:",
+     "test_check_1_goes_red_when_a_job_block_widens"),
+
+    ("wf_permissions: write-all is compared as a scope name, not as <all>",
+     "scripts/verify_workflow_permissions.py",
+     'return {"<all>": _SCOPE_RANK.get(block.split("-", 1)[0], 2)}',
+     'return {"<all>": 0}',
+     "test_check_1_goes_red_on_write_all_replacing_a_narrow_block"),
+
+    ("wf_permissions: TRUST_BOUNDARY compares the diff the wrong way round",
+     "scripts/verify_workflow_permissions.py",
+     "elif lost := sorted(b_tb - a_tb):", "elif lost := sorted(a_tb - b_tb):",
+     "test_check_2_goes_red_when_a_boundary_path_is_removed"),
+
+    ("wf_permissions: a deleted TRUST_BOUNDARY block reads as nothing lost",
+     "scripts/verify_workflow_permissions.py",
+     "if b_tb and not a_tb:", "if a_tb and not b_tb:",
+     "test_check_2_goes_red_when_the_whole_block_disappears"),
     # --- the first reader of the ops dashboard's numbers ---------------------
     # Nothing read /admin/ops before this script, so a finding it gets wrong is
     # a finding nobody else is checking. The two directions are not symmetric:
@@ -4162,6 +4217,35 @@ MUTATIONS = [
      'echo "1. \\`chief\\` rules on it', 'echo "1. Someone rules on it',
      "test_the_hold_comment_tells_the_reader_about_the_chief_route"),
 
+    # --- effective-permissions check 1, after the independent round (#610) ---
+    # The first draft compared DECLARED blocks, so a new job with no block of
+    # its own inherited `agent-merge.yml`'s whole write set and the gate printed
+    # PASS -- live on the shipped file, with 8 workflows exposed. These rows
+    # guard the fix and the two false reds fixed alongside it.
+
+    ('#610: check 1 reverts to declared blocks, so an inheriting job is invisible',
+     "scripts/verify_workflow_permissions.py",
+     '            after = effective_jobs(yaml.safe_load(a_txt))',
+     '            after = perm_blocks(yaml.safe_load(a_txt))',
+     'test_a_NEW_JOB_WITH_NO_BLOCK_inheriting_a_broad_top_level_is_caught'),
+
+    ('#610: a workflow declaring no permissions ranks as granting nothing',
+     "scripts/verify_workflow_permissions.py",
+     '            out[f"jobs.{jid}"] = {REPO_DEFAULT: 2}',
+     '            out[f"jobs.{jid}"] = {}',
+     'test_a_NEW_WORKFLOW_declaring_no_permissions_anywhere_is_caught'),
+
+    ('#610: the <all> fallback is dropped, so tightening write-all reds falsely',
+     "scripts/verify_workflow_permissions.py",
+     '    if "<all>" in block:\n        return block["<all>"]',
+     '    if False:\n        return block["<all>"]',
+     'test_TIGHTENING_write_all_to_a_narrow_mapping_is_not_a_false_red'),
+
+    ('#610: no usable base returns 0 instead of 2 -- did-not-run reads as passed',
+     "scripts/verify_workflow_permissions.py",
+     '        print("This is NOT a pass: an unverified diff may be granting a power.")\n        return 2\n    try:',
+     '        print("This is NOT a pass: an unverified diff may be granting a power.")\n        return 0\n    try:',
+     'test_no_usable_base_exits_2_and_says_it_is_NOT_a_pass'),
     # --- the probe header suppresses four alerts and no others (#618) --------
     # The header is UNAUTHENTICATED, so the allow-list is the whole safety
     # argument: anyone may send it, which is fine for a diagnostic plus an
