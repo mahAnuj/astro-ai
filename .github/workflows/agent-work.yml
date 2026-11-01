@@ -122,6 +122,15 @@ on:
       issue:
         description: "Issue number to work (blank = let project-manager rank)"
         required: false
+      # A QA ROUND ON A PR, which is not the same job as working an issue.
+      # `qa-on-green.yml` sends this when a green PR's branch names no owning
+      # issue -- the state that held four green PRs unmergeable on 2026-11-01,
+      # because `agent-merge` merges on `qa-pass` and only `qa_verdict.sh`
+      # writes it. Mutually exclusive with `issue`: the step below REFUSES both
+      # rather than picking one.
+      pr:
+        description: "PR number to run a QA round on (blank = none; cannot be combined with issue)"
+        required: false
 
 concurrency:
   group: agent-work
@@ -217,6 +226,67 @@ jobs:
           else
             echo "no prior measurement — proceeding without one"
           fi
+      # WHY THIS IS A `run:` STEP AND NOT AN EXPRESSION IN THE PROMPT.
+      #
+      # The prompt line was `/agent-cycle ${{ github.event.inputs.issue }}`.
+      # Adding a second input by expression means something like
+      # `${{ inputs.pr != '' && format('--qa-pr {0}', inputs.pr) || inputs.issue }}`
+      # -- GitHub-expression truthiness over an input that is `null` on a
+      # `schedule` fire and `''` on a dispatch. Getting that wrong does not
+      # fail: the leg goes silently inert, which is #421's class and has
+      # happened three times in this repo. An expression also cannot be
+      # executed by a test, and a `run:` step can:
+      # tests/test_agent_work_cycle_args.py runs THIS fragment.
+      #
+      # It refuses rather than resolves. A dispatcher that sends both an issue
+      # and a PR has a bug, and picking one would hide it behind a cycle that
+      # looks like it worked.
+      - name: Compose the cycle arguments
+        id: args
+        env:
+          ISSUE: ${{ github.event.inputs.issue }}
+          PR: ${{ github.event.inputs.pr }}
+        run: |
+          set -uo pipefail
+          # `:-` because a `schedule` fire has no `inputs` object at all, so
+          # both expressions render empty and `set -u` would otherwise abort
+          # every cron run. That is the whole reason this is not an expression.
+          issue="${ISSUE:-}"
+          pr="${PR:-}"
+
+          # These reach the agent's PROMPT, not a shell, so the risk is a cycle
+          # aimed at nonsense rather than injection -- still refused, because
+          # "aimed at nonsense" is a ~50-minute run that reads as a success.
+          for v in "$issue" "$pr"; do
+            case "$v" in
+              "") ;;
+              *[!0-9]*)
+                echo "::error::\`$v\` is not a number; issue and pr must be digits only"
+                exit 1 ;;
+            esac
+          done
+
+          if [ -n "$issue" ] && [ -n "$pr" ]; then
+            echo "::error::dispatched with BOTH issue=$issue and pr=$pr. A cycle does one thing; refusing rather than choosing."
+            exit 1
+          fi
+
+          if [ -n "$pr" ]; then
+            # Step 0c in .claude/commands/agent-cycle.md. It skips Step 0a --
+            # which is an ISSUE provenance check and the thing that killed both
+            # dispatched rounds on #642 on 2026-11-01, `OUTSIDER -- author is a
+            # bot`, because the loop had filed the issue itself. 40 of the 130
+            # open issues that morning were bot-authored.
+            args="--qa-pr $pr"
+          else
+            # Empty is meaningful and is the cron's case: no argument means
+            # project-manager ranks and picks.
+            args="$issue"
+          fi
+
+          echo "args=$args" >> "$GITHUB_OUTPUT"
+          echo "cycle arguments: \`/agent-cycle $args\`" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -249,7 +319,7 @@ jobs:
           # and that is a different and much larger grant.
           allowed_bots: "github-actions"
           prompt: |
-            /agent-cycle ${{ github.event.inputs.issue }}
+            /agent-cycle ${{ steps.args.outputs.args }}
 
             /tmp/measure/report.md, if present, is the analyst's latest
             measurement. project-manager should rank against it — an issue the

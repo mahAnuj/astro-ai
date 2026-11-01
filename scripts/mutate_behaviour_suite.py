@@ -4135,6 +4135,89 @@ MUTATIONS = [
      'if probe.suppresses_owner_alert(request, "kundli_generated"):',
      'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
 
+    # ---- the PR-scoped QA dispatch -----------------------------------------
+    #
+    # Measured 2026-11-01: four of the five green PRs then open had received
+    # ZERO QA dispatches, because `qa-on-green` required an issue number in the
+    # branch name and theirs had none. `agent-merge` merges on `qa-pass` and
+    # `scripts/qa_verdict.sh` is its only writer, and the only thing that runs
+    # it is a dispatched round -- so the loop could not finish its own work.
+    #
+    # Rows run in BOTH directions deliberately. A guard that only caught the
+    # permissive mutation would bless a change that bricks the six-a-day cron,
+    # which is the one thing here that currently works.
+
+    # THE SUBTLEST ONE AVAILABLE, and the reason this row exists at all. The
+    # number spaces overlap: `gh issue view 639` ANSWERS for pull request #639.
+    # So a `pr=` ruling relabelled `issue=` would pass the carrier's openness
+    # check, dispatch a cycle at "issue" 639, and the cycle would read a pull
+    # request as its specification.
+    ('qa-on-green aims a PR ruling at the issue number space',
+     '.github/workflows/qa-on-green.yml',
+     'target="pr=$num"',
+     'target="issue=$num"',
+     'test_an_unnumbered_branch_aims_at_the_pr_instead_of_declining'),
+
+    # The fallback inverted: numbered branches get the PR form and unnumbered
+    # ones get `issue=` with nothing after it.
+    ('qa-on-green inverts the fallback and loses the owning issue',
+     '.github/workflows/qa-on-green.yml',
+     'if [ -n "$issue" ]; then\n            target="issue=$issue"',
+     'if [ -z "$issue" ]; then\n            target="issue=$issue"',
+     'test_a_numbered_branch_still_aims_at_its_issue'),
+
+    # The carrier file re-acquires the hard-coded prefix it had before, so
+    # every ruling becomes `issue=issue=N` or `issue=pr=N` and the strict
+    # parse refuses all of them. Inert, not dangerous -- and invisible.
+    ('qa-on-green re-prefixes the ruling the carrier already carries',
+     '.github/workflows/qa-on-green.yml',
+     "printf '%s\\n' \"$TARGET\"",
+     "printf 'issue=%s\\n' \"$TARGET\"",
+     'test_the_carrier_receives_the_target_verbatim'),
+
+    # The PR body becomes a source for the aim. Measured on the two real PRs:
+    # #639 has no issue reference of any kind, and #647's body yields 638 and
+    # 640, which are both pull requests.
+    ('qa-on-green starts reading the PR body it must never read',
+     '.github/workflows/qa-on-green.yml',
+     '--json comments',
+     '--json comments,body',
+     'test_the_target_is_never_guessed_from_the_pr_body'),
+
+    # agent-work: the composing step becomes dead code and a `pr=` dispatch
+    # silently runs an ordinary cycle with no argument -- ranking the backlog
+    # instead of judging the PR, at full cost, reported as a success.
+    ('agent-work reads the raw input again and ignores the composed argument',
+     '.github/workflows/agent-work.yml',
+     '/agent-cycle ${{ steps.args.outputs.args }}',
+     '/agent-cycle ${{ github.event.inputs.issue }}',
+     'test_the_prompt_reads_the_composed_output_and_not_the_raw_input'),
+
+    # THE BRICK-THE-LOOP DIRECTION. A `schedule` fire has no `inputs` object,
+    # both expressions render empty, and `set -u` aborts the step -- so all six
+    # crons a day die before the agent starts. This is why the composition is a
+    # `run:` step a test can execute rather than a prompt expression.
+    ('agent-work loses the unset-safe default and every cron fire dies',
+     '.github/workflows/agent-work.yml',
+     'issue="${ISSUE:-}"',
+     'issue="$ISSUE"',
+     'test_a_scheduled_fire_with_no_inputs_at_all_composes_an_empty_argument'),
+
+    # Both inputs at once stops being refused. Picking one hides the
+    # dispatcher's bug behind a ~50-minute run that reads as a success.
+    ('agent-work accepts an issue and a PR at once and picks one',
+     '.github/workflows/agent-work.yml',
+     'refusing rather than choosing."\n            exit 1',
+     'refusing rather than choosing."\n            :',
+     'test_both_inputs_at_once_is_refused_not_resolved'),
+
+    # The shape check widens, so a cycle can be aimed at a non-number.
+    ('agent-work stops requiring the dispatch target to be a number',
+     '.github/workflows/agent-work.yml',
+     '*[!0-9]*)\n                echo "::error::',
+     '*[!0-9a-z]*)\n                echo "::error::',
+     'test_a_non_numeric_input_is_refused'),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
