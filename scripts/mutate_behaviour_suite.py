@@ -4296,10 +4296,15 @@ MUTATIONS = [
      '            if fail_age is None or fail_age < hours:',
      'test_an_unreadable_verdict_time_is_still_reported'),
 
+    # The MUTANT MUST STAY SYNTACTICALLY VALID. The first version of this row
+    # replaced only the opening line of a two-line `print(...)`, which left the
+    # continuation string dangling: the sweep reported `NON-TEST FAILURE rc=2`,
+    # not CAUGHT. A row that breaks the parse proves nothing about the test --
+    # it proves Python can detect a SyntaxError.
     ('no-op loop: the suppressed finding stops being reported',
      'scripts/detect_stalls.py',
-     '                print(f"  (PR #{n}: qa-fail is {fail_age:.1f}h old, under the "',
-     '                pass  # (f"  (PR #{n}: qa-fail is {fail_age:.1f}h old, under the "',
+     '                print(f"  (PR #{n}: qa-fail is {fail_age:.1f}h old, under the "\n                      f"{hours:.0f}h floor — not yet a stall)")',
+     '                pass',
      'test_the_suppression_is_reported_and_not_silent'),
 
     ("no-op loop: the steward's ruling line forgets the pr= form again",
@@ -4325,6 +4330,43 @@ MUTATIONS = [
      '**If the detector\'s findings are all of the above, produce nothing — including no PR\ncomment.**',
      '**If the detector\'s findings are all of the above, say so and produce nothing.**',
      'test_a_quiet_steward_run_writes_no_pr_comment'),
+
+    # The third link in the no-op chain, and the one in a workflow file.
+    ('no-op loop: an in-flight cycle stops counting, so chief is woken anyway',
+     '.github/workflows/agent-steward.yml',
+     '          if [ "$inflight" -gt 0 ]; then',
+     '          if [ "$inflight" -gt 99999 ]; then',
+     'test_a_cycle_already_in_flight_does_not_wake_chief'),
+
+    ('no-op loop: in-flight excuses a REAL inaction too',
+     '.github/workflows/agent-steward.yml',
+     "[.[] | select(.status == \"in_progress\" or .status == \"queued\")] | length",
+     "[.[]] | length",
+     'test_a_steward_that_did_nothing_with_nothing_running_still_wakes_chief'),
+
+    ('no-op loop: standing down is reported as the steward having acted',
+     '.github/workflows/agent-steward.yml',
+     'so standing down was correct. Not waking chief."',
+     'so the steward acted. Not waking chief."',
+     'test_it_says_standing_down_rather_than_claiming_the_steward_acted'),
+
+    ("no-op loop: chief's ruling file forgets the pr= form again",
+     '.github/workflows/agent-steward.yml',
+     '`issue=<number>` OR `pr=<number>`, and nothing else.',
+     '`issue=<number>`, and nothing else.',
+     'test_chief_may_dispatch_a_pr_scoped_round'),
+
+    ('no-op loop: chief is told again to stand down with no owning issue',
+     '.claude/agents/chief.md',
+     '**"The detector named no owning issue" is no longer a reason to stand down.**',
+     '**A PR with no owning issue is not yours to dispatch.**',
+     'test_chief_may_dispatch_a_pr_scoped_round'),
+
+    ('no-op loop: chief may dispatch a workflows PR the App token cannot push',
+     '.claude/agents/chief.md',
+     'Still no line, deliberately, for a PR a cycle cannot clear: a diff touching',
+     'A line is fine for any open PR, including a diff touching',
+     'test_chief_is_still_refused_the_cases_a_cycle_cannot_clear'),
 
     # ---- the PR-scoped QA dispatch -----------------------------------------
     #

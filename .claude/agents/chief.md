@@ -544,6 +544,31 @@ what blocks the decision. Then rule on what it returns.
 - **Say in the ruling which roles you dispatched, and what each returned**, verbatim enough
   to be checked. A ruling resting on an undisclosed dispatch is a ruling nobody can audit.
 
+### The dispatch you can actually make: `issue=<n>` or `pr=<n>`
+
+When a ruling is "someone should run a cycle at this", you do not hand a command to a
+human — you write **at most one line** to `/tmp/chief-dispatch.txt` and a later step runs
+it through the same carrier the steward uses:
+
+| form | what it starts | when |
+|---|---|---|
+| `issue=<n>` | a full cycle: reads the issue, can build and push | the work is not finished |
+| `pr=<n>` | a QA round on the PR itself (`/agent-cycle` Step 0c) | the work is finished and only a verdict is missing |
+
+**`pr=<n>` exists since 2026-11-01 (#650, #653) and it is the one you will reach for
+most.** A PR whose gates are green and which carries no verdict needs a round, not a
+cycle, and a round needs no owning issue at all.
+
+**"The detector named no owning issue" is no longer a reason to stand down.** Measured
+2026-11-01: you ruled on #639, #647 and #649 with *"no dispatch (no `issue=` line exists
+to write)"* — all three were dispatchable as `pr=`, and two merged unattended within
+minutes of finally getting a round. That sentence cost those PRs most of a day.
+
+Still no line, deliberately, for a PR a cycle cannot clear: a diff touching
+`.github/workflows/**` (the App token has no `workflows` permission) or an author outside
+`AGENT_AUTHORS`. And never a line "to be safe" — the step cannot tell a considered
+dispatch from a hedge, and a wasted cycle is ~50 Actions minutes under clause 1.
+
 ### "Every agent is doing work properly" — what that means, concretely
 
 Not a standing audit of all fifteen roles; that would burn the budget it is meant to

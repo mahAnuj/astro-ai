@@ -259,3 +259,49 @@ def test_chief_has_no_write_tool_so_the_read_only_rule_is_enforceable():
     tools = next(ln for ln in head.splitlines() if ln.startswith("tools:"))
     for forbidden in ("Write", "Edit", "NotebookEdit"):
         assert forbidden not in tools, f"chief now has {forbidden}: {tools}"
+
+
+# --- 5. it can actually dispatch the common case ---------------------------
+
+def test_chief_may_dispatch_a_pr_scoped_round():
+    """MEASURED 2026-11-01: chief ruled on #639, #647 and #649 with "no dispatch
+    (no `issue=` line exists to write)". All three were dispatchable as `pr=`,
+    and two merged unattended within minutes of finally getting a round.
+
+    Both halves have to agree: chief's prompt must offer the form, and
+    `agent-steward.yml`'s instruction -- which is what it actually reads at
+    runtime -- must accept it. A form offered in one and not the other is the
+    #628 defect class: two surfaces, one fact, free to drift.
+    """
+    assert "`pr=<n>`" in SRC, "chief is never told it may aim at a PR"
+    flat = " ".join(SRC.split())
+    assert "no longer a reason to stand down" in flat
+
+    wf = (ROOT / ".github" / "workflows" / "agent-steward.yml").read_text(encoding="utf-8")
+    assert "`issue=<number>` OR `pr=<number>`" in wf, (
+        "the runtime instruction still permits only `issue=`, so chief's prompt "
+        "would offer a form the step refuses"
+    )
+
+
+def test_chief_is_still_refused_the_cases_a_cycle_cannot_clear():
+    """The widening is for the missing-issue case only. A workflows diff still
+    cannot be pushed by the App token, and an outsider's PR is not this loop's."""
+    flat = " ".join(SRC.split())
+    assert "`.github/workflows/**`" in flat
+    assert "AGENT_AUTHORS" in flat
+    assert "never a line \"to be safe\"" in flat
+
+
+def test_every_dispatch_form_chief_offers_is_one_the_carrier_parses():
+    """THE CONTRACT, across three files. The carrier parses `^(issue|pr)=[0-9]+$`
+    and refuses anything else, so a form invented in a prompt would be written,
+    refused, and reported as a dispatch that happened."""
+    carrier = (ROOT / "scripts" / "dispatch_cycle.sh").read_text(encoding="utf-8")
+    m = re.search(r"grep -oE '\^\(([a-z|]+)\)=\[0-9\]\+\$'", carrier)
+    assert m, "the carrier's ruling pattern is no longer recognisable"
+    accepted = set(m.group(1).split("|"))
+    offered = set(re.findall(r"`([a-z]+)=<n>`", SRC))
+    assert offered == accepted, (
+        f"chief offers {sorted(offered)}, the carrier accepts {sorted(accepted)}"
+    )

@@ -260,10 +260,13 @@ Do not manufacture work. These are normal and you leave them alone:
   about them is delivery work. **Who OPENED the PR is not the test** (#531): the owner
   opens PRs on cycle branches, and those are this loop's to unblock.
 
-  **A branch with no issue number is NO LONGER one of these.** That bullet used to read
-  "a dispatch needs an issue to aim at", which was true until 2026-11-01 and is the
-  sentence that made you write "there is nothing legitimate to write" six times in one
-  day while four green PRs waited. Dispatch it as `pr=<n>`.
+  **A branch with no issue number is NO LONGER one of these.** Until 2026-11-01 this
+  bullet also excluded it, on the grounds that a dispatch had to be aimed at an issue.
+  That stopped being true when the carrier learned `pr=<n>`, and the obsolete wording is
+  described rather than quoted here on purpose: a dead rule written out in full is a rule
+  the next reader can act on by mistake. It is the reason you wrote "there is nothing
+  legitimate to write" six times in one day while four green PRs waited. Dispatch it as
+  `pr=<n>`.
 - A PR authored by neither `claude[bot]` nor the repository owner. A contributor's PR
   is not this loop's to drive.
 - `needs-human-review` already on the issue. Someone has been told. Re-filing is noise.
