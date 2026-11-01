@@ -152,6 +152,9 @@
         {% endif %}
 
         <p class="mt-2 text-xs text-bhagya-muted-2 italic">{{ t(lang, 'matching_bhakoot_nopoints') }}</p>
+        {% if _bd.convention_only %}
+        <p class="mt-1 text-xs text-bhagya-muted-2 italic">{{ t(lang, 'matching_bhakoot_convention') }}</p>
+        {% endif %}
       </div>
     </div>
     {% endif %}

@@ -3827,6 +3827,61 @@ MUTATIONS = [
      "    if total >= 25:\n        return \"Madhyam\"",
      "test_the_disclosure_moves_no_grade"),
 
+    # --- #177: the Bhakoot 5/9 zero is Bhagya's own convention, and the page says so ---
+    ("#177 5/9: the Bhakoot koota note calls the 5/9 zero classical again",
+     "src/astro_ai/matching.py",
+     "\"scored 0 here as Bhagya's own convention; the classical text we \"",
+     "\"classically an obstacle; the classical text we \"",
+     "test_five_nine_notes_do_not_call_it_classical"),
+
+    ("#177 5/9: the dosha note presents the five parihaaras as classical for 5/9 again",
+     "src/astro_ai/matching.py",
+     "the classical text we hold does not name this distance. The five \"",
+     "the classical tradition cancels it. The five \"",
+     "test_five_nine_notes_do_not_call_it_classical"),
+
+    ("#177 5/9: the convention flag is never set",
+     "src/astro_ai/matching.py",
+     "return frozenset({d_g_to_b, d_b_to_g}) in _BHAKOOT_NOT_IN_HELD_TEXT",
+     "return False",
+     "test_five_nine_flag_is_set_only_for_five_nine"),
+
+    ("#177 5/9: the convention flag is set for 6/8 as well, a sourced distance",
+     "src/astro_ai/matching.py",
+     "    frozenset({5, 9}),\n})",
+     "    frozenset({5, 9}),\n    frozenset({6, 8}),\n})",
+     "test_sourced_distances_keep_their_note_byte_for_byte"),
+
+    ("#177 5/9: the result page stops rendering the convention line in the Bhakoot strip",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ t(lang, 'matching_bhakoot_convention') }}",
+     "{{ '' }}",
+     "test_five_nine_page_discloses_the_zero_is_bhagyas_convention"),
+
+    ("#177 5/9: the Hindi convention line stops saying it is not from the held text",
+     "src/astro_ai/i18n.py",
+     "यह हमारे पास उपलब्ध शास्त्रीय ग्रंथ से नहीं लिया गया है",
+     "यह शास्त्रीय ग्रंथ से लिया गया है",
+     "test_five_nine_page_discloses_the_zero_is_bhagyas_convention"),
+
+    ("#177 5/9: the /matching explainer calls 5-9 traditional again",
+     "src/astro_ai/templates/matching.html",
+     "The 6-8 and 2-12 distances traditionally score zero; Bhagya also scores 5-9 zero as its own convention, which the classical text we hold does not name.",
+     "Certain distances (6-8, 5-9, 2-12) traditionally score zero.",
+     "test_explainers_do_not_call_five_nine_traditional"),
+
+    ("#177 5/9: the Ashtakoot learn article lists 5th-9th as classical Bhakoot Dosha again",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "Our calculator also scores the 5th-9th (Navama-Pancama) distance 0, as its own convention: the classical text we hold does not name it.",
+     "5th-9th (Navama-Pancama) is classical Bhakoot Dosha too.",
+     "test_explainers_do_not_call_five_nine_traditional"),
+
+    ("#177 5/9: a disclosure edit moves the 5/9 koota score (0 -> 3.5)",
+     "src/astro_ai/matching.py",
+     "    if dosha and _bhakoot_convention_only(g_idx, b_idx):\n        return KootaScore(\n            name=\"Bhakoot\", sanskrit=\"भकूट\", max_points=7, awarded=0.0,",
+     "    if dosha and _bhakoot_convention_only(g_idx, b_idx):\n        return KootaScore(\n            name=\"Bhakoot\", sanskrit=\"भकूट\", max_points=7, awarded=3.5,",
+     "test_the_disclosure_moves_no_score_total_or_grade"),
+
     # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
     ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
      "src/astro_ai/chart.py",
