@@ -32,7 +32,10 @@ WHAT IT CHECKS, each against the merge base
   1. A numeric FLOOR may not fall      (EXPECTED_TESTS, EXPECTED_WORKFLOWS)
   2. A numeric CEILING may not rise    (MAX_LINES — the unattended diff limit)
   3. `disallowedTools` may not shrink  (removing a denial grants a power)
-  4. A mutation may not be deleted     (a harness that tests less proves less)
+  4. The TOTAL mutation-row count may not fall, across the WHOLE harness
+     (a harness that tests less proves less. The total rather than per
+      file, so the floor survives the rows being reorganised; moving a
+      row between harness files is free, losing one is not)
   5. agent-merge's gate chain stays    (own -> gates -> qa -> size -> merge:
      every step's `if:` must still depend on its predecessor, which is what
      makes a single removed line unable to skip a condition)
@@ -113,6 +116,53 @@ def at(ref: str, path: str) -> str | None:
 
 def ints(text: str | None, pattern: str) -> list[int]:
     return [int(m) for m in re.findall(pattern, text or "")]
+
+
+def _in_harness(path: str) -> bool:
+    """Is this a file where mutation rows may live?
+
+    Two conventions, both deliberate. `mutate_` is the historical one --
+    `mutate_behaviour_suite.py`, `mutate_verify_workflows.py`,
+    `mutate_natal_prompt_gate.py`. `scripts/mutations/` is where per-area
+    tables go, so that two PRs touching different code never touch the same
+    table and never conflict.
+    """
+    if not path.endswith(".py"):
+        return False
+    # ANCHORED to `scripts/`, not a substring match on `mutate_` anywhere in
+    # the path. The first draft used `"mutate_" in path`, which is correct for
+    # all five harness files today and wrong the moment someone adds
+    # `tests/test_mutate_behaviour_suite.py` -- the obvious name, and the split
+    # that motivated this rule plausibly adds it. Two effects, and the second
+    # is the one that matters: `note` noise for an uncountable test file, and a
+    # `MUTATIONS = [...]` FIXTURE inside a test counted into the production
+    # total, where it could offset a real deletion. Found by the independent
+    # round on this PR.
+    return path.startswith("scripts/mutations/") or path.startswith("scripts/mutate_")
+
+
+def harness_rows(ref: str) -> tuple[int | None, list[str]]:
+    """(total MUTATIONS rows across the harness at `ref`, files with no table).
+
+    None for the total only when the tree cannot be listed at all. A file that
+    exists but is uncountable contributes 0 and is NAMED in the second element,
+    because "uncountable" and "empty" produce the same number and only one of
+    them is fine: `mutate_natal_prompt_gate.py` has no table by design, while a
+    file whose table stopped parsing is a hole.
+    """
+    try:
+        paths = [p for p in git("ls-tree", "-r", "--name-only", ref).splitlines()
+                 if _in_harness(p)]
+    except RuntimeError:
+        return None, []
+    total, uncountable = 0, []
+    for path in paths:
+        n = mutation_rows(at(ref, path))
+        if n is None:
+            uncountable.append(path)
+        else:
+            total += n
+    return total, uncountable
 
 
 def mutation_rows(text: str | None) -> int | None:
@@ -234,27 +284,54 @@ def main(argv: list[str]) -> int:
         elif b_den:
             print(f"  ok   denials kept        {path} ({len(a_den)})")
 
-    # 4. mutations may not be deleted
-    for path in [c for c in changed if "mutate_" in c]:
-        b_txt, a_txt = at(base, path), at("HEAD", path)
-        if b_txt is None or a_txt is None:
-            continue
-        b_n, a_n = mutation_rows(b_txt), mutation_rows(a_txt)
-        what = "rows"
-        if b_n is None or a_n is None:
-            # No countable table on one side. Fall back to the old substring
-            # tally rather than skip the file — but SAY it is a proxy, because
-            # a number that claims to be a count and is not is the whole of
-            # #389. A labelled proxy is honest; an unlabelled one costs the
-            # next reader the time it takes to find out which number lied.
-            b_n, a_n = b_txt.count('("'), a_txt.count('("')
-            what = 'proxy `("` tally'
-        if a_n < b_n:
-            bad.append(f"{path}: mutation {what} fell {b_n} -> {a_n}. A harness that "
-                       f"tests less proves less, and this repo has already had one enshrine a "
-                       f"false positive. Removing a mutation needs a stated reason and a human.")
-        else:
-            print(f"  ok   mutations kept     {path} ({what} {b_n} -> {a_n})")
+    # 4. the TOTAL mutation-row count may not fall.
+    #
+    # PER FILE WAS THE WRONG UNIT, and it only became wrong when the rows
+    # needed reorganising. Every PR in this repo appends to the end of ONE
+    # table in `scripts/mutate_behaviour_suite.py`, so two PRs conflict there
+    # by construction -- four resolutions in two hours on 2026-11-01, each
+    # costing a full suite run and a re-gate. Splitting that table per area
+    # makes the conflicts impossible, and a per-file floor FORBIDS the split:
+    # the main file's count goes to zero however carefully the rows are kept.
+    #
+    # THE TEMPTING SHORTCUT WAS A SILENT WEAKENING, which is why this rule
+    # moved rather than being worked around. Writing
+    # `MUTATIONS = [...] + _load_area_rows()` makes `mutation_rows` return
+    # None -- "built by concatenation or a call, not a literal to count" -- the
+    # old code then fell back to the `("` proxy tally, and the proxy would have
+    # PASSED, because the file's text barely changes. `mutation_rows`'s own
+    # docstring says why that is worthless: "a tally over the whole file can
+    # RISE while a row is deleted: one added comment containing `("` pays for
+    # the row that left." The split would have been waved through by a check
+    # that had quietly stopped counting, which is the exact shape this file
+    # exists to refuse.
+    #
+    # The invariant that actually matters is the one asserted now: HOW MANY
+    # MUTATIONS DOES THE HARNESS HAVE. Indifferent to layout, not buyable with
+    # a comment, and still red on a deleted row wherever that row lived.
+    #
+    # Read from BOTH TREES rather than from the diff, like rule 7: a total is
+    # not a property of the files that happen to have changed, and a row moved
+    # out of the surface entirely would otherwise be invisible.
+    b_total, _b_un = harness_rows(base)
+    a_total, a_un = harness_rows("HEAD")
+    if b_total is None or a_total is None:
+        bad.append("could not list the mutation harness on one side, so the row total "
+                   "cannot be compared. An uncountable harness is not a pass.")
+    elif a_total < b_total:
+        bad.append(f"mutation rows fell {b_total} -> {a_total} across the harness. A harness "
+                   f"that tests less proves less, and this repo has already had one enshrine "
+                   f"a false positive. Removing a mutation needs a stated reason and a human. "
+                   f"Moving rows BETWEEN harness files is free; only the total is floored.")
+    else:
+        delta = "" if a_total == b_total else f" ({b_total} -> {a_total})"
+        print(f"  ok   mutation rows      {a_total} total{delta}")
+    # Named, every run. A file that stops being countable is how a total
+    # silently stops including it, and #389 is this repo's record of a count
+    # that lied for weeks while the harness's own output disagreed two lines
+    # away.
+    for path in sorted(set(a_un)):
+        print(f"  note no countable MUTATIONS table  {path} (contributes 0)")
 
     # 5 + 6. agent-merge's chain and its verdict handling
     am = ".github/workflows/agent-merge.yml"
