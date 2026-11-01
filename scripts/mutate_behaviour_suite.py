@@ -4001,6 +4001,63 @@ MUTATIONS = [
      "",
      "test_the_reporter_is_serialised"),
 
+    # --- the first reader of the ops dashboard's numbers ---------------------
+    # Nothing read /admin/ops before this script, so a finding it gets wrong is
+    # a finding nobody else is checking. The two directions are not symmetric:
+    # a MISSED finding continues the dashboard's existing failure mode, while a
+    # FALSE one gets the watcher muted -- and then the real finding is muted
+    # with it. Every threshold row below is the false-positive direction.
+
+    ("#ops-watch: triage debt fires AT the threshold, not above it",
+     "scripts/detect_ops_regressions.py",
+     "if pct > TRIAGE_DEBT_PCT:", "if pct >= TRIAGE_DEBT_PCT:",
+     "test_triage_debt_fires_only_ABOVE_the_threshold"),
+
+    ("#ops-watch: an empty backlog divides by zero and reports 'could not run'",
+     "scripts/detect_ops_regressions.py",
+     "if isinstance(total, int) and total > 0:",
+     "if isinstance(total, int) and total >= 0:",
+     "test_triage_debt_does_not_divide_by_zero_on_an_empty_backlog"),
+
+    ("#ops-watch: a high-priority count holding steady stops being reported",
+     "scripts/detect_ops_regressions.py",
+     "if n_high and n_high >= b_high:", "if n_high and n_high > b_high:",
+     "test_high_priority_is_reported_when_it_does_not_FALL"),
+
+    ("#ops-watch: the backlog comparison runs the wrong way round",
+     "scripts/detect_ops_regressions.py",
+     'if isinstance(base.get("open"), int) and newest["open"] > base["open"]:',
+     'if isinstance(base.get("open"), int) and newest["open"] < base["open"]:',
+     "test_a_rising_backlog_over_the_window_is_reported"),
+
+    ("#ops-watch: the trend needs no window, so one noisy day files an issue",
+     "scripts/detect_ops_regressions.py",
+     "older = [(w, d) for w, d in hist if (newest_when - w) >= timedelta(days=TREND_DAYS)]",
+     "older = [(w, d) for w, d in hist if (newest_when - w) >= timedelta(days=0)]",
+     "test_a_ONE_DAY_rise_does_not_fire_the_trend"),
+
+    ("#ops-watch: an absent yield measurement is read as 0% and alerted on",
+     "scripts/detect_ops_regressions.py",
+     'if isinstance(y, (int, float)) and d.get("ok") and y < YIELD_FLOOR_PCT:',
+     'if isinstance(y, (int, float)) and y < YIELD_FLOOR_PCT:',
+     "test_yield_is_not_judged_when_the_collector_says_it_could_not_measure"),
+
+    ("#ops-watch: the staleness threshold drops below GitHub's measured cron skew",
+     "scripts/detect_ops_regressions.py",
+     "STALE_HOURS = 32", "STALE_HOURS = 24",
+     "test_a_NORMALLY_LATE_scheduled_run_does_not_read_as_stale"),
+
+    ("#ops-watch: an unreadable source exits 0 -- silence read as health",
+     "scripts/detect_ops_regressions.py",
+     "return 1 if (findings or unreadable) else 0", "return 1 if findings else 0",
+     "test_an_unreadable_source_exits_1_and_says_which"),
+
+    ("#ops-watch: the blind spots are dropped from the carrier's payload",
+     "scripts/detect_ops_regressions.py",
+     '"not_covered": [list(n) for n in NOT_COVERED]}, indent=2))',
+     '"not_covered": []}, indent=2))',
+     "test_json_output_carries_findings_unreadable_AND_the_blind_spots"),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
