@@ -162,6 +162,65 @@ def test_a_near_miss_on_the_author_is_refused(author):
     assert not _accepts(author), author
 
 
+def _shipped_authors() -> str:
+    """The SHIPPED list, owner expression resolved -- not a fixture copy."""
+    env = _step("Is this a PR a cycle should finish?")["env"]
+    return env["AGENT_AUTHORS"].replace("${{ github.repository_owner }}", "mahAnuj")
+
+
+@pytest.mark.parametrize("author", [
+    "claude[bot]", "mahAnuj",
+    # #669, owner's decision 2026-11-02: the identities agent-work's rescue net
+    # opens a PR as. Every PR it opened before this (#617, #643, #663) was
+    # orphaned -- green, unlabelled, and never given a QA round.
+    "github-actions[bot]", "shubhagya-publisher[bot]",
+])
+def test_the_shipped_list_accepts_every_identity_the_loop_opens_prs_as(author):
+    assert _accepts(author, _shipped_authors()), author
+
+
+@pytest.mark.parametrize("author", [
+    "dependabot[bot]", "renovate[bot]", "github-actions", "shubhagya-publisher",
+    "xgithub-actions[bot]", "b", "o", "t",
+])
+def test_the_shipped_list_still_refuses_any_other_bot(author):
+    assert not _accepts(author, _shipped_authors()), author
+
+
+def _skips_branch(branch: str) -> bool:
+    """Drive the REAL measurements/* exclusion out of the pick step."""
+    m = re.search(r'(case "\$HEAD_BRANCH" in\n\s*measurements/\*\).*?\n\s*esac)', PICK, re.S)
+    assert m, "the measurements/* exclusion is no longer recognisable"
+    script = ('HEAD_BRANCH="$1"\nsay() { :; }\n' + m.group(1)
+              + '\necho CONSIDERED\n')
+    p = subprocess.run(["bash", "-c", script, "bash", branch],
+                       capture_output=True, text=True,
+                       env={"PATH": "/usr/bin:/bin"})
+    return "CONSIDERED" not in p.stdout
+
+
+@pytest.mark.parametrize("branch", [
+    "measurements/40140256532-1", "measurements/39867786023-2",
+])
+def test_a_measurement_pr_never_gets_a_qa_round(branch):
+    """The publisher is in AGENT_AUTHORS now, so without this ~8 measurement
+    PRs a day would each spend a ~50-minute cycle on a report that self-merges."""
+    assert _skips_branch(branch), branch
+
+
+@pytest.mark.parametrize("branch", [
+    "fix/floor-only-when-nothing-was-pushed", "issue/523-x", "partial/475-y",
+    "xmeasurements/1-1", "fix/measurements-thing",
+])
+def test_every_other_branch_is_still_considered(branch):
+    assert not _skips_branch(branch), branch
+
+
+def test_the_measurement_exclusion_runs_before_anything_else():
+    """It must precede the author gate: the publisher is now an accepted author."""
+    assert PICK.index('measurements/*)') < PICK.index('case ",$AGENT_AUTHORS," in')
+
+
 def test_the_author_match_is_quoted_so_brackets_are_literal():
     """Unquoted, `$author` expands into the `case` PATTERN and `[bot]` becomes
     a character class — so `claude[bot]` matches only `b`, `o` or `t`, the gate
