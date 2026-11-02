@@ -504,6 +504,10 @@ def test_the_second_slot_runs_the_collectors_without_the_analyst():
 
 
 def test_no_workflow_was_added():
+    # 19 since 2026-11-02: agent-queue.yml, which starts the oldest queued
+    # agent-work ruling when a cycle completes, so a dispatch made while one
+    # runs is queued rather than dropped (scripts/cycle_queue.py).
+    #
     # 18 since 2026-10-28: main-red-report.yml, which turns a non-green run of
     # `PR gates` on `main` into an issue comment. It is a separate workflow and
     # not a step in pr-gates because `failure()` is false when a job is KILLED,
@@ -513,7 +517,7 @@ def test_no_workflow_was_added():
     # 17 since 2026-10-25: qa-on-green.yml, which dispatches a QA round when a
     # PR's gates go green rather than waiting for detect_stalls.py's 4h
     # threshold and the steward's one-dispatch-per-run budget.
-    assert len(list((ROOT / ".github" / "workflows").glob("*.yml"))) == 18
+    assert len(list((ROOT / ".github" / "workflows").glob("*.yml"))) == 19
 
 
 def test_committed_measurement_files_pass_their_validators():

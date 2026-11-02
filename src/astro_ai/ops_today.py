@@ -174,6 +174,10 @@ LOOP_WORKFLOWS = (
     # being true the moment round 2 moved the reporter into its own
     # `workflow_run` workflow (#461).
     "main-red-report.yml",
+    # A loop leg for the same reason as `qa-on-green.yml`: it starts the cycle a
+    # busy `agent-work` queued (2026-11-02). A failed run of it is a queued
+    # ruling nobody starts -- the dropped-dispatch defect it replaced, back.
+    "agent-queue.yml",
     "agent-sync.yml",
     "agent-prioritise.yml",
     "agent-infra.yml",

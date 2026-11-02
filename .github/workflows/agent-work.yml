@@ -132,6 +132,10 @@ on:
         description: "PR number to run a QA round on (blank = none; cannot be combined with issue)"
         required: false
 
+# ONE cycle at a time. GitHub keeps at most ONE pending run in this group and
+# cancels the older pending run when another arrives, so nothing may dispatch
+# here while a cycle runs: `scripts/dispatch_cycle.sh` QUEUES the ruling
+# instead, and `agent-queue.yml` starts it when this run completes.
 concurrency:
   group: agent-work
   cancel-in-progress: false   # never kill a cycle mid-QA; let it finish
@@ -481,6 +485,36 @@ jobs:
           # credential.
           git remote set-url origin \
             "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
+
+          # A LOCAL ALIAS OF WORK ALREADY ON THE REMOTE IS NOT WORK TO RESCUE.
+          # A judge-only QA round checks an existing PR out under a local name
+          # (`qa-675`); its commits are ahead of `main`, so the check above
+          # passes -- and this net pushed `qa-675` and opened PR #677, a
+          # duplicate of #675 at an older head (2026-11-02). The question is
+          # "would commits be lost", and they would not: HEAD already sits on
+          # another remote branch. Only when NO remote branch has THIS name:
+          # an agent that pushed its own branch still continues below, where
+          # the #322 pr-gates dispatch for its PR lives.
+          if ! git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            # --prune: a stale origin/<name> for a branch deleted remotely must
+            # not count as "already on the remote".
+            git fetch --quiet --prune origin '+refs/heads/*:refs/remotes/origin/*' 2>/dev/null || true
+            # `{ grep ... || true; }`: grep exits 1 when NOTHING matches -- the
+            # exact case this net exists for (new commits no remote branch
+            # holds). Under `pipefail` the bare form failed the assignment and
+            # `-e` killed the step: a silent work-loss the day anyone adds
+            # `shell: bash` (#675 QA round 3, B1).
+            holder=$(git branch -r --contains HEAD 2>/dev/null | { grep -v -- '->' || true; } | head -1 | xargs)
+            if [ -n "$holder" ]; then
+              {
+                echo "### Nothing to rescue"
+                echo "Local branch \`$branch\` is an alias: its HEAD is already on \`$holder\`."
+                echo "No commit would be lost, so no branch is pushed and no PR is opened."
+              } >> "$GITHUB_STEP_SUMMARY"
+              echo "$branch: HEAD already on $holder — nothing to rescue"
+              exit 0
+            fi
+          fi
 
           if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
             echo "$branch already on origin — the agent pushed it"

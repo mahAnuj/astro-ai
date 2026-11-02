@@ -302,6 +302,28 @@ What has NOT changed, and why it matters more now than before:
   label could hand itself `qa-pass` and make `agent-merge` decorative. A `qa-fail` PR is
   left alone: that needs a FIX, and which fix is a judgment `steward.md`'s routing table
   holds across three kinds with different actions.
+- **A dispatch made while a cycle runs is QUEUED, not dropped — `agent-queue.yml`, added
+  2026-11-02 on the owner's request.** `agent-work` runs one cycle at a time, and GitHub
+  keeps at most ONE pending run per concurrency group: a third dispatch **cancels** the
+  waiting one, with no error anywhere. So `dispatch_cycle.sh` used to refuse while busy and
+  print "waits for the next run" — and nothing ever came back for that ruling. For
+  `qa-on-green` the one-per-commit marker was already spent, so that commit was never
+  reviewed (#560; #649 twice in one day).
+
+  Now a busy carrier calls `scripts/cycle_queue.py enqueue`, which writes a hidden
+  `<!-- agent-work-queue: kind=… target=… by=… -->` comment on the target (or, via
+  `QUEUE_ON`, on the PR `qa-on-green` is handling — it may not comment on issues).
+  `agent-queue.yml` runs `drain` when an `agent-work` run **completes**, and as a backstop
+  when `agent-steward` completes: oldest entry first, **one per run**, through the same
+  carrier, then edits the marker to `-taken: run=<id>` or `-dropped: <reason>`.
+
+  Three properties are load-bearing. **Only `github-actions[bot]` entries count** — every
+  writer uses `github.token`, and a marker anyone else pastes would aim a cycle at a target
+  nobody ruled on. **It drains on completion, never from inside `agent-work`** — a step in
+  the running cycle would dispatch into the cancellable pending slot. **It writes no label
+  and needs no new permission** — `qa-on-green` stays unable to hand itself `qa-pass`, and
+  every scope `agent-queue.yml` holds is one an existing dispatcher already had. There is
+  deliberately no cron: `*/30` would be ~1,400 Actions minutes a month.
 - **The mutation sandbox copies `.claude/` — since 2026-10-25.** `_SANDBOX_SUBDIRS` in
   `mutate_behaviour_suite.py` had `src`, `tests`, `.github`, `scripts` and `measurements`,
   so a row naming an agent definition or a slash command died with `FileNotFoundError` and

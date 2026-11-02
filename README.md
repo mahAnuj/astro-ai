@@ -169,7 +169,7 @@ app never imports from `evals/`.
 
 ## How the agent team works
 
-This repo ships itself. Fifteen agents and eighteen workflows take an issue
+This repo ships itself. Fifteen agents and nineteen workflows take an issue
 from a cron trigger to a merged, production-verified fix with **nobody inside the
 loop** — and no agent anywhere in it holds the authority to merge.
 
@@ -244,7 +244,7 @@ flowchart TD
 | `issue comment` | every agent | the next cycle, the steward, you | The only record that outlives the run. `AGENT_STATUS.md` is gitignored, so it is invisible outside one machine. |
 | `label` | `qa_verdict.sh` **only** | `agent-merge` | QA writes a *report*; the label is what a workflow can act on. QA runs `qa_verdict.sh` itself (owner, 2026-10-20) — before that, verdicts sat in agent output while PRs stalled, and a FAIL left no machine-readable mark. Only `agent-steward` is denied `gh pr edit`. |
 | `commit SHA` | engineer | QA, gates, `close-on-evidence` | Binds a verdict to exact code — a pass on a moved branch is refused. |
-| `workflow_run` | GitHub | `agent-merge`, `qa-on-green` | The edge that says a gate finished. Miss one and a green PR strands silently. |
+| `workflow_run` | GitHub | `agent-merge`, `qa-on-green`, `agent-queue` | The edge that says a gate (or a cycle) finished. Miss one and a green PR strands silently; `agent-queue` starts the next queued cycle when one completes. |
 | `/health` | production | `close-on-evidence` | Proof the fix is actually serving, not merely merged. |
 
 ### Where the authority sits
