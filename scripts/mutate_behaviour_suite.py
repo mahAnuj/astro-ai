@@ -4658,6 +4658,12 @@ MUTATIONS = [
      'test_generator_reads_the_registry_and_types_no_count'),
 
 
+    # --- #654/#649: the steward's own prompt must offer the pr= form ---
+    ("steward prompt: the ruling line narrows back to issue= alone, as it was until 2026-11-02",
+     ".github/workflows/agent-steward.yml",
+     'exactly `issue=<number>` OR `pr=<number>`, to',
+     'exactly `issue=<number>`, to',
+     "test_the_steward_prompt_does_not_say_exactly_issue_only"),
     # --- #663/#669: the rescue net must see a MERGED PR, not just an open one ---
     ("rescue net: the PR lookup drops --state all and reads OPEN pull requests only",
      ".github/workflows/agent-work.yml",
