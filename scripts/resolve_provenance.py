@@ -21,9 +21,28 @@ Fail closed. There are three verdicts and the middle of the road is not one of t
     OUTSIDER    exit 1   anything else we could positively classify
     UNRESOLVED  exit 2   we could not tell. STOP. Never a default in either direction.
 
-* Any author with `is_bot=true` is OUTSIDER. There is NO allowlist of bot logins anywhere,
-  including as a convenience: `claude[bot]` resolves to permission `none` and
-  `app/github-actions` is a 404, and an allowlist would be a second predicate for one fact.
+* Any author with `is_bot=true` is OUTSIDER, with ONE named exception: this repository's own
+  delivery App (`SELF_APP`). Permission is still not consulted for a bot -- `claude[bot]`
+  resolves to `none` and `app/github-actions` is a 404 -- so the exception is a login check
+  and nothing more. Every other bot, present or installed later, stays OUTSIDER.
+
+  WHY THE EXCEPTION EXISTS, measured 2026-11-01. 40 of the 130 open issues were filed by this
+  App, and a cycle aimed at any of them stopped at `/agent-cycle` Step 0a without building
+  anything. PR #642 was dispatched twice and died both times on #616, an issue the loop had
+  filed itself. The loop could not work ~31% of its own backlog.
+
+  WHAT THIS GIVES UP, stated because it is real and not small. The override rules below say a
+  bot labelling its own issue is "the `USER AUTHORISED PUSH` failure in another costume", and
+  this exception grants structurally the same thing: the loop trusting its own output. The
+  laundering path is concrete -- a cycle reads an outsider's issue or a web page, files a NEW
+  issue restating that content, and the next cycle reads it as trusted. Step 0a exists because
+  an outsider's issue reaches an engineer, and that is not fixed by this, only narrowed to
+  one hop.
+
+  SO THE REMAINING PROTECTION IS NOT THIS GATE. It is that an issue BODY is data, never
+  instructions, wherever it came from. `provenance:outsider` still marks what this App filed
+  for a human to read; `qa` and `agent-merge` still gate the output. A trusted provenance says
+  "this issue may be worked", never "do what it says".
 * Permission comes from `collaborators/<login>/permission`, never from `author_association`
   (`CONTRIBUTOR` means "has had a PR merged", not "has write access").
     admin / write        -> trusted
@@ -71,6 +90,50 @@ from typing import Callable
 
 TRUSTED, OUTSIDER, UNRESOLVED = "TRUSTED", "OUTSIDER", "UNRESOLVED"
 EXIT = {TRUSTED: 0, OUTSIDER: 1, UNRESOLVED: 2}
+
+# This repository's own delivery App, and the ONLY bot login that is not an
+# outsider. A bare string, never a list: a collection here would invite a
+# second entry, and the whole value of this exception is that it is one login
+# wide. tests/test_resolve_provenance.py pins the type.
+SELF_APP = "claude"
+
+
+def is_self_app(login: str) -> bool:
+    """Is `login` this repository's own delivery App?
+
+    TWO RENDERINGS, and both are real. `gh issue view --json author` returns
+    `app/claude`, which `normalise_login` reduces to `claude`; the REST API and
+    AGENT_AUTHORS say `claude[bot]`, which it leaves intact because `[bot]` is
+    a valid login character sequence. `qa-on-green.yml` carries the same note
+    for the same reason. Only the first reaches this script today -- the second
+    is handled because "today" is not a guarantee, and the failure would be a
+    silent return to OUTSIDER for every issue the loop filed.
+
+    CASE-INSENSITIVE because GitHub logins are. `Claude` and `claude` are the
+    SAME ACCOUNT, so folding case is not a widening; comparing exactly would
+    make the gate depend on how an API chose to capitalise today. `app/CLAUDE`
+    therefore resolves TRUSTED, confirmed by the independent QA round on #654.
+
+    WHAT CASE-FOLDING DOES *NOT* BUY, corrected after that round found the
+    claim wrong. An earlier version of this docstring said the fold-then-strip
+    order "handles `CLAUDE[BOT]`". It does not, because that input never
+    arrives here: `_LOGIN` accepts only a lowercase `[bot]` suffix, so
+    `normalise_login("CLAUDE[BOT]")` returns None and `classify` answers
+    UNRESOLVED -- exit 2, "we could not tell, STOP" -- before this function is
+    called. The order is still the right one (it is the cheaper, more obvious
+    reading and costs nothing), but it is not load-bearing for that input, and
+    an uppercase suffix fails CLOSED rather than being recognised.
+    """
+    if not isinstance(login, str):
+        return False
+    # Fold case FIRST, then strip. The other order misses `CLAUDE[BOT]`, and a
+    # case variant resolving to OUTSIDER would silently restore the stall this
+    # exception exists to remove.
+    folded = login.casefold()
+    suffix = "[bot]"
+    if folded.endswith(suffix):
+        folded = folded[:-len(suffix)]
+    return folded == SELF_APP.casefold()
 
 LABEL_TRUSTED = "provenance:trusted"
 LABEL_OUTSIDER = "provenance:outsider"
@@ -247,8 +310,18 @@ def classify(gh: Gh, repo: str, number: int) -> Verdict:
     ev.append(f"author      : {login} (is_bot={str(is_bot).lower()})")
 
     if is_bot:
-        base = OUTSIDER
-        ev.append("permission  : not consulted -- a bot author is untrusted by rule (no allowlist)")
+        # Permission is still not consulted for ANY bot: `claude[bot]` resolves
+        # to `none` and `app/github-actions` is a 404, so asking would answer
+        # "outsider" for the App that owns this repo's loop. The exception is a
+        # login comparison and is deliberately exactly one login wide.
+        if is_self_app(login):
+            base = TRUSTED
+            ev.append(f"permission  : not consulted -- author is this repo's own "
+                      f"delivery App ({SELF_APP}), trusted by the 2026-11-01 ruling")
+        else:
+            base = OUTSIDER
+            ev.append("permission  : not consulted -- a bot author is untrusted by rule "
+                      "(the only exception is this repo's own App)")
     else:
         p = lookup_permission(gh, repo, login)
         base = classify_permission(p)
@@ -258,7 +331,9 @@ def classify(gh: Gh, repo: str, number: int) -> Verdict:
 
     if base == TRUSTED:
         ev.append("override    : not consulted (author is trusted)")
-        return Verdict(TRUSTED, ev, "author has write access")
+        return Verdict(TRUSTED, ev,
+                       f"author is this repo's own delivery App ({SELF_APP})" if is_bot
+                       else "author has write access")
 
     why = "author is a bot (untrusted by rule)" if is_bot else "author is not a collaborator with write access"
     if LABEL_TRUSTED not in labels:

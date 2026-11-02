@@ -132,13 +132,80 @@ def test_author_association_is_never_consulted():
 
 # ---- bots and bad logins -------------------------------------------------------------
 
-@pytest.mark.parametrize("login", ["app/claude", "claude[bot]", "app/github-actions"])
-def test_a_bot_author_is_an_outsider_whatever_its_permission(login):
-    # Mutated: a bot author treated as trusted. Even a bot that WOULD resolve to write.
+@pytest.mark.parametrize("login", ["app/github-actions", "app/dependabot",
+                                   "dependabot[bot]", "app/renovate",
+                                   "claudex", "app/claude-bot", "app/not-claude"])
+def test_every_bot_but_this_repos_own_app_is_an_outsider(login):
+    """THE NARROWNESS GUARD, and the reason the exception below is affordable.
+
+    Mutated: a bot author treated as trusted. Even a bot that WOULD resolve to
+    write. The near-misses are in this list deliberately -- `claudex` and
+    `claude-bot` are what a substring or `startswith` comparison would let in,
+    and either would trust any App whose name begins with the right letters,
+    including one installed years from now by someone else.
+    """
     bare = login[len("app/"):] if login.startswith("app/") else login
     fake = FakeGh(author=(login, True), perms={bare: OK("write")})
     assert verdict(fake) == rp.OUTSIDER
-    assert fake.permission_calls() == []        # no allowlist, no lookup that could grant it
+    assert fake.permission_calls() == []        # no lookup that could grant it
+
+
+@pytest.mark.parametrize("login", ["app/claude", "claude[bot]", "app/Claude"])
+def test_this_repos_own_app_is_trusted(login):
+    """THE 2026-11-01 EXCEPTION, measured: 40 of the 130 open issues were filed
+    by this App, and a cycle aimed at any of them stopped at `/agent-cycle`
+    Step 0a having built nothing. PR #642 was dispatched twice and died both
+    times on #616, an issue the loop had filed itself.
+
+    Three renderings, all real. `gh issue view --json author` says
+    `app/claude`; the REST API and AGENT_AUTHORS say `claude[bot]`; and GitHub
+    logins are case-insensitive, so `Claude` is the same account. Only the
+    first reaches this script today, and a change in any of the other two must
+    not silently restore the stall.
+    """
+    fake = FakeGh(author=(login, True))
+    assert verdict(fake) == rp.TRUSTED
+
+
+def test_the_own_app_is_trusted_without_asking_for_a_permission():
+    """`claude[bot]` resolves to permission `none` and the App is not a
+    collaborator, so CONSULTING the API would answer OUTSIDER for the very
+    account this exception is about. The grant has to come from the login, and
+    the absence of the call is what proves no second predicate crept in."""
+    fake = FakeGh(author=("app/claude", True))
+    assert verdict(fake) == rp.TRUSTED
+    assert fake.permission_calls() == []
+
+
+def test_a_HUMAN_named_claude_is_still_judged_on_permission():
+    """The exception is for a BOT author. A human account that happens to share
+    the App's name must go through `collaborators/<login>/permission` like
+    anyone else, or the gate could be walked through by registering a name."""
+    fake = FakeGh(author=("claude", False), perms={})     # 404 -> not a collaborator
+    assert verdict(fake) == rp.OUTSIDER
+    assert len(fake.permission_calls()) == 1
+
+
+def test_the_exception_is_exactly_one_login_wide():
+    """A collection here invites a second entry, and one login is the whole of
+    why this is affordable. Pinned as a type, because `SELF_APP = ["claude",
+    "github-actions"]` would still pass every behavioural test above."""
+    assert isinstance(rp.SELF_APP, str), (
+        f"SELF_APP is {type(rp.SELF_APP).__name__}; a collection of trusted bot "
+        "logins is the allowlist this script's header refuses"
+    )
+    assert rp.SELF_APP == "claude"
+
+
+def test_the_grant_says_which_kind_of_trust_it_is():
+    """`provenance:trusted` means two different things now, and a reader of the
+    record has to be able to tell them apart: an admin wrote the issue, or the
+    loop did."""
+    bot = rp.classify(FakeGh(author=("app/claude", True)), REPO, 7)
+    human = rp.classify(FakeGh(perms={"alice": OK("admin")}), REPO, 7)
+    assert "own delivery App" in bot.reason, bot.reason
+    assert "write access" in human.reason, human.reason
+    assert bot.reason != human.reason
 
 
 @pytest.mark.parametrize("login", ["x;id", "a b", "$(id)", "-lead", "a--" + "b" * 50,
@@ -235,9 +302,23 @@ def test_a_bot_applied_override_is_ignored():
 
 
 def test_a_bot_applied_override_on_a_bot_filed_issue_is_ignored():
-    fake = FakeGh(author=("app/claude", True), labels=["provenance:trusted"],
+    """The author is `app/dependabot` since 2026-11-01, not `app/claude`: this
+    repo's own App is now trusted on its login, so using it here would reach
+    TRUSTED before the override was ever consulted and the test would pass
+    while proving nothing. The rule under test is unchanged -- a bot labelling
+    an issue is not evidence, whoever filed it."""
+    fake = FakeGh(author=("app/dependabot", True), labels=["provenance:trusted"],
                   events=[labeled("provenance:trusted", "github-actions", actor_type="Bot")])
     assert verdict(fake) == rp.OUTSIDER
+
+
+def test_the_own_app_needs_no_override_label_at_all():
+    """The complement, stated so the two cannot be confused: the exception is a
+    LOGIN grant, so no label is involved and none is read. A reader who sees
+    the test above must not conclude the loop labels its own issues."""
+    fake = FakeGh(author=("app/claude", True))          # no labels, no events
+    assert verdict(fake) == rp.TRUSTED
+    assert not [c for c in fake.calls if c[0] == "api" and c[1].endswith("/events")]
 
 
 def test_an_override_that_was_then_removed_is_ignored():
@@ -426,3 +507,32 @@ def test_a_bad_repo_or_issue_number_is_unresolved_not_a_crash():
     assert rp.main(["7", "--repo", "not a repo; id"], gh=fake) == 2
     assert rp.main(["0", "--repo", REPO], gh=fake) == 2
     assert fake.calls == []
+
+
+def test_an_uppercase_bot_suffix_is_unresolved_not_trusted():
+    """CORRECTING A CLAIM THIS PR SHIPPED, found by the independent QA round
+    on #654.
+
+    `is_self_app` folds case before stripping `[bot]`, and the docstring said
+    that "handles `CLAUDE[BOT]`". It does not: `_LOGIN` accepts only a
+    lowercase suffix, so `normalise_login` returns None and `classify` answers
+    UNRESOLVED before `is_self_app` is reached.
+
+    UNRESOLVED is the correct verdict and the safe one -- "we could not tell,
+    STOP", never a default in either direction -- so the behaviour was always
+    right and only the stated reason was wrong. Pinned here so the claim and
+    the code cannot drift apart again, which is this repo's most frequent
+    defect class.
+    """
+    assert rp.normalise_login("CLAUDE[BOT]") is None
+    fake = FakeGh(author=("CLAUDE[BOT]", True))
+    assert verdict(fake) == rp.UNRESOLVED
+    assert fake.permission_calls() == []
+
+
+def test_the_renderings_that_ARE_recognised_are_the_ones_measured():
+    """The independent round probed 31 logins and found TRUSTED for exactly
+    five, all with `is_bot=true`. These are those five; the near-misses live in
+    test_every_bot_but_this_repos_own_app_is_an_outsider."""
+    for login in ("app/claude", "claude[bot]", "app/claude[bot]", "Claude", "app/CLAUDE"):
+        assert verdict(FakeGh(author=(login, True))) == rp.TRUSTED, login
