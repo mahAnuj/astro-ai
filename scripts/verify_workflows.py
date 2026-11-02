@@ -231,6 +231,14 @@ def logical_lines(text: str) -> list[tuple[int, str]]:
 GH_WORD = re.compile(r"(?<![\w./$-])gh\s+(?=\S)")
 CONTROL_PREFIX = ("&&", "||", ";", "|", "(", "`", "!", "{", "$(")
 CONTROL_WORD = re.compile(r"(?:^|\s)(?:then|do|else|if|elif|while|until)$")
+# `VAR=value gh ...` runs gh at command position with VAR in its environment.
+# Strip any run of such assignments off the END of the prefix before testing
+# it. Without this, `GH_TOKEN="$PR_TOKEN" gh pr create` (agent-work's rescue
+# net, #669) was invisible to the permission check -- measured: the
+# `pull-requests: write -> read` mutation in mutate_verify_workflows.py went
+# MISSED the moment that prefix was added.
+ENV_ASSIGNMENTS = re.compile(
+    r"(?:(?<=\s)|^)(?:[A-Za-z_][A-Za-z0-9_]*=(?:\"[^\"]*\"|'[^']*'|[^\s\"']*)\s+)+$")
 
 
 def gh_calls(run_text: str) -> list[tuple[int, list[str]]]:
@@ -243,7 +251,8 @@ def gh_calls(run_text: str) -> list[tuple[int, list[str]]]:
     calls: list[tuple[int, list[str]]] = []
     for lineno, line in logical_lines(strip_shell_comments(run_text)):
         for m in GH_WORD.finditer(line):
-            prefix = line[: m.start()].rstrip()
+            prefix = line[: m.start()]
+            prefix = ENV_ASSIGNMENTS.sub("", prefix).rstrip()
             if not (prefix == "" or prefix.endswith(CONTROL_PREFIX)
                     or CONTROL_WORD.search(prefix)):
                 continue

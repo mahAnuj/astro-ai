@@ -169,10 +169,18 @@ def test_the_candidate_is_chosen_by_author_and_not_by_branch_name():
     for ref in ("issue/523-x", "partial/523-x", "fix/515-x", "chore/hand-edit"):
         assert _pick([pr(356, branch=ref)]) == "356", ref
 
-    # Authorship is what refuses one. A third-party bot is not in the list even
-    # though it opens PRs on this repo every day -- the measurement publisher.
-    assert _pick([pr(356, user="shubhagya-publisher[bot]")]) == ""
+    # Authorship is what refuses one. A third-party bot is not in the list.
     assert _pick([pr(356, user="dependabot[bot]")]) == ""
+
+    # The publisher and `github.token` ARE in it since 2026-11-02 (#669): the
+    # rescue net in agent-work opens PRs as them. A rescued PR with qa-pass is
+    # a candidate...
+    assert _pick([pr(356, user="shubhagya-publisher[bot]")]) == "356"
+    assert _pick([pr(356, user="github-actions[bot]")]) == "356"
+    # ...and a MEASUREMENT PR, which never carries qa-pass, still is not: the
+    # label filter is what keeps the publisher's ~8 reports a day out.
+    assert _pick([pr(356, user="shubhagya-publisher[bot]", labels=(),
+                     branch="measurements/40140256532-1")]) == ""
     assert _pick([pr(356, user="drive-by-contributor")]) == ""
 
 
