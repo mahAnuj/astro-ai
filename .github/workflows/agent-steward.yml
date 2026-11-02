@@ -452,9 +452,10 @@ jobs:
       #
       # This step is the carrier. It is deliberately dumb: the workflow name is
       # hardcoded here, so the only thing chief chooses is the issue number.
-      # chief cannot dispatch anything else, cannot dispatch twice, and cannot
-      # dispatch over a cycle already in flight — the guard it could not verify
-      # for itself is verified here, where the token can read the API.
+      # chief cannot dispatch anything else and cannot dispatch twice. A ruling
+      # made while a cycle is in flight is QUEUED rather than dispatched over it
+      # (scripts/cycle_queue.py) -- the guard chief could not verify for itself
+      # is applied here, where the token can read the API.
       - name: Carry out chief's dispatch ruling
         if: steps.acted.outputs.ok == 'false'
         env:

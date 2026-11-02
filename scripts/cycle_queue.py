@@ -82,7 +82,16 @@ _BY = re.compile(r"[^A-Za-z0-9_.-]+")
 CARRIER = Path(__file__).resolve().parent / "dispatch_cycle.sh"
 #: The carrier's two rc=1 messages that mean "the ruling was fine, the RUN
 #: failed" -- retry, never drop. Every other rc=1 is a refusal of the ruling.
-TRANSIENT = ("created no new agent-work run", "it did not run a cycle")
+TRANSIENT = ("created no new agent-work run", "it did not run a cycle",
+             # the carrier found a cycle running after all and could not write
+             # the re-queue entry: the ruling is fine, the write failed.
+             "could NOT be queued")
+#: Times a ruling whose RUN died goes back in the queue before it is dropped.
+#: Without a bound it never ends (#675 QA round 2): the dead `agent-work` run
+#: COMPLETES, which fires `agent-queue` again, which dispatches the same entry
+#: again -- #421's shape lasted three days. Counted from the entry's own
+#: `**Pending:**` notes, so it needs no new state, label or store.
+MAX_RETRIES = 2
 
 Runner = Callable[[list[str]], str]
 
@@ -256,7 +265,18 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
         # turn). A claimed entry is no longer pending, so a failure from here on
         # can cost a ruling at worst, never a duplicate cycle.
         body = restate(gh, repo, e.comment_id, e.body, "pending", "claimed")
-        rc, exported, out = carrier(f"{e.kind}={e.target}", f"queue({e.by})")
+        retries = e.body.count("**Pending:**")
+        try:
+            rc, exported, out = carrier(f"{e.kind}={e.target}", f"queue({e.by})")
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            # The carrier itself could not run. Nothing is known about the
+            # ruling, so it goes back -- counted, like any other retry -- rather
+            # than being stranded in `claimed` where nothing would ever see it.
+            restate(gh, repo, e.comment_id, body, "claimed", "pending",
+                    f"the dispatch carrier could not run ({exc.__class__.__name__}); "
+                    f"retry {retries + 1} of {MAX_RETRIES}.")
+            print(f"::error::{e.kind}={e.target}: carrier failed to run: {exc}")
+            return 1
         print(out.rstrip())
         run_id = exported.get("DISPATCHED_RUN")
         if rc == 0 and run_id:
@@ -264,25 +284,35 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
                     f"agent-work run `{run_id}` started at `{e.kind}={e.target}` from the queue.")
             print(f"started {e.kind}={e.target} as run {run_id}")
             return 0
-        if rc == 1 and any(t in out for t in TRANSIENT):
+        if rc == 1 and any(t in out for t in TRANSIENT) and retries < MAX_RETRIES:
             # The carrier ACCEPTED the ruling and the run did not survive -- the
             # #421 shape. That says nothing about the ruling, so it goes back in
             # the queue, and this run goes RED so the failure is seen rather
-            # than reported as a green run that quietly dropped work.
-            restate(gh, repo, e.comment_id, body, "claimed", "pending")
+            # than reported as a green run that quietly dropped work. BOUNDED:
+            # the third failure falls through to the drop below.
+            restate(gh, repo, e.comment_id, body, "claimed", "pending",
+                    f"the dispatched run did not start or died on arrival; "
+                    f"retry {retries + 1} of {MAX_RETRIES}.")
             print(f"::error::{e.kind}={e.target}: the dispatched run did not start or died "
-                  f"on arrival. Returned to the queue; see the carrier output above.")
+                  f"on arrival. Returned to the queue (retry {retries + 1} of {MAX_RETRIES}); "
+                  f"see the carrier output above.")
             return 1
         if rc == 1:
             restate(gh, repo, e.comment_id, body, "claimed", "dropped",
-                    "the dispatch carrier refused the ruling itself (closed target, an "
-                    "issue number that is a PR, or unparseable) -- see the `agent-queue` log.")
+                    f"the dispatch carrier refused the ruling itself, or its run failed "
+                    f"{MAX_RETRIES + 1} times (closed target, an issue number that is a PR, "
+                    f"unparseable, or a run that never started) -- see the `agent-queue` log.")
+            print(f"::error::{e.kind}={e.target} dropped; see the carrier output above.")
             continue
         # rc 0 with no run: the carrier found a cycle in flight after all (a
-        # race with another dispatcher) and queued it again -- deduplicated,
-        # so restoring this entry is what keeps exactly one.
-        restate(gh, repo, e.comment_id, body, "claimed", "pending")
-        print(f"{e.kind}={e.target} not started (a cycle appeared); it stays queued.")
+        # race with another dispatcher). It could not see THIS entry -- it is
+        # claimed, not pending -- so it has already written a fresh one for the
+        # same target. Restoring this one would leave two (#675 QA round 2,
+        # N2), so this one is closed and the carrier's entry is the live one.
+        restate(gh, repo, e.comment_id, body, "claimed", "dropped",
+                "a cycle appeared after the claim; the carrier queued a fresh entry for "
+                "the same target, which replaces this one.")
+        print(f"{e.kind}={e.target} not started (a cycle appeared); the carrier re-queued it.")
         return 0
     return 0
 

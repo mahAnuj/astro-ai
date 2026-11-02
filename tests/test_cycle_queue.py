@@ -217,14 +217,19 @@ def test_a_refused_entry_is_dropped_and_the_next_one_is_tried():
     assert f"{cq.MARK}-taken: " in gh.comments[1]["body"]
 
 
-def test_a_race_with_another_dispatcher_leaves_the_entry_queued():
-    """rc 0 with no run means the carrier found a cycle in flight after all."""
+def test_a_race_with_another_dispatcher_leaves_EXACTLY_ONE_live_entry():
+    """rc 0 with no run: the carrier found a cycle running after all and, unable
+    to see the CLAIMED entry, wrote a fresh one. Restoring the claimed entry too
+    left two for one target (#675 QA round 2, N2)."""
     gh = FakeGh()
     gh.add(entry("pr", 1))
-    car = FakeCarrier([(0, None)])
-    cq.drain(gh, REPO, car)
-    assert [e.target for e in cq.pending(gh, REPO)] == [1]
 
+    def carrier(ruling, who):           # what the real carrier does when busy
+        cq.enqueue(gh, REPO, "pr", 1, who, on=1)
+        return 0, {}, "QUEUED, not dropped"
+    cq.drain(gh, REPO, carrier)
+    assert [(e.kind, e.target) for e in cq.pending(gh, REPO)] == [("pr", 1)]
+    assert f"{cq.MARK}-dropped: " in gh.comments[0]["body"]
 
 def test_a_pr_that_already_carries_qa_pass_is_dropped_without_a_cycle():
     gh = FakeGh(labels={649: "qa-pass,qa:in-cycle"})
@@ -410,3 +415,52 @@ def test_the_steward_is_no_longer_told_to_stand_down_because_a_cycle_runs():
     assert "agent-work-queue" in md
     assert "refuses rather than queueing a second" not in wf
     assert "guard 1 forbids a second dispatch" not in wf
+
+
+# ----------------------------------------- QA round 2 on #675
+
+def _dead(gh, n):
+    return FakeCarrier([(1, None, "dispatch at pr #649 created no new agent-work run within 60s.")
+                        for _ in range(n)])
+
+
+def test_a_dead_run_is_retried_at_most_twice_then_dropped():
+    """BLOCKING N1. A dead agent-work run COMPLETES, which fires agent-queue,
+    which re-dispatched the same entry -- forever (#421 lasted three days)."""
+    gh = FakeGh()
+    gh.add(entry("pr", 649))
+    car = _dead(gh, 3)
+    assert cq.drain(gh, REPO, car) == 1
+    assert [e.target for e in cq.pending(gh, REPO)] == [649], "retry 1"
+    assert cq.drain(gh, REPO, car) == 1
+    assert [e.target for e in cq.pending(gh, REPO)] == [649], "retry 2"
+    cq.drain(gh, REPO, car)
+    assert cq.pending(gh, REPO) == [], "the third failure must drop it"
+    assert f"{cq.MARK}-dropped: " in gh.comments[0]["body"]
+    assert len(car.calls) == 3
+
+
+def test_a_carrier_that_cannot_RUN_returns_the_entry_instead_of_stranding_it():
+    """N3: an OSError or a timeout left the entry `claimed`, where no drain
+    would ever look at it again."""
+    gh = FakeGh()
+    gh.add(entry("pr", 5))
+
+    def broken(ruling, who):
+        raise subprocess.TimeoutExpired("dispatch_cycle.sh", 600)
+    assert cq.drain(gh, REPO, broken) == 1
+    assert [e.target for e in cq.pending(gh, REPO)] == [5]
+    assert "retry 1 of" in gh.comments[0]["body"]
+
+
+def test_a_failed_RE_QUEUE_inside_the_carrier_is_retried_not_dropped():
+    gh = FakeGh()
+    gh.add(entry("pr", 5))
+    car = FakeCarrier([(1, None, "::error::queue(x)'s ruling at pr #5 could NOT be queued.")])
+    assert cq.drain(gh, REPO, car) == 1
+    assert [e.target for e in cq.pending(gh, REPO)] == [5]
+
+
+def test_chief_is_no_longer_told_it_cannot_dispatch_over_a_running_cycle():
+    wf = (ROOT / ".github" / "workflows" / "agent-steward.yml").read_text()
+    assert "dispatch over a cycle already in flight" not in wf
