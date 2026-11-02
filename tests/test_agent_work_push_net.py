@@ -115,3 +115,66 @@ def test_the_net_never_pushes_a_detached_head():
     """`git rev-parse --abbrev-ref HEAD` prints `HEAD` when detached, which is
     not a ref that can be pushed."""
     assert not _would_push("HEAD")
+
+
+# --- 3. a local alias of work already on the remote is not rescued ----------
+
+def _alias_guard() -> str:
+    steps = next(iter(JOB.values()))["steps"]
+    run = next(s for s in steps if s.get("name") == "Push the branch and open the PR")["run"]
+    m = re.search(r"(^if ! git ls-remote --exit-code --heads origin \"\$branch\".*?\n  fi\nfi)",
+                  run, re.S | re.M)
+    assert m, "the alias guard is no longer recognisable"
+    return m.group(1)
+
+
+def _git(cwd, *a):
+    subprocess.run(["git", "-C", str(cwd), "-c", "user.name=t", "-c", "user.email=t@t",
+                    "-c", "commit.gpgsign=false", *a], check=True, capture_output=True, timeout=60)
+
+
+def _guard_says(tmp_path, *, local, pushed_as=None, extra_local_commit=False):
+    """A real origin and clone. `pushed_as` is the remote branch already holding
+    the PR's commit; `local` is the name the cycle ended on."""
+    origin, clone = tmp_path / "origin.git", tmp_path / "clone"
+    subprocess.run(["git", "init", "-q", "--bare", "-b", "main", str(origin)], check=True)
+    subprocess.run(["git", "clone", "-q", str(origin), str(clone)], check=True,
+                   capture_output=True)
+    _git(clone, "commit", "-q", "--allow-empty", "-m", "base")
+    _git(clone, "push", "-q", "origin", "HEAD:main")
+    _git(clone, "checkout", "-q", "-b", local)
+    _git(clone, "commit", "-q", "--allow-empty", "-m", "pr work")
+    if pushed_as:
+        _git(clone, "push", "-q", "origin", f"HEAD:{pushed_as}")
+        _git(clone, "update-ref", "-d", f"refs/remotes/origin/{pushed_as}")  # a fresh runner
+    if extra_local_commit:
+        _git(clone, "commit", "-q", "--allow-empty", "-m", "not yet pushed")
+    script = ('branch="$1"\nGITHUB_STEP_SUMMARY=/dev/null\n' + _alias_guard() + "\necho PROCEEDS\n")
+    p = subprocess.run(["bash", "-c", script, "bash", local], cwd=clone,
+                       capture_output=True, text=True, timeout=60)
+    assert p.returncode == 0, p.stderr
+    return p.stdout
+
+
+def test_a_QA_checkout_under_a_local_name_is_not_pushed_as_a_new_PR(tmp_path):
+    """PR #677: a judge-only round checked #675 out as `qa-675`, and the net
+    pushed it and opened a duplicate PR at an older head."""
+    out = _guard_says(tmp_path, local="qa-675", pushed_as="claude/peaceful-pascal-c5vwht")
+    assert "nothing to rescue" in out and "PROCEEDS" not in out, out
+
+
+def test_unpushed_commits_on_a_new_name_are_still_rescued(tmp_path):
+    """The case the net exists for: a cycle committed and ran out of time."""
+    assert "PROCEEDS" in _guard_says(tmp_path, local="issue/523-x")
+
+
+def test_an_alias_with_a_NEW_commit_on_top_is_still_rescued(tmp_path):
+    out = _guard_says(tmp_path, local="qa-675", pushed_as="claude/peaceful-pascal-c5vwht",
+                      extra_local_commit=True)
+    assert "PROCEEDS" in out, out
+
+
+def test_a_branch_the_agent_pushed_under_its_OWN_name_continues(tmp_path):
+    """It must reach the #322 pr-gates dispatch further down."""
+    out = _guard_says(tmp_path, local="issue/523-x", pushed_as="issue/523-x")
+    assert "PROCEEDS" in out, out
