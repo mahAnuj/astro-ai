@@ -4556,6 +4556,24 @@ MUTATIONS = [
      '  :',
      'test_the_dispatched_kind_is_exported_beside_the_number'),
 
+    ("#265: the card's article count is typed again instead of read",
+     'scripts/generate_og_card.py',
+     'ARTICLE_COUNT = len(ARTICLES)',
+     'ARTICLE_COUNT = 76',
+     'test_generator_reads_the_registry_and_types_no_count'),
+
+    ("#265: an article ships and the committed card still says the old count",
+     'src/astro_ai/learn_registry.py',
+     'ARTICLES: tuple[Article, ...] = (\n    Article(\n        slug="the-9-grahas-overview",',
+     'ARTICLES: tuple[Article, ...] = (\n    Article(slug="mutant", title="m", summary="m", category="Grahas",\n            hero_image="/m", read_time="1 min"),\n    Article(\n        slug="the-9-grahas-overview",',
+     'test_embedded_article_count_matches_the_registry'),
+
+    ("#265: the Swiss Ephemeris badge returns to the card's proof line",
+     'scripts/generate_og_card.py',
+     'PROOF = f"Sidereal Lahiri ayanamsha',
+     'PROOF = f"Swiss Ephemeris chart math  ·  Sidereal Lahiri ayanamsha',
+     'test_generator_reads_the_registry_and_types_no_count'),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
