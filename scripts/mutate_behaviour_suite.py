@@ -4283,8 +4283,8 @@ MUTATIONS = [
 
     ('#642: the self-App exception widens to any bot whose name contains it',
      'scripts/resolve_provenance.py',
-     '    return folded == SELF_APP.casefold()',
-     '    return SELF_APP.casefold() in folded',
+     '    return folded in SELF_APPS',
+     '    return any(a in folded for a in SELF_APPS)',
      'test_every_bot_but_this_repos_own_app_is_an_outsider'),
 
     ('#642: the exception is gone and the loop stalls on its own issues again',

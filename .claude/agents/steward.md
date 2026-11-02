@@ -133,7 +133,7 @@ That is `USER AUTHORISED PUSH` one level up. So:
 
    **No line is a legitimate outcome, and one line is the maximum.** Write one only
    for a PR a cycle can actually adopt: one the detector printed an owning issue for,
-   authored by `claude[bot]` or the repository owner. **The branch name is not the
+   authored by `claude[bot]` or the repository owner (or `github-actions[bot]` / `shubhagya-publisher[bot]`, the identities `agent-work`'s rescue net opens a PR as, #669). **The branch name is not the
    test** — that coupling cost this loop four days and is recorded in #531. `issue/`,
    `partial/` and `fix/` all carry an issue number, and `agent-cycle` Step 2.5 adopts
    an existing branch and PR whoever opened it, so an owner-opened PR on a cycle
@@ -267,7 +267,7 @@ Do not manufacture work. These are normal and you leave them alone:
   the next reader can act on by mistake. It is the reason you wrote "there is nothing
   legitimate to write" six times in one day while four green PRs waited. Dispatch it as
   `pr=<n>`.
-- A PR authored by neither `claude[bot]` nor the repository owner. A contributor's PR
+- A PR authored by neither `claude[bot]` nor the repository owner nor another `AGENT_AUTHORS` bot (`github-actions[bot]`, `shubhagya-publisher[bot]`). A contributor's PR
   is not this loop's to drive.
 - `needs-human-review` already on the issue. Someone has been told. Re-filing is noise.
 

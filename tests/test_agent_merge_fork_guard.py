@@ -109,9 +109,13 @@ def test_the_eligibility_gate_executes_correctly_for_every_author():
             assert p.returncode == 0, p.stderr
             return "ok=true" in (out.read_text() if out.exists() else "")
 
-    # In the list.
+    # In the list. The two extra bots joined 2026-11-02 (#669): identities only
+    # this repo's own workflows can act as, which agent-work's rescue net opens
+    # its PR under when the one-hour claude[bot] token has expired.
     assert eligible("claude[bot]")
     assert eligible("mahAnuj")
+    assert eligible("github-actions[bot]")
+    assert eligible("shubhagya-publisher[bot]")
 
     # The glob reading of `[bot]`, which must NOT be how this matches.
     for ch in ("claudeb", "claudeo", "claudet", "b", "o", "t"):
@@ -119,7 +123,8 @@ def test_the_eligibility_gate_executes_correctly_for_every_author():
 
     # Substring and case near-misses.
     for impostor in ("claude[bot]-x", "xclaude[bot]", "claude", "Claude[bot]",
-                     "notmahAnuj", "mahAnuj-evil", "", "shubhagya-publisher[bot]"):
+                     "notmahAnuj", "mahAnuj-evil", "", "dependabot[bot]",
+                     "github-actions", "shubhagya-publisher", "xgithub-actions[bot]"):
         assert not eligible(impostor), impostor
 
 

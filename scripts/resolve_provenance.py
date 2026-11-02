@@ -21,10 +21,19 @@ Fail closed. There are three verdicts and the middle of the road is not one of t
     OUTSIDER    exit 1   anything else we could positively classify
     UNRESOLVED  exit 2   we could not tell. STOP. Never a default in either direction.
 
-* Any author with `is_bot=true` is OUTSIDER, with ONE named exception: this repository's own
-  delivery App (`SELF_APP`). Permission is still not consulted for a bot -- `claude[bot]`
-  resolves to `none` and `app/github-actions` is a 404 -- so the exception is a login check
-  and nothing more. Every other bot, present or installed later, stays OUTSIDER.
+* Any author with `is_bot=true` is OUTSIDER, with a CLOSED list of exceptions: this
+  repository's own bot identities (`SELF_APPS`). Permission is still not consulted for a bot
+  -- `claude[bot]` resolves to `none` and `app/github-actions` is a 404 -- so the exception is
+  a login check and nothing more. Every other bot, present or installed later, stays OUTSIDER.
+
+  WHY `github-actions` JOINED, owner's decision 2026-11-02 (#669): *"also fix
+  resolve_provenance.py still treats issues filed by github-actions[bot] as from an
+  outsider."* The workflows file issues with `github.token` (detectors, monitors, the
+  measurement loops), and those were as unworkable as the App's were before 2026-11-01.
+  `github-actions[bot]` is an identity only this repository's own workflow files can act as
+  -- a fork's workflow gets a read-only token -- so it is no wider than `claude[bot]`, and
+  the owner stated there are no external contributors. The laundering caveat below applies
+  to it exactly as it does to the App.
 
   WHY THE EXCEPTION EXISTS, measured 2026-11-01. 40 of the 130 open issues were filed by this
   App, and a cycle aimed at any of them stopped at `/agent-cycle` Step 0a without building
@@ -91,11 +100,15 @@ from typing import Callable
 TRUSTED, OUTSIDER, UNRESOLVED = "TRUSTED", "OUTSIDER", "UNRESOLVED"
 EXIT = {TRUSTED: 0, OUTSIDER: 1, UNRESOLVED: 2}
 
-# This repository's own delivery App, and the ONLY bot login that is not an
-# outsider. A bare string, never a list: a collection here would invite a
-# second entry, and the whole value of this exception is that it is one login
-# wide. tests/test_resolve_provenance.py pins the type.
-SELF_APP = "claude"
+# This repository's own bot identities, and the ONLY bot logins that are not
+# outsiders. Until 2026-11-02 this was a bare string, `SELF_APP = "claude"`,
+# pinned as a type so a second entry could not slip in. The owner then added
+# one deliberately (#669) -- so it is now a FROZENSET pinned to its exact
+# contents by tests/test_resolve_provenance.py. A third login is a test edit
+# and a recorded decision, never a drive-by.
+#   claude          the delivery App (`claude[bot]`), the agents themselves
+#   github-actions  `github.token`, i.e. this repository's own workflow files
+SELF_APPS = frozenset({"claude", "github-actions"})
 
 
 def is_self_app(login: str) -> bool:
@@ -133,7 +146,7 @@ def is_self_app(login: str) -> bool:
     suffix = "[bot]"
     if folded.endswith(suffix):
         folded = folded[:-len(suffix)]
-    return folded == SELF_APP.casefold()
+    return folded in SELF_APPS
 
 LABEL_TRUSTED = "provenance:trusted"
 LABEL_OUTSIDER = "provenance:outsider"
@@ -313,15 +326,15 @@ def classify(gh: Gh, repo: str, number: int) -> Verdict:
         # Permission is still not consulted for ANY bot: `claude[bot]` resolves
         # to `none` and `app/github-actions` is a 404, so asking would answer
         # "outsider" for the App that owns this repo's loop. The exception is a
-        # login comparison and is deliberately exactly one login wide.
+        # login comparison against a closed, test-pinned set (SELF_APPS).
         if is_self_app(login):
             base = TRUSTED
             ev.append(f"permission  : not consulted -- author is this repo's own "
-                      f"delivery App ({SELF_APP}), trusted by the 2026-11-01 ruling")
+                      f"bot identity ({login}), trusted by the 2026-11-01/11-02 rulings")
         else:
             base = OUTSIDER
             ev.append("permission  : not consulted -- a bot author is untrusted by rule "
-                      "(the only exception is this repo's own App)")
+                      "(the only exceptions are this repo's own bot identities)")
     else:
         p = lookup_permission(gh, repo, login)
         base = classify_permission(p)
@@ -332,7 +345,7 @@ def classify(gh: Gh, repo: str, number: int) -> Verdict:
     if base == TRUSTED:
         ev.append("override    : not consulted (author is trusted)")
         return Verdict(TRUSTED, ev,
-                       f"author is this repo's own delivery App ({SELF_APP})" if is_bot
+                       f"author is this repo's own delivery App ({login})" if is_bot
                        else "author has write access")
 
     why = "author is a bot (untrusted by rule)" if is_bot else "author is not a collaborator with write access"
