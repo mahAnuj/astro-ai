@@ -4657,6 +4657,13 @@ MUTATIONS = [
      'PROOF = f"Swiss Ephemeris chart math  ·  Sidereal Lahiri ayanamsha',
      'test_generator_reads_the_registry_and_types_no_count'),
 
+
+    # --- #663/#669: the rescue net must see a MERGED PR, not just an open one ---
+    ("rescue net: the PR lookup drops --state all and reads OPEN pull requests only",
+     ".github/workflows/agent-work.yml",
+     '--state all \\\n            --json number,state',
+     '\\\n            --json number,state',
+     "test_the_guard_asks_for_every_state"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
