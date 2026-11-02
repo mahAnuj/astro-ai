@@ -202,9 +202,15 @@ minute when the detector finds nothing and no agent is woken. **A cycle is ~50 m
 twenty times that**, so the dispatches are the whole cost and these guards are what
 protect clause 1 of Standing ruling 4. Before you dispatch:
 
-1. **Is a cycle already running or queued?** `gh run list --workflow agent-work.yml
-   --json status,databaseId`. If anything is `in_progress` or `queued`, dispatch nothing
-   and say so. One is in flight; the stall may clear without you.
+1. **Is this SAME target already queued?** Look for an
+   `<!-- agent-work-queue: kind=… target=<n> -->` comment on the PR or issue that has not
+   been edited to `-taken`/`-dropped`. If one exists, dispatch nothing and say so: it will
+   run when the slot frees. **A cycle running for anything else is no longer a reason to
+   stand down** (changed 2026-11-02, owner's request): the carrier QUEUES your line,
+   `agent-queue.yml` starts it when that cycle completes, and a queued QA round is dropped
+   on its own if a verdict for the same head lands first. Until that date this guard said
+   "if anything is `in_progress` or `queued`, dispatch nothing", which — with nothing to
+   queue into — lost the ruling; #649 waited a day on it.
 2. **Did you already dispatch for this PR, FOR THIS STALL KIND?** Look for your own prior
    comment on it and read which kind it names. If you dispatched for *the same kind* and
    the stall persists, **that is `steward-ineffective` and it goes to `chief`** — not a
@@ -239,13 +245,15 @@ That exists because of two runs on 2026-10-10 that diagnosed three PRs correctly
 acted on none, and concluded `success`. **Your own account of what you did is not the
 evidence.** Nor is it a reason to manufacture an action: a dispatch you make only to
 satisfy the check is worse than none, because it queues fifty minutes of cycle against a
-free-tier budget to avoid a warning. If the right answer is "nothing, a cycle is already
-in flight", say that — the check counts a cycle in flight as action taken.
+free-tier budget to avoid a warning. If the right answer is "nothing, this target is
+already queued", say that. The check still counts a cycle in flight as reason enough not
+to wake `chief`, because whatever you ruled is queued behind it.
 
 ### And say what you did, per stall
 
-Your run summary lists every stall with the action taken, including **"nothing, because
-a cycle is already in flight"** and **"escalated to chief"**. A summary that reports
+Your run summary lists every stall with the action taken, including **"queued behind
+the running cycle"**, **"nothing, because this target is already queued"** and
+**"escalated to chief"**. A summary that reports
 diagnoses and omits actions is how two green runs left three PRs stuck — the reader
 could not tell that nothing had happened.
 

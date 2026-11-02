@@ -394,3 +394,19 @@ def test_enqueue_that_cannot_READ_the_queue_is_exit_1():
     def broken(args):
         raise RuntimeError("api down")
     assert cq.enqueue(broken, REPO, "pr", 5, "x", on=5) == 1
+
+
+def test_the_steward_is_no_longer_told_to_stand_down_because_a_cycle_runs():
+    """QA round 1 on #675's blocking finding. The steward obeys steward.md
+    exactly; while guard 1 said "if anything is in_progress or queued, dispatch
+    nothing", it could never feed the queue -- every copy of the rule has to
+    change together (CLAUDE.md: "six places one coupling lived")."""
+    md = (ROOT / ".claude" / "agents" / "steward.md").read_text()
+    wf = (ROOT / ".github" / "workflows" / "agent-steward.yml").read_text()
+    flat = " ".join(md.split())
+    assert "If anything is `in_progress` or `queued`, dispatch nothing" not in flat.split(
+        "Until that date this guard said")[0], "guard 1 tells the steward to stand down again"
+    assert "Is this SAME target already queued?" in flat
+    assert "agent-work-queue" in md
+    assert "refuses rather than queueing a second" not in wf
+    assert "guard 1 forbids a second dispatch" not in wf
