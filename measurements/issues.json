@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-11-02T13:07:16Z",
+  "generated_at": "2026-11-02T22:36:23Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 130,
-  "with_ask": 55,
+  "open": 131,
+  "with_ask": 54,
   "by_area": {
-    "UNCLASSIFIED": 47,
-    "INFRA": 17,
+    "UNCLASSIFIED": 48,
+    "INFRA": 16,
     "UI": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
+    "DETECT_STALLS": 3,
     "MEASURE": 3,
     "BUG": 3,
     "SEO": 3,
-    "DETECT_STALLS": 2,
     "SECURITY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
@@ -34,7 +34,7 @@
   },
   "by_type": {
     "untyped": 40,
-    "bug": 33,
+    "bug": 34,
     "enhancement": 26,
     "correctness": 10,
     "design": 8,
@@ -42,7 +42,7 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 93,
+    "unset": 94,
     "medium": 20,
     "high": 16,
     "low": 1
@@ -50,15 +50,15 @@
   "blocked": 8,
   "rows": [
     {
-      "number": 669,
-      "title": "[INFRA] agent-work's rescue step opens PRs as github-actions[bot], which is outside AGENT_AUTHORS, so no workflow ever QAs or merges them (#663)",
-      "ask": "Make the rescue step's PR carry an in-list author.",
-      "area": "INFRA",
+      "number": 678,
+      "title": "detect_stalls: qa_fail_age reads the qa-fail LABEL time, so a second FAIL round on a moved head is invisible (#675 misrouted as qa-fail-refixed)",
+      "ask": "",
+      "area": "DETECT_STALLS",
       "type": "untyped",
       "priority": "unset",
       "labels": [],
-      "created": "2026-11-02T02:55:12Z",
-      "updated": "2026-11-02T02:55:12Z",
+      "created": "2026-11-02T17:06:24Z",
+      "updated": "2026-11-02T17:06:24Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -205,6 +205,24 @@
       ],
       "created": "2026-10-31T07:09:19Z",
       "updated": "2026-11-01T21:02:39Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 610,
+      "title": "chief-cleared is documented as releasing a prompts/knowledge PR but no workflow reads it; agent-merge's boundary step re-holds it",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-10-30T18:25:45Z",
+      "updated": "2026-11-02T14:14:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -534,7 +552,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-11-01T17:24:46Z",
+      "updated": "2026-11-02T21:11:56Z",
       "blocked": false,
       "needs_evidence": false
     },
