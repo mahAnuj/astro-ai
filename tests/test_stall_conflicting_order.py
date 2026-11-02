@@ -72,7 +72,7 @@ def _pr(number=608, *, draft=False, hours=9.0, labels=("qa-pass",), mergeable="M
     return doc
 
 
-def _run(monkeypatch, prs, *, checks=None):
+def _run(monkeypatch, prs, *, checks=None, boundary=frozenset()):
     """`find_stalls` with every network call stood in for.
 
     `checks` defaults to a green `gates`, which is the whole point: the defect
@@ -81,7 +81,7 @@ def _run(monkeypatch, prs, *, checks=None):
     monkeypatch.setattr(det, "latest_checks",
                         lambda sha: {"gates": "success"} if checks is None else checks)
     monkeypatch.setattr(det, "agent_pushable", lambda n: True)
-    monkeypatch.setattr(det, "boundary_paths", lambda n: set())
+    monkeypatch.setattr(det, "boundary_paths", lambda n: set(boundary))
 
     def gh(*args):
         if args[0] == "pr" and args[1] == "list":
@@ -166,16 +166,32 @@ def test_anything_that_is_not_exactly_CONFLICTING_is_not_treated_as_conflicting(
     assert "mergeable-but-open" in _kinds(stalls)
 
 
-def test_a_conflicting_pr_with_NO_checks_still_reaches_the_older_branch(monkeypatch):
-    """The pre-existing path is untouched.
+def test_a_conflicting_pr_with_NO_checks_keeps_the_older_arms_detail(monkeypatch):
+    """The `and checks` gate on the new branch leaves this case to the older one.
 
-    That branch explains a second cause -- a PR created by GITHUB_TOKEN, whose
-    events GitHub suppresses -- and only a human can rescue that one. Breaking
-    it would trade one misroute for another.
+    That arm says WHY nothing ran ("no check will ever run"); the new arm's
+    detail says the checks are "history on the head SHA", which is false of a
+    PR that has none -- and the steward reads that line. Asserting `kind` alone
+    passes whichever arm emits it, so the DETAIL is what proves which one did.
+    Deleting or renaming the older arm turns this red, because no other branch
+    produces the first phrase.
     """
     stalls = _run(monkeypatch, [_pr(mergeable="CONFLICTING", labels=())], checks={})
-    assert "pr-conflicting" in _kinds(stalls)
-    assert _for(stalls, 608)[0]["conflicting"] is True
+    finding = _for(stalls, 608)[0]
+    assert finding["kind"] == "pr-conflicting"
+    assert finding["conflicting"] is True
+    assert "no check will ever run" in finding["detail"]
+    assert "history on the head SHA" not in finding["detail"]
+
+
+def test_a_conflicting_pr_WITH_checks_says_they_are_history_on_the_head_sha(monkeypatch):
+    """The other side of the same split: a PR with check runs gets the new arm."""
+    stalls = _run(monkeypatch, [_pr(mergeable="CONFLICTING", labels=())],
+                  checks={"gates": "success"})
+    finding = _for(stalls, 608)[0]
+    assert finding["kind"] == "pr-conflicting"
+    assert "history on the head SHA" in finding["detail"]
+    assert "no check will ever run" not in finding["detail"]
 
 
 def test_a_conflicting_pr_with_no_verdict_is_still_reported_as_conflicting(monkeypatch):
@@ -209,8 +225,8 @@ def test_a_boundary_hold_outranks_a_conflict(monkeypatch):
     not make it mergeable, and routing it to a cycle would have the cycle push
     to a branch that is still held. chief rules first.
     """
-    monkeypatch.setattr(det, "boundary_paths", lambda n: {"src/astro_ai/prompts/natal.txt"})
     stalls = _run(monkeypatch, [_pr(mergeable="CONFLICTING",
-                                    labels=("qa-pass", "needs-human-review"))])
+                                    labels=("qa-pass", "needs-human-review"))],
+                  boundary={"src/astro_ai/prompts/natal.txt"})
     assert "pr-conflicting" not in _kinds(stalls)
     assert any(k.startswith("boundary-hold") for k in _kinds(stalls)), _kinds(stalls)

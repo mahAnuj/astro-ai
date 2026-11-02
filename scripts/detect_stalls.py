@@ -358,9 +358,11 @@ def find_stalls(hours: float) -> list[dict]:
                 boundary_paths=sorted(bpaths),
                 checks=checks, labels=sorted(labels),
                 agent_pushable=pushable))
-        elif pr.get("mergeable") == "CONFLICTING":
+        elif pr.get("mergeable") == "CONFLICTING" and checks:
             # CONFLICTING IS TESTED BEFORE `qa-pass and green` (#616), and the
-            # order is the whole fix.
+            # order is the whole fix. `and checks` limits this arm to a PR that
+            # HAS check history; a CONFLICTING PR with none is the older arm's
+            # below (see the next paragraph).
             #
             # `green` is computed from check runs on the HEAD SHA, which are
             # HISTORY: they stay green after `main` moves underneath the branch
@@ -387,7 +389,12 @@ def find_stalls(hours: float) -> list[dict]:
             # The CONFLICTING test that already existed sits under
             # `elif not checks:` below, and that branch is only reached when
             # NOTHING ever ran. A PR with green history and a later conflict
-            # never gets there.
+            # never gets there -- which is why this arm exists -- and the
+            # converse holds too: a conflicting PR with NO checks is left to
+            # that arm, whose detail ("no check will ever run") is true of it
+            # and would be false of this one. The `and checks` above is what
+            # keeps both details accurate; without it this arm swallows that
+            # case and says "history on the head SHA" about a PR with no history.
             #
             # Emitted with `conflicting=True` and the same `kind` as that
             # branch, so `steward.md`'s routing table needs no new row: one
