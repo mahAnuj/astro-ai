@@ -80,6 +80,9 @@ ENTRY = re.compile(
     r"<!-- agent-work-queue: kind=(issue|pr) target=([0-9]+) by=([A-Za-z0-9_.-]+) -->")
 _BY = re.compile(r"[^A-Za-z0-9_.-]+")
 CARRIER = Path(__file__).resolve().parent / "dispatch_cycle.sh"
+#: The carrier's two rc=1 messages that mean "the ruling was fine, the RUN
+#: failed" -- retry, never drop. Every other rc=1 is a refusal of the ruling.
+TRANSIENT = ("created no new agent-work run", "it did not run a cycle")
 
 Runner = Callable[[list[str]], str]
 
@@ -129,7 +132,12 @@ def pending(gh: Runner, repo: str, now: datetime | None = None) -> list[Entry]:
 
 def enqueue(gh: Runner, repo: str, kind: str, target: int, by: str, on: int) -> int:
     by = _BY.sub("-", by).strip("-") or "unknown"
-    for e in pending(gh, repo):
+    try:
+        queued = pending(gh, repo)
+    except (RuntimeError, ValueError) as exc:
+        print(f"::error::could not read the queue before adding {kind}={target}: {exc}")
+        return 1
+    for e in queued:
         if (e.kind, e.target) == (kind, target):
             print(f"already queued: {kind}={target} (by {e.by}, comment {e.comment_id}). "
                   f"Not adding a second entry.")
@@ -158,11 +166,24 @@ def busy(gh: Runner, repo: str) -> bool:
     return n.strip() != "0"
 
 
+def _marker(state: str) -> str:
+    return f"<!-- {MARK}: " if state == "pending" else f"<!-- {MARK}-{state}: "
+
+
+def restate(gh: Runner, repo: str, cid: int, body: str, frm: str, to: str,
+            note: str = "") -> str:
+    """Move one entry from state `frm` to `to` by editing its marker; return the
+    new body. `pending` is the bare marker; every other state is a suffix, so a
+    non-pending entry never matches ENTRY and is never started again."""
+    new = body.replace(_marker(frm), _marker(to), 1)
+    if note:
+        new += f"\n\n**{to.capitalize()}:** {note}"
+    gh(["api", "-X", "PATCH", f"repos/{repo}/issues/comments/{cid}", "-f", f"body={new}"])
+    return new
+
+
 def mark(gh: Runner, repo: str, e: Entry, state: str, note: str) -> None:
-    body = e.body.replace(f"<!-- {MARK}: ", f"<!-- {MARK}-{state}: ", 1)
-    body += f"\n\n**{state.capitalize()}:** {note}"
-    gh(["api", "-X", "PATCH", f"repos/{repo}/issues/comments/{e.comment_id}",
-        "-f", f"body={body}"])
+    restate(gh, repo, e.comment_id, e.body, "pending", state, note)
 
 
 def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
@@ -178,6 +199,23 @@ def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
         return None
     if "qa-pass" in labels.strip().split(","):
         return f"PR #{e.target} already carries `qa-pass`; a round would re-decide it."
+    # A round that has ALREADY ruled on the current head since this entry was
+    # queued. The case QA round 1 on #675 exposed: once a busy loop is no
+    # reason to hold back, the steward can queue a round for the very PR the
+    # running cycle is reviewing, and draining it would be a second ~50-minute
+    # round on the same commit. `qa_verdict.sh`'s comment names the SHA.
+    try:
+        head = gh(["api", f"repos/{repo}/pulls/{e.target}", "--jq", ".head.sha"]).strip()
+        ruled = gh(["api", "--paginate", f"repos/{repo}/issues/{e.target}/comments?per_page=100",
+                    "--jq", '.[] | select(.body | test("^QA: (PASS|FAIL)")) '
+                            '| "\\(.created_at) \\(.body | split("\\n")[0])"'])
+    except RuntimeError:
+        return None
+    for line in ruled.splitlines():
+        when, _, first = line.partition(" ")
+        if head and when > e.created_at and f"`{head}`" in first:
+            return (f"a QA round already ruled on PR #{e.target} at `{head[:7]}` after "
+                    f"this was queued; a second round on the same commit is waste.")
     return None
 
 
@@ -212,20 +250,38 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
             mark(gh, repo, e, "dropped", reason)
             print(f"dropped {e.kind}={e.target}: {reason}")
             continue
+        # CLAIM BEFORE DISPATCH (QA round 1 on #675). Marking an entry only
+        # AFTER a successful dispatch meant a failed PATCH left it pending, and
+        # the next drain started the same cycle again (~50 Actions minutes a
+        # turn). A claimed entry is no longer pending, so a failure from here on
+        # can cost a ruling at worst, never a duplicate cycle.
+        body = restate(gh, repo, e.comment_id, e.body, "pending", "claimed")
         rc, exported, out = carrier(f"{e.kind}={e.target}", f"queue({e.by})")
         print(out.rstrip())
         run_id = exported.get("DISPATCHED_RUN")
         if rc == 0 and run_id:
-            mark(gh, repo, e, "taken", f"agent-work run `{run_id}` started at "
-                 f"`{e.kind}={e.target}` from the queue.")
+            restate(gh, repo, e.comment_id, body, "claimed", "taken",
+                    f"agent-work run `{run_id}` started at `{e.kind}={e.target}` from the queue.")
             print(f"started {e.kind}={e.target} as run {run_id}")
             return 0
+        if rc == 1 and any(t in out for t in TRANSIENT):
+            # The carrier ACCEPTED the ruling and the run did not survive -- the
+            # #421 shape. That says nothing about the ruling, so it goes back in
+            # the queue, and this run goes RED so the failure is seen rather
+            # than reported as a green run that quietly dropped work.
+            restate(gh, repo, e.comment_id, body, "claimed", "pending")
+            print(f"::error::{e.kind}={e.target}: the dispatched run did not start or died "
+                  f"on arrival. Returned to the queue; see the carrier output above.")
+            return 1
         if rc == 1:
-            mark(gh, repo, e, "dropped", "the dispatch carrier refused it -- see the "
-                 "`agent-queue` run log (closed target, or a run that died on arrival).")
+            restate(gh, repo, e.comment_id, body, "claimed", "dropped",
+                    "the dispatch carrier refused the ruling itself (closed target, an "
+                    "issue number that is a PR, or unparseable) -- see the `agent-queue` log.")
             continue
         # rc 0 with no run: the carrier found a cycle in flight after all (a
-        # race with another dispatcher). The entry stays queued, untouched.
+        # race with another dispatcher) and queued it again -- deduplicated,
+        # so restoring this entry is what keeps exactly one.
+        restate(gh, repo, e.comment_id, body, "claimed", "pending")
         print(f"{e.kind}={e.target} not started (a cycle appeared); it stays queued.")
         return 0
     return 0

@@ -203,8 +203,11 @@ jobs:
 
             You do not need to check whether a cycle is already running, or
             whether the issue is open. The step checks both itself, with a
-            credential that can read the Actions API, and refuses rather than
-            queueing a second.
+            credential that can read the Actions API. If a cycle IS running,
+            your line is QUEUED and started when that cycle completes
+            (scripts/cycle_queue.py) -- so a busy loop is no reason to stand
+            down. Only an existing queue entry for the SAME target is: look for
+            `<!-- agent-work-queue: kind=... target=<n>` on the PR or issue.
 
             Your value is the diagnosis, not the detection. Read steward.md and
             obey its constraints exactly — in particular you may NOT apply or
@@ -316,10 +319,12 @@ jobs:
           # Any evidence of action taken since this run began -- PLUS a cycle
           # that was already running when it began.
           #
-          # THE IN-FLIGHT CASE IS WHY THIS WOKE CHIEF FOR NOTHING. The steward's
-          # own guard 1 says: "Is a cycle already running or queued? If anything
-          # is in_progress or queued, dispatch nothing and say so." So the
-          # steward correctly stands down -- and this step, counting only runs
+          # THE IN-FLIGHT CASE IS WHY THIS WOKE CHIEF FOR NOTHING. Until
+          # 2026-11-02 the steward's guard 1 said to dispatch nothing while a
+          # cycle ran; since then its ruling is QUEUED instead (cycle_queue.py),
+          # so a running cycle is still a reason not to wake chief -- the queue
+          # holds whatever the steward decided. Before that change, the steward
+          # stood down -- and this step, counting only runs
           # CREATED since `$SINCE`, saw `cycles=0` and could not tell that from
           # a steward that simply failed. It then woke chief, which also had
           # nothing to do.
@@ -345,7 +350,7 @@ jobs:
             # Not "the steward acted" -- "there was nothing for it to do", which
             # is a different fact and is reported as one.
             echo "ok=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::$inflight cycle(s) already in flight — the steward's own guard 1 forbids a second dispatch, so standing down was correct. Not waking chief."
+            echo "::notice::$inflight cycle(s) already in flight — anything the steward ruled is queued behind it (scripts/cycle_queue.py) and chief has nothing to add while one runs, so standing down was correct. Not waking chief."
           elif [ "$cycles" -gt 0 ] || [ "$issues" -gt 0 ]; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
             echo "::notice::the steward acted — $cycles cycle(s), $issues issue(s)"

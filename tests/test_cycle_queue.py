@@ -35,10 +35,13 @@ REPO = "owner/repo"
 class FakeGh:
     """Answers exactly the calls cycle_queue.py makes, and records them."""
 
-    def __init__(self, *, busy="0", labels=None):
+    def __init__(self, *, busy="0", labels=None, heads=None, fail_patch_after=None):
         self.comments: list[dict] = []
         self.busy = busy
         self.labels = labels or {}          # target -> "a,b"
+        self.heads = heads or {}            # pr -> head sha
+        self.fail_patch_after = fail_patch_after   # PATCH calls allowed before failing
+        self.patches = 0
         self.calls: list[list[str]] = []
         self._id = 100
 
@@ -50,14 +53,24 @@ class FakeGh:
 
     def __call__(self, args):
         self.calls.append(args)
-        if args[:2] == ["api", "--paginate"]:
+        if args[:2] == ["api", "--paginate"] and "/issues/comments?" in args[2]:
             return "\n".join(json.dumps({k: c[k] for k in ("id", "body", "created_at", "login")})
                              for c in self.comments)
+        if args[:2] == ["api", "--paginate"]:          # one PR's comments: QA verdicts
+            n = int(args[2].split("/issues/")[1].split("/")[0])
+            return "\n".join(f"{c['created_at']} {c['body'].splitlines()[0]}"
+                             for c in self.comments
+                             if c["on"] == n and c["body"].startswith("QA: "))
+        if args[0] == "api" and "/pulls/" in args[1]:
+            return self.heads.get(int(args[1].rsplit("/", 1)[1]), "") + "\n"
         if args[:3] == ["api", "-X", "POST"]:
             on = int(args[3].split("/issues/")[1].split("/")[0])
             self.add(args[5][len("body="):], on=on)
             return "{}"
         if args[:3] == ["api", "-X", "PATCH"]:
+            self.patches += 1
+            if self.fail_patch_after is not None and self.patches > self.fail_patch_after:
+                raise RuntimeError("PATCH failed")
             cid = int(args[3].rsplit("/", 1)[1])
             next(c for c in self.comments if c["id"] == cid)["body"] = args[5][len("body="):]
             return "{}"
@@ -72,13 +85,13 @@ class FakeGh:
 
 class FakeCarrier:
     def __init__(self, results):
-        self.results = list(results)        # each: (rc, run_id or None)
+        self.results = list(results)        # each: (rc, run_id or None[, output])
         self.calls: list[tuple[str, str]] = []
 
     def __call__(self, ruling, who):
         self.calls.append((ruling, who))
-        rc, run = self.results.pop(0)
-        return rc, ({"DISPATCHED_RUN": run} if run else {}), f"carrier rc={rc}"
+        rc, run, *out = self.results.pop(0)
+        return rc, ({"DISPATCHED_RUN": run} if run else {}), (out[0] if out else f"carrier rc={rc}")
 
 
 def entry(kind, target, by="qa-on-green"):
@@ -308,3 +321,76 @@ def test_the_queue_needs_no_label_writes():
     src = (ROOT / "scripts" / "cycle_queue.py").read_text()
     assert "--add-label" not in src and "--remove-label" not in src
     assert "/labels" not in src, "the label endpoints are where a write would go"
+
+
+# ----------------------------------------- QA round 1 on #675: four findings
+
+def test_a_run_that_died_on_arrival_goes_BACK_in_the_queue_and_the_drain_is_red():
+    """The #421 shape: the carrier accepted the ruling and the RUN failed. That
+    says nothing about the ruling, so dropping it lost work behind a green run."""
+    gh = FakeGh()
+    gh.add(entry("pr", 649))
+    car = FakeCarrier([(1, None, "agent-work run 9 concluded 'failure' within 90s "
+                                 "of dispatch at pr #649 -- it did not run a cycle. See #421.")])
+    assert cq.drain(gh, REPO, car) == 1, "a failed run must not read as a green drain"
+    assert [e.target for e in cq.pending(gh, REPO)] == [649]
+
+
+def test_no_run_appearing_is_also_transient():
+    gh = FakeGh()
+    gh.add(entry("pr", 649))
+    car = FakeCarrier([(1, None, "dispatch at pr #649 created no new agent-work run within 60s.")])
+    assert cq.drain(gh, REPO, car) == 1
+    assert [e.target for e in cq.pending(gh, REPO)] == [649]
+
+
+def test_an_entry_is_CLAIMED_before_the_dispatch_so_a_failed_mark_cannot_repeat_it():
+    """Dispatch succeeds, then the `taken` PATCH fails. Marking only afterwards
+    left the entry pending, and the next drain started the same ~50-minute cycle
+    again. Claimed first, it is no longer pending whatever happens next."""
+    gh = FakeGh(fail_patch_after=1)            # the claim succeeds; `taken` fails
+    gh.add(entry("pr", 649))
+    with pytest.raises(RuntimeError):
+        cq.drain(gh, REPO, FakeCarrier([(0, "777")]))
+    assert cq.pending(gh, REPO) == [], "a claimed entry must never be started twice"
+    assert f"{cq.MARK}-claimed: " in gh.comments[0]["body"]
+
+
+def test_a_failed_CLAIM_dispatches_nothing():
+    gh = FakeGh(fail_patch_after=0)
+    gh.add(entry("pr", 649))
+    car = FakeCarrier([])
+    with pytest.raises(RuntimeError):
+        cq.drain(gh, REPO, car)
+    assert car.calls == []
+
+
+def test_a_round_that_already_ruled_on_the_CURRENT_head_since_queueing_drops_the_entry():
+    """The steward may now queue a round for the very PR the running cycle is
+    reviewing. When that cycle posts its verdict for the same head, the queued
+    round is a second round on one commit."""
+    sha = "a" * 40
+    gh = FakeGh(heads={649: sha})
+    gh.add(entry("pr", 649), on=649)
+    gh.add(f"QA: FAIL — verified at `{sha}`\nfindings", login="claude[bot]", on=649)
+    car = FakeCarrier([])
+    cq.drain(gh, REPO, car)
+    assert car.calls == []
+    assert "already ruled on PR #649" in gh.comments[0]["body"]
+
+
+def test_a_verdict_on_an_OLDER_head_does_not_drop_the_entry():
+    """#649 itself: round 3 failed `bab8e54`, the fix moved the head, and a round
+    on the new head is exactly what is wanted."""
+    gh = FakeGh(heads={649: "b" * 40})
+    gh.add(f"QA: FAIL — verified at `{'a' * 40}`\nold", login="claude[bot]", on=649)
+    gh.add(entry("pr", 649), on=649)
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls == [("pr=649", "queue(qa-on-green)")]
+
+
+def test_enqueue_that_cannot_READ_the_queue_is_exit_1():
+    def broken(args):
+        raise RuntimeError("api down")
+    assert cq.enqueue(broken, REPO, "pr", 5, "x", on=5) == 1
