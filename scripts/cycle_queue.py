@@ -253,6 +253,7 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
         print("queue empty.")
         return 0
     print(f"{len(entries)} queued; oldest first.")
+    failed = False
     for e in entries:
         reason = stale_reason(gh, repo, e)
         if reason:
@@ -283,7 +284,7 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
             restate(gh, repo, e.comment_id, body, "claimed", "taken",
                     f"agent-work run `{run_id}` started at `{e.kind}={e.target}` from the queue.")
             print(f"started {e.kind}={e.target} as run {run_id}")
-            return 0
+            return 1 if failed else 0
         if rc == 1 and any(t in out for t in TRANSIENT) and retries < MAX_RETRIES:
             # The carrier ACCEPTED the ruling and the run did not survive -- the
             # #421 shape. That says nothing about the ruling, so it goes back in
@@ -303,6 +304,11 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
                     f"{MAX_RETRIES + 1} times (closed target, an issue number that is a PR, "
                     f"unparseable, or a run that never started) -- see the `agent-queue` log.")
             print(f"::error::{e.kind}={e.target} dropped; see the carrier output above.")
+            # Retries ran out: the run kept dying, which is a failure someone
+            # must see -- a red drain, not a green one with an annotation. A
+            # plain refusal (closed target) is a legitimate outcome and stays green.
+            if any(t in out for t in TRANSIENT):
+                failed = True
             continue
         # rc 0 with no run: the carrier found a cycle in flight after all (a
         # race with another dispatcher). It could not see THIS entry -- it is
@@ -313,8 +319,8 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
                 "a cycle appeared after the claim; the carrier queued a fresh entry for "
                 "the same target, which replaces this one.")
         print(f"{e.kind}={e.target} not started (a cycle appeared); the carrier re-queued it.")
-        return 0
-    return 0
+        return 1 if failed else 0
+    return 1 if failed else 0
 
 
 def main(argv: list[str], gh: Runner = run_gh) -> int:

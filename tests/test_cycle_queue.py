@@ -211,7 +211,7 @@ def test_a_refused_entry_is_dropped_and_the_next_one_is_tried():
     gh.add(entry("issue", 610))         # closed issue: the carrier refuses
     gh.add(entry("pr", 636))
     car = FakeCarrier([(1, None), (0, "888")])
-    cq.drain(gh, REPO, car)
+    assert cq.drain(gh, REPO, car) == 0, "a closed target is a legitimate refusal, not a red drain"
     assert [r for r, _ in car.calls] == ["issue=610", "pr=636"]
     assert f"{cq.MARK}-dropped: " in gh.comments[0]["body"]
     assert f"{cq.MARK}-taken: " in gh.comments[1]["body"]
@@ -434,7 +434,7 @@ def test_a_dead_run_is_retried_at_most_twice_then_dropped():
     assert [e.target for e in cq.pending(gh, REPO)] == [649], "retry 1"
     assert cq.drain(gh, REPO, car) == 1
     assert [e.target for e in cq.pending(gh, REPO)] == [649], "retry 2"
-    cq.drain(gh, REPO, car)
+    assert cq.drain(gh, REPO, car) == 1, "retries ran out: the drain must be red, not quiet"
     assert cq.pending(gh, REPO) == [], "the third failure must drop it"
     assert f"{cq.MARK}-dropped: " in gh.comments[0]["body"]
     assert len(car.calls) == 3

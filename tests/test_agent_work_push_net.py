@@ -150,7 +150,9 @@ def _guard_says(tmp_path, *, local, pushed_as=None, extra_local_commit=False):
     if extra_local_commit:
         _git(clone, "commit", "-q", "--allow-empty", "-m", "not yet pushed")
     script = ('branch="$1"\nGITHUB_STEP_SUMMARY=/dev/null\n' + _alias_guard() + "\necho PROCEEDS\n")
-    p = subprocess.run(["bash", "-c", script, "bash", local], cwd=clone,
+    # `-eo pipefail`: the strictest shell the step could ever be given. Plain
+    # `bash -c` passed with or without B1's fix (#675 QA round 3).
+    p = subprocess.run(["bash", "-eo", "pipefail", "-c", script, "bash", local], cwd=clone,
                        capture_output=True, text=True, timeout=60)
     assert p.returncode == 0, p.stderr
     return p.stdout

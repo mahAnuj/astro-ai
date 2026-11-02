@@ -496,8 +496,15 @@ jobs:
           # an agent that pushed its own branch still continues below, where
           # the #322 pr-gates dispatch for its PR lives.
           if ! git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
-            git fetch --quiet origin '+refs/heads/*:refs/remotes/origin/*' 2>/dev/null || true
-            holder=$(git branch -r --contains HEAD 2>/dev/null | grep -v -- '->' | head -1 | xargs)
+            # --prune: a stale origin/<name> for a branch deleted remotely must
+            # not count as "already on the remote".
+            git fetch --quiet --prune origin '+refs/heads/*:refs/remotes/origin/*' 2>/dev/null || true
+            # `{ grep ... || true; }`: grep exits 1 when NOTHING matches -- the
+            # exact case this net exists for (new commits no remote branch
+            # holds). Under `pipefail` the bare form failed the assignment and
+            # `-e` killed the step: a silent work-loss the day anyone adds
+            # `shell: bash` (#675 QA round 3, B1).
+            holder=$(git branch -r --contains HEAD 2>/dev/null | { grep -v -- '->' || true; } | head -1 | xargs)
             if [ -n "$holder" ]; then
               {
                 echo "### Nothing to rescue"
