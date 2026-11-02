@@ -132,9 +132,12 @@ def test_author_association_is_never_consulted():
 
 # ---- bots and bad logins -------------------------------------------------------------
 
-@pytest.mark.parametrize("login", ["app/github-actions", "app/dependabot",
+@pytest.mark.parametrize("login", ["app/dependabot",
                                    "dependabot[bot]", "app/renovate",
-                                   "claudex", "app/claude-bot", "app/not-claude"])
+                                   "claudex", "app/claude-bot", "app/not-claude",
+                                   # near-misses on the second identity (#669)
+                                   "app/github-actions-x", "github-action[bot]",
+                                   "app/xgithub-actions", "app/github"])
 def test_every_bot_but_this_repos_own_app_is_an_outsider(login):
     """THE NARROWNESS GUARD, and the reason the exception below is affordable.
 
@@ -150,7 +153,10 @@ def test_every_bot_but_this_repos_own_app_is_an_outsider(login):
     assert fake.permission_calls() == []        # no lookup that could grant it
 
 
-@pytest.mark.parametrize("login", ["app/claude", "claude[bot]", "app/Claude"])
+@pytest.mark.parametrize("login", ["app/claude", "claude[bot]", "app/Claude",
+                                   # #669, owner 2026-11-02: issues the workflows
+                                   # file with `github.token`.
+                                   "app/github-actions", "github-actions[bot]"])
 def test_this_repos_own_app_is_trusted(login):
     """THE 2026-11-01 EXCEPTION, measured: 40 of the 130 open issues were filed
     by this App, and a cycle aimed at any of them stopped at `/agent-cycle`
@@ -186,15 +192,18 @@ def test_a_HUMAN_named_claude_is_still_judged_on_permission():
     assert len(fake.permission_calls()) == 1
 
 
-def test_the_exception_is_exactly_one_login_wide():
-    """A collection here invites a second entry, and one login is the whole of
-    why this is affordable. Pinned as a type, because `SELF_APP = ["claude",
-    "github-actions"]` would still pass every behavioural test above."""
-    assert isinstance(rp.SELF_APP, str), (
-        f"SELF_APP is {type(rp.SELF_APP).__name__}; a collection of trusted bot "
-        "logins is the allowlist this script's header refuses"
+def test_the_exception_is_exactly_these_identities():
+    """Until 2026-11-02 this pinned `SELF_APP` as a bare string so a second
+    login could not slip in. The owner then added `github-actions` on purpose
+    (#669). The guard against a DRIVE-BY widening survives as an exact-contents
+    pin on an immutable set: a third login fails here, so it has to arrive as
+    a test edit with a reason, not as one more string in a list."""
+    assert isinstance(rp.SELF_APPS, frozenset), type(rp.SELF_APPS).__name__
+    assert rp.SELF_APPS == frozenset({"claude", "github-actions"}), (
+        f"SELF_APPS is {sorted(rp.SELF_APPS)}; widening the trusted bot set is "
+        "an owner decision recorded in resolve_provenance.py, not a drive-by"
     )
-    assert rp.SELF_APP == "claude"
+    assert not hasattr(rp, "SELF_APP"), "a stale single-login constant is back"
 
 
 def test_the_grant_says_which_kind_of_trust_it_is():
