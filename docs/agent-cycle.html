@@ -297,6 +297,41 @@ footer a{color:var(--text-dim)}
 @media (prefers-reduced-motion:reduce){
   .ring .st circle{transition:none}
 }
+
+/* ---------- readable DAG: colour by kind, connections on demand ----------
+   All 29 edges drawn at once read as spaghetti. Now: boxes are tinted by kind,
+   each line takes the colour of the box that SENDS it, and lines stay faint
+   until you point at a box, when only its own connections light up and the
+   boxes it does not touch fade back. "Show all connections" restores the full
+   map. Holds stay rose and dashed; loop-backs brass and dashed. */
+.node[data-kind="agent"]{background:color-mix(in srgb,var(--violet) 9%,var(--ink-2))}
+.node[data-kind="workflow"]{background:color-mix(in srgb,var(--teal) 8%,var(--ink-2))}
+.node[data-kind="script"]{background:color-mix(in srgb,var(--brass) 8%,var(--ink-2))}
+.node[data-kind="hold"]{background:color-mix(in srgb,var(--rose) 9%,var(--ink-2))}
+.node[data-kind="agent"] .kind{color:var(--violet)}
+.node[data-kind="workflow"] .kind{color:var(--teal)}
+.node[data-kind="script"] .kind{color:var(--brass)}
+.node[data-kind="hold"] .kind{color:var(--rose)}
+.ed.src-agent{stroke:var(--violet)} .ed.src-workflow{stroke:var(--teal)}
+.ed.src-script{stroke:var(--brass)} .ed.src-clock{stroke:var(--text-faint)}
+.ed.hold{stroke:var(--rose)} .ed.back{stroke:var(--brass)}
+.stage-wrap .ed,.stage-wrap .edlab,.stage-wrap .node{transition:opacity .2s,stroke-width .2s}
+.stage-wrap:not(.all) .ed{opacity:.22}
+.stage-wrap:not(.all) .edlab{opacity:0}
+.stage-wrap.focus .ed,.stage-wrap.playing .ed{opacity:.07}
+.stage-wrap .ed.lit{opacity:1 !important;stroke-width:2.6}
+.stage-wrap .edlab.lit{opacity:1 !important;fill:var(--text);font-weight:600}
+.stage-wrap.focus .node{opacity:.32}
+.stage-wrap.focus .node.rel,.stage-wrap.focus .node.cur{opacity:1}
+.stage-wrap.focus .node.cur{box-shadow:0 0 0 2px var(--brass)}
+.stage-wrap.playing .node{opacity:.4}
+.stage-wrap.playing .node.lit{opacity:1}
+.band-out{display:flex;align-items:center;gap:10px;margin:12px 0 0;font-size:12px;color:var(--text-dim)}
+.band-out b{font:10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);font-weight:400}
+.band-out span{font:12px var(--mono);color:var(--brass);border:1px dashed var(--brass);padding:2px 8px;border-radius:var(--r)}
+.band-out::after{content:"↓";color:var(--brass);font-size:15px}
+.legend .lg.note{color:var(--text-faint)}
+@media (max-width:760px){.stage-wrap:not(.all) .ed{opacity:.16}}
 </style>
 </head>
 <body>
@@ -316,7 +351,7 @@ footer a{color:var(--text-dim)}
       <div class="fact"><b>15</b><span>agents</span></div>
       <div class="fact"><b>18</b><span>workflows</span></div>
       <div class="fact"><b>7</b><span>stages</span></div>
-      <div class="fact"><b>0</b><span>agents that can merge</span></div>
+      <div class="fact"><b>0</b><span>agents in the designed merge path</span></div>
       <div class="fact"><b>0</b><span>humans inside a cycle</span></div>
     </div>
   </div>
@@ -401,7 +436,8 @@ footer a{color:var(--text-dim)}
     <button id="play">▶ Play the cycle</button>
     <button id="reset">Reset</button>
     <span class="spacer"></span>
-    <span class="hint" id="status">Click any node for the explanation</span>
+    <button id="allconn" type="button" aria-pressed="false">Show all connections</button>
+    <span class="hint" id="status">Point at a box to see its connections; click it for the explanation</span>
     <button id="theme">◐</button>
   </div>
 
@@ -411,6 +447,7 @@ footer a{color:var(--text-dim)}
     <span class="lg"><i class="sw" style="background:var(--brass)"></i>script (deterministic)</span>
     <span class="lg"><i class="sw" style="background:var(--rose)"></i>hold — stops here for a human</span>
     <span class="lg"><i class="sw" style="background:var(--text-faint)"></i>clock</span>
+    <span class="lg note">a line takes the colour of the box that sends it</span>
   </div>
 
   <div class="stage-wrap">
@@ -510,7 +547,7 @@ footer a{color:var(--text-dim)}
 <script>
 const BANDS = [
   { n:"00", t:"The clock", d:"Almost nothing here is event-driven: these loops wake on cron, staggered into the window after the usage cap resets. The one exception is the steward, which also listens for Agent work to finish.", nodes:[
-    { id:"work", kind:"workflow", name:"agent-work.yml", cap:"Twice daily, 04:30 and 16:30 IST. Runs /agent-cycle — one issue, start to PR.",
+    { id:"work", kind:"workflow", name:"agent-work.yml", cap:"Six times a day, every four hours from 04:30 IST. Runs /agent-cycle — one issue, start to PR.",
       body:`<p>The delivery loop. Fires <code>0 23 * * *</code> — 04:30 IST, deliberately just after the Claude Max 5-hour rolling cap resets, because a cycle that dies mid-run leaves a half-finished branch. Since 2026-10-13 it also fires <code>0 11 * * *</code> — 16:30 IST, twelve hours on — so this runs <strong>twice a day, not once</strong>.</p>
       <p><strong>One issue per run.</strong> A single cycle is 10–15 agent invocations, and QA historically fails its first submission most of the time, so two or three QA rounds per issue is the budget.</p>
       <p class="sec">It passes on</p><p>A prompt (<code>/agent-cycle</code>) and nothing else. The cycle rediscovers all its own state from GitHub, because the previous run's memory is gone.</p>` },
@@ -588,7 +625,7 @@ const BANDS = [
       <li>A claim of traffic impact with no measurement is a FAIL.</li>
       <li>Every user-facing astrological claim must trace to a sourced corpus line.</li></ul>
       <p>A FAIL loops straight back to the engineer, and the PR stays a draft.</p>` },
-    { id:"chief", kind:"agent", name:"chief", cap:"Breaks ties only. Cannot start work, and cannot grant anyone permission.",
+    { id:"chief", kind:"agent", name:"chief", cap:"Rules on deadlocks and held PRs; may clear a hold with a ruling bound to the commit. Never grants a QA pass.",
       body:`<p>Invoked only by a formal escalation — never on a schedule — when two agents genuinely disagree and neither can decide.</p>
       <p class="sec">Deliberately constrained</p>
       <ul><li>An escalation must present <strong>both positions verbatim</strong>. A summary is not an escalation.</li>
@@ -796,6 +833,15 @@ function renderTodo(){
   el.hidden = false;
 }
 
+const HANDS = {
+  "00":"a cron tick or a dispatch",
+  "01":"one issue, confirmed live and ranked",
+  "02":"a commit and a QA verdict on it",
+  "03":"a pull request carrying a SHA-bound label",
+  "04":"green required checks on the head commit",
+  "05":"a merge to main, or a hold for a ruling",
+  "06":"a closed issue with evidence, then a score",
+};
 bandsEl.innerHTML = BANDS.map(b => `
   <div class="band">
     <div class="band-h">
@@ -812,6 +858,7 @@ bandsEl.innerHTML = BANDS.map(b => `
           ${liveRun(n.id)}
         </button>`).join("")}
     </div>
+    ${HANDS[b.n] ? `<div class="band-out"><b>hands on</b><span>${HANDS[b.n]}</span></div>` : ""}
   </div>`).join("");
 
 renderTodo();
@@ -867,7 +914,9 @@ function draw(){
 
     const base = document.createElementNS(NS,"path");
     base.setAttribute("d", d);
-    base.setAttribute("class", "ed" + (kind ? " "+kind : ""));
+    const srcKind = (NODES[from] && NODES[from].kind) || "";
+    base.setAttribute("class", "ed" + (kind ? " "+kind : "") + (srcKind ? " src-"+srcKind : ""));
+    base.dataset.from = from; base.dataset.to = to;
     svg.appendChild(base);
 
     const pulse = document.createElementNS(NS,"path");
@@ -881,10 +930,12 @@ function draw(){
       t.setAttribute("x", mx); t.setAttribute("y", my);
       t.setAttribute("text-anchor","middle");
       t.setAttribute("class","edlab");
+      t.dataset.from = from; t.dataset.to = to;
       t.textContent = label;
       svg.appendChild(t);
     }
   }
+  if (window.__reFocus) window.__reFocus();
 }
 
 /* ---------- panel ---------- */
@@ -916,9 +967,11 @@ function reset(){
   timers.forEach(clearTimeout); timers = []; running = false;
   document.querySelectorAll(".node.lit").forEach(e=>e.classList.remove("lit"));
   document.querySelectorAll(".pulse.go").forEach(e=>e.classList.remove("go"));
+  document.querySelectorAll(".ed.lit,.edlab.lit").forEach(e=>e.classList.remove("lit"));
+  document.querySelector(".stage-wrap").classList.remove("playing");
   document.getElementById("play").classList.remove("on");
   document.getElementById("play").textContent = "▶ Play the cycle";
-  status.textContent = "Click any node for the explanation";
+  status.textContent = "Point at a box to see its connections; click it for the explanation";
 }
 
 /* One ordered walk of the happy path, so the sequence reads as time. */
@@ -947,7 +1000,8 @@ const WALK = [
 ];
 
 function play(){
-  reset(); running = true;
+  reset(); running = true; clearFocus();
+  document.querySelector(".stage-wrap").classList.add("playing");
   const btn = document.getElementById("play");
   btn.classList.add("on"); btn.textContent = "■ Stop";
   const STEP = 820;
@@ -963,6 +1017,8 @@ function play(){
       }
       const prev = i > 0 ? WALK[i-1][0] : null;
       if (prev){
+        svg.querySelectorAll(`.ed[data-from="${prev}"][data-to="${id}"],.edlab[data-from="${prev}"][data-to="${id}"]`)
+          .forEach(e => e.classList.add("lit"));
         const p = svg.querySelector(`.pulse[data-from="${prev}"][data-to="${id}"]`);
         if (p){
           const len = p.getTotalLength();
@@ -985,6 +1041,36 @@ function play(){
 
 document.getElementById("play").onclick = () => running ? reset() : play();
 document.getElementById("reset").onclick = reset;
+
+/* ---------- focus: a box's own connections only ---------- */
+const wrapEl = document.querySelector(".stage-wrap");
+let focusedId = null;
+// draw() rebuilds every edge on resize and theme change; re-light the focus after it.
+window.__reFocus = () => { if (focusedId) focusNode(focusedId); };
+function clearFocus(){
+  focusedId = null;
+  wrapEl.classList.remove("focus");
+  svg.querySelectorAll(".ed.lit,.edlab.lit").forEach(e => { if (!running) e.classList.remove("lit"); });
+  document.querySelectorAll(".node.rel,.node.cur").forEach(e => e.classList.remove("rel","cur"));
+}
+function focusNode(id){
+  if (running) return;
+  clearFocus(); focusedId = id; wrapEl.classList.add("focus");
+  const rel = new Set([id]);
+  svg.querySelectorAll(`.ed[data-from="${id}"],.ed[data-to="${id}"],.edlab[data-from="${id}"],.edlab[data-to="${id}"]`)
+    .forEach(e => { e.classList.add("lit"); rel.add(e.dataset.from); rel.add(e.dataset.to); });
+  rel.forEach(r => { const el = document.querySelector(`.node[data-id="${r}"]`); if (el) el.classList.add(r === id ? "cur" : "rel"); });
+}
+const nodeOf = (t) => t && t.closest ? t.closest(".node") : null;
+document.addEventListener("mouseover", e => { const n = nodeOf(e.target); if (n) focusNode(n.dataset.id); });
+document.addEventListener("mouseout", e => { const n = nodeOf(e.target); if (n && !n.contains(e.relatedTarget)) clearFocus(); });
+document.addEventListener("focusin", e => { const n = nodeOf(e.target); if (n) focusNode(n.dataset.id); });
+document.addEventListener("focusout", e => { if (nodeOf(e.target)) clearFocus(); });
+document.getElementById("allconn").onclick = function(){
+  const on = wrapEl.classList.toggle("all");
+  this.setAttribute("aria-pressed", String(on));
+  this.textContent = on ? "Show connections on hover" : "Show all connections";
+};
 
 /* ---------- theme ---------- */
 const root = document.documentElement;
