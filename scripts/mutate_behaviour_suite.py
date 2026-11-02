@@ -1319,11 +1319,16 @@ MUTATIONS = [
      "    if False:",
      "test_a_bot_applied_override_is_ignored"),
 
+    # RE-ANCHORED 2026-11-01 (#642). The branch this row watched gained the
+    # self-App exception, so `if is_bot:\n        base = OUTSIDER` ceased to
+    # exist and the preflight failed at zero matches -- which is the net
+    # working. The RULE is unchanged and still the one worth guarding: a bot
+    # author defaults to OUTSIDER. Only the default moved down a level.
     ("#361: a bot author is treated as trusted (no allowlist, and no default either)",
      "scripts/resolve_provenance.py",
-     "    if is_bot:\n        base = OUTSIDER",
-     "    if is_bot:\n        base = TRUSTED",
-     "test_a_bot_author_is_an_outsider_whatever_its_permission"),
+     "            base = OUTSIDER\n            ev.append(\"permission  : not consulted -- a bot author is untrusted by rule \"",
+     "            base = TRUSTED\n            ev.append(\"permission  : not consulted -- a bot author is untrusted by rule \"",
+     "test_every_bot_but_this_repos_own_app_is_an_outsider"),
 
     ("#361: a 403 / 5xx collapses into 'outsider' instead of stopping (could-not-ask != no)",
      "scripts/resolve_provenance.py",
@@ -3832,6 +3837,61 @@ MUTATIONS = [
      "    if total >= 25:\n        return \"Madhyam\"",
      "test_the_disclosure_moves_no_grade"),
 
+    # --- #177: the Bhakoot 5/9 zero is Bhagya's own convention, and the page says so ---
+    ("#177 5/9: the Bhakoot koota note calls the 5/9 zero classical again",
+     "src/astro_ai/matching.py",
+     "\"scored 0 here as Bhagya's own convention; the classical text we \"",
+     "\"classically an obstacle; the classical text we \"",
+     "test_five_nine_notes_do_not_call_it_classical"),
+
+    ("#177 5/9: the dosha note presents the five parihaaras as classical for 5/9 again",
+     "src/astro_ai/matching.py",
+     "the classical text we hold does not name this distance. The five \"",
+     "the classical tradition cancels it. The five \"",
+     "test_five_nine_notes_do_not_call_it_classical"),
+
+    ("#177 5/9: the convention flag is never set",
+     "src/astro_ai/matching.py",
+     "return frozenset({d_g_to_b, d_b_to_g}) in _BHAKOOT_NOT_IN_HELD_TEXT",
+     "return False",
+     "test_five_nine_flag_is_set_only_for_five_nine"),
+
+    ("#177 5/9: the convention flag is set for 6/8 as well, a sourced distance",
+     "src/astro_ai/matching.py",
+     "    frozenset({5, 9}),\n})",
+     "    frozenset({5, 9}),\n    frozenset({6, 8}),\n})",
+     "test_sourced_distances_keep_their_note_byte_for_byte"),
+
+    ("#177 5/9: the result page stops rendering the convention line in the Bhakoot strip",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ t(lang, 'matching_bhakoot_convention') }}",
+     "{{ '' }}",
+     "test_five_nine_page_discloses_the_zero_is_bhagyas_convention"),
+
+    ("#177 5/9: the Hindi convention line stops saying it is not from the held text",
+     "src/astro_ai/i18n.py",
+     "यह हमारे पास उपलब्ध शास्त्रीय ग्रंथ से नहीं लिया गया है",
+     "यह शास्त्रीय ग्रंथ से लिया गया है",
+     "test_five_nine_page_discloses_the_zero_is_bhagyas_convention"),
+
+    ("#177 5/9: the /matching explainer calls 5-9 traditional again",
+     "src/astro_ai/templates/matching.html",
+     "The 6-8 and 2-12 distances traditionally score zero; Bhagya also scores 5-9 zero as its own convention, which the classical text we hold does not name.",
+     "Certain distances (6-8, 5-9, 2-12) traditionally score zero.",
+     "test_explainers_do_not_call_five_nine_traditional"),
+
+    ("#177 5/9: the Ashtakoot learn article lists 5th-9th as classical Bhakoot Dosha again",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "Our calculator also scores the 5th-9th (Navama-Pancama) distance 0, as its own convention: the classical text we hold does not name it.",
+     "5th-9th (Navama-Pancama) is classical Bhakoot Dosha too.",
+     "test_explainers_do_not_call_five_nine_traditional"),
+
+    ("#177 5/9: a disclosure edit moves the 5/9 koota score (0 -> 3.5)",
+     "src/astro_ai/matching.py",
+     "    if dosha and _bhakoot_convention_only(g_idx, b_idx):\n        return KootaScore(\n            name=\"Bhakoot\", sanskrit=\"भकूट\", max_points=7, awarded=0.0,",
+     "    if dosha and _bhakoot_convention_only(g_idx, b_idx):\n        return KootaScore(\n            name=\"Bhakoot\", sanskrit=\"भकूट\", max_points=7, awarded=3.5,",
+     "test_the_disclosure_moves_no_score_total_or_grade"),
+
     # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
     ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
      "src/astro_ai/chart.py",
@@ -4211,6 +4271,45 @@ MUTATIONS = [
      'if probe.suppresses_owner_alert(request, "kundli_generated"):',
      'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
 
+    # ---- #642: the loop may work the issues it filed itself ----------------
+    #
+    # Measured 2026-11-01: 40 of the 130 open issues were filed by this repo's
+    # own App and Step 0a refused every one. PR #642 was dispatched twice and
+    # died both times on #616, an issue the loop had filed itself.
+    #
+    # BOTH DIRECTIONS MATTER MORE THAN USUAL HERE. Widening the exception
+    # trusts other people's bots; losing it restores the stall for ~31% of the
+    # backlog. A suite catching only the first would bless the second.
+
+    ('#642: the self-App exception widens to any bot whose name contains it',
+     'scripts/resolve_provenance.py',
+     '    return folded in SELF_APPS',
+     '    return any(a in folded for a in SELF_APPS)',
+     'test_every_bot_but_this_repos_own_app_is_an_outsider'),
+
+    ('#642: the exception is gone and the loop stalls on its own issues again',
+     'scripts/resolve_provenance.py',
+     '            base = TRUSTED\n            ev.append(f"permission  : not consulted',
+     '            base = OUTSIDER\n            ev.append(f"permission  : not consulted',
+     'test_this_repos_own_app_is_trusted'),
+
+    ('#642: case is compared raw, so a rendering change restores the stall',
+     'scripts/resolve_provenance.py',
+     '    folded = login.casefold()',
+     '    folded = login',
+     'test_this_repos_own_app_is_trusted'),
+
+    ('#642: the [bot] rendering stops being recognised',
+     'scripts/resolve_provenance.py',
+     '    suffix = "[bot]"',
+     '    suffix = "[robot]"',
+     'test_this_repos_own_app_is_trusted'),
+
+    ('#642: a HUMAN sharing the App name skips the permission check',
+     'scripts/resolve_provenance.py',
+     '    if is_bot:\n        # Permission is still not consulted for ANY bot',
+     '    if is_bot or is_self_app(login):\n        # Permission is still not consulted for ANY bot',
+     'test_a_HUMAN_named_claude_is_still_judged_on_permission'),
     # ---- chief defaults to PROCEED, and knows the system (owner, 2026-11-01)
     #
     # Measured: on PR #649 chief was woken 0.0h after the qa-fail, restated the
@@ -4500,6 +4599,24 @@ MUTATIONS = [
      '  echo "DISPATCHED_KIND=$kind" >> "$GITHUB_ENV"',
      '  :',
      'test_the_dispatched_kind_is_exported_beside_the_number'),
+
+    ("#265: the card's article count is typed again instead of read",
+     'scripts/generate_og_card.py',
+     'ARTICLE_COUNT = len(ARTICLES)',
+     'ARTICLE_COUNT = 76',
+     'test_generator_reads_the_registry_and_types_no_count'),
+
+    ("#265: an article ships and the committed card still says the old count",
+     'src/astro_ai/learn_registry.py',
+     'ARTICLES: tuple[Article, ...] = (\n    Article(\n        slug="the-9-grahas-overview",',
+     'ARTICLES: tuple[Article, ...] = (\n    Article(slug="mutant", title="m", summary="m", category="Grahas",\n            hero_image="/m", read_time="1 min"),\n    Article(\n        slug="the-9-grahas-overview",',
+     'test_embedded_article_count_matches_the_registry'),
+
+    ("#265: the Swiss Ephemeris badge returns to the card's proof line",
+     'scripts/generate_og_card.py',
+     'PROOF = f"Sidereal Lahiri ayanamsha',
+     'PROOF = f"Swiss Ephemeris chart math  ·  Sidereal Lahiri ayanamsha',
+     'test_generator_reads_the_registry_and_types_no_count'),
 
 ]
 

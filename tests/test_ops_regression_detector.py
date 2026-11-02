@@ -247,7 +247,7 @@ def test_an_unreadable_source_exits_1_and_says_which(tmp_path, monkeypatch, caps
     monkeypatch.setattr(det, "ROOT", root)
     monkeypatch.setattr(det, "MEASUREMENTS", root / "measurements")
     monkeypatch.chdir(root)
-    rc = det.main(["detect_ops_regressions.py"])
+    rc = det.main(["detect_ops_regressions.py"], now=NOW)
     out = capsys.readouterr().out
     assert rc == 1, out
     assert "UNREAD" in out and "agents.json" in out
@@ -272,7 +272,7 @@ def test_a_clean_state_exits_0_and_says_the_sources_were_READABLE(
     monkeypatch.setattr(det, "ROOT", root)
     monkeypatch.setattr(det, "MEASUREMENTS", root / "measurements")
     monkeypatch.chdir(root)
-    rc = det.main(["detect_ops_regressions.py"])
+    rc = det.main(["detect_ops_regressions.py"], now=NOW)
     out = capsys.readouterr().out
     assert rc == 0, out
     assert "every source was readable" in out
@@ -352,9 +352,9 @@ def test_coverage_is_printed_on_request_and_not_by_default(tmp_path, monkeypatch
     monkeypatch.setattr(det, "ROOT", root)
     monkeypatch.setattr(det, "MEASUREMENTS", root / "measurements")
     monkeypatch.chdir(root)
-    det.main(["detect_ops_regressions.py"])
+    det.main(["detect_ops_regressions.py"], now=NOW)
     assert "NOT COVERED" not in capsys.readouterr().out
-    det.main(["detect_ops_regressions.py", "--coverage"])
+    det.main(["detect_ops_regressions.py", "--coverage"], now=NOW)
     assert "NOT COVERED" in capsys.readouterr().out
 
 
@@ -370,7 +370,7 @@ def test_json_output_carries_findings_unreadable_AND_the_blind_spots(
     monkeypatch.setattr(det, "ROOT", root)
     monkeypatch.setattr(det, "MEASUREMENTS", root / "measurements")
     monkeypatch.chdir(root)
-    det.main(["detect_ops_regressions.py", "--json"])
+    det.main(["detect_ops_regressions.py", "--json"], now=NOW)
     doc = json.loads(capsys.readouterr().out)
     assert {"findings", "unreadable", "not_covered"} <= set(doc)
     assert "backlog-growing" in {f["kind"] for f in doc["findings"]}

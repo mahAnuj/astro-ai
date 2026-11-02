@@ -262,7 +262,8 @@ class BhakootDosha:
     """
 
     present: bool
-    """Whether the Moon-rashi distance carries a classical Bhakoot dosha."""
+    """Whether the Moon-rashi distance carries a Bhakoot dosha. Classical for 6/8
+    and 2/12; Bhagya's own convention for 5/9 (see `convention_only`)."""
 
     name: str
     """e.g. "Shadashtaka (6/8)"; empty when no dosha is present."""
@@ -282,6 +283,10 @@ class BhakootDosha:
     Nadi is NOT a clean chart."""
 
     note: str
+
+    convention_only: bool = False
+    """True when this distance scores 0 by Bhagya's own convention rather than
+    on a text we hold (#177) — today only 5/9. Lets the page say so."""
 
 
 @dataclass(frozen=True)
@@ -785,6 +790,23 @@ _BHAKOOT_DOSHA_NAMES: Final[dict[frozenset[int], str]] = {
 }
 
 
+# Distances `_BHAKOOT_DOSHA_NAMES` scores 0 that the classical text we hold does
+# NOT name (#177). knowledge/matching.md (Muhurta Chintamani v.31) gives only the
+# 6/8 and 2/12 afflictions; 5/9 is in none of it, and astro-auditor's 2026-10-17
+# F4 found "nava panchama" absent from all 13 corpus books. We do not know what
+# value, if any, a tradition gives it, so the zero stays and the page says it is
+# Bhagya's own convention. Whether it should score differently is the owner's call.
+_BHAKOOT_NOT_IN_HELD_TEXT: Final[frozenset[frozenset[int]]] = frozenset({
+    frozenset({5, 9}),
+})
+
+
+def _bhakoot_convention_only(g_idx: int, b_idx: int) -> bool:
+    """True when the Moon-sign distance scores 0 only by Bhagya's convention."""
+    d_g_to_b, d_b_to_g, _name = _bhakoot_relation(g_idx, b_idx)
+    return frozenset({d_g_to_b, d_b_to_g}) in _BHAKOOT_NOT_IN_HELD_TEXT
+
+
 def _bhakoot_relation(g_idx: int, b_idx: int) -> tuple[int, int, str]:
     """Moon-rashi distances both ways, plus the dosha name ("" if none)."""
     d_g_to_b = ((b_idx - g_idx) % 12) + 1
@@ -816,6 +838,14 @@ def _bhakoot(g_idx: int, b_idx: int) -> KootaScore:
     source. Provenance now lives in knowledge/matching.md.
     """
     d_g_to_b, d_b_to_g, dosha = _bhakoot_relation(g_idx, b_idx)
+    if dosha and _bhakoot_convention_only(g_idx, b_idx):
+        return KootaScore(
+            name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=0.0,
+            note=f"Bhakoot dosha — the {dosha} distance between the Moon signs is "
+                 "scored 0 here as Bhagya's own convention; the classical text we "
+                 "hold names only the 6/8 and 2/12 afflictions. Any cancellation is "
+                 "reported separately and does not change this score.",
+        )
     if dosha:
         return KootaScore(
             name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=0.0,
@@ -884,7 +914,33 @@ def _bhakoot_dosha(g_idx: int, b_idx: int, kootas: tuple[KootaScore, ...]) -> Bh
         applied.append("Tara (birth-star) compatibility is clean")
 
     cancelled = bool(applied)
-    if cancelled:
+    convention_only = _bhakoot_convention_only(g_idx, b_idx)
+    if convention_only:
+        # The five conditions are the text's list for shad-ashtaka. Bhagya applies
+        # them to this distance by extension, so do not present them as classical
+        # for it (#177).
+        if cancelled:
+            note = (
+                f"{dosha} Bhakoot dosha is counted here by Bhagya's own convention; "
+                "the classical text we hold does not name this distance. The five "
+                "cancelling conditions are that text's list for the 6/8 distance and "
+                "are applied to this one by extension. Here "
+                + (f"{len(applied)} of them apply" if len(applied) > 1 else "one applies")
+                + ". A cancellation removes the dosha; it does not add points to the "
+                "score above."
+            )
+        else:
+            note = (
+                f"{dosha} Bhakoot dosha is counted here by Bhagya's own convention; "
+                "the classical text we hold does not name this distance, and none of "
+                "the cancelling conditions Bhagya applies to it hold."
+            )
+        if cancelled and not nadi_shuddha:
+            note += (
+                " Note that the tradition still requires Nadi to be clean regardless of "
+                "any cancellation, and it is not clean here."
+            )
+    elif cancelled:
         note = (
             f"{dosha} Bhakoot dosha is present, but the classical tradition cancels it "
             "when any one of five conditions holds. Here "
@@ -906,7 +962,7 @@ def _bhakoot_dosha(g_idx: int, b_idx: int, kootas: tuple[KootaScore, ...]) -> Bh
     return BhakootDosha(
         present=True, name=dosha, pariharas=tuple(applied),
         unevaluated=_PARIHARA_UNEVALUATED, cancelled=cancelled,
-        nadi_shuddha=nadi_shuddha, note=note,
+        nadi_shuddha=nadi_shuddha, note=note, convention_only=convention_only,
     )
 
 
