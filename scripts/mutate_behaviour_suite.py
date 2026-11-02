@@ -4574,6 +4574,13 @@ MUTATIONS = [
      'PROOF = f"Swiss Ephemeris chart math  ·  Sidereal Lahiri ayanamsha',
      'test_generator_reads_the_registry_and_types_no_count'),
 
+
+    # --- #654/#649: the steward's own prompt must offer the pr= form ---
+    ("steward prompt: the ruling line narrows back to issue= alone, as it was until 2026-11-02",
+     ".github/workflows/agent-steward.yml",
+     'exactly `issue=<number>` OR `pr=<number>`, to',
+     'exactly `issue=<number>`, to',
+     "test_the_steward_prompt_does_not_say_exactly_issue_only"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

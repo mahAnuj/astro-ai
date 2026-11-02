@@ -189,11 +189,38 @@ jobs:
 
             **IF A FINDING OBLIGES A CYCLE, DO NOT RUN `gh workflow run` --
             YOUR TOKEN IS REFUSED (HTTP 403, #442).** Write AT MOST ONE line,
-            exactly `issue=<number>`, to `/tmp/steward-dispatch.txt`, and a
-            later step carries it out with a credential that can. No line means
-            no dispatch, and that is a legitimate outcome: write one only for a
-            PR a cycle can actually adopt -- one the DETECTOR named an owning
-            issue for, authored by `claude[bot]` or the repository owner. The
+            exactly `issue=<number>` OR `pr=<number>`, to
+            `/tmp/steward-dispatch.txt`, and a later step carries it out with a
+            credential that can.
+
+            **`pr=<number>` IS YOURS AND HAS BEEN SINCE 2026-11-01 (#650,
+            #653).** It aims a QA ROUND at the pull request itself and needs no
+            owning issue. `issue=<number>` aims a full cycle, which reads the
+            issue and can also build.
+
+            This paragraph is here because the omission was measured. Until
+            2026-11-02 this prompt offered the issue form alone and made a
+            detector-named owning issue a precondition for dispatching at all
+            -- the two sentences are described rather than reproduced, because
+            a prompt that quotes a dead rule can be acted on through the
+            quotation. Chief's prompt 210 lines below in this same file, and
+            `steward.md` line 104, both already carried `pr=<number>`. #659
+            taught those two and missed this one. The operative instruction is
+            the one you are reading, so you obeyed it: on 2026-11-02 at 04:50Z
+            you diagnosed
+            `qa-fail-refixed` on PR #654 exactly right, named `pr=654` as the
+            repair in prose, and then wrote **"I hold no `pr=` carrier"** and
+            dispatched nothing. You held it. PRs #649 and #654 waited overnight
+            for a dispatch you were able to make.
+
+            So: an owning issue is NOT a precondition for a dispatch. It is a
+            precondition for `issue=` only. A PR with no issue, or with a
+            CLOSED one, or one whose issue a cycle would refuse at Step 0a, is
+            still dispatchable as `pr=`.
+
+            No line still means no dispatch, and that is still a legitimate
+            outcome: write one only for a PR a cycle can actually adopt --
+            authored by `claude[bot]` or the repository owner, not a fork. The
             branch NAME is not the test (#531): `partial/` and `fix/` carry an
             issue number too, and `agent-cycle` Step 2.5 adopts the existing
             branch and PR whoever opened it. Never write one "to be safe",
