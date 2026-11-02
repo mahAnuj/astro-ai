@@ -216,6 +216,122 @@ footer a{color:var(--text-dim)}
   *{animation-duration:.001ms!important;transition-duration:.001ms!important}
   .pulse.go{opacity:1;stroke-dashoffset:0}
 }
+
+/* ---------- the loop, in plain language ----------
+   A first view anyone can follow: seven stations on a ring, a work item that
+   travels between them carrying the artifact it hands over, and one card that
+   explains the active station. The detailed DAG below stays as the reference.
+   Ring on wide screens, a vertical stepper on narrow ones; both are driven by
+   the same LOOP data. Colours are the page's own tokens. */
+.loop{padding:48px 0 28px;border-bottom:1px solid var(--line-soft)}
+.loop h2{font-size:26px;letter-spacing:-.01em;margin:0 0 8px;font-weight:600}
+.loop .lede{color:var(--text-dim);max-width:68ch;margin:0 0 26px}
+.loop-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px;align-items:start}
+.ring{width:100%;max-width:560px;height:auto;display:block;margin:0 auto;overflow:visible}
+.ring .track{fill:none;stroke:var(--line);stroke-width:2;stroke-dasharray:3 7}
+.ring .flow{fill:none;stroke:var(--teal);stroke-width:2.5;stroke-linecap:round;opacity:.9}
+.ring .st{cursor:pointer}
+.ring .st circle{fill:var(--ink-2);stroke:var(--line);stroke-width:2;transition:fill .3s,stroke .3s,r .3s}
+.ring .st .num{font:600 15px var(--mono);fill:var(--text-dim);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.ring .st .lab{font:600 14px var(--sans);fill:var(--text);text-anchor:middle;pointer-events:none}
+.ring .st .sub{font:11px var(--mono);fill:var(--text-faint);text-anchor:middle;pointer-events:none;letter-spacing:.04em}
+.ring .st.on circle{fill:var(--teal);stroke:var(--teal)}
+.ring .st.on .num{fill:var(--ink)}
+.ring .st.done circle{stroke:var(--teal)}
+.ring .st:focus-visible circle{stroke:var(--brass);stroke-width:3}
+.ring .st:focus{outline:none}
+.ring .hub-t{font:600 17px var(--sans);fill:var(--text);text-anchor:middle}
+.ring .hub-s{font:12px var(--sans);fill:var(--text-dim);text-anchor:middle}
+.ring .token rect{fill:var(--brass)}
+.ring .token text{font:600 11px var(--mono);fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.ring .lock{font:13px var(--sans)}
+.loop-card{background:var(--ink-2);border:1px solid var(--line-soft);border-left:3px solid var(--teal);
+  border-radius:var(--r);padding:22px 22px 18px;min-height:380px}
+.loop-card .step{font:11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin:0 0 6px}
+.loop-card h3{font-size:22px;margin:0 0 10px;font-weight:600}
+.loop-card .what{margin:0 0 16px;color:var(--text)}
+.loop-card dl{margin:0;display:grid;gap:14px}
+.loop-card dt{font:11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);margin:0 0 5px}
+.loop-card dd{margin:0;color:var(--text-dim);font-size:14.5px}
+.who{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:12px var(--mono);padding:3px 8px;border-radius:var(--r);border:1px solid var(--line);color:var(--text)}
+.chip i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.chip.agent i{background:var(--violet)} .chip.workflow i{background:var(--teal)}
+.chip.script i{background:var(--brass)} .chip.person i{background:var(--rose)}
+.chip small{color:var(--text-faint);margin-left:6px}
+.artifact{display:inline-block;font:12.5px var(--mono);color:var(--brass);border:1px dashed var(--brass);padding:3px 8px;border-radius:var(--r)}
+.loop-ctl{display:flex;gap:8px;align-items:center;margin:16px 0 0;flex-wrap:wrap}
+.loop-ctl button{font:12px var(--mono);background:var(--ink-3);color:var(--text);border:1px solid var(--line);
+  padding:7px 12px;border-radius:var(--r);cursor:pointer}
+.loop-ctl button:hover{border-color:var(--teal)}
+.loop-ctl button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.loop-ctl .hint{font-size:12px;color:var(--text-faint)}
+.kinds{display:flex;flex-wrap:wrap;gap:6px 16px;margin:18px 0 0;font-size:12.5px;color:var(--text-dim)}
+.kinds .chip{border:0;padding:0;color:var(--text-dim)}
+.stepper{display:none;list-style:none;margin:0;padding:0;border-left:2px dashed var(--line)}
+.stepper li{position:relative;padding:0 0 4px 22px}
+.stepper button{all:unset;cursor:pointer;display:block;width:100%;padding:10px 0;color:var(--text);font-weight:600}
+.stepper button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.stepper .dot{position:absolute;left:-9px;top:12px;width:16px;height:16px;border-radius:50%;
+  background:var(--ink-2);border:2px solid var(--line);font:10px var(--mono);display:grid;place-items:center;color:var(--text-dim)}
+.stepper li.on .dot{background:var(--teal);border-color:var(--teal);color:var(--ink)}
+.stepper li.done .dot{border-color:var(--teal)}
+.stepper small{display:block;font-weight:400;color:var(--text-faint);font:11px var(--mono);margin-top:2px}
+.around{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:30px 0 0}
+.around > div{background:var(--ink-2);border:1px solid var(--line-soft);border-radius:var(--r);padding:16px 18px}
+.around h3{font-size:15px;margin:0 0 8px;font-weight:600}
+.around ul{margin:0;padding-left:18px;color:var(--text-dim);font-size:14px}
+.around li{margin:4px 0}
+.around .tag{font:11px var(--mono);letter-spacing:.12em;text-transform:uppercase;margin:0 0 6px}
+.around .watch .tag{color:var(--teal)} .around .human .tag{color:var(--rose)}
+.under{padding:34px 0 0}
+.under h2{font-size:22px;margin:0 0 6px;font-weight:600}
+.under p{color:var(--text-dim);max-width:72ch;margin:0}
+@media (max-width:860px){
+  .loop-grid{grid-template-columns:1fr}
+  .ring{display:none}
+  .stepper{display:block}
+  .loop-card{min-height:0}
+  .around{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  .ring .st circle{transition:none}
+}
+
+/* ---------- readable DAG: colour by kind, connections on demand ----------
+   All 29 edges drawn at once read as spaghetti. Now: boxes are tinted by kind,
+   each line takes the colour of the box that SENDS it, and lines stay faint
+   until you point at a box, when only its own connections light up and the
+   boxes it does not touch fade back. "Show all connections" restores the full
+   map. Holds stay rose and dashed; loop-backs brass and dashed. */
+.node[data-kind="agent"]{background:color-mix(in srgb,var(--violet) 9%,var(--ink-2))}
+.node[data-kind="workflow"]{background:color-mix(in srgb,var(--teal) 8%,var(--ink-2))}
+.node[data-kind="script"]{background:color-mix(in srgb,var(--brass) 8%,var(--ink-2))}
+.node[data-kind="hold"]{background:color-mix(in srgb,var(--rose) 9%,var(--ink-2))}
+.node[data-kind="agent"] .kind{color:var(--violet)}
+.node[data-kind="workflow"] .kind{color:var(--teal)}
+.node[data-kind="script"] .kind{color:var(--brass)}
+.node[data-kind="hold"] .kind{color:var(--rose)}
+.ed.src-agent{stroke:var(--violet)} .ed.src-workflow{stroke:var(--teal)}
+.ed.src-script{stroke:var(--brass)} .ed.src-clock{stroke:var(--text-faint)}
+.ed.hold{stroke:var(--rose)} .ed.back{stroke:var(--brass)}
+.stage-wrap .ed,.stage-wrap .edlab,.stage-wrap .node{transition:opacity .2s,stroke-width .2s}
+.stage-wrap:not(.all) .ed{opacity:.22}
+.stage-wrap:not(.all) .edlab{opacity:0}
+.stage-wrap.focus .ed,.stage-wrap.playing .ed{opacity:.07}
+.stage-wrap .ed.lit{opacity:1 !important;stroke-width:2.6}
+.stage-wrap .edlab.lit{opacity:1 !important;fill:var(--text);font-weight:600}
+.stage-wrap.focus .node{opacity:.32}
+.stage-wrap.focus .node.rel,.stage-wrap.focus .node.cur{opacity:1}
+.stage-wrap.focus .node.cur{box-shadow:0 0 0 2px var(--brass)}
+.stage-wrap.playing .node{opacity:.4}
+.stage-wrap.playing .node.lit{opacity:1}
+.band-out{display:flex;align-items:center;gap:10px;margin:12px 0 0;font-size:12px;color:var(--text-dim)}
+.band-out b{font:10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);font-weight:400}
+.band-out span{font:12px var(--mono);color:var(--brass);border:1px dashed var(--brass);padding:2px 8px;border-radius:var(--r)}
+.band-out::after{content:"↓";color:var(--brass);font-size:15px}
+.legend .lg.note{color:var(--text-faint)}
+@media (max-width:760px){.stage-wrap:not(.all) .ed{opacity:.16}}
 </style>
 </head>
 <body>
@@ -223,30 +339,105 @@ footer a{color:var(--text-dim)}
 <header>
   <div class="wrap">
     <p class="eyebrow">astro-ai · shubhagya.com</p>
-    <h1>No agent ever talks to <em>another agent</em>.</h1>
+    <h1>How fifteen AI agents build and grow a product, <em>and what keeps them in line</em>.</h1>
     <p class="thesis">
-      A subagent starts with no memory of any other, so this system cannot pass work by
-      conversation. Every handoff is <strong>written down somewhere durable</strong> — an issue
-      comment, a label, a commit SHA, a PR body, a <code>workflow_run</code> event. The diagram
-      below is that paper trail. The arrows are not calls; they are
-      <strong>artifacts one agent leaves for the next one to find.</strong>
+      Shubh Bhagya is built and maintained by a team of AI agents running on a schedule. They
+      never talk to each other: each starts with no memory of the others, so every handoff is
+      <strong>written down</strong> as an issue, a label, a commit or a pull request. That paper
+      trail is what the picture below follows, and it is what lets <strong>a workflow, not an
+      agent, decide what ships.</strong>
     </p>
     <div class="facts">
       <div class="fact"><b>15</b><span>agents</span></div>
       <div class="fact"><b>19</b><span>workflows</span></div>
       <div class="fact"><b>7</b><span>stages</span></div>
-      <div class="fact"><b>0</b><span>agents that can merge</span></div>
+      <div class="fact"><b>0</b><span>agents in the designed merge path</span></div>
       <div class="fact"><b>0</b><span>humans inside a cycle</span></div>
     </div>
   </div>
 </header>
+
+<section class="loop" id="loop" aria-labelledby="loop-h">
+  <div class="wrap">
+    <h2 id="loop-h">The loop in one picture</h2>
+    <p class="lede">
+      Every change to the site goes round the same seven steps. Watch one piece of work travel the
+      loop: at each step a different agent or workflow picks it up, and hands the next one
+      something <strong>written down</strong>, shown on the moving tag. Select any step to read what
+      happens there and what keeps it honest.
+    </p>
+    <div class="loop-grid">
+      <div>
+        <svg class="ring" id="ring" viewBox="0 0 600 600" role="img"
+             aria-label="A loop of seven steps: measure, decide, build, check, merge, ship and verify, score, then back to measure.">
+          <circle class="track" cx="300" cy="300" r="215"></circle>
+          <path class="flow" id="flow" d=""></path>
+          <g id="stations"></g>
+          <text class="hub-t" x="300" y="290">One change, from data</text>
+          <text class="hub-t" x="300" y="312">to production and back</text>
+          <text class="hub-s" x="300" y="340">delivery runs six times a day</text>
+          <g class="token" id="token" aria-hidden="true">
+            <rect x="-48" y="-12" width="96" height="24" rx="4"></rect>
+            <text id="token-t" x="0" y="0"></text>
+          </g>
+        </svg>
+        <ol class="stepper" id="stepper"></ol>
+        <div class="loop-ctl">
+          <button id="loop-play" type="button">❚❚ Pause</button>
+          <button id="loop-prev" type="button" aria-label="Previous step">←</button>
+          <button id="loop-next" type="button" aria-label="Next step">→</button>
+          <span class="hint" id="loop-hint">Playing. Select a step to stop on it.</span>
+        </div>
+        <div class="kinds" aria-hidden="true">
+          <span class="chip agent"><i></i>AI agent</span>
+          <span class="chip workflow"><i></i>automated workflow</span>
+          <span class="chip script"><i></i>fixed script</span>
+        </div>
+      </div>
+      <article class="loop-card" id="loop-card" aria-live="off"></article>
+    </div>
+
+    <div class="around">
+      <div class="watch">
+        <p class="tag">Watching the loop</p>
+        <h3>Something checks that the loop is still moving</h3>
+        <ul>
+          <li><b>steward</b> (agent, twice a day) finds finished work that has stalled and routes the repair.</li>
+          <li><b>loop-outcomes</b> (workflow, weekly) reports what each loop actually did, not what it said.</li>
+          <li>An <b>ops dashboard</b> shows every run, so a quiet loop is visible as a gap, not hidden as a zero.</li>
+        </ul>
+      </div>
+      <div class="human">
+        <p class="tag">Outside the loop</p>
+        <h3>What only a person decides</h3>
+        <ul>
+          <li>Editing the agents' own rules, or the workflows that run them.</li>
+          <li>Granting a permission, a scope or a secret.</li>
+          <li>Product, pricing, legal and privacy decisions.</li>
+          <li>Anything that cannot be undone, such as deleting user data.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="under">
+      <h2>Under the hood: every agent, workflow and script</h2>
+      <p>
+        The same loop at full detail, for engineers. Each box below is one agent, workflow or
+        script, the lines are the artifacts passed between them, and live badges show each
+        workflow's last run. Press play to watch a change move through it, or select a box for the
+        explanation.
+      </p>
+    </div>
+  </div>
+</section>
 
 <div class="wrap">
   <div class="controls">
     <button id="play">▶ Play the cycle</button>
     <button id="reset">Reset</button>
     <span class="spacer"></span>
-    <span class="hint" id="status">Click any node for the explanation</span>
+    <button id="allconn" type="button" aria-pressed="false">Show all connections</button>
+    <span class="hint" id="status">Point at a box to see its connections; click it for the explanation</span>
     <button id="theme">◐</button>
   </div>
 
@@ -256,6 +447,7 @@ footer a{color:var(--text-dim)}
     <span class="lg"><i class="sw" style="background:var(--brass)"></i>script (deterministic)</span>
     <span class="lg"><i class="sw" style="background:var(--rose)"></i>hold — stops here for a human</span>
     <span class="lg"><i class="sw" style="background:var(--text-faint)"></i>clock</span>
+    <span class="lg note">a line takes the colour of the box that sends it</span>
   </div>
 
   <div class="stage-wrap">
@@ -355,7 +547,7 @@ footer a{color:var(--text-dim)}
 <script>
 const BANDS = [
   { n:"00", t:"The clock", d:"Almost nothing here is event-driven: these loops wake on cron, staggered into the window after the usage cap resets. The one exception is the steward, which also listens for Agent work to finish.", nodes:[
-    { id:"work", kind:"workflow", name:"agent-work.yml", cap:"Twice daily, 04:30 and 16:30 IST. Runs /agent-cycle — one issue, start to PR.",
+    { id:"work", kind:"workflow", name:"agent-work.yml", cap:"Six times a day, every four hours from 04:30 IST. Runs /agent-cycle — one issue, start to PR.",
       body:`<p>The delivery loop. Fires <code>0 23 * * *</code> — 04:30 IST, deliberately just after the Claude Max 5-hour rolling cap resets, because a cycle that dies mid-run leaves a half-finished branch. Since 2026-10-13 it also fires <code>0 11 * * *</code> — 16:30 IST, twelve hours on — so this runs <strong>twice a day, not once</strong>.</p>
       <p><strong>One issue per run.</strong> A single cycle is 10–15 agent invocations, and QA historically fails its first submission most of the time, so two or three QA rounds per issue is the budget.</p>
       <p class="sec">It passes on</p><p>A prompt (<code>/agent-cycle</code>) and nothing else. The cycle rediscovers all its own state from GitHub, because the previous run's memory is gone.</p>` },
@@ -433,7 +625,7 @@ const BANDS = [
       <li>A claim of traffic impact with no measurement is a FAIL.</li>
       <li>Every user-facing astrological claim must trace to a sourced corpus line.</li></ul>
       <p>A FAIL loops straight back to the engineer, and the PR stays a draft.</p>` },
-    { id:"chief", kind:"agent", name:"chief", cap:"Breaks ties only. Cannot start work, and cannot grant anyone permission.",
+    { id:"chief", kind:"agent", name:"chief", cap:"Rules on deadlocks and held PRs; may clear a hold with a ruling bound to the commit. Never grants a QA pass.",
       body:`<p>Invoked only by a formal escalation — never on a schedule — when two agents genuinely disagree and neither can decide.</p>
       <p class="sec">Deliberately constrained</p>
       <ul><li>An escalation must present <strong>both positions verbatim</strong>. A summary is not an escalation.</li>
@@ -641,6 +833,15 @@ function renderTodo(){
   el.hidden = false;
 }
 
+const HANDS = {
+  "00":"a cron tick or a dispatch",
+  "01":"one issue, confirmed live and ranked",
+  "02":"a commit and a QA verdict on it",
+  "03":"a pull request carrying a SHA-bound label",
+  "04":"green required checks on the head commit",
+  "05":"a merge to main, or a hold for a ruling",
+  "06":"a closed issue with evidence, then a score",
+};
 bandsEl.innerHTML = BANDS.map(b => `
   <div class="band">
     <div class="band-h">
@@ -657,6 +858,7 @@ bandsEl.innerHTML = BANDS.map(b => `
           ${liveRun(n.id)}
         </button>`).join("")}
     </div>
+    ${HANDS[b.n] ? `<div class="band-out"><b>hands on</b><span>${HANDS[b.n]}</span></div>` : ""}
   </div>`).join("");
 
 renderTodo();
@@ -712,7 +914,9 @@ function draw(){
 
     const base = document.createElementNS(NS,"path");
     base.setAttribute("d", d);
-    base.setAttribute("class", "ed" + (kind ? " "+kind : ""));
+    const srcKind = (NODES[from] && NODES[from].kind) || "";
+    base.setAttribute("class", "ed" + (kind ? " "+kind : "") + (srcKind ? " src-"+srcKind : ""));
+    base.dataset.from = from; base.dataset.to = to;
     svg.appendChild(base);
 
     const pulse = document.createElementNS(NS,"path");
@@ -726,10 +930,12 @@ function draw(){
       t.setAttribute("x", mx); t.setAttribute("y", my);
       t.setAttribute("text-anchor","middle");
       t.setAttribute("class","edlab");
+      t.dataset.from = from; t.dataset.to = to;
       t.textContent = label;
       svg.appendChild(t);
     }
   }
+  if (window.__reFocus) window.__reFocus();
 }
 
 /* ---------- panel ---------- */
@@ -761,9 +967,11 @@ function reset(){
   timers.forEach(clearTimeout); timers = []; running = false;
   document.querySelectorAll(".node.lit").forEach(e=>e.classList.remove("lit"));
   document.querySelectorAll(".pulse.go").forEach(e=>e.classList.remove("go"));
+  document.querySelectorAll(".ed.lit,.edlab.lit").forEach(e=>e.classList.remove("lit"));
+  document.querySelector(".stage-wrap").classList.remove("playing");
   document.getElementById("play").classList.remove("on");
   document.getElementById("play").textContent = "▶ Play the cycle";
-  status.textContent = "Click any node for the explanation";
+  status.textContent = "Point at a box to see its connections; click it for the explanation";
 }
 
 /* One ordered walk of the happy path, so the sequence reads as time. */
@@ -792,7 +1000,8 @@ const WALK = [
 ];
 
 function play(){
-  reset(); running = true;
+  reset(); running = true; clearFocus();
+  document.querySelector(".stage-wrap").classList.add("playing");
   const btn = document.getElementById("play");
   btn.classList.add("on"); btn.textContent = "■ Stop";
   const STEP = 820;
@@ -808,6 +1017,8 @@ function play(){
       }
       const prev = i > 0 ? WALK[i-1][0] : null;
       if (prev){
+        svg.querySelectorAll(`.ed[data-from="${prev}"][data-to="${id}"],.edlab[data-from="${prev}"][data-to="${id}"]`)
+          .forEach(e => e.classList.add("lit"));
         const p = svg.querySelector(`.pulse[data-from="${prev}"][data-to="${id}"]`);
         if (p){
           const len = p.getTotalLength();
@@ -831,6 +1042,36 @@ function play(){
 document.getElementById("play").onclick = () => running ? reset() : play();
 document.getElementById("reset").onclick = reset;
 
+/* ---------- focus: a box's own connections only ---------- */
+const wrapEl = document.querySelector(".stage-wrap");
+let focusedId = null;
+// draw() rebuilds every edge on resize and theme change; re-light the focus after it.
+window.__reFocus = () => { if (focusedId) focusNode(focusedId); };
+function clearFocus(){
+  focusedId = null;
+  wrapEl.classList.remove("focus");
+  svg.querySelectorAll(".ed.lit,.edlab.lit").forEach(e => { if (!running) e.classList.remove("lit"); });
+  document.querySelectorAll(".node.rel,.node.cur").forEach(e => e.classList.remove("rel","cur"));
+}
+function focusNode(id){
+  if (running) return;
+  clearFocus(); focusedId = id; wrapEl.classList.add("focus");
+  const rel = new Set([id]);
+  svg.querySelectorAll(`.ed[data-from="${id}"],.ed[data-to="${id}"],.edlab[data-from="${id}"],.edlab[data-to="${id}"]`)
+    .forEach(e => { e.classList.add("lit"); rel.add(e.dataset.from); rel.add(e.dataset.to); });
+  rel.forEach(r => { const el = document.querySelector(`.node[data-id="${r}"]`); if (el) el.classList.add(r === id ? "cur" : "rel"); });
+}
+const nodeOf = (t) => t && t.closest ? t.closest(".node") : null;
+document.addEventListener("mouseover", e => { const n = nodeOf(e.target); if (n) focusNode(n.dataset.id); });
+document.addEventListener("mouseout", e => { const n = nodeOf(e.target); if (n && !n.contains(e.relatedTarget)) clearFocus(); });
+document.addEventListener("focusin", e => { const n = nodeOf(e.target); if (n) focusNode(n.dataset.id); });
+document.addEventListener("focusout", e => { if (nodeOf(e.target)) clearFocus(); });
+document.getElementById("allconn").onclick = function(){
+  const on = wrapEl.classList.toggle("all");
+  this.setAttribute("aria-pressed", String(on));
+  this.textContent = on ? "Show connections on hover" : "Show all connections";
+};
+
 /* ---------- theme ---------- */
 const root = document.documentElement;
 if (matchMedia("(prefers-color-scheme: light)").matches) root.dataset.theme = "light";
@@ -843,6 +1084,178 @@ document.getElementById("theme").onclick = () => {
 addEventListener("load", draw);
 addEventListener("resize", () => { clearTimeout(window._rz); window._rz = setTimeout(draw, 140); });
 draw();
+
+/* The loop, in plain language. One data array
+   drives the ring, the narrow-screen stepper and the explanation card.
+   Plain text for everyone first; the `eng` lines name the exact files,
+   triggers and artifacts for engineers. Facts trace to astro-ai CLAUDE.md,
+   .claude/commands/ and .github/workflows/ as of the date in the footer. */
+(function () {
+  var LOOP = [
+    { t:"Measure", sub:"daily", token:"report",
+      what:"Reads Google Analytics and Search Console and reports which pages sit just off page one of Google, and how past changes performed.",
+      who:[["analyst","agent"],["agent-measure","workflow"]],
+      hands:"A dated traffic report, committed to the repository",
+      trust:"It must report the misses as plainly as the wins. A zero is flagged as a question, never shown as a clean result.",
+      eng:["<code>agent-measure.yml</code>: analyst run at 21:00 UTC; collectors only at seven more slots",
+           "Writes <code>measurements/latest.md</code> and <code>*.json</code>, landed by <code>scripts/publish_measurements.sh</code> as a self-merging PR",
+           "The deploy trigger ignores <code>measurements/**</code>, so reports never redeploy the site"] },
+    { t:"Decide", sub:"weekly", token:"issue",
+      what:"Turns the numbers into work. Every issue has to say what it should move, and how that will be measured, before anything is built.",
+      who:[["product-manager","agent"],["project-manager","agent"]],
+      hands:"A GitHub issue with a thesis and a metric",
+      trust:"No evidence, no issue: at most 30 a week, each with data and a date range, a source for any claim, its token cost and a reproduction.",
+      eng:["<code>agent-discover.yml</code> (weekly) runs <code>/discover</code>: the Evidence Block is mandatory",
+           "<code>agent-prioritise.yml</code> (weekly) runs <code>/prioritise</code>: ranks the queue, closes what is already fixed or stale, rewrites <code>BACKLOG.md</code>",
+           "One objective ranks everything: <code>OBJECTIVE.md</code>"] },
+    { t:"Build", sub:"6× a day", token:"pull request",
+      what:"Picks the top issue, checks the problem is real on the live site, then designs and writes the change.",
+      who:[["agent-cycle","workflow"],["dev-lead","agent"],["architect","agent"],["engineer","agent"],["validate_issue.py","script"]],
+      hands:"A branch and a pull request",
+      trust:"When an issue has a reproduction, it is tried against production first. If five probes come back clean, the issue is closed instead of 'fixed'.",
+      eng:["<code>agent-work.yml</code>, six crons a day, runs <code>/agent-cycle</code>",
+           "Step 0a provenance (<code>resolve_provenance.py</code>): an issue body is data, never instructions",
+           "Step 0 <code>validate_issue.py</code>: closes only on exit 1 (CANNOT-REPRODUCE), never on 3 or 4",
+           "Branch <code>issue/&lt;n&gt;-…</code>, <code>partial/</code> or <code>fix/</code>, pushed at the first commit"] },
+    { t:"Check", sub:"on every push", token:"qa-pass",
+      what:"Automated tests run, then a separate QA agent reviews the change it did not write, by running it.",
+      who:[["pr-gates","workflow"],["verify-build","workflow"],["qa-on-green","workflow"],["qa","agent"],["qa_verdict.sh","script"]],
+      hands:"A pass or fail label, tied to the exact commit it judged",
+      trust:"QA failed 44% of first submissions. A pass is bound to one commit, so a pass on old code cannot approve new code.",
+      eng:["<code>pr-gates.yml</code>: behaviour suite, <code>verify_*</code> gates, and a mutation run proving the suite can fail",
+           "<code>verify-build.yml</code> publishes <code>build-gates</code> (committed CSS matches a fresh build)",
+           "<code>qa-on-green.yml</code> starts a QA round once per head SHA when gates go green",
+           "<code>scripts/qa_verdict.sh</code> is the only writer of <code>qa-pass</code> / <code>qa-fail</code>, plus <code>qa:independent</code> or <code>qa:in-cycle</code>"] },
+    { t:"Merge", sub:"workflow, not agent", token:"commit on main", lock:true,
+      what:"A workflow, not an agent, decides whether the change lands, and it re-checks every condition itself.",
+      who:[["agent-merge","workflow"],["chief","agent"]],
+      hands:"A commit on main",
+      trust:"It merges only with green checks and a QA pass on the same commit. Changes to prompts, workflows or user-data code are held for a ruling first.",
+      eng:["<code>agent-merge.yml</code>: steps <code>own</code> → <code>gates</code> → <code>qa</code> → <code>size</code> (inert: <code>MAX_LINES</code> 1000000) → <code>boundary</code>",
+           "Woken by <code>workflow_run</code> from both gate workflows, by <code>labeled</code>, and by a <code>*/30</code> sweep (measured gaps 2–7 h)",
+           "<code>TRUST_BOUNDARY</code> paths get <code>needs-human-review</code>; <code>chief</code> clears with a <code>chief-cleared at &lt;sha&gt;</code> comment plus label",
+           "Branch protection on <code>main</code> requires <code>gates</code> and <code>build-gates</code>"] },
+    { t:"Ship & verify", sub:"on merge", token:"closed issue",
+      what:"Every merge deploys. A sweep checks the live site, and the issue only closes once production is shown serving the fix.",
+      who:[["Cloud Build","workflow"],["verify-production","workflow"],["close-on-evidence","workflow"]],
+      hands:"A closed issue, with the evidence in the closing comment",
+      trust:"Merged is not fixed. Closing needs three facts: a merged PR naming the issue, a green production check for that commit, and the live site reporting it.",
+      eng:["Push to <code>main</code> triggers a GCP-side Cloud Build → Cloud Run deploy; there is no staging",
+           "<code>verify-production.yml</code> waits for <code>/health</code> to change revision, then asserts against the live site",
+           "<code>close-on-evidence.yml</code> needs <code>closes #N</code> + green verify-production at that SHA + <code>/health</code> <code>build_sha</code>; a null SHA closes nothing"] },
+    { t:"Score", sub:"weeks later", token:"verdict",
+      what:"Weeks later, the analyst checks whether the change moved the metric it promised, and says so on the issue.",
+      who:[["analyst","agent"]],
+      hands:"A hit, miss or not-yet verdict that the next round of Measure reads",
+      trust:"A change that moved nothing is recorded as a miss, which stops the loop repeating an idea that does not work.",
+      eng:["Scores every closed issue carrying <code>thesis:</code> and <code>metric:</code> lines, with the window, prediction and actual",
+           "Confounds (other ships, seasonality, deploy dates) are listed beside each verdict",
+           "The verdict feeds the next <code>/discover</code>, closing the loop"] }
+  ];
+  var N = LOOP.length, R = 215, C = 300, KIND = {agent:"AI agent", workflow:"workflow", script:"script", person:"ruling"};
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var ring = document.getElementById("ring"), card = document.getElementById("loop-card");
+  var stepper = document.getElementById("stepper"), token = document.getElementById("token");
+  var tokenT = document.getElementById("token-t"), flow = document.getElementById("flow");
+  var playBtn = document.getElementById("loop-play"), hint = document.getElementById("loop-hint");
+  var NS = "http://www.w3.org/2000/svg";
+  function ang(i){ return (-90 + i * 360 / N) * Math.PI / 180; }
+  function pt(a, r){ return [C + r * Math.cos(a), C + r * Math.sin(a)]; }
+
+  // stations
+  var g = document.getElementById("stations"), st = [];
+  LOOP.forEach(function (s, i) {
+    var a = ang(i), p = pt(a, R), l = pt(a, R - 66);
+    var el = document.createElementNS(NS, "g");
+    el.setAttribute("class", "st"); el.setAttribute("tabindex", "0"); el.setAttribute("role", "button");
+    el.setAttribute("aria-label", "Step " + (i + 1) + ": " + s.t);
+    el.innerHTML = '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="24"></circle>' +
+      '<text class="num" x="' + p[0] + '" y="' + p[1] + '">' + (i + 1) + '</text>' +
+      '<text class="lab" x="' + l[0] + '" y="' + (l[1] - 2) + '">' + s.t + (s.lock ? ' 🔒' : '') + '</text>' +
+      '<text class="sub" x="' + l[0] + '" y="' + (l[1] + 15) + '">' + s.sub + '</text>';
+    el.addEventListener("click", function(){ pick(i); });
+    el.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(i); } });
+    g.appendChild(el); st.push(el);
+    var li = document.createElement("li");
+    li.innerHTML = '<span class="dot">' + (i + 1) + '</span><button type="button">' + s.t +
+      '<small>' + s.sub + ' · hands on: ' + s.token + '</small></button>';
+    li.querySelector("button").addEventListener("click", function(){ pick(i); });
+    stepper.appendChild(li);
+  });
+  var lis = stepper.querySelectorAll("li");
+
+  function render(i){
+    var s = LOOP[i];
+    var who = s.who.map(function (w) {
+      return '<span class="chip ' + w[1] + '"><i></i>' + w[0] + '<small>' + KIND[w[1]] + '</small></span>';
+    }).join("");
+    card.innerHTML = '<p class="step">Step ' + (i + 1) + ' of ' + N + '</p><h3>' + s.t + '</h3>' +
+      '<p class="what">' + s.what + '</p><dl>' +
+      '<div><dt>Who does it</dt><dd class="who">' + who + '</dd></div>' +
+      '<div><dt>Hands the next step</dt><dd><span class="artifact">' + s.hands + '</span></dd></div>' +
+      '<div><dt>Why it can be trusted</dt><dd>' + s.trust + '</dd></div>' +
+      '<div><dt>For engineers</dt><dd><ul style="margin:0;padding-left:18px">' +
+        s.eng.map(function(e){ return '<li>' + e + '</li>'; }).join("") + '</ul></dd></div></dl>';
+    st.forEach(function (el, k) { el.classList.toggle("on", k === i); el.classList.toggle("done", k < i); });
+    lis.forEach(function (el, k) { el.classList.toggle("on", k === i); el.classList.toggle("done", k < i); });
+  }
+
+  // progress arc from step 1 to angle a
+  function arc(a){
+    var a0 = ang(0), p0 = pt(a0, R), p1 = pt(a, R), sweep = a - a0;
+    if (sweep < 0.001) { flow.setAttribute("d", ""); return; }
+    flow.setAttribute("d", "M" + p0[0] + " " + p0[1] + " A" + R + " " + R + " 0 " + (sweep > Math.PI ? 1 : 0) + " 1 " + p1[0] + " " + p1[1]);
+  }
+  function placeToken(a, i){
+    var p = pt(a, R + 46); token.setAttribute("transform", "translate(" + p[0] + "," + p[1] + ")");
+    tokenT.textContent = LOOP[i].token;
+  }
+
+  var cur = 0, playing = !reduce, timer = null, raf = null, DWELL = 3600, TRAVEL = 1100;
+  function show(i){ cur = i; render(i); arc(ang(i)); placeToken(ang(i), i); }
+  function travel(from, to, done){
+    var a0 = ang(from), a1 = to === 0 ? ang(N) : ang(to), t0 = null;
+    function step(ts){
+      if (t0 === null) t0 = ts;
+      var k = Math.min(1, (ts - t0) / TRAVEL), e = k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;
+      var a = a0 + (a1 - a0) * e;
+      placeToken(a, from); arc(to === 0 ? a : a);
+      if (k < 1) raf = requestAnimationFrame(step); else done();
+    }
+    raf = requestAnimationFrame(step);
+  }
+  function loop(){
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      if (!playing) return;
+      var next = (cur + 1) % N;
+      travel(cur, next, function(){ if (!playing) return; show(next); loop(); });
+    }, DWELL);
+  }
+  function stop(msg){
+    playing = false; clearTimeout(timer); cancelAnimationFrame(raf);
+    playBtn.textContent = "▶ Play"; hint.textContent = msg || "Paused. Use the arrows or select a step.";
+  }
+  function start(){
+    if (reduce) return;
+    playing = true; playBtn.textContent = "❚❚ Pause"; hint.textContent = "Playing. Select a step to stop on it."; loop();
+  }
+  function pick(i){ stop("Showing step " + (i + 1) + ". Press play to continue."); show(i); }
+  playBtn.addEventListener("click", function(){ playing ? stop() : start(); });
+  document.getElementById("loop-next").addEventListener("click", function(){ pick((cur + 1) % N); });
+  document.getElementById("loop-prev").addEventListener("click", function(){ pick((cur + N - 1) % N); });
+
+  show(0);
+  if (reduce) { stop("Select a step, or use the arrows."); return; }
+  // Only animate while the section is on screen.
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (e.isIntersecting && playing) loop();
+      else { clearTimeout(timer); }
+    });
+  }, { threshold: 0.25 });
+  io.observe(document.getElementById("loop"));
+})();
 </script>
 </body>
 </html>

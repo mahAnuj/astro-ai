@@ -4097,6 +4097,95 @@ MUTATIONS = [
      "",
      "test_the_reporter_is_serialised"),
 
+    # --- verify_workflow_permissions, checks 1 and 2 (#610) ------------------
+    # These nine rows carry more weight than most. `chief.md` cites this gate
+    # by name as what makes clearing a `.github/workflows/` PR non-circular now
+    # that the user widened Shape C to the whole trust boundary, so a hole in
+    # either check is not one missing check — it is the only thing between an
+    # agent and its own constraints.
+
+    ("wf_permissions: an unknown permissions value ranks as ABSENT, not wide",
+     "scripts/verify_workflow_permissions.py",
+     'return {"<unparseable>": 2}', 'return {"<unparseable>": 0}',
+     "test_an_unrecognised_permissions_shape_ranks_as_WIDE_not_as_absent"),
+
+    ("wf_permissions: a job's own block is written to the top-level key instead",
+     "scripts/verify_workflow_permissions.py",
+     'if isinstance(job, dict) and "permissions" in job:\n            out[f"jobs.{jid}"] = normalise_perms(job["permissions"])\n        elif top is not _MISSING:',
+     'if isinstance(job, dict) and "permissions" in job:\n            out["<top-level>"] = normalise_perms(job["permissions"])\n        elif top is not _MISSING:',
+     "test_effective_jobs_resolves_own_then_top_level_then_repo_default"),
+
+    ("wf_permissions: the TRUST_BOUNDARY block never ends, swallowing env keys",
+     "scripts/verify_workflow_permissions.py",
+     "if len(nxt) - len(nxt.lstrip()) <= indent:", "if False:",
+     "test_the_block_ends_at_the_first_line_that_dedents"),
+
+    ("wf_permissions: an unparseable workflow is swallowed instead of failing",
+     "scripts/verify_workflow_permissions.py",
+     'bad.append(f"{path}: cannot be parsed as YAML ({exc.__class__.__name__}), so its "',
+     'pass  # MUTANT: swallow it. The line below is now a bare expression.\n            (',
+     "test_check_1_goes_red_rather_than_quiet_on_a_workflow_it_cannot_parse"),
+
+    ("wf_permissions: a brand-new permissions block grants nothing, apparently",
+     "scripts/verify_workflow_permissions.py",
+     "granted = sorted(k for k, v in a_block.items() if v > 0)",
+     "granted = []",
+     "test_check_1_goes_red_on_a_permissions_block_that_is_entirely_new"),
+
+    ("wf_permissions: a widened scope is never above the threshold",
+     "scripts/verify_workflow_permissions.py",
+     "if rank > was:", "if rank > was + 9:",
+     "test_check_1_goes_red_when_a_job_block_widens"),
+
+    ("wf_permissions: write-all is compared as a scope name, not as <all>",
+     "scripts/verify_workflow_permissions.py",
+     'return {"<all>": _SCOPE_RANK.get(block.split("-", 1)[0], 2)}',
+     'return {"<all>": 0}',
+     "test_check_1_goes_red_on_write_all_replacing_a_narrow_block"),
+
+    ("wf_permissions: TRUST_BOUNDARY compares the diff the wrong way round",
+     "scripts/verify_workflow_permissions.py",
+     "weak = [(w, sorted(b_tb - p)) for w, p in a_defs if b_tb - p]",
+     "weak = [(w, sorted(p - b_tb)) for w, p in a_defs if p - b_tb]",
+     "test_check_2_goes_red_when_a_boundary_path_is_removed"),
+
+    ("wf_permissions: a deleted TRUST_BOUNDARY block reads as nothing lost",
+     "scripts/verify_workflow_permissions.py",
+     "elif b_tb and not a_defs:", "elif False:",
+     "test_check_2_goes_red_when_the_whole_block_disappears"),
+
+    # QA round 1 on #636. Actions resolves env step -> job -> workflow, so a
+    # narrower step-level TRUST_BOUNDARY is what the enforcing step reads. The
+    # first draft judged one definition and printed "boundary intact".
+    ("wf_permissions: only the FIRST TRUST_BOUNDARY definition is judged (#636 bypass)",
+     "scripts/verify_workflow_permissions.py",
+     "for w, p in a_defs if b_tb - p]",
+     "for w, p in a_defs[:1] if b_tb - p]",
+     "test_check_2_goes_red_when_a_STEP_level_env_shadows_the_job_list"),
+
+    ("wf_permissions: a non-string TRUST_BOUNDARY value contributes paths",
+     "scripts/verify_workflow_permissions.py",
+     "paths = set(v.split()) if isinstance(v, str) else set()",
+     "paths = set(v.split()) if isinstance(v, str) else set(v or [])",
+     "test_boundary_definitions_finds_every_level_and_fails_closed_on_non_strings"),
+
+    ("wf_permissions: an unparseable agent-merge reads as having no definitions",
+     "scripts/verify_workflow_permissions.py",
+     "    except yaml.YAMLError:\n        return None\n    found",
+     "    except yaml.YAMLError:\n        return []\n    found",
+     "test_boundary_definitions_finds_every_level_and_fails_closed_on_non_strings"),
+
+    ("wf_permissions: a widened .yaml workflow is never looked at (#636 QA)",
+     "scripts/verify_workflow_permissions.py",
+     'c.endswith((".yml", ".yaml"))]',
+     'c.endswith(".yml")]',
+     "test_a_widening_in_a_dot_YAML_workflow_is_caught"),
+
+    ("wf_permissions: no fallback base, so a missing origin/main fails every PR (#636 QA)",
+     "scripts/verify_workflow_permissions.py",
+     'for cand in (args.base, "main", "origin/HEAD", "HEAD~1"):',
+     "for cand in (args.base,):",
+     "test_an_unresolvable_base_falls_back_to_main_rather_than_failing"),
     # --- the first reader of the ops dashboard's numbers ---------------------
     # Nothing read /admin/ops before this script, so a finding it gets wrong is
     # a finding nobody else is checking. The two directions are not symmetric:
@@ -4227,6 +4316,74 @@ MUTATIONS = [
      'echo "1. \\`chief\\` rules on it', 'echo "1. Someone rules on it',
      "test_the_hold_comment_tells_the_reader_about_the_chief_route"),
 
+    # --- effective-permissions check 1, after the independent round (#610) ---
+    # The first draft compared DECLARED blocks, so a new job with no block of
+    # its own inherited `agent-merge.yml`'s whole write set and the gate printed
+    # PASS -- live on the shipped file, with 8 workflows exposed. These rows
+    # guard the fix and the two false reds fixed alongside it.
+
+    ('#610: check 1 reverts to declared blocks, so an inheriting job is invisible',
+     "scripts/verify_workflow_permissions.py",
+     '            after = effective_jobs(yaml.safe_load(a_txt))',
+     '            after = perm_blocks(yaml.safe_load(a_txt))',
+     'test_a_NEW_JOB_WITH_NO_BLOCK_inheriting_a_broad_top_level_is_caught'),
+
+    ('#610: a workflow declaring no permissions ranks as granting nothing',
+     "scripts/verify_workflow_permissions.py",
+     '            out[f"jobs.{jid}"] = {REPO_DEFAULT: 2}',
+     '            out[f"jobs.{jid}"] = {}',
+     'test_a_NEW_WORKFLOW_declaring_no_permissions_anywhere_is_caught'),
+
+    ('#610: the <all> fallback is dropped, so tightening write-all reds falsely',
+     "scripts/verify_workflow_permissions.py",
+     '    if "<all>" in block:\n        return block["<all>"]',
+     '    if False:\n        return block["<all>"]',
+     'test_TIGHTENING_write_all_to_a_narrow_mapping_is_not_a_false_red'),
+
+    ('#610: no usable base returns 0 instead of 2 -- did-not-run reads as passed',
+     "scripts/verify_workflow_permissions.py",
+     '        print("This is NOT a pass: an unverified diff may be granting a power.")\n        return 2\n    try:',
+     '        print("This is NOT a pass: an unverified diff may be granting a power.")\n        return 0\n    try:',
+     'test_no_usable_base_exits_2_and_says_it_is_NOT_a_pass'),
+    # --- a conflict is work, not a gate defect (#616) ------------------------
+    # `green` is check HISTORY on the head SHA, so it survives `main` moving
+    # underneath the branch. Order is the whole fix, and these rows prove both
+    # directions of it: the conflict must be SEEN, and UNKNOWN must not be
+    # mistaken for it.
+
+    ('#616: the conflict branch never matches, so a conflict reads as a gate defect',
+     "scripts/detect_stalls.py",
+     'elif pr.get("mergeable") == "CONFLICTING" and checks:',
+     'elif pr.get("mergeable") == "NEVER" and checks:',
+     'test_a_green_qa_pass_pr_that_CONFLICTED_is_not_called_a_gate_defect'),
+
+    ('#616: the test becomes a negation, so a freshly pushed UNKNOWN reads as conflicting',
+     "scripts/detect_stalls.py",
+     'elif pr.get("mergeable") == "CONFLICTING" and checks:',
+     'elif pr.get("mergeable") != "MERGEABLE" and checks:',
+     'test_anything_that_is_not_exactly_CONFLICTING_is_not_treated_as_conflicting'),
+
+    ('#616: the finding drops `conflicting`, so the routing table cannot match it',
+     "scripts/detect_stalls.py",
+     '                conflicting=True,\n                checks=checks, labels=sorted(labels), agent_pushable=pushable))\n        elif "qa-pass" in labels',
+     '                checks=checks, labels=sorted(labels), agent_pushable=pushable))\n        elif "qa-pass" in labels',
+     'test_the_finding_carries_conflicting_true_so_the_routing_table_matches'),
+
+    # The `and checks` gate is what keeps the older `elif not checks:` arm
+    # reachable. Drop it and the new arm swallows a conflicting PR with no
+    # checks, so the older arm becomes dead code and the finding says "history
+    # on the head SHA" about a PR that has no history.
+    ('#616: the `and checks` gate is dropped, so a no-checks conflict gets the history detail',
+     "scripts/detect_stalls.py",
+     'elif pr.get("mergeable") == "CONFLICTING" and checks:',
+     'elif pr.get("mergeable") == "CONFLICTING":',
+     'test_a_conflicting_pr_with_NO_checks_keeps_the_older_arms_detail'),
+
+    ('#616: the older no-checks conflict arm stops emitting pr-conflicting',
+     "scripts/detect_stalls.py",
+     '                    kind="pr-conflicting", pr=n, issue=issue, age_h=round(age, 1),\n                    detail=(f"CONFLICTING for {age:.0f}h, so GitHub cannot build',
+     '                    kind="DEADCODE", pr=n, issue=issue, age_h=round(age, 1),\n                    detail=(f"CONFLICTING for {age:.0f}h, so GitHub cannot build',
+     'test_a_conflicting_pr_with_NO_checks_keeps_the_older_arms_detail'),
     # --- the probe header suppresses four alerts and no others (#618) --------
     # The header is UNAUTHENTICATED, so the allow-list is the whole safety
     # argument: anyone may send it, which is fine for a diagnostic plus an
@@ -4271,6 +4428,60 @@ MUTATIONS = [
      'if probe.suppresses_owner_alert(request, "kundli_generated"):',
      'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
 
+    # --- qa_verdict learns which context is recording the verdict -----------
+    # FIRST MUTATION ROWS THIS SCRIPT HAS EVER HAD. It writes `qa-pass`, which
+    # is the sole merge trigger, and until now it was the only gate-critical
+    # script with no behaviour test and no row. These guard the DIAGNOSTIC; the
+    # refusal it precedes lands separately, after a real agent-work log
+    # confirms the reading.
+
+    ('qa_verdict: one runner variable is enough to claim to be the loop',
+     'scripts/qa_verdict.sh',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ]; then',
+     'test_half_the_runner_evidence_is_not_the_loop'),
+
+    ('qa_verdict: $CI is read as the loop',
+     'scripts/qa_verdict.sh',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then',
+     'if [ -n "${CI:-}" ]; then',
+     'test_CI_is_deliberately_not_consulted'),
+
+    ('qa_verdict: the mode is reported inverted',
+     'scripts/qa_verdict.sh',
+     '[ "$IN_LOOP" = 1 ] && MODE=loop',
+     '[ "$IN_LOOP" = 0 ] && MODE=loop',
+     'test_the_loop_is_read_as_the_loop'),
+
+    ('qa_verdict: an unset runner variable is reported as blank, not unset',
+     'scripts/qa_verdict.sh',
+     'GITHUB_ACTIONS=${GITHUB_ACTIONS:-unset}',
+     'GITHUB_ACTIONS=${GITHUB_ACTIONS:-}',
+     'test_an_unset_variable_is_reported_as_unset_not_as_blank'),
+
+    # RE-ANCHORED in round 2. `${GITHUB_RUN_ID:+set}` was replaced by an
+    # explicit set/unset, because `:+` rendered an UNSET id as an empty string
+    # -- indistinguishable from set-to-empty, which the QA round flagged as a
+    # non-blocking ambiguity. The rule is unchanged: the VALUE never appears.
+    ('qa_verdict: the run id value is printed into every log line',
+     'scripts/qa_verdict.sh',
+     'echo set || echo unset)',
+     'echo "${GITHUB_RUN_ID}" || echo unset)',
+     'test_the_run_id_VALUE_is_not_printed'),
+
+    # ---- round 2 on #649, from the independent QA round's two findings -----
+
+    ('#649 r2: the mode line moves back after the exits, so a failed run reports nothing',
+     'scripts/qa_verdict.sh',
+     'echo "qa_verdict: mode=$MODE" \\',
+     ': "qa_verdict: mode=$MODE" \\',
+     'test_the_mode_is_reported_even_when_the_run_exits_early'),
+
+    ('#649 r2: an unset run id reads as set, so mode=top-level contradicts its own evidence',
+     'scripts/qa_verdict.sh',
+     '&& echo set || echo unset)',
+     '&& echo set || echo set)',
+     'test_an_empty_run_id_reads_as_unset_not_as_set'),
     # ---- #642: the loop may work the issues it filed itself ----------------
     #
     # Measured 2026-11-01: 40 of the 130 open issues were filed by this repo's
@@ -4713,6 +4924,19 @@ MUTATIONS = [
      'PROOF = f"Swiss Ephemeris chart math  ·  Sidereal Lahiri ayanamsha',
      'test_generator_reads_the_registry_and_types_no_count'),
 
+
+    # --- #654/#649: the steward's own prompt must offer the pr= form ---
+    ("steward prompt: the ruling line narrows back to issue= alone, as it was until 2026-11-02",
+     ".github/workflows/agent-steward.yml",
+     'exactly `issue=<number>` OR `pr=<number>`, to',
+     'exactly `issue=<number>`, to',
+     "test_the_steward_prompt_does_not_say_exactly_issue_only"),
+    # --- #663/#669: the rescue net must see a MERGED PR, not just an open one ---
+    ("rescue net: the PR lookup drops --state all and reads OPEN pull requests only",
+     ".github/workflows/agent-work.yml",
+     '--state all \\\n            --json number,state',
+     '\\\n            --json number,state',
+     "test_the_guard_asks_for_every_state"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
