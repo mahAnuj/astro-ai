@@ -32,7 +32,9 @@ ACCENT = (255, 215, 100)  # warm gold (saffron-ish) for the bindu
 
 
 def draw_kundli(size: int, *, r_ratio: float = 0.42, stroke_ratio: float = 0.022,
-                dot_ratio: float = 0.045, bg_alpha: int = 255) -> Image.Image:
+                dot_ratio: float = 0.045, bg_alpha: int = 255,
+                bg: tuple | None = None, fg: tuple | None = None,
+                accent: tuple | None = None) -> Image.Image:
     """Render the Kundli-diamond logo at `size`x`size`.
 
     r_ratio:      diamond half-width as a fraction of canvas size. 0.42 is
@@ -40,8 +42,14 @@ def draw_kundli(size: int, *, r_ratio: float = 0.42, stroke_ratio: float = 0.022
                   vertices stay inside Android's adaptive safe zone.
     stroke_ratio: line width as a fraction of canvas size.
     dot_ratio:    center bindu radius as a fraction of canvas size.
+    bg/fg/accent: optional RGB overrides, default to the module constants so
+                  the install icons are unaffected (#381 owns their colours).
+                  generate_og_card.py passes the bhagya palette (#265).
     """
-    img = Image.new("RGBA", (size, size), BG + (bg_alpha,))
+    bg = BG if bg is None else bg
+    fg = FG if fg is None else fg
+    accent = ACCENT if accent is None else accent
+    img = Image.new("RGBA", (size, size), bg + (bg_alpha,))
     d = ImageDraw.Draw(img)
     cx, cy = size // 2, size // 2
     r = int(size * r_ratio)
@@ -55,22 +63,22 @@ def draw_kundli(size: int, *, r_ratio: float = 0.42, stroke_ratio: float = 0.022
 
     # Outer diamond.
     d.line([top, right, bottom, left, top],
-           fill=FG + (255,), width=stroke, joint="curve")
+           fill=fg + (255,), width=stroke, joint="curve")
     # The two through-lines (vertical + horizontal) carve the 12 houses.
-    d.line([top, bottom], fill=FG + (255,), width=stroke)
-    d.line([left, right], fill=FG + (255,), width=stroke)
+    d.line([top, bottom], fill=fg + (255,), width=stroke)
+    d.line([left, right], fill=fg + (255,), width=stroke)
     # Inner diamond from edge midpoints — completes the classical layout.
     m_tr = ((top[0]+right[0])//2,  (top[1]+right[1])//2)
     m_rb = ((right[0]+bottom[0])//2, (right[1]+bottom[1])//2)
     m_bl = ((bottom[0]+left[0])//2,  (bottom[1]+left[1])//2)
     m_lt = ((left[0]+top[0])//2,     (left[1]+top[1])//2)
     d.line([m_tr, m_rb, m_bl, m_lt, m_tr],
-           fill=FG + (255,), width=stroke, joint="curve")
+           fill=fg + (255,), width=stroke, joint="curve")
 
     # Gold bindu at center — the spiritual anchor point.
     dot_r = int(size * dot_ratio)
     d.ellipse([(cx-dot_r, cy-dot_r), (cx+dot_r, cy+dot_r)],
-              fill=ACCENT + (255,))
+              fill=accent + (255,))
     return img
 
 
