@@ -220,7 +220,9 @@ jobs:
 
             No line still means no dispatch, and that is still a legitimate
             outcome: write one only for a PR a cycle can actually adopt --
-            authored by `claude[bot]` or the repository owner, not a fork. The
+            authored by `claude[bot]` or the repository owner (or
+            `github-actions[bot]` / `shubhagya-publisher[bot]`, #669), not a
+            fork. The
             branch NAME is not the test (#531): `partial/` and `fix/` carry an
             issue number too, and `agent-cycle` Step 2.5 adopts the existing
             branch and PR whoever opened it. Never write one "to be safe",
@@ -439,7 +441,9 @@ jobs:
             case is exactly it. Do not write a line for a PR a cycle cannot
             clear -- one whose diff touches `.github/workflows/**` (the App
             token has no `workflows` permission), or one
-            authored by neither `claude[bot]` nor the repository owner.
+            authored by neither `claude[bot]` nor the repository owner
+            nor another AGENT_AUTHORS bot (`github-actions[bot]`,
+            `shubhagya-publisher[bot]`).
             And do not write one to be
             safe: the step cannot tell a considered dispatch from a hedge, and a
             wasted cycle is ~50 Actions minutes under clause 1.
