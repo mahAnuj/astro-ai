@@ -69,7 +69,7 @@
 #   4  an API call failed and the transition is INCOMPLETE -- read the output,
 #      because this is the partial state the script exists to prevent
 #
-# A `qa_verdict: mode=` line on STDERR says whether this run looks like the
+# A `qa_verdict: mode=` line on STDOUT says whether this run looks like the
 # loop or like a top-level session, and names the variables it read. It is
 # printed as soon as the mode is known -- BEFORE the exits for a bad argument,
 # an unreadable PR or a stale `--sha` -- so every run leaves the reading,
@@ -251,7 +251,7 @@ fi
 echo "qa_verdict: PR #$PR ($BRANCH @ ${HEAD:0:7}) verdict=$VERDICT issue=$ISSUE"
 # The mode is REPEATED here beside the provenance, which is the pairing a
 # reader of the outcome wants: "a top-level session recorded an in-cycle PASS"
-# is one fact, not two. The authoritative early reading is on stderr above,
+# is one fact, not two. The authoritative early reading is the one above,
 # printed before any exit could suppress it.
 echo "qa_verdict: mode=$MODE provenance=$PROV"
 echo "  PR labels now: ${pr_have:-none}"

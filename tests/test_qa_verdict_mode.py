@@ -327,3 +327,40 @@ def test_the_mode_is_printed_before_the_argument_parsing():
         "the mode line is emitted after argument parsing begins, so an early "
         "exit suppresses it again"
     )
+
+
+def test_the_header_names_the_stream_the_line_actually_uses(tmp_path):
+    """Round 3's blocking finding, pinned by EXECUTION rather than by reading.
+
+    The header said the reading was on STDERR and the note beside the summary
+    said "on stderr above", while the comment directly above the echo said "On
+    stdout" -- and the echo is a plain `echo`, so stdout is what it does. Three
+    claims, two of them false, the file contradicting itself, and the stated
+    plan is to go and read `mode=` out of a real `agent-work` log: a reader
+    told the wrong stream looks in the wrong place and concludes the line is
+    missing.
+
+    This is the same class the round-1 FAIL named (a header describing
+    behaviour the script does not have), so the assertion runs the script and
+    compares the streams against the words, instead of comparing words to
+    words.
+    """
+    p = _run(tmp_path, env_extra=LOOP)
+    assert "qa_verdict: mode=" in p.stdout, (
+        f"the reading is not on stdout at all; stdout={p.stdout!r}"
+    )
+    assert "qa_verdict: mode=" not in p.stderr, (
+        f"the reading is on stderr too, so neither claim is simply right; "
+        f"stderr={p.stderr!r}"
+    )
+    src = SCRIPT.read_text(encoding="utf-8")
+    assert "line on STDOUT" in src, (
+        "the header does not name STDOUT, and the line is on stdout"
+    )
+    assert "on stderr above" not in src, (
+        "the note beside the summary still sends a reader to stderr for a "
+        "line that is printed on stdout"
+    )
+    assert "line on STDERR" not in src, (
+        "the header claims STDERR for a line the script prints on stdout"
+    )
