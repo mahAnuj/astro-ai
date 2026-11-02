@@ -1051,10 +1051,15 @@ MUTATIONS = [
      "an `issue/*` branch with an owning issue",
      "test_the_dispatch_rule_never_requires_an_issue_slash_branch"),
 
+    # RE-ANCHORED 2026-11-01. The bullet this watched said "a dispatch needs an
+    # issue to aim at", which stopped being true when the steward learned
+    # `pr=<n>`; the preflight failed at zero matches, which is the net working.
+    # The RULE is unchanged and is still #531's: who OPENED the PR is never the
+    # test. Only the surrounding bullet moved.
     ("the steward stands down on a PR the owner opened (the 21h stall)",
      ".claude/agents/steward.md",
-     "- A PR the detector could not name an owning issue for",
-     "- A PR a human opened is not this loop's.\n#",
+     "**Who OPENED the PR is not the test** (#531)",
+     "A PR a human opened is not this loop's (#531)",
      "test_the_dispatch_rule_never_refuses_a_pr_for_who_opened_it"),
 
     # chief's copy of the same rule. It is the LAST gate: `steward-ineffective`
@@ -1314,11 +1319,16 @@ MUTATIONS = [
      "    if False:",
      "test_a_bot_applied_override_is_ignored"),
 
+    # RE-ANCHORED 2026-11-01 (#642). The branch this row watched gained the
+    # self-App exception, so `if is_bot:\n        base = OUTSIDER` ceased to
+    # exist and the preflight failed at zero matches -- which is the net
+    # working. The RULE is unchanged and still the one worth guarding: a bot
+    # author defaults to OUTSIDER. Only the default moved down a level.
     ("#361: a bot author is treated as trusted (no allowlist, and no default either)",
      "scripts/resolve_provenance.py",
-     "    if is_bot:\n        base = OUTSIDER",
-     "    if is_bot:\n        base = TRUSTED",
-     "test_a_bot_author_is_an_outsider_whatever_its_permission"),
+     "            base = OUTSIDER\n            ev.append(\"permission  : not consulted -- a bot author is untrusted by rule \"",
+     "            base = TRUSTED\n            ev.append(\"permission  : not consulted -- a bot author is untrusted by rule \"",
+     "test_every_bot_but_this_repos_own_app_is_an_outsider"),
 
     ("#361: a 403 / 5xx collapses into 'outsider' instead of stopping (could-not-ask != no)",
      "scripts/resolve_provenance.py",
@@ -2389,8 +2399,8 @@ MUTATIONS = [
     # ---- #442: the steward can dispatch, and a merge is not a refix ---------
     ("#442: the carrier stops refusing a lenient dispatch line",
      "scripts/dispatch_cycle.sh",
-     "grep -oE '^issue=[0-9]+$'",
-     "grep -oE 'issue=[0-9]+'",
+     "grep -oE '^(issue|pr)=[0-9]+$'",
+     "grep -oE '(issue|pr)=[0-9]+'",
      "test_anything_but_issue_equals_digits_is_refused"),
     ("#442: the carrier stops treating an unreadable concurrency check as busy",
      "scripts/dispatch_cycle.sh",
@@ -3796,6 +3806,92 @@ MUTATIONS = [
      "when counted from any axis.",
      "test_sentence_still_states_the_venus_axis_downgrade_and_its_three_frames"),
 
+    # --- #177: the matching verdict bands are Bhagya's own, and the page says so ---
+    ("#177: the result page stops rendering the band disclosure beside the legend",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ t(lang, 'matching_bands_note') }}",
+     "{{ '' }}",
+     "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: the English disclosure drops the 'not drawn from the classical texts we hold' statement",
+     "src/astro_ai/i18n.py",
+     "Bhagya's own reading of the 36-point total and are not drawn from the classical texts we hold.",
+     "Bhagya's own reading of the 36-point total.",
+     "test_result_page_discloses_the_bands_are_not_classical"),
+
+    ("#177: the learn article calls the 30+ band classical again",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "Widely read as an ideal match.",
+     "Classical texts consider this an ideal match.",
+     "test_no_page_calls_the_cutoffs_classical"),
+
+    ("#177: the registry FAQ calls the 18/24/30 guidance classical again",
+     "src/astro_ai/learn_registry.py",
+     "A widely quoted rule of thumb is 18+ acceptable",
+     "The classical guidance: 18+ acceptable",
+     "test_registry_faq_and_summary_do_not_call_the_cutoffs_classical"),
+
+    ("#177: a disclosure edit moves a grade (Madhyam floor 24 -> 25)",
+     "src/astro_ai/matching.py",
+     "    if total >= 24:\n        return \"Madhyam\"",
+     "    if total >= 25:\n        return \"Madhyam\"",
+     "test_the_disclosure_moves_no_grade"),
+
+    # --- #177: the Bhakoot 5/9 zero is Bhagya's own convention, and the page says so ---
+    ("#177 5/9: the Bhakoot koota note calls the 5/9 zero classical again",
+     "src/astro_ai/matching.py",
+     "\"scored 0 here as Bhagya's own convention; the classical text we \"",
+     "\"classically an obstacle; the classical text we \"",
+     "test_five_nine_notes_do_not_call_it_classical"),
+
+    ("#177 5/9: the dosha note presents the five parihaaras as classical for 5/9 again",
+     "src/astro_ai/matching.py",
+     "the classical text we hold does not name this distance. The five \"",
+     "the classical tradition cancels it. The five \"",
+     "test_five_nine_notes_do_not_call_it_classical"),
+
+    ("#177 5/9: the convention flag is never set",
+     "src/astro_ai/matching.py",
+     "return frozenset({d_g_to_b, d_b_to_g}) in _BHAKOOT_NOT_IN_HELD_TEXT",
+     "return False",
+     "test_five_nine_flag_is_set_only_for_five_nine"),
+
+    ("#177 5/9: the convention flag is set for 6/8 as well, a sourced distance",
+     "src/astro_ai/matching.py",
+     "    frozenset({5, 9}),\n})",
+     "    frozenset({5, 9}),\n    frozenset({6, 8}),\n})",
+     "test_sourced_distances_keep_their_note_byte_for_byte"),
+
+    ("#177 5/9: the result page stops rendering the convention line in the Bhakoot strip",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ t(lang, 'matching_bhakoot_convention') }}",
+     "{{ '' }}",
+     "test_five_nine_page_discloses_the_zero_is_bhagyas_convention"),
+
+    ("#177 5/9: the Hindi convention line stops saying it is not from the held text",
+     "src/astro_ai/i18n.py",
+     "यह हमारे पास उपलब्ध शास्त्रीय ग्रंथ से नहीं लिया गया है",
+     "यह शास्त्रीय ग्रंथ से लिया गया है",
+     "test_five_nine_page_discloses_the_zero_is_bhagyas_convention"),
+
+    ("#177 5/9: the /matching explainer calls 5-9 traditional again",
+     "src/astro_ai/templates/matching.html",
+     "The 6-8 and 2-12 distances traditionally score zero; Bhagya also scores 5-9 zero as its own convention, which the classical text we hold does not name.",
+     "Certain distances (6-8, 5-9, 2-12) traditionally score zero.",
+     "test_explainers_do_not_call_five_nine_traditional"),
+
+    ("#177 5/9: the Ashtakoot learn article lists 5th-9th as classical Bhakoot Dosha again",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "Our calculator also scores the 5th-9th (Navama-Pancama) distance 0, as its own convention: the classical text we hold does not name it.",
+     "5th-9th (Navama-Pancama) is classical Bhakoot Dosha too.",
+     "test_explainers_do_not_call_five_nine_traditional"),
+
+    ("#177 5/9: a disclosure edit moves the 5/9 koota score (0 -> 3.5)",
+     "src/astro_ai/matching.py",
+     "    if dosha and _bhakoot_convention_only(g_idx, b_idx):\n        return KootaScore(\n            name=\"Bhakoot\", sanskrit=\"भकूट\", max_points=7, awarded=0.0,",
+     "    if dosha and _bhakoot_convention_only(g_idx, b_idx):\n        return KootaScore(\n            name=\"Bhakoot\", sanskrit=\"भकूट\", max_points=7, awarded=3.5,",
+     "test_the_disclosure_moves_no_score_total_or_grade"),
+
     # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
     ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
      "src/astro_ai/chart.py",
@@ -4001,6 +4097,46 @@ MUTATIONS = [
      "",
      "test_the_reporter_is_serialised"),
 
+    # --- the first reader of the ops dashboard's numbers ---------------------
+    # Nothing read /admin/ops before this script, so a finding it gets wrong is
+    # a finding nobody else is checking. The two directions are not symmetric:
+    # a MISSED finding continues the dashboard's existing failure mode, while a
+    # FALSE one gets the watcher muted -- and then the real finding is muted
+    # with it. Every threshold row below is the false-positive direction.
+
+    ("#ops-watch: the backlog comparison runs the wrong way round",
+     "scripts/detect_ops_regressions.py",
+     'if isinstance(base.get("open"), int) and newest["open"] > base["open"]:',
+     'if isinstance(base.get("open"), int) and newest["open"] < base["open"]:',
+     "test_a_rising_backlog_over_the_window_is_reported"),
+
+    ("#ops-watch: the trend needs no window, so one noisy day files an issue",
+     "scripts/detect_ops_regressions.py",
+     "older = [(w, d) for w, d in hist if (newest_when - w) >= timedelta(days=TREND_DAYS)]",
+     "older = [(w, d) for w, d in hist if (newest_when - w) >= timedelta(days=0)]",
+     "test_a_ONE_DAY_rise_does_not_fire_the_trend"),
+
+    ("#ops-watch: an absent yield measurement is read as 0% and alerted on",
+     "scripts/detect_ops_regressions.py",
+     'if isinstance(y, (int, float)) and d.get("ok") and y < YIELD_FLOOR_PCT:',
+     'if isinstance(y, (int, float)) and y < YIELD_FLOOR_PCT:',
+     "test_yield_is_not_judged_when_the_collector_says_it_could_not_measure"),
+
+    ("#ops-watch: the staleness threshold drops below GitHub's measured cron skew",
+     "scripts/detect_ops_regressions.py",
+     "STALE_HOURS = 32", "STALE_HOURS = 24",
+     "test_a_NORMALLY_LATE_scheduled_run_does_not_read_as_stale"),
+
+    ("#ops-watch: an unreadable source exits 0 -- silence read as health",
+     "scripts/detect_ops_regressions.py",
+     "return 1 if (findings or unreadable) else 0", "return 1 if findings else 0",
+     "test_an_unreadable_source_exits_1_and_says_which"),
+
+    ("#ops-watch: the blind spots are dropped from the carrier's payload",
+     "scripts/detect_ops_regressions.py",
+     '"not_covered": [list(n) for n in NOT_COVERED]}, indent=2))',
+     '"not_covered": []}, indent=2))',
+     "test_json_output_carries_findings_unreadable_AND_the_blind_spots"),
     # --- ops/DAG agree on what a failure is (#628) ---------------------------
     # One fact with two consumers. The DAG had the set, `ops_today` did not, so
     # the DAG page read `loop-outcomes` as `reporting` while /admin/ops counted
@@ -4157,6 +4293,353 @@ MUTATIONS = [
      'if not probe.suppresses_owner_alert(request, "kundli_generated"):',
      'if probe.suppresses_owner_alert(request, "kundli_generated"):',
      'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
+
+    # ---- #642: the loop may work the issues it filed itself ----------------
+    #
+    # Measured 2026-11-01: 40 of the 130 open issues were filed by this repo's
+    # own App and Step 0a refused every one. PR #642 was dispatched twice and
+    # died both times on #616, an issue the loop had filed itself.
+    #
+    # BOTH DIRECTIONS MATTER MORE THAN USUAL HERE. Widening the exception
+    # trusts other people's bots; losing it restores the stall for ~31% of the
+    # backlog. A suite catching only the first would bless the second.
+
+    ('#642: the self-App exception widens to any bot whose name contains it',
+     'scripts/resolve_provenance.py',
+     '    return folded in SELF_APPS',
+     '    return any(a in folded for a in SELF_APPS)',
+     'test_every_bot_but_this_repos_own_app_is_an_outsider'),
+
+    ('#642: the exception is gone and the loop stalls on its own issues again',
+     'scripts/resolve_provenance.py',
+     '            base = TRUSTED\n            ev.append(f"permission  : not consulted',
+     '            base = OUTSIDER\n            ev.append(f"permission  : not consulted',
+     'test_this_repos_own_app_is_trusted'),
+
+    ('#642: case is compared raw, so a rendering change restores the stall',
+     'scripts/resolve_provenance.py',
+     '    folded = login.casefold()',
+     '    folded = login',
+     'test_this_repos_own_app_is_trusted'),
+
+    ('#642: the [bot] rendering stops being recognised',
+     'scripts/resolve_provenance.py',
+     '    suffix = "[bot]"',
+     '    suffix = "[robot]"',
+     'test_this_repos_own_app_is_trusted'),
+
+    ('#642: a HUMAN sharing the App name skips the permission check',
+     'scripts/resolve_provenance.py',
+     '    if is_bot:\n        # Permission is still not consulted for ANY bot',
+     '    if is_bot or is_self_app(login):\n        # Permission is still not consulted for ANY bot',
+     'test_a_HUMAN_named_claude_is_still_judged_on_permission'),
+    # ---- chief defaults to PROCEED, and knows the system (owner, 2026-11-01)
+    #
+    # Measured: on PR #649 chief was woken 0.0h after the qa-fail, restated the
+    # steward's conclusion from two minutes earlier, and produced no act. On
+    # #642 it ruled twice in one day, the second re-deriving the first.
+    #
+    # A PROMPT'S failure mode is a plausible ruling, not an exception -- so the
+    # rows here guard CONSISTENCY. An earlier chief.md shipped line 117
+    # permitting what line 130 forbade, and a reader resolves a contradiction
+    # by picking, which makes a contradicted rule no rule at all.
+
+    ('chief: the non-negotiable forbids the PROCEED default two sections above it',
+     '.claude/agents/chief.md',
+     '- **Proceed, choose between what was presented, or return `insufficient-evidence`.** Never a\n  third OPTION',
+     '- **Choose between what was presented, or return `insufficient-evidence`.** Never a third option.\n  <!--',
+     'test_the_three_places_that_enumerate_outcomes_all_allow_proceeding'),
+
+    ('chief: the ladder loses its terminal rung, so nothing says when to stop',
+     '.claude/agents/chief.md',
+     '5. **Otherwise: proceed.** Importance is not a reason to intervene.',
+     '5. **Otherwise: consider carefully.** Importance is a reason to intervene.',
+     'test_the_ladder_is_ordered_and_ends_in_proceed'),
+
+    ('chief: proceeding stops being distinguished from inventing an option',
+     '.claude/agents/chief.md',
+     '**`proceed` is not a third OPTION; it is declining to intervene.**',
+     '**`proceed` is one of the options you may pick.**',
+     'test_proceeding_is_distinguished_from_inventing_an_option'),
+
+    ('chief: a proceed ruling must satisfy the six-bullet shape again',
+     '.claude/agents/chief.md',
+     '**A `proceed` ruling is SHORTER, deliberately.**',
+     '**A `proceed` ruling is reported in full, like any other.**',
+     'test_the_three_places_that_enumerate_outcomes_all_allow_proceeding'),
+
+    ('chief: it rules on a PR without reading the diff',
+     '.claude/agents/chief.md',
+     '**If an escalation names a PR, read `gh pr diff <n>` before deciding.**',
+     '**If an escalation names a PR, the labels and check conclusions are enough.**',
+     'test_it_is_told_to_read_the_pr_diff_before_ruling'),
+
+    ('chief: it regenerates the measurement it is meant to read',
+     '.claude/agents/chief.md',
+     'cat measurements/agents.json                     # is each loop ALIVE',
+     'uv run python scripts/collect_agent_performance.py   # is each loop ALIVE',
+     'test_it_reads_the_measurement_and_never_regenerates_it'),
+
+    ('chief: the objective reverts to caution, so PROCEED loses its reason',
+     '.claude/agents/chief.md',
+     'caution is not the objective',
+     'caution is the objective',
+     'test_the_objective_is_turnaround_not_caution'),
+
+    ('chief: gains a Write tool, so the read-only rule becomes a request',
+     '.claude/agents/chief.md',
+     'tools: Agent, Read, Grep, Glob, Bash, WebFetch',
+     'tools: Agent, Read, Write, Grep, Glob, Bash, WebFetch',
+     'test_chief_has_no_write_tool_so_the_read_only_rule_is_enforceable'),
+
+    # ---- the loop stops spending invocations on no-ops (owner, 2026-11-01) --
+    #
+    # Measured: 26 comments across four PRs, of which six were the steward's
+    # and five chief's, and all eleven produced NO ACT. chief ruled three times
+    # on one unchanged SHA. The engine was a chain, not a misjudgement:
+    # detect_stalls marked a 0.0h-old qa-fail OBLIGED -> agent-steward demanded
+    # proof of an action -> the steward had none to take -> chief was woken.
+
+    ('no-op loop: a verdict written minutes ago is a stall again',
+     'scripts/detect_stalls.py',
+     '            elif fail_age < hours:',
+     '            elif fail_age < 0:',
+     'test_a_verdict_written_minutes_ago_is_not_a_stall'),
+
+    # THE PLACEMENT, which #659 got wrong and shipped to main. The floor's
+    # premise is "nobody could have fixed it yet", so reaching it before the
+    # landed-fix arm suppresses a fix for the whole window -- and every other
+    # path is silent too (`qa-on-green` declines a `qa-fail` PR, the steward
+    # runs twice a day).
+    #
+    # THE MUTANT MUST MOVE THE FLOOR AHEAD OF THE LANDED-FIX ARM. The first
+    # version of this row edited the floor's own `elif` (the arm AFTER the
+    # landed-fix one), so its added term could never decide anything: the mutant
+    # behaved identically to the original, the named test stayed green, and the
+    # row only went red through a string-presence side effect in the static
+    # ordering test. Mutating the landed-fix arm itself to also require the
+    # window to have elapsed re-creates #659's suppression -- a fix pushed
+    # inside the window falls through to the floor -- and the named test goes
+    # red on an assertion.
+    ('no-op loop: the freshness floor runs before the landed-fix arm again',
+     'scripts/detect_stalls.py',
+     '            elif head_age < fail_age:',
+     '            elif head_age < fail_age and fail_age >= hours:',
+     'test_a_fix_pushed_inside_the_window_is_reported_immediately'),
+
+    ('no-op loop: the floor swallows a REAL unaddressed verdict too',
+     'scripts/detect_stalls.py',
+     '            elif fail_age < hours:',
+     '            elif fail_age < 10000:',
+     'test_an_old_unaddressed_verdict_is_still_a_stall'),
+
+    ('no-op loop: an unreadable verdict time is reported as unaddressed',
+     'scripts/detect_stalls.py',
+     '                    kind="qa-fail-unreadable", pr=n, issue=issue, age_h=round(age, 1),',
+     '                    kind="qa-fail-unaddressed", pr=n, issue=issue, age_h=round(age, 1),',
+     'test_an_unreadable_verdict_time_is_still_reported'),
+
+    # The MUTANT MUST STAY SYNTACTICALLY VALID. The first version of this row
+    # replaced only the opening line of a two-line `print(...)`, which left the
+    # continuation string dangling: the sweep reported `NON-TEST FAILURE rc=2`,
+    # not CAUGHT. A row that breaks the parse proves nothing about the test --
+    # it proves Python can detect a SyntaxError.
+    ('no-op loop: the suppressed finding stops being reported',
+     'scripts/detect_stalls.py',
+     '                print(f"  (PR #{n}: qa-fail is {fail_age:.1f}h old with nothing pushed "\n                      f"since, under the {hours:.0f}h floor — not yet a stall)")',
+     '                pass',
+     'test_the_suppression_is_reported_and_not_silent'),
+
+    ("no-op loop: the steward's ruling line forgets the pr= form again",
+     '.claude/agents/steward.md',
+     'write **one** line, exactly `issue=<n>` **or** `pr=<n>`, to',
+     'write **one** line, exactly `issue=<n>`, to',
+     'test_the_steward_can_dispatch_a_pr_scoped_round'),
+
+    ('no-op loop: chief rules twice on the same head again',
+     '.claude/agents/chief.md',
+     '**If you have already ruled on this PR at this same head commit, do not rule again. Say nothing.**',
+     '**A second look at the same head is always worth writing down.**',
+     'test_it_does_not_rule_twice_on_the_same_head'),
+
+    ('no-op loop: a red main halts chief instead of being reported',
+     '.claude/agents/chief.md',
+     '**If `main` is red, say so in one line and then rule anyway.**',
+     '**A red `main` outranks everything in front of you.**',
+     'test_a_red_main_is_reported_but_does_not_stop_the_ruling'),
+
+    ("no-op loop: the steward's quiet run comments on every PR again",
+     '.claude/agents/steward.md',
+     '**If the detector\'s findings are all of the above, produce nothing — including no PR\ncomment.**',
+     '**If the detector\'s findings are all of the above, say so and produce nothing.**',
+     'test_a_quiet_steward_run_writes_no_pr_comment'),
+
+    # The third link in the no-op chain, and the one in a workflow file.
+    ('no-op loop: an in-flight cycle stops counting, so chief is woken anyway',
+     '.github/workflows/agent-steward.yml',
+     '          if [ "$inflight" -gt 0 ]; then',
+     '          if [ "$inflight" -gt 99999 ]; then',
+     'test_a_cycle_already_in_flight_does_not_wake_chief'),
+
+    ('no-op loop: in-flight excuses a REAL inaction too',
+     '.github/workflows/agent-steward.yml',
+     "[.[] | select(.status == \"in_progress\" or .status == \"queued\")] | length",
+     "[.[]] | length",
+     'test_a_steward_that_did_nothing_with_nothing_running_still_wakes_chief'),
+
+    ('no-op loop: standing down is reported as the steward having acted',
+     '.github/workflows/agent-steward.yml',
+     'so standing down was correct. Not waking chief."',
+     'so the steward acted. Not waking chief."',
+     'test_it_says_standing_down_rather_than_claiming_the_steward_acted'),
+
+    ("no-op loop: chief's ruling file forgets the pr= form again",
+     '.github/workflows/agent-steward.yml',
+     '`issue=<number>` OR `pr=<number>`, and nothing else.',
+     '`issue=<number>`, and nothing else.',
+     'test_chief_may_dispatch_a_pr_scoped_round'),
+
+    ('no-op loop: chief is told again to stand down with no owning issue',
+     '.claude/agents/chief.md',
+     '**"The detector named no owning issue" is no longer a reason to stand down.**',
+     '**A PR with no owning issue is not yours to dispatch.**',
+     'test_chief_may_dispatch_a_pr_scoped_round'),
+
+    ('no-op loop: chief may dispatch a workflows PR the App token cannot push',
+     '.claude/agents/chief.md',
+     'Still no line, deliberately, for a PR a cycle cannot clear: a diff touching',
+     'A line is fine for any open PR, including a diff touching',
+     'test_chief_is_still_refused_the_cases_a_cycle_cannot_clear'),
+
+    # ---- the PR-scoped QA dispatch -----------------------------------------
+    #
+    # Measured 2026-11-01: four of the five green PRs then open had received
+    # ZERO QA dispatches, because `qa-on-green` required an issue number in the
+    # branch name and theirs had none. `agent-merge` merges on `qa-pass` and
+    # `scripts/qa_verdict.sh` is its only writer, and the only thing that runs
+    # it is a dispatched round -- so the loop could not finish its own work.
+    #
+    # Rows run in BOTH directions deliberately. A guard that only caught the
+    # permissive mutation would bless a change that bricks the six-a-day cron,
+    # which is the one thing here that currently works.
+
+    # THE SUBTLEST ONE AVAILABLE, and the reason this row exists at all. The
+    # number spaces overlap: `gh issue view 639` ANSWERS for pull request #639.
+    # So a `pr=` ruling relabelled `issue=` would pass the carrier's openness
+    # check, dispatch a cycle at "issue" 639, and the cycle would read a pull
+    # request as its specification.
+    ('qa-on-green aims a PR ruling at the issue number space',
+     '.github/workflows/qa-on-green.yml',
+     'target="pr=$num"',
+     'target="issue=$num"',
+     'test_an_unnumbered_branch_aims_at_the_pr_instead_of_declining'),
+
+    # The fallback inverted: numbered branches get the PR form and unnumbered
+    # ones get `issue=` with nothing after it.
+    ('qa-on-green inverts the fallback and loses the owning issue',
+     '.github/workflows/qa-on-green.yml',
+     'if [ -n "$issue" ]; then\n            target="issue=$issue"',
+     'if [ -z "$issue" ]; then\n            target="issue=$issue"',
+     'test_a_numbered_branch_still_aims_at_its_issue'),
+
+    # The carrier file re-acquires the hard-coded prefix it had before, so
+    # every ruling becomes `issue=issue=N` or `issue=pr=N` and the strict
+    # parse refuses all of them. Inert, not dangerous -- and invisible.
+    ('qa-on-green re-prefixes the ruling the carrier already carries',
+     '.github/workflows/qa-on-green.yml',
+     "printf '%s\\n' \"$TARGET\"",
+     "printf 'issue=%s\\n' \"$TARGET\"",
+     'test_the_carrier_receives_the_target_verbatim'),
+
+    # The PR body becomes a source for the aim. Measured on the two real PRs:
+    # #639 has no issue reference of any kind, and #647's body yields 638 and
+    # 640, which are both pull requests.
+    ('qa-on-green starts reading the PR body it must never read',
+     '.github/workflows/qa-on-green.yml',
+     '--json comments',
+     '--json comments,body',
+     'test_the_target_is_never_guessed_from_the_pr_body'),
+
+    # agent-work: the composing step becomes dead code and a `pr=` dispatch
+    # silently runs an ordinary cycle with no argument -- ranking the backlog
+    # instead of judging the PR, at full cost, reported as a success.
+    ('agent-work reads the raw input again and ignores the composed argument',
+     '.github/workflows/agent-work.yml',
+     '/agent-cycle ${{ steps.args.outputs.args }}',
+     '/agent-cycle ${{ github.event.inputs.issue }}',
+     'test_the_prompt_reads_the_composed_output_and_not_the_raw_input'),
+
+    # THE BRICK-THE-LOOP DIRECTION. A `schedule` fire has no `inputs` object,
+    # both expressions render empty, and `set -u` aborts the step -- so all six
+    # crons a day die before the agent starts. This is why the composition is a
+    # `run:` step a test can execute rather than a prompt expression.
+    ('agent-work loses the unset-safe default and every cron fire dies',
+     '.github/workflows/agent-work.yml',
+     'issue="${ISSUE:-}"',
+     'issue="$ISSUE"',
+     'test_a_scheduled_fire_with_no_inputs_at_all_composes_an_empty_argument'),
+
+    # Both inputs at once stops being refused. Picking one hides the
+    # dispatcher's bug behind a ~50-minute run that reads as a success.
+    ('agent-work accepts an issue and a PR at once and picks one',
+     '.github/workflows/agent-work.yml',
+     'refusing rather than choosing."\n            exit 1',
+     'refusing rather than choosing."\n            :',
+     'test_both_inputs_at_once_is_refused_not_resolved'),
+
+    # The shape check widens, so a cycle can be aimed at a non-number.
+    ('agent-work stops requiring the dispatch target to be a number',
+     '.github/workflows/agent-work.yml',
+     '*[!0-9]*)\n                echo "::error::',
+     '*[!0-9a-z]*)\n                echo "::error::',
+     'test_a_non_numeric_input_is_refused'),
+    # --- the carrier learns a second ruling form: pr= (#639, #647) ----------
+    # A QA ROUND NEEDS A PR, NOT AN ISSUE. These rows guard the two halves that
+    # can go wrong quietly: dispatching a `pr=` ruling under the `issue` key,
+    # and reading a PR's state with `gh issue view` -- which ANSWERS, because
+    # the number spaces overlap, so the wrong object's state would pass.
+
+    ('#639: a pr= ruling is dispatched under the issue key',
+     'scripts/dispatch_cycle.sh',
+     'gh workflow run agent-work.yml --repo "$GH_REPO" -f "$kind=$target"',
+     'gh workflow run agent-work.yml --repo "$GH_REPO" -f issue="$target"',
+     'test_the_real_dispatch_composes_the_key_it_was_given'),
+
+    ("#639: a pr= ruling's state is read with gh issue view, which answers",
+     'scripts/dispatch_cycle.sh',
+     '    state=$(gh pr view "$target" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)',
+     '    state=$(gh issue view "$target" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)',
+     'test_a_pr_ruling_is_checked_with_pr_view_and_NOT_issue_view'),
+
+    ('#639: an issue= ruling naming a pull request is accepted',
+     'scripts/dispatch_cycle.sh',
+     '      */pull/*)',
+     '      */never-matches/*)',
+     'test_an_issue_ruling_that_names_a_PULL_REQUEST_is_refused'),
+
+    ('#639: the dispatched kind is not exported, so a round reads as a cycle',
+     'scripts/dispatch_cycle.sh',
+     '  echo "DISPATCHED_KIND=$kind" >> "$GITHUB_ENV"',
+     '  :',
+     'test_the_dispatched_kind_is_exported_beside_the_number'),
+
+    ("#265: the card's article count is typed again instead of read",
+     'scripts/generate_og_card.py',
+     'ARTICLE_COUNT = len(ARTICLES)',
+     'ARTICLE_COUNT = 76',
+     'test_generator_reads_the_registry_and_types_no_count'),
+
+    ("#265: an article ships and the committed card still says the old count",
+     'src/astro_ai/learn_registry.py',
+     'ARTICLES: tuple[Article, ...] = (\n    Article(\n        slug="the-9-grahas-overview",',
+     'ARTICLES: tuple[Article, ...] = (\n    Article(slug="mutant", title="m", summary="m", category="Grahas",\n            hero_image="/m", read_time="1 min"),\n    Article(\n        slug="the-9-grahas-overview",',
+     'test_embedded_article_count_matches_the_registry'),
+
+    ("#265: the Swiss Ephemeris badge returns to the card's proof line",
+     'scripts/generate_og_card.py',
+     'PROOF = f"Sidereal Lahiri ayanamsha',
+     'PROOF = f"Swiss Ephemeris chart math  ·  Sidereal Lahiri ayanamsha',
+     'test_generator_reads_the_registry_and_types_no_count'),
 
 ]
 

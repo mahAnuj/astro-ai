@@ -593,7 +593,16 @@ jobs:
           # Measured 2026-08-26 on GET /numerology, grid markers ("Number Grid",
           # "Arrow of") = 0; on this POST = 3. A fixed birth date keeps the
           # rendered output stable run to run.
+          # `X-Bhagya-Probe` so this POST does not page the owner (#618). The
+          # probe's input is hardcoded, so the alert was byte-identical on
+          # every run -- 4-6 a day, measured over the eight days to
+          # 2026-10-31, training the one channel that has to work on the day
+          # something breaks to be ignored. `src/astro_ai/probe.py` honours
+          # this header on the four alerts `notify.py` documents as PII-free
+          # and on nothing else; the header is unauthenticated, which is why
+          # that allow-list rather than this line is the safety argument.
           curl -sSL --fail --max-time 45 -X POST "$SITE/numerology" \
+               -H 'X-Bhagya-Probe: verify-production' \
                -d 'name=CI Check' -d 'birth_date=1988-05-14'          -o /tmp/numerology.html
           curl -sSL --fail --max-time 30 "$SITE/learn/diwali-muhurat-2026/" -o /tmp/diwali.html
           curl -sSL --fail --max-time 30 "$SITE/panchang"             -o /tmp/panchang.html
@@ -717,7 +726,10 @@ jobs:
           code=000
           for try in 1 2 3; do
             JAR=$(mktemp)
+            # Same header, same reason (#618). This path fires
+            # `kundli_generated`, also PII-free.
             code=$(curl -sSL --max-time 150 -c "$JAR" -b "$JAR" \
+                     -H 'X-Bhagya-Probe: verify-production' \
                      --data 'name=CI Check' --data 'birth_date=1957-09-07' \
                      --data 'birth_time=01:05' --data 'birth_place=Mumbai' \
                      "$SITE/reading" -o /tmp/kundli.html -w '%{http_code}') || code=000
