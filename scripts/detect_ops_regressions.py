@@ -142,7 +142,7 @@ def _instant(text: str) -> datetime | None:
         return None
 
 
-def issue_history(days: int) -> list[tuple[datetime, dict]]:
+def issue_history(days: int, now: datetime | None = None) -> list[tuple[datetime, dict]]:
     """(commit date, parsed issues.json) for each revision, newest first.
 
     Read from git rather than from the dated `measurements/*.md` files because
@@ -158,7 +158,11 @@ def issue_history(days: int) -> list[tuple[datetime, dict]]:
         log = _git("log", "--format=%H %cI", "--", "measurements/issues.json")
     except RuntimeError:
         return out
-    cut = datetime.now(timezone.utc) - timedelta(days=days * 3)
+    # ONE clock per run: `find()` passes its `now` down. A second
+    # `datetime.now()` here made the window drift away from the fixture's
+    # clock and the test suite a time bomb (the agents.json leg went red
+    # ~31h after #639 landed, on every PR at once).
+    cut = (now or datetime.now(timezone.utc)) - timedelta(days=days * 3)
     for line in log.splitlines():
         sha, _, iso = line.partition(" ")
         when = _instant(iso)
@@ -231,7 +235,7 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
     # ranks from `measurements/prioritise/latest.md` and the issues themselves,
     # and is told "do not rank from issue titles" -- it does not filter on a
     # label either.
-    hist = issue_history(TREND_DAYS)
+    hist = issue_history(TREND_DAYS, now)
     if len(hist) < 2:
         unreadable.append(
             f"issues.json history (only {len(hist)} usable revision(s); a trend needs two)")
@@ -261,7 +265,7 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
     return findings, unreadable
 
 
-def main(argv: list[str]) -> int:
+def main(argv: list[str], now: datetime | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--json", action="store_true", help="machine-readable output")
     ap.add_argument("--coverage", action="store_true",
@@ -269,7 +273,7 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv[1:])
 
     try:
-        findings, unreadable = find()
+        findings, unreadable = find(now)
     except Exception as exc:  # noqa: BLE001 - an unreadable detector is not a pass
         print(f"COULD NOT RUN (exit 2) — {exc.__class__.__name__}: {exc}")
         return 2
