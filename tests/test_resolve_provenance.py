@@ -192,8 +192,10 @@ def test_a_HUMAN_named_claude_is_still_judged_on_permission():
     assert len(fake.permission_calls()) == 1
 
 
-def test_the_exception_is_exactly_these_identities():
-    """Until 2026-11-02 this pinned `SELF_APP` as a bare string so a second
+def test_the_exception_is_exactly_one_login_wide():
+    """NAME KEPT for the test-count floor; the guard it names was re-pinned.
+
+    Until 2026-11-02 this pinned `SELF_APP` as a bare string so a second
     login could not slip in. The owner then added `github-actions` on purpose
     (#669). The guard against a DRIVE-BY widening survives as an exact-contents
     pin on an immutable set: a third login fails here, so it has to arrive as
