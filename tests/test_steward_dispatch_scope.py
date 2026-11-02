@@ -97,8 +97,24 @@ def test_the_dispatch_rule_states_the_authorship_test(name):
     src = SOURCES[name]
     assert "claude[bot]" in src, f"{name} does not name the agent author"
     assert re.search(r"repository owner", src), f"{name} does not name the owner"
-    assert re.search(r"owning issue", src), (
-        f"{name} no longer requires an owning issue to aim the dispatch at")
+
+    # THE OWNING-ISSUE HALF WAS DELETED ON PURPOSE, 2026-11-01, and this test
+    # used to assert it. It passed after the change ONLY because the phrase
+    # "owning issue" survived inside a sentence saying the opposite -- "the
+    # detector named no owning issue is NO LONGER a reason to stand down".
+    # A substring that appears in its own negation is the `_code()` trap this
+    # repo has now hit three times, so the assertion is replaced rather than
+    # left to pass by accident.
+    #
+    # The eligibility rule is still two-part; the second part is just no longer
+    # "an issue exists". It is "the dispatch names a target the carrier can
+    # parse", which is `issue=<n>` or `pr=<n>`.
+    assert re.search(r"`pr=<n(?:umber)?>`", src), (
+        f"{name} offers no PR-scoped form, so a green PR whose branch carries "
+        f"no number is unreachable -- the state that held four PRs on "
+        f"2026-11-01")
+    assert not re.search(r"needs an issue to aim at", src), (
+        f"{name} still states the precondition that caused six no-op comments")
 
 
 def test_chief_keeps_the_two_refusals_that_are_real():
@@ -109,8 +125,12 @@ def test_chief_keeps_the_two_refusals_that_are_real():
     not have widened it to everything.
     """
     src = SOURCES["agent-steward.yml"]
-    assert ".github/workflows/**` (the App token has no `workflows` permission)" in src
-    assert re.search(r"authored by neither `claude\[bot\]` nor the repository owner", src)
+    # Whitespace-insensitive: this prose is wrapped to the YAML block's width,
+    # so a reflow must not read as a deleted refusal. The first draft of this
+    # assertion was literal and failed on exactly that.
+    flat = " ".join(src.split())
+    assert "`.github/workflows/**` (the App token has no `workflows` permission)" in flat
+    assert re.search(r"authored by neither `claude\[bot\]` nor the repository owner", flat)
 
 
 # --- 3. the adoption globs the dispatch relies on -----------------------------

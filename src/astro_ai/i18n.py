@@ -352,6 +352,8 @@ _EN: Final[dict[str, str]] = {
     "matching_bhakoot_uneval":      "Not evaluated",
     "matching_bhakoot_nopoints":
         "A cancellation removes the dosha. It does not add points to the score above.",
+    "matching_bhakoot_convention":
+        "The zero for this distance is Bhagya's own convention; it is not drawn from the classical text we hold, which names only the 6/8 and 2/12 afflictions.",
     "matching_nadi":        "Nadi Dosh",
     "matching_nadi_grave":  "Gravest form",
     "matching_nadi_alpa":   "Reduced",
@@ -411,6 +413,7 @@ _EN: Final[dict[str, str]] = {
     "pdf_download":           "Download PDF",
     "pdf_download_hint":      "Uses your browser's print → save as PDF. Works on desktop; mobile users may see a print preview instead.",
     "matching_verdict_below":   "Below recommended threshold",
+    "matching_bands_note":     "The 18, 24 and 30 cut-offs and their labels are Bhagya's own reading of the 36-point total and are not drawn from the classical texts we hold. The eight koota scores and their weights are the classical part.",
     "monthly_title":       "{name}'s month ahead",
     "monthly_title_anon":  "Your month ahead",
     "monthly_subtitle":    "30-day outlook based on your natal chart and the current slow-mover backdrop",
@@ -909,6 +912,8 @@ _HI: Final[dict[str, str]] = {
     "matching_bhakoot_uneval":      "जाँच नहीं की गई",
     "matching_bhakoot_nopoints":
         "परिहार दोष को हटाता है। यह ऊपर दिए गए अंकों में वृद्धि नहीं करता।",
+    "matching_bhakoot_convention":
+        "इस दूरी पर शून्य अंक शुभ भाग्य की अपनी परिपाटी है; यह हमारे पास उपलब्ध शास्त्रीय ग्रंथ से नहीं लिया गया है, जिसमें केवल 6/8 और 2/12 की अशुभता बताई गई है।",
     "matching_nadi":        "नाड़ी दोष",
     "matching_nadi_grave":  "गंभीरतम रूप",
     "matching_nadi_alpa":   "अल्प",
@@ -951,6 +956,7 @@ _HI: Final[dict[str, str]] = {
     "matching_verdict_madhyam": "मध्यम संगतता",
     "matching_verdict_avara":   "स्वीकार्य (सावधानी के साथ)",
     "matching_verdict_below":   "अनुशंसित स्तर से कम",
+    "matching_bands_note":     "18, 24 और 30 की सीमाएँ और उनके नाम 36 गुणों के कुल योग की शुभ भाग्य की अपनी व्याख्या हैं; ये हमारे पास उपलब्ध शास्त्रीय ग्रंथों से नहीं लिए गए हैं। आठ कूटों के अंक और उनका भार ही शास्त्र-आधारित भाग है।",
     "monthly_title":       "{name} का मासिक भविष्यफल",
     "monthly_title_anon":  "आपका मासिक भविष्यफल",
     "monthly_subtitle":    "आपकी जन्म कुंडली और वर्तमान मंद-ग्रह पृष्ठभूमि के आधार पर 30 दिनों का दृष्टिकोण",

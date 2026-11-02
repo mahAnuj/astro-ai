@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-11-01T08:43:30Z",
+  "generated_at": "2026-11-02T00:17:38Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 130,
+  "open": 132,
   "with_ask": 55,
   "by_area": {
     "UNCLASSIFIED": 48,
-    "INFRA": 15,
+    "INFRA": 16,
     "UI": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
+    "MEASURE": 3,
     "DETECT_STALLS": 3,
     "BUG": 3,
     "SEO": 3,
-    "MEASURE": 2,
     "CONTENT": 2,
     "SECURITY": 2,
     "RASHIFAL": 2,
@@ -33,22 +33,61 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 38,
+    "untyped": 41,
     "bug": 33,
-    "enhancement": 27,
+    "enhancement": 26,
     "correctness": 11,
     "design": 8,
     "chore": 7,
     "ui": 6
   },
   "by_priority": {
-    "unset": 92,
+    "unset": 95,
     "medium": 20,
-    "high": 17,
+    "high": 16,
     "low": 1
   },
-  "blocked": 7,
+  "blocked": 9,
   "rows": [
+    {
+      "number": 666,
+      "title": "[MEASURE] The analyst job checks out at depth 1, so the required `git log origin/main --since` confound check cannot run",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-02T00:15:45Z",
+      "updated": "2026-11-02T00:15:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 664,
+      "title": "[INFRA] No dispatch can clear a CONFLICTING PR that also carries a refixed qa-fail (#649, #654 stuck)",
+      "ask": "",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-01T22:55:31Z",
+      "updated": "2026-11-01T22:55:31Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 657,
+      "title": "qa-on-green aims at the branch-named issue without checking it is open, so a green PR whose issue already closed is refused every time and never gets a QA round (#636)",
+      "ask": "In the pick step, after deriving issue, run gh issue view \"$issue\" --json state --jq .state and fall back to target=\"pr=$num\" unless it is OPEN.",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-01T16:31:28Z",
+      "updated": "2026-11-01T16:31:28Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 648,
       "title": "Four accuracy defects left by #642's conflict reclassification — including a dead arm whose replacement detail is wrong for the case it inherited",
@@ -114,7 +153,7 @@
         "bug"
       ],
       "created": "2026-11-01T00:10:33Z",
-      "updated": "2026-11-01T00:10:33Z",
+      "updated": "2026-11-01T21:02:17Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -152,7 +191,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-31T07:09:19Z",
-      "updated": "2026-11-01T04:58:09Z",
+      "updated": "2026-11-01T21:02:39Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -164,11 +203,12 @@
       "type": "untyped",
       "priority": "unset",
       "labels": [
+        "needs-human-review",
         "provenance:outsider"
       ],
       "created": "2026-10-31T02:25:29Z",
-      "updated": "2026-11-01T03:24:19Z",
-      "blocked": false,
+      "updated": "2026-11-01T10:32:39Z",
+      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -406,11 +446,12 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "needs-human-review"
       ],
       "created": "2026-10-27T15:12:04Z",
-      "updated": "2026-10-29T15:55:44Z",
-      "blocked": false,
+      "updated": "2026-11-01T16:24:16Z",
+      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -496,24 +537,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-10-31T02:26:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 514,
-      "title": "Rashifal layout: move the fixed furniture out of the prose into computed fields (Chandra Bala + day colour)",
-      "ask": "The two window names — in flight on partial/513-drop-window-names-from-prose (unpushed; three tests still failing, see that branch's commit message).",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "high",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "priority:high"
-      ],
-      "created": "2026-10-24T06:06:02Z",
-      "updated": "2026-10-24T06:06:02Z",
+      "updated": "2026-11-01T17:24:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -557,7 +581,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-23T19:06:27Z",
-      "updated": "2026-10-24T17:55:39Z",
+      "updated": "2026-11-01T15:17:39Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -759,7 +783,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-20T16:03:10Z",
-      "updated": "2026-10-20T16:05:41Z",
+      "updated": "2026-11-01T21:02:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1435,7 +1459,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-09-04T11:06:50Z",
-      "updated": "2026-09-04T11:06:50Z",
+      "updated": "2026-11-01T21:02:52Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1885,12 +1909,12 @@
       "priority": "unset",
       "labels": [
         "astrology-correctness",
-        "qa-fail",
+        "qa-pass",
         "provenance:trusted",
         "qa:in-cycle"
       ],
       "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-11-01T02:37:43Z",
+      "updated": "2026-11-01T19:55:10Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1950,7 +1974,7 @@
         "bug"
       ],
       "created": "2026-08-07T15:59:16Z",
-      "updated": "2026-08-27T04:14:14Z",
+      "updated": "2026-11-01T21:02:40Z",
       "blocked": false,
       "needs_evidence": false
     },

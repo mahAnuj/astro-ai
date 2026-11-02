@@ -86,6 +86,12 @@
         24 <span class="opacity-60">Madhyam</span> &middot;
         30 <span class="opacity-60">Uttam</span> &middot; 36
       </div>
+      {# The 18/24/30 bands and their labels are our own reading, not drawn from the texts we hold (#177):
+         the 36-point engine is sourced, the four verdict grades are not — no book
+         we hold states a minimum-guna rule or uses these labels. Disclosure only;
+         the thresholds live in matching.py:_overall_verdict and are not moved here.
+         Do not name a source for the bands. #}
+      <p class="mt-2 max-w-md text-xs text-bhagya-muted leading-relaxed text-center">{{ t(lang, 'matching_bands_note') }}</p>
 
     </div>
 
@@ -146,6 +152,9 @@
         {% endif %}
 
         <p class="mt-2 text-xs text-bhagya-muted-2 italic">{{ t(lang, 'matching_bhakoot_nopoints') }}</p>
+        {% if _bd.convention_only %}
+        <p class="mt-1 text-xs text-bhagya-muted-2 italic">{{ t(lang, 'matching_bhakoot_convention') }}</p>
+        {% endif %}
       </div>
     </div>
     {% endif %}
@@ -327,7 +336,13 @@
           <td colspan="4" class="pt-3 text-xs text-bhagya-muted leading-relaxed">
             <strong>How this total was reached:</strong> the
             {{ "%.1f"|format(guna.total_awarded) }} above is the points table alone.
-            {% if guna.bhakoot_dosha.cancelled %}
+            {% if guna.bhakoot_dosha.cancelled and guna.bhakoot_dosha.convention_only %}
+            {# #177: 5/9 is Bhagya's own convention, not in the text we hold — so its
+               cancellation must not be called classical either. #}
+            The Bhakoot dosha here is cancelled by the conditions Bhagya applies to it, but a
+            cancellation removes the <em>dosha</em> &mdash; it does not add the koota's
+            points back.
+            {% elif guna.bhakoot_dosha.cancelled %}
             The Bhakoot dosha here is cancelled by the classical conditions, but a
             cancellation removes the <em>dosha</em> &mdash; it does not add the koota's
             points back.
