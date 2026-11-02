@@ -186,7 +186,22 @@ jobs:
       #
       # Owner comes from the context, not a literal, so a rename or a fork of
       # the whole repo does not silently widen or empty the set.
-      AGENT_AUTHORS: claude[bot],${{ github.repository_owner }}
+      #
+      # THE TWO OTHER BOT LOGINS -- owner's decision, 2026-11-02 (#669). Both
+      # are identities only THIS repository's own workflows can act as:
+      #   github-actions[bot]          `github.token`. A fork's workflow gets a
+      #                                read-only token and cannot open a PR here.
+      #   shubhagya-publisher[bot]     the publisher App, whose key is a repo
+      #                                secret.
+      # `agent-work`'s rescue net opens its PR as one of them when the
+      # one-hour `claude[bot]` token has expired, and every such PR (#617,
+      # #643, #663) was orphaned: green, unlabelled, and invisible to both
+      # this job and qa-on-green. Accepting them grants nothing downstream --
+      # gates, `qa-pass`, size and trust boundary all still have to hold.
+      # Measurement PRs (publisher, `measurements/*`) never carry `qa-pass`,
+      # so the sweep's label filter still keeps them out; they self-merge via
+      # `allow_auto_merge` exactly as before.
+      AGENT_AUTHORS: claude[bot],github-actions[bot],shubhagya-publisher[bot],${{ github.repository_owner }}
       # NOTHING FROM THE PULL REQUEST IS INTERPOLATED INTO A `run:` BLOCK (#358).
       # `${{ }}` is textual substitution performed BEFORE bash parses the
       # script, so an interpolated value is not a shell string -- it is shell

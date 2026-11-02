@@ -188,8 +188,9 @@ done
 # and then sat open and green while the NEXT report (#555) merged past it 44
 # minutes later. 31 of the 32 publisher PRs merged; that one did not, and
 # nothing ever came back for it. `agent-merge`'s sweep is not a backstop here
-# either -- this script's PRs are authored by the publisher App, which is not
-# in that workflow's AGENT_AUTHORS, so it is not even a sweep candidate.
+# either -- the publisher App joined that workflow's AGENT_AUTHORS on
+# 2026-11-02 (#669), but the sweep also requires `qa-pass`, which a
+# measurement PR never carries, so it is still never a sweep candidate.
 #
 # TWO DIFFERENT FAILURES, AND ONLY ONE IS RETRYABLE
 #

@@ -92,10 +92,25 @@ jobs:
           # WROTE the PR decides whether it is ours, never what the branch is
           # called. #531 and #534 removed six copies of the branch-name rule;
           # this is a seventh place that must not reintroduce it.
-          AGENT_AUTHORS: claude[bot],${{ github.repository_owner }}
+          # github-actions[bot] and shubhagya-publisher[bot] added 2026-11-02
+          # (#669): identities only this repo's own workflows can act as; see
+          # agent-merge.yml for the reasoning.
+          AGENT_AUTHORS: claude[bot],github-actions[bot],shubhagya-publisher[bot],${{ github.repository_owner }}
         run: |
           set -uo pipefail
           say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+
+          # Measurement PRs are the publisher's and self-merge via
+          # `allow_auto_merge`; they never want a QA round. Now that the
+          # publisher is in AGENT_AUTHORS, this is what keeps ~8 a day from
+          # each spending a ~50-minute cycle. Excluded by the branch the
+          # publisher script ALWAYS uses, not by author -- the rescue net in
+          # agent-work.yml also opens PRs as the publisher, and those do.
+          case "$HEAD_BRANCH" in
+            measurements/*)
+              say "\`$HEAD_BRANCH\` is a measurement PR — it self-merges, no QA round."
+              exit 0 ;;
+          esac
 
           if [ "$GATES_CONCLUSION" != "success" ]; then
             say "\`PR gates\` concluded \`$GATES_CONCLUSION\` on \`$HEAD_BRANCH\` — a red gate is information, not a stall."
