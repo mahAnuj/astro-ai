@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-01T23:23:26Z",
+  "generated_at": "2026-11-02T00:17:38Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 131,
+  "open": 132,
   "with_ask": 55,
   "by_area": {
     "UNCLASSIFIED": 48,
@@ -11,10 +11,10 @@
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
+    "MEASURE": 3,
     "DETECT_STALLS": 3,
     "BUG": 3,
     "SEO": 3,
-    "MEASURE": 2,
     "CONTENT": 2,
     "SECURITY": 2,
     "RASHIFAL": 2,
@@ -33,7 +33,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 40,
+    "untyped": 41,
     "bug": 33,
     "enhancement": 26,
     "correctness": 11,
@@ -42,13 +42,26 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 94,
+    "unset": 95,
     "medium": 20,
     "high": 16,
     "low": 1
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 666,
+      "title": "[MEASURE] The analyst job checks out at depth 1, so the required `git log origin/main --since` confound check cannot run",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-02T00:15:45Z",
+      "updated": "2026-11-02T00:15:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 664,
       "title": "[INFRA] No dispatch can clear a CONFLICTING PR that also carries a refixed qa-fail (#649, #654 stuck)",
