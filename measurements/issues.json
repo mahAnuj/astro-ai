@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-02T00:17:38Z",
+  "generated_at": "2026-11-02T08:53:57Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
   "open": 132,
-  "with_ask": 55,
+  "with_ask": 56,
   "by_area": {
-    "UNCLASSIFIED": 48,
-    "INFRA": 16,
+    "UNCLASSIFIED": 47,
+    "INFRA": 17,
     "UI": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -49,6 +49,19 @@
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 669,
+      "title": "[INFRA] agent-work's rescue step opens PRs as github-actions[bot], which is outside AGENT_AUTHORS, so no workflow ever QAs or merges them (#663)",
+      "ask": "Make the rescue step's PR carry an in-list author.",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-02T02:55:12Z",
+      "updated": "2026-11-02T02:55:12Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 666,
       "title": "[MEASURE] The analyst job checks out at depth 1, so the required `git log origin/main --since` confound check cannot run",
@@ -1447,19 +1460,6 @@
       "labels": [],
       "created": "2026-09-19T13:44:15Z",
       "updated": "2026-09-19T17:06:34Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 265,
-      "title": "The og:image card bakes \"Swiss Ephemeris\" and a hardcoded explainer count into every social preview",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-09-04T11:06:50Z",
-      "updated": "2026-11-01T21:02:52Z",
       "blocked": false,
       "needs_evidence": false
     },
