@@ -38,7 +38,7 @@ gh pr view <n> --repo "$GH_REPO" --json state,isCrossRepository,author \
 2. `isCrossRepository` is **false**. A fork PR never reaches this loop, and that must stay true for
    this new door: a cycle reading an outsider's diff with write credentials is #361's
    `provenance:outsider` concern wearing a pull request's clothes.
-3. The author is in `AGENT_AUTHORS` — `claude[bot]` or the repo owner.
+3. The author is in `AGENT_AUTHORS` — `claude[bot]`, `github-actions[bot]`, `shubhagya-publisher[bot]` or the repo owner.
 
 Any of those failing: say which, and stop. This is Step 0a's substitute in this mode, because Step
 0a takes an issue number and there may not be one.

@@ -40,8 +40,10 @@ enables auto-merge. Three things follow:
   half of this warning expired on 2026-10-25: `agent-merge` no longer gates on
   the branch NAME at all, so no name keeps a PR away from its sweep. What keeps
   these out is that the sweep requires `qa-pass`, which a measurement PR never
-  carries, and that their author (`shubhagya-publisher[bot]`) is not in
-  `AGENT_AUTHORS`. They self-merge via `allow_auto_merge`, not via that job.
+  carries. Their author (`shubhagya-publisher[bot]`) **has been in `AGENT_AUTHORS`
+  since 2026-11-02** (#669, below), so `qa-pass` is now the only thing keeping them
+  out of the sweep, and `qa-on-green` skips `measurements/*` by branch so they never
+  get a QA round. They self-merge via `allow_auto_merge`, not via that job.
 
 Two more consequences worth knowing before you move that directory:
 
@@ -200,8 +202,22 @@ What has NOT changed, and why it matters more now than before:
   `notify.py`, `email_sender.py` or `storage.py`. The loop still pushes and merges
   everything else. The list is the `TRUST_BOUNDARY` env var in `agent-merge.yml`.
 - **What `agent-merge` will consider is decided by the PR's AUTHOR, not its branch name
-  — changed 2026-10-25.** `AGENT_AUTHORS` in `agent-merge.yml` holds `claude[bot]` and the
-  repo owner; a fork PR cannot reach the job at all.
+  — changed 2026-10-25.** `AGENT_AUTHORS` in `agent-merge.yml` holds `claude[bot]`,
+  `github-actions[bot]`, `shubhagya-publisher[bot]` and the repo owner; a fork PR cannot
+  reach the job at all.
+
+  **The two extra bot logins were added 2026-11-02 on the owner's decision** (#669):
+  *"we should allow claude author or the related things that is blocking any opening
+  PRs. We don't have any external authors currently."* `agent-work`'s rescue net opens
+  its PR with whatever token survives the one-hour `claude[bot]` expiry, and every such
+  PR (#617, #643, #663) sat green and unlabelled because neither `qa-on-green` nor
+  `agent-merge` would look at it. Both logins are identities only this repository's own
+  workflows can act as — a fork's workflow gets a read-only token, and the publisher's
+  key is a repo secret — and every downstream condition (gates, `qa-pass`, size, trust
+  boundary) still holds. The rescue net now opens its PR with the publisher token where
+  it can, because a `github-actions[bot]` PR has its `pull_request` suites held in
+  `action_required` (#393; measured on #663: two held suites, `mergeable_state:
+  blocked`, every check green).
 
   It was a `case` on `issue/*`, and the name carried none of the meaning it was asked to
   carry. Cycles correctly name a branch `partial/<n>-<slug>` whenever acceptance criteria
@@ -307,7 +323,8 @@ What has NOT changed, and why it matters more now than before:
   every write through one script enforces and a bare `--add-label qa-pass` did not.
 - **A merge can arrive up to 30 minutes after the gates go green (#357).** `agent-merge`
   now also runs on a `*/30` cron and re-evaluates every open PR carrying `qa-pass` whose
-  author is in `AGENT_AUTHORS` (`claude[bot]` and the repo owner),
+  author is in `AGENT_AUTHORS` (`claude[bot]`, `github-actions[bot]`,
+  `shubhagya-publisher[bot]` and the repo owner),
   because its two event triggers are edges and a PR whose last green check landed after
   the last edge used to strand forever — four times, most recently #356. **So a PR that
   has not merged yet is not a PR that was refused.** Check `gh run list --workflow=
