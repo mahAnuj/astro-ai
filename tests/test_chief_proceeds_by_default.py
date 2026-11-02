@@ -184,13 +184,12 @@ def test_it_does_not_rule_twice_on_the_same_head():
 #: This is a SELF-CLEANING allowance: the assertion is equality, so landing the
 #: missing file fails this test too and forces the entry to be deleted. A silent
 #: `if m not in KNOWN` would rot into permanent cover for the next gap.
-CITED_BUT_ABSENT = {
-    # Four citations in the Shape C section rest on this gate, and it is still
-    # on unmerged PR #636. So the trust-boundary clearance chief was granted
-    # currently has NO gate behind its safety argument -- recorded here rather
-    # than discovered again later. Delete this entry when #636 merges.
-    "verify_workflow_permissions.py",
-}
+# EMPTY since #636 landed `scripts/verify_workflow_permissions.py`, the gate
+# the Shape C clearance's safety argument rests on. It stays a set() rather
+# than being deleted, so the next script chief cites before it exists has to
+# be recorded here with its reason. (`set()`, never `{}` -- that is a dict and
+# would compare unequal to an empty set forever.)
+CITED_BUT_ABSENT: set[str] = set()
 
 
 def test_every_script_chief_is_told_to_run_exists():

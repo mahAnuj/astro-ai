@@ -241,6 +241,46 @@ def trust_boundary(text: str) -> set[str]:
     return set()
 
 
+def boundary_definitions(text: str) -> list[tuple[str, set[str]]] | None:
+    """EVERY `TRUST_BOUNDARY` key in the file, at any depth, as (where, paths).
+
+    WHY EVERY ONE, found by the independent QA round on this PR: Actions
+    resolves `env:` step -> job -> workflow, so a step-level
+    `TRUST_BOUNDARY: ""` (or a one-path block) placed under the "Trust
+    boundary" step OVERRIDES the job-level list for the only step that reads
+    it. `trust_boundary()` above reads the first block in the file, saw the
+    untouched job-level list, and reported "boundary intact" while the step
+    would have enforced nothing. So check 2 judges every definition: each one
+    must still hold every path the base held.
+
+    Parsed as YAML rather than scanned, so a quoted string, a flow mapping
+    (`env: {TRUST_BOUNDARY: ""}`), a folded scalar and an empty value are all
+    seen. A non-string value (null, a list, a number) contributes NO paths and
+    therefore fails closed. Returns None when the file does not parse --
+    the caller reports that as a failure, never as "nothing was lost".
+    """
+    try:
+        doc = yaml.safe_load(text)
+    except yaml.YAMLError:
+        return None
+    found: list[tuple[str, set[str]]] = []
+
+    def walk(node: object, where: str) -> None:
+        if isinstance(node, dict):
+            for k, v in node.items():
+                here = f"{where}.{k}" if where else str(k)
+                if k == "TRUST_BOUNDARY":
+                    paths = set(v.split()) if isinstance(v, str) else set()
+                    found.append((here, paths))
+                walk(v, here)
+        elif isinstance(node, list):
+            for i, v in enumerate(node):
+                walk(v, f"{where}[{i}]")
+
+    walk(doc, "")
+    return found
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--base", default="origin/main")
@@ -323,17 +363,30 @@ def main(argv: list[str]) -> int:
 
     # 2. TRUST_BOUNDARY may not lose an entry
     if AGENT_MERGE in wf_changed:
-        a_tb = trust_boundary(at("HEAD", AGENT_MERGE) or "")
-        b_tb = trust_boundary(at(base, AGENT_MERGE) or "")
-        if b_tb and not a_tb:
+        a_txt = at("HEAD", AGENT_MERGE) or ""
+        b_txt = at(base, AGENT_MERGE) or ""
+        b_defs = boundary_definitions(b_txt) or []
+        b_tb = trust_boundary(b_txt) | set().union(*(p for _, p in b_defs))
+        a_defs = boundary_definitions(a_txt)
+        if b_tb and a_defs is None:
+            bad.append(f"{AGENT_MERGE}: cannot be parsed as YAML, so no `TRUST_BOUNDARY` "
+                       f"definition can be checked. An unreadable boundary is not an intact one.")
+        elif b_tb and not a_defs:
             bad.append(f"{AGENT_MERGE}: the `TRUST_BOUNDARY` block is gone. Every boundary "
                        f"path it listed is now unheld, and `chief` has nothing left to clear.")
-        elif lost := sorted(b_tb - a_tb):
-            bad.append(f"{AGENT_MERGE}: `TRUST_BOUNDARY` lost {', '.join(lost)}. A path removed "
-                       f"from the boundary stops being held at all — that is wider than "
-                       f"anything `chief` was granted, which only clears a hold case by case.")
         elif b_tb:
-            print(f"  ok   boundary intact   {AGENT_MERGE} ({len(a_tb)} path(s))")
+            weak = [(w, sorted(b_tb - p)) for w, p in a_defs if b_tb - p]
+            for where, lost in weak:
+                # The first form is the message the job-level case has always
+                # printed; `at <where>` names which definition, which matters
+                # once there can be more than one.
+                bad.append(f"{AGENT_MERGE}: `TRUST_BOUNDARY` lost {', '.join(lost)} at "
+                           f"`{where}`. A path removed from the boundary -- or shadowed by "
+                           f"a narrower step- or job-level `env:` -- stops being held at "
+                           f"all, which is wider than anything `chief` was granted.")
+            if not weak:
+                print(f"  ok   boundary intact   {AGENT_MERGE} "
+                      f"({len(b_tb)} path(s), {len(a_defs)} definition(s))")
 
     print()
     if bad:

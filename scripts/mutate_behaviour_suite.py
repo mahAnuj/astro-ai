@@ -4145,13 +4145,47 @@ MUTATIONS = [
 
     ("wf_permissions: TRUST_BOUNDARY compares the diff the wrong way round",
      "scripts/verify_workflow_permissions.py",
-     "elif lost := sorted(b_tb - a_tb):", "elif lost := sorted(a_tb - b_tb):",
+     "weak = [(w, sorted(b_tb - p)) for w, p in a_defs if b_tb - p]",
+     "weak = [(w, sorted(p - b_tb)) for w, p in a_defs if p - b_tb]",
      "test_check_2_goes_red_when_a_boundary_path_is_removed"),
 
     ("wf_permissions: a deleted TRUST_BOUNDARY block reads as nothing lost",
      "scripts/verify_workflow_permissions.py",
-     "if b_tb and not a_tb:", "if a_tb and not b_tb:",
+     "elif b_tb and not a_defs:", "elif False:",
      "test_check_2_goes_red_when_the_whole_block_disappears"),
+
+    # QA round 1 on #636. Actions resolves env step -> job -> workflow, so a
+    # narrower step-level TRUST_BOUNDARY is what the enforcing step reads. The
+    # first draft judged one definition and printed "boundary intact".
+    ("wf_permissions: only the FIRST TRUST_BOUNDARY definition is judged (#636 bypass)",
+     "scripts/verify_workflow_permissions.py",
+     "for w, p in a_defs if b_tb - p]",
+     "for w, p in a_defs[:1] if b_tb - p]",
+     "test_check_2_goes_red_when_a_STEP_level_env_shadows_the_job_list"),
+
+    ("wf_permissions: a non-string TRUST_BOUNDARY value contributes paths",
+     "scripts/verify_workflow_permissions.py",
+     "paths = set(v.split()) if isinstance(v, str) else set()",
+     "paths = set(v.split()) if isinstance(v, str) else set(v or [])",
+     "test_boundary_definitions_finds_every_level_and_fails_closed_on_non_strings"),
+
+    ("wf_permissions: an unparseable agent-merge reads as having no definitions",
+     "scripts/verify_workflow_permissions.py",
+     "    except yaml.YAMLError:\n        return None\n    found",
+     "    except yaml.YAMLError:\n        return []\n    found",
+     "test_boundary_definitions_finds_every_level_and_fails_closed_on_non_strings"),
+
+    ("wf_permissions: a widened .yaml workflow is never looked at (#636 QA)",
+     "scripts/verify_workflow_permissions.py",
+     'c.endswith((".yml", ".yaml"))]',
+     'c.endswith(".yml")]',
+     "test_a_widening_in_a_dot_YAML_workflow_is_caught"),
+
+    ("wf_permissions: no fallback base, so a missing origin/main fails every PR (#636 QA)",
+     "scripts/verify_workflow_permissions.py",
+     'for cand in (args.base, "main", "origin/HEAD", "HEAD~1"):',
+     "for cand in (args.base,):",
+     "test_an_unresolvable_base_falls_back_to_main_rather_than_failing"),
     # --- the first reader of the ops dashboard's numbers ---------------------
     # Nothing read /admin/ops before this script, so a finding it gets wrong is
     # a finding nobody else is checking. The two directions are not symmetric:

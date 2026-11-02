@@ -622,3 +622,108 @@ def test_no_usable_base_exits_2_and_says_it_is_NOT_a_pass(tmp_path, monkeypatch,
     assert rc == 2, out
     assert "COULD NOT VERIFY (exit 2)" in out
     assert "NOT a pass" in out
+
+
+# ------------------------------------------- QA round 1 on #636: the bypass
+
+def _with_step_env(text: str, env_block: str) -> str:
+    """Give the one step its own `env:` -- the place Actions resolves first."""
+    return text.replace("      - run: echo one\n",
+                        "      - name: Trust boundary\n"
+                        f"        env:\n{env_block}"
+                        "        run: echo one\n")
+
+
+@pytest.mark.parametrize("env_block,why", [
+    ('          TRUST_BOUNDARY: ""\n', "an empty string"),
+    ("          TRUST_BOUNDARY: |\n            src/astro_ai/prompts/\n", "a one-path block"),
+    ("          TRUST_BOUNDARY: src/astro_ai/prompts/ src/astro_ai/knowledge/\n",
+     "an inline list missing one path"),
+    ("          TRUST_BOUNDARY:\n", "a null"),
+])
+def test_check_2_goes_red_when_a_STEP_level_env_shadows_the_job_list(
+        env_block, why, tmp_path, monkeypatch, capsys):
+    """THE BYPASS QA round 1 found. Actions resolves env step -> job -> workflow,
+    so a narrower step-level `TRUST_BOUNDARY` is what the enforcing step reads,
+    while the job-level list -- the only one the first draft looked at -- is
+    untouched. That draft printed "boundary intact" on every case here."""
+    before = _agent_merge(READ_TOP, JOB_READ, BOUNDARY)
+    root = _repo(tmp_path, {AM: before}, {AM: _with_step_env(before, env_block)})
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 1, f"{why}: {out}"
+    assert "`TRUST_BOUNDARY` lost" in out and "steps[0]" in out, out
+
+
+def test_check_2_goes_red_on_a_FLOW_mapping_override(tmp_path, monkeypatch, capsys):
+    """`env: {TRUST_BOUNDARY: ""}` never appears as a `TRUST_BOUNDARY: |` line,
+    which is why the definitions are read from parsed YAML, not scanned."""
+    before = _agent_merge(READ_TOP, JOB_READ, BOUNDARY)
+    after = before.replace("      - run: echo one\n",
+                           '      - env: {TRUST_BOUNDARY: ""}\n        run: echo one\n')
+    root = _repo(tmp_path, {AM: before}, {AM: after})
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 1, out
+    assert "`TRUST_BOUNDARY` lost" in out
+
+
+def test_check_2_stays_green_when_a_second_definition_holds_every_path(
+        tmp_path, monkeypatch, capsys):
+    """The rule is "every definition holds every path", not "only one may
+    exist" -- a step that restates the full list narrows nothing."""
+    before = _agent_merge(READ_TOP, JOB_READ, BOUNDARY)
+    full = "".join(f"            {p}\n" for p in BOUNDARY)
+    after = _with_step_env(before, f"          TRUST_BOUNDARY: |\n{full}")
+    root = _repo(tmp_path, {AM: before}, {AM: after})
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 0, out
+    assert "2 definition(s)" in out
+
+
+def test_boundary_definitions_finds_every_level_and_fails_closed_on_non_strings():
+    text = ("env:\n  TRUST_BOUNDARY: a/ b/\n"
+            "jobs:\n  j:\n    env:\n      TRUST_BOUNDARY: |\n        a/\n        b/\n"
+            "    steps:\n      - env:\n          TRUST_BOUNDARY: [a/, b/]\n")
+    defs = gate.boundary_definitions(text)
+    assert [w for w, _ in defs] == ["env.TRUST_BOUNDARY", "jobs.j.env.TRUST_BOUNDARY",
+                                    "jobs.j.steps[0].env.TRUST_BOUNDARY"]
+    assert defs[0][1] == defs[1][1] == {"a/", "b/"}
+    assert defs[2][1] == set(), "a non-string value must contribute no paths"
+    assert gate.boundary_definitions("a: [unclosed\n") is None
+
+
+def test_the_shipped_agent_merge_has_exactly_one_complete_definition():
+    defs = gate.boundary_definitions((ROOT / AM).read_text(encoding="utf-8"))
+    assert len(defs) == 1, defs
+    assert defs[0][1] == gate.trust_boundary((ROOT / AM).read_text(encoding="utf-8"))
+
+
+# ------------------------------------- QA round 1 on #636: two blind mutants
+
+def test_a_widening_in_a_dot_YAML_workflow_is_caught(tmp_path, monkeypatch, capsys):
+    """Dropping `.yaml` from the changed-file filter left all 51 tests green.
+    GitHub runs `.yaml` workflows exactly as it runs `.yml` ones."""
+    def wf(job: str) -> str:
+        return ("name: X\non: workflow_dispatch\npermissions:\n  contents: read\n"
+                f"jobs:\n  j:\n    runs-on: ubuntu-latest\n    permissions:\n{job}"
+                "    steps:\n      - run: echo x\n")
+    path = ".github/workflows/extra.yaml"
+    root = _repo(tmp_path, {path: wf(JOB_READ)}, {path: wf(JOB_WRITE)})
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 1, out
+    assert "extra.yaml" in out and "widens `contents`" in out
+
+
+def test_an_unresolvable_base_falls_back_to_main_rather_than_failing(
+        tmp_path, monkeypatch, capsys):
+    """Dropping the fallback chain left all 51 tests green. A shallow clone or a
+    local run often has `main` but no `origin/main`, and exiting 2 there would
+    fail every PR on a ref name."""
+    before = _agent_merge(READ_TOP, JOB_READ, BOUNDARY)
+    root = _repo(tmp_path, {AM: before}, {AM: _agent_merge(READ_TOP, JOB_WRITE, BOUNDARY)})
+    subprocess.run(("git", "-C", str(root), "branch", "main", "base"),
+                   check=True, timeout=60, capture_output=True)
+    monkeypatch.chdir(root)
+    rc = gate.main(["verify_workflow_permissions.py", "--base", "origin/does-not-exist"])
+    out = capsys.readouterr().out
+    assert rc == 1, out
+    assert "(via main)" in out
