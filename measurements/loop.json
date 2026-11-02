@@ -1,6 +1,76 @@
 {
-  "generated_at": "2026-11-02T08:53:44Z",
+  "generated_at": "2026-11-02T13:07:01Z",
   "rows": [
+    {
+      "run": 41446403501,
+      "workflow": "agent-work",
+      "date": "2026-11-02",
+      "started": "2026-11-02T12:38:50Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 17.3,
+      "issue": 616,
+      "pr": 642,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt"
+    },
+    {
+      "run": 41444315251,
+      "workflow": "agent-work",
+      "date": "2026-11-02",
+      "started": "2026-11-02T12:23:34Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 1.8,
+      "issue": null,
+      "pr": 663,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt"
+    },
+    {
+      "run": 41441022194,
+      "workflow": "agent-work",
+      "date": "2026-11-02",
+      "started": "2026-11-02T11:59:02Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 9.6,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "nothing",
+      "attribution": "receipt"
+    },
+    {
+      "run": 41434999817,
+      "workflow": "agent-work",
+      "date": "2026-11-02",
+      "started": "2026-11-02T11:12:55Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 4.2,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "nothing",
+      "attribution": "receipt"
+    },
+    {
+      "run": 41431090657,
+      "workflow": "agent-work",
+      "date": "2026-11-02",
+      "started": "2026-11-02T10:43:34Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 26.6,
+      "issue": 426,
+      "pr": 673,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt"
+    },
     {
       "run": 41392524897,
       "workflow": "agent-work",
@@ -235,8 +305,8 @@
       "minutes": 21.6,
       "issue": 616,
       "pr": 642,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt"
     },
     {
