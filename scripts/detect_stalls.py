@@ -481,6 +481,39 @@ def find_stalls(hours: float) -> list[dict]:
                                 f"{split[0]} non-merge commit(s) landed after the verdict and no "
                                 f"round has seen them. Dispatch QA."),
                         checks=checks, labels=sorted(labels), agent_pushable=pushable))
+            elif fail_age < hours:
+                # A FRESH VERDICT WITH NOTHING PUSHED IS NOT A STALL -- and the
+                # PLACEMENT of this branch is the whole of it. Its premise is
+                # "nobody could have fixed it yet", so it may only be reached
+                # once the `head_age < fail_age` arm above has ruled out a fix
+                # having landed. That arm still reports one immediately.
+                #
+                # THAT ORDER WAS WRONG WHEN THIS FLOOR FIRST LANDED (#659) and
+                # the defect reached `main`. The branch sat FIRST in the chain,
+                # so a fix pushed inside the window was suppressed for the whole
+                # window: `qa-fail-refixed` never fired, `qa-on-green` declines
+                # a `qa-fail` PR by design, and the steward runs twice a day --
+                # so "push a fix, earn a fresh round" silently became "push a
+                # fix, wait four hours". Measured on PRs #649 and #654, whose
+                # round-2 fixes went up ~2h after their verdicts and were
+                # invisible to every path at once.
+                #
+                # THE ORIGINAL DEFECT, which still holds and is why the floor
+                # exists. PR #649: QA wrote `qa-fail` at 16:39; this detector
+                # reported `qa-fail-unaddressed` at 16:41 with fail_age 0.0h;
+                # that kind is in `obliged`, so `agent-steward.yml` demanded
+                # proof of an action; the steward correctly had none to take two
+                # minutes after a verdict; and chief was woken to rule "not a
+                # stall, normal operation". Three invocations, structurally
+                # guaranteed, for a PR nobody could have fixed yet.
+                #
+                # Every other threshold in this file is `hours`; the verdict age
+                # was the one quantity compared against nothing.
+                #
+                # Reported, never silent: a suppressed finding nobody can see is
+                # how a detector starts lying by omission.
+                print(f"  (PR #{n}: qa-fail is {fail_age:.1f}h old with nothing pushed "
+                      f"since, under the {hours:.0f}h floor — not yet a stall)")
             else:
                 stalls.append(dict(
                     kind="qa-fail-unaddressed", pr=n, issue=issue, age_h=round(fail_age, 1),

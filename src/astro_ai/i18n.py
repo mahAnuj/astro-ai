@@ -352,6 +352,8 @@ _EN: Final[dict[str, str]] = {
     "matching_bhakoot_uneval":      "Not evaluated",
     "matching_bhakoot_nopoints":
         "A cancellation removes the dosha. It does not add points to the score above.",
+    "matching_bhakoot_convention":
+        "The zero for this distance is Bhagya's own convention; it is not drawn from the classical text we hold, which names only the 6/8 and 2/12 afflictions.",
     "matching_nadi":        "Nadi Dosh",
     "matching_nadi_grave":  "Gravest form",
     "matching_nadi_alpa":   "Reduced",
@@ -910,6 +912,8 @@ _HI: Final[dict[str, str]] = {
     "matching_bhakoot_uneval":      "जाँच नहीं की गई",
     "matching_bhakoot_nopoints":
         "परिहार दोष को हटाता है। यह ऊपर दिए गए अंकों में वृद्धि नहीं करता।",
+    "matching_bhakoot_convention":
+        "इस दूरी पर शून्य अंक शुभ भाग्य की अपनी परिपाटी है; यह हमारे पास उपलब्ध शास्त्रीय ग्रंथ से नहीं लिया गया है, जिसमें केवल 6/8 और 2/12 की अशुभता बताई गई है।",
     "matching_nadi":        "नाड़ी दोष",
     "matching_nadi_grave":  "गंभीरतम रूप",
     "matching_nadi_alpa":   "अल्प",

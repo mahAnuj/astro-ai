@@ -101,8 +101,19 @@ That is `USER AUTHORISED PUSH` one level up. So:
    would unstick it. Name the run IDs. Someone must be able to check you.
 3. **File ONE issue per distinct root cause**, with the Evidence Block the loop
    requires and an executable `repro:`. Several stalls with one cause get one issue.
-4. **Record a cycle dispatch** — write **one** line, exactly `issue=<n>`, to
+4. **Record a cycle dispatch** — write **one** line, exactly `issue=<n>` **or** `pr=<n>`, to
    `/tmp/steward-dispatch.txt` — when the repair is ordinary delivery work.
+
+   **`pr=<n>` since 2026-11-01 (#650, #653), and it is the form that unsticks most PRs.**
+   `issue=<n>` aims a full cycle at an issue and is the richer dispatch: the cycle reads the
+   issue and can finish work that is not built yet. `pr=<n>` aims a **QA round** at the PR
+   itself (`/agent-cycle` Step 0c) and needs no owning issue at all.
+
+   Use `pr=<n>` whenever the detector names no owning issue, which until that date left you
+   with nothing to write. Measured 2026-11-01: across four PRs you wrote **six comments, every
+   one of them saying "no dispatch by me"**, several because the branch carried no number —
+   and all four PRs were in fact dispatchable as `pr=`. Two merged unattended within minutes
+   of finally getting one.
 
    **Do NOT run `gh workflow run` yourself. It is refused** (#442). Inside this loop
    your `gh` is the Claude GitHub App token and the Actions API answers it
@@ -245,17 +256,43 @@ Do not manufacture work. These are normal and you leave them alone:
 - `qa-fail` present. That PR is correctly blocked; QA found something. Not your
   business.
 - A red gate. That is the system working. A failing check is information, not a stall.
-- A PR the detector could not name an owning issue for — a `measurements/*` branch,
-  or anything outside `issue/`, `partial/` and `fix/`. A dispatch needs an issue to
-  aim at. **Who OPENED the PR is not the test** (#531): the owner opens PRs on cycle
-  branches, and those are this loop's to unblock.
+- A `measurements/*` branch. Those carry no owning issue by construction and nothing
+  about them is delivery work. **Who OPENED the PR is not the test** (#531): the owner
+  opens PRs on cycle branches, and those are this loop's to unblock.
+
+  **A branch with no issue number is NO LONGER one of these.** Until 2026-11-01 this
+  bullet also excluded it, on the grounds that a dispatch had to be aimed at an issue.
+  That stopped being true when the carrier learned `pr=<n>`, and the obsolete wording is
+  described rather than quoted here on purpose: a dead rule written out in full is a rule
+  the next reader can act on by mistake. It is the reason you wrote "there is nothing
+  legitimate to write" six times in one day while four green PRs waited. Dispatch it as
+  `pr=<n>`.
 - A PR authored by neither `claude[bot]` nor the repository owner. A contributor's PR
   is not this loop's to drive.
 - `needs-human-review` already on the issue. Someone has been told. Re-filing is noise.
 
-**If the detector's findings are all of the above, say so and produce nothing.** A quiet
-run is a correct run, and saying "nothing was stuck that is mine to fix" is the most
-useful sentence you can write when it is true.
+**If the detector's findings are all of the above, produce nothing — including no PR
+comment.** A quiet run is a correct run. Say "nothing was stuck that is mine to fix" **in
+the run summary**, where a human looking for it will find it, and leave the PRs alone.
+
+**ONE COMMENT PER HEAD, which is the guard you never had.** Before commenting on a PR,
+read your own prior comments on it and compare the head:
+
+```bash
+gh pr view <n> --json headRefOid,comments \
+  --jq '.headRefOid, (.comments[] | select(.body|startswith("**steward")) | .body[0:160])'
+```
+
+If you already commented at this head and reached the same conclusion, **write nothing**.
+A new commit is new information and earns a fresh reading; the same commit never does —
+`qa-on-green` has enforced exactly this from the start and its comment calls it "the
+reason this workflow is safe to run on every green".
+
+**Measured 2026-11-01.** Across four PRs, 26 comments were written. Six were yours and
+five were chief's, and **all eleven produced no act**; the four that mattered were two
+dispatches and two QA verdicts. chief ruled three times on one unchanged SHA. A comment
+is not an act, and a repeated comment is indistinguishable from a new finding to
+everything downstream.
 
 ## Report
 
