@@ -36,10 +36,11 @@
 #
 # EXIT CODES, so a workflow step can route on them:
 #   0  dispatched and verified running; or nothing was recorded (a legitimate
-#      ruling); or a cycle is already in flight, so this one defers.
+#      ruling); or a cycle is already in flight, so this one is QUEUED
+#      (scripts/cycle_queue.py) and started when that cycle completes.
 #   1  a ruling was recorded and could NOT be carried out: unparseable, the
 #      target is not open, an `issue=` ruling named a pull request, no run
-#      appeared, or the run died on arrival.
+#      appeared, the run died on arrival, or it could not be queued.
 #   2  could not run: bad arguments.
 set -uo pipefail
 
@@ -130,12 +131,31 @@ if [ "$state" != "OPEN" ]; then
   exit 1
 fi
 
-# Never queue a second cycle behind one in flight. An unreadable answer counts as
+# Never DISPATCH a second cycle behind one in flight. An unreadable answer counts as
 # busy: guessing "not busy" is what spends the quota twice.
 busy=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 10 \
          --json status --jq '[.[] | select(.status != "completed")] | length' 2>/dev/null || echo unknown)
+#
+# BUSY MEANS QUEUED, NOT DROPPED -- since 2026-11-02. This used to print "it
+# waits for the next run" and exit, and nothing ever came back for the ruling:
+# GitHub keeps one pending run per concurrency group and CANCELS the older one
+# when a third arrives, so dispatching behind a running cycle loses work, and
+# not dispatching lost it too (#560: qa-on-green's marker was already spent).
+# `scripts/cycle_queue.py` records the ruling as a marker comment and
+# `agent-queue.yml` starts the oldest entry when the running cycle completes.
+# QUEUE_ON names where the entry may be written -- `qa-on-green` can comment on
+# its PR but not on an issue -- and defaults to the target itself.
 if [ "$busy" != "0" ]; then
-  echo "::warning::a cycle is in flight (or the check failed: '$busy'). ${WHO}'s ruling at $kind #$target stands; it waits for the next run rather than queueing behind this one."
+  echo "::notice::a cycle is in flight (or the check failed: '$busy'). ${WHO}'s ruling at $kind #$target is QUEUED, not dropped."
+  if [ -n "$DRY" ]; then
+    echo "DRY RUN: would queue agent-work at $kind #$target on ${WHO}'s ruling"
+    exit 0
+  fi
+  if ! python3 "$(dirname "$0")/cycle_queue.py" enqueue \
+         --kind "$kind" --target "$target" --by "$WHO" --on "${QUEUE_ON:-$target}"; then
+    echo "::error::${WHO}'s ruling at $kind #$target could NOT be queued. It is lost unless re-ruled."
+    exit 1
+  fi
   exit 0
 fi
 

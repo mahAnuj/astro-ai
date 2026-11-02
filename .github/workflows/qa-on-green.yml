@@ -310,7 +310,8 @@ jobs:
       # most reliable defect is a copied file diverging (`id-token: write` was
       # missing from four loops each copied from a fifth), and a dispatcher whose
       # instances drift is that bug with a worse blast radius. The script
-      # re-checks that the issue is open and that no cycle is in flight, and
+      # re-checks that the issue is open, QUEUES the ruling if a cycle is in
+      # flight (on this PR, via QUEUE_ON -- see scripts/cycle_queue.py), and
       # verifies the run it created survived 90s -- `gh workflow run` exits 0 on
       # a run that then dies in 1.5 seconds, which is how #421 hid for three days.
       - name: Carry out the dispatch
@@ -319,6 +320,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           TARGET: ${{ steps.pick.outputs.target }}
+          # Where a QUEUED entry is written if a cycle is already running. This
+          # workflow may comment on PRs and not on issues, so an `issue=<n>`
+          # ruling is queued on the PR it came from. See scripts/cycle_queue.py.
+          QUEUE_ON: ${{ steps.pick.outputs.pr }}
         run: |
           set -uo pipefail
           # `issue=<n>` or `pr=<n>`. The carrier parses the form strictly and

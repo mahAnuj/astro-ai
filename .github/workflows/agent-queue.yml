@@ -1,0 +1,57 @@
+# Starts the oldest QUEUED `agent-work` ruling once the slot is actually free.
+#
+# WHY A SEPARATE WORKFLOW, AND WHY ON COMPLETION
+# ----------------------------------------------
+# `agent-work` runs one cycle at a time, and GitHub keeps at most ONE pending
+# run per concurrency group: a third dispatch cancels the waiting one, with no
+# error anywhere. So a dispatch made while a cycle is running is QUEUED by
+# `scripts/dispatch_cycle.sh` (via `scripts/cycle_queue.py`), and this workflow
+# drains it.
+#
+# Draining from a final step INSIDE `agent-work` was the obvious design and is
+# wrong: that run is still in progress, so the dispatch lands in the pending
+# slot, where `agent-work`'s own scheduled fire can cancel it. `workflow_run`
+# on completion means the slot is free when this looks.
+#
+# `Agent steward` completing is the backstop (twice a day): it catches an entry
+# queued when no cycle was really running -- the busy check counts an
+# unreadable answer as busy -- and a drain run that died. It costs no scheduled
+# runs of its own. A `*/30` cron here would be ~1,400 Actions minutes a month
+# against a 2,000-minute allowance, for a case those two triggers already cover.
+#
+# ONE ENTRY PER RUN. The constraint this exists for is "one cycle at a time";
+# the next entry is started when THAT cycle completes and fires this again.
+name: Agent queue
+
+on:
+  workflow_run:
+    # `name:` fields, never filenames -- verify_workflows.py checks both exist.
+    workflows: ["Agent work", "Agent steward"]
+    types: [completed]
+  workflow_dispatch:
+
+# Every scope here is one an existing dispatcher already holds:
+#   actions: write        dispatch_cycle.sh runs `gh workflow run agent-work.yml`
+#   issues/pull-requests  edit a queue entry's marker once it is taken or dropped
+permissions:
+  contents: read
+  actions: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: agent-queue
+  cancel-in-progress: false
+
+jobs:
+  drain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start the oldest queued cycle
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 scripts/cycle_queue.py drain

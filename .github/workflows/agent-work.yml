@@ -132,6 +132,10 @@ on:
         description: "PR number to run a QA round on (blank = none; cannot be combined with issue)"
         required: false
 
+# ONE cycle at a time. GitHub keeps at most ONE pending run in this group and
+# cancels the older pending run when another arrives, so nothing may dispatch
+# here while a cycle runs: `scripts/dispatch_cycle.sh` QUEUES the ruling
+# instead, and `agent-queue.yml` starts it when this run completes.
 concurrency:
   group: agent-work
   cancel-in-progress: false   # never kill a cycle mid-QA; let it finish

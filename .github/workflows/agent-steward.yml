@@ -427,7 +427,9 @@ jobs:
 
             You do not need to check whether a cycle is already running. The
             step checks that itself, with a credential that can actually read
-            the Actions API, and refuses rather than queueing a second.
+            the Actions API. If one is running, your ruling is QUEUED and
+            started when that cycle completes (scripts/cycle_queue.py), so a
+            busy loop is no reason to hold back a dispatch.
           claude_args: |
             --max-turns 50
             --effort high

@@ -121,11 +121,16 @@ def test_a_closed_issue_is_refused(tmp_path):
     assert "CLOSED" in r.stdout
 
 
-def test_a_cycle_already_in_flight_defers_rather_than_queueing(tmp_path):
+def test_a_cycle_already_in_flight_is_QUEUED_not_dropped(tmp_path):
+    """It used to say "waits for the next run" and nothing ever came back for
+    the ruling (#560). Since 2026-11-02 it is queued; the queue itself is
+    tested end to end in tests/test_cycle_queue.py. Dry run: nothing written."""
     r = _run(tmp_path, "issue=409", busy=1)
     assert r.returncode == 0, r.stdout
     assert "in flight" in r.stdout
-    assert "waits for the next run" in r.stdout
+    assert "QUEUED, not dropped" in r.stdout
+    assert "would queue" in r.stdout
+    assert "waits for the next run" not in r.stdout
 
 
 def test_an_unreadable_concurrency_check_counts_as_busy(tmp_path):

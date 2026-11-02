@@ -127,7 +127,9 @@ That is `USER AUTHORISED PUSH` one level up. So:
 
    **You do not check concurrency or whether the issue is open.** The carrier
    (`scripts/dispatch_cycle.sh`) re-checks both with a token that can read the
-   Actions API, refuses rather than queueing a second cycle, and verifies the run
+   Actions API, QUEUES the ruling if a cycle is already running (started when that
+   cycle completes, `scripts/cycle_queue.py` — so a busy loop is no reason to hold
+   back a dispatch you would otherwise make), and verifies the run
    it created survived 90s — because `gh workflow run` exits 0 on a run that then
    dies in 1.5 seconds, which is how #421 hid for three days.
 
