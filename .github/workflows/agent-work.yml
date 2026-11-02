@@ -493,8 +493,35 @@ jobs:
               exit 0
             }
           fi
-          if gh pr list --repo "$GH_REPO" --head "$branch" --json number --jq '.[0].number' | grep -q .; then
-            echo "PR already open for $branch"
+          # --state all, NOT the `gh pr list` default of --state open.
+          #
+          # Measured: PR #660 merged at 22:51:06Z; this step ran ten seconds
+          # later, asked for OPEN PRs on the same head, got an empty list, and
+          # opened #663 -- a second PR for work that was already on main. Its
+          # diff against the merge base was empty. The receipt step below has
+          # always used `--state all`; only this guard did not.
+          #
+          # A MERGED PR and a CLOSED PR are both reasons not to create: the
+          # first means the work landed, the second means someone decided it
+          # should not. Re-opening either is wrong, so all three states
+          # suppress creation and the state is printed to say which one.
+          #
+          # This matters more than one wasted PR. A PR this step opens is
+          # authored by `github-actions[bot]`, which is NOT in `AGENT_AUTHORS`
+          # in `qa-on-green.yml` or `agent-merge.yml`, so neither workflow will
+          # ever label or merge it (#669). Every PR this guard creates by
+          # mistake is therefore an ORPHAN -- green gates, no verdict, no
+          # owner, forever -- and it still draws `detect_stalls`, `steward` and
+          # `chief` attention, because none of them filter on author.
+          existing=$(gh pr list --repo "$GH_REPO" --head "$branch" --state all \
+            --json number,state --jq '.[0] | select(.) | "\(.number) \(.state)"') || {
+            # A FAILED lookup is not "no PR". Creating one on a failed read is
+            # how the orphan above gets made, so decline and say so.
+            echo "::warning::could not list PRs for $branch; not opening one"
+            exit 0
+          }
+          if [ -n "$existing" ]; then
+            echo "PR already exists for $branch: #$existing — not opening another"
           else
             GH_TOKEN="$PR_TOKEN" gh pr create --repo "$GH_REPO" --base main --head "$branch" --fill
           fi

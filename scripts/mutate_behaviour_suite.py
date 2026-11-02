@@ -4345,6 +4345,45 @@ MUTATIONS = [
      '        print("This is NOT a pass: an unverified diff may be granting a power.")\n        return 2\n    try:',
      '        print("This is NOT a pass: an unverified diff may be granting a power.")\n        return 0\n    try:',
      'test_no_usable_base_exits_2_and_says_it_is_NOT_a_pass'),
+    # --- a conflict is work, not a gate defect (#616) ------------------------
+    # `green` is check HISTORY on the head SHA, so it survives `main` moving
+    # underneath the branch. Order is the whole fix, and these rows prove both
+    # directions of it: the conflict must be SEEN, and UNKNOWN must not be
+    # mistaken for it.
+
+    ('#616: the conflict branch never matches, so a conflict reads as a gate defect',
+     "scripts/detect_stalls.py",
+     'elif pr.get("mergeable") == "CONFLICTING" and checks:',
+     'elif pr.get("mergeable") == "NEVER" and checks:',
+     'test_a_green_qa_pass_pr_that_CONFLICTED_is_not_called_a_gate_defect'),
+
+    ('#616: the test becomes a negation, so a freshly pushed UNKNOWN reads as conflicting',
+     "scripts/detect_stalls.py",
+     'elif pr.get("mergeable") == "CONFLICTING" and checks:',
+     'elif pr.get("mergeable") != "MERGEABLE" and checks:',
+     'test_anything_that_is_not_exactly_CONFLICTING_is_not_treated_as_conflicting'),
+
+    ('#616: the finding drops `conflicting`, so the routing table cannot match it',
+     "scripts/detect_stalls.py",
+     '                conflicting=True,\n                checks=checks, labels=sorted(labels), agent_pushable=pushable))\n        elif "qa-pass" in labels',
+     '                checks=checks, labels=sorted(labels), agent_pushable=pushable))\n        elif "qa-pass" in labels',
+     'test_the_finding_carries_conflicting_true_so_the_routing_table_matches'),
+
+    # The `and checks` gate is what keeps the older `elif not checks:` arm
+    # reachable. Drop it and the new arm swallows a conflicting PR with no
+    # checks, so the older arm becomes dead code and the finding says "history
+    # on the head SHA" about a PR that has no history.
+    ('#616: the `and checks` gate is dropped, so a no-checks conflict gets the history detail',
+     "scripts/detect_stalls.py",
+     'elif pr.get("mergeable") == "CONFLICTING" and checks:',
+     'elif pr.get("mergeable") == "CONFLICTING":',
+     'test_a_conflicting_pr_with_NO_checks_keeps_the_older_arms_detail'),
+
+    ('#616: the older no-checks conflict arm stops emitting pr-conflicting',
+     "scripts/detect_stalls.py",
+     '                    kind="pr-conflicting", pr=n, issue=issue, age_h=round(age, 1),\n                    detail=(f"CONFLICTING for {age:.0f}h, so GitHub cannot build',
+     '                    kind="DEADCODE", pr=n, issue=issue, age_h=round(age, 1),\n                    detail=(f"CONFLICTING for {age:.0f}h, so GitHub cannot build',
+     'test_a_conflicting_pr_with_NO_checks_keeps_the_older_arms_detail'),
     # --- the probe header suppresses four alerts and no others (#618) --------
     # The header is UNAUTHENTICATED, so the allow-list is the whole safety
     # argument: anyone may send it, which is fine for a diagnostic plus an
@@ -4389,6 +4428,60 @@ MUTATIONS = [
      'if probe.suppresses_owner_alert(request, "kundli_generated"):',
      'test_a_normal_kundli_render_STILL_fires_exactly_one_alert'),
 
+    # --- qa_verdict learns which context is recording the verdict -----------
+    # FIRST MUTATION ROWS THIS SCRIPT HAS EVER HAD. It writes `qa-pass`, which
+    # is the sole merge trigger, and until now it was the only gate-critical
+    # script with no behaviour test and no row. These guard the DIAGNOSTIC; the
+    # refusal it precedes lands separately, after a real agent-work log
+    # confirms the reading.
+
+    ('qa_verdict: one runner variable is enough to claim to be the loop',
+     'scripts/qa_verdict.sh',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ]; then',
+     'test_half_the_runner_evidence_is_not_the_loop'),
+
+    ('qa_verdict: $CI is read as the loop',
+     'scripts/qa_verdict.sh',
+     'if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then',
+     'if [ -n "${CI:-}" ]; then',
+     'test_CI_is_deliberately_not_consulted'),
+
+    ('qa_verdict: the mode is reported inverted',
+     'scripts/qa_verdict.sh',
+     '[ "$IN_LOOP" = 1 ] && MODE=loop',
+     '[ "$IN_LOOP" = 0 ] && MODE=loop',
+     'test_the_loop_is_read_as_the_loop'),
+
+    ('qa_verdict: an unset runner variable is reported as blank, not unset',
+     'scripts/qa_verdict.sh',
+     'GITHUB_ACTIONS=${GITHUB_ACTIONS:-unset}',
+     'GITHUB_ACTIONS=${GITHUB_ACTIONS:-}',
+     'test_an_unset_variable_is_reported_as_unset_not_as_blank'),
+
+    # RE-ANCHORED in round 2. `${GITHUB_RUN_ID:+set}` was replaced by an
+    # explicit set/unset, because `:+` rendered an UNSET id as an empty string
+    # -- indistinguishable from set-to-empty, which the QA round flagged as a
+    # non-blocking ambiguity. The rule is unchanged: the VALUE never appears.
+    ('qa_verdict: the run id value is printed into every log line',
+     'scripts/qa_verdict.sh',
+     'echo set || echo unset)',
+     'echo "${GITHUB_RUN_ID}" || echo unset)',
+     'test_the_run_id_VALUE_is_not_printed'),
+
+    # ---- round 2 on #649, from the independent QA round's two findings -----
+
+    ('#649 r2: the mode line moves back after the exits, so a failed run reports nothing',
+     'scripts/qa_verdict.sh',
+     'echo "qa_verdict: mode=$MODE" \\',
+     ': "qa_verdict: mode=$MODE" \\',
+     'test_the_mode_is_reported_even_when_the_run_exits_early'),
+
+    ('#649 r2: an unset run id reads as set, so mode=top-level contradicts its own evidence',
+     'scripts/qa_verdict.sh',
+     '&& echo set || echo unset)',
+     '&& echo set || echo set)',
+     'test_an_empty_run_id_reads_as_unset_not_as_set'),
     # ---- #642: the loop may work the issues it filed itself ----------------
     #
     # Measured 2026-11-01: 40 of the 130 open issues were filed by this repo's
@@ -4736,6 +4829,19 @@ MUTATIONS = [
      'PROOF = f"Swiss Ephemeris chart math  ·  Sidereal Lahiri ayanamsha',
      'test_generator_reads_the_registry_and_types_no_count'),
 
+
+    # --- #654/#649: the steward's own prompt must offer the pr= form ---
+    ("steward prompt: the ruling line narrows back to issue= alone, as it was until 2026-11-02",
+     ".github/workflows/agent-steward.yml",
+     'exactly `issue=<number>` OR `pr=<number>`, to',
+     'exactly `issue=<number>`, to',
+     "test_the_steward_prompt_does_not_say_exactly_issue_only"),
+    # --- #663/#669: the rescue net must see a MERGED PR, not just an open one ---
+    ("rescue net: the PR lookup drops --state all and reads OPEN pull requests only",
+     ".github/workflows/agent-work.yml",
+     '--state all \\\n            --json number,state',
+     '\\\n            --json number,state',
+     "test_the_guard_asks_for_every_state"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

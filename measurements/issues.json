@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-02T08:53:57Z",
+  "generated_at": "2026-11-02T13:07:16Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 132,
-  "with_ask": 56,
+  "open": 130,
+  "with_ask": 55,
   "by_area": {
     "UNCLASSIFIED": 47,
     "INFRA": 17,
@@ -12,14 +12,14 @@
     "FEATURE": 7,
     "NUMEROLOGY": 6,
     "MEASURE": 3,
-    "DETECT_STALLS": 3,
     "BUG": 3,
     "SEO": 3,
-    "CONTENT": 2,
+    "DETECT_STALLS": 2,
     "SECURITY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "CHORE": 2,
+    "CONTENT": 1,
     "PRIVACY": 1,
     "REPO": 1,
     "CHART": 1,
@@ -33,21 +33,21 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 41,
+    "untyped": 40,
     "bug": 33,
     "enhancement": 26,
-    "correctness": 11,
+    "correctness": 10,
     "design": 8,
     "chore": 7,
     "ui": 6
   },
   "by_priority": {
-    "unset": 95,
+    "unset": 93,
     "medium": 20,
     "high": 16,
     "low": 1
   },
-  "blocked": 9,
+  "blocked": 8,
   "rows": [
     {
       "number": 669,
@@ -206,22 +206,6 @@
       "created": "2026-10-31T07:09:19Z",
       "updated": "2026-11-01T21:02:39Z",
       "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 616,
-      "title": "detect_stalls: a green qa-pass PR that later became CONFLICTING is reported mergeable-but-open, routing it to 'diagnose the gate' instead of 'merge main in'",
-      "ask": "Test pr.get(\"mergeable\") == \"CONFLICTING\" before the qa-pass and green branch and emit pr-conflicting for it, so a conflicted PR is routed to the cycle that merges main in",
-      "area": "DETECT_STALLS",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "needs-human-review",
-        "provenance:outsider"
-      ],
-      "created": "2026-10-31T02:25:29Z",
-      "updated": "2026-11-01T10:32:39Z",
-      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -912,23 +896,6 @@
       ],
       "created": "2026-10-20T02:24:10Z",
       "updated": "2026-10-31T16:27:29Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 426,
-      "title": "[CONTENT] Saturn's exit from Pisces is stated as 'early 2027' / 'late Feb 2027' on /learn/sade-sati and the gochar page; the engine's ephemeris says 2027-06-03 — and Jupiter does not stay in Cancer for 12 months",
-      "ask": "",
-      "area": "CONTENT",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "seo",
-        "content",
-        "astrology-correctness"
-      ],
-      "created": "2026-10-19T23:20:46Z",
-      "updated": "2026-10-23T21:14:50Z",
       "blocked": false,
       "needs_evidence": false
     },
