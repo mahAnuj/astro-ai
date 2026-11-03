@@ -130,7 +130,7 @@
     has_chart:  "{{ 'yes' if user_age_bucket(request) else 'no' }}"
   };
 </script>
-<script src="/static/analytics.js" defer></script>
+<script src="/static/analytics.js?v={{ asset_v('analytics.js') }}" defer></script>
 {# Scroll-reveal is pure CSS keyframe now — see [data-reveal] rule in
    the <style> block below. No JS needed. #}
 <script>

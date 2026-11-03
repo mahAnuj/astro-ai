@@ -24,6 +24,10 @@
  *   .pwaInstalled()                — accepted the PWA install prompt
  *   .feedbackSent({type})          — submitted the feedback form
  *   .pageView(path)                — manual pageview (use for SPA nav)
+ *   .ctaClick({from_path,to_path}) — a /learn reader followed an in-article link
+ *                                    to a tool; links in nav/header/footer never
+ *                                    count (fired by the delegated listener
+ *                                    below, not by templates — see TOOL_ROOTS)
  *
  * Add a new event by adding a method here — keep templates dumb.
  */
@@ -63,6 +67,71 @@
     if (window.clarity) window.clarity('event', name);
   }
 
+  // ── cta_click: a /learn reader follows an in-article link to a tool (#570) ──
+  // #276/#329/#521/#518 each claim these links get used; the only proxy was
+  // pages/session, which cannot resolve at ~500 sessions/28d. One delegated
+  // listener on `document` rather than an attribute per link: templates stay
+  // free of gtag, no article has to be edited (#311's window is open), and it
+  // survives hx-boost body swaps because `document` is never swapped.
+  //
+  // TOOL_ROOTS is matched on the FIRST path SEGMENT, never as a substring, so
+  // /muhurat/vivah, /numerology/compatibility and /dasha/deep-dive count as the
+  // tool they belong to and /kundlifoo does not count as /kundli. That also
+  // admits /kundli/card (an SVG, linked from no article) -- deliberate: a
+  // sub-page of a tool is still the tool. Derived 2026-11-03 from every
+  // distinct non-/learn/ href in templates/learn/*.html and
+  // learn_article_base.html; tests/test_learn_tool_routes.py::
+  // test_every_learn_internal_href_is_classified fails when a new one appears
+  // unclassified, so a new tool link cannot be silently ignored.
+  var TOOL_ROOTS = [
+    '/kundli', '/dasha', '/matching', '/ask', '/manglik-check',
+    '/sade-sati-check', '/kaal-sarp-check', '/numerology', '/muhurat'
+  ];
+  // SITE CHROME NEVER COUNTS, for any path. QA round 1 measured the rendered
+  // /learn/sade-sati/: ~21 tool anchors sit in the desktop nav, the mobile tab
+  // bar and the footer against ~6 genuine in-article links (~3:1), and no param
+  // separates them -- so a chrome click is a navigation click, and counting it
+  // makes the event measure the menu rather than "an in-article tool CTA".
+  // Every real CTA (in-prose links, the end-of-article card, the sticky mobile
+  // CTA `#learn-sticky-cta`, a <div>) sits outside <nav>, <header> and <footer>,
+  // so none is lost. The test is on position because the path cannot say.
+  //
+  // "/" is the extra hard case: it is BOTH the Kundli form (72 in-article
+  // "Generate your free Kundli" links, the end-of-article CTA, the sticky mobile
+  // CTA) and the site's Home link, so it is a tool only outside chrome -- which
+  // the rule above already guarantees, hence no special case beyond listing it.
+  var CHROME_SELECTOR = 'nav, header, footer';
+
+  function isToolPath(path) {
+    if (path === '/') return true;
+    for (var i = 0; i < TOOL_ROOTS.length; i++) {
+      var r = TOOL_ROOTS[i];
+      if (path === r || path.indexOf(r + '/') === 0) return true;
+    }
+    return false;
+  }
+
+  // PATHS ONLY: `location.pathname` and the link's `pathname`. Never the query
+  // string, hash, link text or anything a visitor typed. Modified clicks
+  // (ctrl/meta/shift) ARE counted -- the `click` event still fires for them and
+  // a new-tab open is a follow; a middle click fires `auxclick`, not `click`,
+  // and is not counted. Never preventDefault/stopPropagation: this observes.
+  document.addEventListener('click', function (e) {
+    try {
+      if (location.pathname.indexOf('/learn/') !== 0) return;
+      var el = e.target;
+      if (el && !el.closest && el.parentElement) el = el.parentElement;  // text node
+      if (!el || !el.closest) return;
+      var a = el.closest('a[href]');
+      if (!a) return;
+      if (a.closest(CHROME_SELECTOR)) return;
+      var url = new URL(a.href, location.href);
+      if (url.origin !== location.origin) return;
+      if (!isToolPath(url.pathname)) return;
+      window.Analytics.ctaClick({ from_path: location.pathname, to_path: url.pathname });
+    } catch (err) { /* analytics must never break a click */ }
+  });
+
   // ── Public surface ───────────────────────────────────────────────────
   window.Analytics = {
     track: track,
@@ -94,6 +163,20 @@
     featureView: function (feature) {
       if (!feature) return;
       track('feature_view', { feature: feature });
+    },
+
+    // transport_type 'beacon': the click navigates away, and without it gtag's
+    // XHR can be cancelled by the unload and the event lost. It is a
+    // transport option gtag consumes on event calls, not a reported dimension.
+    // Params are rebuilt from the two named fields so nothing else a caller
+    // passes can reach GA4.
+    ctaClick: function (p) {
+      p = p || {};
+      track('cta_click', {
+        from_path: p.from_path,
+        to_path: p.to_path,
+        transport_type: 'beacon'
+      });
     },
 
     // Manual pageview helper. GA4's auto-config sends the initial pageview;
