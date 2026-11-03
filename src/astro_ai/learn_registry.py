@@ -619,8 +619,18 @@ ARTICLES: tuple[Article, ...] = (
         slug="sade-sati",
         title="Sade Sati: The 7.5-Year Saturn Lesson, Without the Fear",
         summary="Saturn's transit across your Janma Rashi over 7.5 years — the most-feared transit in Vedic astrology and the most misunderstood. The three phases, what each really teaches, classical remedies, and why most lives are better on the other side.",
-        seo_title="Sade Sati: Saturn's 7.5-Year Lesson (Without the Fear)",
-        seo_description="Sade Sati is Saturn's 7.5-year transit across your Janma Rashi — the 3 phases, what each really teaches, classical remedies, and why most emerge stronger.",
+        # #685, written 2026-11-03: these two strings name the signs in Sade Sati AT THIS
+        # MOMENT, so unlike the evergreen pair they replaced they have a shelf life. They
+        # become FALSE when Saturn enters Aries on 2027-06-03 (sidereal/Lahiri, per FAQ #1
+        # below and the template's "currently in Pisces" paragraph): from then Aries is the
+        # peak, Pisces moves to setting and Aquarius drops out. Saturn then slips back into
+        # Pisces ~2027-10-21 and re-enters Aries ~2028-02-24 (FAQ #1), so it flips again.
+        # Whoever touches this page on or after 2027-06-03 must revisit both strings, FAQ #1
+        # and the template's "currently in Pisces" paragraph together.
+        # Phase names are position words (setting/peak/rising), never Arambha/Madhya/Uttara:
+        # SOURCES.md:530 records those as UNSOURCED. Pinned by tests/test_learn_sade_sati_seo.py.
+        seo_title="Sade Sati Now: Aquarius, Pisces and Aries Moon Signs",
+        seo_description="Sade Sati now: Aquarius Moons are in the setting phase, Pisces the peak, Aries the rising phase. What each phase teaches, plus classical remedies.",
         category="Doshas",
         hero_image="/static/learn/sade-sati/hero.svg",
         read_time="8 min",
