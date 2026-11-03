@@ -231,6 +231,32 @@ _PREFIX_ZERO = {"calls": 0, "measurable": 0, "reported": 0,
                 "prompt_measurable": 0, "prompt_reported": 0, "cached_tokens": 0,
                 "cached_measurable": 0, "reported_unmeasurable": 0}
 
+# The keys a stored row must carry to be READABLE (#431). Separate from
+# `_PREFIX_ZERO` on purpose. Both used to be one set, so adding any counter made
+# every stored row fail the gate and the whole window emptied itself -- which is
+# why a ninth key was treated as unaffordable. Now adding a counter is one of two
+# explicit acts:
+#   * add it to `_PREFIX_ZERO` only  -> declares "absent == 0". Old rows stay
+#     readable and `range_summary` sums `pc.get(field, 0)` over `_PREFIX_ZERO`.
+#   * add it to `_PREFIX_REQUIRED` too -> declares "absent is NOT zero", and rows
+#     without it are skipped whole, as before.
+# A key is safe to default only if it is a pure event counter outside both rates
+# (`cached_tokens` / `prompt_reported`, `cached_measurable` / `prompt_measurable`)
+# and outside `_is_impossible`, and no existing field changed meaning. A missing
+# denominator beside a present numerator is the 571% / 3998% defect.
+#
+# A shape check cannot see a change of MEANING under the same key names. To change
+# what a field means, add a NEW key to `_PREFIX_REQUIRED`; never reuse a name.
+_PREFIX_REQUIRED = frozenset({"calls", "measurable", "reported",
+                              "prompt_measurable", "prompt_reported", "cached_tokens",
+                              "cached_measurable", "reported_unmeasurable"})
+
+
+def _is_known_prefix_row(pc) -> bool:
+    """True when `pc` carries every key in `_PREFIX_REQUIRED`. One predicate for
+    `record()` and `range_summary()`, so the write and read sides cannot drift."""
+    return isinstance(pc, dict) and _PREFIX_REQUIRED <= pc.keys()
+
 
 def _now_minute() -> int:
     """The UTC epoch minute. A function so a test can pin it (#475)."""
@@ -320,7 +346,8 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
     returned for the call that SERVED this request, or None when the probe did not
     apply (not a Groq host) or could not classify the call. It rides the same
     mutator -- no extra storage write -- and `_PREFIX_ZERO` is deliberately not
-    touched (the "ninth key" warning in the prefix-cache block below).
+    touched (it needed no new counter; see `_PREFIX_REQUIRED` for what adding one
+    would take).
 
     KNOWN GAP: a request whose whole chain fails never reaches record() (it is
     called on success only, and there is no failure-path record call to ride),
@@ -426,7 +453,17 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
             if _as_int(ratelimit.get("last_limit")) > 0:
                 rl["last_limit"] = _as_int(ratelimit.get("last_limit"))
 
-        pc = data.setdefault("prefix_cache", {}).setdefault(stat_key, dict(_PREFIX_ZERO))
+        rows = data.setdefault("prefix_cache", {})
+        pc = rows.get(stat_key)
+        if not _is_known_prefix_row(pc):
+            # REPLACE, do not upgrade in place (#431). `setdefault` kept an
+            # old-shaped row (v1 stored `prompt_tokens`) and `.get(k, 0)` below
+            # filled its missing keys one call at a time, until it carried all of
+            # them and passed the read gate -- with its old-meaning sums intact.
+            # range_summary would have skipped that row whole, so nothing
+            # readable is lost by starting over, and post-change calls become
+            # visible instead of being absorbed into an unreadable row.
+            pc = rows[stat_key] = dict(_PREFIX_ZERO)
         pc["calls"] = pc.get("calls", 0) + 1
         if prompt_tokens is not None:
             # MEASURABILITY READS (model, size) AND NOTHING ELSE. In particular it
@@ -509,14 +546,14 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
                 # "SMOOTHING an impossible figure into a plausible one is its own
                 # defect".
                 #
-                # Counted in `reported_unmeasurable`, NOT a new field. A ninth
-                # key in `_PREFIX_ZERO` would fail `_PREFIX_ZERO.keys() <=
-                # pc.keys()` for every row already stored, so every historical
-                # row would be skipped whole and the panel would empty itself --
-                # trading a wrong number for no number. The counter already means
-                # "the provider reported on a call this rule cannot use"; an
+                # Counted in `reported_unmeasurable`, NOT a new field. At the time
+                # a ninth key in `_PREFIX_ZERO` would have failed the read gate
+                # for every stored row, so the panel would have emptied itself --
+                # trading a wrong number for no number. That is no longer true
+                # (`_PREFIX_REQUIRED`, #431), but the counter already means "the
+                # provider reported on a call this rule cannot use"; an
                 # impossible report is exactly that, and the panel copy names
-                # both causes.
+                # both causes. Separating them is a follow-up, not this change.
                 pc["reported_unmeasurable"] = pc.get("reported_unmeasurable", 0) + 1
             else:
                 if measurable:
@@ -956,7 +993,11 @@ def range_summary(days: int) -> dict[str, Any]:
             # a mixed window then publishes a rate over 100% (measured: 571% and
             # 3998%). Requiring every field makes a schema change show up as a
             # missing row rather than an inflated percentage.
-            if not _PREFIX_ZERO.keys() <= pc.keys():
+            #
+            # The gate tests `_PREFIX_REQUIRED`, not `_PREFIX_ZERO` (#431): a
+            # counter added to `_PREFIX_ZERO` alone reads as 0 on old rows and
+            # does NOT skip them. Only a key declared required does.
+            if not _is_known_prefix_row(pc):
                 # Say so. The comment here used to claim the skip "makes a schema
                 # change show up as a missing row", which is only true when the
                 # route has no current-schema days: otherwise the row is present
@@ -968,7 +1009,7 @@ def range_summary(days: int) -> dict[str, Any]:
                     log.warning("llm_stats: skipping a prefix_cache row with an "
                                 "unrecognised shape (key=%s, fields=%s) -- its counts "
                                 "are excluded from the aggregate", compound_key,
-                                sorted(pc.keys()))
+                                sorted(pc.keys()) if isinstance(pc, dict) else type(pc).__name__)
                 skipped_rows += 1
                 continue
             acc = prefix_acc.setdefault(parts[2], dict(_PREFIX_ZERO))
