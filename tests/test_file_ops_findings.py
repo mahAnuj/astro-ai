@@ -33,7 +33,9 @@ class FakeGh:
             self.n += 1
             title = args[5][len("title="):]
             body = args[7][len("body="):]
-            self.issues[self.n] = {"title": title, "body": body, "by": fo.WRITER, "comments": []}
+            labels = [a[len("labels[]="):] for a in args if a.startswith("labels[]=")]
+            self.issues[self.n] = {"title": title, "body": body, "by": fo.WRITER, "comments": [],
+                                   "labels": labels}
             return "{}"
         if args[:3] == ["api", "-X", "POST"] and args[3].endswith("/comments"):
             n = int(args[3].split("/issues/")[1].split("/")[0])
@@ -128,3 +130,24 @@ def test_the_steward_runs_the_carrier_before_its_stall_check_without_new_permiss
     assert "file_ops_findings.py" in steps[i]["run"]
     assert i < names.index("Is anything actually stuck?")
     assert doc["jobs"]["steward"]["permissions"]["issues"] == "write"
+
+
+_ev = importlib.util.spec_from_file_location("verify_issue_evidence", ROOT / "scripts" / "verify_issue_evidence.py")
+evidence = importlib.util.module_from_spec(_ev)
+sys.modules["verify_issue_evidence"] = evidence
+_ev.loader.exec_module(evidence)
+
+
+def test_a_filed_issue_passes_the_loops_own_evidence_gate():
+    """QA round 2 on #691: the carrier filed issues with no Evidence Block and no
+    label, and verify_issue_evidence.check() refused them (exit 1, 6 problems), so
+    agent-cycle labelled each needs-evidence and project-manager never ranked one.
+    Filed and never worked. FakeGh hid it because nothing applied the loop's gate
+    to what the carrier writes -- this does, on the issue as actually filed."""
+    for kind in ("claude-quota", "cycle-waste", "loop-idle"):
+        gh = FakeGh()
+        fo.carry(gh, REPO, [F(kind=kind)], "2026-11-03T00:00:00Z")
+        (i,) = gh.issues.values()
+        assert i["labels"] == ["chore"], i["labels"]
+        rc, lines = evidence.check(i["body"], i["labels"], "2026-11-03T00:00:00Z")
+        assert rc == 0, "\n".join(lines)

@@ -95,9 +95,26 @@ def last_comment_state(gh: Runner, repo: str, number: int) -> tuple[str | None, 
     return state, cleared
 
 
+#: Exempts the issue from the traffic fields of the evidence gate; the label
+#: exists on the repository (checked 2026-11-03) -- `labels[]=` on a missing one
+#: is dropped by the API without an error.
+LABEL = "chore"
+
 def body_for(f: dict, now: str) -> str:
     return (f"<!-- {MARK}: {f['kind']} -->\n<!-- ops-state: {_state(f)} -->\n"
             f"**{f['level'].upper()}: {f['title']}**\n\n{f['detail']}\n\n"
+            # The loop's own intake gate (scripts/verify_issue_evidence.py) refuses an
+            # issue with no Evidence Block: agent-cycle labels it needs-evidence and
+            # project-manager never ranks it. QA round 2 on #691 measured exactly that
+            # -- filed and never worked. `chore` (applied in carry()) exempts it from
+            # gsc:/ga4:, and the shell repro yields NO-REPRO at validate_issue.py, so
+            # step 0 can never close one on a probe.
+            f"## Evidence Block\n"
+            f"- corpus: n/a — operational measurement from measurements/*.json, no classical source involved\n"
+            f"- tokens: 0 measured — no LLM path is touched; the lever is the loop's own schedule\n"
+            f"- thesis: acting on the lever named above brings this reading back under its threshold\n"
+            f"- metric: `{f['kind']}` fires 0 times in the next 7 days (thresholds in scripts/detect_ops_regressions.py)\n"
+            f"- repro: `uv run python scripts/detect_ops_regressions.py --json` -> no finding of kind {f['kind']}\n\n"
             f"Filed by `agent-steward`'s ops carrier from `scripts/detect_ops_regressions.py` "
             f"at {now}. One issue per finding kind: it is commented on when the finding "
             f"changes and when it clears, never refiled. See `/admin/ops`.")
@@ -115,7 +132,8 @@ def carry(gh: Runner, repo: str, findings: list[dict], now: str) -> dict:
         cur = existing.get(kind)
         if cur is None:
             gh(["api", "-X", "POST", f"repos/{repo}/issues",
-                "-f", f"title=[OPS] {f['title']}", "-f", f"body={body_for(f, now)}"])
+                "-f", f"title=[OPS] {f['title']}", "-f", f"body={body_for(f, now)}",
+                "-f", f"labels[]={LABEL}"])
             stats["filed"] += 1
             continue
         last, cleared = last_comment_state(gh, repo, cur["number"])
