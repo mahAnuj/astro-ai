@@ -107,6 +107,20 @@ YIELD_FLOOR_PCT = 35
 #: asserts the relationship rather than the number, which is what caught it.
 STALE_HOURS = 32
 
+#: Weekly Claude quota at or above this is a finding (2026-11-03). Every agent
+#: shares ONE Claude Max subscription, and the seven-day window is the one that
+#: binds (measured that day: 69%). Kept equal to ops_data.CLAUDE_QUOTA_ALERT so
+#: the page and the loop alarm at the same number; a test pins it.
+CLAUDE_QUOTA_ALERT = 0.85
+#: The loop spending this share of its cycle time WITHOUT a result (a merged or
+#: open PR, or a QA verdict) over loop.json's waste window is a finding. Measured
+#: 2026-11-03 across 138 cycles: ~47% (1,303 + 440 of ~4,600 minutes).
+WASTE_SHARE_ALERT = 0.40
+#: ...and only once there are enough cycles for a share to mean anything.
+WASTE_MIN_CYCLES = 5
+#: The build lane idle this share of the window, with work open, is a finding.
+IDLE_SHARE_ALERT = 0.75
+
 #: What this script cannot see, named so silence is never read as health. Each
 #: entry is (concern, where it is computed, why a checkout cannot reach it).
 NOT_COVERED = (
@@ -220,6 +234,52 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
                 f"{d.get('cycles')} cycles, {(d.get('outcomes') or {}).get('shipped')} "
                 f"shipped. Below {YIELD_FLOOR_PCT}% the loop is spending the "
                 f"Claude cap without moving the backlog.", "/admin/ops")
+
+    # --- the Claude subscription and the loop's time (2026-11-03) -----------
+    # Owner: "the agent monitoring the ops dashboard should look at these data
+    # to take action and finetune". Each finding names the lever, so the issue
+    # the carrier files from it is workable rather than a status report.
+    try:
+        usage = _read("claude_usage.json")
+    except (OSError, json.JSONDecodeError) as exc:
+        unreadable.append(f"claude_usage.json ({exc.__class__.__name__})")
+    else:
+        latest = usage.get("latest") or {}
+        seven = latest.get("seven_day")
+        rejected = usage.get("rejected_runs") or []
+        if isinstance(seven, (int, float)) and (seven >= CLAUDE_QUOTA_ALERT or rejected):
+            add("claude-quota", "red" if rejected else "amber",
+                f"Claude weekly quota {round(seven * 100)}% used",
+                f"Every agent shares one Claude Max subscription. "
+                f"{len(rejected)} run(s) in the sample hit a limit. Levers, cheapest "
+                f"first: stop dispatching ranked (`/agent-cycle`) cycles that end in "
+                f"nothing; space out the weekly agent loops; keep QA rounds to one "
+                f"per head. Do not add a parallel build lane until it resets.", "/admin/ops")
+    try:
+        loop = _read("loop.json")
+    except (OSError, json.JSONDecodeError) as exc:
+        unreadable.append(f"loop.json ({exc.__class__.__name__})")
+        loop = {}
+    w = loop.get("waste") or {}
+    share = w.get("share_without_result")
+    if isinstance(share, (int, float)) and (w.get("cycles") or 0) >= WASTE_MIN_CYCLES \
+            and share >= WASTE_SHARE_ALERT:
+        m = w.get("minutes_by_outcome") or {}
+        add("cycle-waste", "amber",
+            f"{round(share * 100)}% of cycle time produced no result in {w.get('days')}d",
+            f"{round(w.get('minutes_without_result') or 0)} of {round(w.get('minutes_total') or 0)} "
+            f"minutes: nothing {round(m.get('nothing') or 0)}, failed {round(m.get('failed') or 0)}, "
+            f"unknown {round(m.get('unknown') or 0)}. Read the `nothing` rows in loop.json by "
+            f"`kind` -- a ranked cycle that keeps standing down is a ranking problem, an issue "
+            f"cycle that does is an issue that is not workable as written.", "/admin/ops")
+    idle = w.get("build_idle_share")
+    if isinstance(idle, (int, float)) and idle >= IDLE_SHARE_ALERT:
+        add("loop-idle", "amber",
+            f"Build lane idle {round(idle * 100)}% of the last {w.get('days')}d",
+            f"{w.get('build_idle_hours')}h with no build cycle running. With a backlog open "
+            f"that is unused capacity: the schedule, not the work, is the limit. Check the "
+            f"Claude weekly quota first -- if it has headroom, more cron slots in "
+            f"agent-work.yml are the lever; if not, idle is the right answer.", "/admin/ops")
 
     # --- the backlog, and the triage debt under it ------------------------
     try:

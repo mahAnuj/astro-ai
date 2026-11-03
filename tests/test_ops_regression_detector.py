@@ -81,6 +81,20 @@ def _issues(*, open_=128, unset=40, high=18, stamp=None) -> dict:
             "by_priority": {"unset": unset, "high": high, "medium": 20, "low": 1}}
 
 
+def _usage(seven=0.40, rejected=()):
+    return {"generated_at": "2026-11-01T02:00:00Z",
+            "latest": {"seven_day": seven, "five_hour": 0.02, "status": "allowed"},
+            "rejected_runs": list(rejected)}
+
+
+def _waste(share=0.20, idle=0.30, cycles=20):
+    return {"days": 7, "cycles": cycles, "minutes_total": 600.0,
+            "minutes_without_result": 600.0 * share, "share_without_result": share,
+            "minutes_by_outcome": {"shipped": 400.0, "pr open": 0.0, "judged": 80.0,
+                                   "nothing": 100.0, "failed": 20.0, "unknown": 0.0},
+            "build_idle_hours": round(168 * idle, 1), "build_idle_share": idle}
+
+
 def _repo(tmp_path: Path, agents: dict, snapshots: list[tuple[int, dict]]) -> Path:
     """A repo whose `measurements/issues.json` history is `snapshots`.
 
@@ -91,6 +105,10 @@ def _repo(tmp_path: Path, agents: dict, snapshots: list[tuple[int, dict]]) -> Pa
     root = tmp_path / "repo"
     (root / "measurements").mkdir(parents=True)
     (root / "measurements" / "agents.json").write_text(json.dumps(agents))
+    # 2026-11-03: the Claude quota and loop waste the detector now also reads.
+    # Healthy by default; tests below override them.
+    (root / "measurements" / "claude_usage.json").write_text(json.dumps(_usage()))
+    (root / "measurements" / "loop.json").write_text(json.dumps({"rows": [], "waste": _waste()}))
 
     def run(*a, env_date=None):
         env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path)}
@@ -375,3 +393,64 @@ def test_json_output_carries_findings_unreadable_AND_the_blind_spots(
     assert {"findings", "unreadable", "not_covered"} <= set(doc)
     assert "backlog-growing" in {f["kind"] for f in doc["findings"]}
     assert len(doc["not_covered"]) == len(det.NOT_COVERED)
+
+
+# ------------------------------- the Claude quota and the loop's time (2026-11-03)
+
+def _with(tmp_path, monkeypatch, usage=None, waste=None):
+    root = _repo(tmp_path, _agents(), [(8, _issues()), (0, _issues())])
+    if usage is not None:
+        (root / "measurements" / "claude_usage.json").write_text(json.dumps(usage))
+    if waste is not None:
+        (root / "measurements" / "loop.json").write_text(json.dumps({"rows": [], "waste": waste}))
+    monkeypatch.setattr(det, "ROOT", root)
+    monkeypatch.setattr(det, "MEASUREMENTS", root / "measurements")
+    return det.find(now=NOW)
+
+
+def test_a_high_weekly_quota_is_a_finding_that_names_the_levers(tmp_path, monkeypatch):
+    f, _ = _with(tmp_path, monkeypatch, usage=_usage(seven=0.90))
+    hit = next(x for x in f if x["kind"] == "claude-quota")
+    assert hit["level"] == "amber" and "90%" in hit["title"]
+    assert "parallel build lane" in hit["detail"]
+
+
+def test_a_run_that_HIT_the_limit_is_red_whatever_the_percentage(tmp_path, monkeypatch):
+    f, _ = _with(tmp_path, monkeypatch, usage=_usage(seven=0.50, rejected=[123]))
+    assert next(x for x in f if x["kind"] == "claude-quota")["level"] == "red"
+
+
+def test_quota_below_the_threshold_is_no_finding(tmp_path, monkeypatch):
+    f, _ = _with(tmp_path, monkeypatch, usage=_usage(seven=0.84))
+    assert "claude-quota" not in _kinds(f)
+
+
+def test_the_page_and_the_detector_alarm_at_the_same_quota():
+    from astro_ai import ops_data
+    assert det.CLAUDE_QUOTA_ALERT == ops_data.CLAUDE_QUOTA_ALERT
+
+
+def test_an_unreadable_usage_file_is_UNREAD_not_healthy(tmp_path, monkeypatch):
+    root = _repo(tmp_path, _agents(), [(8, _issues()), (0, _issues())])
+    (root / "measurements" / "claude_usage.json").unlink()
+    monkeypatch.setattr(det, "ROOT", root)
+    monkeypatch.setattr(det, "MEASUREMENTS", root / "measurements")
+    _, u = det.find(now=NOW)
+    assert any("claude_usage.json" in x for x in u)
+
+
+def test_cycle_time_without_a_result_is_a_finding_above_the_share(tmp_path, monkeypatch):
+    f, _ = _with(tmp_path, monkeypatch, waste=_waste(share=0.47))
+    hit = next(x for x in f if x["kind"] == "cycle-waste")
+    assert "47%" in hit["title"] and "kind" in hit["detail"]
+
+
+def test_too_few_cycles_is_no_waste_finding(tmp_path, monkeypatch):
+    f, _ = _with(tmp_path, monkeypatch, waste=_waste(share=0.9, cycles=3))
+    assert "cycle-waste" not in _kinds(f)
+
+
+def test_an_idle_build_lane_is_a_finding_that_points_at_the_quota_first(tmp_path, monkeypatch):
+    f, _ = _with(tmp_path, monkeypatch, waste=_waste(idle=0.80))
+    hit = next(x for x in f if x["kind"] == "loop-idle")
+    assert "Claude weekly quota first" in hit["detail"]

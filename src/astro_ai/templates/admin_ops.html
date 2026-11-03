@@ -77,6 +77,7 @@
   --line:#272c37; --line-2:#39404f;
   --ink:#e8e4da; --ink-dim:#9ba2ae; --ink-mute:#838a97;
   --shipped:#5bb98c; --open:#e3a84a; --nothing:#646c7a; --nothing-text:#8a919d; --failed:#e0614a;
+  --judged:#6f9fd8;
   --accent:#e3a84a; --accent-dim:#8a6a2a;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
 }
@@ -176,6 +177,18 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .blk:hover,.blk:focus-visible{filter:brightness(1.25);box-shadow:0 0 0 1px var(--ink)}
 .blk.o-shipped{background:var(--shipped)} .blk.o-pr-open{background:var(--open)}
 .blk.o-nothing{background:var(--nothing)} .blk.o-failed{background:var(--failed)}
+.blk.o-judged{background:var(--judged)}
+/* Claude quota strip (2026-11-03). The weekly window leads: it is the one that binds. */
+.quota{display:grid;grid-template-columns:auto 1fr auto;gap:6px 14px;align-items:center;
+  margin:0 0 14px;padding:10px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.quota .big{font-size:20px;font-weight:600}
+.quota .meter{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.quota .meter b{display:block;height:100%;background:var(--shipped)}
+.quota.warn .meter b{background:var(--open)} .quota.hot .meter b{background:var(--failed)}
+.quota .sub{grid-column:1/-1;font-size:12px;color:var(--ink-dim)}
+.waste-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:8px}
+.waste-grid div{padding:8px 10px;border:1px solid var(--line);border-radius:4px}
+.waste-grid .n{display:block;font-size:18px;font-weight:600}
 .blk.o-unknown{background:repeating-linear-gradient(135deg,var(--failed) 0 4px,#8c3e32 4px 8px)}
 .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--ink-dim)}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:1px;margin-right:6px;vertical-align:baseline}
@@ -594,6 +607,27 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
 
 <div class="wrap">
 
+  {# ── Claude quota. Every agent shares ONE subscription; this is how much of it
+     is left before the weekly window resets (scripts/collect_claude_usage.py). #}
+  {% set Q = ops.claude %}
+  {% if Q %}
+  <section class="quota {{ 'hot' if Q.seven_left_pct <= 15 else ('warn' if Q.seven_left_pct <= 30 else '') }}">
+    <span class="lbl">Claude weekly quota</span>
+    <span class="meter" title="{{ Q.seven_used_pct }}% used"><b style="width:{{ Q.seven_used_pct }}%"></b></span>
+    <span><span class="big">{{ Q.seven_left_pct }}% left</span>
+      {% if Q.seven_resets_in %}<span class="lbl" style="margin-left:8px">resets in {{ Q.seven_resets_in }}</span>{% endif %}</span>
+    <span class="sub">
+      {{ Q.seven_used_pct }}% of the weekly window used{% if Q.seven_resets_at %}, resets {{ Q.seven_resets_at }} IST{% endif %}.
+      {% if Q.five_used_pct is not none %}Five-hour window {{ Q.five_used_pct }}% used{% if Q.five_resets_in %} (resets in {{ Q.five_resets_in }}){% endif %}.{% endif %}
+      {% if Q.rejected_runs %}<b class="c-failed">{{ Q.rejected_runs }} run(s) hit a limit.</b>{% endif %}
+      Read {{ Q.age.text }} from the agents' own rate-limit logs.
+    </span>
+  </section>
+  {% else %}
+  <p class="clear"><b>Claude quota unknown.</b> <code>measurements/claude_usage.json</code> could not be read
+    — it is written by <code>agent-measure</code>.</p>
+  {% endif %}
+
   {# ── Anything wrong, first. Nothing here on a good day. ───────────── #}
   {% if ops.alerts %}
   <section class="alerts">
@@ -633,6 +667,8 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         Shipped <b>#{{ latest.issue }}</b> as <b>PR&nbsp;#{{ latest.pr }}</b>, merged.
       {% elif latest.outcome == 'pr open' %}
         Opened <b>PR&nbsp;#{{ latest.pr }}</b> for <b>#{{ latest.issue }}</b> — still unmerged.
+      {% elif latest.outcome == 'judged' %}
+        Ran a <b>QA round</b>{% if latest.pr %} on <b>PR&nbsp;#{{ latest.pr }}</b>{% endif %} and recorded a verdict.
       {% elif latest.outcome == 'nothing' %}
         Ran for {{ latest.minutes }} minutes and <b>produced nothing</b>.
       {% else %}
@@ -698,6 +734,31 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         {% else %}<span class="age {{ 'stale' if ops.ages.Backlog.stale }}"
               title="from measurements/issues.json, collected {{ I.generated_at or 'never' }}">as of {{ ops.ages.Backlog.text }}</span>{% endif %}</span>
     </button>
+  </section>
+
+  {# ── Where the loop's time went. loop.json `waste` (scripts/collect_loop_measurements.py).
+     A RESULT is a merged PR, an open PR, or a QA verdict; everything else is time
+     spent without one. Idle is build-lane wall clock with no cycle running. #}
+  {% set W = ops.waste %}
+  <section class="panel">
+    <h2>Where the loop's time went <span class="lbl">last {{ W.days if W else 7 }} days</span></h2>
+    {% if W %}
+    <div class="waste-grid">
+      <div><span class="lab">cycles</span><span class="n">{{ W.cycles }}</span></div>
+      <div><span class="lab">PRs shipped</span><span class="n c-shipped">{{ W.shipped_prs }}</span></div>
+      <div><span class="lab">minutes without a result</span>
+        <span class="n {{ 'c-failed' if (W.no_result_pct or 0) >= 40 }}">{{ W.minutes_without_result|round|int }}
+          {% if W.no_result_pct is not none %}<span class="lbl">({{ W.no_result_pct }}%)</span>{% endif %}</span></div>
+      <div><span class="lab">build lane idle</span><span class="n">{{ W.build_idle_hours }} h
+        <span class="lbl">({{ W.idle_pct }}%)</span></span></div>
+    </div>
+    <p class="sub" style="margin-top:10px">
+      {% for k, v in W.minutes_by_outcome.items() if v %}{{ k }} {{ v|round|int }} min{% if not loop.last %} · {% endif %}{% endfor %}
+    </p>
+    {% else %}
+    <p class="none"><code>loop.json</code> carries no <code>waste</code> block yet — the next
+      <code>agent-measure</code> run writes it.</p>
+    {% endif %}
   </section>
 
   {# ── Token budget ──────────────────────────────────────────────────────
@@ -1128,6 +1189,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       <div class="legend">
         <span><i style="background:var(--shipped)"></i>shipped &amp; merged</span>
         <span><i style="background:var(--open)"></i>PR left open</span>
+        <span><i style="background:var(--judged)"></i>QA round, verdict recorded</span>
         <span><i style="background:var(--nothing)"></i>produced nothing</span>
         <span><i style="background:var(--failed)"></i>failed</span>
         <span><i style="background:repeating-linear-gradient(135deg,var(--failed) 0 3px,#8c3e32 3px 6px)"></i>unattributable</span>

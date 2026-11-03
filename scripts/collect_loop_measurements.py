@@ -110,10 +110,23 @@ WORKFLOW_NAME = "agent-work"
 LOOKBACK = timedelta(days=14)     # runs listed per collection
 RETAIN = timedelta(days=120)      # rows older than this are pruned
 
-OUTCOMES = ("shipped", "pr open", "nothing", "failed", "unknown")
+OUTCOMES = ("shipped", "pr open", "judged", "nothing", "failed", "unknown")
 ATTRIBUTIONS = ("receipt", "log", "unattributed")
+# WHAT THE RUN WAS ASKED TO DO, read from the cycle's own prompt (2026-11-03).
+# Until then a QA round that ruled on a PR -- which by design ships nothing --
+# was filed as `nothing`, indistinguishable from a cycle that produced nothing:
+# measured that day, 13 of the 47 `nothing` runs (158 of 1,303 minutes) were
+# rounds that had done their job. `judged` is the outcome of a successful round.
+#   qa-round   `/agent-cycle --qa-pr <n>`   judge one PR
+#   issue      `/agent-cycle <n>`           work one named issue
+#   ranked     `/agent-cycle`               project-manager picks the issue
+#   unknown    no prompt line in the log (expired, or older than this field)
+KINDS = ("qa-round", "issue", "ranked", "unknown")
 LOOP_FIELDS = ("run", "workflow", "date", "started", "trigger", "conclusion", "minutes",
-               "issue", "pr", "pr_merged", "outcome", "attribution")
+               "issue", "pr", "pr_merged", "outcome", "attribution", "kind")
+# The action step's env listing prints the RESOLVED prompt (`PROMPT: /agent-cycle
+# --qa-pr 679`), never the template, so this cannot match a step's echoed source.
+PROMPT = re.compile(r"\bPROMPT: /agent-cycle(?: (--qa-pr )?(\d+))?[ \t]*$", re.M)
 COST_FIELDS = ("item", "vendor", "monthly_usd", "basis", "status", "note")
 FIGURE_STATUSES = ("known", "free-tier")
 
@@ -192,6 +205,10 @@ def validate_loop(doc) -> list[str]:
         if not isinstance(r, dict):
             errs.append(f"{where} is not an object")
             continue
+        # `kind` arrived 2026-11-03; a snapshot written before then is still a
+        # valid snapshot -- its rows read as kind `unknown` until re-collected.
+        if "kind" not in r:
+            r = {**r, "kind": "unknown"}
         if set(r) != set(LOOP_FIELDS):
             errs.append(f"{where} fields differ: missing {sorted(set(LOOP_FIELDS) - set(r))} "
                         f"extra {sorted(set(r) - set(LOOP_FIELDS))}")
@@ -227,6 +244,16 @@ def validate_loop(doc) -> list[str]:
             errs.append(f"{where} unattributed but names an issue/pr")
         if r["attribution"] == "unattributed" and r["outcome"] not in ("failed", "unknown"):
             errs.append(f"{where} unattributed but outcome is {r['outcome']!r}")
+        if r["kind"] not in KINDS:
+            errs.append(f"{where} kind {r['kind']!r} not in {KINDS}")
+        if r["outcome"] == "judged" and r["kind"] != "qa-round":
+            errs.append(f"{where} 'judged' but the run was not a QA round")
+    w = doc.get("waste")
+    if w is not None:
+        if not isinstance(w, dict) or set(w.get("minutes_by_outcome", {})) != set(OUTCOMES):
+            errs.append("waste.minutes_by_outcome does not cover every outcome")
+        elif not (0 <= w.get("build_idle_share", -1) <= 1):
+            errs.append("waste.build_idle_share out of range")
     return errs
 
 
@@ -304,6 +331,14 @@ def parse_net_line(log: str):
     return None
 
 
+def kind_of(logs: list[str]) -> str:
+    for log in logs:
+        m = PROMPT.search(log)
+        if m:
+            return "qa-round" if m.group(1) else ("issue" if m.group(2) else "ranked")
+    return "unknown"
+
+
 def job_logs(src: Source, run_id: int) -> list[str]:
     """Every non-skipped job's log. An unreadable one raises ApiError."""
     out = []
@@ -329,6 +364,7 @@ def attribute(src: Source, run: dict, owner: str) -> dict:
     """{'issue','pr','attribution','no_pr_recorded'} for one run. Raises ApiError
     for a transient read failure so the caller can defer rather than freeze a guess."""
     logs = job_logs(src, run["id"])
+    kind = kind_of(logs)
     for log in logs:
         got = parse_receipt(log)
         if got:
@@ -336,7 +372,8 @@ def attribute(src: Source, run: dict, owner: str) -> dict:
             if issue is None and branch:
                 m = BRANCH_ISSUE.match(branch)
                 issue = int(m.group(1)) if m else None
-            return {"issue": issue, "pr": pr, "attribution": "receipt", "no_pr_recorded": pr is None}
+            return {"issue": issue, "pr": pr, "attribution": "receipt", "no_pr_recorded": pr is None,
+                    "kind": kind}
     for log in logs:
         got = parse_net_line(log)
         if got:
@@ -344,8 +381,9 @@ def attribute(src: Source, run: dict, owner: str) -> dict:
             m = BRANCH_ISSUE.match(branch)
             issue = int(m.group(1)) if m else None     # "on 'main'": ended without a branch
             pr = None if (no_pr or not m) else pr_for_branch(src, owner, branch, ts(run["updated_at"]))
-            return {"issue": issue, "pr": pr, "attribution": "log", "no_pr_recorded": no_pr}
-    return {"issue": None, "pr": None, "attribution": "unattributed", "no_pr_recorded": False}
+            return {"issue": issue, "pr": pr, "attribution": "log", "no_pr_recorded": no_pr, "kind": kind}
+    return {"issue": None, "pr": None, "attribution": "unattributed", "no_pr_recorded": False,
+            "kind": kind}
 
 
 def outcome_of(conclusion: str, pr: int | None, merged: bool | None, state: str | None,
@@ -377,11 +415,20 @@ def _minutes(run: dict) -> float:
     return round(max((ts(run["updated_at"]) - start).total_seconds(), 0) / 60, 1)
 
 
+def judged(row: dict) -> dict:
+    """A successful QA round's outcome is `judged`, whatever PR its receipt names:
+    a round reviews a PR, it does not ship one, so crediting it with the PR's merge
+    would count one PR as shipped twice and hide the round's real cost."""
+    if row["kind"] == "qa-round" and row["conclusion"] == "success" and row["outcome"] != "unknown":
+        return {**row, "outcome": "judged"}
+    return row
+
+
 def make_row(run: dict, a: dict, state, merged) -> dict:
     started = run.get("run_started_at") or run["created_at"]
     pr = a["pr"]
     unreadable_pr = pr is not None and state is None
-    return {
+    return judged({
         "run": run["id"], "workflow": WORKFLOW_NAME, "date": iso(ts(started))[:10], "started": iso(ts(started)),
         "trigger": run.get("event") or "unknown", "conclusion": run.get("conclusion") or "unknown",
         "minutes": _minutes(run), "issue": a["issue"], "pr": pr,
@@ -389,7 +436,8 @@ def make_row(run: dict, a: dict, state, merged) -> dict:
         "outcome": "unknown" if unreadable_pr else outcome_of(
             run.get("conclusion") or "unknown", pr, merged, state, a["attribution"], a["no_pr_recorded"]),
         "attribution": a["attribution"],
-    }
+        "kind": a.get("kind", "unknown"),
+    })
 
 
 def reopen(row: dict) -> bool:
@@ -405,7 +453,8 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
     """(document, stats). Pure given `src`; the caller validates and writes."""
     src = MemoSource(src)
     old = {r["run"]: r for r in (existing or {}).get("rows", []) if isinstance(r, dict) and "run" in r}
-    stats = {"new": 0, "refreshed": 0, "frozen": 0, "deferred": 0, "pruned": 0, "pending": 0}
+    stats = {"new": 0, "refreshed": 0, "frozen": 0, "deferred": 0, "pruned": 0, "pending": 0,
+             "migrated": 0}
     merged_rows = dict(old)
     for run in list_runs(src, WORKFLOW_NAME, Window(now - LOOKBACK, now)):
         if run.get("status") != "completed":
@@ -413,12 +462,24 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
             continue
         prev = old.get(run["id"])
         try:
+            if prev is not None and "kind" not in prev:
+                # A row settled before `kind` existed: read its log ONCE for the
+                # prompt, then it is frozen again like any other.
+                try:
+                    k = kind_of(job_logs(src, run["id"]))
+                except ApiError as e:
+                    if e.status not in (404, 410):
+                        raise
+                    k = "unknown"
+                prev = judged({**prev, "kind": k})
+                merged_rows[run["id"]] = prev
+                stats["migrated"] += 1
             if prev is not None and not reopen(prev):
                 stats["frozen"] += 1
                 continue
             if prev is not None:      # only the PR can have moved
                 a = {"issue": prev["issue"], "pr": prev["pr"], "attribution": prev["attribution"],
-                     "no_pr_recorded": False}
+                     "no_pr_recorded": False, "kind": prev.get("kind", "unknown")}
                 state, merged = read_pr(src, prev["pr"])
                 merged_rows[run["id"]] = make_row(run, a, state, merged)
                 stats["refreshed"] += 1
@@ -431,7 +492,8 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
                 # tomorrow rather than freeze an `unattributed` that is really
                 # "could not read".
                 if e.status in (404, 410):
-                    a = {"issue": None, "pr": None, "attribution": "unattributed", "no_pr_recorded": False}
+                    a = {"issue": None, "pr": None, "attribution": "unattributed", "no_pr_recorded": False,
+                         "kind": "unknown"}
                 else:
                     stats["deferred"] += 1
                     print(f"::warning::run {run['id']}: {e}", file=sys.stderr)
@@ -443,10 +505,66 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
             stats["deferred"] += 1
             print(f"::warning::run {run['id']}: {e}", file=sys.stderr)
     floor = iso(now - RETAIN)
-    kept = {k: v for k, v in merged_rows.items() if v["started"] >= floor}
+    # Rows older than the listing window that predate `kind` are not re-read
+    # (their runs are no longer listed): they are honestly `unknown`.
+    kept = {k: (v if "kind" in v else {**v, "kind": "unknown"})
+            for k, v in merged_rows.items() if v["started"] >= floor}
     stats["pruned"] = len(merged_rows) - len(kept)
     rows = sorted(kept.values(), key=lambda r: r["started"], reverse=True)
-    return {"generated_at": iso(now), "rows": rows}, stats
+    return {"generated_at": iso(now), "rows": rows, "waste": waste(rows, now)}, stats
+
+
+#: The span the waste figures cover. Short enough to show a change this week,
+#: long enough that one bad day does not dominate.
+WASTE_DAYS = 7
+#: Outcomes that produced a RESULT: a merged PR, an open PR still on its way,
+#: or a verdict. Everything else is time spent without one.
+RESULT_OUTCOMES = ("shipped", "pr open", "judged")
+
+
+def waste(rows: list[dict], now: datetime, days: int = WASTE_DAYS) -> dict:
+    """Where the loop's time went over the last `days`: minutes by outcome, the
+    share spent without a result, and how long the BUILD lane sat idle.
+
+    Idle is wall-clock time in the window with no build-lane cycle running (QA
+    rounds have their own lane and are excluded). With a backlog open, idle is
+    capacity the schedule left unused -- not waste by itself, but the number to
+    watch when the question is "would more cycles help"."""
+    start = now - timedelta(days=days)
+    win = [r for r in rows if ts(r["started"]) >= start]
+    by = {o: 0.0 for o in OUTCOMES}
+    for r in win:
+        by[r["outcome"]] += float(r["minutes"])
+    total = sum(by.values())
+    no_result = sum(v for k, v in by.items() if k not in RESULT_OUTCOMES)
+    spans = sorted((ts(r["started"]), ts(r["started"]) + timedelta(minutes=float(r["minutes"])))
+                   for r in win if r["kind"] != "qa-round")
+    busy, cur_s, cur_e = 0.0, None, None
+    for s, e in spans:
+        s, e = max(s, start), min(e, now)
+        if e <= s:
+            continue
+        if cur_e is None or s > cur_e:
+            if cur_e is not None:
+                busy += (cur_e - cur_s).total_seconds()
+            cur_s, cur_e = s, e
+        else:
+            cur_e = max(cur_e, e)
+    if cur_e is not None:
+        busy += (cur_e - cur_s).total_seconds()
+    window_h = days * 24.0
+    idle_h = max(window_h - busy / 3600, 0.0)
+    return {
+        "days": days,
+        "cycles": len(win),
+        "minutes_by_outcome": {k: round(v, 1) for k, v in by.items()},
+        "minutes_total": round(total, 1),
+        "minutes_without_result": round(no_result, 1),
+        "share_without_result": round(no_result / total, 3) if total else None,
+        "shipped_prs": len({r["pr"] for r in win if r["outcome"] == "shipped" and r["pr"]}),
+        "build_idle_hours": round(idle_h, 1),
+        "build_idle_share": round(idle_h / window_h, 3),
+    }
 
 
 def dump(doc: dict) -> str:

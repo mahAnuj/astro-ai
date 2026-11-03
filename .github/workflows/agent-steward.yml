@@ -111,6 +111,32 @@ jobs:
       # detector could not determine, which is NOT a pass: it is escalated as
       # loudly as a stall, because "the pipeline may be stalled and unobserved"
       # is the exact condition this loop exists for.
+      # THE OPS CARRIER (2026-11-03, owner: "the agent monitoring the ops
+      # dashboard should look at these data to take action and finetune").
+      # scripts/detect_ops_regressions.py reads the same committed measurements
+      # /admin/ops renders -- Claude quota, cycle time without a result, build-
+      # lane idle, loop liveness, backlog trend -- and until now nothing ran it.
+      # This files each finding as ONE issue per kind (commented on change,
+      # never refiled), which project-manager ranks and /agent-cycle works.
+      # Deterministic: no model, no new permission (`issues: write` is held).
+      # continue-on-error: a carrier hiccup must never stop the stall check.
+      - name: File the ops dashboard's findings as issues
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set +e
+          uv run python scripts/detect_ops_regressions.py --json > /tmp/ops-findings.json
+          code=$?
+          set -e
+          echo "detector exit $code"
+          if [ "$code" = 2 ]; then
+            echo "::warning::the ops detector could not run; no findings filed"
+            exit 0
+          fi
+          uv run python scripts/file_ops_findings.py --repo "$GH_REPO" --findings /tmp/ops-findings.json
+
       - name: Is anything actually stuck?
         id: detect
         env:

@@ -346,6 +346,18 @@ What has NOT changed, and why it matters more now than before:
   (48% two days earlier, resetting 2026-11-06 06:00Z) — the WEEKLY window binds, not the
   five-hour one this file used to name. A parallel build lane is not affordable while
   `seven_day` runs that high; `rejected_runs` lists any run that actually hit a limit.
+
+  **The ops dashboard is now read by the loop, not only by a human** (2026-11-03, owner:
+  *"the agent monitoring the ops dashboard should look at these data to take action and
+  finetune"*). `/admin/ops` leads with the Claude weekly quota left and its reset time, and
+  shows where the loop's time went: `loop.json` rows carry a `kind` (`qa-round` / `issue` /
+  `ranked`) read from the cycle's own prompt, a successful QA round is `judged` rather than
+  `nothing`, and a `waste` block holds minutes by outcome, the share spent without a result
+  and build-lane idle hours. `scripts/detect_ops_regressions.py` raises `claude-quota`,
+  `cycle-waste` and `loop-idle` from the same files, each naming its lever, and
+  `scripts/file_ops_findings.py` — run by `agent-steward` twice a day — files every finding
+  as ONE issue per kind (commented on change, a single note when it clears, never closed
+  by the carrier). Nothing ran that detector before; its own header said a carrier would.
 - **The mutation sandbox copies `.claude/` — since 2026-10-25.** `_SANDBOX_SUBDIRS` in
   `mutate_behaviour_suite.py` had `src`, `tests`, `.github`, `scripts` and `measurements`,
   so a row naming an agent definition or a slash command died with `FileNotFoundError` and
