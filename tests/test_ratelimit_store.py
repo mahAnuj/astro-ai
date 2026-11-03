@@ -10,8 +10,9 @@ What is easy to get quietly wrong, and so is pinned:
     rides the existing mutator (a second `update_json` per call would double the
     cross-continent GCS round-trips on the LLM path, #144);
   * `_PREFIX_ZERO` must stay at its eight keys. A ninth is how the prefix-cache
-    panel once emptied itself: every row already stored fails the
-    `_PREFIX_ZERO.keys() <= pc.keys()` gate and is skipped whole;
+    panel once emptied itself (the read gate was `_PREFIX_ZERO.keys() <=
+    pc.keys()`; since #431 it tests `_PREFIX_REQUIRED`, but this change needs no new
+    counter, so the pin stays);
   * a day with no `ratelimit_by_model` contributes NOTHING (not a zero) and is
     not counted in `ratelimit_days`;
   * `last_limit` is a state, not a quantity: the latest day's value, never a sum;

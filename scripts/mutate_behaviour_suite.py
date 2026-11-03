@@ -1471,7 +1471,7 @@ MUTATIONS = [
 
     ("#410: an older stored schema is summed field-by-field again (mixed window published 571%)",
      "src/astro_ai/llm_stats.py",
-     "            if not _PREFIX_ZERO.keys() <= pc.keys():", "            if False:",
+     "            if not _is_known_prefix_row(pc):", "            if False:",
      "test_an_old_schema_day_blob_is_skipped_whole_not_summed_field_by_field"),
 
     ("#410: the rate is no longer clamped (a misreporting provider puts 250% on the dashboard)",
