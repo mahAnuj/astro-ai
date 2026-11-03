@@ -337,6 +337,15 @@ What has NOT changed, and why it matters more now than before:
   `dispatch_cycle.sh` and `cycle_queue.py` count busy per lane from it. `drain` starts at
   most one entry per free lane. Change that title prefix and the lanes merge silently;
   `tests/test_cycle_queue.py` pins the three copies together.
+
+  **Whether to add more parallelism is read from `measurements/claude_usage.json`, not
+  argued** (since 2026-11-03). Every agent here runs on ONE Claude Max 5x subscription.
+  `scripts/collect_claude_usage.py`, an `agent-measure` collector, reads the
+  `rate_limit_info` blocks `claude-code-action` already logs, with both windows the
+  subscription enforces. Measured the day it landed: five-hour ~4%, **seven-day 69%**
+  (48% two days earlier, resetting 2026-11-06 06:00Z) — the WEEKLY window binds, not the
+  five-hour one this file used to name. A parallel build lane is not affordable while
+  `seven_day` runs that high; `rejected_runs` lists any run that actually hit a limit.
 - **The mutation sandbox copies `.claude/` — since 2026-10-25.** `_SANDBOX_SUBDIRS` in
   `mutate_behaviour_suite.py` had `src`, `tests`, `.github`, `scripts` and `measurements`,
   so a row naming an agent definition or a slash command died with `FileNotFoundError` and

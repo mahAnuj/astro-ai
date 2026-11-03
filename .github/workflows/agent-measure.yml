@@ -295,6 +295,22 @@ jobs:
           python3 scripts/collect_agent_performance.py --repo "$GH_REPO" --out measurements/agents.json \
             || echo "::warning::agent performance not refreshed; measurements/agents.json is the previous one"
 
+      # 2026-11-03 (owner): how close the loop runs to its ONE Claude Max
+      # subscription. Read from the `rate_limit_info` blocks claude-code-action
+      # already logs, both windows: measured that day, five-hour ~4% but
+      # SEVEN-DAY 69%, so the weekly window is the one that binds. Whether more
+      # parallel cycles are affordable is decided from this file. Needs
+      # `actions: read` for job logs, which this job's `actions: write` covers.
+      # continue-on-error like its siblings; it writes nothing it cannot parse.
+      - name: Collect Claude usage
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/collect_claude_usage.py --repo "$GH_REPO" --out measurements/claude_usage.json \
+            || echo "::warning::Claude usage not refreshed; measurements/claude_usage.json is the previous one"
+
       # #393: the PR opened below must NOT be authored by `github-actions[bot]`.
       # Since 2026-06-11 GitHub holds the `pull_request` runs of a PR that bot
       # opens in `action_required`, and while one held suite sits on the head

@@ -4839,6 +4839,22 @@ MUTATIONS = [
     # re-opens one way the queue could lose, duplicate, misorder, or invent work.
     # The QA lane (2026-11-03): two copies of the lane rule, and the drain's
     # one-per-lane bookkeeping. Each row merges the lanes or overfills one.
+    # Claude usage (2026-11-03): the file the parallelism decision reads.
+    ('claude usage: a run reports its LAST reading, not its worst',
+     'scripts/collect_claude_usage.py',
+     '                    seven = u if seven is None else max(seven, u)',
+     '                    seven = u',
+     'test_a_run_is_summarised_by_its_WORST_state'),
+    ('claude usage: a rejected window is not noticed (the cap hit reads as allowed)',
+     'scripts/collect_claude_usage.py',
+     '            if s in STATUS_RANK and STATUS_RANK[s] > STATUS_RANK[status]:\n                status = s\n        s = b.get("status")',
+     '            if False:\n                status = s\n        s = b.get("status")',
+     'test_a_rejected_window_anywhere_makes_the_run_rejected'),
+    ('claude usage: unreadable logs overwrite the file with an empty reading',
+     'scripts/collect_claude_usage.py',
+     '    if not readings:\n        return None',
+     '    if False:\n        return None',
+     'test_NOTHING_readable_writes_nothing_and_says_so'),
     ('lanes: the queue counts QA rounds as build cycles (lanes merge)',
      'scripts/cycle_queue.py',
      '    pick = title if lane == "qa" else f"({title} | not)"',
