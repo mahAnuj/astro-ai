@@ -35,9 +35,10 @@ REPO = "owner/repo"
 class FakeGh:
     """Answers exactly the calls cycle_queue.py makes, and records them."""
 
-    def __init__(self, *, busy="0", labels=None, heads=None, fail_patch_after=None):
+    def __init__(self, *, busy="0", busy_qa=None, labels=None, heads=None, fail_patch_after=None):
         self.comments: list[dict] = []
-        self.busy = busy
+        self.busy = busy                    # build lane (and the QA lane unless busy_qa given)
+        self.busy_qa = busy if busy_qa is None else busy_qa
         self.labels = labels or {}          # target -> "a,b"
         self.heads = heads or {}            # pr -> head sha
         self.fail_patch_after = fail_patch_after   # PATCH calls allowed before failing
@@ -75,9 +76,11 @@ class FakeGh:
             next(c for c in self.comments if c["id"] == cid)["body"] = args[5][len("body="):]
             return "{}"
         if args[:2] == ["run", "list"]:
-            if self.busy == "error":
+            jq = args[-1]
+            lane = self.busy if "| not" in jq else self.busy_qa
+            if lane == "error":
                 raise RuntimeError("gh run list failed")
-            return self.busy + "\n"
+            return lane + "\n"
         if args[0] == "api" and "/issues/" in args[1]:
             return self.labels.get(int(args[1].rsplit("/", 1)[1]), "") + "\n"
         raise AssertionError(f"unexpected gh call: {args}")
@@ -464,3 +467,48 @@ def test_a_failed_RE_QUEUE_inside_the_carrier_is_retried_not_dropped():
 def test_chief_is_no_longer_told_it_cannot_dispatch_over_a_running_cycle():
     wf = (ROOT / ".github" / "workflows" / "agent-steward.yml").read_text()
     assert "dispatch over a cycle already in flight" not in wf
+
+
+# ----------------------------------------- the QA lane (2026-11-03)
+
+def test_a_QA_entry_starts_while_a_BUILD_cycle_runs():
+    gh = FakeGh(busy="1", busy_qa="0")
+    gh.add(entry("issue", 518))
+    gh.add(entry("pr", 649))
+    car = FakeCarrier([(0, "11")])
+    cq.drain(gh, REPO, car)
+    assert car.calls == [("pr=649", "queue(qa-on-green)")]
+    assert [e.target for e in cq.pending(gh, REPO)] == [518], "the build entry waits"
+
+
+def test_both_lanes_free_starts_ONE_entry_in_EACH():
+    gh = FakeGh()
+    gh.add(entry("issue", 518))
+    gh.add(entry("pr", 649))
+    gh.add(entry("pr", 636))
+    car = FakeCarrier([(0, "11"), (0, "12")])
+    cq.drain(gh, REPO, car)
+    assert [r for r, _ in car.calls] == ["issue=518", "pr=649"]
+    assert [e.target for e in cq.pending(gh, REPO)] == [636], "one QA round at a time"
+
+
+def test_lanes_follow_the_kind():
+    assert cq.lane_of("pr") == "qa" and cq.lane_of("issue") == "build"
+
+
+def test_the_queue_and_the_carrier_tell_lanes_apart_the_SAME_way():
+    """Two copies of one rule: if they drift, a lane looks free to one and busy
+    to the other, and a round lands in a cancellable pending slot."""
+    sh = (ROOT / "scripts" / "dispatch_cycle.sh").read_text()
+    assert f'startswith("{cq.QA_TITLE}")' in cq.lane_jq("qa")
+    assert f'select(.displayTitle | startswith("{cq.QA_TITLE}"))' in sh
+    assert f'select(.displayTitle | startswith("{cq.QA_TITLE}") | not)' in sh
+
+
+def test_agent_work_names_and_groups_QA_rounds_by_the_same_rule():
+    src = (ROOT / ".github" / "workflows" / "agent-work.yml").read_text()
+    doc = yaml.safe_load(src)
+    assert doc["run-name"] == "${{ inputs.pr && format('QA round: PR #{0}', inputs.pr) || 'Agent work' }}"
+    assert doc["run-name"].split("format('")[1].startswith(cq.QA_TITLE)
+    assert doc["concurrency"]["group"] == "${{ inputs.pr && 'agent-work-qa' || 'agent-work' }}"
+    assert doc["concurrency"]["cancel-in-progress"] is False

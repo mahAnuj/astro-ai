@@ -3,7 +3,7 @@
 
 WHY THIS EXISTS
 ---------------
-`agent-work` runs one cycle at a time (`concurrency: group: agent-work`), and
+`agent-work` runs one cycle at a time PER LANE (`agent-work` / `agent-work-qa`), and
 GitHub keeps at most ONE pending run per group: a third dispatch while one is
 running and one is waiting CANCELS the waiting one, silently. So
 `scripts/dispatch_cycle.sh` refused to dispatch while a cycle was in flight and
@@ -165,11 +165,33 @@ def enqueue(gh: Runner, repo: str, kind: str, target: int, by: str, on: int) -> 
     return 0
 
 
-def busy(gh: Runner, repo: str) -> bool:
-    """An unreadable answer counts as busy, exactly as in the carrier."""
+#: TWO LANES since 2026-11-03 (owner's request). A judge-only QA round
+#: (`pr=`) never pushes, so it cannot conflict with a build cycle and need not
+#: wait 45 minutes behind one. agent-work.yml puts `pr=` runs in the
+#: `agent-work-qa` concurrency group and names them "QA round: PR #<n>"
+#: (`run-name:`), because `gh run list` cannot show a run's inputs. A run
+#: started before that change is titled "Agent work" and counts as build.
+QA_TITLE = "QA round"
+LANES = ("build", "qa")
+
+
+def lane_of(kind: str) -> str:
+    return "qa" if kind == "pr" else "build"
+
+
+def lane_jq(lane: str) -> str:
+    """The jq that counts running agent-work runs in ONE lane. dispatch_cycle.sh
+    carries the same two selects; tests/test_cycle_queue.py pins they agree."""
+    title = f'(.displayTitle | startswith("{QA_TITLE}"))'
+    pick = title if lane == "qa" else f"({title} | not)"
+    return f'[.[] | select(.status != "completed") | select({pick})] | length'
+
+
+def busy(gh: Runner, repo: str, lane: str = "build") -> bool:
+    """Is a cycle running in THIS lane? Unreadable counts as busy, as in the carrier."""
     try:
-        n = gh(["run", "list", "--repo", repo, "--workflow", "agent-work.yml", "--limit", "10",
-                "--json", "status", "--jq", '[.[] | select(.status != "completed")] | length'])
+        n = gh(["run", "list", "--repo", repo, "--workflow", "agent-work.yml", "--limit", "20",
+                "--json", "status,displayTitle", "--jq", lane_jq(lane)])
     except RuntimeError:
         return True
     return n.strip() != "0"
@@ -245,8 +267,11 @@ def run_carrier(ruling: str, who: str) -> tuple[int, dict[str, str], str]:
 
 
 def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
-    if busy(gh, repo):
-        print("a cycle is running (or the check failed); the queue waits for it to complete.")
+    # ONE ENTRY PER FREE LANE, oldest first within each. A lane that starts
+    # (or fails to start) a cycle is busy for the rest of this run.
+    busy_lanes = {lane for lane in LANES if busy(gh, repo, lane)}
+    if busy_lanes == set(LANES):
+        print("a cycle is running in every lane (or the check failed); the queue waits.")
         return 0
     entries = pending(gh, repo)
     if not entries:
@@ -255,6 +280,9 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
     print(f"{len(entries)} queued; oldest first.")
     failed = False
     for e in entries:
+        lane = lane_of(e.kind)
+        if lane in busy_lanes:
+            continue
         reason = stale_reason(gh, repo, e)
         if reason:
             mark(gh, repo, e, "dropped", reason)
@@ -277,14 +305,17 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
                     f"the dispatch carrier could not run ({exc.__class__.__name__}); "
                     f"retry {retries + 1} of {MAX_RETRIES}.")
             print(f"::error::{e.kind}={e.target}: carrier failed to run: {exc}")
-            return 1
+            failed = True
+            busy_lanes.add(lane)
+            continue
         print(out.rstrip())
         run_id = exported.get("DISPATCHED_RUN")
         if rc == 0 and run_id:
             restate(gh, repo, e.comment_id, body, "claimed", "taken",
                     f"agent-work run `{run_id}` started at `{e.kind}={e.target}` from the queue.")
-            print(f"started {e.kind}={e.target} as run {run_id}")
-            return 1 if failed else 0
+            print(f"started {e.kind}={e.target} as run {run_id} ({lane} lane)")
+            busy_lanes.add(lane)
+            continue
         if rc == 1 and any(t in out for t in TRANSIENT) and retries < MAX_RETRIES:
             # The carrier ACCEPTED the ruling and the run did not survive -- the
             # #421 shape. That says nothing about the ruling, so it goes back in
@@ -297,7 +328,9 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
             print(f"::error::{e.kind}={e.target}: the dispatched run did not start or died "
                   f"on arrival. Returned to the queue (retry {retries + 1} of {MAX_RETRIES}); "
                   f"see the carrier output above.")
-            return 1
+            failed = True
+            busy_lanes.add(lane)
+            continue
         if rc == 1:
             restate(gh, repo, e.comment_id, body, "claimed", "dropped",
                     f"the dispatch carrier refused the ruling itself, or its run failed "
@@ -319,7 +352,7 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
                 "a cycle appeared after the claim; the carrier queued a fresh entry for "
                 "the same target, which replaces this one.")
         print(f"{e.kind}={e.target} not started (a cycle appeared); the carrier re-queued it.")
-        return 1 if failed else 0
+        busy_lanes.add(lane)
     return 1 if failed else 0
 
 

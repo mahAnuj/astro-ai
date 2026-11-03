@@ -328,6 +328,15 @@ What has NOT changed, and why it matters more now than before:
   and needs no new permission** — `qa-on-green` stays unable to hand itself `qa-pass`, and
   every scope `agent-queue.yml` holds is one an existing dispatcher already had. There is
   deliberately no cron: `*/30` would be ~1,400 Actions minutes a month.
+
+  **Two lanes since 2026-11-03 (owner's request).** A judge-only QA round (`pr=`) runs in
+  its own concurrency group, `agent-work-qa`, so it no longer waits ~45 minutes behind a
+  build cycle; build cycles stay strictly one at a time, because two would conflict on
+  shared files. Runs are told apart by TITLE — agent-work.yml's `run-name` makes a round
+  "QA round: PR #<n>" — because `gh run list` cannot show inputs, and both
+  `dispatch_cycle.sh` and `cycle_queue.py` count busy per lane from it. `drain` starts at
+  most one entry per free lane. Change that title prefix and the lanes merge silently;
+  `tests/test_cycle_queue.py` pins the three copies together.
 - **The mutation sandbox copies `.claude/` — since 2026-10-25.** `_SANDBOX_SUBDIRS` in
   `mutate_behaviour_suite.py` had `src`, `tests`, `.github`, `scripts` and `measurements`,
   so a row naming an agent definition or a slash command died with `FileNotFoundError` and
