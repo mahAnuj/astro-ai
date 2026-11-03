@@ -24,9 +24,10 @@
  *   .pwaInstalled()                — accepted the PWA install prompt
  *   .feedbackSent({type})          — submitted the feedback form
  *   .pageView(path)                — manual pageview (use for SPA nav)
- *   .ctaClick({from_path,to_path}) — a /learn reader followed a link to a tool
- *                                    (fired by the delegated listener below, not
- *                                    by templates — see TOOL_ROOTS)
+ *   .ctaClick({from_path,to_path}) — a /learn reader followed an in-article link
+ *                                    to a tool; links in nav/header/footer never
+ *                                    count (fired by the delegated listener
+ *                                    below, not by templates — see TOOL_ROOTS)
  *
  * Add a new event by adding a method here — keep templates dumb.
  */
@@ -86,15 +87,23 @@
     '/kundli', '/dasha', '/matching', '/ask', '/manglik-check',
     '/sade-sati-check', '/kaal-sarp-check', '/numerology', '/muhurat'
   ];
-  // "/" is BOTH the Kundli form (72 in-article "Generate your free Kundli"
-  // links, the end-of-article CTA, the sticky mobile CTA) and the site's Home
-  // link. The path cannot tell them apart, the position can: Home lives in the
-  // site nav, the breadcrumb, the mobile tab bar and the footer, so "/" counts
-  // only when the anchor is outside every <nav>, <header> and <footer>.
+  // SITE CHROME NEVER COUNTS, for any path. QA round 1 measured the rendered
+  // /learn/sade-sati/: ~21 tool anchors sit in the desktop nav, the mobile tab
+  // bar and the footer against ~6 genuine in-article links (~3:1), and no param
+  // separates them -- so a chrome click is a navigation click, and counting it
+  // makes the event measure the menu rather than "an in-article tool CTA".
+  // Every real CTA (in-prose links, the end-of-article card, the sticky mobile
+  // CTA `#learn-sticky-cta`, a <div>) sits outside <nav>, <header> and <footer>,
+  // so none is lost. The test is on position because the path cannot say.
+  //
+  // "/" is the extra hard case: it is BOTH the Kundli form (72 in-article
+  // "Generate your free Kundli" links, the end-of-article CTA, the sticky mobile
+  // CTA) and the site's Home link, so it is a tool only outside chrome -- which
+  // the rule above already guarantees, hence no special case beyond listing it.
   var CHROME_SELECTOR = 'nav, header, footer';
 
-  function isToolPath(path, anchor) {
-    if (path === '/') return !anchor.closest(CHROME_SELECTOR);
+  function isToolPath(path) {
+    if (path === '/') return true;
     for (var i = 0; i < TOOL_ROOTS.length; i++) {
       var r = TOOL_ROOTS[i];
       if (path === r || path.indexOf(r + '/') === 0) return true;
@@ -115,9 +124,10 @@
       if (!el || !el.closest) return;
       var a = el.closest('a[href]');
       if (!a) return;
+      if (a.closest(CHROME_SELECTOR)) return;
       var url = new URL(a.href, location.href);
       if (url.origin !== location.origin) return;
-      if (!isToolPath(url.pathname, a)) return;
+      if (!isToolPath(url.pathname)) return;
       window.Analytics.ctaClick({ from_path: location.pathname, to_path: url.pathname });
     } catch (err) { /* analytics must never break a click */ }
   });

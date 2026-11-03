@@ -10,8 +10,12 @@ the real file under Node against a stub DOM and assert what reaches `gtag`:
   * a tool link clicked on a /learn page sends ONE `cta_click` with paths only;
   * a navigation link, an external link, and any click outside /learn send none;
   * the query string and hash of the link never reach GA4;
-  * "/" is the Kundli form AND the Home link, so it counts only outside the
-    nav / header / footer chrome;
+  * site chrome (<nav>, <header>, <footer>) never counts, for ANY tool path: QA
+    round 1 measured ~21 chrome tool anchors against ~6 in-article ones on
+    /learn/sade-sati/, so counting the chrome made the event measure the menu.
+    "/" is the Kundli form AND the Home link, which the same rule resolves;
+  * the same is proven on the REAL rendered articles, every anchor of which is
+    driven through the real script;
   * absent gtag / clarity, a text-node target and a malformed href throw nothing.
 
 The second half pins the allowlist against the routing the articles actually use,
@@ -75,7 +79,7 @@ if (spec.clarity) ctx.clarity = (...a) => calls.push(['clarity', ...a]);
 vm.createContext(ctx);
 vm.runInContext(src, ctx);
 
-const out = { listeners: listeners.map(l => l[0]), thrown: [], prevented: 0, stopped: 0 };
+const out = { listeners: listeners.map(l => l[0]), thrown: [], prevented: 0, stopped: 0, perClick: [] };
 for (const c of spec.clicks) {
   let parent = el('body');
   for (const tag of c.ancestors || []) parent = el(tag, parent);
@@ -88,8 +92,10 @@ for (const c of spec.clicks) {
   if (c.target === 'textnode') target = { nodeType: 3 };   // no .closest, no parent
   if (c.target === 'bare') target = el('div', parent);     // inside no anchor
   const ev = { target, preventDefault() { out.prevented++; }, stopPropagation() { out.stopped++; } };
+  const before = calls.filter(x => x[0] === 'gtag' && x[1] === 'event').length;
   try { for (const [t, f] of listeners) if (t === 'click') f(ev); }
   catch (e) { out.thrown.push(String(e)); }
+  out.perClick.push(calls.filter(x => x[0] === 'gtag' && x[1] === 'event').length - before);
 }
 if (spec.direct) {
   try { ctx.Analytics.ctaClick(); ctx.Analytics.ctaClick({ from_path: '/learn/x/', to_path: '/kundli', q: 'secret' }); }
@@ -226,10 +232,120 @@ def test_the_home_link_counts_only_outside_the_site_chrome(tmp_path, ancestors, 
         assert _events(out)[0][3]["to_path"] == "/"
 
 
-def test_a_tool_link_inside_the_nav_still_counts(tmp_path):
-    # The chrome exclusion is for "/" only; /ask in the nav is still a tool.
-    out = _run(tmp_path, clicks=[{"href": "/ask", "ancestors": ["nav"]}])
-    assert len(_events(out)) == 1
+@pytest.mark.parametrize("href", ["/kundli", "/ask", "/matching", "/muhurat/vivah", "/numerology"])
+@pytest.mark.parametrize("ancestors", [
+    ["nav"],                          # desktop nav, mobile tab bar
+    ["header"],
+    ["footer"],
+    ["header", "div", "nav", "ul", "li"],   # nested: closest() must find the ancestor
+    ["div", "footer", "div", "ul"],
+])
+def test_a_tool_link_inside_site_chrome_does_not_count(tmp_path, href, ancestors):
+    # QA round 1: the exclusion used to apply to "/" only, so every tool link in the
+    # nav, the tab bar and the footer fired too (~21 vs ~6 in-article on sade-sati).
+    out = _run(tmp_path, clicks=[{"href": href, "ancestors": ancestors}])
+    assert _events(out) == []
+    assert ["clarity", "event", "cta_click"] not in out["calls"]
+
+
+@pytest.mark.parametrize("href", ["/kundli", "/ask", "/matching", "/"])
+@pytest.mark.parametrize("ancestors", [
+    ["main", "article", "p"],         # in-prose link
+    ["main", "section", "div"],       # end-of-article CTA card
+    ["div"],                          # the sticky mobile CTA (#learn-sticky-cta)
+    ["main", "div", "div"],
+])
+def test_the_same_tool_link_outside_site_chrome_counts(tmp_path, href, ancestors):
+    out = _run(tmp_path, clicks=[{"href": href, "ancestors": ancestors}])
+    assert [e[3]["to_path"] for e in _events(out)] == [href]
+
+
+# --- the REAL rendered articles, every anchor driven through the real script ------------
+
+_VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta",
+         "param", "source", "track", "wbr"}
+_CHROME = {"nav", "header", "footer"}
+
+
+class _Anchors(HTMLParser):
+    """Every <a href>, with the tag chain above it and the ids on that chain."""
+
+    def __init__(self):
+        super().__init__()
+        self.stack: list[tuple[str, str]] = []
+        self.anchors: list[dict] = []
+        self._open: dict | None = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag in _VOID:
+            return
+        a = dict(attrs)
+        if tag == "a" and a.get("href") is not None:
+            self._open = {"href": a["href"], "ancestors": [t for t, _ in self.stack],
+                          "ids": [i for _, i in self.stack if i], "text": ""}
+            self.anchors.append(self._open)
+        self.stack.append((tag, a.get("id") or ""))
+
+    def handle_endtag(self, tag):
+        if tag == "a":
+            self._open = None
+        tags = [t for t, _ in self.stack]
+        if tag in tags:      # tolerate unclosed <p>/<li>: pop up to the match
+            del self.stack[len(tags) - 1 - tags[::-1].index(tag):]
+
+    def handle_data(self, data):
+        if self._open is not None:
+            self._open["text"] += data
+
+
+# Measured 2026-11-03 on the rendered pages, anchors that fire / chrome tool anchors
+# suppressed: sade-sati 8/22, manglik-dosh 8/22, rahu-mahadasha-ketu-antardasha 6/22.
+# The floors below sit under those so the test cannot pass on a page that parsed to
+# nothing.
+_ARTICLES = ["sade-sati", "manglik-dosh", "rahu-mahadasha-ketu-antardasha"]
+_MIN_FIRING = 3
+
+
+def _is_tool(href: str, roots: list[str]) -> bool:
+    path = href.split("?")[0].split("#")[0]
+    return path == "/" or _covered(path, roots)
+
+
+@pytest.mark.parametrize("slug", _ARTICLES)
+def test_on_a_real_article_only_in_article_tool_links_fire(client, tmp_path, slug):
+    pathname = f"/learn/{slug}/"
+    html = client.get(pathname).text
+    p = _Anchors()
+    p.feed(html)
+    internal = [a for a in p.anchors if a["href"].startswith("/")]
+    assert internal, "the rendered article has no internal anchors: the page did not render"
+
+    out = _run(tmp_path, pathname=pathname,
+               clicks=[{"href": a["href"], "ancestors": a["ancestors"]} for a in internal])
+    assert out["thrown"] == []
+    # Exactly one event or none per click, attributed to the anchor that was clicked.
+    assert set(out["perClick"]) <= {0, 1}, out["perClick"]
+    fired = [a for a, n in zip(internal, out["perClick"]) if n]
+    suppressed_chrome = [a for a, n in zip(internal, out["perClick"])
+                         if not n and _CHROME & set(a["ancestors"]) and _is_tool(a["href"], _tool_roots())]
+    # (b) nothing inside nav/header/footer fires...
+    assert not [a for a in fired if _CHROME & set(a["ancestors"])], \
+        [(a["href"], a["ancestors"]) for a in fired if _CHROME & set(a["ancestors"])]
+    # ...and there IS chrome to suppress, so (b) is not vacuous in the other direction:
+    # measured 22 on each of the three articles; the floor is well under that.
+    assert len(suppressed_chrome) >= 10, "the chrome tool anchors vanished: is this the real page?"
+    # (c) the test cannot pass because nothing fired. Measured 8 / 8 / 6.
+    assert len(fired) >= _MIN_FIRING, (slug, [a["href"] for a in fired])
+
+    # (a) the sticky CTA and the end-of-article CTA are the two real CTAs: both fire.
+    sticky = [a for a in internal if "learn-sticky-cta" in a["ids"]]
+    assert len(sticky) == 1 and sticky[0]["href"] == "/"
+    assert not (_CHROME & set(sticky[0]["ancestors"]))
+    end = [a for a in internal if "Get your free Kundli" in a["text"] or "Ask Shubh Bhagya" in a["text"]]
+    assert len(end) == 2 and not any(_CHROME & set(a["ancestors"]) for a in end)
+    for a in sticky + end:
+        assert a in fired, (a["href"], a["ancestors"], a["text"])
+    print(f"{slug}: fired={len(fired)} suppressed_chrome_tool={len(suppressed_chrome)}")
 
 
 @pytest.mark.parametrize("gtag,clarity", [(False, False), (True, False), (False, True)])
