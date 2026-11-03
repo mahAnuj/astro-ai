@@ -7,20 +7,22 @@
    {% block %} declarations are compile-time, so we conditional INSIDE the
    block rather than wrapping it. #}
 {% block meta_robots %}{% if is_snapshot | default(false) %}noindex, nofollow{% else %}index, follow{% endif %}{% endblock %}
-{# Cosmic Card (Issue #113) as og:image for snapshot pages. WhatsApp/
-   Twitter/LinkedIn previews on shared snapshot URLs render a personalized
-   card of the sender's chart instead of a generic icon. Regular /kundli
-   uses the default icon (personal cookie chart isn't relevant to link
-   previews of the /kundli URL itself). #}
-{# The Cosmic Card is 1080x1920, so it must override the inherited 1200x630 —
-   a wrong declared size makes crawlers lay out the wrong box before fetching.
-   NOTE: /kundli/card serves image/svg+xml, which OG crawlers reject; this
-   preview does not currently render on any major platform. Fixing it means
-   rasterising the card to PNG — tracked separately. #}
-{% if is_snapshot | default(false) %}{% block og_image %}{{ site_url }}/kundli/card{% endblock %}
-{% block og_image_width %}1080{% endblock %}
-{% block og_image_height %}1920{% endblock %}
-{% block og_image_alt %}Your Janma Kundli chart card from Shubh Bhagya{% endblock %}{% endif %}
+{# og:image is deliberately NOT overridden here — this page inherits base.html's
+   1200x630 PNG (#231).
+
+   It used to point at /kundli/card (issue #113) so a shared /r/{id} link would
+   preview the sender's chart. That never worked, for two reasons: the card is
+   image/svg+xml, which Facebook, LinkedIn, X, WhatsApp and Slack do not render;
+   and /kundli/card is derived from the VISITOR'S session cookie, so a crawler
+   (no cookie) gets a 303 to an HTML page and a human opening the link would see
+   their OWN chart. A PNG at the same URL would have fixed neither.
+
+   The override was also declared inside an `{% if is_snapshot %}`, which Jinja
+   does not honour for a block in a child template (measured: the override
+   applies with the flag false) — so every /kundli render advertised the SVG too.
+
+   A personalised preview needs a PNG route keyed on the snapshot id, not the
+   session; that is the part of #231 still open. #}
 
 {% block content %}
 {# Pre-compute Lagna / Sun / Moon for summary chips. #}

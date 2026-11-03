@@ -23,8 +23,10 @@
 {%- endfor %}
 
 {# Open Graph — controls how the page renders when shared on WhatsApp,
-   FB, LinkedIn etc. Readings pages override the og_image block with
-   chart-specific imagery.
+   FB, LinkedIn etc. No page overrides the og_image block today: a
+   personalised preview for shared /r/{id} links is still open (#231). A page
+   that does override it must also override og_image_width and
+   og_image_height to match the file it actually serves.
 
    og:image MUST stay 1200x630. It used to point at icon-512.png, a 512x512
    square, while twitter:card below declares `summary_large_image` — so every

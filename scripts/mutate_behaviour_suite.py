@@ -5006,6 +5006,7 @@ MUTATIONS = [
      "<script src=\"/static/analytics.js?v={{ asset_v('analytics.js') }}\" defer></script>",
      "<script src=\"/static/analytics.js\" defer></script>",
      "test_the_script_tag_is_fingerprinted_so_returning_visitors_get_the_new_bytes"),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
