@@ -33,6 +33,7 @@ day for a round that takes fifteen minutes.
 from __future__ import annotations
 
 import json
+import shlex
 import re
 import subprocess
 import tempfile
@@ -442,7 +443,9 @@ def test_the_guard_and_the_dispatch_share_one_condition():
 
 @pytest.mark.parametrize("label,why", [
     ("qa-pass", "agent-merge owns it from there"),
-    ("qa-fail", "needs a fix, and which fix is a judgment steward.md holds"),
+    # Still routed, but no longer simply declined: since 2026-11-02 a qa-fail
+    # PR whose FIX has landed gets its round (section 7 below).
+    ("qa-fail", "a round only once a fix has landed"),
     ("needs-human-review", "someone has been told"),
 ])
 def test_it_declines_a_pr_that_is_already_routed(label, why):
@@ -569,3 +572,92 @@ def test_every_value_reaches_the_shell_as_an_env_var():
     sink. verify_workflows.py enforces this; this test states why."""
     for step in STEPS:
         assert "${{" not in (step.get("run") or ""), step.get("name")
+
+
+# --- 7. a qa-fail PR whose fix has landed gets its round (2026-11-02) -------
+
+SHA_FAIL = "a" * 40
+SHA_HEAD = "b" * 40
+
+
+def _refix_block() -> str:
+    m = re.search(r"(refix=false\ncase \",\$labels,\" in.*?refix=true ;;\nesac)", PICK, re.S)
+    assert m, "the re-fix block is no longer recognisable"
+    return m.group(1)
+
+
+def _refix(tmp_path, *, labels="qa-fail,qa:in-cycle", verdict=f"QA: FAIL — verified at `{SHA_FAIL}`",
+           author="claude[bot]", head=SHA_HEAD, commits=((1,), ), compare_ok=True):
+    """Drive the REAL block with a fake `gh` that serves canned API JSON and
+    applies the block's OWN `--jq` filter with real jq -- so a mutant that
+    loosens a filter is caught, not just one that deletes a line."""
+    import json as _j
+    b = tmp_path / "bin"
+    b.mkdir(exist_ok=True)
+    comments = [{"user": {"login": "claude[bot]"}, "body": "qa-on-green: dispatched at x"},
+                {"user": {"login": author}, "body": verdict + "\nfindings"}]
+    compare = {"commits": [{"parents": list(p)} for p in commits]}
+    (tmp_path / "comments.json").write_text(_j.dumps(comments))
+    (tmp_path / "compare.json").write_text(_j.dumps(compare))
+    bad = "" if compare_ok else "exit 1"
+    (b / "gh").write_text(f"""#!/usr/bin/env bash
+filter=""; prev=""
+for a in "$@"; do [ "$prev" = "--jq" ] && filter="$a"; prev="$a"; done
+case "$*" in
+  *"/comments"*) jq -r "$filter" {tmp_path}/comments.json ;;
+  *"/compare/"*) {bad}
+                 jq -r "$filter" {tmp_path}/compare.json ;;
+  *) exit 9 ;;
+esac
+""")
+    (b / "gh").chmod(0o755)
+    script = ('set -uo pipefail\nlabels="$1"; num=675; head="$2"; GH_REPO=o/r\n'
+              'say() { echo "SAY: $1"; }\n' + _refix_block() + '\necho "REFIX=$refix"\n')
+    p = subprocess.run(["bash", "-c", script, "bash", labels, head], capture_output=True, text=True,
+                       env={"PATH": f"{b}:/usr/bin:/bin"}, timeout=60)
+    return p.stdout
+
+
+def test_a_qa_fail_PR_with_a_fix_commit_since_the_verdict_gets_its_round(tmp_path):
+    """#649, #636 and #675 each sat hours with the fix pushed and no round."""
+    assert "REFIX=true" in _refix(tmp_path)
+
+
+def test_the_SAME_head_the_fail_was_bound_to_gets_nothing(tmp_path):
+    out = _refix(tmp_path, head=SHA_FAIL)
+    assert "REFIX=" not in out and "needs a FIX first" in out
+
+
+def test_only_MERGES_since_the_verdict_are_not_a_fix(tmp_path):
+    out = _refix(tmp_path, commits=((1, 2), (3, 4)))
+    assert "REFIX=" not in out and "a merge is not a fix" in out
+
+
+def test_an_unreadable_verdict_leaves_the_PR_alone(tmp_path):
+    out = _refix(tmp_path, verdict="QA: FAIL — verified at somewhere")
+    assert "REFIX=" not in out and "could not be read" in out
+
+
+def test_a_failed_compare_counts_as_no_fix(tmp_path):
+    assert "REFIX=" not in _refix(tmp_path, compare_ok=False)
+
+
+def test_one_real_commit_among_merges_IS_a_fix(tmp_path):
+    assert "REFIX=true" in _refix(tmp_path, commits=((1, 2), (5,)))
+
+
+def test_a_PR_without_qa_fail_is_untouched_by_the_block(tmp_path):
+    assert "REFIX=false" in _refix(tmp_path, labels="qa:in-cycle")
+
+
+def test_the_verdict_is_read_only_from_claude_bot(tmp_path):
+    """An outsider pasting "QA: FAIL — verified at <sha>" must not aim a round."""
+    out = _refix(tmp_path, author="drive-by")
+    assert "REFIX=" not in out and "could not be read" in out
+
+
+def test_a_refix_round_is_aimed_at_the_PR_whatever_the_branch_is_called():
+    """An `issue/` branch would otherwise aim a full cycle that may rebuild."""
+    code = _code(PICK)
+    assert 'if [ -n "$issue" ] && [ "$refix" != true ]; then' in code, \
+        "a re-fixed PR on an issue/ branch would be aimed at a full cycle"

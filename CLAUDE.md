@@ -255,8 +255,12 @@ What has NOT changed, and why it matters more now than before:
 - **A green PR gets its QA round immediately, not in four hours — `qa-on-green.yml`,
   added 2026-10-25.** `workflow_run` on `PR gates` completing: if the PR is open, its
   author is in `AGENT_AUTHORS`, the head still matches what was gated and it carries no
-  `qa-pass`/`qa-fail`/`needs-human-review`, it dispatches one cycle through the shared
-  `scripts/dispatch_cycle.sh`.
+  `qa-pass`/`needs-human-review`, it dispatches one cycle through the shared
+  `scripts/dispatch_cycle.sh`. A `qa-fail` PR is dispatched too, **but only once a fix has
+  landed** (since 2026-11-02): at least one non-merge commit after the SHA its FAIL was
+  bound to, read from `claude[bot]`'s own `QA: FAIL — verified at <sha>` comment, and the
+  round is aimed at `pr=<n>`. Before that, every re-fixed PR waited for the steward or a
+  human — #649, #636 and #675 each sat hours that way with the fix already pushed.
 
   **What it aims the dispatch at, since 2026-11-01, and the branch name is no longer a
   precondition.** `issue/<n>-`, `partial/<n>-` and `fix/<n>-` yield `issue=<n>` and the
@@ -299,9 +303,9 @@ What has NOT changed, and why it matters more now than before:
   **It cannot write a verdict.** It holds `pull-requests: write` for that one comment and
   for nothing else; `tests/test_qa_on_green.py` fails the build if `gh pr edit`,
   `--add-label` or `--remove-label` appears in any `run:` block. A dispatcher that could
-  label could hand itself `qa-pass` and make `agent-merge` decorative. A `qa-fail` PR is
-  left alone: that needs a FIX, and which fix is a judgment `steward.md`'s routing table
-  holds across three kinds with different actions.
+  label could hand itself `qa-pass` and make `agent-merge` decorative. A `qa-fail` PR
+  with no fix since its verdict is still left alone: that needs a FIX, and which fix is a
+  judgment `steward.md`'s routing table holds across three kinds with different actions.
 - **A dispatch made while a cycle runs is QUEUED, not dropped — `agent-queue.yml`, added
   2026-11-02 on the owner's request.** `agent-work` runs one cycle at a time, and GitHub
   keeps at most ONE pending run per concurrency group: a third dispatch **cancels** the

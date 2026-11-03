@@ -153,10 +153,44 @@ jobs:
           case ",$labels," in
             *",qa-pass,"*)
               say "PR #$num already carries \`qa-pass\` — \`agent-merge\` owns it from here."; exit 0 ;;
-            *",qa-fail,"*)
-              say "PR #$num carries \`qa-fail\`. That needs a FIX, not a round, and which fix is a judgment \`steward.md\`'s routing table holds. Leaving it."; exit 0 ;;
             *",needs-human-review,"*)
               say "PR #$num carries \`needs-human-review\` — someone has been told."; exit 0 ;;
+          esac
+
+          # A `qa-fail` PR WHOSE FIX HAS LANDED GETS ITS ROUND NOW (2026-11-02,
+          # owner's request). Until then this step left every `qa-fail` PR
+          # alone ("that needs a FIX, not a round"), which was right before the
+          # fix and wrong after it: the round that clears the label then waited
+          # for the steward (twice a day) or a human. Measured that day: #649,
+          # #636 and #675 each sat hours with the fix pushed, green gates and no
+          # round, and the owner started three of them by hand.
+          #
+          # A fix is a NON-MERGE commit after the commit the FAIL was bound to --
+          # the same test `detect_stalls.py` uses for `qa-fail-refixed`. Merging
+          # `main` in fixes nothing a round failed, so it earns nothing here.
+          # The verdict is read from `scripts/qa_verdict.sh`'s own comment, and
+          # only from `claude[bot]`, and only as a 40-hex SHA: an outsider
+          # pasting "QA: FAIL — verified at ..." cannot aim a round. Anything
+          # unreadable leaves the PR alone, which is today's behaviour.
+          refix=false
+          case ",$labels," in
+            *",qa-fail,"*)
+              failed_at=$(gh api "repos/$GH_REPO/issues/$num/comments?per_page=100" --paginate \
+                  --jq '.[] | select(.user.login == "claude[bot]") | .body | select(startswith("QA: FAIL")) | split("\n")[0]' \
+                  2>/dev/null | tail -1 | grep -oE '[0-9a-f]{40}' | head -1 || true)
+              if [ -z "$failed_at" ]; then
+                say "PR #$num carries \`qa-fail\` and its FAIL verdict could not be read — leaving it."; exit 0
+              fi
+              if [ "$failed_at" = "$head" ]; then
+                say "PR #$num carries \`qa-fail\` bound to this very head \`${head:0:7}\` — it needs a FIX first."; exit 0
+              fi
+              fixes=$(gh api "repos/$GH_REPO/compare/$failed_at...$head" \
+                        --jq '[.commits[] | select((.parents | length) == 1)] | length' 2>/dev/null || echo 0)
+              case "$fixes" in ''|*[!0-9]*) fixes=0 ;; esac
+              if [ "$fixes" -eq 0 ]; then
+                say "PR #$num carries \`qa-fail\` at \`${failed_at:0:7}\`; only merges have landed since — a merge is not a fix. Leaving it."; exit 0
+              fi
+              refix=true ;;
           esac
 
           # A JUDGING ROUND IS STILL POSSIBLE ON A BRANCH NOBODY CAN PUSH (#610).
@@ -229,12 +263,17 @@ jobs:
           # through an openness check and point a ~50-minute cycle at a number
           # lifted from prose. tests/test_qa_on_green.py pins this shut.
           issue=$(printf '%s' "$HEAD_BRANCH" | sed -nE 's#^(issue|partial|fix)/([0-9]+).*#\2#p')
-          if [ -n "$issue" ]; then
+          # A re-fixed `qa-fail` PR wants a ROUND ON THE FIX, not a cycle that
+          # may rebuild: it is aimed at the PR whatever the branch is called.
+          if [ -n "$issue" ] && [ "$refix" != true ]; then
             target="issue=$issue"
             aim="issue #$issue"
           else
             target="pr=$num"
             aim="PR #$num itself — \`$HEAD_BRANCH\` names no owning issue, so the round judges the diff"
+          fi
+          if [ "$refix" = true ]; then
+            aim="PR #$num itself — \`qa-fail\` at \`${failed_at:0:7}\` and $fixes fix commit(s) since, so the round judges the fix"
           fi
 
           # THE LOOP GUARD, and it is the reason this workflow is safe to run on

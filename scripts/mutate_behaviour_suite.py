@@ -1031,6 +1031,23 @@ MUTATIONS = [
     # A `qa-fail` PR needs a FIX, and which fix is a judgment `steward.md`'s
     # routing table holds across three kinds with different actions. Sending a
     # round at unaddressed findings returns the same FAIL at full cost.
+    # 2026-11-02: a qa-fail PR gets a round once a FIX has landed. Each row
+    # re-opens one way that could dispatch at unaddressed findings again.
+    ("qa-on-green counts a merge of main as a fix",
+     ".github/workflows/qa-on-green.yml",
+     "--jq '[.commits[] | select((.parents | length) == 1)] | length'",
+     "--jq '[.commits[]] | length'",
+     "test_only_MERGES_since_the_verdict_are_not_a_fix"),
+    ("qa-on-green rounds the very head a FAIL was bound to",
+     ".github/workflows/qa-on-green.yml",
+     '              if [ "$failed_at" = "$head" ]; then',
+     '              if [ "$failed_at" = "never" ]; then',
+     "test_the_SAME_head_the_fail_was_bound_to_gets_nothing"),
+    ("qa-on-green reads a FAIL verdict anyone could paste",
+     ".github/workflows/qa-on-green.yml",
+     '.[] | select(.user.login == "claude[bot]") | .body',
+     '.[] | .body',
+     "test_the_verdict_is_read_only_from_claude_bot"),
     ("qa-on-green sends a round at a PR whose findings are unaddressed",
      ".github/workflows/qa-on-green.yml",
      '*",qa-fail,"*)',
@@ -4724,10 +4741,15 @@ MUTATIONS = [
 
     # The fallback inverted: numbered branches get the PR form and unnumbered
     # ones get `issue=` with nothing after it.
+    ('qa-on-green aims a re-fixed qa-fail PR at a full cycle instead of a round',
+     '.github/workflows/qa-on-green.yml',
+     'if [ -n "$issue" ] && [ "$refix" != true ]; then',
+     'if [ -n "$issue" ]; then',
+     'test_a_refix_round_is_aimed_at_the_PR_whatever_the_branch_is_called'),
     ('qa-on-green inverts the fallback and loses the owning issue',
      '.github/workflows/qa-on-green.yml',
-     'if [ -n "$issue" ]; then\n            target="issue=$issue"',
-     'if [ -z "$issue" ]; then\n            target="issue=$issue"',
+     'if [ -n "$issue" ] && [ "$refix" != true ]; then\n            target="issue=$issue"',
+     'if [ -z "$issue" ] && [ "$refix" != true ]; then\n            target="issue=$issue"',
      'test_a_numbered_branch_still_aims_at_its_issue'),
 
     # The carrier file re-acquires the hard-coded prefix it had before, so
