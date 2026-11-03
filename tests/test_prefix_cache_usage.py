@@ -1738,3 +1738,99 @@ def test_the_two_caches_sentences_cannot_be_softened(admin, stats_dir):
         "the response cache lives in one Cloud Run instance; any claim that it "
         "survives an instance going away is false, however it is spelled")
     assert html is not None
+
+
+# --- #432: one row spans two models' caches, and the reporting set is pinned ----
+
+def _route_cell(html: str, route: str) -> str:
+    """First cell of `route`'s PREFIX-CACHE row, tags stripped. Not `_row`: that
+    matches the cell text EXACTLY, and a blended row's cell carries a marker."""
+    import html as _html
+    table = html[html.index("Provider-side prefix cache (Groq)"):]
+    for cell in re.findall(r"<td\b.*?</td>", table, flags=re.S):
+        text = re.sub(r"\s+", " ", _html.unescape(re.sub(r"<[^>]+>", " ", cell))).strip()
+        if text == route or text.startswith(route + " "):
+            return text
+    raise AssertionError(f"no prefix-cache row for {route!r}")
+
+
+def _seed_two_models_one_route(stats_dir):
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    today = date.today()
+    k120, k20 = "groq120|openai/gpt-oss-120b|ask", "groq20|openai/gpt-oss-20b|ask"
+    row = {"calls": 4, "measurable": 4, "prompt_measurable": 4000,
+           "cached_measurable": 1000, "reported": 1, "prompt_reported": 1000,
+           "cached_tokens": 1000}
+    (stats_dir / f"{today.isoformat()}.json").write_text(json.dumps({
+        "date": today.isoformat(),
+        "counts": {k120: 4, k20: 4}, "totals": {"ask": 8}, "fallbacks": 4,
+        "prefix_cache": {k120: {**llm_stats._PREFIX_ZERO, **row},
+                         k20: {**llm_stats._PREFIX_ZERO, **row}},
+    }))
+
+
+def test_a_route_served_by_two_models_says_so_and_a_single_model_route_does_not(
+        stats_dir, admin):
+    """Groq's cache is per model, but a route row sums every model that served
+    it. The row must carry which models, and the panel must mark a blended one --
+    and must NOT mark a one-model route, or the marker means nothing."""
+    _seed_two_models_one_route(stats_dir)
+    e = llm_stats.range_summary(1)["aggregate"]["prefix_cache"]["ask"]
+    assert e["models"] == ["groq120:openai/gpt-oss-120b", "groq20:openai/gpt-oss-20b"]
+    assert e["calls"] == 8, "the blend still sums; only the labelling is new"
+    assert "blends 2 models" in _route_cell(admin.get("/admin").text, "ask")
+
+    # same route, one model: no marker
+    for f in stats_dir.glob("*.json"):
+        f.unlink()
+    _seed(stats_dir, {"calls": 4, "measurable": 4, "prompt_measurable": 4000})
+    e = llm_stats.range_summary(1)["aggregate"]["prefix_cache"]["ask"]
+    assert e["models"] == ["groq120:openai/gpt-oss-120b"]
+    assert _route_cell(admin.get("/admin").text, "ask") == "ask"
+
+
+def test_the_footnote_says_a_row_blends_the_models_that_served_it(stats_dir, admin):
+    _seed_two_models_one_route(stats_dir)
+    text = _notice(admin.get("/admin").text)
+    assert "Each row adds up every model that served the route" in text
+    assert "Groq's prefix cache is per model" in text
+
+
+def test_cache_reporting_models_is_pinned_and_matches_no_non_groq_provider():
+    """#432 part 2. Deleting entries left the suite green, so nothing said which
+    were deliberate. The set decides MEASURABILITY (record() reads
+    `model in CACHE_REPORTING_MODELS`), and it matches the model STRING with no
+    provider test -- so an entry that also names a non-Groq provider's model would
+    count that provider's silences as measured zeros: the original defect.
+
+    Checked against the REAL provider registry, so a change to providers.py that
+    breaks either direction fails here rather than silently on the panel."""
+    pinned = frozenset({
+        # produced by the chain (groq / groq120 / groq20) -- load-bearing
+        "openai/gpt-oss-120b", "openai/gpt-oss-20b",
+        # Groq's docs name the bare model; no registry provider produces these
+        # spellings today (measured 2026-11-03), kept as documented forward
+        # compatibility for a pinned / re-based ASTRO_AI_MODEL
+        "gpt-oss-120b", "gpt-oss-20b",
+        # the safeguard classifier: not usable for narrative, so no route reaches it
+        "openai/gpt-oss-safeguard-20b", "gpt-oss-safeguard-20b",
+    })
+    assert llm_stats.CACHE_REPORTING_MODELS == pinned, (
+        "the reporting set changed: classify the new entry above (produced by the "
+        "chain, or documented forward compatibility) and update the footnote count")
+
+    groq_models = {p.default_model for p in providers.PROVIDERS.values()
+                   if p.api_base and "groq.com" in p.api_base}
+    chain = {providers.PROVIDERS[n].default_model for n in ("groq", "groq120", "groq20")}
+    assert chain <= llm_stats.CACHE_REPORTING_MODELS, (
+        "a model the recommended chain serves would read as unmeasurable")
+    # groq_qwen is a Groq model that is deliberately NOT cache-reporting-measured
+    assert providers.PROVIDERS["groq_qwen"].default_model not in llm_stats.CACHE_REPORTING_MODELS
+    assert groq_models  # the filter found Groq at all, or the next check is vacuous
+
+    for name, p in providers.PROVIDERS.items():
+        if p.api_base and "groq.com" in p.api_base:
+            continue
+        assert p.default_model not in llm_stats.CACHE_REPORTING_MODELS, (
+            f"{name} ({p.default_model}) would have its silences booked as measured "
+            "zeros under a Groq-derived floor")

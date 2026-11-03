@@ -889,6 +889,10 @@ def range_summary(days: int) -> dict[str, Any]:
     fallback_reasons: dict[str, int] = defaultdict(int)
     prefix_acc: dict[str, dict[str, int]] = {}
     skipped_rows = 0          # prefix_cache rows from an older schema (#410 NEW-5)
+    # Which `provider:model` strings fed each route row (#432). Kept OUTSIDE
+    # `prefix_acc` on purpose: that dict's keys are `_PREFIX_ZERO`'s and the loop
+    # below sums every one of them, so a non-numeric entry there would break it.
+    prefix_models: dict[str, set[str]] = {}
     daily: list[dict[str, Any]] = []
     for i in range(days):
         d = today - timedelta(days=i)
@@ -968,6 +972,7 @@ def range_summary(days: int) -> dict[str, Any]:
                 skipped_rows += 1
                 continue
             acc = prefix_acc.setdefault(parts[2], dict(_PREFIX_ZERO))
+            prefix_models.setdefault(parts[2], set()).add(f"{parts[0]}:{parts[1]}")
             for field in acc:
                 acc[field] += pc.get(field, 0)
     daily.reverse()  # oldest first for display
@@ -996,7 +1001,13 @@ def range_summary(days: int) -> dict[str, Any]:
                         "hit_pct": _rate(v["cached_tokens"], v["prompt_reported"], v["reported"]),
                         "effective_pct": _rate(v["cached_measurable"], v["prompt_measurable"],
                                                v["measurable"]),
-                        "impossible": _is_impossible(v)}
+                        "impossible": _is_impossible(v),
+                        # #432: Groq's prefix cache is per MODEL, but this row sums
+                        # every model that served the route. More than one entry
+                        # here means Effective/Hit rate blend independent caches
+                        # (routine, not rare: a fallback from groq120 to groq20
+                        # lands in the same row), and the panel says so.
+                        "models": sorted(prefix_models.get(route, ()))}
                 for route, v in sorted(prefix_acc.items(), key=lambda kv: -kv[1]["calls"])
             },
             # Non-zero means some stored rows were written by an older schema and
