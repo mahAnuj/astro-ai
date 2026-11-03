@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-03T09:00:41Z",
+  "generated_at": "2026-11-03T12:38:11Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 129,
+  "open": 128,
   "with_ask": 52,
   "by_area": {
     "UNCLASSIFIED": 46,
@@ -11,9 +11,9 @@
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
-    "SEO": 4,
     "DETECT_STALLS": 3,
     "BUG": 3,
+    "SEO": 3,
     "MEASURE": 2,
     "SECURITY": 2,
     "RASHIFAL": 2,
@@ -35,37 +35,20 @@
   "by_type": {
     "untyped": 39,
     "bug": 32,
-    "enhancement": 27,
+    "enhancement": 26,
     "correctness": 10,
     "design": 8,
     "chore": 7,
     "ui": 6
   },
   "by_priority": {
-    "unset": 93,
+    "unset": 92,
     "medium": 19,
     "high": 16,
     "low": 1
   },
   "blocked": 8,
   "rows": [
-    {
-      "number": 685,
-      "title": "[SEO] /learn/sade-sati/ title names no Moon sign — 1,754 impressions at 0.63% CTR while rivals lead with Aquarius, Pisces, Aries",
-      "ask": "",
-      "area": "SEO",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "seo",
-        "content"
-      ],
-      "created": "2026-11-03T02:01:12Z",
-      "updated": "2026-11-03T02:01:12Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
     {
       "number": 678,
       "title": "detect_stalls: qa_fail_age reads the qa-fail LABEL time, so a second FAIL round on a moved head is invisible (#675 misrouted as qa-fail-refixed)",
@@ -856,7 +839,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-20T08:48:15Z",
-      "updated": "2026-10-27T09:16:03Z",
+      "updated": "2026-11-03T11:14:13Z",
       "blocked": false,
       "needs_evidence": false
     },
