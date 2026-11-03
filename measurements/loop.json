@@ -1,6 +1,111 @@
 {
-  "generated_at": "2026-11-03T12:38:00Z",
+  "generated_at": "2026-11-03T20:24:49Z",
   "rows": [
+    {
+      "run": 41698210139,
+      "workflow": "agent-work",
+      "date": "2026-11-03",
+      "started": "2026-11-03T18:54:15Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 1.5,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "nothing",
+      "attribution": "receipt",
+      "kind": "issue"
+    },
+    {
+      "run": 41697899251,
+      "workflow": "agent-work",
+      "date": "2026-11-03",
+      "started": "2026-11-03T18:52:15Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 1.5,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "nothing",
+      "attribution": "receipt",
+      "kind": "issue"
+    },
+    {
+      "run": 41692071978,
+      "workflow": "agent-work",
+      "date": "2026-11-03",
+      "started": "2026-11-03T18:15:37Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 36.1,
+      "issue": 431,
+      "pr": 694,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked"
+    },
+    {
+      "run": 41678664094,
+      "workflow": "agent-work",
+      "date": "2026-11-03",
+      "started": "2026-11-03T16:52:51Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 13.1,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
+    },
+    {
+      "run": 41662132383,
+      "workflow": "agent-work",
+      "date": "2026-11-03",
+      "started": "2026-11-03T15:16:17Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 23.7,
+      "issue": 231,
+      "pr": 693,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "issue"
+    },
+    {
+      "run": 41657685522,
+      "workflow": "agent-work",
+      "date": "2026-11-03",
+      "started": "2026-11-03T14:50:34Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 17.1,
+      "issue": 231,
+      "pr": 693,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked"
+    },
+    {
+      "run": 41650916446,
+      "workflow": "agent-work",
+      "date": "2026-11-03",
+      "started": "2026-11-03T14:09:28Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 26.9,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
+    },
     {
       "run": 41629198490,
       "workflow": "agent-work",
@@ -12,8 +117,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41623463054,
@@ -27,7 +133,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41623227784,
@@ -41,7 +148,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41620643992,
@@ -55,7 +163,8 @@
       "pr": 690,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41574673500,
@@ -69,7 +178,8 @@
       "pr": 688,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41559859945,
@@ -83,7 +193,8 @@
       "pr": 684,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41541327920,
@@ -97,7 +208,8 @@
       "pr": 683,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41525432990,
@@ -111,7 +223,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41521112322,
@@ -125,7 +238,8 @@
       "pr": 680,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41508277484,
@@ -138,8 +252,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41497008853,
@@ -152,8 +267,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41490701736,
@@ -166,8 +282,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41485118862,
@@ -181,7 +298,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41484907018,
@@ -195,7 +313,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41456502147,
@@ -209,7 +328,8 @@
       "pr": 636,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41452781789,
@@ -222,8 +342,9 @@
       "issue": null,
       "pr": 649,
       "pr_merged": true,
-      "outcome": "shipped",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41452767198,
@@ -236,8 +357,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41446403501,
@@ -251,7 +373,8 @@
       "pr": 642,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41444315251,
@@ -264,8 +387,9 @@
       "issue": null,
       "pr": 663,
       "pr_merged": false,
-      "outcome": "failed",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41441022194,
@@ -278,8 +402,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41434999817,
@@ -292,8 +417,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41431090657,
@@ -307,7 +433,8 @@
       "pr": 673,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41392524897,
@@ -320,8 +447,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41390831405,
@@ -334,8 +462,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41389905057,
@@ -348,8 +477,9 @@
       "issue": null,
       "pr": 649,
       "pr_merged": true,
-      "outcome": "shipped",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41376274996,
@@ -363,7 +493,8 @@
       "pr": 668,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41357950281,
@@ -377,7 +508,8 @@
       "pr": 663,
       "pr_merged": false,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41343784134,
@@ -390,8 +522,9 @@
       "issue": 610,
       "pr": 636,
       "pr_merged": true,
-      "outcome": "shipped",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41340795140,
@@ -405,7 +538,8 @@
       "pr": 656,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41335763357,
@@ -418,8 +552,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41334126645,
@@ -432,8 +567,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41331606838,
@@ -446,8 +582,9 @@
       "issue": null,
       "pr": 659,
       "pr_merged": true,
-      "outcome": "shipped",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41329309760,
@@ -461,7 +598,8 @@
       "pr": 658,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41326584885,
@@ -474,8 +612,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41325894105,
@@ -488,8 +627,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41325447290,
@@ -502,8 +642,9 @@
       "issue": null,
       "pr": null,
       "pr_merged": null,
-      "outcome": "nothing",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41314101402,
@@ -517,7 +658,8 @@
       "pr": 656,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41298178984,
@@ -531,7 +673,8 @@
       "pr": 635,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41296369632,
@@ -544,8 +687,9 @@
       "issue": 616,
       "pr": 642,
       "pr_merged": true,
-      "outcome": "shipped",
-      "attribution": "receipt"
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
     },
     {
       "run": 41293178433,
@@ -559,7 +703,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41282716226,
@@ -573,7 +718,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41272807261,
@@ -587,7 +733,8 @@
       "pr": 645,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41269407032,
@@ -601,7 +748,8 @@
       "pr": 643,
       "pr_merged": false,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41268979809,
@@ -615,7 +763,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41263211947,
@@ -629,7 +778,8 @@
       "pr": 635,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41217336410,
@@ -643,7 +793,8 @@
       "pr": 626,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41160004688,
@@ -657,7 +808,8 @@
       "pr": 617,
       "pr_merged": false,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 41158453919,
@@ -671,7 +823,8 @@
       "pr": 615,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 41094535728,
@@ -685,7 +838,8 @@
       "pr": 608,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40993804625,
@@ -699,7 +853,8 @@
       "pr": 590,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40991776257,
@@ -713,7 +868,8 @@
       "pr": 600,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40920301013,
@@ -727,7 +883,8 @@
       "pr": 590,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40906523134,
@@ -741,7 +898,8 @@
       "pr": 587,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40805022843,
@@ -755,7 +913,8 @@
       "pr": 587,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40731757802,
@@ -769,7 +928,8 @@
       "pr": 579,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40623536535,
@@ -783,7 +943,8 @@
       "pr": 556,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40618656911,
@@ -797,7 +958,8 @@
       "pr": 572,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40560037408,
@@ -811,7 +973,8 @@
       "pr": 565,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40545574904,
@@ -825,7 +988,8 @@
       "pr": 556,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40539081988,
@@ -839,7 +1003,8 @@
       "pr": 562,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40528705674,
@@ -853,7 +1018,8 @@
       "pr": 551,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40446902384,
@@ -867,7 +1033,8 @@
       "pr": 549,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40435096605,
@@ -881,7 +1048,8 @@
       "pr": 556,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40371414771,
@@ -895,7 +1063,8 @@
       "pr": 544,
       "pr_merged": false,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40365965016,
@@ -909,7 +1078,8 @@
       "pr": 548,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40354134934,
@@ -923,7 +1093,8 @@
       "pr": 544,
       "pr_merged": false,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40274940597,
@@ -937,7 +1108,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "failed",
-      "attribution": "unattributed"
+      "attribution": "unattributed",
+      "kind": "issue"
     },
     {
       "run": 40255262206,
@@ -951,7 +1123,8 @@
       "pr": 536,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40252231274,
@@ -965,7 +1138,8 @@
       "pr": 530,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40220142751,
@@ -979,7 +1153,8 @@
       "pr": 530,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40210721288,
@@ -993,7 +1168,8 @@
       "pr": 538,
       "pr_merged": false,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40204359848,
@@ -1007,7 +1183,8 @@
       "pr": 536,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40198469142,
@@ -1021,7 +1198,8 @@
       "pr": 521,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 40148506600,
@@ -1035,7 +1213,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40101948294,
@@ -1049,7 +1228,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 40049681451,
@@ -1063,7 +1243,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 39987488558,
@@ -1077,7 +1258,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 39980147953,
@@ -1091,7 +1273,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 39966993890,
@@ -1105,7 +1288,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 39909611851,
@@ -1119,7 +1303,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 39903136797,
@@ -1133,7 +1318,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 39889312586,
@@ -1147,7 +1333,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 39883358107,
@@ -1161,7 +1348,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 39818019465,
@@ -1175,7 +1363,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 39808283559,
@@ -1189,7 +1378,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 39724181383,
@@ -1203,7 +1393,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "issue"
     },
     {
       "run": 39705140804,
@@ -1217,7 +1408,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 39629475932,
@@ -1231,7 +1423,8 @@
       "pr": 470,
       "pr_merged": false,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 39526992390,
@@ -1245,7 +1438,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "ranked"
     },
     {
       "run": 39459331240,
@@ -1259,7 +1453,8 @@
       "pr": 458,
       "pr_merged": false,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39449708098,
@@ -1273,7 +1468,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39439334311,
@@ -1287,7 +1483,8 @@
       "pr": 410,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39401034741,
@@ -1301,7 +1498,8 @@
       "pr": 410,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39389328692,
@@ -1315,7 +1513,8 @@
       "pr": 425,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39354530549,
@@ -1329,7 +1528,8 @@
       "pr": 427,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39293467690,
@@ -1343,7 +1543,8 @@
       "pr": 425,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39182927592,
@@ -1357,7 +1558,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39135545368,
@@ -1371,7 +1573,8 @@
       "pr": 420,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39129439785,
@@ -1385,7 +1588,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39083727258,
@@ -1399,7 +1603,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39040203989,
@@ -1413,7 +1618,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39039274694,
@@ -1427,7 +1633,8 @@
       "pr": 412,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39033334347,
@@ -1441,7 +1648,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39019460241,
@@ -1455,7 +1663,8 @@
       "pr": 411,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 39019457404,
@@ -1469,7 +1678,8 @@
       "pr": 410,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38989674710,
@@ -1483,7 +1693,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38948547928,
@@ -1497,7 +1708,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38922715683,
@@ -1511,7 +1723,8 @@
       "pr": 395,
       "pr_merged": false,
       "outcome": "failed",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38832965474,
@@ -1525,7 +1738,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38780443195,
@@ -1539,7 +1753,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38778922121,
@@ -1553,7 +1768,8 @@
       "pr": 370,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38761072763,
@@ -1567,7 +1783,8 @@
       "pr": 364,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38752449831,
@@ -1581,7 +1798,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38749111300,
@@ -1595,7 +1813,8 @@
       "pr": 360,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38682827063,
@@ -1609,7 +1828,8 @@
       "pr": 356,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38664803810,
@@ -1623,7 +1843,8 @@
       "pr": 352,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "receipt"
+      "attribution": "receipt",
+      "kind": "unknown"
     },
     {
       "run": 38591957381,
@@ -1637,7 +1858,8 @@
       "pr": 344,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38497046522,
@@ -1651,7 +1873,8 @@
       "pr": 342,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38444494901,
@@ -1665,7 +1888,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "unknown",
-      "attribution": "unattributed"
+      "attribution": "unattributed",
+      "kind": "unknown"
     },
     {
       "run": 38435548008,
@@ -1679,7 +1903,8 @@
       "pr": 334,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38341529127,
@@ -1693,7 +1918,8 @@
       "pr": 330,
       "pr_merged": false,
       "outcome": "failed",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38333060465,
@@ -1707,7 +1933,8 @@
       "pr": 328,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38194683560,
@@ -1721,7 +1948,8 @@
       "pr": 328,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38162823809,
@@ -1735,7 +1963,8 @@
       "pr": 328,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38112266796,
@@ -1749,7 +1978,8 @@
       "pr": 321,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38102505156,
@@ -1763,7 +1993,8 @@
       "pr": 324,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38037798582,
@@ -1777,7 +2008,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38037787957,
@@ -1791,7 +2023,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 38015945496,
@@ -1805,7 +2038,8 @@
       "pr": 321,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 37962523239,
@@ -1819,7 +2053,8 @@
       "pr": 319,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 37960342502,
@@ -1833,7 +2068,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "failed",
-      "attribution": "unattributed"
+      "attribution": "unattributed",
+      "kind": "unknown"
     },
     {
       "run": 37959985368,
@@ -1847,7 +2083,8 @@
       "pr": 318,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 37887744912,
@@ -1861,7 +2098,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "failed",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 37876433396,
@@ -1875,7 +2113,8 @@
       "pr": 312,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 37818476420,
@@ -1889,7 +2128,8 @@
       "pr": 303,
       "pr_merged": true,
       "outcome": "shipped",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 37759004420,
@@ -1903,7 +2143,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "unknown",
-      "attribution": "unattributed"
+      "attribution": "unattributed",
+      "kind": "unknown"
     },
     {
       "run": 37749887640,
@@ -1917,7 +2158,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "unknown",
-      "attribution": "unattributed"
+      "attribution": "unattributed",
+      "kind": "unknown"
     },
     {
       "run": 37741141641,
@@ -1931,7 +2173,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "failed",
-      "attribution": "unattributed"
+      "attribution": "unattributed",
+      "kind": "unknown"
     },
     {
       "run": 37737070840,
@@ -1945,7 +2188,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 37735035844,
@@ -1959,7 +2203,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 37734421636,
@@ -1973,7 +2218,8 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "nothing",
-      "attribution": "log"
+      "attribution": "log",
+      "kind": "unknown"
     },
     {
       "run": 37718620952,
@@ -1987,7 +2233,26 @@
       "pr": null,
       "pr_merged": null,
       "outcome": "unknown",
-      "attribution": "unattributed"
+      "attribution": "unattributed",
+      "kind": "unknown"
     }
-  ]
+  ],
+  "waste": {
+    "days": 7,
+    "cycles": 64,
+    "minutes_by_outcome": {
+      "shipped": 992.0,
+      "pr open": 0.0,
+      "judged": 287.9,
+      "nothing": 61.2,
+      "failed": 36.2,
+      "unknown": 0.0
+    },
+    "minutes_total": 1377.3,
+    "minutes_without_result": 97.4,
+    "share_without_result": 0.071,
+    "shipped_prs": 24,
+    "build_idle_hours": 150.1,
+    "build_idle_share": 0.893
+  }
 }
