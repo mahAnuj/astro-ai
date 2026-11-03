@@ -359,6 +359,17 @@ What has NOT changed, and why it matters more now than before:
   `scripts/file_ops_findings.py` — run by `agent-steward` twice a day — files every finding
   as ONE issue per kind (commented on change, a single note when it clears, never closed
   by the carrier). Nothing ran that detector before; its own header said a carrier would.
+- **New mutation rows go in `scripts/mutations/<area>.py`, never in the central table —
+  since 2026-11-03.** Every PR used to append to the one `MUTATIONS` list in
+  `mutate_behaviour_suite.py`, so any two open PRs conflicted there by construction and
+  each conflict cost a merge of `main` and a fresh QA round; and because that file is in
+  `_ALWAYS_FULL`, every PR that added a row paid the full ~55-minute sweep. The harness now
+  loads every `scripts/mutations/*.py` (one literal `MUTATIONS = [...]` each), and a scoped
+  run selects an area file's rows when that file changed. `tests/test_mutation_tables.py`
+  freezes the central table at 734 rows and requires each area table to stay a literal —
+  `verify_no_relaxation`'s row floor counts by AST, so a table built by concatenation
+  reads as zero rows, i.e. as rows deleted. One file per PR or per area; never a shared
+  `misc.py` that recreates the hot spot.
 - **The mutation sandbox copies `.claude/` — since 2026-10-25.** `_SANDBOX_SUBDIRS` in
   `mutate_behaviour_suite.py` had `src`, `tests`, `.github`, `scripts` and `measurements`,
   so a row naming an agent definition or a slash command died with `FileNotFoundError` and

@@ -1031,23 +1031,6 @@ MUTATIONS = [
     # A `qa-fail` PR needs a FIX, and which fix is a judgment `steward.md`'s
     # routing table holds across three kinds with different actions. Sending a
     # round at unaddressed findings returns the same FAIL at full cost.
-    # 2026-11-02: a qa-fail PR gets a round once a FIX has landed. Each row
-    # re-opens one way that could dispatch at unaddressed findings again.
-    ("qa-on-green counts a merge of main as a fix",
-     ".github/workflows/qa-on-green.yml",
-     "--jq '[.commits[] | select((.parents | length) == 1)] | length'",
-     "--jq '[.commits[]] | length'",
-     "test_only_MERGES_since_the_verdict_are_not_a_fix"),
-    ("qa-on-green rounds the very head a FAIL was bound to",
-     ".github/workflows/qa-on-green.yml",
-     '              if [ "$failed_at" = "$head" ]; then',
-     '              if [ "$failed_at" = "never" ]; then',
-     "test_the_SAME_head_the_fail_was_bound_to_gets_nothing"),
-    ("qa-on-green reads a FAIL verdict anyone could paste",
-     ".github/workflows/qa-on-green.yml",
-     '.[] | select(.user.login == "claude[bot]") | .body',
-     '.[] | .body',
-     "test_the_verdict_is_read_only_from_claude_bot"),
     ("qa-on-green sends a round at a PR whose findings are unaddressed",
      ".github/workflows/qa-on-green.yml",
      '*",qa-fail,"*)',
@@ -4741,11 +4724,6 @@ MUTATIONS = [
 
     # The fallback inverted: numbered branches get the PR form and unnumbered
     # ones get `issue=` with nothing after it.
-    ('qa-on-green aims a re-fixed qa-fail PR at a full cycle instead of a round',
-     '.github/workflows/qa-on-green.yml',
-     'if [ -n "$issue" ] && [ "$refix" != true ]; then',
-     'if [ -n "$issue" ]; then',
-     'test_a_refix_round_is_aimed_at_the_PR_whatever_the_branch_is_called'),
     ('qa-on-green inverts the fallback and loses the owning issue',
      '.github/workflows/qa-on-green.yml',
      'if [ -n "$issue" ] && [ "$refix" != true ]; then\n            target="issue=$issue"',
@@ -4837,75 +4815,6 @@ MUTATIONS = [
     # Before it, a ruling made while a cycle ran printed "waits for the next
     # run" and nothing came back for it (#560; #649 twice in one day). Each row
     # re-opens one way the queue could lose, duplicate, misorder, or invent work.
-    # The QA lane (2026-11-03): two copies of the lane rule, and the drain's
-    # one-per-lane bookkeeping. Each row merges the lanes or overfills one.
-    # Waste, the dashboard and the ops carrier (2026-11-03).
-    ('collector: a successful QA round is filed as nothing again',
-     'scripts/collect_loop_measurements.py',
-     '    if row["kind"] == "qa-round" and row["conclusion"] == "success" and row["outcome"] != "unknown":',
-     '    if False:',
-     'test_a_QA_round_with_no_PR_is_JUDGED_not_nothing'),
-    ('collector: QA rounds count as build-lane busy time',
-     'scripts/collect_loop_measurements.py',
-     '                   for r in win if r["kind"] != "qa-round")',
-     '                   for r in win)',
-     'test_idle_merges_overlapping_build_runs_and_ignores_QA_rounds'),
-    ('ops carrier: the same finding is re-commented every run',
-     'scripts/file_ops_findings.py',
-     '        if (last or cur["state"]) == _state(f) and not cleared:',
-     '        if False:',
-     'test_the_same_finding_on_the_next_run_is_SILENCE'),
-    ('ops carrier: adopts a marker issue anyone filed',
-     'scripts/file_ops_findings.py',
-     'f"repos/{repo}/issues?state=open&creator={WRITER}&per_page=100"',
-     '"repos/{repo}/issues?state=open&per_page=100"',
-     'test_an_issue_someone_else_filed_with_the_marker_is_not_adopted'),
-    ('ops detector: a high weekly Claude quota raises nothing',
-     'scripts/detect_ops_regressions.py',
-     '        if isinstance(seven, (int, float)) and (seven >= CLAUDE_QUOTA_ALERT or rejected):',
-     '        if isinstance(seven, (int, float)) and (seven > 1.0 or rejected):',
-     'test_a_high_weekly_quota_is_a_finding_that_names_the_levers'),
-    ('ops page: a high weekly Claude quota raises no alert',
-     'src/astro_ai/ops_data.py',
-     '    if claude and claude["alert"]:',
-     '    if False:',
-     'test_a_high_weekly_quota_raises_an_alert'),
-    # Claude usage (2026-11-03): the file the parallelism decision reads.
-    ('claude usage: job logs fetched without --allow-escape-sequences (gh refuses them all)',
-     'scripts/collect_claude_usage.py',
-     '        return gh(["api", "--allow-escape-sequences", path])',
-     '        return gh(["api", path])',
-     'test_job_logs_are_fetched_with_allow_escape_sequences'),
-    ('claude usage: a run reports its LAST reading, not its worst',
-     'scripts/collect_claude_usage.py',
-     '                    seven = u if seven is None else max(seven, u)',
-     '                    seven = u',
-     'test_a_run_is_summarised_by_its_WORST_state'),
-    ('claude usage: a rejected window is not noticed (the cap hit reads as allowed)',
-     'scripts/collect_claude_usage.py',
-     '            if s in STATUS_RANK and STATUS_RANK[s] > STATUS_RANK[status]:\n                status = s\n        s = b.get("status")',
-     '            if False:\n                status = s\n        s = b.get("status")',
-     'test_a_rejected_window_anywhere_makes_the_run_rejected'),
-    ('claude usage: unreadable logs overwrite the file with an empty reading',
-     'scripts/collect_claude_usage.py',
-     '    if not readings:\n        return None',
-     '    if False:\n        return None',
-     'test_NOTHING_readable_writes_nothing_and_says_so'),
-    ('lanes: the queue counts QA rounds as build cycles (lanes merge)',
-     'scripts/cycle_queue.py',
-     '    pick = title if lane == "qa" else f"({title} | not)"',
-     '    pick = title if lane == "qa" else title',
-     'test_a_QA_entry_starts_while_a_BUILD_cycle_runs'),
-    ('lanes: the carrier holds a QA round behind a build cycle again',
-     'scripts/dispatch_cycle.sh',
-     """  lane_sel='select(.displayTitle | startswith("QA round") | not)'""",
-     """  lane_sel='select(true)'""",
-     'test_a_build_cycle_still_waits_for_a_build_cycle_and_ignores_QA_rounds'),
-    ('lanes: agent-work puts QA rounds back in the build group',
-     '.github/workflows/agent-work.yml',
-     "  group: ${{ inputs.pr && 'agent-work-qa' || 'agent-work' }}",
-     "  group: agent-work",
-     'test_agent_work_names_and_groups_QA_rounds_by_the_same_rule'),
     ('queue: a marker anyone pastes into a comment is treated as a ruling',
      'scripts/cycle_queue.py',
      '        if c.get("login") != WRITER:\n            continue',
@@ -5100,6 +5009,41 @@ MUTATIONS = [
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+# PER-AREA TABLES (2026-11-03). Until then every PR appended to the ONE table
+# above, so any two open PRs conflicted here by construction -- five merge-and-
+# re-QA rounds in two days (#636, #649, #671, #675 and others) -- and because
+# this file is in `_ALWAYS_FULL`, every PR that added a row also paid the full
+# ~55-minute sweep. NEW ROWS GO IN `scripts/mutations/<area>.py`, one literal
+# `MUTATIONS = [...]` per file; they are appended here with `.extend()` -- never
+# by reassigning MUTATIONS, which `verify_no_relaxation.py` counts by parsing
+# and which a concatenation would make uncountable. The table above is frozen
+# at its current size by tests/test_mutation_tables.py.
+MUTATIONS_DIR = pathlib.Path(__file__).resolve().parent / "mutations"
+#: area file (repo-relative) -> its rows, so a scoped run can select every row
+#: of an area file the PR changed.
+AREA_ROWS: dict[str, list] = {}
+
+
+def _load_area_rows() -> list:
+    rows: list = []
+    for f in sorted(MUTATIONS_DIR.glob("*.py")):
+        if f.name.startswith("_"):
+            continue
+        ns: dict = {}
+        exec(compile(f.read_text(), str(f), "exec"), ns)  # noqa: S102 - a data-only table in this repo
+        table = ns.get("MUTATIONS")
+        if not isinstance(table, list) or not all(
+                isinstance(r, tuple) and len(r) == 5 and all(isinstance(x, str) for x in r)
+                for r in table):
+            raise SystemExit(f"{f}: MUTATIONS must be a list of (label, file, old, new, test) "
+                             f"string tuples -- an unreadable area table is not an empty one")
+        AREA_ROWS[f.relative_to(ROOT).as_posix()] = list(table)
+        rows.extend(table)
+    return rows
+
+
+MUTATIONS.extend(_load_area_rows())
 
 
 def _die_cleanly(signum, _frame):
@@ -5584,13 +5528,17 @@ def _scope_rows(base: str) -> tuple[list, str]:
             seen[name] = seen.get(name, 0) + 1
             test_file.setdefault(name, rel_f)
 
+    # A changed AREA table selects all of its own rows: a row that was just
+    # added or re-anchored must be proven even if neither its target nor its
+    # test changed in this diff.
+    from_area = {id(r) for f, rs in AREA_ROWS.items() if f in changed_set for r in rs}
     picked = []
     for row in MUTATIONS:
         _label, rel, _old, _new, test = row
         base_name = (test or "").split("[", 1)[0]
         tf = test_file.get(base_name) if seen.get(base_name) == 1 else None
         # An unresolvable test name selects the row rather than dropping it.
-        if rel in changed_set or tf is None or tf in changed_set:
+        if rel in changed_set or tf is None or tf in changed_set or id(row) in from_area:
             picked.append(row)
     return picked, (f"{len(changed)} file(s) changed against {base!r} — "
                     f"{len(picked)} of {len(MUTATIONS)} rows touch them "
