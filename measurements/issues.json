@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-11-02T22:36:23Z",
+  "generated_at": "2026-11-03T02:51:32Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 131,
-  "with_ask": 54,
+  "open": 130,
+  "with_ask": 52,
   "by_area": {
-    "UNCLASSIFIED": 48,
+    "UNCLASSIFIED": 46,
     "INFRA": 16,
     "UI": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
+    "SEO": 4,
     "DETECT_STALLS": 3,
     "MEASURE": 3,
     "BUG": 3,
-    "SEO": 3,
     "SECURITY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
@@ -34,8 +34,8 @@
   },
   "by_type": {
     "untyped": 40,
-    "bug": 34,
-    "enhancement": 26,
+    "bug": 32,
+    "enhancement": 27,
     "correctness": 10,
     "design": 8,
     "chore": 7,
@@ -43,12 +43,29 @@
   },
   "by_priority": {
     "unset": 94,
-    "medium": 20,
+    "medium": 19,
     "high": 16,
     "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 685,
+      "title": "[SEO] /learn/sade-sati/ title names no Moon sign — 1,754 impressions at 0.63% CTR while rivals lead with Aquarius, Pisces, Aries",
+      "ask": "",
+      "area": "SEO",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo",
+        "content"
+      ],
+      "created": "2026-11-03T02:01:12Z",
+      "updated": "2026-11-03T02:01:12Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 678,
       "title": "detect_stalls: qa_fail_age reads the qa-fail LABEL time, so a second FAIL round on a moved head is invisible (#675 misrouted as qa-fail-refixed)",
@@ -233,11 +250,13 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "needs-evidence"
+      ],
       "created": "2026-10-30T15:39:52Z",
-      "updated": "2026-10-30T15:39:52Z",
+      "updated": "2026-11-02T23:00:45Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 597,
@@ -316,12 +335,14 @@
       "labels": [
         "bug",
         "category:technical",
-        "priority:low"
+        "priority:low",
+        "provenance:trusted",
+        "needs-evidence"
       ],
       "created": "2026-10-29T23:50:13Z",
-      "updated": "2026-10-29T23:50:13Z",
+      "updated": "2026-11-02T23:00:38Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 584,
@@ -494,10 +515,11 @@
       "labels": [
         "enhancement",
         "seo",
-        "content"
+        "content",
+        "provenance:trusted"
       ],
       "created": "2026-10-26T23:35:18Z",
-      "updated": "2026-10-26T23:35:24Z",
+      "updated": "2026-11-02T23:01:17Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -509,12 +531,13 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "needs-evidence"
       ],
       "created": "2026-10-24T22:53:58Z",
-      "updated": "2026-10-24T22:54:04Z",
+      "updated": "2026-11-02T23:00:42Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 523,
@@ -866,21 +889,6 @@
       "updated": "2026-10-21T15:57:09Z",
       "blocked": false,
       "needs_evidence": true
-    },
-    {
-      "number": 432,
-      "title": "One Effective prefix-cache figure spans two models' caches, and CACHE_REPORTING_MODELS carries three spellings no provider produces",
-      "ask": "The panel's own copy tells the operator to \"Read Effective, not Hit rate\" and",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-10-20T02:57:03Z",
-      "updated": "2026-10-20T02:57:03Z",
-      "blocked": false,
-      "needs_evidence": false
     },
     {
       "number": 431,
@@ -1491,22 +1499,6 @@
       ],
       "created": "2026-09-04T04:47:35Z",
       "updated": "2026-09-04T04:47:35Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 254,
-      "title": "Six pages use `prose` classes that have never had any rules — the typography plugin was never installed",
-      "ask": "Add @tailwindcss/typography to devDependencies and a plugins: [require('@tailwindcss/typography')] key to tailwind.config.js, then rebuild.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium"
-      ],
-      "created": "2026-09-02T12:18:38Z",
-      "updated": "2026-09-02T12:18:38Z",
       "blocked": false,
       "needs_evidence": false
     },
