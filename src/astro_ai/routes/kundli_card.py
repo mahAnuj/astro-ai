@@ -103,12 +103,16 @@ def _card_content_disposition(name: str) -> str:
 async def kundli_cosmic_card(request: Request) -> Response:
     """Cosmic Card (Issue #113) — shareable 1080×1920 SVG of the user's chart.
 
-    Served as image/svg+xml so browsers render it inline; social platforms
-    (WhatsApp, Instagram, Twitter) accept SVG as og:image on most modern
-    stacks. Users can right-click "Save as" for a copy.
+    Served as image/svg+xml so browsers render it inline. Users can
+    right-click "Save as" for a copy.
+
+    NOT an og:image, and it must not be used as one (#231): social platforms
+    do not render SVG previews, and this route reads the visitor's session
+    cookie, so a crawler gets a 303 to HTML. Snapshot pages inherit the
+    site-wide PNG instead. A shareable personalised preview needs a PNG route
+    keyed on the snapshot id.
 
     Ships as SVG (not PNG) to avoid new deps (Pillow / cairosvg / Playwright).
-    A future PNG-rasterize path can wrap this if platforms reject the SVG.
     """
     saved = load_collection(request).active
     if saved is None:
