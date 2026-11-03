@@ -25,8 +25,9 @@ card and serve it to the next. ``private`` costs nothing: the browser still
 caches it for an hour, which is the whole point of the header, and no shared
 cache may.
 
-``Content-Disposition`` stays hand-set for social-platform og:image fetchers,
-and this route is still deliberately NOT routed through ``_no_cdn_cache``.
+``Content-Disposition`` stays hand-set because the chart name is user-typed and
+needs the ASCII/UTF-8 filename handling below (#180), and this route is still
+deliberately NOT routed through ``_no_cdn_cache``.
 
 Moved verbatim from ``main.py``; only the decorator prefix changed
 (``@app.`` → ``@router.``). Absolute imports only — nothing here may import
