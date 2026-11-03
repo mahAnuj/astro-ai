@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-03T12:38:11Z",
+  "generated_at": "2026-11-03T20:27:17Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 128,
-  "with_ask": 52,
+  "open": 127,
+  "with_ask": 51,
   "by_area": {
-    "UNCLASSIFIED": 46,
+    "UNCLASSIFIED": 45,
     "INFRA": 16,
     "UI": 12,
     "REDESIGN": 10,
@@ -34,7 +34,7 @@
   },
   "by_type": {
     "untyped": 39,
-    "bug": 32,
+    "bug": 31,
     "enhancement": 26,
     "correctness": 10,
     "design": 8,
@@ -42,7 +42,7 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 92,
+    "unset": 91,
     "medium": 19,
     "high": 16,
     "low": 1
@@ -269,12 +269,14 @@
       "priority": "unset",
       "labels": [
         "ui",
-        "skill:ui-fixer"
+        "skill:ui-fixer",
+        "provenance:trusted",
+        "needs-evidence"
       ],
       "created": "2026-10-29T23:50:33Z",
-      "updated": "2026-10-29T23:50:39Z",
+      "updated": "2026-11-03T18:19:04Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 595,
@@ -468,10 +470,11 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "provenance:trusted"
       ],
       "created": "2026-10-27T03:55:12Z",
-      "updated": "2026-10-27T03:55:12Z",
+      "updated": "2026-11-03T18:21:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -859,21 +862,6 @@
       "updated": "2026-10-21T15:57:09Z",
       "blocked": false,
       "needs_evidence": true
-    },
-    {
-      "number": 431,
-      "title": "prefix_cache rows have no schema version, so adding a ninth counter would erase all stored history",
-      "ask": "It bit immediately.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-10-20T02:56:39Z",
-      "updated": "2026-10-20T02:56:39Z",
-      "blocked": false,
-      "needs_evidence": false
     },
     {
       "number": 429,
@@ -1657,9 +1645,13 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-08-31T17:52:23Z",
-      "updated": "2026-08-31T17:52:23Z",
+      "updated": "2026-11-03T15:51:40Z",
       "blocked": false,
       "needs_evidence": false
     },
