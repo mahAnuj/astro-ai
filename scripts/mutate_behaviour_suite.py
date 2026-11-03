@@ -4937,6 +4937,27 @@ MUTATIONS = [
      '--state all \\\n            --json number,state',
      '\\\n            --json number,state',
      "test_the_guard_asks_for_every_state"),
+    # --- #432: a route row spans two models' caches; the reporting set is pinned ---
+    ("#432: range_summary stops recording which models fed a route row",
+     "src/astro_ai/llm_stats.py",
+     '            prefix_models.setdefault(parts[2], set()).add(f"{parts[0]}:{parts[1]}")\n',
+     '            pass\n',
+     "test_a_route_served_by_two_models_says_so_and_a_single_model_route_does_not"),
+    ("#432: the blend marker renders on a route served by ONE model",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if pc.models | length > 1 %}",
+     "{% if pc.models | length > 0 %}",
+     "test_a_route_served_by_two_models_says_so_and_a_single_model_route_does_not"),
+    ("#432: the footnote stops saying a row adds up every model that served the route",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "<em>Each row adds up every model that served the route.</em>",
+     "<em>Each row is one model.</em>",
+     "test_the_footnote_says_a_row_blends_the_models_that_served_it"),
+    ("#432: a non-Groq provider's default model joins CACHE_REPORTING_MODELS",
+     "src/astro_ai/llm_stats.py",
+     '    "gpt-oss-120b", "gpt-oss-20b", "gpt-oss-safeguard-20b",\n})',
+     '    "gpt-oss-120b", "gpt-oss-20b", "gpt-oss-safeguard-20b", "llama3.3-70b",\n})',
+     "test_cache_reporting_models_is_pinned_and_matches_no_non_groq_provider"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
