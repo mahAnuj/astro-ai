@@ -1,11 +1,13 @@
 {# Cosmic Card — 1080×1920 shareable SVG (Issue #113).
    Rendered server-side per chart. Meant for Instagram Story format
-   (9:16 aspect ratio). Set as og:image on /r/{id} snapshot pages.
+   (9:16 aspect ratio). NOT an og:image (#231): it is SVG, which social
+   platforms do not render, and it is derived from the visitor's session. It
+   is served at /kundli/card and linked from the result page only.
 
    Recoloured to the redesign palette in #239. It used to mirror the
    hero SVGs (astro-purple + cream + gold); it no longer does, and that
-   is deliberate — this is the image that represents the site when a
-   reading is shared, so it leads the migration rather than trailing it.
+   is deliberate — this is the most visible image the app produces for a
+   seeker's own chart, so it leads the migration rather than trailing it.
    The hero SVGs move separately in #259.
 
    Every colour below is a bhagya token from tailwind.config.js, EXCEPT
