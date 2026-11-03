@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-03T02:51:32Z",
+  "generated_at": "2026-11-03T09:00:41Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 130,
+  "open": 129,
   "with_ask": 52,
   "by_area": {
     "UNCLASSIFIED": 46,
@@ -13,8 +13,8 @@
     "NUMEROLOGY": 6,
     "SEO": 4,
     "DETECT_STALLS": 3,
-    "MEASURE": 3,
     "BUG": 3,
+    "MEASURE": 2,
     "SECURITY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
@@ -33,7 +33,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 40,
+    "untyped": 39,
     "bug": 32,
     "enhancement": 27,
     "correctness": 10,
@@ -42,7 +42,7 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 94,
+    "unset": 93,
     "medium": 19,
     "high": 16,
     "low": 1
@@ -432,19 +432,6 @@
       ],
       "created": "2026-10-28T11:11:25Z",
       "updated": "2026-10-30T11:26:24Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 570,
-      "title": "[MEASURE] No event records a click on an in-article tool link, so #276, #329 and #521 can only be scored through pages/session",
-      "ask": "",
-      "area": "MEASURE",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-10-28T00:17:18Z",
-      "updated": "2026-10-28T00:17:18Z",
       "blocked": false,
       "needs_evidence": false
     },
