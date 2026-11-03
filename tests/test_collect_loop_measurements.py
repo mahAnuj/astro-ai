@@ -302,7 +302,7 @@ def test_a_transient_log_error_defers_the_row_instead_of_freezing_a_guess():
 def _row(**kw):
     base = {"run": 1, "workflow": "agent-work", "date": "2026-10-13", "started": "2026-10-13T10:00:00Z",
             "trigger": "schedule", "conclusion": "success", "minutes": 20.0, "issue": 5, "pr": 42,
-            "pr_merged": True, "outcome": "shipped", "attribution": "receipt"}
+            "pr_merged": True, "outcome": "shipped", "attribution": "receipt", "kind": "issue"}
     return {**base, **kw}
 
 
@@ -525,3 +525,118 @@ def test_committed_measurement_files_pass_their_validators():
     assert loop.exists() and cost.exists(), "run scripts/collect_loop_measurements.py and commit the result"
     assert cm.validate_loop(json.loads(loop.read_text())) == []
     assert json.loads(cost.read_text()) == cm.build_cost()      # the rates table is the source of truth
+
+
+# --------------------------------------------------------------------------- #
+# 2026-11-03: what the run was ASKED to do, and where the loop's time went.
+
+def _prompt_line(p):
+    """The action step's env listing, as Actions prints it -- the RESOLVED value."""
+    return f"2026-10-13T10:01:00.0000000Z   PROMPT: {p}\n"
+
+
+@pytest.mark.parametrize("prompt,kind", [
+    ("/agent-cycle --qa-pr 679", "qa-round"),
+    ("/agent-cycle 675", "issue"),
+    ("/agent-cycle ", "ranked"),
+    ("/agent-cycle", "ranked"),
+])
+def test_the_kind_is_read_from_the_runs_own_prompt(prompt, kind):
+    assert cm.kind_of(["noise\n" + _prompt_line(prompt)]) == kind
+
+
+def test_no_prompt_line_is_unknown_not_guessed():
+    assert cm.kind_of(["2026-10-13T10:01:00Z nothing to see\n"]) == "unknown"
+
+
+def test_a_QA_round_with_no_PR_is_JUDGED_not_nothing():
+    """13 of the 47 `nothing` runs measured 2026-11-03 were rounds that had done
+    their job -- 158 minutes filed as waste."""
+    script, out = receipt_log(have_branch=False)
+    log = _prompt_line("/agent-cycle --qa-pr 649") + wrap_as_actions_log(script, out)
+    src = Fake({**runs_listing(run(1)), **jobs(1, 77)}, logs={"77": log})
+    (row,) = collect(src)[0]["rows"]
+    assert (row["kind"], row["outcome"]) == ("qa-round", "judged")
+
+
+def test_a_QA_round_is_never_credited_with_the_PRs_merge():
+    """A round reviews a PR; counting it `shipped` would count one PR twice."""
+    script, out = receipt_log(pr_number=334)
+    log = _prompt_line("/agent-cycle --qa-pr 334") + wrap_as_actions_log(script, out)
+    src = Fake({**runs_listing(run(1)), **jobs(1, 77), "pulls/334": pull(334, merged=True)},
+               logs={"77": log})
+    (row,) = collect(src)[0]["rows"]
+    assert row["outcome"] == "judged" and row["pr"] == 334
+
+
+def test_an_issue_cycle_with_no_PR_is_still_nothing():
+    script, out = receipt_log(have_branch=False)
+    log = _prompt_line("/agent-cycle 518") + wrap_as_actions_log(script, out)
+    src = Fake({**runs_listing(run(1)), **jobs(1, 77)}, logs={"77": log})
+    (row,) = collect(src)[0]["rows"]
+    assert (row["kind"], row["outcome"]) == ("issue", "nothing")
+
+
+def test_a_row_settled_before_kind_existed_is_read_ONCE_then_frozen():
+    old = _row(outcome="nothing", pr=None, pr_merged=None)
+    del old["kind"]
+    src = Fake({**runs_listing(run(1)), **jobs(1, 77)},
+               logs={"77": _prompt_line("/agent-cycle --qa-pr 9")})
+    doc, stats = collect(src, {"rows": [old]})
+    assert stats["migrated"] == 1
+    assert (doc["rows"][0]["kind"], doc["rows"][0]["outcome"]) == ("qa-round", "judged")
+    src2 = Fake(runs_listing(run(1)))
+    doc2, stats2 = collect(src2, doc)
+    assert stats2["migrated"] == 0 and stats2["frozen"] == 1
+
+
+def test_an_old_row_outside_the_listing_window_is_unknown_not_re_read():
+    old = _row(run=9, started="2026-08-01T00:00:00Z", date="2026-08-01")
+    del old["kind"]
+    doc, _ = collect(Fake(runs_listing()), {"rows": [old, _row()]})
+    assert {r["run"]: r["kind"] for r in doc["rows"]}[9] == "unknown"
+
+
+def test_judged_is_rejected_for_anything_but_a_QA_round():
+    def doc(**kw):
+        return {"generated_at": "2026-10-13T00:00:00Z", "rows": [_row(**kw)]}
+    assert cm.validate_loop(doc(outcome="judged", kind="qa-round", pr=None, pr_merged=None)) == []
+    assert cm.validate_loop(doc(outcome="judged", kind="issue", pr=None, pr_merged=None))
+    assert cm.validate_loop(doc(kind="sideways"))
+
+
+def test_a_snapshot_written_before_kind_still_validates():
+    r = _row()
+    del r["kind"]
+    assert cm.validate_loop({"generated_at": "x", "rows": [r]}) == []
+
+
+def _w(outcome, kind, start, minutes, pr=None):
+    return _row(run=hash((start, kind)) % 10**6, started=start, date=start[:10], minutes=minutes,
+                outcome=outcome, kind=kind, pr=pr,
+                pr_merged=(True if outcome == "shipped" else None if pr is None else False))
+
+
+def test_waste_splits_minutes_by_outcome_and_counts_judged_as_a_result():
+    rows = [_w("shipped", "issue", "2026-10-13T01:00:00Z", 40, pr=1),
+            _w("judged", "qa-round", "2026-10-13T02:00:00Z", 10),
+            _w("nothing", "ranked", "2026-10-13T03:00:00Z", 30),
+            _w("failed", "issue", "2026-10-13T04:00:00Z", 20)]
+    w = cm.waste(rows, NOW)
+    assert w["minutes_by_outcome"]["judged"] == 10
+    assert w["minutes_without_result"] == 50
+    assert w["share_without_result"] == round(50 / 100, 3)
+    assert w["shipped_prs"] == 1 and w["cycles"] == 4
+
+
+def test_idle_merges_overlapping_build_runs_and_ignores_QA_rounds():
+    rows = [_w("shipped", "issue", "2026-10-13T10:00:00Z", 60, pr=1),
+            _w("nothing", "ranked", "2026-10-13T10:30:00Z", 60),       # overlaps: busy 10:00-11:30
+            _w("judged", "qa-round", "2026-10-13T14:00:00Z", 120)]     # own lane: not build-busy
+    w = cm.waste(rows, NOW, days=1)
+    assert w["build_idle_hours"] == round(24 - 1.5, 1)
+
+
+def test_rows_outside_the_window_are_not_counted():
+    w = cm.waste([_w("nothing", "ranked", "2026-09-01T00:00:00Z", 999)], NOW)
+    assert w["cycles"] == 0 and w["share_without_result"] is None and w["build_idle_hours"] == 7 * 24

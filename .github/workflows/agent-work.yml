@@ -38,6 +38,11 @@
 # with every one failing its first submission, so budget two or three rounds.
 # A run that starts a second issue leaves both half-done when the budget ends.
 name: Agent work
+# The LANE, in the title: `gh run list` cannot show a run's inputs, so
+# dispatch_cycle.sh and cycle_queue.py tell a QA round from a build cycle by
+# this. Change the prefix and both lanes merge silently -- tests pin it.
+# QUOTED: unquoted, `: ` reads as a mapping and ` #` as a comment.
+run-name: "${{ inputs.pr && format('QA round: PR #{0}', inputs.pr) || 'Agent work' }}"
 
 on:
   # TWICE a day since 2026-10-13, not once. The repo going public removed the
@@ -132,12 +137,19 @@ on:
         description: "PR number to run a QA round on (blank = none; cannot be combined with issue)"
         required: false
 
-# ONE cycle at a time. GitHub keeps at most ONE pending run in this group and
-# cancels the older pending run when another arrives, so nothing may dispatch
-# here while a cycle runs: `scripts/dispatch_cycle.sh` QUEUES the ruling
-# instead, and `agent-queue.yml` starts it when this run completes.
+# ONE cycle at a time PER LANE. GitHub keeps at most ONE pending run in a group
+# and cancels the older pending run when another arrives, so nothing may
+# dispatch into a busy lane: `scripts/dispatch_cycle.sh` QUEUES the ruling
+# instead, and `agent-queue.yml` starts it when a run completes.
+#
+# TWO LANES since 2026-11-03 (owner's request): a judge-only QA round (`pr=`)
+# never pushes, so it cannot conflict with a build cycle, and it no longer
+# waits ~45 minutes behind one. Build cycles stay strictly one at a time --
+# they edit shared files (mutate_behaviour_suite.py, ARCHITECTURE.md) and two
+# at once would conflict. A round racing a build on the SAME PR cannot record
+# a wrong verdict: qa_verdict.sh refuses a PASS once the branch has moved.
 concurrency:
-  group: agent-work
+  group: ${{ inputs.pr && 'agent-work-qa' || 'agent-work' }}
   cancel-in-progress: false   # never kill a cycle mid-QA; let it finish
 
 jobs:

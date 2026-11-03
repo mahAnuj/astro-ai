@@ -4726,8 +4726,8 @@ MUTATIONS = [
     # ones get `issue=` with nothing after it.
     ('qa-on-green inverts the fallback and loses the owning issue',
      '.github/workflows/qa-on-green.yml',
-     'if [ -n "$issue" ]; then\n            target="issue=$issue"',
-     'if [ -z "$issue" ]; then\n            target="issue=$issue"',
+     'if [ -n "$issue" ] && [ "$refix" != true ]; then\n            target="issue=$issue"',
+     'if [ -z "$issue" ] && [ "$refix" != true ]; then\n            target="issue=$issue"',
      'test_a_numbered_branch_still_aims_at_its_issue'),
 
     # The carrier file re-acquires the hard-coded prefix it had before, so
@@ -4832,9 +4832,9 @@ MUTATIONS = [
      'test_pending_is_oldest_first_whatever_order_the_api_returns'),
     ('queue: drains while a cycle runs, into the cancellable pending slot',
      'scripts/cycle_queue.py',
-     '    if busy(gh, repo):',
-     '    if False:',
-     'test_drain_does_nothing_while_a_cycle_runs'),
+     '        if lane in busy_lanes:\n            continue\n        reason = stale_reason(gh, repo, e)',
+     '        if False:\n            continue\n        reason = stale_reason(gh, repo, e)',
+     'test_a_QA_entry_starts_while_a_BUILD_cycle_runs'),
     ('queue: an unreadable busy check reads as idle',
      'scripts/cycle_queue.py',
      '    except RuntimeError:\n        return True',
@@ -4842,8 +4842,8 @@ MUTATIONS = [
      'test_an_unreadable_busy_check_counts_as_busy'),
     ('queue: drain starts every entry at once instead of one per free slot',
      'scripts/cycle_queue.py',
-     '            print(f"started {e.kind}={e.target} as run {run_id}")\n            return 1 if failed else 0',
-     '            print(f"started {e.kind}={e.target} as run {run_id}")\n            continue',
+     '            print(f"started {e.kind}={e.target} as run {run_id} ({lane} lane)")\n            busy_lanes.add(lane)',
+     '            print(f"started {e.kind}={e.target} as run {run_id} ({lane} lane)")',
      'test_drain_starts_the_OLDEST_entry_and_only_one'),
     ('queue: an entry is no longer claimed before dispatch, so a failed mark repeats the cycle',
      'scripts/cycle_queue.py',
@@ -5007,22 +5007,44 @@ MUTATIONS = [
      "<script src=\"/static/analytics.js\" defer></script>",
      "test_the_script_tag_is_fingerprinted_so_returning_visitors_get_the_new_bytes"),
 
-    # --- #231: a shared /r/{id} link advertises an og:image a crawler can use ---
-    ("#231: the snapshot page's og:image is the session-derived SVG card again",
-     "src/astro_ai/templates/result.html",
-     "   session; that is the part of #231 still open. #}\n",
-     "   session; that is the part of #231 still open. #}\n"
-     "{% block og_image %}{{ site_url }}/kundli/card{% endblock %}\n",
-     "test_snapshot_og_image_is_a_png_not_the_session_derived_card"),
-    ("#231: the card's 1080x1920 size is declared over a 1200x630 PNG (declared != served)",
-     "src/astro_ai/templates/result.html",
-     "   session; that is the part of #231 still open. #}\n",
-     "   session; that is the part of #231 still open. #}\n"
-     "{% block og_image_width %}1080{% endblock %}\n",
-     "test_snapshot_declared_size_matches_the_bytes_served"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+# PER-AREA TABLES (2026-11-03). Until then every PR appended to the ONE table
+# above, so any two open PRs conflicted here by construction -- five merge-and-
+# re-QA rounds in two days (#636, #649, #671, #675 and others) -- and because
+# this file is in `_ALWAYS_FULL`, every PR that added a row also paid the full
+# ~55-minute sweep. NEW ROWS GO IN `scripts/mutations/<area>.py`, one literal
+# `MUTATIONS = [...]` per file; they are appended here with `.extend()` -- never
+# by reassigning MUTATIONS, which `verify_no_relaxation.py` counts by parsing
+# and which a concatenation would make uncountable. The table above is frozen
+# at its current size by tests/test_mutation_tables.py.
+MUTATIONS_DIR = pathlib.Path(__file__).resolve().parent / "mutations"
+#: area file (repo-relative) -> its rows, so a scoped run can select every row
+#: of an area file the PR changed.
+AREA_ROWS: dict[str, list] = {}
+
+
+def _load_area_rows() -> list:
+    rows: list = []
+    for f in sorted(MUTATIONS_DIR.glob("*.py")):
+        if f.name.startswith("_"):
+            continue
+        ns: dict = {}
+        exec(compile(f.read_text(), str(f), "exec"), ns)  # noqa: S102 - a data-only table in this repo
+        table = ns.get("MUTATIONS")
+        if not isinstance(table, list) or not all(
+                isinstance(r, tuple) and len(r) == 5 and all(isinstance(x, str) for x in r)
+                for r in table):
+            raise SystemExit(f"{f}: MUTATIONS must be a list of (label, file, old, new, test) "
+                             f"string tuples -- an unreadable area table is not an empty one")
+        AREA_ROWS[f.relative_to(ROOT).as_posix()] = list(table)
+        rows.extend(table)
+    return rows
+
+
+MUTATIONS.extend(_load_area_rows())
 
 
 def _die_cleanly(signum, _frame):
@@ -5507,13 +5529,17 @@ def _scope_rows(base: str) -> tuple[list, str]:
             seen[name] = seen.get(name, 0) + 1
             test_file.setdefault(name, rel_f)
 
+    # A changed AREA table selects all of its own rows: a row that was just
+    # added or re-anchored must be proven even if neither its target nor its
+    # test changed in this diff.
+    from_area = {id(r) for f, rs in AREA_ROWS.items() if f in changed_set for r in rs}
     picked = []
     for row in MUTATIONS:
         _label, rel, _old, _new, test = row
         base_name = (test or "").split("[", 1)[0]
         tf = test_file.get(base_name) if seen.get(base_name) == 1 else None
         # An unresolvable test name selects the row rather than dropping it.
-        if rel in changed_set or tf is None or tf in changed_set:
+        if rel in changed_set or tf is None or tf in changed_set or id(row) in from_area:
             picked.append(row)
     return picked, (f"{len(changed)} file(s) changed against {base!r} — "
                     f"{len(picked)} of {len(MUTATIONS)} rows touch them "

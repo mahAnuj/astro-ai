@@ -255,8 +255,12 @@ What has NOT changed, and why it matters more now than before:
 - **A green PR gets its QA round immediately, not in four hours — `qa-on-green.yml`,
   added 2026-10-25.** `workflow_run` on `PR gates` completing: if the PR is open, its
   author is in `AGENT_AUTHORS`, the head still matches what was gated and it carries no
-  `qa-pass`/`qa-fail`/`needs-human-review`, it dispatches one cycle through the shared
-  `scripts/dispatch_cycle.sh`.
+  `qa-pass`/`needs-human-review`, it dispatches one cycle through the shared
+  `scripts/dispatch_cycle.sh`. A `qa-fail` PR is dispatched too, **but only once a fix has
+  landed** (since 2026-11-02): at least one non-merge commit after the SHA its FAIL was
+  bound to, read from `claude[bot]`'s own `QA: FAIL — verified at <sha>` comment, and the
+  round is aimed at `pr=<n>`. Before that, every re-fixed PR waited for the steward or a
+  human — #649, #636 and #675 each sat hours that way with the fix already pushed.
 
   **What it aims the dispatch at, since 2026-11-01, and the branch name is no longer a
   precondition.** `issue/<n>-`, `partial/<n>-` and `fix/<n>-` yield `issue=<n>` and the
@@ -299,9 +303,9 @@ What has NOT changed, and why it matters more now than before:
   **It cannot write a verdict.** It holds `pull-requests: write` for that one comment and
   for nothing else; `tests/test_qa_on_green.py` fails the build if `gh pr edit`,
   `--add-label` or `--remove-label` appears in any `run:` block. A dispatcher that could
-  label could hand itself `qa-pass` and make `agent-merge` decorative. A `qa-fail` PR is
-  left alone: that needs a FIX, and which fix is a judgment `steward.md`'s routing table
-  holds across three kinds with different actions.
+  label could hand itself `qa-pass` and make `agent-merge` decorative. A `qa-fail` PR
+  with no fix since its verdict is still left alone: that needs a FIX, and which fix is a
+  judgment `steward.md`'s routing table holds across three kinds with different actions.
 - **A dispatch made while a cycle runs is QUEUED, not dropped — `agent-queue.yml`, added
   2026-11-02 on the owner's request.** `agent-work` runs one cycle at a time, and GitHub
   keeps at most ONE pending run per concurrency group: a third dispatch **cancels** the
@@ -314,7 +318,8 @@ What has NOT changed, and why it matters more now than before:
   `<!-- agent-work-queue: kind=… target=… by=… -->` comment on the target (or, via
   `QUEUE_ON`, on the PR `qa-on-green` is handling — it may not comment on issues).
   `agent-queue.yml` runs `drain` when an `agent-work` run **completes**, and as a backstop
-  when `agent-steward` completes: oldest entry first, **one per run**, through the same
+  when `agent-steward` completes: oldest entry first, **one per free lane** (see the two
+  lanes below), through the same
   carrier, then edits the marker to `-taken: run=<id>` or `-dropped: <reason>`.
 
   Three properties are load-bearing. **Only `github-actions[bot]` entries count** — every
@@ -324,6 +329,47 @@ What has NOT changed, and why it matters more now than before:
   and needs no new permission** — `qa-on-green` stays unable to hand itself `qa-pass`, and
   every scope `agent-queue.yml` holds is one an existing dispatcher already had. There is
   deliberately no cron: `*/30` would be ~1,400 Actions minutes a month.
+
+  **Two lanes since 2026-11-03 (owner's request).** A judge-only QA round (`pr=`) runs in
+  its own concurrency group, `agent-work-qa`, so it no longer waits ~45 minutes behind a
+  build cycle; build cycles stay strictly one at a time, because two would conflict on
+  shared files. Runs are told apart by TITLE — agent-work.yml's `run-name` makes a round
+  "QA round: PR #<n>" — because `gh run list` cannot show inputs, and both
+  `dispatch_cycle.sh` and `cycle_queue.py` count busy per lane from it. `drain` starts at
+  most one entry per free lane. Change that title prefix and the lanes merge silently;
+  `tests/test_cycle_queue.py` pins the three copies together.
+
+  **Whether to add more parallelism is read from `measurements/claude_usage.json`, not
+  argued** (since 2026-11-03). Every agent here runs on ONE Claude Max 5x subscription.
+  `scripts/collect_claude_usage.py`, an `agent-measure` collector, reads the
+  `rate_limit_info` blocks `claude-code-action` already logs, with both windows the
+  subscription enforces. Measured the day it landed: five-hour ~4%, **seven-day 69%**
+  (48% two days earlier, resetting 2026-11-06 06:00Z) — the WEEKLY window binds, not the
+  five-hour one this file used to name. A parallel build lane is not affordable while
+  `seven_day` runs that high; `rejected_runs` lists any run that actually hit a limit.
+
+  **The ops dashboard is now read by the loop, not only by a human** (2026-11-03, owner:
+  *"the agent monitoring the ops dashboard should look at these data to take action and
+  finetune"*). `/admin/ops` leads with the Claude weekly quota left and its reset time, and
+  shows where the loop's time went: `loop.json` rows carry a `kind` (`qa-round` / `issue` /
+  `ranked`) read from the cycle's own prompt, a successful QA round is `judged` rather than
+  `nothing`, and a `waste` block holds minutes by outcome, the share spent without a result
+  and build-lane idle hours. `scripts/detect_ops_regressions.py` raises `claude-quota`,
+  `cycle-waste` and `loop-idle` from the same files, each naming its lever, and
+  `scripts/file_ops_findings.py` — run by `agent-steward` twice a day — files every finding
+  as ONE issue per kind (commented on change, a single note when it clears, never closed
+  by the carrier). Nothing ran that detector before; its own header said a carrier would.
+- **New mutation rows go in `scripts/mutations/<area>.py`, never in the central table —
+  since 2026-11-03.** Every PR used to append to the one `MUTATIONS` list in
+  `mutate_behaviour_suite.py`, so any two open PRs conflicted there by construction and
+  each conflict cost a merge of `main` and a fresh QA round; and because that file is in
+  `_ALWAYS_FULL`, every PR that added a row paid the full ~55-minute sweep. The harness now
+  loads every `scripts/mutations/*.py` (one literal `MUTATIONS = [...]` each), and a scoped
+  run selects an area file's rows when that file changed. `tests/test_mutation_tables.py`
+  freezes the central table at 734 rows and requires each area table to stay a literal —
+  `verify_no_relaxation`'s row floor counts by AST, so a table built by concatenation
+  reads as zero rows, i.e. as rows deleted. One file per PR or per area; never a shared
+  `misc.py` that recreates the hot spot.
 - **The mutation sandbox copies `.claude/` — since 2026-10-25.** `_SANDBOX_SUBDIRS` in
   `mutate_behaviour_suite.py` had `src`, `tests`, `.github`, `scripts` and `measurements`,
   so a row naming an agent definition or a slash command died with `FileNotFoundError` and

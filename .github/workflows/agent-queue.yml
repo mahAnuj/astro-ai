@@ -19,8 +19,10 @@
 # runs of its own. A `*/30` cron here would be ~1,400 Actions minutes a month
 # against a 2,000-minute allowance, for a case those two triggers already cover.
 #
-# ONE ENTRY PER RUN. The constraint this exists for is "one cycle at a time";
-# the next entry is started when THAT cycle completes and fires this again.
+# ONE ENTRY PER FREE LANE. Since 2026-11-03 agent-work has two lanes (build,
+# and judge-only QA rounds), each one cycle at a time, so a drain starts at most
+# one entry in each; the next is started when THAT cycle completes and fires
+# this again.
 name: Agent queue
 
 on:

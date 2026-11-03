@@ -1748,6 +1748,67 @@ def _rashifal_view(today_ist: str, days: int = 7) -> dict:
     }
 
 
+#: Weekly Claude quota at or above this is an alert: past it, the loop can run
+#: out before the window resets. Shared with scripts/detect_ops_regressions.py's
+#: `claude-quota` finding (a test pins the two equal).
+CLAUDE_QUOTA_ALERT = 0.85
+
+
+def _claude_view(doc: dict | None, now: datetime) -> dict | None:
+    """The subscription's headroom for the strip at the top of the page.
+
+    Every agent runs on ONE Claude Max subscription (measurements/cost.json),
+    and `scripts/collect_claude_usage.py` records both windows it enforces from
+    the rate-limit blocks claude-code-action logs. Measured when this landed
+    (2026-11-03): five-hour ~4%, SEVEN-DAY 69% -- the weekly window binds, so it
+    leads. None when the file cannot be read; the strip then says so.
+    """
+    latest = (doc or {}).get("latest") or {}
+    seven, five = latest.get("seven_day"), latest.get("five_hour")
+    if not isinstance(seven, (int, float)):
+        return None
+
+    def until(epoch):
+        if not isinstance(epoch, (int, float)):
+            return None, None
+        at = datetime.fromtimestamp(epoch, tz=timezone.utc)
+        secs = max((at - now).total_seconds(), 0)
+        d, h = int(secs // 86400), int(secs % 86400 // 3600)
+        text = f"{d}d {h}h" if d else f"{h}h {int(secs % 3600 // 60)}m"
+        return text, at.astimezone(IST).strftime("%a %d %b %H:%M")
+
+    resets = latest.get("resets") or {}
+    in7, at7 = until(resets.get("seven_day"))
+    in5, at5 = until(resets.get("five_hour"))
+    return {
+        "seven_used_pct": round(seven * 100),
+        "seven_left_pct": max(0, 100 - round(seven * 100)),
+        "seven_resets_in": in7, "seven_resets_at": at7,
+        "five_used_pct": round(five * 100) if isinstance(five, (int, float)) else None,
+        "five_resets_in": in5, "five_resets_at": at5,
+        "status": latest.get("status") or "unknown",
+        "peak_seven_pct": round((doc.get("peak_seven_day") or seven) * 100),
+        "rejected_runs": len(doc.get("rejected_runs") or []),
+        "alert": seven >= CLAUDE_QUOTA_ALERT,
+        "age": _age(doc.get("generated_at"), now),
+    }
+
+
+def _waste_view(loop_doc: dict | None) -> dict | None:
+    """`loop.json`'s `waste` block, passed through with the shares as percents.
+
+    Written by scripts/collect_loop_measurements.py `waste()`: minutes by
+    outcome over the last 7 days, the share spent WITHOUT a result (a merged PR,
+    an open PR or a QA verdict), and how long the build lane sat idle."""
+    w = (loop_doc or {}).get("waste")
+    if not isinstance(w, dict) or not w.get("minutes_by_outcome"):
+        return None
+    share = w.get("share_without_result")
+    return {**w,
+            "no_result_pct": round(share * 100) if isinstance(share, (int, float)) else None,
+            "idle_pct": round((w.get("build_idle_share") or 0) * 100)}
+
+
 def snapshot(now: datetime | None = None,
              app_days: int = DEFAULT_APP_DAYS) -> dict:
     """Everything /admin/ops renders, in one dict. Never raises.
@@ -1795,6 +1856,17 @@ def snapshot(now: datetime | None = None,
     }
 
     alerts = _alerts(loop, issues, agents, app, ages)
+    claude = _claude_view(_fetch("claude_usage.json"), now)
+    if claude and claude["alert"]:
+        alerts.insert(0, {
+            "level": "red" if claude["rejected_runs"] else "amber",
+            "title": f"Claude weekly quota {claude['seven_used_pct']}% used",
+            "detail": (f"{claude['seven_left_pct']}% left, resets in {claude['seven_resets_in']}. "
+                       "Every agent shares this one subscription; hold off adding parallel "
+                       "cycles until it resets."
+                       + (f" {claude['rejected_runs']} run(s) already hit a limit." if claude["rejected_runs"] else "")),
+            "where": "",
+        })
 
     return {
         "alerts": alerts,
@@ -1807,6 +1879,8 @@ def snapshot(now: datetime | None = None,
         "app_windows": APP_WINDOWS,
         "next_cycle_ist": next_cycle_ist(now),
         "loop": loop,
+        "claude": claude,
+        "waste": _waste_view(loop_doc),
         "issues": issues,
         "cost": cost,
         "traffic": traffic,

@@ -31,7 +31,7 @@ import pytest
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "dispatch_cycle.sh"
 
 
-def _fake_gh(tmp_path: Path, *, state="OPEN", busy=0, runs=("11", "22"),
+def _fake_gh(tmp_path: Path, *, state="OPEN", busy=0, busy_qa=0, runs=("11", "22"),
              status_seq=("in_progress",), pr_state=None, issue_url=None) -> Path:
     """A `gh` that answers only what the script asks, from shell case matching.
 
@@ -53,7 +53,8 @@ case "$*" in
   *"issue view"*"--json url"*) echo '{issue_url or "https://github.com/owner/repo/issues/1"}' ;;
   *"pr view"*)            echo '{pr_state or state}' ;;
   *"issue view"*)         echo '{state}' ;;
-  *"--json status --jq"*'select(.status != "completed")'*) echo '{busy}' ;;
+  *"run list"*'startswith("QA round") | not'*) echo '{busy}' ;;
+  *"run list"*'startswith("QA round")'*) echo '{busy_qa}' ;;
   *"--limit 1 --json databaseId"*)
       if [ -f "{tmp_path}/dispatched" ]; then echo '{runs[1]}'; else echo '{runs[0]}'; fi ;;
   *"workflow run"*)       : > "{tmp_path}/dispatched"; echo 'dispatched' ;;
@@ -272,7 +273,7 @@ case "$*" in
   *"issue view"*"--json url"*) echo 'https://github.com/owner/repo/issues/1' ;;
   *"pr view"*)            echo 'OPEN' ;;
   *"issue view"*)         echo 'OPEN' ;;
-  *"--json status --jq"*) echo '0' ;;
+  *"run list"*"--json status"*) echo '0' ;;
   *"--limit 1 --json databaseId"*)
       if [ -f "{tmp_path}/d" ]; then echo '22'; else echo '11'; fi ;;
   *"workflow run"*)       echo "gh $*" >> "{calls}"; : > "{tmp_path}/d" ;;
@@ -349,3 +350,21 @@ def test_the_cycle_doc_carries_the_qa_round_mode():
     assert "qa:independent" in doc, (
         "the mode does not say which provenance it claims, and the wider claim "
         "would make chief's Shape C hold loop-satisfiable")
+
+
+# --- the QA lane (2026-11-03) ----------------------------------------------
+
+def test_a_QA_round_is_not_held_behind_a_running_BUILD_cycle(tmp_path):
+    """A judge-only round never pushes, so it has its own lane."""
+    r = _run(tmp_path, "pr=649", busy=1, busy_qa=0)
+    assert "would dispatch" in r.stdout and "QUEUED" not in r.stdout, r.stdout
+
+
+def test_a_QA_round_IS_queued_behind_another_QA_round(tmp_path):
+    r = _run(tmp_path, "pr=649", busy=0, busy_qa=1)
+    assert "QUEUED, not dropped" in r.stdout, r.stdout
+
+
+def test_a_build_cycle_still_waits_for_a_build_cycle_and_ignores_QA_rounds(tmp_path):
+    assert "QUEUED" in _run(tmp_path, "issue=409", busy=1, busy_qa=0).stdout
+    assert "would dispatch" in _run(tmp_path, "issue=409", busy=0, busy_qa=1).stdout

@@ -133,8 +133,20 @@ fi
 
 # Never DISPATCH a second cycle behind one in flight. An unreadable answer counts as
 # busy: guessing "not busy" is what spends the quota twice.
-busy=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 10 \
-         --json status --jq '[.[] | select(.status != "completed")] | length' 2>/dev/null || echo unknown)
+#
+# PER LANE since 2026-11-03: a `pr=` QA round runs in `agent-work-qa` and is
+# busy only behind another QA round; everything else is the build lane. Runs
+# are told apart by title ("QA round: PR #<n>", agent-work.yml `run-name:`)
+# because `gh run list` cannot show inputs. scripts/cycle_queue.py `lane_jq`
+# carries the same selects; tests pin that the two agree.
+if [ "$kind" = pr ]; then
+  lane_sel='select(.displayTitle | startswith("QA round"))'
+else
+  lane_sel='select(.displayTitle | startswith("QA round") | not)'
+fi
+busy=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 20 \
+         --json status,displayTitle \
+         --jq "[.[] | select(.status != \"completed\") | $lane_sel] | length" 2>/dev/null || echo unknown)
 #
 # BUSY MEANS QUEUED, NOT DROPPED -- since 2026-11-02. This used to print "it
 # waits for the next run" and exit, and nothing ever came back for the ruling:
