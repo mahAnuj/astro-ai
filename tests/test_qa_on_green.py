@@ -661,3 +661,12 @@ def test_a_refix_round_is_aimed_at_the_PR_whatever_the_branch_is_called():
     code = _code(PICK)
     assert 'if [ -n "$issue" ] && [ "$refix" != true ]; then' in code, \
         "a re-fixed PR on an issue/ branch would be aimed at a full cycle"
+
+
+def test_the_dispatch_comment_does_not_claim_a_refixed_branch_names_no_issue():
+    """QA round 1 on #691: a re-fixed `issue/` PR was told "its branch names no
+    owning issue", which is false on that path."""
+    rec = _step("Record the dispatch on the PR")
+    assert rec["env"]["REFIX"] == "${{ steps.pick.outputs.refix }}"
+    assert 'if [ "$REFIX" = true ]; then' in rec["run"]
+    assert "echo \"refix=$refix\"" in PICK

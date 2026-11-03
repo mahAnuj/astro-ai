@@ -185,8 +185,11 @@ jobs:
                 say "PR #$num carries \`qa-fail\` bound to this very head \`${head:0:7}\` — it needs a FIX first."; exit 0
               fi
               fixes=$(gh api "repos/$GH_REPO/compare/$failed_at...$head" \
-                        --jq '[.commits[] | select((.parents | length) == 1)] | length' 2>/dev/null || echo 0)
-              case "$fixes" in ''|*[!0-9]*) fixes=0 ;; esac
+                        --jq '[.commits[] | select((.parents | length) == 1)] | length' 2>/dev/null || echo unreadable)
+              case "$fixes" in
+                ''|*[!0-9]*)
+                  say "PR #$num carries \`qa-fail\` and the commits since \`${failed_at:0:7}\` could not be compared — leaving it."; exit 0 ;;
+              esac
               if [ "$fixes" -eq 0 ]; then
                 say "PR #$num carries \`qa-fail\` at \`${failed_at:0:7}\`; only merges have landed since — a merge is not a fix. Leaving it."; exit 0
               fi
@@ -298,6 +301,7 @@ jobs:
             echo "target=$target"
             echo "head=$head"
             echo "judge_only=$judge_only"
+            echo "refix=$refix"
             echo "go=true"
           } >> "$GITHUB_OUTPUT"
           if [ "$judge_only" = true ]; then
@@ -318,6 +322,7 @@ jobs:
           PR_HEAD: ${{ steps.pick.outputs.head }}
           TARGET: ${{ steps.pick.outputs.target }}
           JUDGE_ONLY: ${{ steps.pick.outputs.judge_only }}
+          REFIX: ${{ steps.pick.outputs.refix }}
         run: |
           set -uo pipefail
           # The aim is re-derived from the `kind=digits` output rather than
@@ -328,6 +333,9 @@ jobs:
             *)
               aim="this PR itself, because its branch names no owning issue. The round judges the diff and records its verdict with \`--issue none\`, which \`qa_verdict.sh\` has always accepted." ;;
           esac
+          if [ "$REFIX" = true ]; then
+            aim="this PR itself, to judge the fix pushed since its \`qa-fail\` verdict (a round on the fix, not a cycle that may rebuild)."
+          fi
           # The judge-only paragraph is a REMINDER, not the rule. The rule lives
           # in `.claude/commands/agent-cycle.md` Step 2.5, because a comment on a
           # PR is data the agent reads and a rule it must obey cannot be sourced

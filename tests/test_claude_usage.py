@@ -70,12 +70,25 @@ def test_no_utilization_at_all_is_no_reading():
 
 
 class FakeGh:
-    def __init__(self, logs):          # workflow -> list of log texts (one run each)
-        self.logs, self.calls = logs, []
+    """Serves runs, jobs and logs. Like gh 2.103 on a GitHub-hosted runner, it
+    REFUSES a job-log fetch without `--allow-escape-sequences` (QA round 1 on
+    #691) -- or, with `old_gh`, rejects the flag as unknown like an older gh."""
+
+    def __init__(self, logs, old_gh=False, logs_fail=False):  # workflow -> list of log texts
+        self.logs, self.calls, self.old_gh, self.logs_fail = logs, [], old_gh, logs_fail
 
     def __call__(self, args):
         self.calls.append(args)
-        path = args[1]
+        path = next(a for a in args[1:] if a.startswith("repos/"))
+        if path.endswith("/logs"):
+            flag = "--allow-escape-sequences" in args
+            if self.logs_fail:
+                raise RuntimeError("gh api: HTTP 403")
+            if self.old_gh and flag:
+                raise RuntimeError("gh api: unknown flag: --allow-escape-sequences")
+            if not self.old_gh and not flag:
+                raise RuntimeError("gh api: the response contains terminal escape sequences; "
+                                   "pass --allow-escape-sequences")
         if "/actions/workflows/" in path:
             wf = path.split("/actions/workflows/")[1].split("/")[0]
             runs = [{"id": hash((wf, i)) % 10**9, "created_at": f"2026-11-03T0{i}:00:00Z"}
@@ -145,3 +158,26 @@ def test_agent_measure_collects_it_without_new_permissions():
     assert "collect_claude_usage.py" in steps[i]["run"]
     assert i < names.index("Commit the measurement"), "must run before the publish"
     assert doc["jobs"]["commit"]["permissions"]["actions"] in ("read", "write")
+
+
+def test_job_logs_are_fetched_with_allow_escape_sequences():
+    """QA round 1 on #691: gh 2.103 refuses every job log without the flag, the
+    collector swallowed it, and claude_usage.json was never written."""
+    gh = FakeGh({"agent-work.yml": [block(0.04, 0.69)]})
+    doc = cu.collect(gh, "o/r", NOW)
+    assert doc and doc["latest"]["seven_day"] == 0.69
+    assert any("--allow-escape-sequences" in c for c in gh.calls if c[-1].endswith("/logs"))
+
+
+def test_an_older_gh_without_the_flag_is_retried_plainly():
+    doc = cu.collect(FakeGh({"agent-work.yml": [block(0.04, 0.69)]}, old_gh=True), "o/r", NOW)
+    assert doc and doc["latest"]["seven_day"] == 0.69
+
+
+def test_every_FETCH_failing_is_reported_as_a_fetch_failure_not_as_empty_logs(tmp_path, capsys):
+    out = tmp_path / "u.json"
+    rc = cu.main(["x", "--repo", "o/r", "--out", str(out)],
+                 gh=FakeGh({"agent-work.yml": [block(0.04, 0.69)]}, logs_fail=True), now=NOW)
+    assert rc == 1 and not out.exists()
+    msg = capsys.readouterr().out
+    assert "FETCH failed" in msg and "403" in msg

@@ -35,10 +35,12 @@ HOW IT DRAINS
 -------------
 `agent-queue.yml` runs `drain` when an `agent-work` run COMPLETES, so the slot
 is genuinely free and nothing is dispatched into the cancellable pending slot.
+Since 2026-11-03 there are two lanes (build, QA) and `drain` starts at most one
+entry PER FREE LANE -- up to two per run.
 It also runs when `agent-steward` completes (twice a day), a backstop for an
 entry queued when no cycle was really running (an unreadable busy check counts
-as busy) or a drain run that died. `drain` takes ONE entry per run, oldest
-first, because one cycle at a time is the whole constraint.
+as busy) or a drain run that died. Within each lane `drain` takes the OLDEST
+entry, one at a time, because one cycle per lane is the whole constraint.
 
 An entry is consumed by editing its marker, never by deleting the comment, so
 the record of what was queued, by whom, and what became of it stays readable:

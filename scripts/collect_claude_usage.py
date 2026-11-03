@@ -72,6 +72,23 @@ def run_gh(args: list[str]) -> str:
     return p.stdout
 
 
+def fetch_log(gh: Runner, repo: str, job: int) -> str:
+    """One job's log. Job logs contain terminal escape sequences and `gh api`
+    REFUSES to print them without `--allow-escape-sequences` -- measured by QA on
+    PR #691 with gh 2.103.2 on a GitHub-hosted runner, where every call failed
+    and the file was never written (the session that built this had gh 2.89,
+    which did not need it). Same flag, same fallback as
+    collect_loop_measurements.LogSource: an older gh that does not know the
+    flag is retried without it."""
+    path = f"repos/{repo}/actions/jobs/{job}/logs"
+    try:
+        return gh(["api", "--allow-escape-sequences", path])
+    except RuntimeError as exc:
+        if "unknown flag" in str(exc):
+            return gh(["api", path])
+        raise
+
+
 def parse_blocks(log: str) -> list[dict]:
     """Every `rate_limit_info` object in a job log, parsed as JSON.
 
@@ -126,9 +143,14 @@ def summarise(blocks: list[dict]) -> dict | None:
     return {"five_hour": five, "seven_day": seven, "status": status, "resets": resets}
 
 
-def collect(gh: Runner, repo: str, now: datetime) -> dict | None:
+def collect(gh: Runner, repo: str, now: datetime, tally: dict | None = None) -> dict | None:
+    """The document, or None when nothing parsed. `tally` (if given) is filled
+    with how many logs were fetched, failed to fetch, and parsed to nothing --
+    so the caller can say WHICH failed instead of blaming the logs."""
     since = (now - timedelta(hours=WINDOW_HOURS)).strftime("%Y-%m-%dT%H:%M:%SZ")
     readings: list[dict] = []
+    t = tally if tally is not None else {}
+    t.update({"logs_fetched": 0, "fetch_failed": 0, "no_blocks": 0, "last_error": ""})
     for wf in CLAUDE_WORKFLOWS:
         try:
             runs = json.loads(gh(["api", f"repos/{repo}/actions/workflows/{wf}/runs"
@@ -145,9 +167,16 @@ def collect(gh: Runner, repo: str, now: datetime) -> dict | None:
             blocks: list[dict] = []
             for j in jobs:
                 try:
-                    blocks += parse_blocks(gh(["api", f"repos/{repo}/actions/jobs/{j}/logs"]))
-                except RuntimeError:
+                    log = fetch_log(gh, repo, j)
+                except RuntimeError as exc:
+                    t["fetch_failed"] += 1
+                    t["last_error"] = str(exc)[:200]
                     continue
+                t["logs_fetched"] += 1
+                got = parse_blocks(log)
+                if not got:
+                    t["no_blocks"] += 1
+                blocks += got
             s = summarise(blocks)
             if s:
                 readings.append({"workflow": wf.removesuffix(".yml"), "run": r["id"],
@@ -187,10 +216,19 @@ def main(argv: list[str], gh: Runner = run_gh, now: datetime | None = None) -> i
         a = ap.parse_args(argv[1:])
     except SystemExit:
         return 2
-    doc = collect(gh, a.repo, now or datetime.now(timezone.utc))
+    tally: dict = {}
+    doc = collect(gh, a.repo, now or datetime.now(timezone.utc), tally)
     if doc is None:
-        print("::warning::no rate_limit_info could be read from any recent run; "
-              "the previous claude_usage.json is left standing")
+        # Say WHICH failed: a fetch refused by gh and a log with no rate-limit
+        # block are different repairs, and QA round 1 on #691 found the old
+        # single message blaming the logs when the fetch was the problem.
+        if tally.get("fetch_failed") and not tally.get("logs_fetched"):
+            print(f"::warning::every job-log FETCH failed ({tally['fetch_failed']}); last error: "
+                  f"{tally['last_error']}. The previous claude_usage.json is left standing.")
+        else:
+            print(f"::warning::{tally.get('logs_fetched', 0)} log(s) fetched, none carried a "
+                  f"rate_limit_info block ({tally.get('fetch_failed', 0)} fetch failure(s)). "
+                  f"The previous claude_usage.json is left standing.")
         return 1
     errs = validate(doc)
     if errs:

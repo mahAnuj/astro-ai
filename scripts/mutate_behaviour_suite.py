@@ -4871,6 +4871,11 @@ MUTATIONS = [
      '    if False:',
      'test_a_high_weekly_quota_raises_an_alert'),
     # Claude usage (2026-11-03): the file the parallelism decision reads.
+    ('claude usage: job logs fetched without --allow-escape-sequences (gh refuses them all)',
+     'scripts/collect_claude_usage.py',
+     '        return gh(["api", "--allow-escape-sequences", path])',
+     '        return gh(["api", path])',
+     'test_job_logs_are_fetched_with_allow_escape_sequences'),
     ('claude usage: a run reports its LAST reading, not its worst',
      'scripts/collect_claude_usage.py',
      '                    seven = u if seven is None else max(seven, u)',

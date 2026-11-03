@@ -318,7 +318,8 @@ What has NOT changed, and why it matters more now than before:
   `<!-- agent-work-queue: kind=… target=… by=… -->` comment on the target (or, via
   `QUEUE_ON`, on the PR `qa-on-green` is handling — it may not comment on issues).
   `agent-queue.yml` runs `drain` when an `agent-work` run **completes**, and as a backstop
-  when `agent-steward` completes: oldest entry first, **one per run**, through the same
+  when `agent-steward` completes: oldest entry first, **one per free lane** (see the two
+  lanes below), through the same
   carrier, then edits the marker to `-taken: run=<id>` or `-dropped: <reason>`.
 
   Three properties are load-bearing. **Only `github-actions[bot]` entries count** — every
