@@ -247,7 +247,7 @@
           <tbody>
             {% for route, pc in llm_stats.aggregate.prefix_cache.items() %}
             <tr class="border-b border-bhagya-line-2 last:border-0">
-              <td class="py-2 font-semibold text-bhagya-ink">{{ route }}{% if pc.impossible %}<span class="text-bhagya-sindoor" title="IMPOSSIBLE: the stored sums for this route cannot describe a real cache (cached exceeds prompt, or a counter exceeds the call count). Every percentage on this row is clamped and untrustworthy.">&nbsp;&#9888;</span>{% endif %}{% if pc.models | length > 1 %}<span class="block text-xs font-normal text-bhagya-muted" title="Groq's prefix cache is per model. This row adds up {{ pc.models | length }} models' calls ({{ pc.models | join(', ') }}), so its Hit rate and Effective describe the mix of their caches, not any one cache.">blends {{ pc.models | length }} models</span>{% endif %}</td>
+              <td class="py-2 font-semibold text-bhagya-ink">{{ route }}{% if pc.impossible %}<span class="text-bhagya-sindoor" title="IMPOSSIBLE: the stored sums for this route cannot describe a real cache (cached exceeds prompt, or a counter exceeds the call count). Every percentage on this row is clamped and untrustworthy.">&nbsp;&#9888;</span>{% endif %}{% if pc.models | length > 1 %}<span class="block text-xs font-normal text-bhagya-muted" title="Groq's prefix cache is per model. This row adds up {{ pc.models | length }} models' calls ({{ pc.models | join(', ') }}), so where more than one of them reports a cache, this row's Hit rate and Effective mix independent caches. A model that reports none adds calls here and nothing to either rate.">blends {{ pc.models | length }} models</span>{% endif %}</td>
               <td class="py-2 text-right text-bhagya-ink tabular-nums">{{ pc.calls }}</td>
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.measurable }}</td>
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{% if pc.measurable %}{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}{% else %}&mdash;{% endif %}</td>
@@ -280,8 +280,9 @@
           &mdash; compare those two columns before reading it as a share of the route's traffic.
           <em>Each row adds up every model that served the route.</em> Groq's prefix cache is per
           model, so a row marked <strong>blends N models</strong> (a fallback from one model to the
-          next lands here) reports a mix of independent caches, and neither the saving nor the quota
-          it came from belongs to one model.
+          next lands here) can mix independent caches: where more than one of those models reports
+          one, neither the saving nor the quota it came from belongs to a single model. A model
+          that reports none adds to Fresh calls and to neither rate.
           {% set ru = llm_stats.aggregate.prefix_cache.values() | map(attribute='reported_unmeasurable') | sum %}
           {% if ru %}<strong>{{ ru }} call(s) carried a cache report that Effective leaves out.</strong>
           The counter cannot tell its two causes apart, so read both. <strong>(1) A real report on a
