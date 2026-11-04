@@ -752,6 +752,31 @@ def _cost_view(doc: dict | None, shipped_30d: int) -> dict:
     }
 
 
+def _last_run_failed(lp: dict) -> bool:
+    """A scheduled loop whose last run was red but whose verdict is silent (#628).
+
+    THE GAP, MEASURED 2026-11-04. `agents.json` held `agent-research.yml` as
+    `verdict: not-due-yet` with `last_run_health: red` (`failure`, 2026-10-28)
+    and `alerts: []`. The verdict grades the SCHEDULE -- a weekly loop between
+    slots is `not-due-yet` whether its last run was green or red -- so the Team
+    panel header read "every scheduled loop ran when due" over a loop that had
+    failed and could not run again for days. The red chip in the table was the
+    only trace, and the strip that leads the page said nothing.
+
+    Read from data the page already loads, so it costs no API request: the
+    budget on `ops_today` is already at its ceiling, which is why a per-loop
+    live lookup was the wrong shape for this.
+
+    `broken`, `dormant` and `missing-slots` already alert and are excluded so
+    one loop is not announced twice; `on-demand` loops run on events, where
+    "failed today" already covers a red run. `last_run_health` is the
+    collector's own colour, so a `reporting` workflow that exits non-zero by
+    contract (`loop-outcomes`) arrives amber and never trips this.
+    """
+    return (lp.get("verdict") in ("not-due-yet", "ok")
+            and lp.get("last_run_health") == "red")
+
+
 def _agents_view() -> dict:
     """Loop liveness, delivery yield and per-agent activity (#345).
 
@@ -774,6 +799,9 @@ def _agents_view() -> dict:
         "loops": loops,
         "alerts": doc.get("alerts") or [],
         "scheduled": [r for r in loops if r["verdict"] != "on-demand"],
+        # Scheduled loops whose MOST RECENT run was red while the schedule
+        # verdict says nothing is wrong. See `_last_run_failed`.
+        "last_failed": [r for r in loops if _last_run_failed(r)],
         "delivery": doc.get("delivery") or {},
         "agents": doc.get("agents") or {},
     }
@@ -1586,6 +1614,17 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
         elif lp.get("verdict") == "missing-slots":
             add("amber", f"{lp.get('workflow')} missed scheduled runs",
                 f"{ran} of {due} slots since {(lp.get('schedule_since') or '')[:10]}.",
+                lp.get("display") or "")
+        elif _last_run_failed(lp):
+            # Amber, not red: the verdict says the schedule is fine, and the
+            # failure may already be fixed -- this page has no git history to
+            # tell. But it must not be silent: nothing re-runs a weekly loop
+            # before its next slot, so a red last run stays the loop's state
+            # for days. #628 defect 2.
+            add("amber", f"{lp.get('workflow')}'s last run failed",
+                f"Ended {lp.get('last_conclusion') or 'badly'} on {last or 'an unknown date'}"
+                f"; the schedule is not due again yet, so nothing has re-run it. "
+                "Check whether a fix has landed since.",
                 lp.get("display") or "")
 
     # NOT gated on `loop["ok"]`: the tiles are live and the ribbon is not, so
