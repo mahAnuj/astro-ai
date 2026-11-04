@@ -1,6 +1,36 @@
 {
-  "generated_at": "2026-11-04T01:06:18Z",
+  "generated_at": "2026-11-04T08:38:03Z",
   "rows": [
+    {
+      "run": 41792163238,
+      "workflow": "agent-work",
+      "date": "2026-11-04",
+      "started": "2026-11-04T07:25:24Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 13.5,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
+    },
+    {
+      "run": 41763916900,
+      "workflow": "agent-work",
+      "date": "2026-11-04",
+      "started": "2026-11-04T02:56:14Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 13.6,
+      "issue": 628,
+      "pr": 703,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked"
+    },
     {
       "run": 41742519197,
       "workflow": "agent-work",
@@ -2271,18 +2301,18 @@
     "days": 7,
     "cycles": 66,
     "minutes_by_outcome": {
-      "shipped": 1028.1,
+      "shipped": 978.1,
       "pr open": 0.0,
-      "judged": 287.9,
+      "judged": 301.4,
       "nothing": 61.2,
       "failed": 36.2,
       "unknown": 0.0
     },
-    "minutes_total": 1413.4,
+    "minutes_total": 1376.9,
     "minutes_without_result": 97.4,
-    "share_without_result": 0.069,
-    "shipped_prs": 26,
-    "build_idle_hours": 149.5,
-    "build_idle_share": 0.89
+    "share_without_result": 0.071,
+    "shipped_prs": 25,
+    "build_idle_hours": 150.3,
+    "build_idle_share": 0.895
   }
 }
