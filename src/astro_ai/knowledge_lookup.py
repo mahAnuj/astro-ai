@@ -101,7 +101,7 @@ def _tables() -> tuple[dict[str, str], dict[str, str]]:
     """
     try:
         text = _read_remedies()
-    except OSError as exc:
+    except (OSError, ValueError) as exc:  # ValueError: UnicodeDecodeError on non-UTF-8 bytes
         raise RemedyTablesError(f"cannot read {_REMEDIES_PATH.name}: {exc}") from exc
     grains = _section_rows(text, "5.1")
     deities = _section_rows(text, "7.1")

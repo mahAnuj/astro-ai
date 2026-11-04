@@ -240,6 +240,21 @@ def test_a_missing_empty_or_unparseable_file_returns_empty_and_logs_error(
     assert [r for r in caplog.records if r.levelno == logging.ERROR], "silent failure"
 
 
+@pytest.mark.parametrize("payload", [b"\xff\xfe\x00junk", b"# remedies\n\xc3\x28 broken utf-8\n"],
+                         ids=["bom-like-garbage", "invalid-continuation-byte"])
+def test_a_non_utf8_file_returns_empty_and_logs_error_not_a_unicode_error(
+        monkeypatch, tmp_path, caplog, payload):
+    """QA round 1 on PR #712: UnicodeDecodeError is a ValueError, not an OSError,
+    so a file that is not valid UTF-8 raised out of _tables() and GET /kundli
+    returned 502 on every chart that has a flagged planet (~81%)."""
+    path = tmp_path / "remedies.md"
+    path.write_bytes(payload)
+    monkeypatch.setattr(kl, "_REMEDIES_PATH", path)
+    with caplog.at_level(logging.ERROR, logger=kl.__name__):
+        assert kl.remedy_rules_for(_debilitated("Sun", "Mars")) == ""
+    assert [r for r in caplog.records if r.levelno == logging.ERROR], "silent failure"
+
+
 def test_a_failed_parse_is_retried_not_cached(monkeypatch, tmp_path):
     """lru_cache does not cache an exception; a file that appears later works."""
     path = tmp_path / "remedies.md"
