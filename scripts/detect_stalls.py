@@ -776,6 +776,43 @@ def find_stalls(hours: float) -> list[dict]:
     return stalls
 
 
+#: Kinds whose action is a DISPATCH of a cycle. An agent must be able to push
+#: the branch for the dispatch to do anything, hence the `agent_pushable` filter
+#: in `obliged_actions`.
+OBLIGED_PUSH_KINDS = frozenset({
+    "draft-never-readied", "no-qa-verdict", "mergeable-but-open",
+    "steward-ineffective", "qa-fail-unaddressed", "qa-fail-refixed",
+    "draft-held-by-qa-fail", "pr-conflicting"})
+
+#: Kinds whose action is a RULING, not a push (#709). `chief` clears a
+#: trust-boundary hold by commenting `chief-cleared at <sha>` and labelling; it
+#: pushes nothing, and `agent-merge` merges with `github.token`.
+#:
+#: THE DEFECT, MEASURED 2026-11-04 on PR #706: this kind was emitted (so the
+#: stall printed) and absent from the obliged set, so `OBLIGED_ACTIONS=0`,
+#: `agent-steward.yml`'s accountability step exited at `demanded == 0` and never
+#: woke chief. Three steward runs were green over seven hours and the one role
+#: granted this queue (CLAUDE.md, 2026-11-01) was never invoked.
+#:
+#: IT IS NOT FILTERED BY `agent_pushable`, on purpose. That filter exists
+#: because a dispatched cycle cannot push to a `.github/workflows/**` branch.
+#: Chief is not a cycle and does not push, and a workflow PR is exactly the kind
+#: of hold the 2026-11-01 grant widened chief's queue to. Filtering would leave
+#: those holds unwoken -- the same bug for the PRs that matter most.
+OBLIGED_RULING_KINDS = frozenset({"boundary-hold-clearable"})
+
+
+def obliged_actions(stalls: list[dict]) -> list[dict]:
+    """The stalls that oblige an action some agent can actually perform.
+
+    `agent-steward.yml` reads `OBLIGED_ACTIONS=<len>` of this and wakes `chief`
+    when it is non-zero and the steward acted on none of it.
+    """
+    return [x for x in stalls
+            if x["kind"] in OBLIGED_RULING_KINDS
+            or (x["kind"] in OBLIGED_PUSH_KINDS and x.get("agent_pushable", True))]
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--hours", type=float, default=DEFAULT_HOURS,
@@ -808,12 +845,7 @@ def main(argv: list[str]) -> int:
     # A stall is obliged only if its kind routes to an action AND an agent can
     # actually perform it. `no-checks-ever` and `dead-trigger-leg` are absent:
     # they route to an escalation or an issue, not a dispatch.
-    obliged = [x for x in stalls
-               if x["kind"] in {"draft-never-readied", "no-qa-verdict",
-                                "mergeable-but-open", "steward-ineffective",
-                                "qa-fail-unaddressed", "qa-fail-refixed",
-                                "draft-held-by-qa-fail", "pr-conflicting"}
-               and x.get("agent_pushable", True)]
+    obliged = obliged_actions(stalls)
     print(f"OBLIGED_ACTIONS={len(obliged)}")
 
     if not stalls:
