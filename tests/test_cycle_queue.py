@@ -35,12 +35,14 @@ REPO = "owner/repo"
 class FakeGh:
     """Answers exactly the calls cycle_queue.py makes, and records them."""
 
-    def __init__(self, *, busy="0", busy_qa=None, labels=None, heads=None, fail_patch_after=None):
+    def __init__(self, *, busy="0", busy_qa=None, labels=None, heads=None, fail_patch_after=None,
+                 open_prs=None):
         self.comments: list[dict] = []
         self.busy = busy                    # build lane (and the QA lane unless busy_qa given)
         self.busy_qa = busy if busy_qa is None else busy_qa
         self.labels = labels or {}          # target -> "a,b"
         self.heads = heads or {}            # pr -> head sha
+        self.open_prs = open_prs or {}      # pr -> (head ref, "a,b" labels, mergeable "true"/"false"/"null")
         self.fail_patch_after = fail_patch_after   # PATCH calls allowed before failing
         self.patches = 0
         self.calls: list[list[str]] = []
@@ -62,6 +64,11 @@ class FakeGh:
             return "\n".join(f"{c['created_at']} {c['body'].splitlines()[0]}"
                              for c in self.comments
                              if c["on"] == n and c["body"].startswith("QA: "))
+        if args[0] == "api" and "/pulls?state=open" in args[1]:
+            return "\n".join(json.dumps({"number": n, "ref": ref, "labels": [l for l in labs.split(",") if l]})
+                             for n, (ref, labs, _m) in self.open_prs.items())
+        if args[0] == "api" and "/pulls/" in args[1] and args[-1] == ".mergeable":
+            return self.open_prs[int(args[1].rsplit("/", 1)[1])][2] + "\n"
         if args[0] == "api" and "/pulls/" in args[1]:
             return self.heads.get(int(args[1].rsplit("/", 1)[1]), "") + "\n"
         if args[:3] == ["api", "-X", "POST"]:
@@ -243,26 +250,62 @@ def test_a_pr_that_already_carries_qa_pass_is_dropped_without_a_cycle():
     assert "already carries `qa-pass`" in gh.comments[0]["body"]
 
 
-def test_an_ISSUE_entry_whose_issue_already_carries_qa_pass_is_dropped():
-    """2026-11-03 18:52Z: `issue=431` was drained twice while PR #694 held
-    `qa-pass` (which qa_verdict.sh also writes to the issue). Each cycle stood
-    down in ~35s and the carrier retried it as died-on-arrival, turning
-    agent-queue red twice. The label check now covers issue entries."""
-    gh = FakeGh(labels={431: "bug,qa-pass,qa:in-cycle"})
+def _issue_431(mergeable="true", ref="issue/431-prefix-row-known-shapes", pr_labels="qa-pass,qa:in-cycle"):
+    gh = FakeGh(labels={431: "bug,qa-pass,qa:in-cycle"},
+                open_prs={694: (ref, pr_labels, mergeable), 650: ("issue/43-other", "qa-pass", "true")})
     gh.add(entry("issue", 431))
+    return gh
+
+
+def test_an_ISSUE_entry_whose_PR_has_passed_and_is_mergeable_is_dropped():
+    """2026-11-03 18:52Z: `issue=431` was drained twice while PR #694 held
+    `qa-pass` and was mergeable. Each cycle stood down in ~35s and the carrier
+    retried it as died-on-arrival, turning agent-queue red twice."""
+    gh = _issue_431()
     car = FakeCarrier([])
     cq.drain(gh, REPO, car)
     assert car.calls == []
-    assert "issue #431 already carries `qa-pass`" in gh.comments[0]["body"]
+    assert "issue #431's PR #694 carries `qa-pass` and is mergeable" in gh.comments[0]["body"]
 
 
-def test_an_ISSUE_entry_without_qa_pass_is_still_started():
+def test_an_ISSUE_entry_whose_qa_pass_PR_is_CONFLICTING_is_still_started():
+    """QA round 1 on #704: the issue's own `qa-pass` label survives a PR going
+    CONFLICTING (the #608 case). The steward queues `issue=<n>` to merge main
+    in, and agent-merge skips a conflicting PR by design -- nothing is waiting
+    to merge. Dropping on the label alone dropped that entry permanently."""
+    gh = _issue_431(mergeable="false")
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls and car.calls[0][0] == "issue=431"
+
+
+def test_an_ISSUE_entry_with_qa_pass_but_NO_open_PR_is_still_started():
+    """A `partial/` PR merged with the issue still open: the label stays, no PR
+    is waiting, and the remaining work needs a cycle. #43's PR must not count
+    for #431 (prefix match on the number)."""
+    gh = _issue_431()
+    del gh.open_prs[694]
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls and car.calls[0][0] == "issue=431"
+
+
+def test_an_ISSUE_entry_whose_PR_mergeability_is_UNKNOWN_is_still_started():
+    """GitHub answers `mergeable: null` while it computes. A stand-down costs
+    ~35s; a wrong drop is permanent, so unknown starts the cycle."""
+    gh = _issue_431(mergeable="null")
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls and car.calls[0][0] == "issue=431"
+
+
+def test_an_ISSUE_entry_without_qa_pass_is_started_without_reading_PRs():
     gh = FakeGh(labels={431: "bug,qa-fail"})
     gh.add(entry("issue", 431))
     car = FakeCarrier([(0, "1")])
     cq.drain(gh, REPO, car)
     assert car.calls and car.calls[0][0] == "issue=431"
-
+    assert not any("/pulls?state=open" in " ".join(c) for c in gh.calls)
 
 def test_a_qa_fail_pr_IS_started():
     """qa-fail is exactly the state a manual round exists for (#649, #636)."""
