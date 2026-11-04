@@ -1,0 +1,80 @@
+"""#399 — the natal remedy block is retrieved per chart from remedies.md.
+
+2026-11-04. Rows re-break each way the lookup could regress: a parenthetical
+(the Venus cell names an author) reaching the model, the caps, the debilitated
+tier, the both-tags dedupe, the token-vs-equality tag test, the empty-file
+fallback raising on the /kundli path, the citation backstop, and the block
+becoming sheddable or moving ahead of the dignity block it is keyed on."""
+
+_KL = "src/astro_ai/knowledge_lookup.py"
+_LLM = "src/astro_ai/llm.py"
+
+MUTATIONS = [
+    ("knowledge_lookup: parentheticals not stripped (author name / cell notes reach the model)",
+     _KL,
+     '    return _PAREN_RE.sub("", cell).strip()',
+     '    return cell.strip()',
+     "test_the_parenthetical_is_stripped_from_the_toor_daal_cell"),
+    ("knowledge_lookup: Venus rendered from its cell, not fixed as 'a whitish grain'",
+     _KL,
+     '    if planet == "Venus":',
+     '    if planet == "Nobody":',
+     "test_venus_grain_is_only_a_whitish_grain"),
+    ("knowledge_lookup: planet cap removed (9 planets in the block)",
+     _KL,
+     'MAX_PLANETS = 3',
+     'MAX_PLANETS = 9',
+     "test_cap_of_three_keeps_debilitated_before_combust_before_graha_order"),
+    ("knowledge_lookup: deity cap removed (five Jupiter deities)",
+     _KL,
+     'MAX_DEITIES = 3',
+     'MAX_DEITIES = 9',
+     "test_deities_are_capped_at_three_in_table_order"),
+    ("knowledge_lookup: combust ranked level with debilitated (cap drops the wrong planets)",
+     _KL,
+     '    tier = {"DEBILITATED": 0, "COMBUST": 1}',
+     '    tier = {"DEBILITATED": 0, "COMBUST": 0}',
+     "test_cap_of_three_keeps_debilitated_before_combust_before_graha_order"),
+    ("knowledge_lookup: tags tested by equality (the COMBUST tag carries its separation)",
+     _KL,
+     '    tokens = {t.split(" (")[0].strip() for t in tags}',
+     '    tokens = set(tags)',
+     "test_tags_are_tested_by_token_not_equality"),
+    ("knowledge_lookup: unreadable remedies.md raises into the /kundli request path",
+     _KL,
+     '        _log.error("remedy rules unavailable, natal reading goes out without them: %s", exc)\n        return ""',
+     '        raise',
+     "test_a_missing_empty_or_unparseable_file_returns_empty_and_logs_error"),
+    ("knowledge_lookup: unreadable remedies.md fails silently (no ERROR logged)",
+     _KL,
+     '        _log.error("remedy rules unavailable, natal reading goes out without them: %s", exc)',
+     '        pass',
+     "test_a_missing_empty_or_unparseable_file_returns_empty_and_logs_error"),
+    ("knowledge_lookup: citation backstop disabled (a cell naming a book is rendered)",
+     _KL,
+     '    if _CITATION_RE.search(line):',
+     '    if False and _CITATION_RE.search(line):',
+     "test_a_citation_in_a_table_cell_drops_that_planet_not_the_whole_block"),
+    ("knowledge_lookup: parse not memoised (file re-read on every natal request)",
+     _KL,
+     '@lru_cache(maxsize=1)\ndef _tables()',
+     'def _tables()',
+     "test_the_parse_reads_the_file_once"),
+    ("llm: remedy block made sheddable (rank 3) — a flagged planet loses its rules first",
+     _LLM,
+     '        _OptionalBlock("remedy rules", remedy_block, 0),',
+     '        _OptionalBlock("remedy rules", remedy_block, 3),',
+     "test_the_block_is_never_shed"),
+    ("llm: remedy block placed before the dignity block it is keyed on",
+     _LLM,
+     '        _OptionalBlock("planet dignity", dignity_block, 0),\n'
+     '        _OptionalBlock("remedy rules", remedy_block, 0),\n',
+     '        _OptionalBlock("remedy rules", remedy_block, 0),\n'
+     '        _OptionalBlock("planet dignity", dignity_block, 0),\n',
+     "test_a_chart_with_weak_planets_gets_the_block_and_one_log_line"),
+    ("llm: retrieval log line loses the planets it chose",
+     _LLM,
+     '"planets=%s tok~%d", planets, providers.estimate_data_tokens(block),',
+     '"planets=%s tok~%d", [], providers.estimate_data_tokens(block),',
+     "test_a_chart_with_weak_planets_gets_the_block_and_one_log_line"),
+]
