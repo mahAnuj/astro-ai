@@ -545,8 +545,9 @@ def find_stalls(hours: float) -> list[dict]:
                 # THAT ORDER WAS WRONG WHEN THIS FLOOR FIRST LANDED (#659) and
                 # the defect reached `main`. The branch sat FIRST in the chain,
                 # so a fix pushed inside the window was suppressed for the whole
-                # window: `qa-fail-refixed` never fired, `qa-on-green` declines
-                # a `qa-fail` PR by design, and the steward runs twice a day --
+                # window: `qa-fail-refixed` never fired, `qa-on-green` then
+                # declined every `qa-fail` PR (it dispatches a re-fixed one since
+                # #691, 2026-11-03), and the steward runs twice a day --
                 # so "push a fix, earn a fresh round" silently became "push a
                 # fix, wait four hours". Measured on PRs #649 and #654, whose
                 # round-2 fixes went up ~2h after their verdicts and were

@@ -223,15 +223,24 @@ def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
     """A reason NOT to start this entry that the carrier would not catch. The
     carrier already refuses a closed target; a PR that has since been given
     `qa-pass` is open and would pass, and a round on it is ~50 minutes spent
-    re-deciding a decided question."""
-    if e.kind != "pr":
-        return None
+    re-deciding a decided question.
+
+    The `qa-pass` check covers ISSUE entries too. `qa_verdict.sh` writes the
+    verdict to the PR *and* its issue, so an issue carrying `qa-pass` has a
+    passed PR waiting to merge. Measured 2026-11-03 18:52Z: an `issue=431`
+    entry was drained twice while PR #694 already held `qa-pass`; each cycle
+    stood down in ~35s, the carrier read that as died-on-arrival, retried, and
+    turned `agent-queue` red twice for work that was already done."""
     try:
         labels = gh(["api", f"repos/{repo}/issues/{e.target}", "--jq", "[.labels[].name] | join(\",\")"])
     except RuntimeError:
         return None
     if "qa-pass" in labels.strip().split(","):
-        return f"PR #{e.target} already carries `qa-pass`; a round would re-decide it."
+        noun = "PR" if e.kind == "pr" else "issue"
+        return (f"{noun} #{e.target} already carries `qa-pass`; a cycle would re-decide "
+                f"work that has passed QA and is waiting to merge.")
+    if e.kind != "pr":
+        return None
     # A round that has ALREADY ruled on the current head since this entry was
     # queued. The case QA round 1 on #675 exposed: once a busy loop is no
     # reason to hold back, the steward can queue a round for the very PR the

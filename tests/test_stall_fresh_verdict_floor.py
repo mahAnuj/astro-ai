@@ -180,8 +180,8 @@ def test_a_fix_pushed_inside_the_window_is_reported_immediately(monkeypatch):
     suppressed the finding for the whole window.
 
     The cost was not noise, it was silence on every path at once:
-    `qa-on-green` declines a `qa-fail` PR by design, the steward runs twice a
-    day, and this detector was the only thing left that could notice a fix had
+    `qa-on-green` then declined every `qa-fail` PR (since #691 it dispatches
+    one once a fix lands), the steward runs twice a day, and this detector was the only thing left that could notice a fix had
     landed. Measured on PRs #649 and #654, whose round-2 fixes went up ~2h
     after their verdicts.
 

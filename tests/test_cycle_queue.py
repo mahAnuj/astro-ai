@@ -243,6 +243,27 @@ def test_a_pr_that_already_carries_qa_pass_is_dropped_without_a_cycle():
     assert "already carries `qa-pass`" in gh.comments[0]["body"]
 
 
+def test_an_ISSUE_entry_whose_issue_already_carries_qa_pass_is_dropped():
+    """2026-11-03 18:52Z: `issue=431` was drained twice while PR #694 held
+    `qa-pass` (which qa_verdict.sh also writes to the issue). Each cycle stood
+    down in ~35s and the carrier retried it as died-on-arrival, turning
+    agent-queue red twice. The label check now covers issue entries."""
+    gh = FakeGh(labels={431: "bug,qa-pass,qa:in-cycle"})
+    gh.add(entry("issue", 431))
+    car = FakeCarrier([])
+    cq.drain(gh, REPO, car)
+    assert car.calls == []
+    assert "issue #431 already carries `qa-pass`" in gh.comments[0]["body"]
+
+
+def test_an_ISSUE_entry_without_qa_pass_is_still_started():
+    gh = FakeGh(labels={431: "bug,qa-fail"})
+    gh.add(entry("issue", 431))
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls and car.calls[0][0] == "issue=431"
+
+
 def test_a_qa_fail_pr_IS_started():
     """qa-fail is exactly the state a manual round exists for (#649, #636)."""
     gh = FakeGh(labels={649: "qa-fail,qa:in-cycle"})
