@@ -47,6 +47,12 @@ module.exports = {
       pattern:
         /^(bg|text|border|from|via|to)-(astro|emerald|amber|rose|stone)-(50|100|200|300|400|500|600|700|800|900)$/,
     },
+    // Exists ONLY so scripts/verify_contrast.py Gate 3 stays measurable: its
+    // DECLARED_PAIRS row for text-white on the primary fills needs a rule to
+    // exist in app.css, and since #262 deleted templates/rashifal.html no
+    // template emits one. Retires with those legacy rows and the `cream`
+    // colour token below, in a follow-up change.
+    'text-white',
   ],
 
   theme: {
@@ -127,11 +133,13 @@ module.exports = {
         // deleting the token made that gate exit 2, COULD NOT VERIFY. Tried
         // 2026-09-04 and reverted.
         //
-        // Those five rows now guard only rashifal.html, which is dead code
-        // (no route, no test, no reference — #262). So the token, the legacy
-        // rows and that file should retire in ONE change, not three: pulling
-        // the token alone silences a working gate to tidy a line of config.
-        // Tracked on #262. Use `bhagya.cream` for anything new.
+        // Those five rows guarded only templates/rashifal.html, which #262
+        // deleted as dead code (no route, no test, no reference). They now
+        // guard nothing, so the token, the five legacy rows and the
+        // `text-white` safelist entry above should retire together in a
+        // follow-up change, not this one: pulling the token alone silences a
+        // working gate to tidy a line of config. Use `bhagya.cream` for
+        // anything new.
         cream: '#faf7f2',
 
         // ─── Redesign palette (#233/#238) ─────────────────────────────
