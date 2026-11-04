@@ -57,7 +57,9 @@ from astro_ai.chart import (
     format_aspects_for_prompt,
     format_navamsha_for_prompt,
     format_dashamsa_for_prompt,
+    planet_dignities,
 )
+from . import knowledge_lookup
 from .learn_registry import ARTICLES
 
 # Appended to the system prompt to switch the LLM's output language.
@@ -277,6 +279,30 @@ def _shed_to_fit(
         )
 
 
+def _remedy_rules_block(chart: Chart) -> str:
+    """The natal `--- REMEDY RULES ---` block for this chart, or "" (#399).
+
+    Logs ONE line per natal build, with the planets chosen and the block's
+    size, so "why did my reading carry no remedy line" has an answer in the
+    logs rather than only in the chart.
+    """
+    dignities = [(p.name, tags) for p, tags in planet_dignities(chart)]
+    block = knowledge_lookup.remedy_rules_for(dignities)
+    planets = knowledge_lookup.select_planets(dignities)
+    if block:
+        _log.info(
+            "knowledge retrieval route=natal sections=remedies.md§5.1,§7.1 "
+            "planets=%s tok~%d", planets, providers.estimate_data_tokens(block),
+        )
+    else:
+        _log.info(
+            "knowledge retrieval route=natal sections=remedies.md§5.1,§7.1 "
+            "planets=[] (%s) tok~0",
+            "none weak" if not planets else "remedies.md unavailable",
+        )
+    return block
+
+
 def _format_seeker_message(
     details: BirthDetails,
     chart: Chart,
@@ -309,6 +335,7 @@ def _format_seeker_message(
     # Deterministic per chart; cheap to compute.
     house_lords_block = format_house_lords_for_prompt(chart)
     dignity_block = format_planet_dignity_for_prompt(chart)
+    remedy_block = _remedy_rules_block(chart)
     nakshatras_block = format_planet_nakshatras_for_prompt(chart)
     aspects_block = format_aspects_for_prompt(chart)
     navamsha_block = format_navamsha_for_prompt(chart)
@@ -344,6 +371,7 @@ def _format_seeker_message(
     blocks = [
         _OptionalBlock("house lords", house_lords_block, 0),
         _OptionalBlock("planet dignity", dignity_block, 0),
+        _OptionalBlock("remedy rules", remedy_block, 0),
         _OptionalBlock("nakshatras", nakshatras_block, 3),
         _OptionalBlock("aspects", aspects_block, 4),
         _OptionalBlock("D-9 navamsha",
