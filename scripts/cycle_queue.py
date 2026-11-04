@@ -219,18 +219,69 @@ def mark(gh: Runner, repo: str, e: Entry, state: str, note: str) -> None:
     restate(gh, repo, e.comment_id, e.body, "pending", state, note)
 
 
+#: The branch shapes that carry an owning issue -- the same three qa-on-green
+#: reads (`issue/<n>-`, `partial/<n>-`, `fix/<n>-`).
+_OWNED_BRANCH = re.compile(r"^(?:issue|partial|fix)/(\d+)-")
+
+
+def _mergeable_passed_pr(gh: Runner, repo: str, issue: int) -> int | None:
+    """An open PR for `issue` that carries `qa-pass` and that GitHub reports
+    `mergeable: true`, or None. Any read failure answers None (start the cycle)."""
+    try:
+        raw = gh(["api", f"repos/{repo}/pulls?state=open&per_page=100",
+                  "--jq", ".[] | {number, ref: .head.ref, labels: [.labels[].name]}"])
+    except RuntimeError:
+        return None
+    for line in raw.splitlines():
+        try:
+            pr = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        m = _OWNED_BRANCH.match(pr.get("ref") or "")
+        if not m or int(m.group(1)) != issue or "qa-pass" not in pr.get("labels", []):
+            continue
+        try:
+            mergeable = gh(["api", f"repos/{repo}/pulls/{pr['number']}", "--jq", ".mergeable"]).strip()
+        except RuntimeError:
+            continue
+        if mergeable == "true":
+            return pr["number"]
+    return None
+
+
 def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
     """A reason NOT to start this entry that the carrier would not catch. The
     carrier already refuses a closed target; a PR that has since been given
     `qa-pass` is open and would pass, and a round on it is ~50 minutes spent
-    re-deciding a decided question."""
-    if e.kind != "pr":
-        return None
+    re-deciding a decided question.
+
+    An ISSUE entry is dropped only when an open PR for that issue holds
+    `qa-pass` AND GitHub reports it mergeable -- i.e. it really is waiting to
+    merge. Measured 2026-11-03 18:52Z: an `issue=431` entry was drained twice
+    while PR #694 held `qa-pass`; each cycle stood down in ~35s, the carrier
+    read that as died-on-arrival, retried, and turned `agent-queue` red twice.
+
+    The issue's OWN `qa-pass` label is only a prefilter, never the reason
+    (QA round 1 on #704). `qa_verdict.sh` writes the verdict to the issue too,
+    so the label survives two states where a cycle IS the next step: a
+    `qa-pass` PR that has gone CONFLICTING (the #608 case -- the steward queues
+    `issue=<n>` to run merge_main_into_branch.py, and agent-merge skips a
+    conflicting PR by design, #403), and a `partial/` PR that merged with work
+    still open. An unknown `mergeable` (GitHub still computing) also starts
+    the cycle: a wasted stand-down costs ~35s, a wrongly dropped entry is
+    permanent."""
     try:
         labels = gh(["api", f"repos/{repo}/issues/{e.target}", "--jq", "[.labels[].name] | join(\",\")"])
     except RuntimeError:
         return None
-    if "qa-pass" in labels.strip().split(","):
+    passed = "qa-pass" in labels.strip().split(",")
+    if e.kind != "pr":
+        pr = _mergeable_passed_pr(gh, repo, e.target) if passed else None
+        if pr is None:
+            return None
+        return (f"issue #{e.target}'s PR #{pr} carries `qa-pass` and is mergeable; it is "
+                f"waiting to merge, and a cycle would re-decide passed work.")
+    if passed:
         return f"PR #{e.target} already carries `qa-pass`; a round would re-decide it."
     # A round that has ALREADY ruled on the current head since this entry was
     # queued. The case QA round 1 on #675 exposed: once a busy loop is no
