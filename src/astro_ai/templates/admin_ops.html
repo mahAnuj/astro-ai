@@ -1206,6 +1206,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
   <section class="panel">
     <h2>Team <span class="lbl">
       {% if A.alerts %}<span style="color:var(--failed)">{{ A.alerts|length }} loop{{ '' if A.alerts|length == 1 else 's' }} need attention</span>
+      {% elif A.last_failed %}<span style="color:var(--failed)">{{ A.last_failed|length }} loop{{ '' if A.last_failed|length == 1 else 's' }} last run failed</span>
       {% else %}every scheduled loop ran when due{% endif %}
       · {{ A.window_days }} d</span>
       <span class="age {{ 'stale' if ops.ages.Team.stale }}"
