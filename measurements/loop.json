@@ -1,6 +1,51 @@
 {
-  "generated_at": "2026-11-04T08:38:03Z",
+  "generated_at": "2026-11-04T12:47:25Z",
   "rows": [
+    {
+      "run": 41823902520,
+      "workflow": "agent-work",
+      "date": "2026-11-04",
+      "started": "2026-11-04T11:48:21Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 10.5,
+      "issue": 402,
+      "pr": 706,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "issue"
+    },
+    {
+      "run": 41815690677,
+      "workflow": "agent-work",
+      "date": "2026-11-04",
+      "started": "2026-11-04T10:40:10Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 67.8,
+      "issue": 402,
+      "pr": 706,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "ranked"
+    },
+    {
+      "run": 41795777049,
+      "workflow": "agent-work",
+      "date": "2026-11-04",
+      "started": "2026-11-04T07:56:45Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 43.4,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
+    },
     {
       "run": 41792163238,
       "workflow": "agent-work",
@@ -2299,20 +2344,20 @@
   ],
   "waste": {
     "days": 7,
-    "cycles": 66,
+    "cycles": 69,
     "minutes_by_outcome": {
       "shipped": 978.1,
-      "pr open": 0.0,
-      "judged": 301.4,
+      "pr open": 78.3,
+      "judged": 344.8,
       "nothing": 61.2,
       "failed": 36.2,
       "unknown": 0.0
     },
-    "minutes_total": 1376.9,
+    "minutes_total": 1498.6,
     "minutes_without_result": 97.4,
-    "share_without_result": 0.071,
+    "share_without_result": 0.065,
     "shipped_prs": 25,
-    "build_idle_hours": 150.3,
-    "build_idle_share": 0.895
+    "build_idle_hours": 149.0,
+    "build_idle_share": 0.887
   }
 }
