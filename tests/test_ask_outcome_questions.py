@@ -43,8 +43,11 @@ def test_nothing_sent_to_the_model_still_says_to_commit_to_a_yes_or_no():
 
 def test_an_outcome_question_is_told_to_describe_the_chart_not_to_answer_yes_or_no():
     rule = _line(r"specific outcome")
-    assert re.search(r"never yes/no", rule, re.I)
-    assert re.search(r'never "likely" or "probably not"', rule, re.I)
+    assert re.search(r"never a yes/no verdict", rule, re.I)
+    # It must not forbid "likely" itself: HONESTY says to USE "likely", and a
+    # prompt that bans and requires the same word hands the model a coin flip.
+    assert '"likely"' not in rule
+    assert 'Use "likely", "the chart suggests", "tends toward".' in PROMPT
     # still ANSWER FIRST: the rule opens the answer with what the chart supports,
     # so it cannot be satisfied by an evasion.
     assert re.search(r"open with what the chart does and does not support", rule, re.I)
@@ -96,4 +99,4 @@ def test_the_user_message_for_an_exam_question_carries_the_never_an_event_framin
     assert "never whether a specific event will happen" in user
     assert "Will I clear my UPSC exam this year?" in user
     # the system side of the same request: the matching instruction is present
-    assert "Never yes/no" in cap["m"][0]["content"]
+    assert "Never a yes/no verdict" in cap["m"][0]["content"]

@@ -118,18 +118,33 @@ def test_the_fingerprint_is_a_pure_function_of_the_date():
     assert re.fullmatch(r"[0-9a-f]{8}", a)
 
 
-def test_the_fingerprint_changes_across_an_ingress_and_not_within_a_period():
-    """2025-03-29 is the Saturn ingress into Meena (sidereal) as published in the
-    usual Shani-gochara tables; this test only relies on the ENGINE agreeing that
-    some slow planet changed sign between 03-27 and 03-31, which it asserts."""
-    before, after = _moment(2025, 3, 27), _moment(2025, 3, 31)
-    later = _moment(2025, 4, 10)
+# One pair per hashed planet. The fingerprint hashes Saturn|Jupiter|Rahu, and a
+# test spanning only a Saturn ingress lets a hand edit drop either of the others
+# with the suite green (QA, PR #706) -- so each pair changes EXACTLY ONE planet
+# (asserted below, so a wrong date cannot make a row vacuous), and `later` is a
+# within-period control in which nothing has changed since `after`.
+# Dates measured with chart.compute_transit_snapshot (sidereal, rashifal noon):
+#   Saturn  2025-03-27 Kumbha -> 03-31 Meena   (control 04-10)
+#   Jupiter 2025-05-14 Vrishabha -> 05-16 Mithuna (control 05-20)
+#   Rahu    2025-05-29 Meena -> 05-31 Kumbha   (control 06-10)
+@pytest.mark.parametrize("planet, before, after, later", [
+    ("Saturn", (2025, 3, 27), (2025, 3, 31), (2025, 4, 10)),
+    ("Jupiter", (2025, 5, 14), (2025, 5, 16), (2025, 5, 20)),
+    ("Rahu", (2025, 5, 29), (2025, 5, 31), (2025, 6, 10)),
+])
+def test_the_fingerprint_changes_across_an_ingress_and_not_within_a_period(
+    planet, before, after, later
+):
+    """The engine, not a published table, is the oracle: this only relies on it
+    agreeing that `planet` alone changed sign between `before` and `after`."""
+    before, after, later = _moment(*before), _moment(*after), _moment(*later)
 
     def signs(m):
         snap = chart.compute_transit_snapshot(SimpleNamespace(lagna_rashi=chart.RASHIS[0]), m)
         return {p.name: p.rashi for p in snap.planets if p.name in ("Saturn", "Jupiter", "Rahu")}
 
-    assert signs(before) != signs(after), "fixture no longer spans an ingress"
+    sb, sa = signs(before), signs(after)
+    assert [n for n in sb if sb[n] != sa[n]] == [planet], "fixture no longer isolates one planet"
     assert signs(after) == signs(later)
     fp = ask_transit.transit_fingerprint
     assert fp(before) != fp(after)
