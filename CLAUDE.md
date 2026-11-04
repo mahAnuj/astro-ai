@@ -110,10 +110,14 @@ exactly `pyproject.toml`, `uv.lock`, `README.md` and `src/`. Three things to kno
   *verifying*. A `paths:` allow-list would silently exempt every future app path.
 - **The pattern is `*.md`, never `**.md`.** In GitHub path filters `*` does not cross a
   `/`, so `*.md` is root-level only. `**.md` would also match
-  `src/astro_ai/knowledge/*.md` — the classical-source corpus. **The app does not read it at
-  runtime** (measured 2026-10-15: no Python opens any of the 11 files; the only line in `src/`
-  pairing "knowledge" with a file-read call is a comment, `numerology.py:996`); it is the authority *agents* cite, and it sits under `src/`, which the Dockerfile
-  copies, so it ships in the image. Keeping it verifying is the conservative default — every
+  `src/astro_ai/knowledge/*.md` — the classical-source corpus. **The app reads exactly
+  one of the 11 at runtime, and only since #399 (2026-11-04):** `knowledge_lookup.py` parses
+  `remedies.md` §5.1 and §7.1 to build the natal prompt's `--- REMEDY RULES ---` block. The other
+  ten are still unread (measured 2026-10-15: no Python opened any of the 11; the only line in
+  `src/` pairing "knowledge" with a file-read call was a comment, `numerology.py:996`), so a
+  `remedies.md` edit now reaches users — but not cached natal readings, see `ARCHITECTURE.md`. The files
+  are otherwise the authority *agents* cite, and they sit under `src/`, which the Dockerfile
+  copies, so they ship in the image. Keeping it verifying is the conservative default — every
   edit under `src/` verifies. The file that IS read at runtime and becomes the system prompt
   is `src/astro_ai/prompts/*.txt`, loaded via `routes/deps.py` `PROMPTS_DIR`.
 - **A skipped run closes no issue.** `close-on-evidence.yml` fires on this workflow
