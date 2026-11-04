@@ -215,8 +215,8 @@
      halves of that are load-bearing:
 
        - Scoping it to [lang="sa"] means `font-display font-bold` elements
-         holding Hindi (_subscribe_modal.html:37,143 and rashifal.html:181,
-         which render Devanagari under the Hindi toggle) keep falling to Noto
+         holding Hindi (_subscribe_modal.html:37,143, which render
+         Devanagari under the Hindi toggle) keep falling to Noto
          Sans Devanagari, which we already load at 700. Wire the serif into
          `display` instead and those headings need a serif 700 we would not
          be loading — a SYNTHESISED bold, the same defect family as the

@@ -225,7 +225,6 @@ _EN: Final[dict[str, str]] = {
 
     # Rashifal page
     "rashifal_title":      "Today's Rashifal",
-    "rashifal_subtitle":   "Daily predictions for all 12 Moon signs — find your Janma Rashi below.",
     "rashifal_dont_know":  "Don't know your Moon sign? Generate your free Kundli — it tells you instantly.",
 
     # Rashifal — the per-rashi standalone page (/rashifal/{rashi}), #124.
@@ -794,7 +793,6 @@ _HI: Final[dict[str, str]] = {
 
     # Rashifal page
     "rashifal_title":      "आज का राशिफल",
-    "rashifal_subtitle":   "सभी 12 राशियों के लिए आज का भविष्यफल — अपनी जन्म राशि नीचे खोजें।",
     "rashifal_dont_know":  "अपनी जन्म राशि नहीं जानते? मुफ्त कुंडली बनाएँ — तुरंत पता चलेगा।",
 
     # Rashifal — the per-rashi standalone page (/rashifal/{rashi}), #124.
@@ -802,7 +800,8 @@ _HI: Final[dict[str, str]] = {
     # HARVESTED, not invented. Nobody on this change is a native Hindi
     # speaker, so the wording is reused from Hindi already written in this
     # repo by a human: "आज का राशिफल" / "भविष्यफल" / "जन्म राशि" from the
-    # keys just above, "व्हाट्सएप पर साझा करें" from templates/rashifal.html,
+    # keys just above, "व्हाट्सएप पर साझा करें" from a standalone rashifal
+    # template since deleted (#262; it is in git history),
     # "पूरा विश्लेषण" / "जन्म कुंडली" from templates/email/welcome.html,
     # "राहु काल" / "अभिजित मुहूर्त" / "तिथि" / "नक्षत्र" from the panchang
     # keys. Composed-from-parts, and so the first thing a Hindi reviewer
@@ -828,7 +827,8 @@ _HI: Final[dict[str, str]] = {
     # (§"The 12 rashis — appearance, character, body region"). That spelling
     # is also the one _subscribe_modal.html shipped, so moving the modal onto
     # this table leaves its rendered bytes untouched — note कुम्भ, not the
-    # कुंभ that the unreferenced templates/rashifal.html uses.
+    # कुंभ that a standalone rashifal template, since
+    # deleted (#262), used.
     "rashi_name_aries":         "मेष",
     "rashi_name_taurus":        "वृषभ",
     "rashi_name_gemini":        "मिथुन",
