@@ -1,16 +1,17 @@
 {
-  "generated_at": "2026-11-03T20:27:17Z",
+  "generated_at": "2026-11-04T01:06:27Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 127,
-  "with_ask": 51,
+  "open": 129,
+  "with_ask": 52,
   "by_area": {
-    "UNCLASSIFIED": 45,
-    "INFRA": 16,
+    "UNCLASSIFIED": 44,
+    "INFRA": 17,
     "UI": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
+    "CHORE": 3,
     "DETECT_STALLS": 3,
     "BUG": 3,
     "SEO": 3,
@@ -18,7 +19,7 @@
     "SECURITY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
-    "CHORE": 2,
+    "OPS": 1,
     "CONTENT": 1,
     "PRIVACY": 1,
     "REPO": 1,
@@ -33,22 +34,65 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 39,
+    "untyped": 40,
     "bug": 31,
     "enhancement": 26,
     "correctness": 10,
+    "chore": 8,
     "design": 8,
-    "chore": 7,
     "ui": 6
   },
   "by_priority": {
-    "unset": 91,
+    "unset": 93,
     "medium": 19,
     "high": 16,
     "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 700,
+      "title": "[CHORE] Retire the six legacy verify_contrast DECLARED_PAIRS rows, the cream token and the text-white safelist entry together",
+      "ask": "",
+      "area": "CHORE",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-04T00:07:00Z",
+      "updated": "2026-11-04T00:07:00Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 698,
+      "title": "[INFRA] agent-work's cycle step has no GH_REPO, so the agent runs `gh repo view`, which `Bash(gh repo:*)` denies — 3 cycles died in <90 s in 24 h",
+      "ask": "Add GH_REPO: ${{ github.repository }} to the env: of the claude-code-action step.",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-04T00:00:15Z",
+      "updated": "2026-11-04T00:00:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 697,
+      "title": "[OPS] Build lane idle 89% of the last 7d",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-03T20:55:15Z",
+      "updated": "2026-11-03T20:55:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 678,
       "title": "detect_stalls: qa_fail_age reads the qa-fail LABEL time, so a second FAIL round on a moved head is invisible (#675 misrouted as qa-fail-refixed)",
@@ -303,12 +347,13 @@
       "priority": "unset",
       "labels": [
         "ui",
-        "skill:ui-fixer"
+        "skill:ui-fixer",
+        "needs-evidence"
       ],
       "created": "2026-10-29T23:50:30Z",
-      "updated": "2026-10-29T23:50:30Z",
+      "updated": "2026-11-03T23:58:15Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 593,
@@ -382,12 +427,13 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness"
+        "astrology-correctness",
+        "needs-evidence"
       ],
       "created": "2026-10-28T23:11:01Z",
-      "updated": "2026-10-28T23:11:01Z",
+      "updated": "2026-11-03T23:58:18Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 580,
@@ -548,7 +594,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-11-02T21:11:56Z",
+      "updated": "2026-11-03T20:54:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -577,9 +623,13 @@
       "area": "SEO",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-10-23T23:46:23Z",
-      "updated": "2026-10-23T23:46:27Z",
+      "updated": "2026-11-03T20:59:05Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1246,7 +1296,7 @@
         "chore"
       ],
       "created": "2026-10-13T23:19:23Z",
-      "updated": "2026-10-27T23:00:30Z",
+      "updated": "2026-11-04T00:00:24Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1443,21 +1493,6 @@
       "created": "2026-09-04T04:48:44Z",
       "updated": "2026-09-04T04:48:44Z",
       "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 262,
-      "title": "Delete rashifal.html — 246 lines of dead code, now the only purple file left",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "chore"
-      ],
-      "created": "2026-09-04T04:47:35Z",
-      "updated": "2026-09-04T04:47:35Z",
-      "blocked": false,
       "needs_evidence": false
     },
     {

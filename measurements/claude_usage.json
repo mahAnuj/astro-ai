@@ -1,57 +1,21 @@
 {
- "generated_at": "2026-11-03T20:28:20Z",
+ "generated_at": "2026-11-04T01:07:20Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 41698210139,
-  "at": "2026-11-03T18:54:15Z",
-  "five_hour": 0.05,
-  "seven_day": 0.72,
-  "status": "allowed",
+  "run": 41742519197,
+  "at": "2026-11-03T23:52:23Z",
+  "five_hour": 0.29,
+  "seven_day": 0.75,
+  "status": "allowed_warning",
   "resets": {
-   "five_hour": 1793737800,
+   "five_hour": 1793756400,
    "seven_day": 1793944800
   }
  },
- "peak_seven_day": 0.72,
+ "peak_seven_day": 0.75,
  "rejected_runs": [],
  "readings": [
-  {
-   "workflow": "agent-prioritise",
-   "run": 41349182187,
-   "at": "2026-11-01T20:53:51Z",
-   "five_hour": 0.02,
-   "seven_day": 0.48,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1793584200,
-    "seven_day": 1793944800
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 41678664094,
-   "at": "2026-11-03T16:52:51Z",
-   "five_hour": 0.02,
-   "seven_day": 0.72,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1793737800,
-    "seven_day": 1793944800
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 41692071978,
-   "at": "2026-11-03T18:15:37Z",
-   "five_hour": 0.05,
-   "seven_day": 0.72,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1793737800,
-    "seven_day": 1793944800
-   }
-  },
   {
    "workflow": "agent-work",
    "run": 41697899251,
@@ -73,6 +37,30 @@
    "status": "allowed",
    "resets": {
     "five_hour": 1793737800,
+    "seven_day": 1793944800
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 41714980008,
+   "at": "2026-11-03T20:42:07Z",
+   "five_hour": 0.01,
+   "seven_day": 0.73,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1793756400,
+    "seven_day": 1793944800
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 41742519197,
+   "at": "2026-11-03T23:52:23Z",
+   "five_hour": 0.29,
+   "seven_day": 0.75,
+   "status": "allowed_warning",
+   "resets": {
+    "five_hour": 1793756400,
     "seven_day": 1793944800
    }
   }
