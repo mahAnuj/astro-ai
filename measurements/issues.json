@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-04T12:47:35Z",
+  "generated_at": "2026-11-04T20:40:13Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 129,
+  "open": 128,
   "with_ask": 52,
   "by_area": {
     "UNCLASSIFIED": 44,
@@ -12,10 +12,10 @@
     "FEATURE": 7,
     "NUMEROLOGY": 6,
     "CHORE": 3,
-    "DETECT_STALLS": 3,
     "BUG": 3,
     "SEO": 3,
     "MEASURE": 2,
+    "DETECT_STALLS": 2,
     "SECURITY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
@@ -34,7 +34,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 40,
+    "untyped": 39,
     "bug": 31,
     "enhancement": 26,
     "correctness": 10,
@@ -43,7 +43,7 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 93,
+    "unset": 92,
     "medium": 19,
     "high": 16,
     "low": 1
@@ -89,20 +89,7 @@
         "chore"
       ],
       "created": "2026-11-03T20:55:15Z",
-      "updated": "2026-11-04T11:48:29Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 678,
-      "title": "detect_stalls: qa_fail_age reads the qa-fail LABEL time, so a second FAIL round on a moved head is invisible (#675 misrouted as qa-fail-refixed)",
-      "ask": "",
-      "area": "DETECT_STALLS",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-11-02T17:06:24Z",
-      "updated": "2026-11-02T17:06:24Z",
+      "updated": "2026-11-04T15:13:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -594,7 +581,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-11-03T20:54:04Z",
+      "updated": "2026-11-04T15:12:35Z",
       "blocked": false,
       "needs_evidence": false
     },
