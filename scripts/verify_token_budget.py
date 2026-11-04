@@ -35,9 +35,13 @@ hardcoded names, so a renamed constant is an import error rather than a quiet
 drift. A TWELFTH `prompts/*.txt` that no route above covers FAILS the gate: a
 new prompt cannot ship unbudgeted.
 
-System prompt only, for every route except natal. Per-route payload fixtures
-were deliberately not built (YAGNI): the system prompt is the part an engineer
-edits and the part that is sent on every call. Natal additionally gets a
+System prompt only, for every route except natal, rashifal_single and /ask.
+Per-route payload fixtures were deliberately not built (YAGNI): the system
+prompt is the part an engineer edits and the part that is sent on every call.
+/ask gets three `ask+...+payload` rows (#402): its user message now carries a
+transit block, and a change that trades prompt text for message text is only
+visible against the SUM -- the system-only rows read -79 tokens while the
+message grew. Natal additionally gets a
 `natal+payload` row — its system prompt plus the user message for one golden
 chart (`cancer-lagna-manglik-exempt`, the largest of the eight, unshed) — because
 #266 was the SUM crossing the TPM line, not the prompt alone.
@@ -123,6 +127,17 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 #           is the backstop for a baseline someone has already raised.
 #           `natal+payload` is the exception; see its reason.
 #
+# RE-MEASURED 2026-11-04 (#402, the ask rows only): ask.txt shed 79 tok when the
+# transit block arrived in the /ask user message (see the three ask+...+payload
+# rows below), so ask 1251/1383 -> 1172/1304, ask+numerology 1822 -> 1743 (en;
+# hi is +132 each). The two matching rows were already stale: their recorded
+# 1964 and 2090 (2026-10-17) predate overlay edits and measured 2025 and 2151
+# on 0d19cb7, so they go to 1946 and 2072, not 1885 and 2011. Each ceiling
+# follows the rule below from the new hi figure and none rose (ask 1550 ->
+# 1450, matching 2350 -> 2300, third_party 2450 -> 2450, numerology 2150 ->
+# 2100). A lowered ceiling is not a relaxation; leaving the old one would have
+# kept up to 100 tokens of slack the payload rows exist to take away.
+#
 # Re-measured 2026-10-17 on 16c6ea4 (the `hi` suffix adds 132 tok to every
 # route): measured en/hi = ask 1251/1383, ask+matching 1964/2096,
 # ask+matching_third_party 2090/2222, ask+numerology 1822/1954, natal 3111/3243,
@@ -135,11 +150,12 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 # passes on anything). Do not "fix" a red run by editing a number you did not
 # mean to raise.
 _D = "2026-10-17"
+_D402 = "2026-11-04"
 BUDGET: dict[str, tuple[int, int, str, str]] = {
-    "ask":                      (1251, 1550, _D, "hi 1383 + 10%"),
-    "ask+matching":             (1964, 2350, _D, "hi 2096 + 10%"),
-    "ask+matching_third_party": (2090, 2450, _D, "hi 2222 + 10%"),
-    "ask+numerology":           (1822, 2150, _D, "hi 1954 + 10%"),
+    "ask":                      (1172, 1450, _D402, "hi 1304 + 10%"),
+    "ask+matching":             (1946, 2300, _D402, "hi 2078 + 10%"),
+    "ask+matching_third_party": (2072, 2450, _D402, "hi 2204 + 10%"),
+    "ask+numerology":           (1743, 2100, _D402, "hi 1875 + 10%"),
     "natal":                    (3111, 3600, _D,
                                  "hi 3243 + 10%. natal.txt was 4,332 tok before the "
                                  "#266 compression (18,095 B -> 13,135 B)"),
@@ -214,6 +230,26 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
                                  "built from the en one and read 4265)"),
     "natal+payload":            (6798, 7000, _D,
                                  "7,000 = 8,000 TPM less the runtime guard's 1,000 margin"),
+    # ADDED 2026-11-04 (#402). /ask's user message gained a ~76-token transit
+    # block while ask.txt was cut by 79, and the issue's AC4 is that net input
+    # per /ask request does NOT rise. These rows ARE that criterion, so the
+    # BASELINE is the figure measured on origin/main 0d19cb7 BEFORE the change,
+    # never the post-change one, and the CEILING is that same request's hi
+    # figure (baseline + the 132-tok Hindi suffix, which the transit block does
+    # not touch) with NO slack: a reviewer who wants /ask to grow edits this row
+    # and says why. Each is system + the largest golden-chart user message,
+    # unshed, built by the real generate_ask_answer with the clock and the
+    # transit moment pinned (see `ask_payloads`).
+    #   plain      1,251 + 700         = 1,951   (cancer-lagna-manglik-exempt)
+    #   numerology 1,822 + 823         = 2,645   (reading + overlay)
+    #   matching   2,025 + 1,612       = 3,637   (kaal-sarp x strong-gajakesari,
+    #                                             partner chart + Guna Milan)
+    "ask+payload":              (1951, 2083, _D402,
+                                 "pre-change 0d19cb7, hi = en + 132; AC4: no growth"),
+    "ask+numerology+payload":   (2645, 2777, _D402,
+                                 "pre-change 0d19cb7, hi = en + 132; AC4: no growth"),
+    "ask+matching+payload":     (3637, 3769, _D402,
+                                 "pre-change 0d19cb7, hi = en + 132; AC4: no growth"),
 }
 
 GROWTH_PCT_DEFAULT = 5.0
@@ -306,6 +342,94 @@ def rashifal_payload(llm, chart_mod, lang: str = "en") -> str:
         llm._RASHI_ANCHORS[0], signals, llm.format_transit_for_prompt(transit),
         llm._gochara_block(0, transit), llm._RASHIFAL_SHAPES[0],
         llm._OPENING_MOVES[0])
+
+
+_ASK_QUESTION = "Will I clear my UPSC exam this year? I have been preparing for three years."
+
+
+def ask_payloads(llm, count, routes) -> dict[str, tuple[list, list]]:
+    """Row -> (en messages, hi messages) for the largest /ask request of each shape.
+
+    Built by the REAL `generate_ask_answer` with `providers.chat` replaced by a
+    capture, because the user message is assembled inline there and a copy of
+    it would drift (#523 is what a hand-written copy cost the rashifal row).
+    The golden charts are all eight fixtures; the row is the largest. `count`
+    is the tokenizer, so the "largest" is picked in the unit the row is judged in.
+    The prompt files come from `routes` (already passed through `--prompt` /
+    `--prompts-dir`), so an override reaches these rows as it reaches the rest.
+
+    Pinned: the clock `today_anchor` reads, the dasha and flag dates, and the
+    transit moment, so the figure does not move with the weekday or the sky.
+    Three shapes, each the biggest request that route can send:
+      ask+payload             chart context
+      ask+numerology+payload  chart + numerology reading, with its overlay
+      ask+matching+payload    the larger of the two matching shapes over every
+                              ordered pair of fixtures: groom/bride (partner
+                              chart + Guna Milan) and third party (Guna Milan
+                              only, no partner chart -- routes/ask.py).
+    """
+    import itertools
+    from astro_ai import chart, numerology
+    from astro_ai.matching import compute_guna_milan
+
+    try:
+        fixtures = json.loads(FIXTURES.read_text())
+        fixtures.pop("_meta", None)
+    except (OSError, ValueError) as exc:
+        raise CouldNotRun(f"fixtures unreadable: {exc}") from exc
+
+    class _Pinned(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return _PINNED_WHEN.astimezone(tz)
+
+    captured: dict = {}
+    real_geocode, real_chat, real_dt = chart.geocode_place, llm.providers.chat, llm.datetime
+    chart.geocode_place = lambda place: _PINNED_PLACE
+    llm.providers.chat = lambda messages, route=None, **kw: captured.update(m=messages) or "x"
+    llm.datetime = _Pinned
+    try:
+        moment = chart.rashifal_day_moment(_PINNED_WHEN.date())
+        charts = {k: chart.compute_chart(f["birth_date"], f["birth_time"], f["birth_place"])
+                  for k, f in fixtures.items()}
+
+        def build(key, lang, overlay=None, **kw):
+            c = charts[key]
+            llm.generate_ask_answer(
+                c, chart.compute_dasha_state(c, _PINNED_WHEN),
+                chart.compute_vedic_flags(c, _PINNED_WHEN), _ASK_QUESTION, "career",
+                routes["ask"][0], lang=lang, overlay_path=overlay,
+                transit_moment=moment, **kw)
+            return captured["m"]
+
+        def size(msgs):
+            return sum(count(m["content"]) for m in msgs)
+
+        def largest(cases):
+            """cases: (key, overlay, kwargs) -> (en, hi) messages of the biggest."""
+            best = max(cases, key=lambda c: size(build(c[0], "en", c[1], **c[2])))
+            return tuple(build(best[0], lang, best[1], **best[2]) for lang in ("en", "hi"))
+
+        ov = {name: routes[f"ask+{name}"][1]
+              for name in ("numerology", "matching", "matching_third_party")}
+        rows = {"ask+payload": largest([(k, None, {}) for k in charts])}
+        rows["ask+numerology+payload"] = largest([
+            (k, ov["numerology"], {"numerology_reading": numerology.compute(
+                fixtures[k]["name"], fixtures[k]["birth_date"],
+                target_year=_PINNED_WHEN.year)}) for k in charts])
+        matching = []
+        for a, b in itertools.permutations(charts, 2):
+            g = compute_guna_milan(charts[a], charts[b])
+            matching.append((a, ov["matching"], {
+                "partner_chart": charts[b], "guna_milan": g, "guna_pair_label": "A & B"}))
+            matching.append((a, ov["matching_third_party"], {
+                "guna_milan": g, "guna_pair_label": "A & B"}))
+        rows["ask+matching+payload"] = largest(matching)
+        return rows
+    except Exception as exc:  # noqa: BLE001 - no ephemeris, bad fixture...
+        raise CouldNotRun(f"ask payloads could not be computed: {type(exc).__name__}: {exc}") from exc
+    finally:
+        chart.geocode_place, llm.providers.chat, llm.datetime = real_geocode, real_chat, real_dt
 
 
 def route_files(deps) -> dict[str, tuple[Path, Path | None]]:
@@ -512,6 +636,11 @@ def main(argv: list[str] | None = None) -> int:
             payload_messages["rashifal_single"] = tuple(
                 [{"role": "system", "content": llm._system_prompt(base, lang, overlay)},
                  {"role": "user", "content": payloads[lang]}] for lang in ("en", "hi"))
+        if "ask" in measured:
+            for row, (m_en, m_hi) in ask_payloads(llm, count, routes).items():
+                measured[row] = (sum(count(m["content"]) for m in m_en),
+                                 sum(count(m["content"]) for m in m_hi))
+                payload_messages[row] = (m_en, m_hi)
     except CouldNotRun as exc:
         print(f"  COULD NOT VERIFY: {exc}")
         print("  -> SKIPPED (exit 2). This is NOT a pass — the check did not run.")
@@ -533,8 +662,8 @@ def main(argv: list[str] | None = None) -> int:
     hi_costs = {hi - en for en, hi in measured.values()}
     print(f"\n  Hindi suffix adds {', '.join(f'{c:,}' for c in sorted(hi_costs))} tok per route "
           f"(ceiling is judged on the larger of en/hi; growth on en).")
-    print("  Scope: system prompt only, except the two +payload rows (system +\n"
-          "  one golden payload, unshed). Zero LLM calls; zero runtime tokens.")
+    print("  Scope: system prompt only, except the +payload rows (system + the\n"
+          "  largest golden payload, unshed). Zero LLM calls; zero runtime tokens.")
     # PRINTED, never recorded in prose. Three different "full request" figures
     # for this route reached a comment, a commit message and a PR comment on
     # the same day -- 355 tokens apart -- because each was measured by hand and
