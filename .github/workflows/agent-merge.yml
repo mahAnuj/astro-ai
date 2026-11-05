@@ -716,6 +716,19 @@ jobs:
               fi
               echo "::notice::chief-cleared is present but no ruling comment names" \
                    "$PR_SHA — a clearance does not carry across a push, so the hold stands"
+              # AND THE STALE LABEL COMES OFF (2026-11-05). Left on, it hid the PR
+              # from the one thing that wakes chief: detect_stalls.py's
+              # `boundary-hold-clearable` arm requires `chief-cleared` ABSENT, and
+              # qa-on-green skips a held PR. Measured on #706: main was merged in
+              # after chief's ruling, the label outlived its SHA, and nothing would
+              # ever have looked at the PR again. A label with no ruling for THIS
+              # head is stale or fabricated; removing it only keeps the hold.
+              if gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --remove-label "chief-cleared" >/dev/null 2>&1; then
+                echo "::notice::removed the stale chief-cleared so chief is woken to rule on $PR_SHA"
+              else
+                echo "::warning::could not remove the stale chief-cleared from PR #$PR_NUMBER;" \
+                     "detect_stalls will not wake chief until it is gone"
+              fi
               ;;
           esac
 

@@ -13,8 +13,10 @@ MUTATIONS = [
      "test_no_ruling_comment_means_no_label"),
     ("chief clear: anyone's comment counts as chief's ruling",
      "scripts/chief_clear.py",
-     "                    f'[.[] | select(.user.login == \"{RULER}\")'",
-     "                    f'[.[] | select(.user.login != \"nobody\")'",
+     "                    f'[.[] | select(.user.login == \"{RULER}\")'\n"
+     "                    f' | select(.body | contains(\"chief-cleared at {sha}\"))]",
+     "                    f'[.[] | select(.user.login != \"nobody\")'\n"
+     "                    f' | select(.body | contains(\"chief-cleared at {sha}\"))]",
      "test_a_ruling_comment_by_anyone_but_claude_bot_does_not_count"),
     ("chief clear: an in-cycle qa-pass clears a boundary hold",
      "scripts/chief_clear.py",
@@ -36,4 +38,21 @@ MUTATIONS = [
      "        run: python3 scripts/chief_clear.py /tmp/chief-clear.txt\n",
      "        run: echo skipped\n",
      "test_the_workflow_runs_the_carrier_after_chief_with_no_new_scope"),
+    ("chief clear: QA labels from an earlier commit are trusted",
+     "scripts/chief_clear.py",
+     "    if not passed.isdigit() or int(passed) == 0:",
+     "    if not passed.isdigit():",
+     "test_QA_labels_left_over_from_an_earlier_commit_are_not_enough"),
+    ("agent-merge: a stale chief-cleared stays on and hides the PR from chief",
+     ".github/workflows/agent-merge.yml",
+     '              if gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --remove-label "chief-cleared" >/dev/null 2>&1; then',
+     '              if false; then',
+     "test_a_STALE_clearance_label_is_removed_so_chief_is_woken_again"),
+    ("chief clear: anyone's QA: PASS comment counts as the verdict",
+     "scripts/chief_clear.py",
+     "                     f'[.[] | select(.user.login == \"{RULER}\")'\n"
+     "                     f' | select(.body | startswith(\"QA: PASS\"))'",
+     "                     f'[.[] | select(.user.login != \"nobody\")'\n"
+     "                     f' | select(.body | startswith(\"QA: PASS\"))'",
+     "test_a_PASS_verdict_by_anyone_but_claude_bot_does_not_count"),
 ]

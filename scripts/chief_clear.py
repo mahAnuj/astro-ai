@@ -28,6 +28,9 @@ The labels change only when ALL of these read true from the API now:
   4. the `gates` check run on that sha concluded `success`   (precondition 2)
   5. a `claude[bot]` comment contains `chief-cleared at <sha>`  (precondition 4:
      the ruling comes first, and agent-merge re-checks this same string)
+  6. a `claude[bot]` `QA: PASS` verdict whose first line names that sha  (the
+     labels cannot say which commit they are about -- #706 carried an
+     independent PASS from b9077f6 onto da2f7d3 after a merge of main)
 
 Precondition 3, that chief read the diff, cannot be checked by code; the
 ruling comment is chief's record of it. Any refusal leaves every label as it
@@ -118,6 +121,20 @@ def refusal(gh: Runner, repo: str, pr: int, sha: str) -> str | None:
         return f"could not read the comments ({exc})"
     if not ruled.isdigit() or int(ruled) == 0:
         return f"no `{RULER}` comment contains `chief-cleared at {sha}`; the ruling comes first"
+    # The QA labels cannot say which commit they are about. On #706 `main` was
+    # merged in after an independent PASS at b9077f6, and the labels stayed on
+    # the new head da2f7d3. The verdict COMMENT names its sha, so require one
+    # for this head -- the same binding agent-merge applies to the ruling.
+    try:
+        passed = gh(["api", f"repos/{repo}/issues/{pr}/comments?per_page=100", "--jq",
+                     f'[.[] | select(.user.login == "{RULER}")'
+                     f' | select(.body | startswith("QA: PASS"))'
+                     f' | select(.body | split("\\n")[0] | contains("{sha}"))] | length']).strip()
+    except RuntimeError as exc:
+        return f"could not read the QA verdicts ({exc})"
+    if not passed.isdigit() or int(passed) == 0:
+        return (f"no `{RULER}` `QA: PASS` verdict names {sha[:7]}; the QA labels may be left "
+                f"over from an earlier commit")
     return None
 
 

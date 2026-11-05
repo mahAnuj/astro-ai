@@ -441,6 +441,12 @@ dispatches `chief` for every such hold instead of reporting "A HUMAN decides thi
   first re-reads every precondition from the API: head = sha, `qa-pass` + `qa:independent`,
   no `qa-fail`, `gates` green, and a `claude[bot]` comment naming the sha. Chief still
   cannot label anything itself.
+- **A clearance label that outlives its SHA comes off (2026-11-05).** When `agent-merge`
+  keeps a hold because `chief-cleared` names no ruling for the current head, it removes the
+  label. `detect_stalls.py` wakes chief only while `chief-cleared` is absent, so a stale one
+  hid the PR from everything. Measured on #706 after `main` was merged in. For the same
+  reason `chief_clear.py` also requires a `claude[bot]` `QA: PASS` verdict whose first line
+  names the head: the QA labels cannot say which commit they are about.
 - **Irreversible actions still stop and ask** — data migration, destructive storage, anything
   touching subscriber records. That carve-out is about reversibility, not trust: a wrong merge
   is one `git revert`, a deleted subscriber is gone. The grant is about who clears a *hold on a
