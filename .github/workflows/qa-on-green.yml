@@ -302,7 +302,7 @@ jobs:
           # A stale pass wants a ROUND ON THIS HEAD, not a cycle that may
           # rebuild -- aimed at the PR whatever the branch is called, like a refix.
           if [ "$stale_pass" = true ]; then
-            target="pr=$num"
+            target="pr=${num}"
             aim="PR #$num itself — its \`qa-pass\` names an earlier commit, so the round judges \`${head:0:7}\`"
           fi
 

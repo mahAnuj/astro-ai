@@ -77,7 +77,7 @@ MUTATIONS = [
      "test_a_FAIL_naming_the_head_is_not_a_pass"),
     ("qa-on-green: a stale pass is aimed at a full issue cycle",
      ".github/workflows/qa-on-green.yml",
-     '            target="pr=$num"\n            aim="PR #$num itself — its',
+     '            target="pr=${num}"\n            aim="PR #$num itself — its',
      '            aim="PR #$num itself — its',
      "test_a_stale_pass_is_aimed_at_the_PR_as_a_judge_round"),
 ]

@@ -737,4 +737,4 @@ def test_no_qa_pass_label_leaves_the_block_inert(tmp_path):
 
 def test_a_stale_pass_is_aimed_at_the_PR_as_a_judge_round():
     code = _code(PICK)
-    assert 'if [ "$stale_pass" = true ]; then\n  target="pr=$num"' in code
+    assert 'if [ "$stale_pass" = true ]; then\n  target="pr=${num}"' in code
