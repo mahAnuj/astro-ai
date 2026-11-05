@@ -1,16 +1,17 @@
 {
-  "generated_at": "2026-11-04T20:40:13Z",
+  "generated_at": "2026-11-05T01:19:57Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 128,
+  "open": 132,
   "with_ask": 52,
   "by_area": {
-    "UNCLASSIFIED": 44,
+    "UNCLASSIFIED": 45,
     "INFRA": 17,
     "UI": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
+    "MUHURAT": 3,
     "CHORE": 3,
     "BUG": 3,
     "SEO": 3,
@@ -37,19 +38,79 @@
     "untyped": 39,
     "bug": 31,
     "enhancement": 26,
-    "correctness": 10,
+    "correctness": 14,
     "chore": 8,
     "design": 8,
     "ui": 6
   },
   "by_priority": {
-    "unset": 92,
+    "unset": 96,
     "medium": 19,
     "high": 16,
     "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 716,
+      "title": "verify_rule_citations scans only chart.py — muhurat.py still cites BPHS, Muhurta Chintamani and Phaladeepika, none registered or held (UNSOURCED + gate gap)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-05T00:20:37Z",
+      "updated": "2026-11-05T00:20:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 715,
+      "title": "muhurat: Chandra Bala matches neither Raman's muhurta rule nor Rao's gochara table, and is credited to BPHS (CONTESTED)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-05T00:20:36Z",
+      "updated": "2026-11-05T00:20:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 714,
+      "title": "muhurat: Janma Tara is scored a flat 'ok' — Raman makes it event- and sex-dependent; a groom's Janma Tara passes the Vivah verdict (CONTESTED)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-05T00:20:35Z",
+      "updated": "2026-11-05T00:20:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 713,
+      "title": "muhurat: Panchak flags all of Dhanishta; Raman's Nakshatra Panchaka starts at its third quarter (WRONG, extent)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-05T00:20:33Z",
+      "updated": "2026-11-05T00:20:33Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 700,
       "title": "[CHORE] Retire the six legacy verify_contrast DECLARED_PAIRS rows, the cream token and the text-white safelist entry together",
@@ -357,7 +418,7 @@
         "needs-evidence"
       ],
       "created": "2026-10-29T23:50:13Z",
-      "updated": "2026-11-02T23:00:38Z",
+      "updated": "2026-11-04T21:03:15Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -978,10 +1039,10 @@
         "priority:high",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-04T11:58:37Z",
+      "updated": "2026-11-05T00:51:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -994,10 +1055,13 @@
       "priority": "high",
       "labels": [
         "category:technical",
-        "priority:high"
+        "priority:high",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-17T07:17:17Z",
-      "updated": "2026-10-17T07:17:17Z",
+      "updated": "2026-11-04T22:23:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1877,7 +1941,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-11-01T19:55:10Z",
+      "updated": "2026-11-05T00:42:40Z",
       "blocked": false,
       "needs_evidence": false
     },
