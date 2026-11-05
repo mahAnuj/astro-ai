@@ -112,7 +112,7 @@
           </td>
         </tr>
         {#- Sections are the same 4-tuples daily_rashifal.html consumes —
-            (glyph, title, teaser, body) — built once in main.py and shared by
+            (glyph, title, teaser, body) — built once in routes/subscribe.py and shared by
             both senders. Unpacking 3 here raised ValueError on every render
             where the Rashifal actually generated, so the welcome email only
             ever arrived when generation had FAILED (issue #145).

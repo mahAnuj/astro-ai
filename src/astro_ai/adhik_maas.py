@@ -102,8 +102,8 @@ from zoneinfo import ZoneInfo
 import swisseph as swe
 
 # Private cross-module helper, imported deliberately. Precedent:
-# `lunar_observances.py:148` imports this same symbol, and main.py:790 imports
-# `astro_ai.muhurat._choghadiya_windows` the same way.
+# `lunar_observances.py:148` imports this same symbol, and routes/panchang.py imports
+# `astro_ai.muhurat._choghadiya_windows` the same way (function-local).
 #
 # `_sunrise_sunset(day, lat, lon, tz)` takes raw coordinates and needs no Chart.
 # `compute_panchang()` would be the obvious public entry point but requires a full

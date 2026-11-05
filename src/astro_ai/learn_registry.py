@@ -6,7 +6,7 @@ the index page + sitemap + structured-data need (title, summary, category,
 hero image, FAQs).
 
 Adding a new article = drop a new dict here + create the matching template
-file under templates/learn/. No route changes; main.py resolves slug → file
+file under templates/learn/. No route changes; routes/learn.py resolves slug → file
 lookup automatically.
 
 We intentionally do NOT generate this content at runtime via LLM:

@@ -1291,7 +1291,7 @@ def generate_rashifal(
 
     `prompt_path` is the SINGLE-rashi prompt (rashifal_single.txt), not the
     old 12-rashi batch prompt. Callers should pass RASHIFAL_PROMPT_PATH; the
-    module-level constant in main.py has been updated to point at the new
+    module-level constant in routes/deps.py has been updated to point at the new
     single-rashi file.
 
     `pace_deadline` (#475) is the absolute time (providers.pace_deadline()) after

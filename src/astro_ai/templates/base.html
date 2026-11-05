@@ -1388,7 +1388,7 @@
     (function() {
       var DISMISS_KEY = 'bhagya_pwa_install_dismissed';
 
-      // 1. Register the SW. /sw.js is served from root (see main.py) so its
+      // 1. Register the SW. /sw.js is served from root (see routes/seo.py) so its
       //    default scope is `/`, letting it intercept HTML pages too.
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
