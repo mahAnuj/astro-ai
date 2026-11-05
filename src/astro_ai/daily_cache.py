@@ -5,7 +5,7 @@ panchang) so a same-day request never triggers regeneration. The file is
 overwritten on a new day and is human-readable for debugging — `cat` any file
 in `data/daily_cache/` to see exactly what was served.
 
-Design vs the 3-tier GCS+SQLite+LLM cache in main.py:
+Design vs the 3-tier GCS+SQLite+LLM cache in routes/subscribe.py (`_shared_three_tier`):
   - This layer sits IN FRONT of the 3-tier cache for rashifal — a same-instance
     same-day hit skips SQLite/GCS/LLM entirely (fastest path).
   - For panchang (pure-math, no LLM), this layer is the only cache we need.

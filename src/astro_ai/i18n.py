@@ -4,8 +4,9 @@ This is *not* full Babel/gettext — just a key → translated string lookup wit
 optional `str.format(**kwargs)` substitution. Fine for the handful of pages
 we have; revisit if the surface grows.
 
-Templates use it as `{{ t('rahu_kaal') }}` or `{{ t('outlook_named', name=...) }}`.
-The active language is bound per-request in `main.py` via a Jinja context filter.
+Templates use it as `{{ t(lang, 'rahu_kaal') }}` or `{{ t(lang, 'outlook_named', name=...) }}`.
+The language is not bound anywhere: `routes/deps.py` registers `translate` as the
+Jinja global `t`, and each template passes the per-request `lang` explicitly.
 """
 
 from __future__ import annotations
