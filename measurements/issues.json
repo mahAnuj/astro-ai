@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-05T08:57:40Z",
+  "generated_at": "2026-11-05T12:56:23Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 133,
+  "open": 132,
   "with_ask": 52,
   "by_area": {
-    "UNCLASSIFIED": 46,
+    "UNCLASSIFIED": 45,
     "INFRA": 17,
     "UI": 12,
     "REDESIGN": 10,
@@ -36,7 +36,7 @@
   },
   "by_type": {
     "untyped": 39,
-    "bug": 32,
+    "bug": 31,
     "enhancement": 26,
     "correctness": 14,
     "chore": 8,
@@ -44,28 +44,13 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 97,
+    "unset": 96,
     "medium": 19,
     "high": 16,
     "low": 1
   },
   "blocked": 8,
   "rows": [
-    {
-      "number": 719,
-      "title": "chief's carrier denies gh pr edit, so a chief-cleared ruling can never be followed by its label (#706 held 3h after ruling)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-11-05T03:27:22Z",
-      "updated": "2026-11-05T03:27:22Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
     {
       "number": 716,
       "title": "verify_rule_citations scans only chart.py — muhurat.py still cites BPHS, Muhurta Chintamani and Phaladeepika, none registered or held (UNSOURCED + gate gap)",
@@ -1073,10 +1058,10 @@
         "priority:high",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-17T07:17:17Z",
-      "updated": "2026-11-04T22:23:41Z",
+      "updated": "2026-11-05T11:45:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1920,10 +1905,13 @@
       "type": "enhancement",
       "priority": "unset",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-08-08T09:45:41Z",
-      "updated": "2026-08-08T09:45:41Z",
+      "updated": "2026-11-05T10:52:25Z",
       "blocked": false,
       "needs_evidence": false
     },
