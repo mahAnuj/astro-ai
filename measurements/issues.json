@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-05T12:56:23Z",
+  "generated_at": "2026-11-05T20:56:10Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 132,
-  "with_ask": 52,
+  "open": 134,
+  "with_ask": 53,
   "by_area": {
-    "UNCLASSIFIED": 45,
+    "UNCLASSIFIED": 46,
     "INFRA": 17,
     "UI": 12,
     "REDESIGN": 10,
@@ -15,12 +15,12 @@
     "CHORE": 3,
     "BUG": 3,
     "SEO": 3,
+    "OPS": 2,
     "MEASURE": 2,
     "DETECT_STALLS": 2,
     "SECURITY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
-    "OPS": 1,
     "CONTENT": 1,
     "PRIVACY": 1,
     "REPO": 1,
@@ -35,22 +35,50 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 39,
+    "untyped": 40,
     "bug": 31,
     "enhancement": 26,
     "correctness": 14,
-    "chore": 8,
+    "chore": 9,
     "design": 8,
     "ui": 6
   },
   "by_priority": {
-    "unset": 96,
+    "unset": 98,
     "medium": 19,
     "high": 16,
     "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 727,
+      "title": "agent-merge sweep reads mergeable once, skips on UNKNOWN, and the cron is 6-8h apart: chief-cleared PRs #706 and #712 wait",
+      "ask": "In the sweep loop, retry gh pr view --json mergeable up to ~3 times with sleep 5 while the answer is UNKNOWN.",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-05T15:45:50Z",
+      "updated": "2026-11-05T18:40:43Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 726,
+      "title": "[OPS] Claude weekly quota 86% used",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-05T15:43:27Z",
+      "updated": "2026-11-05T15:43:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 716,
       "title": "verify_rule_citations scans only chart.py — muhurat.py still cites BPHS, Muhurta Chintamani and Phaladeepika, none registered or held (UNSOURCED + gate gap)",
@@ -445,12 +473,14 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness"
+        "astrology-correctness",
+        "provenance:trusted",
+        "needs-evidence"
       ],
       "created": "2026-10-28T23:12:01Z",
-      "updated": "2026-10-28T23:12:01Z",
+      "updated": "2026-11-05T18:36:46Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 582,
@@ -2001,10 +2031,13 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-08-07T15:59:16Z",
-      "updated": "2026-11-01T21:02:40Z",
+      "updated": "2026-11-05T15:48:02Z",
       "blocked": false,
       "needs_evidence": false
     },
