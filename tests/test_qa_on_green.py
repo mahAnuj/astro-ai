@@ -670,3 +670,71 @@ def test_the_dispatch_comment_does_not_claim_a_refixed_branch_names_no_issue():
     assert rec["env"]["REFIX"] == "${{ steps.pick.outputs.refix }}"
     assert 'if [ "$REFIX" = true ]; then' in rec["run"]
     assert "echo \"refix=$refix\"" in PICK
+
+
+
+# --- 8. a qa-pass for an EARLIER commit is not a verdict (2026-11-05) --------
+
+def _stale_block() -> str:
+    m = re.search(r"(stale_pass=false\ncase \",\$labels,\" in.*?stale_pass=true ;;\nesac)", PICK, re.S)
+    assert m, "the stale-pass block is no longer recognisable"
+    return m.group(1)
+
+
+def _stale(tmp_path, *, labels="qa-pass,qa:in-cycle", verdict=f"QA: PASS — verified at `{SHA_HEAD}`",
+           author="claude[bot]", head=SHA_HEAD):
+    """Drive the REAL block; the fake `gh` applies the block's own --jq with real jq."""
+    import json as _j
+    b = tmp_path / "bin"
+    b.mkdir(exist_ok=True)
+    comments = [{"id": 1, "user": {"login": "claude[bot]"}, "body": "qa-on-green: dispatched at x"},
+                {"id": 2, "user": {"login": author}, "body": verdict + "\nfindings"}]
+    (tmp_path / "comments.json").write_text(_j.dumps(comments))
+    (b / "gh").write_text(f"""#!/usr/bin/env bash
+filter=""; prev=""
+for a in "$@"; do [ "$prev" = "--jq" ] && filter="$a"; prev="$a"; done
+case "$*" in
+  *"/comments"*) jq -r "$filter" {tmp_path}/comments.json ;;
+  *) exit 9 ;;
+esac
+""")
+    (b / "gh").chmod(0o755)
+    script = ('set -uo pipefail\nlabels="$1"; num=706; head="$2"; GH_REPO=mahAnuj/astro-ai\n'
+              'say() { echo "SAY: $1"; }\n' + _stale_block() + '\necho "STALE=$stale_pass"\n')
+    p = subprocess.run(["bash", "-c", script, "bash", labels, head], capture_output=True, text=True,
+                       env={"PATH": f"{b}:/usr/bin:/bin"}, timeout=60)
+    return p.stdout
+
+
+def test_a_qa_pass_bound_to_THIS_head_still_belongs_to_agent_merge(tmp_path):
+    out = _stale(tmp_path)
+    assert "STALE=" not in out and "agent-merge` owns it" in out
+
+
+def test_a_qa_pass_from_an_EARLIER_commit_earns_a_round(tmp_path):
+    """#706: `main` merged into a passed PR. agent-merge now refuses the stale
+    label, so this step must not read it as "agent-merge owns it"."""
+    assert "STALE=true" in _stale(tmp_path, verdict=f"QA: PASS — verified at `{SHA_FAIL}`")
+
+
+def test_an_outsiders_PASS_comment_does_not_bind(tmp_path):
+    assert "STALE=true" in _stale(tmp_path, author="drive-by")
+
+
+def test_the_owners_PASS_comment_binds(tmp_path):
+    """A top-level session records its verdict as the owner."""
+    out = _stale(tmp_path, author="mahAnuj")
+    assert "STALE=" not in out
+
+
+def test_a_FAIL_naming_the_head_is_not_a_pass(tmp_path):
+    assert "STALE=true" in _stale(tmp_path, verdict=f"QA: FAIL — verified at `{SHA_HEAD}`")
+
+
+def test_no_qa_pass_label_leaves_the_block_inert(tmp_path):
+    assert "STALE=false" in _stale(tmp_path, labels="qa:in-cycle")
+
+
+def test_a_stale_pass_is_aimed_at_the_PR_as_a_judge_round():
+    code = _code(PICK)
+    assert 'if [ "$stale_pass" = true ]; then\n  target="pr=$num"' in code

@@ -537,6 +537,8 @@ jobs:
         if: steps.gates.outputs.ok == 'true'
         env:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_SHA: ${{ steps.pr.outputs.sha }}
+          REPO_OWNER: ${{ github.repository_owner }}
         run: |
           labels=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" \
                      --json labels --jq '[.labels[].name] | join(",")')
@@ -571,7 +573,30 @@ jobs:
               echo "::notice::needs-human-review is set — a human merges this one, whatever else is present"
               exit 0 ;;
             *,qa-pass,*)
-              echo "ok=true" >> "$GITHUB_OUTPUT" ;;
+              # `qa-pass` MUST BE FOR THIS COMMIT (2026-11-05). A label cannot
+              # say which commit it is about, and it survives a push: #609
+              # merged on a `qa-pass` left over from an earlier commit, and a
+              # `main` merged into a passed PR used to ship unreviewed -- which
+              # CLAUDE.md's merge procedure step 8 forbids ("send the MERGE
+              # RESULT through QA"). `qa_verdict.sh` writes
+              # "QA: PASS — verified at `<sha>`" as the comment's first line;
+              # require one naming $PR_SHA, from claude[bot] or the owner (a
+              # top-level session records its verdict as the owner). Anything
+              # unreadable counts as no verdict, so a hiccup holds the PR.
+              # qa-on-green treats the same stale label as "no verdict yet" and
+              # dispatches a round, so the PR is not stranded.
+              passed=$(gh api --paginate "repos/$GH_REPO/issues/$PR_NUMBER/comments?per_page=100" \
+                         --jq ".[] | select(.user.login == \"claude[bot]\" or .user.login == \"$REPO_OWNER\")
+                                   | select(.body | startswith(\"QA: PASS\"))
+                                   | select(.body | split(\"\\n\")[0] | contains(\"$PR_SHA\"))
+                                   | .id" 2>/dev/null | grep -c . || true)
+              case "$passed" in ''|*[!0-9]*) passed=0 ;; esac
+              if [ -n "$PR_SHA" ] && [ "$passed" -gt 0 ]; then
+                echo "ok=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "::notice::qa-pass is on the PR but no QA: PASS verdict names ${PR_SHA:-the head}" \
+                     "— it is from an earlier commit, so not merging. qa-on-green dispatches a round on this head."
+              fi ;;
             *)
               echo "::notice::no qa-pass label yet — leaving the PR open" ;;
           esac
