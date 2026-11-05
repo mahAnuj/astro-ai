@@ -102,8 +102,8 @@ def _numbers(text: str) -> list[int]:
 
 
 # A decision-log row: `| 2026-10-18 | <title cell> | ...`. The title cell may carry
-# escaped pipes (`\|`). 33 of the 117 rows have no bold title, so the whole cell
-# is the key rather than a `**...**` span.
+# escaped pipes (`\|`). About a third of the rows have no bold title, so the whole
+# cell is the key rather than a `**...**` span.
 LOG_ROW = re.compile(r"^\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*((?:[^|\\]|\\.)+?)\s*\|")
 LOG_HEADING = "## 10. Decision log"
 
@@ -124,6 +124,9 @@ def _duplicate_log_rows(body: str) -> list[str]:
     WHAT THIS LETS THROUGH: a revision whose title cell was also edited, since
     the key is the title as written. It catches the shape the resolver produces
     — the edited row is kept verbatim beside its older self, title included.
+
+    COVERAGE: pr-gates skips the verify_* sweep on a diff with no code path in it,
+    so a PR that edits only ARCHITECTURE.md is not checked by this (QA, #466).
     """
     if LOG_HEADING not in body:
         return [f"heading {LOG_HEADING!r} not found — renamed? this check must "

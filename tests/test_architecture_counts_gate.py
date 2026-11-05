@@ -44,8 +44,8 @@ CLEAN = [
 ]
 
 
-# Two distinct dated rows, one of them with no bold title (33 of the real log's
-# 117 rows have none), so the clean doc exercises both title shapes.
+# Two distinct dated rows, one of them with no bold title (about a third of the
+# real log's rows have none), so the clean doc exercises both title shapes.
 CLEAN_LOG = (
     "## 10. Decision log\n\n| date | decision | why |\n|---|---|---|\n"
     "| 2026-10-18 | **A bolded title** | because |\n"
@@ -186,7 +186,7 @@ def test_a_decision_log_row_kept_beside_its_older_draft_fails(tmp_path, monkeypa
 
 
 def test_a_duplicate_plain_title_fails_too(tmp_path, monkeypatch, capsys):
-    # 33 of the real rows carry no `**title**`; keying on bold would skip them.
+    # About a third of the real rows carry no `**title**`; keying on bold would skip them.
     log = CLEAN_LOG + "| 2026-10-18 | a plain title | a revision |\n"
     rc, out = _run(tmp_path, monkeypatch, capsys, log=log)
     assert rc != 0, out
@@ -212,3 +212,20 @@ def test_a_missing_decision_log_heading_fails_rather_than_passing(tmp_path, monk
     assert rc != 0, out
     assert "not found" in out
 
+
+
+def test_an_escaped_pipe_in_a_title_does_not_make_two_rows_collide(tmp_path, monkeypatch, capsys):
+    # Same date, titles that share a prefix up to an escaped pipe and differ after
+    # it. A regex that stops at the backslash reads both as `use a`.
+    log = CLEAN_LOG + ("| 2026-10-20 | use a \\| b first | x |\n"
+                       "| 2026-10-20 | use a \\| c second | x |\n")
+    rc, out = _run(tmp_path, monkeypatch, capsys, log=log)
+    assert rc == 0, out
+
+
+def test_a_dated_row_in_a_later_section_is_not_compared_with_the_log(tmp_path, monkeypatch, capsys):
+    # The log ends at the next `## `; a dated table row below it is a different
+    # table and must not be counted against §10.
+    log = CLEAN_LOG + "\n## 11. Known gaps\n\n| 2026-10-18 | **A bolded title** | a gap |\n"
+    rc, out = _run(tmp_path, monkeypatch, capsys, log=log)
+    assert rc == 0, out
