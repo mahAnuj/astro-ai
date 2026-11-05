@@ -1,66 +1,66 @@
 {
- "generated_at": "2026-11-04T08:39:07Z",
+ "generated_at": "2026-11-05T08:58:37Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 41792163238,
-  "at": "2026-11-04T07:25:24Z",
-  "five_hour": 0.01,
-  "seven_day": 0.76,
+  "run": 41960753770,
+  "at": "2026-11-05T03:18:25Z",
+  "five_hour": 0.31,
+  "seven_day": 0.84,
   "status": "allowed_warning",
   "resets": {
-   "five_hour": 1793793600,
+   "five_hour": 1793866800,
    "seven_day": 1793944800
   }
  },
- "peak_seven_day": 0.76,
+ "peak_seven_day": 0.84,
  "rejected_runs": [],
  "readings": [
   {
    "workflow": "agent-work",
-   "run": 41714980008,
-   "at": "2026-11-03T20:42:07Z",
-   "five_hour": 0.01,
-   "seven_day": 0.73,
-   "status": "allowed",
+   "run": 41911727014,
+   "at": "2026-11-04T20:59:01Z",
+   "five_hour": 0.1,
+   "seven_day": 0.81,
+   "status": "allowed_warning",
    "resets": {
-    "five_hour": 1793756400,
+    "five_hour": 1793830800,
     "seven_day": 1793944800
    }
   },
   {
    "workflow": "agent-work",
-   "run": 41742519197,
-   "at": "2026-11-03T23:52:23Z",
-   "five_hour": 0.29,
-   "seven_day": 0.75,
+   "run": 41922149787,
+   "at": "2026-11-04T22:05:45Z",
+   "five_hour": 0.11,
+   "seven_day": 0.81,
    "status": "allowed_warning",
    "resets": {
-    "five_hour": 1793756400,
+    "five_hour": 1793848800,
     "seven_day": 1793944800
    }
   },
   {
    "workflow": "agent-work",
-   "run": 41763916900,
-   "at": "2026-11-04T02:56:14Z",
-   "five_hour": 0.02,
-   "seven_day": 0.75,
+   "run": 41939452128,
+   "at": "2026-11-05T00:11:20Z",
+   "five_hour": 0.28,
+   "seven_day": 0.84,
    "status": "allowed_warning",
    "resets": {
-    "five_hour": 1793775600,
+    "five_hour": 1793848800,
     "seven_day": 1793944800
    }
   },
   {
    "workflow": "agent-work",
-   "run": 41792163238,
-   "at": "2026-11-04T07:25:24Z",
-   "five_hour": 0.01,
-   "seven_day": 0.76,
+   "run": 41960753770,
+   "at": "2026-11-05T03:18:25Z",
+   "five_hour": 0.31,
+   "seven_day": 0.84,
    "status": "allowed_warning",
    "resets": {
-    "five_hour": 1793793600,
+    "five_hour": 1793866800,
     "seven_day": 1793944800
    }
   }

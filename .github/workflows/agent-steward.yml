@@ -455,6 +455,13 @@ jobs:
             You may not merge, close, push, label a QA verdict, or edit
             `.github/workflows/**`, `.claude/**` or `CLAUDE.md`.
 
+            **If you rule to CLEAR a trust-boundary hold, do not try to label
+            it -- `gh pr edit` is denied here (#719).** Post the ruling comment
+            containing `chief-cleared at <full head sha>` first, then write
+            `/tmp/chief-clear.txt` with one line per PR, exactly
+            `pr=<number> sha=<full head sha>` (at most three). A later step
+            re-checks your preconditions from the API and applies the labels.
+
             **If you rule that a cycle should be dispatched, do not hand the
             command to a human — record it and a later step runs it.** Write
             `/tmp/chief-dispatch.txt` containing AT MOST ONE line, exactly
@@ -516,6 +523,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: bash scripts/dispatch_cycle.sh /tmp/chief-dispatch.txt chief
+
+      # CHIEF CLEARS, CODE LABELS (#719). The owner granted chief the right to
+      # clear `needs-human-review` (CLAUDE.md, 2026-11-01), but both agent
+      # steps above deny `gh pr edit`, so chief could post its SHA-bound ruling
+      # and never apply the label. PR #706 sat held seven hours after chief
+      # ruled. Chief writes `pr=<n> sha=<head>` to /tmp/chief-clear.txt (from
+      # either agent step -- chief can run as the steward's subagent), and this
+      # step applies it on the job's own `pull-requests: write`. No new scope.
+      # The script re-reads every precondition from the API (head = sha,
+      # qa-pass + qa:independent, no qa-fail, gates green, a claude[bot] ruling
+      # comment naming the sha) and refuses on any doubt. `always()` so a
+      # ruling made inside the steward step is carried even when the chief
+      # step did not run.
+      - name: Carry out chief's clearance ruling
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 scripts/chief_clear.py /tmp/chief-clear.txt
 
       # Say what happened either way. A loop that reports nothing when it found
       # nothing cannot be told from one that failed to run — which is the defect

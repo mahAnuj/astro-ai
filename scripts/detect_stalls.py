@@ -170,15 +170,82 @@ def boundary_paths(pr: int) -> set[str]:
             if isinstance(q := f.get("path", ""), str) and q.startswith(BOUNDARY)}
 
 
-def qa_fail_age(pr: int) -> float | None:
-    """Hours since `qa-fail` was last applied, or None if it never was.
+#: The first line `scripts/qa_verdict.sh` writes: "QA: FAIL — verified at `<sha>`".
+#: The sha is optional-backtick because the script quotes it and a hand-written
+#: verdict may not; 7+ hex chars because a comment may carry a short sha.
+_VERDICT_LINE = re.compile(r"^QA: (PASS|FAIL) — verified at `?([0-9a-f]{7,40})`?")
 
-    Read from the timeline rather than the label list, because the label alone
-    says a verdict exists and not WHEN — and when is the whole question: a head
-    newer than the verdict means somebody fixed it and it needs re-reviewing,
-    while a head older than the verdict means nobody has touched it.
+#: Who may move the verdict clock. REST reports `claude[bot]` /
+#: `github-actions[bot]`; `gh pr view --json` drops the `[bot]` suffix. Both
+#: spellings of these two identities and NOTHING else: the comment is the
+#: source of truth now, so a look-alike pasted by anyone else must not be able
+#: to re-date a verdict (or, via its sha, mark a head as already judged).
+_VERDICT_AUTHORS = frozenset({"claude[bot]", "claude",
+                              "github-actions[bot]", "github-actions"})
+
+
+def _newest_verdict(pr: int) -> tuple[str, str, str] | None:
+    """`(created_at, verdict, sha)` of the newest trusted QA verdict COMMENT.
+
+    None means "no such comment" -- the caller falls back to the label event.
+    RAISES RuntimeError when the comments cannot be read, so "could not ask" is
+    never mistaken for "no verdict" (the same asymmetry `boundary_paths` keeps).
+
+    WHY A COMMENT AND NOT THE LABEL EVENT (#678, #502). `qa_verdict.sh` adds
+    `qa-fail`, and GitHub emits no `labeled` event when the label is already
+    there, so every FAIL after round 1 was dated at round 1 and the commits a
+    later round HAD judged were counted as "no round has seen them". The
+    comment is written on every round, first, and carries the sha examined.
+
+    `--jq` emits one object per line (JSONL), so `--paginate` is safe: a jq
+    expression returning one array per page is not valid JSON once concatenated.
+    Only the first line of each body is kept -- it is all the match needs.
+    """
+    out = gh("api", f"repos/{REPO}/issues/{pr}/comments", "--paginate", "--jq",
+             '.[] | {u: .user.login, t: .created_at, l: (.body | split("\\n")[0])}')
+    found: list[tuple[str, str, str]] = []
+    for line in out.splitlines():
+        try:
+            c = json.loads(line)
+        except ValueError:
+            continue
+        if not isinstance(c, dict) or c.get("u") not in _VERDICT_AUTHORS:
+            continue
+        m = _VERDICT_LINE.match(c.get("l") or "")
+        if m and c.get("t"):
+            found.append((c["t"], m.group(1), m.group(2)))
+    return max(found) if found else None
+
+
+def verdict_sha(pr: int) -> str | None:
+    """The sha the newest trusted QA verdict comment says it examined, or None
+    (no such comment, or the comments could not be read)."""
+    try:
+        v = _newest_verdict(pr)
+    except RuntimeError:
+        return None
+    return v[2] if v else None
+
+
+def qa_fail_age(pr: int) -> float | None:
+    """Hours since the newest QA verdict, or None if it cannot be dated.
+
+    Source of truth: the newest `QA: PASS|FAIL — verified at <sha>` comment by
+    `claude[bot]` / `github-actions[bot]` (#678). The `labeled qa-fail` timeline
+    event is the fallback ONLY when no such comment exists -- a PR whose
+    verdict predates the comment format. It is NOT a substitute for the comment:
+    it never moves on a repeat FAIL, so on a PR with several rounds it dates the
+    verdict at round 1. Do not widen the fallback to "when the comment is
+    older"; that re-creates the defect.
+
+    Dated rather than merely detected, because when is the whole question: a
+    head newer than the verdict means somebody fixed it and it needs
+    re-reviewing, while a head older than the verdict means nobody has touched it.
     """
     try:
+        verdict = _newest_verdict(pr)
+        if verdict:
+            return age_hours(verdict[0])
         events = json.loads(gh("api", f"repos/{REPO}/issues/{pr}/timeline",
                                "--paginate", "--jq",
                                '[.[] | select(.event=="labeled")'
@@ -500,6 +567,23 @@ def find_stalls(hours: float) -> list[dict]:
             # this out of chief's lap: it is work, not a decision.
             fail_age = qa_fail_age(n)
             head_age = head_pushed_hours_ago(n)
+            # THE ROUND JUDGED THIS EXACT HEAD (#678, #502). The verdict comment
+            # names the sha it examined; when that is the head, nothing has been
+            # pushed since, whatever the head's committedDate says -- a rebase
+            # or a merge-forward gives a commit a date unrelated to when the
+            # branch moved. Clamping `head_age` to the verdict's age (rather
+            # than adding an arm) leaves the chain below, and the order its
+            # comments justify, exactly as it was: the head is "not newer than
+            # the verdict", so the freshness floor and the unaddressed arm
+            # decide, and `qa-fail-refixed` cannot be reached. Prefix compare,
+            # because the comment may carry a short sha. A sha the comment
+            # lacks, or a comment by anyone but the QA identities, leaves this
+            # False and the age comparison as it was.
+            vsha = verdict_sha(n)
+            at_head = bool(vsha and (pr["headRefOid"] or "").startswith(vsha))
+            if at_head and fail_age is not None and head_age is not None \
+                    and head_age < fail_age:
+                head_age = fail_age
             if fail_age is None or head_age is None:
                 # Could not read one of the two. Report it rather than guessing
                 # a direction -- a wrong guess here dispatches the wrong agent
@@ -572,9 +656,10 @@ def find_stalls(hours: float) -> list[dict]:
             else:
                 stalls.append(dict(
                     kind="qa-fail-unaddressed", pr=n, issue=issue, age_h=round(fail_age, 1),
-                    detail=(f"qa-fail {fail_age:.0f}h ago and nothing pushed since (head is "
-                            f"{head_age:.0f}h old) — the findings are unaddressed. Dispatch a "
-                            f"cycle at them."),
+                    detail=(f"qa-fail {fail_age:.0f}h ago and nothing pushed since ("
+                            + (f"the verdict names this exact head, {vsha[:8]}"
+                               if at_head else f"head is {head_age:.0f}h old")
+                            + ") — the findings are unaddressed. Dispatch a cycle at them."),
                     checks=checks, labels=sorted(labels), agent_pushable=pushable))
         elif "qa-pass" not in labels and "qa-fail" not in labels and green:
             # Gates green and no verdict either way: the cycle did not reach QA.
@@ -691,6 +776,43 @@ def find_stalls(hours: float) -> list[dict]:
     return stalls
 
 
+#: Kinds whose action is a DISPATCH of a cycle. An agent must be able to push
+#: the branch for the dispatch to do anything, hence the `agent_pushable` filter
+#: in `obliged_actions`.
+OBLIGED_PUSH_KINDS = frozenset({
+    "draft-never-readied", "no-qa-verdict", "mergeable-but-open",
+    "steward-ineffective", "qa-fail-unaddressed", "qa-fail-refixed",
+    "draft-held-by-qa-fail", "pr-conflicting"})
+
+#: Kinds whose action is a RULING, not a push (#709). `chief` clears a
+#: trust-boundary hold by commenting `chief-cleared at <sha>` and labelling; it
+#: pushes nothing, and `agent-merge` merges with `github.token`.
+#:
+#: THE DEFECT, MEASURED 2026-11-04 on PR #706: this kind was emitted (so the
+#: stall printed) and absent from the obliged set, so `OBLIGED_ACTIONS=0`,
+#: `agent-steward.yml`'s accountability step exited at `demanded == 0` and never
+#: woke chief. Three steward runs were green over seven hours and the one role
+#: granted this queue (CLAUDE.md, 2026-11-01) was never invoked.
+#:
+#: IT IS NOT FILTERED BY `agent_pushable`, on purpose. That filter exists
+#: because a dispatched cycle cannot push to a `.github/workflows/**` branch.
+#: Chief is not a cycle and does not push, and a workflow PR is exactly the kind
+#: of hold the 2026-11-01 grant widened chief's queue to. Filtering would leave
+#: those holds unwoken -- the same bug for the PRs that matter most.
+OBLIGED_RULING_KINDS = frozenset({"boundary-hold-clearable"})
+
+
+def obliged_actions(stalls: list[dict]) -> list[dict]:
+    """The stalls that oblige an action some agent can actually perform.
+
+    `agent-steward.yml` reads `OBLIGED_ACTIONS=<len>` of this and wakes `chief`
+    when it is non-zero and the steward acted on none of it.
+    """
+    return [x for x in stalls
+            if x["kind"] in OBLIGED_RULING_KINDS
+            or (x["kind"] in OBLIGED_PUSH_KINDS and x.get("agent_pushable", True))]
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--hours", type=float, default=DEFAULT_HOURS,
@@ -723,12 +845,7 @@ def main(argv: list[str]) -> int:
     # A stall is obliged only if its kind routes to an action AND an agent can
     # actually perform it. `no-checks-ever` and `dead-trigger-leg` are absent:
     # they route to an escalation or an issue, not a dispatch.
-    obliged = [x for x in stalls
-               if x["kind"] in {"draft-never-readied", "no-qa-verdict",
-                                "mergeable-but-open", "steward-ineffective",
-                                "qa-fail-unaddressed", "qa-fail-refixed",
-                                "draft-held-by-qa-fail", "pr-conflicting"}
-               and x.get("agent_pushable", True)]
+    obliged = obliged_actions(stalls)
     print(f"OBLIGED_ACTIONS={len(obliged)}")
 
     if not stalls:

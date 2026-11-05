@@ -1,21 +1,22 @@
 {
-  "generated_at": "2026-11-04T08:38:13Z",
+  "generated_at": "2026-11-05T08:57:40Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 129,
+  "open": 133,
   "with_ask": 52,
   "by_area": {
-    "UNCLASSIFIED": 44,
+    "UNCLASSIFIED": 46,
     "INFRA": 17,
     "UI": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
+    "MUHURAT": 3,
     "CHORE": 3,
-    "DETECT_STALLS": 3,
     "BUG": 3,
     "SEO": 3,
     "MEASURE": 2,
+    "DETECT_STALLS": 2,
     "SECURITY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
@@ -34,22 +35,97 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 40,
-    "bug": 31,
+    "untyped": 39,
+    "bug": 32,
     "enhancement": 26,
-    "correctness": 10,
+    "correctness": 14,
     "chore": 8,
     "design": 8,
     "ui": 6
   },
   "by_priority": {
-    "unset": 93,
+    "unset": 97,
     "medium": 19,
     "high": 16,
     "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 719,
+      "title": "chief's carrier denies gh pr edit, so a chief-cleared ruling can never be followed by its label (#706 held 3h after ruling)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-05T03:27:22Z",
+      "updated": "2026-11-05T03:27:22Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 716,
+      "title": "verify_rule_citations scans only chart.py — muhurat.py still cites BPHS, Muhurta Chintamani and Phaladeepika, none registered or held (UNSOURCED + gate gap)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-05T00:20:37Z",
+      "updated": "2026-11-05T00:20:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 715,
+      "title": "muhurat: Chandra Bala matches neither Raman's muhurta rule nor Rao's gochara table, and is credited to BPHS (CONTESTED)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-05T00:20:36Z",
+      "updated": "2026-11-05T00:20:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 714,
+      "title": "muhurat: Janma Tara is scored a flat 'ok' — Raman makes it event- and sex-dependent; a groom's Janma Tara passes the Vivah verdict (CONTESTED)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-05T00:20:35Z",
+      "updated": "2026-11-05T00:20:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 713,
+      "title": "muhurat: Panchak flags all of Dhanishta; Raman's Nakshatra Panchaka starts at its third quarter (WRONG, extent)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-05T00:20:33Z",
+      "updated": "2026-11-05T00:20:33Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 700,
       "title": "[CHORE] Retire the six legacy verify_contrast DECLARED_PAIRS rows, the cream token and the text-white safelist entry together",
@@ -89,20 +165,7 @@
         "chore"
       ],
       "created": "2026-11-03T20:55:15Z",
-      "updated": "2026-11-03T20:55:15Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 678,
-      "title": "detect_stalls: qa_fail_age reads the qa-fail LABEL time, so a second FAIL round on a moved head is invisible (#675 misrouted as qa-fail-refixed)",
-      "ask": "",
-      "area": "DETECT_STALLS",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-11-02T17:06:24Z",
-      "updated": "2026-11-02T17:06:24Z",
+      "updated": "2026-11-05T03:24:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -370,7 +433,7 @@
         "needs-evidence"
       ],
       "created": "2026-10-29T23:50:13Z",
-      "updated": "2026-11-02T23:00:38Z",
+      "updated": "2026-11-04T21:03:15Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -594,7 +657,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-11-03T20:54:04Z",
+      "updated": "2026-11-04T15:12:35Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -879,7 +942,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-20T09:27:06Z",
-      "updated": "2026-10-26T17:50:58Z",
+      "updated": "2026-11-05T03:23:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -989,10 +1052,12 @@
       "labels": [
         "bug",
         "priority:high",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:independent"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-10-23T21:14:21Z",
+      "updated": "2026-11-05T00:51:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1005,10 +1070,13 @@
       "priority": "high",
       "labels": [
         "category:technical",
-        "priority:high"
+        "priority:high",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-17T07:17:17Z",
-      "updated": "2026-10-17T07:17:17Z",
+      "updated": "2026-11-04T22:23:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1888,7 +1956,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-11-01T19:55:10Z",
+      "updated": "2026-11-05T00:42:40Z",
       "blocked": false,
       "needs_evidence": false
     },

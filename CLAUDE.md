@@ -433,6 +433,14 @@ dispatches `chief` for every such hold instead of reporting "A HUMAN decides thi
   stale `qa-fail` after its defect was fixed. A clearance does not survive a push.
 - **The ruling comment comes first**, for the reason `qa.md` already gives: a label with no
   ruling above it is the fabrication shape this repo has been burned by twice.
+- **Code applies the labels, not chief — since 2026-11-05 (#719).** Both `agent-steward.yml`
+  steps that run chief deny `gh pr edit`, so for four days the grant could not be exercised:
+  #706 sat held seven hours after chief's ruling until the owner labelled it by hand. Chief
+  now writes `pr=<n> sha=<head>` to `/tmp/chief-clear.txt`, and a `run:` step,
+  `scripts/chief_clear.py`, applies it on the job's existing `pull-requests: write`. It
+  first re-reads every precondition from the API: head = sha, `qa-pass` + `qa:independent`,
+  no `qa-fail`, `gates` green, and a `claude[bot]` comment naming the sha. Chief still
+  cannot label anything itself.
 - **Irreversible actions still stop and ask** — data migration, destructive storage, anything
   touching subscriber records. That carve-out is about reversibility, not trust: a wrong merge
   is one `git revert`, a deleted subscriber is gone. The grant is about who clears a *hold on a
