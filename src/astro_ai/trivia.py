@@ -92,8 +92,8 @@ DID_YOU_KNOW: list[dict[str, str]] = [
         "hi": "सूर्य मेष में उच्च और तुला में नीच होता है — विपरीत राशियाँ। प्रत्येक ग्रह की अपनी उच्च और नीच राशि होती है।",
     },
     {
-        "en": "Ashtakoot matching scores compatibility on 8 dimensions — 36 max points. 18+ is considered acceptable; 28+ excellent for marriage.",
-        "hi": "अष्टकूट मिलान 8 आयामों में संगति आँकता है — कुल 36 अंक। 18+ स्वीकार्य; 28+ विवाह के लिए उत्कृष्ट।",
+        "en": "Ashtakoot matching scores compatibility on 8 dimensions — 36 max points. Bhagya reads 18+ as acceptable and 30+ as excellent; those cut-offs are its own reading, not a rule from the classical texts.",
+        "hi": "अष्टकूट मिलान 8 आयामों में संगति आँकता है — कुल 36 अंक। शुभ भाग्य 18+ को स्वीकार्य और 30+ को उत्कृष्ट पढ़ता है; ये सीमाएँ उसकी अपनी व्याख्या हैं, शास्त्रीय ग्रंथों का नियम नहीं।",
     },
     {
         "en": "The Moon spends about 2.25 days in each rashi — so within 27 days it visits all 12. Your tithi (lunar day) cycles every ~29.5 days.",
