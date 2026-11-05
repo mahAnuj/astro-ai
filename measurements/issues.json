@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-05T01:19:57Z",
+  "generated_at": "2026-11-05T08:57:40Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 132,
+  "open": 133,
   "with_ask": 52,
   "by_area": {
-    "UNCLASSIFIED": 45,
+    "UNCLASSIFIED": 46,
     "INFRA": 17,
     "UI": 12,
     "REDESIGN": 10,
@@ -36,7 +36,7 @@
   },
   "by_type": {
     "untyped": 39,
-    "bug": 31,
+    "bug": 32,
     "enhancement": 26,
     "correctness": 14,
     "chore": 8,
@@ -44,13 +44,28 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 96,
+    "unset": 97,
     "medium": 19,
     "high": 16,
     "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 719,
+      "title": "chief's carrier denies gh pr edit, so a chief-cleared ruling can never be followed by its label (#706 held 3h after ruling)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-05T03:27:22Z",
+      "updated": "2026-11-05T03:27:22Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 716,
       "title": "verify_rule_citations scans only chart.py — muhurat.py still cites BPHS, Muhurta Chintamani and Phaladeepika, none registered or held (UNSOURCED + gate gap)",
@@ -150,7 +165,7 @@
         "chore"
       ],
       "created": "2026-11-03T20:55:15Z",
-      "updated": "2026-11-04T15:13:30Z",
+      "updated": "2026-11-05T03:24:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -927,7 +942,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-20T09:27:06Z",
-      "updated": "2026-10-26T17:50:58Z",
+      "updated": "2026-11-05T03:23:45Z",
       "blocked": false,
       "needs_evidence": false
     },
