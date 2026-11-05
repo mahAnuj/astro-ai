@@ -66,6 +66,16 @@ like `scripts/verify_adhik_maas.py` and `scripts/verify_festivals.py`.
       fixed-karana branches are reachable at all rather than merely correct
       in principle.
 
+  Gate 8 - Gulika Kaal (#150).  Saturn's part of the eight equal parts of
+      daylight, checked three independent ways: (A) arithmetic from Drik's
+      PRINTED sunrise and sunset reproduces Drik's printed "Gulikai Kalam"
+      (no import from this codebase); (B) `compute_panchang()` reproduces the
+      same window from its OWN sunrise; (C) `_GULIKA_SEGMENT` equals the
+      ordinals re-derived here from Rao's 8-slot cycle, for all 7 weekdays.
+      KNOWN GAP: the almanac rows cover Fri/Sun/Mon/Thu only. Tuesday, Wednesday
+      and Saturday rest on Rao's table (Gate C) with no almanac confirmation;
+      Saturday, the ordinal-1 case, is the cheapest next row to add.
+
 HOW TO EXTEND THE ALMANAC TABLE
 -------------------------------
 Open the URL recorded next to any row, read the Yoga and Karana blocks, and
@@ -93,6 +103,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from astro_ai.chart import (  # noqa: E402
+    _GULIKA_SEGMENT,
     compute_chart,
     compute_moon_rise_set,
     compute_panchang,
@@ -737,6 +748,7 @@ def _windows_are_wellformed(day: date, p) -> list[str]:
     for label, start, end in (
         ("rahu kaal", p.rahu_kaal_start, p.rahu_kaal_end),
         ("abhijit", p.abhijit_start, p.abhijit_end),
+        ("gulika", p.gulika_start, p.gulika_end),
     ):
         if end <= start:
             bad.append(f"{label} {start:%H:%M:%S}..{end:%H:%M:%S} ends before it starts")
@@ -1041,6 +1053,150 @@ def gate_7_moon_rise_set() -> list[str]:
     return failures
 
 
+# --------------------------------------------------------------------------
+# Gate 8 - Gulika Kaal: Saturn's part of the eight (#150)
+# --------------------------------------------------------------------------
+
+# Four New Delhi day pages from drikpanchang.com, read 2026-11-05 by the
+# astro-auditor with WebFetch, which returns a model-written SUMMARY of a page
+# rather than a byte transcription. Each date was therefore fetched twice with
+# differently worded requests and a row is kept only where both fetches agreed on
+# the sunrise, the sunset and the Gulikai window; all four did. These are not a
+# browser read and have not been confirmed by one — re-open the URL before
+# trusting a row you doubt. Drik prints the window as "Gulikai Kalam" and lists
+# exactly ONE per day, in daylight, with no separate night Gulikai.
+#
+# Fields: (iso date, weekday, drik sunrise, drik sunset, drik Gulikai start,
+#          drik Gulikai end) — 24h HH:MM, New Delhi.
+#
+# KNOWN GAP: Fri, Sun, Mon and Thu only. Tuesday (5th part), Wednesday (4th) and
+# Saturday (1st) have NO almanac row, so those three weekdays are confirmed by
+# Rao's Table 10 alone (Gate 8C), not by a published almanac. Saturday, the
+# ordinal-1 case, is the cheapest row to add next. Do not derive a row from this
+# codebase; read the URL.
+GULIKAI_ALMANAC: tuple[tuple[str, str, str, str, str, str], ...] = (
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=06/11/2026
+    ("2026-11-06", "Fri", "06:37", "17:33", "07:59", "09:21"),
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=08/11/2026
+    ("2026-11-08", "Sun", "06:38", "17:31", "14:48", "16:10"),
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=09/11/2026
+    ("2026-11-09", "Mon", "06:39", "17:31", "13:26", "14:48"),
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=12/11/2026
+    ("2026-11-12", "Thu", "06:41", "17:29", "09:23", "10:44"),
+)
+
+# Drik prints whole minutes and the app computes to the second. Measured
+# 2026-11-05 over the four rows: the largest start/end difference between the
+# app and Drik is 0.57 min (Fri start), and between arithmetic on Drik's own
+# printed minutes and Drik's window it is 0.62 min (Sun end, an artefact of
+# rounding sunrise AND sunset to the minute). One minute covers both and is far
+# tighter than the one-eighth-of-daylight (~81 min) step a wrong ordinal makes.
+GULIKA_TOLERANCE_MIN = 1.0
+
+# Rao's daytime cycle (knowledge/vedic_reference.md §28.1, Table 10): the eight
+# parts of the day are ruled Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn
+# and a lord-less slot, entered at the weekday lord. Written out HERE so Gate 8C
+# is a second derivation: importing it from chart.py would test the table
+# against itself.
+_RAO_DAY_CYCLE: tuple[str | None, ...] = (
+    "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", None,
+)
+# datetime.weekday() order: Monday=0 .. Sunday=6.
+_WEEKDAY_LORD: tuple[str, ...] = (
+    "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Sun",
+)
+_WEEKDAY_ABBR: tuple[str, ...] = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+
+def _rao_saturn_ordinal(weekday: int) -> int:
+    """1-based part of the day ruled by Saturn, counting from the weekday lord."""
+    lord = _WEEKDAY_LORD[weekday]
+    return 1 + (_RAO_DAY_CYCLE.index("Saturn") - _RAO_DAY_CYCLE.index(lord)) % 8
+
+
+def _hhmm(text: str) -> int:
+    h, m = (int(x) for x in text.split(":"))
+    return h * 60 + m
+
+
+def gate_8_gulika() -> list[str]:
+    failures: list[str] = []
+
+    # --- C: the ordinals, from Rao's cycle, for all seven weekdays ----------
+    for wd in range(7):
+        want = _rao_saturn_ordinal(wd)
+        got = _GULIKA_SEGMENT.get(wd)
+        ok = got == want
+        print(f"  {'ok  ' if ok else 'FAIL'} {_WEEKDAY_ABBR[wd]}  Rao Table 10 "
+              f"Saturn part {want}  _GULIKA_SEGMENT {got}")
+        if not ok:
+            failures.append(
+                f"{_WEEKDAY_ABBR[wd]}: _GULIKA_SEGMENT says part {got} but counting "
+                f"Rao's 8-slot cycle from the weekday lord puts Saturn in part {want}"
+            )
+    if set(_GULIKA_SEGMENT) != set(range(7)):
+        failures.append(f"_GULIKA_SEGMENT keys are {sorted(_GULIKA_SEGMENT)}, not 0..6")
+
+    chart = compute_chart("2000-01-01", "12:00", CITY)
+    for iso, abbr, sr, ss, gs, ge in GULIKAI_ALMANAC:
+        day = date.fromisoformat(iso)
+        if _WEEKDAY_ABBR[day.weekday()] != abbr:
+            failures.append(f"{iso}: the row says {abbr} but that date is "
+                            f"{_WEEKDAY_ABBR[day.weekday()]} — a transcription error")
+            continue
+        want_gs, want_ge = _hhmm(gs), _hhmm(ge)
+
+        # --- A: arithmetic on Drik's own printed sunrise/sunset -------------
+        n = _rao_saturn_ordinal(day.weekday())
+        eighth = (_hhmm(ss) - _hhmm(sr)) / 8.0
+        calc_gs = _hhmm(sr) + (n - 1) * eighth
+        calc_ge = _hhmm(sr) + n * eighth
+        d_a = (calc_gs - want_gs, calc_ge - want_ge)
+        ok_a = max(abs(d_a[0]), abs(d_a[1])) <= GULIKA_TOLERANCE_MIN
+        print(f"  {'ok  ' if ok_a else 'FAIL'} {iso} {abbr}  A  part {n} of Drik's "
+              f"{sr}-{ss}: {calc_gs:.1f}..{calc_ge:.1f} min vs Drik {gs}-{ge} "
+              f"({d_a[0]:+.2f}/{d_a[1]:+.2f}m)")
+        if not ok_a:
+            failures.append(
+                f"{iso} ({abbr}): Saturn's part {n} of Drik's own sunrise {sr} / "
+                f"sunset {ss} is off Drik's printed Gulikai Kalam {gs}-{ge} by "
+                f"{d_a[0]:+.2f}/{d_a[1]:+.2f} min (limit {GULIKA_TOLERANCE_MIN}) — "
+                "the window is not Saturn's part, or the row was mis-transcribed"
+            )
+
+        # --- B: compute_panchang() from its own sunrise ---------------------
+        try:
+            p = _panchang_for(chart, day)
+        except Exception as exc:  # noqa: BLE001
+            failures.append(f"{iso}: compute_panchang() raised {type(exc).__name__}: {exc}")
+            continue
+
+        def _min(d: datetime) -> float:
+            return d.hour * 60 + d.minute + d.second / 60.0
+
+        off_sr = _min(p.sunrise) - _hhmm(sr)
+        d_b = (_min(p.gulika_start) - want_gs, _min(p.gulika_end) - want_ge)
+        ok_b = (p.daylight_ordinary
+                and abs(off_sr) <= SUNRISE_TOLERANCE_MIN
+                and max(abs(d_b[0]), abs(d_b[1])) <= GULIKA_TOLERANCE_MIN)
+        print(f"  {'ok  ' if ok_b else 'FAIL'} {iso} {abbr}  B  app "
+              f"{p.gulika_start:%H:%M:%S}-{p.gulika_end:%H:%M:%S} vs Drik {gs}-{ge} "
+              f"({d_b[0]:+.2f}/{d_b[1]:+.2f}m; app sunrise {off_sr:+.2f}m)")
+        if not ok_b:
+            failures.append(
+                f"{iso} ({abbr}): compute_panchang() Gulika "
+                f"{p.gulika_start:%H:%M:%S}-{p.gulika_end:%H:%M:%S} vs Drik "
+                f"{gs}-{ge} ({d_b[0]:+.2f}/{d_b[1]:+.2f} min, limit "
+                f"{GULIKA_TOLERANCE_MIN}; sunrise {off_sr:+.2f} min, limit "
+                f"{SUNRISE_TOLERANCE_MIN}; daylight_ordinary={p.daylight_ordinary})"
+            )
+
+    covered = sorted({r[1] for r in GULIKAI_ALMANAC})
+    print(f"  almanac rows cover {', '.join(covered)}; "
+          f"Tue/Wed/Sat rest on Rao's table alone (known gap)")
+    return failures
+
+
 def main() -> int:
     print("Panchang anga verification — Nitya Yoga + Karana (issue #142)")
     print("  computation : src/astro_ai/chart.py compute_panchang()")
@@ -1082,6 +1238,8 @@ def main() -> int:
          lambda: gate_6_polar_daylight(census)),
         ("Gate 7 - moonrise/moonset: reached, bounded, absent where it should be (#150)",
          gate_7_moon_rise_set),
+        ("Gate 8 - Gulika Kaal: Saturn's part, almanac + Rao Table 10 (#150)",
+         gate_8_gulika),
     ]
 
     all_failures: list[str] = list(census_errors)
