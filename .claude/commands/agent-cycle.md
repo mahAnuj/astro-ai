@@ -264,11 +264,23 @@ fixing. They still need `corpus:` and `tokens:`.
 Agent(subagent_type="project-manager", description="Rank the eligible backlog",
       prompt="""Rank what to work on next in <cwd>. Staleness sweep FIRST, and probe with
 scripts/validate_issue.py rather than reading titles. Rank only confirmed-live, evidence-complete
-items. Read BACKLOG.md as a cache, not evidence. Read-only — propose closures, do not close.""")
+items. Read BACKLOG.md as a cache, not evidence. Read-only — propose closures, do not close.
+STARTED WORK FIRST: an open issue with a merged partial/<n>- PR and no open PR outranks any
+unstarted issue of the same or lower priority -- finish it, or say exactly which item of the
+closed 'cannot do' list in agent-cycle.md Step 4 still blocks it.""")
 ```
 
 Take its top item. Never queue work another loop is already doing — check `AGENT_STATUS.md` and
 live branches.
+
+**Started work comes first — since 2026-11-06.** Measured that day: 38 PRs had been opened on
+`partial/` branches, and 14 open issues carried `qa-pass` from slices that had merged. #518 had
+three merged slices with about 27 articles still to route. Nothing ever came back to them. The
+ranking had no preference for half-finished work, so every cycle started something new and the
+backlog stayed at about 130 while the loop merged four PRs a day. When the top item has merged
+partial PRs, read what each one said remains. Then do one of two things: **build what remains
+and use `issue/<n>-` with `closes #<n>`**, or, if what remains is entirely on the closed list in
+Step 4, comment that on the issue and move to the next item.
 
 ## Step 2.5 — check what a previous cycle already did, and continue from it
 
@@ -515,7 +527,7 @@ and the only one a name was ever able to answer.
 | | branch | PR body | what happens at merge |
 |---|---|---|---|
 | fixes every acceptance criterion | `issue/<n>-<slug>` | `closes #<n>` | `agent-merge` may merge it (provenance permitting); `close-on-evidence` may close the issue after verifying production |
-| acceptance criteria remain that the loop cannot do (e.g. anything under `.github/workflows/`) | `partial/<n>-<slug>` | `refs #<n>`, plus what remains | `agent-merge` may merge it on the same evidence; **nothing closes the issue** — `close-on-evidence` and the merge comment both read `^issue/<n>` and find nothing, which is correct while work remains |
+| acceptance criteria remain that are on the closed "cannot do" list below — nothing else | `partial/<n>-<slug>` | `refs #<n>`, plus what remains | `agent-merge` may merge it on the same evidence; **nothing closes the issue** — `close-on-evidence` and the merge comment both read `^issue/<n>` and find nothing, which is correct while work remains |
 
 **So choose the name by what is left to do, never by what you want to happen to the PR.** Naming a
 finished fix `partial/` leaves its issue open forever; naming an unfinished one `issue/` closes an
@@ -523,6 +535,42 @@ issue whose acceptance criteria are not met. Between 2026-10-21 and 2026-10-25 t
 silently decided mergeability, and every `partial/` PR in that window — #480, #482 and #487 among
 them, each carrying `qa-pass` on green gates — waited for a human. That is the coupling this change
 removed.
+
+### "The loop cannot do it" is a closed list — since 2026-11-06
+
+**`partial/` is right ONLY when what remains is on this list:**
+
+1. **An act only the owner can take** — the five in CLAUDE.md's `chief` table: authoring a file
+   under `.github/workflows/`, editing `.claude/`, granting a scope or secret, a product or revenue
+   decision, a legal or privacy commitment.
+2. **A source the corpus does not have.** Use `corpus_search.py --absent`, and say which books were
+   present (CLAUDE.md: an absence measured against a partial corpus is worthless).
+3. **A ruling from `chief` that has not been given yet**, on a question you raised under Step 4.5.
+
+**Not on the list, and each one has been used as a reason:**
+
+- **"The file is in the trust boundary."** You may edit `prompts/`, `knowledge/`, `notify.py` and
+  the rest. The boundary holds the MERGE for `chief`; it does not stop the edit. #717 left
+  `prompts/matching.txt` undone as "trust boundary, chief's". That was wrong: the change belonged
+  in the PR, and chief rules on the PR.
+- **"It will not fit this cycle."** If the issue is too large for one cycle, split it into GitHub
+  **sub-issues** (one per independently shippable part, each with its own acceptance criteria)
+  and close them one by one with `closes #<sub>`. The parent closes when its last sub-issue does.
+  A `partial/` slice of a parent that never closes is how #518 reached a fourth slice. The
+  one-hour token is a reason to **push early** (above), not a reason to **stop early**: push the
+  branch as a draft and keep working on it.
+- **"The metric can only be measured after deploy."** The Evidence Block's `metric:` and any
+  "N days after deploy" criterion are **post-ship measurements**, not acceptance criteria a PR can
+  meet. #508 shipped every buildable change and stays open forever, because its metric is a 28-day
+  click-through rate. When everything a PR *can* deliver is delivered, write `closes #<n>`. The
+  `analyst` scores closed issues against their thesis afterwards; if the metric fails, that is a
+  new finding, not a reason to keep this issue open.
+- **"A disclosure fix ships today, the value later."** That is two issues. Ship the disclosure
+  with `closes` on a sub-issue that says so, and leave the value question as its own issue, where
+  it ranks on its own evidence.
+
+**The last slice closes.** When your PR delivers what earlier `partial/` PRs said remained, it is an
+`issue/<n>-` branch with `closes #<n>`, whoever did the earlier slices.
 
 ```bash
 git switch -c issue/<n>-<slug>             # or partial/<n>-<slug>

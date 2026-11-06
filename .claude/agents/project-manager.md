@@ -121,7 +121,8 @@ Weigh in this order:
 Then, separately:
 
 - **Stale list** — close these, with the evidence
-- **Blocked list** — what each one waits on, and whether a partial fix ships today. A blocked *value* often has an unblocked *disclosure* fix.
+- **Blocked list** — what each one waits on. A blocked *value* often has an unblocked *disclosure* fix: propose it as its **own sub-issue** that can close, never as a `partial/` slice of the blocked one. A slice of an issue that never closes is how 38 `partial/` PRs and 14 open `qa-pass` issues piled up by 2026-11-06.
+- **Started work ranks first.** An open issue with a merged `partial/<n>-` PR and no open PR outranks any unstarted issue of the same or lower priority. For each one, either rank it to be finished, or name which item of `agent-cycle.md` Step 4's closed "cannot do" list still blocks it. An outcome metric measurable only after deploy is not on that list: if everything buildable has merged, **propose it for closing**, with the PRs as evidence.
 - **Explicitly not recommended** — things that look urgent and are not, with the reason. This is as useful as the queue; it stops the same item being re-raised.
 - **A full open-issue index** — every open issue, one row each: number, short title, its state
   in this scan (queue position / propose-close / blocked / live / not-recommended), and the SHA
