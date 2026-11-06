@@ -1,24 +1,25 @@
 {
-  "generated_at": "2026-11-06T01:25:49Z",
+  "generated_at": "2026-11-06T08:56:09Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 137,
-  "with_ask": 54,
+  "open": 131,
+  "with_ask": 48,
   "by_area": {
-    "UNCLASSIFIED": 45,
-    "INFRA": 17,
-    "UI": 14,
+    "UNCLASSIFIED": 39,
+    "INFRA": 16,
+    "UI": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
     "CHORE": 4,
+    "RETRIEVAL": 3,
+    "OPS": 3,
     "MEASURE": 3,
     "MUHURAT": 3,
     "BUG": 3,
-    "SEO": 3,
-    "OPS": 2,
-    "DETECT_STALLS": 2,
     "SECURITY": 2,
+    "DETECT_STALLS": 2,
+    "SEO": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "CONTENT": 1,
@@ -27,7 +28,6 @@
     "CHART": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
-    "ARCHITECTURE": 1,
     "KUNDLI": 1,
     "TASK": 1,
     "BLOCKER": 1,
@@ -35,22 +35,132 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 41,
-    "bug": 30,
+    "untyped": 37,
     "enhancement": 26,
+    "bug": 25,
+    "chore": 14,
     "correctness": 14,
-    "chore": 10,
     "design": 9,
-    "ui": 7
+    "ui": 6
   },
   "by_priority": {
-    "unset": 101,
+    "unset": 100,
     "medium": 19,
-    "high": 16,
+    "high": 11,
     "low": 1
   },
-  "blocked": 9,
+  "blocked": 6,
   "rows": [
+    {
+      "number": 744,
+      "title": "security: verify_pii_egress.py, a sentinel sweep over every sink that leaves the process (split from #354)",
+      "ask": "",
+      "area": "SECURITY",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "category:technical",
+        "chore"
+      ],
+      "created": "2026-11-06T06:31:31Z",
+      "updated": "2026-11-06T06:31:31Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 743,
+      "title": "security: verify_egress.py, an allow-list of runtime outbound hosts (split from #354)",
+      "ask": "",
+      "area": "SECURITY",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "category:technical",
+        "chore"
+      ],
+      "created": "2026-11-06T06:31:30Z",
+      "updated": "2026-11-06T06:31:30Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 742,
+      "title": "retrieval: move the remaining prompts' recalled rules to knowledge/ retrieval, one PR each (#399 follow-up)",
+      "ask": "",
+      "area": "RETRIEVAL",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "category:technical"
+      ],
+      "created": "2026-11-06T06:30:25Z",
+      "updated": "2026-11-06T06:30:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 741,
+      "title": "retrieval: ground the ask* prompts in knowledge/ retrieval, after #706 (#399 follow-up)",
+      "ask": "",
+      "area": "RETRIEVAL",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "category:technical"
+      ],
+      "created": "2026-11-06T06:30:24Z",
+      "updated": "2026-11-06T06:30:24Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 740,
+      "title": "retrieval: key natal knowledge/ retrieval on yogas and doshas, not only weak planets (#399 follow-up)",
+      "ask": "",
+      "area": "RETRIEVAL",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "category:technical"
+      ],
+      "created": "2026-11-06T06:30:23Z",
+      "updated": "2026-11-06T06:30:23Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 739,
+      "title": "verify_workflow_permissions: a renamed workflow can slip past the TRUST_BOUNDARY check; HEAD~1 fallback untested (#610/#636 leftovers)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-06T06:16:27Z",
+      "updated": "2026-11-06T06:16:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 738,
+      "title": "ops: the findings carrier never files a red last run, and the alert says \"not due again yet\" on verdict ok (#628 leftovers)",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-06T06:16:26Z",
+      "updated": "2026-11-06T06:16:26Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 735,
       "title": "[MEASURE] 14 GA4 sessions landed on /admin/* (13 on /admin/ops, a page documented to carry no analytics) and 15 on (not set)",
@@ -97,22 +207,6 @@
       "needs_evidence": false
     },
     {
-      "number": 731,
-      "title": "[UI] Home page has no <main> landmark and no page has a skip link — 13–14 Tab stops to reach the first form field",
-      "ask": "Add one visually-hidden-until-focused link as the first child of <body> content (<a href=\"#main-content\" class=\"sr-only focus:not-sr-only …\">Skip to content</a>), styled from",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer"
-      ],
-      "created": "2026-11-06T00:47:08Z",
-      "updated": "2026-11-06T00:47:08Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 727,
       "title": "agent-merge sweep reads mergeable once, skips on UNKNOWN, and the cron is 6-8h apart: chief-cleared PRs #706 and #712 wait",
       "ask": "In the sweep loop, retry gh pr view --json mergeable up to ~3 times with sleep 5 while the answer is UNKNOWN.",
@@ -121,7 +215,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-05T15:45:50Z",
-      "updated": "2026-11-06T00:06:31Z",
+      "updated": "2026-11-06T03:52:14Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -131,12 +225,13 @@
       "ask": "",
       "area": "OPS",
       "type": "chore",
-      "priority": "unset",
+      "priority": "medium",
       "labels": [
+        "priority:medium",
         "chore"
       ],
       "created": "2026-11-05T15:43:27Z",
-      "updated": "2026-11-05T21:36:33Z",
+      "updated": "2026-11-06T06:44:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -234,12 +329,13 @@
       "ask": "",
       "area": "OPS",
       "type": "chore",
-      "priority": "unset",
+      "priority": "medium",
       "labels": [
+        "priority:medium",
         "chore"
       ],
       "created": "2026-11-03T20:55:15Z",
-      "updated": "2026-11-05T21:36:34Z",
+      "updated": "2026-11-06T06:44:20Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -348,62 +444,6 @@
       ],
       "created": "2026-11-01T00:10:33Z",
       "updated": "2026-11-01T21:02:17Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 628,
-      "title": "/admin/ops misreports loop health two ways: loop-outcomes' contract exit reads as a failure, and a weekly loop's failure is invisible 6 days in 7",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-31T19:57:13Z",
-      "updated": "2026-11-04T03:16:10Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 618,
-      "title": "The production verifier POSTs real user forms, so every verify fires an owner Telegram alert — 4-6 identical ones a day",
-      "ask": "Scope it deliberately to the no-PII diagnostic alerts only.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:medium",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-31T07:09:19Z",
-      "updated": "2026-11-01T21:02:39Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 610,
-      "title": "chief-cleared is documented as releasing a prompts/knowledge PR but no workflow reads it; agent-merge's boundary step re-holds it",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-30T18:25:45Z",
-      "updated": "2026-11-02T14:14:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -698,26 +738,6 @@
       "needs_evidence": true
     },
     {
-      "number": 523,
-      "title": "Per-area day ratings from Gochara karakas — Work / Money / Relationships / Health, counted not scored",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "high",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "priority:high",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-24T09:46:37Z",
-      "updated": "2026-10-25T17:08:28Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 518,
       "title": "Learn articles are 56% of sessions and 71% have no route to a tool — the median first link sits at 92% page depth",
       "ask": "",
@@ -733,7 +753,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-11-04T15:12:35Z",
+      "updated": "2026-11-06T06:15:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -751,26 +771,9 @@
         "needs-evidence"
       ],
       "created": "2026-10-24T03:29:51Z",
-      "updated": "2026-10-24T14:22:14Z",
+      "updated": "2026-11-06T06:30:49Z",
       "blocked": false,
       "needs_evidence": true
-    },
-    {
-      "number": 508,
-      "title": "[SEO] /matching ranks 4.3 on 336 impressions and got 0 clicks — title/meta test (2026-09-23..10-20)",
-      "ask": "",
-      "area": "SEO",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-23T23:46:23Z",
-      "updated": "2026-11-03T20:59:05Z",
-      "blocked": false,
-      "needs_evidence": false
     },
     {
       "number": 503,
@@ -821,26 +824,6 @@
       "labels": [],
       "created": "2026-10-22T14:24:37Z",
       "updated": "2026-10-23T21:14:15Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 475,
-      "title": "Pace LLM calls against a per-model token bucket so a 429_tpm is a short wait, not a failure",
-      "ask": "A _TokenBucket per model in providers.py.",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "high",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "priority:high",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-21T17:59:35Z",
-      "updated": "2026-10-27T20:52:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1003,7 +986,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-20T09:27:06Z",
-      "updated": "2026-11-06T00:05:25Z",
+      "updated": "2026-11-06T06:15:31Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1053,7 +1036,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-20T02:24:10Z",
-      "updated": "2026-10-31T16:27:29Z",
+      "updated": "2026-11-06T06:15:40Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1113,31 +1096,12 @@
       "labels": [
         "bug",
         "priority:high",
-        "qa-pass",
+        "qa-fail",
         "provenance:trusted",
-        "qa:independent"
+        "qa:in-cycle"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-05T00:51:44Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 399,
-      "title": "architecture: knowledge/ ships in the image but no runtime code ever reads it — ground the readings in the corpus by retrieval, replacing recalled prompt text",
-      "ask": "",
-      "area": "ARCHITECTURE",
-      "type": "untyped",
-      "priority": "high",
-      "labels": [
-        "category:technical",
-        "priority:high",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-10-17T07:17:17Z",
-      "updated": "2026-11-05T11:45:01Z",
+      "updated": "2026-11-06T06:39:35Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1286,24 +1250,6 @@
       "needs_evidence": false
     },
     {
-      "number": 367,
-      "title": "Triage an outsider's issue automatically: ask for what is missing, or recommend declining with a reason — never implement, never close",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "medium",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "priority:medium",
-        "qa-fail"
-      ],
-      "created": "2026-10-15T17:18:46Z",
-      "updated": "2026-10-16T18:35:20Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 366,
       "title": "[UI] Sub-12px text remains on / (24 nodes), /panchang (9) and 16 other templates — remainder of #307",
       "ask": "",
@@ -1331,42 +1277,6 @@
       "created": "2026-10-15T16:25:46Z",
       "updated": "2026-10-15T16:25:46Z",
       "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 361,
-      "title": "security: the loop acts on any issue from anyone, and strictness should key on the issue's author rather than on the PR's paths",
-      "ask": "Exit 1 originally told the agent to *\"post one comment saying the loop does not implement issues",
-      "area": "SECURITY",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:high",
-        "needs-human-review",
-        "qa-pass"
-      ],
-      "created": "2026-10-15T14:32:55Z",
-      "updated": "2026-10-16T20:41:28Z",
-      "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 354,
-      "title": "security: the repo is public and the loop auto-merges — nothing gates the system prompts, the agent-facing corpus, or egress",
-      "ask": "1. agent-merge refuses to auto-merge a PR touching the trust boundary.",
-      "area": "SECURITY",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "needs-human-review"
-      ],
-      "created": "2026-10-15T04:38:13Z",
-      "updated": "2026-10-15T14:33:21Z",
-      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -1550,21 +1460,6 @@
       "created": "2026-10-08T06:16:12Z",
       "updated": "2026-10-27T23:00:31Z",
       "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 279,
-      "title": "[INFRA] CI holds 1 of 8 registered corpus books and nothing fetches the rest — 4 are fixable free, 4 need a human decision",
-      "ask": "",
-      "area": "INFRA",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "needs-human-review"
-      ],
-      "created": "2026-10-08T05:53:58Z",
-      "updated": "2026-10-23T23:47:08Z",
-      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -1803,23 +1698,6 @@
       "needs_evidence": false
     },
     {
-      "number": 231,
-      "title": "Cosmic Card is served as SVG, so snapshot og:image previews fail on every major platform",
-      "ask": "Rasterise to PNG.",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-08-31T17:52:23Z",
-      "updated": "2026-11-03T15:51:40Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 219,
       "title": "muhurat combustion: degree-orb model vs the days-from-heliacal model, and two blocking states we don't model",
       "ask": "",
@@ -1874,7 +1752,7 @@
         "qa-pass"
       ],
       "created": "2026-08-16T09:30:19Z",
-      "updated": "2026-10-15T02:05:31Z",
+      "updated": "2026-11-06T06:15:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1921,7 +1799,7 @@
         "provenance:trusted"
       ],
       "created": "2026-08-10T12:55:44Z",
-      "updated": "2026-10-16T01:31:56Z",
+      "updated": "2026-11-06T06:15:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1987,7 +1865,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-08-08T09:45:41Z",
-      "updated": "2026-11-05T10:52:25Z",
+      "updated": "2026-11-06T06:30:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2020,7 +1898,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-11-05T00:42:40Z",
+      "updated": "2026-11-06T06:15:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2083,7 +1961,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-08-07T15:59:16Z",
-      "updated": "2026-11-05T15:48:02Z",
+      "updated": "2026-11-06T06:30:40Z",
       "blocked": false,
       "needs_evidence": false
     },
