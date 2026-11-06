@@ -378,7 +378,9 @@ def test_agent_queue_drains_on_COMPLETION_of_agent_work_and_the_steward():
     assert on["workflow_run"]["workflows"] == ["Agent work", "Agent steward"]
     assert on["workflow_run"]["types"] == ["completed"]
     assert "schedule" not in on, "a cron here costs ~1,400 Actions minutes a month"
-    run = doc["jobs"]["drain"]["steps"][-1]["run"]
+    # By name, not position: since 2026-11-06 a chain step follows the drain.
+    run = next(s["run"] for s in doc["jobs"]["drain"]["steps"]
+               if s.get("name") == "Start the oldest queued cycle")
     assert "cycle_queue.py drain" in run and "${{" not in run
 
 

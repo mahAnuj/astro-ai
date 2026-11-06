@@ -343,6 +343,16 @@ What has NOT changed, and why it matters more now than before:
   most one entry per free lane. Change that title prefix and the lanes merge silently;
   `tests/test_cycle_queue.py` pins the three copies together.
 
+  **A finished build cycle chains the next one (2026-11-06, owner: *"I have been seeing a
+  long queue of backlog issues for very long"*).** Measured that day, the build lane sat idle
+  **148.8 of 168 hours (89%)** with 131 issues open, because a ~20-minute cycle then waited
+  up to four hours for its next cron slot. After the drain, `agent-queue.yml` runs
+  `scripts/chain_cycle.py`, which dispatches one ranked cycle (no inputs) if the build lane
+  is still free. It chains only off a successful BUILD run that opened or moved a loop PR,
+  only while `measurements/claude_usage.json` reads the weekly window under **70%**, fresh
+  and `allowed` (an unread quota is not a free one), and at most **16** build runs per UTC
+  day. The queue drains first, because a ruling someone made outranks the ranker.
+
   **Whether to add more parallelism is read from `measurements/claude_usage.json`, not
   argued** (since 2026-11-03). Every agent here runs on ONE Claude Max 5x subscription.
   `scripts/collect_claude_usage.py`, an `agent-measure` collector, reads the
