@@ -350,12 +350,12 @@ def test_coverage_names_the_product_checks_this_script_cannot_see():
 
 
 def test_the_cache_hit_ratio_and_token_ceiling_are_no_longer_declared_uncovered():
-    """Found while writing this, and it is a gap not a blind spot.
-
-    `ops_data` computes `cache_hits` and `cache_misses` and raises no alert at
-    any threshold. The number is rendered and never judged. Recording that in
-    `NOT_COVERED` is what stops the next reader assuming the dashboard has it
-    covered.
+    """Replaced test_the_cache_hit_ratio_is_declared_as_alerted_on_by_NOTHING
+    on 2026-11-06. That test asserted a GAP, and this PR closes the gap:
+    `cache-low` and `token-ceiling` now judge measurements/llm-usage.json. So the
+    entry leaves NOT_COVERED, and this asserts it stays out, so the header
+    cannot claim a blind spot the detector no longer has. The findings
+    themselves are tested at the end of this file.
     """
     concerns = " ".join(c for c, _, _ in det.NOT_COVERED)
     assert "cache hit ratio" not in concerns and "daily token ceiling" not in concerns
