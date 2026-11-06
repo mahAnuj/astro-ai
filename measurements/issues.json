@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-06T08:56:09Z",
+  "generated_at": "2026-11-06T12:43:24Z",
   "repo": "mahAnuj/astro-ai",
-  "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 131,
+  "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for",
+  "open": 132,
   "with_ask": 48,
   "by_area": {
     "UNCLASSIFIED": 39,
@@ -17,6 +17,7 @@
     "MEASURE": 3,
     "MUHURAT": 3,
     "BUG": 3,
+    "MATCHING": 2,
     "SECURITY": 2,
     "DETECT_STALLS": 2,
     "SEO": 2,
@@ -31,26 +32,40 @@
     "KUNDLI": 1,
     "TASK": 1,
     "BLOCKER": 1,
-    "KNOWLEDGE": 1,
-    "MATCHING": 1
+    "KNOWLEDGE": 1
   },
   "by_type": {
     "untyped": 37,
     "enhancement": 26,
     "bug": 25,
+    "correctness": 15,
     "chore": 14,
-    "correctness": 14,
     "design": 9,
     "ui": 6
   },
   "by_priority": {
-    "unset": 100,
+    "unset": 101,
     "medium": 19,
     "high": 11,
     "low": 1
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 751,
+      "title": "matching: five rules blocked on a source the corpus lacks (split from #177)",
+      "ask": "",
+      "area": "MATCHING",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-06T11:07:25Z",
+      "updated": "2026-11-06T11:07:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 744,
       "title": "security: verify_pii_egress.py, a sentinel sweep over every sink that leaves the process (split from #354)",
@@ -231,7 +246,7 @@
         "chore"
       ],
       "created": "2026-11-05T15:43:27Z",
-      "updated": "2026-11-06T06:44:21Z",
+      "updated": "2026-11-06T09:02:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1096,12 +1111,12 @@
       "labels": [
         "bug",
         "priority:high",
-        "qa-fail",
+        "qa-pass",
         "provenance:trusted",
         "qa:in-cycle"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-06T06:39:35Z",
+      "updated": "2026-11-06T11:31:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1898,7 +1913,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-11-06T06:15:44Z",
+      "updated": "2026-11-06T11:07:35Z",
       "blocked": false,
       "needs_evidence": false
     },
