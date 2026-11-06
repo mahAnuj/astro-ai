@@ -888,7 +888,16 @@ what is the number?**
 
 ### When it does not fit, say so — do not silently spend
 
-The escape hatch is to **add a model**, because Groq's buckets are per-model. But that is a
+**The first escape hatch is to move the generation out of the request path (owner,
+2026-11-06):** *"guide agents to use claude code sessions if possible where we think are limited
+by Groq budget."* Content that is the same for every visitor of a page, rashi or date is
+generated in a scheduled Claude Code job, stored, and served from cache, as #515 did for the
+nightly rashifal. Groq per-request calls are kept for what is personal (a chart, a question). Size
+the job to the Claude Max weekly window (`measurements/claude_usage.json`), which every agent
+shares. `detect_ops_regressions.py` names this lever in its `cache-low` and `token-ceiling`
+findings (#747).
+
+The other escape hatch is to **add a model**, because Groq's buckets are per-model. But that is a
 proposal for the human, not a decision an agent takes, and the obvious candidates are already
 ruled out with measurements:
 

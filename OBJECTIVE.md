@@ -17,6 +17,14 @@
 > design target is **thousands of requests a day served inside that budget**. That means cache
 > first, deterministic before generated, and a shared prompt prefix. The paid `openai` fallback
 > is a safety net, not capacity.
+>
+> **Where Groq's budget is the limit, use Claude Code (owner, 2026-11-06):** *"we should also
+> guide agents to use claude code sessions if possible where we think are limited by Groq
+> budget."* Bulk or shared generation, meaning content every visitor of a page or rashi sees,
+> runs in a scheduled Claude Code job, is stored, and is served from cache. #515's nightly
+> rashifal is the pattern. Per-request Groq calls are kept for what is genuinely personal (a
+> chart, a question). Claude Code is not free either: it shares one Max subscription with
+> every agent (`measurements/claude_usage.json`), so a job is sized to that weekly window too.
 
 
 > **Move the 6–20 position band into the top 5 on the ten highest-impression queries.**
