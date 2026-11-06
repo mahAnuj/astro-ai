@@ -28,8 +28,11 @@ MUTATIONS = [
      "test_findings_are_prioritised_by_severity_and_follow_a_level_change"),
     ("loop outcomes: the fetch step's first line stops naming agent-measure.yml (QA on #745)",
      ".github/workflows/agent-work.yml",
-     "          # PREFER THE COMMITTED REPORT (2026-11-06) over agent-measure.yml's artifact. It commits the\n",
-     "          # PREFER THE COMMITTED REPORT (2026-11-06). It commits the\n",
+     # Anchored from the `run: |` line above: the harness refuses an anchor that
+     # BEGINS on a comment, and here the comment's first line is what the
+     # loop-outcomes report actually reads.
+     "        run: |\n          # PREFER THE COMMITTED REPORT (2026-11-06) over agent-measure.yml's artifact. It commits the\n",
+     "        run: |\n          # PREFER THE COMMITTED REPORT (2026-11-06). It commits the\n",
      "test_the_REAL_fetch_step_still_reads_as_received_when_it_uses_the_committed_report"),
     ("loop outcomes: the committed-report echo is no longer a receipt",
      "scripts/report_loop_outcomes.py",
