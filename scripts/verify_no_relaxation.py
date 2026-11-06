@@ -95,8 +95,25 @@ REQUIRED_SUBSTRINGS = {
     ".claude/commands/agent-cycle.md": [
         "Comment, label, skip",
         "under any label, assignment or circumstance",
+        # 2026-11-06, with the self-edit grant below.
+        "**Never push to `main`.** Branch and PR only.",
     ],
     ".claude/agents/project-manager.md": ["not ranked at all"],
+    # 2026-11-06. The owner let agents edit their own definitions "without waiting
+    # for anyone ... while keep astrology 100% true". The grant covers improving
+    # HOW an agent works, not widening WHAT it may do, and these are the lines that
+    # draw that edge. They live as prose in files agents may now edit, so they are
+    # floored here; this file cannot change alongside any other (rule 7), so a
+    # rule and its guard cannot be removed in one PR. Removing one is the owner's
+    # act #2 in CLAUDE.md's chief table.
+    ".claude/agents/qa.md": [
+        "The comment comes first, then the label.",
+        "every claim the change ships must trace to a source",
+    ],
+    "CLAUDE.md": [
+        "It clears a HOLD, never a VERDICT.",
+        "Astrological claims must trace to `knowledge/*.md`",
+    ],
 }
 
 
