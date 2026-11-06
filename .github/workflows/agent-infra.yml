@@ -97,12 +97,13 @@ jobs:
               #232  twelve concurrent rashifal reads become twelve GCS calls.
               #253  the service worker served a stale stylesheet for weeks.
 
-            Also yours: verify-production.yml's `exact` deploy tier has NEVER
-            run. It needs BUILD_SHA=$COMMIT_SHA on the GCP-side Cloud Build
-            trigger, so every green run so far proved only that *a* revision
-            landed, not which one. **You may fix this yourself** — gcloud is
-            granted (project bhagya-500701, trigger
-            rmgpgab-bhagya-asia-south1-mahAnuj-astro-ai--mapzk).
+            Also yours: verify-production.yml's `exact` deploy tier. It IS live
+            -- corrected 2026-11-06, this said "has NEVER run" after BUILD_SHA
+            was set on 2026-10-08, and two weekly reports spent their headline
+            disproving it. /health reports build_sha, and close-on-evidence
+            relies on it. Check it still holds; do not re-fix it. Note the
+            service account cannot read Cloud Build triggers (PERMISSION_DENIED,
+            #568), so verify the tier from /health and verify-production runs.
 
             GitHub Actions is equally yours: workflow runs, gate failures,
             triggers that never fire, cancelled jobs. `gh run view --log`,

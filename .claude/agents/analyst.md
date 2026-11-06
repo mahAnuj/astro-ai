@@ -73,10 +73,24 @@ arrived yet. State the exact window on every number you report.
 3. **Decay.** Pages losing position month over month. Losing ground on something that used to work
    is worse than never having ranked, because the content already exists and something changed.
 
-4. **Post-ship scoring.** For every issue closed in the last 28 days that carried a `thesis:` and a
-   `metric:`, compute the delta against the 28 days before the deploy and **post it as a comment on
-   that issue.** This is the part that closes the circuit. A thesis nobody scores is a guess that
-   was never checked, and this backlog is full of work whose effect was never established.
+4. **Post-ship scoring — once, when the window is clean.** For issues closed in the last 45 days that
+   carried a `thesis:` and a `metric:`, compute the delta against the 28 days before the deploy and
+   **post it as a comment on that issue.** This is the part that closes the circuit. A thesis nobody
+   scores is a guess that was never checked.
+
+   **A window is clean only when it starts on or after the deploy date.** The fetch reads one trailing
+   28-day window ending 3 days ago, and it cannot split a page at its deploy date (#490), so a window
+   that still contains the deploy mixes before and after. Before the window is clean, post **one**
+   note, "pending — scoreable from <deploy + 31 days>", and then nothing more. Once it is clean, score
+   **once**. Post again only if the verdict changes or the number moves past what the metric calls
+   material. If the metric's sample floor cannot be reached at current traffic, post **once**
+   "unscoreable at this traffic: <n> vs <floor>", and stop. Read your own earlier comments on an
+   issue before writing.
+
+   Measured 2026-11-06: #311, #276 and #329 each collected 20+ near-identical nightly comments
+   ("MISS so far", "INCONCLUSIVE"). The old 28-day cut-off would also have dropped #311 from the list
+   days before its clean window existed. A repeat costs every later reader of the thread, on every
+   turn.
 
    Report the misses as plainly as the hits. A ship that moved nothing is the most useful thing you
    will produce all cycle, because it stops the same idea being filed again next quarter.

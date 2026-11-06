@@ -123,6 +123,11 @@ Then, separately:
 - **Stale list** — close these, with the evidence
 - **Blocked list** — what each one waits on. A blocked *value* often has an unblocked *disclosure* fix: propose it as its **own sub-issue** that can close, never as a `partial/` slice of the blocked one. A slice of an issue that never closes is how 38 `partial/` PRs and 14 open `qa-pass` issues piled up by 2026-11-06.
 - **Started work ranks first.** An open issue with a merged `partial/<n>-` PR and no open PR outranks any unstarted issue of the same or lower priority. For each one, either rank it to be finished, or name which item of `agent-cycle.md` Step 4's closed "cannot do" list still blocks it. An outcome metric measurable only after deploy is not on that list: if everything buildable has merged, **propose it for closing**, with the PRs as evidence.
+- **Ops findings rank by severity.** An `[OPS]` issue, filed by `scripts/file_ops_findings.py` and carrying a hidden `ops-finding` marker, is the dashboard telling the loop it is unhealthy. If it carries `priority:high` (a red finding: a broken loop, stale measurements, the quota about to bind), it ranks **above all feature work**. If it carries `priority:medium` (amber), it ranks with the other priority-medium items on its stated harm.
+
+  Read the finding's **lever** first. When the lever is something the loop can build, rank it to be worked. When the lever is an owner-only act (a cron slot in a workflow, spacing out the weekly loops, a credential), it **cannot be queued**: put it on the blocked list naming the owner's single act, and say so once on the issue.
+
+  Measured 2026-11-06: #697 (build lane idle) and #726 (Claude quota 89%) had sat for days unranked, because nothing here mentioned them, and both levers are workflow edits.
 - **Explicitly not recommended** — things that look urgent and are not, with the reason. This is as useful as the queue; it stops the same item being re-raised.
 - **A full open-issue index** — every open issue, one row each: number, short title, its state
   in this scan (queue position / propose-close / blocked / live / not-recommended), and the SHA

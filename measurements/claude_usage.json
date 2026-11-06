@@ -1,67 +1,67 @@
 {
- "generated_at": "2026-11-06T01:26:47Z",
+ "generated_at": "2026-11-06T08:57:02Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 42133188750,
-  "at": "2026-11-05T23:56:51Z",
-  "five_hour": 0.24,
-  "seven_day": 0.89,
-  "status": "allowed_warning",
+  "run": 42184436643,
+  "at": "2026-11-06T07:58:55Z",
+  "five_hour": 0.01,
+  "seven_day": 0.03,
+  "status": "allowed",
   "resets": {
-   "five_hour": 1793931000,
-   "seven_day": 1793944800
+   "five_hour": 1793969400,
+   "seven_day": 1794549600
   }
  },
- "peak_seven_day": 0.89,
+ "peak_seven_day": 0.03,
  "rejected_runs": [],
  "readings": [
   {
    "workflow": "agent-work",
-   "run": 42052087700,
-   "at": "2026-11-05T15:09:29Z",
-   "five_hour": 0.03,
-   "seven_day": 0.86,
-   "status": "allowed_warning",
+   "run": 42177393220,
+   "at": "2026-11-06T06:54:19Z",
+   "five_hour": 0.25,
+   "seven_day": 0.02,
+   "status": "allowed",
    "resets": {
-    "five_hour": 1793909400,
-    "seven_day": 1793944800
+    "five_hour": 1793951400,
+    "seven_day": 1794549600
    }
   },
   {
    "workflow": "agent-work",
-   "run": 42085432562,
-   "at": "2026-11-05T18:33:50Z",
-   "five_hour": 0.06,
-   "seven_day": 0.87,
-   "status": "allowed_warning",
+   "run": 42180782314,
+   "at": "2026-11-06T07:25:29Z",
+   "five_hour": 0.27,
+   "seven_day": 0.02,
+   "status": "allowed",
    "resets": {
-    "five_hour": 1793909400,
-    "seven_day": 1793944800
+    "five_hour": 1793951400,
+    "seven_day": 1794549600
    }
   },
   {
    "workflow": "agent-work",
-   "run": 42111082723,
-   "at": "2026-11-05T21:16:11Z",
-   "five_hour": 0.02,
-   "seven_day": 0.87,
-   "status": "allowed_warning",
+   "run": 42183125754,
+   "at": "2026-11-06T07:46:54Z",
+   "five_hour": 0.3,
+   "seven_day": 0.03,
+   "status": "allowed",
    "resets": {
-    "five_hour": 1793931000,
-    "seven_day": 1793944800
+    "five_hour": 1793969400,
+    "seven_day": 1794549600
    }
   },
   {
    "workflow": "agent-work",
-   "run": 42133188750,
-   "at": "2026-11-05T23:56:51Z",
-   "five_hour": 0.24,
-   "seven_day": 0.89,
-   "status": "allowed_warning",
+   "run": 42184436643,
+   "at": "2026-11-06T07:58:55Z",
+   "five_hour": 0.01,
+   "seven_day": 0.03,
+   "status": "allowed",
    "resets": {
-    "five_hour": 1793931000,
-    "seven_day": 1793944800
+    "five_hour": 1793969400,
+    "seven_day": 1794549600
    }
   }
  ]

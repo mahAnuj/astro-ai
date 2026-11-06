@@ -144,16 +144,44 @@ jobs:
             Act as the `analyst` agent. Follow .claude/agents/analyst.md exactly.
 
             The data is already fetched — read these, do not re-call the APIs:
-              /tmp/gsc-band.json   the 6-20 position band, ranked by opportunity
-              /tmp/gsc-all.json    all queries in the window
-              /tmp/ga4.json        landing pages, sessions, bounce, pages/session
+              /tmp/gsc-band.json         the 6-20 position band, ranked by opportunity
+              /tmp/gsc-all.json          all queries in the window
+              /tmp/ga4.json              landing pages, sessions, bounce, pages/session
+              /tmp/gsc-daily.json        site-level clicks/impressions per day
+              /tmp/ga4-daily.json        site-level sessions per day
+              /tmp/gsc-trend-page.json   per-page change, this window vs the previous one
+              /tmp/gsc-trend-query.json  per-query change, this window vs the previous one
+            All seven are written by the fetch step above. Until 2026-11-06 this list
+            named only the first three, and runs reported decay as "not determinable"
+            while the trend files sat unread on disk.
 
             Do, in order:
             1. Report the band against OBJECTIVE.md. Name the window on every number.
-            2. Score every issue closed in the last 28 days that carried a `thesis:`
-               and a `metric:`. Post the score as a comment on that issue: predicted,
-               actual, verdict. Report the misses exactly as prominently as the hits —
-               a ship that moved nothing is the most useful finding you produce.
+            2. Score issues closed in the last 45 days that carried a `thesis:` and a
+               `metric:`. Report the misses exactly as prominently as the hits — a
+               ship that moved nothing is the most useful finding you produce.
+
+               SCORE ONCE, WHEN THE WINDOW IS CLEAN — never re-post (2026-11-06).
+               The fetch reads ONE trailing 28-day window ending 3 days ago and cannot
+               split a page at its deploy date (#490). So a window that still contains
+               the deploy mixes before and after, and is not a score. Until then, #311,
+               #276 and #329 each collected 20+ near-identical "MISS so far" /
+               "INCONCLUSIVE" comments, one a night, and #311 would have left the
+               28-day list days before its clean window existed.
+               - A window is CLEAN when its start (today - 31 days) is on or after the
+                 deploy date (the merge to main). Before that, post ONE comment on the
+                 issue, "pending — scoreable from <deploy + 31 days>", if no such note
+                 is there yet, and otherwise post nothing.
+               - Once clean: post predicted, actual, verdict ONCE. On later runs post
+                 again only if the verdict changes or the number moves past what the
+                 metric calls material. An unchanged verdict goes in /tmp/report.md,
+                 not on the issue.
+               - If the metric's sample floor cannot be reached at current traffic
+                 (for example, it needs at least 10 sessions and the page gets 3 in 28
+                 days), post ONCE "unscoreable at this traffic: <n> vs <floor>", and
+                 stop scoring that issue.
+               Read your own earlier comments on an issue before you write anything on
+               it.
             3. Name your confounds before any delta: concurrent ships (git log
                origin/main --since), seasonality, and whether the page was even
                working — #253 served a stale stylesheet for weeks and #266 fails
@@ -220,7 +248,9 @@ jobs:
         run: |
           mkdir -p /tmp/measure
           cp -f /tmp/report.md /tmp/measure/report.md 2>/dev/null || true
-          cp -f /tmp/gsc-band.json /tmp/gsc-all.json /tmp/ga4.json /tmp/measure/ 2>/dev/null || true
+          cp -f /tmp/gsc-band.json /tmp/gsc-all.json /tmp/ga4.json \
+                /tmp/gsc-daily.json /tmp/ga4-daily.json \
+                /tmp/gsc-trend-page.json /tmp/gsc-trend-query.json /tmp/measure/ 2>/dev/null || true
           date -u +%Y-%m-%dT%H:%M:%SZ > /tmp/measure/generated-at.txt
 
       - uses: actions/upload-artifact@v4

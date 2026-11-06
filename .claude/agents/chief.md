@@ -439,7 +439,7 @@ available ruling.
 | # | The act | Why no agent can do it |
 | --- | --- | --- |
 | 1 | **Authoring a file under `.github/workflows/`** | The App token is refused the `workflows` permission (#421), so the push itself is rejected — this is a capability limit, not a policy one. You may still **merge** such a PR that a human or a Claude session pushed; `agent-merge` merges with `github.token`, not the App token. |
-| 2 | **Editing anything under `.claude/`** | An agent may not author its own definition. The same circularity as a workflow edit, in a different file. |
+| 2 | **Removing a pinned safety or grounding line from `.claude/`** | `verify_no_relaxation.py` is red on it by construction (its `REQUIRED_SUBSTRINGS`). Editing `.claude/` is otherwise NOT owner-only since 2026-11-06: any agent may improve a definition through a PR, never to widen what an agent may do (CLAUDE.md, "Agents may edit their own definitions"). |
 | 3 | **Granting a scope, a secret or a permission** | It is the one change that widens what every agent can do, and `verify_workflow_permissions.py` is red on it by construction. |
 | 4 | **A product or revenue decision** | Which school a reading follows, whether a feature ships at all, what is charged for. The facts are yours to gather; the objective is theirs to set. |
 | 5 | **A legal, licensing or privacy commitment** | #279 licensing, and any copy that promises a user something about their data. |

@@ -37,6 +37,19 @@ class FakeGh:
             self.issues[self.n] = {"title": title, "body": body, "by": fo.WRITER, "comments": [],
                                    "labels": labels}
             return "{}"
+        if args[:3] == ["api", "-X", "POST"] and args[3].endswith("/labels"):
+            n = int(args[3].split("/issues/")[1].split("/")[0])
+            for a in args:
+                if a.startswith("labels[]=") and a[9:] not in self.issues[n]["labels"]:
+                    self.issues[n]["labels"].append(a[9:])
+            return "{}"
+        if args[:3] == ["api", "-X", "DELETE"] and "/labels/" in args[3]:
+            n = int(args[3].split("/issues/")[1].split("/")[0])
+            name = args[3].rsplit("/", 1)[1]
+            if name not in self.issues[n]["labels"]:
+                raise RuntimeError("404")
+            self.issues[n]["labels"].remove(name)
+            return "{}"
         if args[:3] == ["api", "-X", "POST"] and args[3].endswith("/comments"):
             n = int(args[3].split("/issues/")[1].split("/")[0])
             self.issues[n]["comments"].append(args[5][len("body="):])
@@ -148,6 +161,35 @@ def test_a_filed_issue_passes_the_loops_own_evidence_gate():
         gh = FakeGh()
         fo.carry(gh, REPO, [F(kind=kind)], "2026-11-03T00:00:00Z")
         (i,) = gh.issues.values()
-        assert i["labels"] == ["chore"], i["labels"]
+        assert i["labels"][0] == "chore" and "priority:medium" in i["labels"], i["labels"]
         rc, lines = evidence.check(i["body"], i["labels"], "2026-11-03T00:00:00Z")
         assert rc == 0, "\n".join(lines)
+
+
+
+def test_a_number_wobble_is_SILENCE_not_a_comment():
+    """#697 got four comments for "idle 90% -> 89% -> 88% -> 89%" while the
+    finding itself never changed. Numbers are ignored; the level is not."""
+    gh = FakeGh()
+    fo.carry(gh, REPO, [F(kind="loop-idle", title="Build lane idle 90% of the last 7d")], "t1")
+    for pct in (89, 88, 89):
+        fo.carry(gh, REPO, [F(kind="loop-idle", title=f"Build lane idle {pct}% of the last 7d")], "t")
+    (i,) = gh.issues.values()
+    assert i["comments"] == [], i["comments"]
+
+
+def test_findings_are_prioritised_by_severity_and_follow_a_level_change():
+    """Owner, 2026-11-06: ops issues should also be prioritised."""
+    gh = FakeGh()
+    fo.carry(gh, REPO, [F(level="amber")], "t1")
+    (n,) = gh.issues
+    assert "priority:medium" in gh.issues[n]["labels"]
+    fo.carry(gh, REPO, [F(level="red", title="Claude weekly quota 97% used")], "t2")
+    assert "priority:high" in gh.issues[n]["labels"] and "priority:medium" not in gh.issues[n]["labels"]
+
+
+def test_a_red_finding_is_filed_at_priority_high():
+    gh = FakeGh()
+    fo.carry(gh, REPO, [F(kind="loop-broken", level="red", title="agent-work failed 3 runs")], "t1")
+    (i,) = gh.issues.values()
+    assert "priority:high" in i["labels"]
