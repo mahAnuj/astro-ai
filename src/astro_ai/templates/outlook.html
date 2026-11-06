@@ -6,10 +6,10 @@
 {% block content %}
 {% set sade_phase_key = {'rising': 'phase_rising', 'peak': 'phase_peak', 'setting': 'phase_setting'}.get(flags.sade_sati_phase, '') %}
 
-{# active_page passed in from main.py — 'monthly' or 'yearly' #}
+{# active_page passed in from routes/outlook.py — 'monthly' or 'yearly' #}
 {% include "_nav.html" %}
 
-<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+<main id="main-content" class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   <!-- HEADER ------------------------------------------------------ -->
   <header>

@@ -13,7 +13,7 @@
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
 
-<main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+<main id="main-content" class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   <header class="text-center space-y-2">
     <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor">Panchang</div>
@@ -112,7 +112,7 @@
       <div class="text-lg font-marcellus text-bhagya-sindoor">{{ p.karana_name }}</div>
       <div class="text-xs text-bhagya-muted">{% if p.karana_significance %}{{ p.karana_significance }}{% else %}Half-tithi {{ p.karana_index + 1 }} of 60, at sunrise{% endif %}</div>
     </div>
-    {#- Rahu Kaal, Abhijit and Choghadiya are each a fixed fraction of the
+    {#- Rahu Kaal, Gulika Kaal, Abhijit and Choghadiya are each a fixed fraction of the
        sunrise-to-sunset period. At polar latitudes a date can hold no such
        period — then p.daylight_ordinary is False and the arithmetic produces
        windows that end before they start (Tromso 2026-05-17: Rahu Kaal
@@ -132,6 +132,18 @@
       </div>
       <div class="text-xs text-bhagya-muted">Inauspicious 1/8 of daylight</div>
     </div>
+    {#- Gulika Kaal (#150, slice 1): Saturn's part of the eight. Sourced from
+       Rao's Table 10 and CONFIRMED against four almanac rows by Gate 8 of
+       scripts/verify_panchang_angas.py. The subtitle says it is an inference
+       because it is one (Rao gives a longitude, not a window), and attributes
+       no prohibition to Rao — he supports only that Gulika is Saturn-natured. #}
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Gulika Kaal (avoid)</div>
+      <div class="text-lg font-marcellus text-bhagya-sindoor tabular-nums">
+        {{ p.gulika_start.strftime('%H:%M') }} — {{ p.gulika_end.strftime('%H:%M') }}
+      </div>
+      <div class="text-xs text-bhagya-muted">Saturn's 1/8 of daylight, inferred from Rao and confirmed against a published almanac</div>
+    </div>
     <div class="bg-white border border-bhagya-line p-4">
       <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Abhijit Muhurat (best)</div>
       <div class="text-lg font-marcellus text-emerald-800 tabular-nums">
@@ -147,7 +159,7 @@
       </div>
       <p class="text-xs text-amber-800 mt-2">
         At {{ city_display }}'s latitude the Sun can stay above the horizon past midnight, so these two instants do not bound a daylight period inside {{ today_pretty }}.
-        <strong>Rahu Kaal, Abhijit Muhurat and Choghadiya are each a fixed fraction of the sunrise-to-sunset period</strong>, so on a date without one there is nothing to divide — they are left out rather than guessed.
+        <strong>Rahu Kaal, Gulika Kaal, Abhijit Muhurat and Choghadiya are each a fixed fraction of the sunrise-to-sunset period</strong>, so on a date without one there is nothing to divide — they are left out rather than guessed.
         The tithi, yoga and karana above come from Sun and Moon longitudes, not from the length of the day.
       </p>
     </div>
@@ -275,7 +287,8 @@
         <ul class="list-disc pl-5 space-y-2 text-sm sm:text-base text-bhagya-ink leading-relaxed">
           <li><strong>Rahu Kaal</strong> &mdash; a specific 1/8 slice of daylight considered inauspicious for beginnings. It shifts weekday-by-weekday and depends on your sunrise/sunset (which shifts by location). We compute it correctly for your city.</li>
           <li><strong>Abhijit Muhurta</strong> &mdash; a ~48-minute window around solar noon, considered the most universally auspicious slot of the day. Perfect for signing important documents, starting a business call, or committing to any decision.</li>
-          <li><strong>Yamaganda / Gulikai</strong> &mdash; two more classical inauspicious windows on the same weekday-lord principle as Rahu Kaal (not shown above, deferred to a next release).</li>
+          <li><strong>Gulika Kaal</strong> &mdash; Saturn's 1/8 of daylight, on the same weekday-lord principle as Rahu Kaal: it moves one slot earlier each day, from the 7th eighth on Sunday to the 1st on Saturday. Narasimha Rao's table of the eight parts of the day gives Saturn's part for each weekday; reading that part as a window is our inference, and its times match the Gulikai Kalam printed by a published almanac. Shown above, from your city's sunrise and sunset.</li>
+          <li><strong>Yamaganda and Brahma Muhurta</strong> &mdash; two more classical timings we do not show yet: the texts we hold do not state a rule we can compute them from, so they are deferred rather than guessed.</li>
           <li><strong>Choghadiya</strong> &mdash; 8 equal daytime windows named Amrit / Shubh / Labh (auspicious), Rog / Kaal (avoid), Udveg / Chal (neutral). Which name each window gets rotates with weekday. Useful for picking a specific shop-open time or product-launch minute.</li>
         </ul>
       </div>
@@ -285,7 +298,7 @@
       <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">How Bhagya computes it</h2>
       <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
         <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
-          All calculations use <strong>Swiss Ephemeris</strong> on sidereal <strong>Lahiri (Chitrapaksha) ayanamsa</strong>, the standard Indian classical convention. Sunrise/sunset for your city are computed from the local latitude/longitude + timezone, not approximated. Rahu Kaal, Abhijit, and Choghadiya windows are derived from that local sunrise/sunset &mdash; they will not match tables that hardcode Mumbai-only or Delhi-only times.
+          All calculations use <strong>Swiss Ephemeris</strong> on sidereal <strong>Lahiri (Chitrapaksha) ayanamsa</strong>, the standard Indian classical convention. Sunrise/sunset for your city are computed from the local latitude/longitude + timezone, not approximated. Rahu Kaal, Gulika Kaal, Abhijit, and Choghadiya windows are derived from that local sunrise/sunset &mdash; they will not match tables that hardcode Mumbai-only or Delhi-only times.
         </p>
       </div>
     </div>

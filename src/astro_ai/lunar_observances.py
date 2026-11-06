@@ -136,7 +136,7 @@ from zoneinfo import ZoneInfo
 
 import swisseph as swe
 
-# Private cross-module helpers, imported deliberately. Precedent: main.py:790
+# Private cross-module helpers, imported deliberately. Precedent: routes/panchang.py
 # imports `astro_ai.muhurat._choghadiya_windows` the same way.
 #
 # `_tithi_at(jd) -> (index 0-29, name, paksha, significance)` and

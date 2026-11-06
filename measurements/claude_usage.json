@@ -1,66 +1,66 @@
 {
- "generated_at": "2026-11-05T08:58:37Z",
+ "generated_at": "2026-11-06T01:26:47Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 41960753770,
-  "at": "2026-11-05T03:18:25Z",
-  "five_hour": 0.31,
-  "seven_day": 0.84,
+  "run": 42133188750,
+  "at": "2026-11-05T23:56:51Z",
+  "five_hour": 0.24,
+  "seven_day": 0.89,
   "status": "allowed_warning",
   "resets": {
-   "five_hour": 1793866800,
+   "five_hour": 1793931000,
    "seven_day": 1793944800
   }
  },
- "peak_seven_day": 0.84,
+ "peak_seven_day": 0.89,
  "rejected_runs": [],
  "readings": [
   {
    "workflow": "agent-work",
-   "run": 41911727014,
-   "at": "2026-11-04T20:59:01Z",
-   "five_hour": 0.1,
-   "seven_day": 0.81,
+   "run": 42052087700,
+   "at": "2026-11-05T15:09:29Z",
+   "five_hour": 0.03,
+   "seven_day": 0.86,
    "status": "allowed_warning",
    "resets": {
-    "five_hour": 1793830800,
+    "five_hour": 1793909400,
     "seven_day": 1793944800
    }
   },
   {
    "workflow": "agent-work",
-   "run": 41922149787,
-   "at": "2026-11-04T22:05:45Z",
-   "five_hour": 0.11,
-   "seven_day": 0.81,
+   "run": 42085432562,
+   "at": "2026-11-05T18:33:50Z",
+   "five_hour": 0.06,
+   "seven_day": 0.87,
    "status": "allowed_warning",
    "resets": {
-    "five_hour": 1793848800,
+    "five_hour": 1793909400,
     "seven_day": 1793944800
    }
   },
   {
    "workflow": "agent-work",
-   "run": 41939452128,
-   "at": "2026-11-05T00:11:20Z",
-   "five_hour": 0.28,
-   "seven_day": 0.84,
+   "run": 42111082723,
+   "at": "2026-11-05T21:16:11Z",
+   "five_hour": 0.02,
+   "seven_day": 0.87,
    "status": "allowed_warning",
    "resets": {
-    "five_hour": 1793848800,
+    "five_hour": 1793931000,
     "seven_day": 1793944800
    }
   },
   {
    "workflow": "agent-work",
-   "run": 41960753770,
-   "at": "2026-11-05T03:18:25Z",
-   "five_hour": 0.31,
-   "seven_day": 0.84,
+   "run": 42133188750,
+   "at": "2026-11-05T23:56:51Z",
+   "five_hour": 0.24,
+   "seven_day": 0.89,
    "status": "allowed_warning",
    "resets": {
-    "five_hour": 1793866800,
+    "five_hour": 1793931000,
     "seven_day": 1793944800
    }
   }

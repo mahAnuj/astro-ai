@@ -3,7 +3,7 @@
 
 WHY THIS EXISTS
 ---------------
-`welcome.html` unpacked THREE names out of `rashifal_sections` while `main.py`
+`welcome.html` unpacked THREE names out of `rashifal_sections` while `routes/subscribe.py`
 has been building FOUR-tuples — `(glyph, title, teaser, body)` — since 3c8345b.
 Every render where the Rashifal LLM call SUCCEEDED therefore raised
 `ValueError: too many values to unpack (expected 3)`, the caller logged and
@@ -16,7 +16,7 @@ suite, and a template arity error is invisible to a diff and to `ast.parse`.
 This script is that missing check: one command, PASS/FAIL, exit 0 or 1.
 
   Gate 1 - digest render (all 12 rashis).  Both templates rendered in `en` and
-      `hi` against the real 4-tuples `main.py` constructs, with the panchang,
+      `hi` against the real 4-tuples `routes/subscribe.py` constructs, with the panchang,
       shlok, festival and trivia context keys `_email_context()` supplies. A
       raise fails. Rendering is not enough on its own, so this gate also
       asserts every rashi glyph, every rashi title and the first section's
@@ -43,11 +43,11 @@ This script is that missing check: one command, PASS/FAIL, exit 0 or 1.
 
 WHAT THIS DOES NOT DO
 ---------------------
-It does not import `main.py`. That module builds the FastAPI app, reads
-environment variables and touches GCS at import time, and it is edited
+It does not import `routes/subscribe.py`. That module pulls in `routes/deps.py`, which loads
+`.env` and reads environment variables at import time, and it is edited
 constantly — a gate that fails because an unrelated route was mid-edit is a
 gate people learn to ignore. The fixture below instead reproduces the tuple
-`main.py` builds, using the same `symbol_for_rashi_label()` and
+`routes/subscribe.py` builds, using the same `symbol_for_rashi_label()` and
 `parse_sectioned_reading()` helpers it calls, plus a local copy of its
 2-sentence teaser split. If `_send_welcome_email` ever changes the SHAPE of
 those tuples, update `_sections_from_reading()` here in the same commit.
@@ -120,7 +120,7 @@ def _reading_text(labels: tuple[str, ...]) -> str:
 
 
 def _teaser(body: str, sentences: int = 2) -> str:
-    """Local copy of `main.py:_rashifal_teaser` — see WHAT THIS DOES NOT DO."""
+    """Local copy of `routes/subscribe.py:_rashifal_teaser` — see WHAT THIS DOES NOT DO."""
     parts = re.split(r"(?<=[.!?])\s+", (body or "").strip())
     return " ".join(parts[:sentences]).strip()
 
@@ -162,7 +162,7 @@ def _context(*, lang: str, sections: list, with_panchang: bool = True) -> dict:
 
 
 # Same autoescape behaviour as the app's environment, built without importing
-# main.py. This one is Starlette's `directory=` default, which for .html is
+# routes/deps.py. This one is Starlette's `directory=` default, which for .html is
 # identical to the explicit pin in routes/deps.py (#409); the pin itself is
 # asserted by tests/test_autoescape_pinned.py, against the REAL `templates.env`,
 # so this gate renders the email templates escaped only for as long as that test
@@ -354,7 +354,7 @@ def gate_4_arity_is_enforced() -> list[str]:
         failures.append(
             f"{name}: rendered a list of 3-tuples without error. The template is "
             "not unpacking all four fields, so gates 1-3 prove nothing about the "
-            "contract main.py actually builds."
+            "contract routes/subscribe.py actually builds."
         )
     return failures
 
@@ -399,7 +399,7 @@ def main() -> int:
     print()
     if all_failures:
         print(f"FAIL — {len(all_failures)} problem(s). A template that cannot render "
-              "the sections main.py builds means that email never reaches anyone.")
+              "the sections routes/subscribe.py builds means that email never reaches anyone.")
         return 1
     print("PASS")
     return 0

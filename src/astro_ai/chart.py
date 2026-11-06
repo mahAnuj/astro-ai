@@ -2133,20 +2133,19 @@ def is_combust(planet, sun) -> tuple[bool, float]:
     return sep < orb, sep
 
 
-def format_planet_dignity_for_prompt(chart: "Chart") -> str:
-    """Planet dignity report (Issue #61).
+def planet_dignities(chart: "Chart") -> list[tuple["PlanetPosition", list[str]]]:
+    """(planet, dignity tags) for the 7 planets that have a dignity (#61, #399).
 
-    For each of the 7 luminary+non-luminary planets (Rahu/Ketu don't own
-    signs so are omitted here — their dignity theory is contested), report:
-    - Sign + house
-    - Dignity: EXALTED / OWN SIGN / DEBILITATED / neutral
-    - Combust flag per COMBUSTION_ORBS (per-planet, retrograde-aware)
+    Rahu/Ketu are skipped — they don't own signs and their dignity theory is
+    contested. Tags are the strings the prompt prints: "OWN SIGN", "EXALTED",
+    "DEBILITATED", "COMBUST (x.x° from Sun)"; an empty list means neutral.
 
-    Debilitation dramatically reverses a planet's expression; the LLM often
-    misses this in output. Explicit flag prevents "Sun in Libra is
-    authoritative" errors when Sun is deeply debilitated there.
+    Split out of format_planet_dignity_for_prompt so the remedy lookup
+    (knowledge_lookup.py) reads the SAME verdict the PLANET DIGNITY block
+    prints, instead of a second copy of the sign/orb logic that could disagree
+    with it.
     """
-    lines = ["--- PLANET DIGNITY (own sign / exalted / debilitated / combust) ---"]
+    result: list[tuple["PlanetPosition", list[str]]] = []
     sun = next((p for p in chart.planets if p.name == "Sun"), None)
     for p in chart.planets:
         if p.name in ("Rahu", "Ketu"):
@@ -2167,6 +2166,25 @@ def format_planet_dignity_for_prompt(chart: "Chart") -> str:
             combust, sep = is_combust(p, sun)
             if combust:
                 dignities.append(f"COMBUST ({sep:.1f}° from Sun)")
+        result.append((p, dignities))
+    return result
+
+
+def format_planet_dignity_for_prompt(chart: "Chart") -> str:
+    """Planet dignity report (Issue #61).
+
+    For each of the 7 luminary+non-luminary planets (Rahu/Ketu don't own
+    signs so are omitted here — their dignity theory is contested), report:
+    - Sign + house
+    - Dignity: EXALTED / OWN SIGN / DEBILITATED / neutral
+    - Combust flag per COMBUSTION_ORBS (per-planet, retrograde-aware)
+
+    Debilitation dramatically reverses a planet's expression; the LLM often
+    misses this in output. Explicit flag prevents "Sun in Libra is
+    authoritative" errors when Sun is deeply debilitated there.
+    """
+    lines = ["--- PLANET DIGNITY (own sign / exalted / debilitated / combust) ---"]
+    for p, dignities in planet_dignities(chart):
         tag = " — ".join(dignities) if dignities else "neutral"
         lines.append(f"  {p.name} in {p.rashi} (house {p.house}) — {tag}")
     return "\n".join(lines)
@@ -3690,6 +3708,40 @@ _RAHU_KAAL_SEGMENT: dict[int, int] = {
     6: 8,  # Sunday    — 8th part
 }
 
+# 1-based 1/8 segment of the daylight when Gulika Kaal falls — SATURN'S part of
+# the eight (#150).
+#
+# Source: P.V.R. Narasimha Rao, "Vedic Astrology: An Integrated Approach",
+# §4.3 Table 10, "Rulers of the 8 parts of the DAY" — the daytime cycle is
+# Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, (lord-less), entered at the
+# weekday lord; Gulika rises in Saturn's part. `knowledge/vedic_reference.md`
+# §28.1-28.2 reproduce the table. The ordinal is 7 - (weekday-lord index, Sun=0),
+# and §28.2 proves it is the SAME under Rao's 8-slot cycle and a plain 7-planet
+# cycle (counting from the weekday lord reaches Saturn before the lord-less
+# slot), so nothing here depends on that slot.
+#
+# Two things this is NOT. Rao computes Gulika as a LONGITUDE (the lagna at the
+# middle of Saturn's part) and never writes "Gulika Kaal", so reading the whole
+# part as a panchang window is an inference — the same structural move as
+# `_RAHU_KAAL_SEGMENT` — and it is confirmed against four published almanac rows
+# (drikpanchang.com, "Gulikai Kalam", Fri/Sun/Mon/Thu) by
+# `scripts/verify_panchang_angas.py` Gate 8. Tuesday, Wednesday and Saturday
+# have no almanac row; those three rest on Rao's table alone. And it is NOT a
+# prohibition from Rao: he supports only that Gulika is Saturn-natured and
+# afflicting (§28.2), so no surface may attribute a "do not ..." to him.
+#
+# DAY windows only. Rao also gives a night cycle, and Drik prints no separate
+# night Gulikai on the four pages checked, so none is computed here.
+_GULIKA_SEGMENT: dict[int, int] = {
+    0: 6,  # Monday    — 6th part
+    1: 5,  # Tuesday   — 5th part
+    2: 4,  # Wednesday — 4th part
+    3: 3,  # Thursday  — 3rd part
+    4: 2,  # Friday    — 2nd part
+    5: 1,  # Saturday  — 1st part
+    6: 7,  # Sunday    — 7th part
+}
+
 
 # 30 Tithi names — 15 waxing (Shukla Paksha) then 15 waning (Krishna Paksha).
 # Purnima (index 14) = full moon; Amavasya (index 29) = new moon.
@@ -3833,8 +3885,10 @@ class DailyPanchang:
     rahu_kaal_end: datetime   # LOCATION-DEPENDENT
     abhijit_start: datetime   # LOCATION-DEPENDENT
     abhijit_end: datetime     # LOCATION-DEPENDENT
+    gulika_start: datetime    # LOCATION-DEPENDENT — Saturn's 1/8 of daylight (#150)
+    gulika_end: datetime      # LOCATION-DEPENDENT
     # False when this date has no ordinary sunrise→sunset span at this
-    # latitude, so the four fields above are arithmetic on a span that does
+    # latitude, so the six fields above are arithmetic on a span that does
     # not exist and MUST NOT be presented. See compute_panchang. #227.
     daylight_ordinary: bool = True
 
@@ -4030,7 +4084,8 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
     # (2026-05-16) with a sunset on D+1. Those 5 used to render a confident
     # backwards table on `/panchang` — 200 OK, no error, no clue. Issue #227.
     #
-    # The four derived fields are still POPULATED rather than set to None:
+    # The six derived fields (Rahu Kaal, Abhijit, Gulika — two instants each) are
+    # still POPULATED rather than set to None:
     # `llm.py` formats them unconditionally for the daily-reading and rashifal
     # prompts, so a None would convert this quiet render defect into a crash on
     # the email path. Callers that PRESENT a daylight window must check this
@@ -4045,6 +4100,11 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
     rk_segment_idx = _RAHU_KAAL_SEGMENT[weekday]
     rk_start = sunrise + timedelta(seconds=(rk_segment_idx - 1) * segment_seconds)
     rk_end = sunrise + timedelta(seconds=rk_segment_idx * segment_seconds)
+    # Gulika Kaal: the same eighths, Saturn's one. Populated, never None, for
+    # the reason given above `daylight_ordinary`.
+    gk_segment_idx = _GULIKA_SEGMENT[weekday]
+    gk_start = sunrise + timedelta(seconds=(gk_segment_idx - 1) * segment_seconds)
+    gk_end = sunrise + timedelta(seconds=gk_segment_idx * segment_seconds)
 
     # Abhijit Muhurta: centred on LOCAL solar noon, spanning day_length/15
     # (~48 minutes on equinox days).
@@ -4085,6 +4145,8 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
         rahu_kaal_end=rk_end,
         abhijit_start=midday - abhijit_half,
         abhijit_end=midday + abhijit_half,
+        gulika_start=gk_start,
+        gulika_end=gk_end,
         daylight_ordinary=daylight_ordinary,
     )
     _PANCHANG_CACHE[cache_key] = result

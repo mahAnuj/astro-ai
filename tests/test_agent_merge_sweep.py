@@ -244,13 +244,21 @@ def _walk(shortlist: str, mergeable: dict[int, str]) -> tuple[str, str]:
             'for p in $@; do case "$p" in [0-9]*) n="$p"; break;; esac; done\n'
             f'for e in $(echo "{table}" | tr ";" " "); do\n'
             '  k="${e%%=*}"; v="${e#*=}"\n'
-            '  if [ "$k" = "$n" ]; then printf "%s" "$v"; exit 0; fi\n'
+            '  if [ "$k" = "$n" ]; then\n'
+            '    case "$v" in\n'
+            '      UNKNOWNx*) left="${v#UNKNOWNx}"; times="${left%%:*}"; final="${left#*:}"\n'
+            '                 c=$(cat "$GH_COUNT.$n" 2>/dev/null || echo 0); echo $((c+1)) > "$GH_COUNT.$n"\n'
+            '                 if [ "$c" -lt "$times" ]; then printf UNKNOWN; else printf "%s" "$final"; fi ;;\n'
+            '      *) printf "%s" "$v" ;;\n'
+            '    esac; exit 0\n'
+            '  fi\n'
             "done\n"
             "exit 1\n")
         gh.chmod(0o755)
         script = f'candidates="{shortlist}"\nGH_REPO=x\n{loop}\nprintf "PICKED=%s" "$n"\n'
         r = subprocess.run(["bash", "-c", script], capture_output=True, text=True,
-                           env={"PATH": f"{bin_dir}:/usr/bin:/bin"})
+                           env={"PATH": f"{bin_dir}:/usr/bin:/bin", "MERGEABLE_WAIT": "0",
+                                "GH_COUNT": str(pathlib.Path(tmp) / "count")})
     out = r.stdout + r.stderr
     picked = re.search(r"PICKED=(\d*)", out)
     return (picked.group(1) if picked else ""), out
@@ -275,6 +283,19 @@ def test_unknown_is_not_treated_as_mergeable():
     # failure intermittent, which is worse than reliable.
     picked, _ = _walk("352", {352: "UNKNOWN"})
     assert picked == ""
+
+
+def test_unknown_is_asked_again_before_the_candidate_is_skipped():
+    """2026-11-06: #706 and #712 sat cleared and green for 18 hours. The first
+    ask STARTS GitHub's computation and every merge to main discards it, so a
+    single ask read UNKNOWN on four consecutive sweeps."""
+    picked, out = _walk("706", {706: "UNKNOWNx2:MERGEABLE"})
+    assert picked == "706", out
+
+
+def test_unknown_that_never_settles_is_still_skipped():
+    picked, out = _walk("706 712", {706: "UNKNOWNx9:MERGEABLE", 712: "MERGEABLE"})
+    assert picked == "712" and "skipping #706 — mergeable=UNKNOWN" in out
 
 
 def test_an_unreadable_candidate_is_skipped_not_assumed_good():

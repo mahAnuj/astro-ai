@@ -65,6 +65,11 @@ does not prove the command counts the right thing.
 
 Two rows sharing a label or a command also FAIL — EXPECTED_ROWS is a floor, and
 a floor is blind to a row that was duplicated rather than removed.
+
+The decision log (§10) gets the same treatment (#466): two rows with one
+(date, title) cell are one decision kept twice, FAIL. A row revised across QA
+rounds had survived as four rows because the union merge resolver keeps an
+edited row beside its older self. An unparseable log fails rather than passes.
 """
 from __future__ import annotations
 
@@ -96,12 +101,67 @@ def _numbers(text: str) -> list[int]:
     return [int(n.replace(",", "")) for n in re.findall(r"\d[\d,]*", text)]
 
 
+# A decision-log row: `| 2026-10-18 | <title cell> | ...`. The title cell may carry
+# escaped pipes (`\|`). About a third of the rows have no bold title, so the whole
+# cell is the key rather than a `**...**` span.
+LOG_ROW = re.compile(r"^\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*((?:[^|\\]|\\.)+?)\s*\|")
+LOG_HEADING = "## 10. Decision log"
+
+
+def _duplicate_log_rows(body: str) -> list[str]:
+    """Two decision-log rows with the same (date, title) cell are one decision.
+
+    #466: a row revised across four QA rounds survived as FOUR rows (13,435 /
+    12,479 / 11,532 / 5,822 bytes), because the union merge resolver cannot tell
+    an edited row from a new row plus a deleted one and keeps both. A reader
+    who lands on the 5,822-byte first draft never sees that three later
+    revisions exist, and the earlier ones carry claims the later ones corrected.
+
+    A row this cannot parse is a FAILURE, not a skip: if the heading is present
+    and no row matches, the table's shape changed and this check would otherwise
+    report success over nothing.
+
+    WHAT THIS LETS THROUGH: a revision whose title cell was also edited, since
+    the key is the title as written. It catches the shape the resolver produces
+    — the edited row is kept verbatim beside its older self, title included.
+
+    COVERAGE: pr-gates skips the verify_* sweep on a diff with no code path in it,
+    so a PR that edits only ARCHITECTURE.md is not checked by this (QA, #466).
+    """
+    if LOG_HEADING not in body:
+        return [f"heading {LOG_HEADING!r} not found — renamed? this check must "
+                f"follow it rather than report PASS over nothing"]
+    start = body.index(LOG_HEADING)
+    nxt = body.find("\n## ", start + 1)
+    section = body[start:nxt if nxt != -1 else len(body)]
+    keys: dict[tuple[str, str], int] = {}
+    for line in section.splitlines():
+        m = LOG_ROW.match(line)
+        if m:
+            k = (m.group(1), m.group(2))
+            keys[k] = keys.get(k, 0) + 1
+    if not keys:
+        return [f"no dated rows parsed under {LOG_HEADING!r} — the table's shape "
+                f"changed and this check is blind"]
+    return [f"{n} rows share {date} / {title[:70]!r}" for (date, title), n in
+            sorted(keys.items()) if n > 1]
+
+
 def main() -> int:
     if not DOC.exists():
         print(f"FAIL — {DOC} not found")
         return 1
 
     body = DOC.read_text()
+
+    # The decision log is checked for revisions kept as extra rows (#466).
+    log_problems = _duplicate_log_rows(body)
+    if log_problems:
+        print("FAIL — decision-log rows are not one-per-decision:")
+        for p in log_problems:
+            print(f"  - {p}")
+        return 1
+
     # §1 only: from its heading to the next ##
     start = body.index("## 1.")
     end = body.index("\n## ", start + 1)

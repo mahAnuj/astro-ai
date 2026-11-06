@@ -168,7 +168,7 @@ HEADINGS = (
 # were guesses in the first version of this file and every one of them was
 # wrong — the guessed chars-per-token over-counted the prompt by 16%.
 #
-#   * The system prompt is 3,111 tok at 13,135 B (13,013 B after #398) — 4.22 B/tok for instruction
+#   * The system prompt is 3,111 tok at 13,135 B (13,013 B after #398, 12,640 B after #399) — 4.22 B/tok for instruction
 #     prose. It is identical on every request; only the user message varies.
 #   * The largest chart payload across the eight fixtures is 3,687 tok
 #     (cancer-lagna-manglik-exempt: Manglik detail block plus topic summaries).

@@ -1,26 +1,26 @@
 {
-  "generated_at": "2026-11-05T08:57:40Z",
+  "generated_at": "2026-11-06T01:25:49Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 133,
-  "with_ask": 52,
+  "open": 137,
+  "with_ask": 54,
   "by_area": {
-    "UNCLASSIFIED": 46,
+    "UNCLASSIFIED": 45,
     "INFRA": 17,
-    "UI": 12,
+    "UI": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
+    "CHORE": 4,
+    "MEASURE": 3,
     "MUHURAT": 3,
-    "CHORE": 3,
     "BUG": 3,
     "SEO": 3,
-    "MEASURE": 2,
+    "OPS": 2,
     "DETECT_STALLS": 2,
     "SECURITY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
-    "OPS": 1,
     "CONTENT": 1,
     "PRIVACY": 1,
     "REPO": 1,
@@ -35,34 +35,108 @@
     "MATCHING": 1
   },
   "by_type": {
-    "untyped": 39,
-    "bug": 32,
+    "untyped": 41,
+    "bug": 30,
     "enhancement": 26,
     "correctness": 14,
-    "chore": 8,
-    "design": 8,
-    "ui": 6
+    "chore": 10,
+    "design": 9,
+    "ui": 7
   },
   "by_priority": {
-    "unset": 97,
+    "unset": 101,
     "medium": 19,
     "high": 16,
     "low": 1
   },
-  "blocked": 8,
+  "blocked": 9,
   "rows": [
     {
-      "number": 719,
-      "title": "chief's carrier denies gh pr edit, so a chief-cleared ruling can never be followed by its label (#706 held 3h after ruling)",
+      "number": 735,
+      "title": "[MEASURE] 14 GA4 sessions landed on /admin/* (13 on /admin/ops, a page documented to carry no analytics) and 15 on (not set)",
       "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
+      "area": "MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-06T01:24:18Z",
+      "updated": "2026-11-06T01:24:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 733,
+      "title": "[CHORE] agent-design.yml never asks for an Evidence Block, so every design-filed issue fails verify_issue_evidence and the cycle skips it",
+      "ask": "",
+      "area": "CHORE",
+      "type": "chore",
       "priority": "unset",
       "labels": [
-        "bug"
+        "needs-human-review",
+        "chore"
       ],
-      "created": "2026-11-05T03:27:22Z",
-      "updated": "2026-11-05T03:27:22Z",
+      "created": "2026-11-06T00:49:38Z",
+      "updated": "2026-11-06T00:49:38Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 732,
+      "title": "[UI] Form focus indicator is a 1px saffron border at 2.50:1 on white — under WCAG 1.4.11's 3:1, and verify_contrast never checks focus",
+      "ask": "Keep the saffron glow ring (it is the brand's look) and change only the focused border colour to an existing token with >= 3:1 on white and cream: bhagya-night (18.84:1 on white)",
+      "area": "UI",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "design-proposal"
+      ],
+      "created": "2026-11-06T00:47:34Z",
+      "updated": "2026-11-06T00:47:34Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 731,
+      "title": "[UI] Home page has no <main> landmark and no page has a skip link — 13–14 Tab stops to reach the first form field",
+      "ask": "Add one visually-hidden-until-focused link as the first child of <body> content (<a href=\"#main-content\" class=\"sr-only focus:not-sr-only …\">Skip to content</a>), styled from",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-11-06T00:47:08Z",
+      "updated": "2026-11-06T00:47:08Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 727,
+      "title": "agent-merge sweep reads mergeable once, skips on UNKNOWN, and the cron is 6-8h apart: chief-cleared PRs #706 and #712 wait",
+      "ask": "In the sweep loop, retry gh pr view --json mergeable up to ~3 times with sleep 5 while the answer is UNKNOWN.",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-05T15:45:50Z",
+      "updated": "2026-11-06T00:06:31Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 726,
+      "title": "[OPS] Claude weekly quota 86% used",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-05T15:43:27Z",
+      "updated": "2026-11-05T21:36:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -165,7 +239,7 @@
         "chore"
       ],
       "created": "2026-11-03T20:55:15Z",
-      "updated": "2026-11-05T03:24:26Z",
+      "updated": "2026-11-05T21:36:34Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -363,7 +437,7 @@
         "risk:low"
       ],
       "created": "2026-10-29T23:50:53Z",
-      "updated": "2026-10-29T23:51:02Z",
+      "updated": "2026-11-06T00:49:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -460,12 +534,14 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness"
+        "astrology-correctness",
+        "provenance:trusted",
+        "needs-evidence"
       ],
       "created": "2026-10-28T23:12:01Z",
-      "updated": "2026-10-28T23:12:01Z",
+      "updated": "2026-11-05T18:36:46Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 582,
@@ -785,21 +861,6 @@
       "needs_evidence": true
     },
     {
-      "number": 466,
-      "title": "ARCHITECTURE.md holds four successive revisions of one decision-log row as four rows — resolve_union_dated keeps an edited row as two (second head of #460)",
-      "ask": "The 2026-10-20 log already records a related incident: a hand resolution in this same table \"silently concatenated two decision-log rows … a row's text ended up inside another and",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-10-21T04:49:46Z",
-      "updated": "2026-10-21T04:49:46Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 464,
       "title": "Gate 7 cannot catch an FAQ naming a practice its page lacks — QA pasted the fixed defect back and the gate stayed green (#398 F2)",
       "ask": "",
@@ -942,7 +1003,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-20T09:27:06Z",
-      "updated": "2026-11-05T03:23:45Z",
+      "updated": "2026-11-06T00:05:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1073,10 +1134,10 @@
         "priority:high",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-17T07:17:17Z",
-      "updated": "2026-11-04T22:23:41Z",
+      "updated": "2026-11-05T11:45:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1171,7 +1232,7 @@
         "page:matching"
       ],
       "created": "2026-10-15T22:59:04Z",
-      "updated": "2026-10-29T23:50:54Z",
+      "updated": "2026-11-06T00:49:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1220,7 +1281,7 @@
         "skill:ui-fixer"
       ],
       "created": "2026-10-15T22:59:00Z",
-      "updated": "2026-10-29T23:50:55Z",
+      "updated": "2026-11-06T00:49:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1920,10 +1981,13 @@
       "type": "enhancement",
       "priority": "unset",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-08-08T09:45:41Z",
-      "updated": "2026-08-08T09:45:41Z",
+      "updated": "2026-11-05T10:52:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2013,10 +2077,13 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-08-07T15:59:16Z",
-      "updated": "2026-11-01T21:02:40Z",
+      "updated": "2026-11-05T15:48:02Z",
       "blocked": false,
       "needs_evidence": false
     },

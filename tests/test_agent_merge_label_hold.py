@@ -19,6 +19,7 @@ type-checks, and the failure is silent in the worst way: the PR merges.
 """
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
 
@@ -35,14 +36,30 @@ def _qa_step() -> dict:
     return next(s for s in steps if s.get("id") == "qa")
 
 
-def _drive(labels: str, tmp_path: Path) -> tuple[int, str, str]:
+HEAD = "c" * 40
+
+
+def _drive(labels: str, tmp_path: Path, passed_at: str = HEAD) -> tuple[int, str, str]:
     """Run the step's own `run:` block with a fake `gh` returning `labels`."""
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     gh = bin_dir / "gh"
-    # The step calls: gh pr view N --repo R --json labels --jq '...'
-    # The real --jq joins the names with a comma, so the fake prints that.
-    gh.write_text("#!/bin/sh\nprintf '%s\\n' \"$FAKE_LABELS\"\n")
+    # The step calls `gh pr view N --json labels --jq '...'` (the real --jq
+    # joins names with a comma, so the fake prints that) and, on qa-pass, the
+    # comments API -- answered by applying the step's OWN --jq with real jq
+    # over a PASS bound to PR_SHA, so the SHA binding is exercised, not stubbed.
+    comments = tmp_path / "comments.json"
+    comments.write_text(json.dumps(
+        [{"id": 1, "user": {"login": "claude[bot]"}, "body": f"QA: PASS — verified at `{passed_at}`\nok"}]))
+    gh.write_text(f"""#!/usr/bin/env bash
+filter=""; prev=""
+for a in "$@"; do [ "$prev" = "--jq" ] && filter="$a"; prev="$a"; done
+case "$*" in
+  *"/comments"*) jq -r "$filter" {comments} ;;
+  *"--json labels"*) printf '%s\\n' "$FAKE_LABELS" ;;
+  *) exit 9 ;;
+esac
+""")
     gh.chmod(0o755)
 
     out_file = tmp_path / "gh_output"
@@ -57,6 +74,8 @@ def _drive(labels: str, tmp_path: Path) -> tuple[int, str, str]:
             "GITHUB_OUTPUT": str(out_file),
             "GH_REPO": "mahAnuj/astro-ai",
             "PR_NUMBER": "550",
+            "PR_SHA": HEAD,
+            "REPO_OWNER": "mahAnuj",
         },
     )
     return p.returncode, p.stdout + p.stderr, out_file.read_text()
@@ -130,3 +149,14 @@ def test_the_sweep_filter_and_this_step_refuse_the_same_label():
     assert sweep, "the sweep filter no longer refuses needs-human-review"
     assert "*,needs-human-review,*)" in _qa_step()["run"], (
         "the QA verdict step no longer refuses needs-human-review")
+
+
+
+def test_a_qa_pass_for_an_EARLIER_commit_does_not_merge(tmp_path):
+    """2026-11-05. A label cannot say which commit it is about and survives a
+    push (#609 merged on one). A `main` merged into a passed PR used to ship
+    unreviewed; the step now requires a QA: PASS comment naming the head."""
+    rc, log, out = _drive("qa-pass,qa:in-cycle", tmp_path, passed_at="d" * 40)
+    assert rc == 0, log
+    assert "ok=true" not in out
+    assert "from an earlier commit" in log

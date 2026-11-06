@@ -44,15 +44,24 @@ CLEAN = [
 ]
 
 
-def _doc(rows, extra: str = "") -> str:
+# Two distinct dated rows, one of them with no bold title (about a third of the
+# real log's rows have none), so the clean doc exercises both title shapes.
+CLEAN_LOG = (
+    "## 10. Decision log\n\n| date | decision | why |\n|---|---|---|\n"
+    "| 2026-10-18 | **A bolded title** | because |\n"
+    "| 2026-10-18 | a plain title | because |\n"
+)
+
+
+def _doc(rows, extra: str = "", log: str = CLEAN_LOG) -> str:
     lines = ["# t", "", "## 1. What the system is", "", "| | count | command |", "|---|---|---|"]
     lines += [f"| {a} | {b} | `{c}` |" for a, b, c in rows]
-    return "\n".join(lines) + "\n" + extra + "\n## 2. Next\n"
+    return "\n".join(lines) + "\n" + extra + "\n## 2. Next\n\n" + log
 
 
-def _run(tmp_path, monkeypatch, capsys, rows=None, extra: str = ""):
+def _run(tmp_path, monkeypatch, capsys, rows=None, extra: str = "", log: str = CLEAN_LOG):
     doc = tmp_path / "ARCHITECTURE.md"
-    doc.write_text(_doc(CLEAN if rows is None else rows, extra))
+    doc.write_text(_doc(CLEAN if rows is None else rows, extra, log))
     monkeypatch.setattr(gate, "DOC", doc)
     monkeypatch.setattr(gate, "ROOT", tmp_path)
     rc = gate.main()
@@ -164,3 +173,59 @@ def test_measured_must_be_exactly_the_lowercase_word_on_a_report_only_row(
     rc, out = _run(tmp_path, monkeypatch, capsys, _with("behaviour suite", value=cell))
     assert rc != 0, out
     assert "behaviour suite: volatile; a number here is what makes every PR conflict" in out
+
+
+# --- #466: a revised decision-log row must replace its older self ------------
+
+def test_a_decision_log_row_kept_beside_its_older_draft_fails(tmp_path, monkeypatch, capsys):
+    # The #466 shape: the SAME date and title, two different bodies.
+    log = CLEAN_LOG + "| 2026-10-18 | **A bolded title** | a later, longer revision |\n"
+    rc, out = _run(tmp_path, monkeypatch, capsys, log=log)
+    assert rc != 0, out
+    assert "2 rows share 2026-10-18 / '**A bolded title**'" in out
+
+
+def test_a_duplicate_plain_title_fails_too(tmp_path, monkeypatch, capsys):
+    # About a third of the real rows carry no `**title**`; keying on bold would skip them.
+    log = CLEAN_LOG + "| 2026-10-18 | a plain title | a revision |\n"
+    rc, out = _run(tmp_path, monkeypatch, capsys, log=log)
+    assert rc != 0, out
+    assert "2 rows share 2026-10-18 / 'a plain title'" in out
+
+
+def test_the_same_title_on_another_date_is_a_different_decision(tmp_path, monkeypatch, capsys):
+    log = CLEAN_LOG + "| 2026-10-19 | **A bolded title** | revisited the next day |\n"
+    rc, out = _run(tmp_path, monkeypatch, capsys, log=log)
+    assert rc == 0, out
+
+
+def test_a_decision_log_with_no_parseable_rows_fails_rather_than_passing(
+        tmp_path, monkeypatch, capsys):
+    rc, out = _run(tmp_path, monkeypatch, capsys,
+                   log="## 10. Decision log\n\n| when | what |\n|---|---|\n| soon | x |\n")
+    assert rc != 0, out
+    assert "no dated rows parsed" in out
+
+
+def test_a_missing_decision_log_heading_fails_rather_than_passing(tmp_path, monkeypatch, capsys):
+    rc, out = _run(tmp_path, monkeypatch, capsys, log="## 10. Renamed section\n")
+    assert rc != 0, out
+    assert "not found" in out
+
+
+
+def test_an_escaped_pipe_in_a_title_does_not_make_two_rows_collide(tmp_path, monkeypatch, capsys):
+    # Same date, titles that share a prefix up to an escaped pipe and differ after
+    # it. A regex that stops at the backslash reads both as `use a`.
+    log = CLEAN_LOG + ("| 2026-10-20 | use a \\| b first | x |\n"
+                       "| 2026-10-20 | use a \\| c second | x |\n")
+    rc, out = _run(tmp_path, monkeypatch, capsys, log=log)
+    assert rc == 0, out
+
+
+def test_a_dated_row_in_a_later_section_is_not_compared_with_the_log(tmp_path, monkeypatch, capsys):
+    # The log ends at the next `## `; a dated table row below it is a different
+    # table and must not be counted against §10.
+    log = CLEAN_LOG + "\n## 11. Known gaps\n\n| 2026-10-18 | **A bolded title** | a gap |\n"
+    rc, out = _run(tmp_path, monkeypatch, capsys, log=log)
+    assert rc == 0, out

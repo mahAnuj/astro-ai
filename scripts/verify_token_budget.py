@@ -156,8 +156,13 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     "ask+matching":             (1946, 2300, _D402, "hi 2078 + 10%"),
     "ask+matching_third_party": (2072, 2450, _D402, "hi 2204 + 10%"),
     "ask+numerology":           (1743, 2100, _D402, "hi 1875 + 10%"),
-    "natal":                    (3111, 3600, _D,
-                                 "hi 3243 + 10%. natal.txt was 4,332 tok before the "
+    # LOWERED 2026-11-04 (#399): 3,111 -> 3,001. The nine-planet remedy list
+    # (189 tok) became a 107-tok rule line that fires on a REMEDY RULES block;
+    # measured on main just before this edit, natal read 3,083 en. The ceiling
+    # is the 2026-10-17 one, deliberately not lowered with it.
+    "natal":                    (3001, 3600, "2026-11-04",
+                                 "ceiling is hi 3243 (2026-10-17) + 10%; hi now 3,133. "
+                                 "natal.txt was 4,332 tok before the "
                                  "#266 compression (18,095 B -> 13,135 B)"),
     "daily":                    (743, 1000, _D, "hi 875 + 10%"),
     "monthly":                  (732, 1000, _D, "hi 864 + 10%"),
@@ -228,7 +233,14 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
                                  "builder, pinned. The route did not grow. "
                                  "hi is built from the HI message (it was "
                                  "built from the en one and read 4265)"),
-    "natal+payload":            (6798, 7000, _D,
+    # LOWERED 2026-11-04 (#399): 6,798 -> 6,748. Measured on main just before the
+    # edit it read 6,751 en. That chart carries a REMEDY RULES block now, and the
+    # net is only -3 here because it is the worst case: three flagged planets
+    # with the heaviest rows cost ~79 tok in the message (78 for the block plus
+    # its separator) against the 82 the rule line saved, while a chart with no
+    # flagged planet saves the full 82 (tests/test_knowledge_lookup.py pins that
+    # the heaviest block stays under the saving).
+    "natal+payload":            (6748, 7000, "2026-11-04",
                                  "7,000 = 8,000 TPM less the runtime guard's 1,000 margin"),
     # ADDED 2026-11-04 (#402). /ask's user message gained a ~76-token transit
     # block while ask.txt was cut by 79, and the issue's AC4 is that net input

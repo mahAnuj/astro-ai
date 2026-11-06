@@ -152,8 +152,8 @@ async def rashifal(request: Request) -> HTMLResponse:
 
 
 # Per-rashi metadata used by /rashifal/{rashi} — mirrors _RASHI_ANCHORS
-# in llm.py plus the presentation-only glyph + colour that main.py needs
-# for the standalone-page hero. Kept in main.py rather than llm.py to
+# in llm.py plus the presentation-only glyph + colour that this module needs
+# for the standalone-page hero. Kept here rather than in llm.py to
 # avoid coupling the LLM layer to UI concerns.
 _RASHIFAL_UI_META: dict[str, dict[str, str]] = {
     "aries":       {"glyph": "♈︎", "glyph_color": "text-orange-700",  "element": "fire",  "quality": "Movable",  "lord": "Mars",     "sa": "Mesha"},

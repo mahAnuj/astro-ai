@@ -48,7 +48,7 @@ def _unsubscribe_secret() -> bytes:
 
     Reuses the cookie secret so we don't have to manage another env var.
     If the secret is unset, fall back to a clearly-flagged dev string —
-    same convention as ADMIN_PASSWORD in main.py.
+    same convention as ADMIN_PASSWORD in routes/deps.py.
     """
     return os.environ.get("ASTRO_AI_COOKIE_SECRET", "bhagya-dev-only-CHANGE-ME").encode()
 
