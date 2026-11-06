@@ -28,9 +28,13 @@ WHAT IT READS (GitHub REST, raw JSON; every filter is in Python so it is tested)
   - reverted commits on main
   - failed verify-production runs (production did not satisfy its invariants)
   - ops findings from scripts/detect_ops_regressions.py
-* OUR OUTCOMES -- the analyst's post-ship verdicts on closed issues (HIT, MISS,
-  INCONCLUSIVE, PENDING, UNSCOREABLE), latest per issue, by `claude[bot]`, read
-  only from comments that also say `metric` or `predicted`
+* OUR OUTCOMES -- the analyst's post-ship verdicts on closed issues, latest per
+  issue, read ONLY from `claude[bot]` comments whose first line is the analyst's
+  own heading (`## Analyst score — #N: **<headline>**`), and ONLY from that
+  headline. The first version took any bot comment that said "metric" and the
+  first verdict-like word anywhere in it: QA on #747 measured a /sync note on
+  #490 recorded as INCONCLUSIVE, #276's stale INCONCLUSIVE surviving three newer
+  PROVISIONAL scores, and #272's "PASS on shape" missing entirely.
 * RIVALS -- issues carrying the hidden `<!-- competitor-pattern -->` marker that
   the discover loop writes, one per pattern seen on a competing site
 
@@ -92,11 +96,33 @@ def _defect_text(text: str) -> str:
     return text[m.start():] if m else text
 
 
-VERDICTS = ("HIT", "MISS", "INCONCLUSIVE", "PENDING", "UNSCOREABLE")
-_VERDICT = re.compile(r"\b(" + "|".join(VERDICTS) + r")\b")
-#: Prefer the word right after "verdict": a comment that says "MISS so far" and later
-#: mentions an INCONCLUSIVE sibling issue must read as MISS.
-_AFTER_VERDICT = re.compile(r"verdict[^A-Za-z\n]{0,12}(?:\*\*)?\s*(" + "|".join(VERDICTS) + r")\b", re.I)
+#: The analyst's heading. Only a comment that opens with it is a score.
+_ANALYST_HEAD = re.compile(r"^\s*#+\s*analyst score\b", re.I)
+#: The headline is the first bold span on that heading line.
+_HEADLINE = re.compile(r"\*\*(.+?)\*\*")
+#: The analyst's real headline vocabulary, measured on #311, #276, #685 and #272,
+#: longest phrase first so "NOT A PASS" is not read as PASS. Matched at the START
+#: of the headline only, so "INCONCLUSIVE, leaning MISS" reads INCONCLUSIVE and
+#: "MISS so far (INCONCLUSIVE on the full window ...)" reads MISS.
+_LEAD = re.compile(r"\s*(NOT A PASS|NOT SCOREABLE|UNSCOREABLE|UNSCORED|PROVISIONAL|"
+                   r"INCONCLUSIVE|PARTIAL|PENDING|MISS|HIT|PASS)\b", re.I)
+_CANON = {"NOT A PASS": "MISS", "NOT SCOREABLE": "UNSCOREABLE", "UNSCORED": "UNSCOREABLE"}
+
+
+def analyst_verdict(body: str) -> tuple[str, str] | None:
+    """(verdict, headline) for an analyst score comment, else None. A headline
+    whose lead word is unknown reads OTHER, so it still replaces an older score."""
+    first = body.lstrip().split("\n", 1)[0]
+    if not _ANALYST_HEAD.match(first):
+        return None
+    h = _HEADLINE.search(first)
+    # Older scores carry no bold span: "## Analyst score — UNSCORED (...)". Read
+    # the heading's own text after the prefix and its dash or colon.
+    headline = (h.group(1) if h else re.sub(r"^\s*#+\s*analyst score\s*[—:–-]*\s*", "", first,
+                                             flags=re.I)).strip()
+    m = _LEAD.match(headline)
+    word = m.group(1).upper() if m else "OTHER"
+    return _CANON.get(word, word), headline[:120]
 #: Both shapes QA writes: the marker line qa_verdict.sh posts, and the full verdict.
 _FAIL = re.compile(r"^(?:#+\s*)?QA(?: verdict)?:\s*FAIL", re.I)
 
@@ -167,12 +193,12 @@ def collect(gh: Runner, repo: str, now: datetime, ops_findings: list[dict]) -> d
                 qa_fail.append({"number": num, "at": at, "url": c.get("html_url"),
                                 "summary": body[:300].replace("\n", " "), "themes": themes_of(_defect_text(near))})
                 continue
-            low = body.lower()
-            if "metric" in low or "predicted" in low:
-                m = _AFTER_VERDICT.search(body) or _VERDICT.search(body)
-                if m:
-                    latest_verdict[num] = {"number": num, "verdict": m.group(1).upper(),
-                                           "at": c.get("created_at"), "url": c.get("html_url")}
+            v = analyst_verdict(body)
+            if v:
+                # `comments` is sorted oldest first above, so the newest score
+                # overwrites -- including one whose headline reads OTHER.
+                latest_verdict[num] = {"number": num, "verdict": v[0], "headline": v[1],
+                                       "at": c.get("created_at"), "url": c.get("html_url")}
 
     reverts = [{"sha": c["sha"][:7], "message": c["commit"]["message"].split("\n", 1)[0],
                 "at": c["commit"]["author"]["date"]}
@@ -234,7 +260,7 @@ def render(doc: dict) -> str:
     lines += ["## Our outcomes (analyst verdicts, latest per issue)", ""]
     if doc["outcomes"]:
         lines.append("counts: " + ", ".join(f"{k} {v}" for k, v in sorted(doc["outcome_counts"].items())))
-        lines += [f"- #{o['number']}: {o['verdict']}" for o in doc["outcomes"]]
+        lines += [f"- #{o['number']}: {o['verdict']} — {o.get('headline', '')}" for o in doc["outcomes"]]
         lines += ["", "A MISS is the most useful line here: before proposing work of the same kind, say why "
                   "this time differs, or do not propose it."]
     else:

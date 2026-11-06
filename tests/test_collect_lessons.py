@@ -92,19 +92,46 @@ def test_comments_by_anyone_else_are_ignored():
     assert collect(gh)["errors"]["qa_fail"] == []
 
 
-def test_the_analyst_verdict_is_the_word_after_verdict_latest_per_issue():
-    """#311's comment said 'MISS so far' and mentioned an INCONCLUSIVE sibling;
-    the first version read it as INCONCLUSIVE."""
+def A(num, headline, at):
+    return C(num, f"## Analyst score — #{num}: **{headline}** — run\n\nWindow W ... metric ...", at=at)
+
+
+def test_the_analyst_verdict_is_the_headline_of_the_latest_analyst_score():
+    """Newest first, as the API returns them: the newest score must win."""
     gh = FakeGh(comments=[
-        C(311, "predicted 2.0, actual 0.4. verdict: HIT", at="2026-11-01T01:00:00Z"),
-        C(311, "metric re-read. **Verdict: MISS so far.** #329 stays INCONCLUSIVE.",
-          at="2026-11-05T01:00:00Z"),
-        C(312, "a status line that says HIT and nothing else"),
+        A(311, "MISS so far (INCONCLUSIVE on the full window, but no sign of movement)",
+          "2026-11-05T01:00:00Z"),
+        A(311, "INCONCLUSIVE, leaning MISS", "2026-11-01T01:00:00Z"),
     ])
     doc = collect(gh)
-    assert doc["outcomes"] == [{"number": 311, "verdict": "MISS",
-                                "at": "2026-11-05T01:00:00Z",
-                                "url": "https://github.com/o/r/issues/311#c"}]
+    assert [(o["number"], o["verdict"]) for o in doc["outcomes"]] == [(311, "MISS")]
+    assert doc["outcomes"][0]["at"] == "2026-11-05T01:00:00Z"
+
+
+def test_a_sync_note_that_says_metric_and_inconclusive_is_not_a_verdict():
+    """QA on #747: a /sync note on #490 was recorded as an analyst INCONCLUSIVE."""
+    gh = FakeGh(comments=[C(490, "**/sync 2026-10-23** — the metric for #276 stays INCONCLUSIVE; "
+                                 "predicted lift unchanged. verdict: INCONCLUSIVE")])
+    assert collect(gh)["outcomes"] == []
+
+
+def test_the_real_headline_vocabulary_is_mapped():
+    rows = {"NOT SCOREABLE YET": "UNSCOREABLE", "UNSCORED — 0 post-deploy days": "UNSCOREABLE",
+            "NOT A PASS (inconclusive, below the bar)": "MISS",
+            "PROVISIONAL — bar met on W, not attributable": "PROVISIONAL",
+            "PASS on shape; the query-level half is NOT MET": "PASS",
+            "a headline nobody planned for": "OTHER"}
+    assert cl.analyst_verdict("## Analyst score — UNSCORED (not determinable this run)\nx")[0] \
+        == "UNSCOREABLE", "a heading with no bold span reads its own text"
+    for i, (headline, want) in enumerate(rows.items()):
+        assert cl.analyst_verdict(f"## Analyst score — #{i}: **{headline}**\nbody")[0] == want, headline
+
+
+def test_a_newer_unmapped_score_still_replaces_an_older_one():
+    """#276: three PROVISIONAL scores matched no token, so a stale INCONCLUSIVE survived."""
+    gh = FakeGh(comments=[A(276, "something new", "2026-11-06T01:00:00Z"),
+                          A(276, "INCONCLUSIVE", "2026-10-22T01:00:00Z")])
+    assert collect(gh)["outcomes"][0]["verdict"] == "OTHER"
 
 
 def test_comments_older_than_the_window_are_dropped():
