@@ -340,6 +340,13 @@ jobs:
             /tmp/measure/report.md, if present, is the analyst's latest
             measurement. project-manager should rank against it — an issue the
             analyst showed moving nothing outranks nothing.
+
+            measurements/lessons.md is the loop's memory (scripts/collect_lessons.py):
+            the last 30 days of our own QA FAILs by theme, reverts, failed production
+            checks, the analyst's HIT/MISS verdicts, and competitor patterns. Read it
+            before choosing work. Do not repeat a kind of change that MISSED without
+            saying why this time differs, and treat a repeated error theme as a
+            reason to fix the cause, not just the instance.
           # In automation mode a plain-text prompt grants NO tools. agent-measure
           # proved it the hard way: 7 turns, 4 denials, nothing done, step green.
           # The delivery loop needs the full set because it dispatches subagents

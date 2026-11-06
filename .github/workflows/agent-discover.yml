@@ -103,6 +103,27 @@ jobs:
             WebSearch, then the corpus. File an issue ONLY if it carries a
             complete Evidence Block. An issue missing a field is not filed.
 
+            measurements/lessons.md is the loop's memory (scripts/collect_lessons.py):
+            the last 30 days of our own QA FAILs by theme, reverts, failed production
+            checks, the analyst's HIT/MISS verdicts, and competitor patterns. Read it
+            before choosing work. Do not repeat a kind of change that MISSED without
+            saying why this time differs, and treat a repeated error theme as a
+            reason to fix the cause, not just the instance.
+
+            RECORD WHAT RIVALS DO, so the loop can learn from it (owner,
+            2026-11-06). For each concrete pattern you see on a site that
+            outranks us (a tool, a page structure, an answer format, a speed or
+            UX choice), file ONE issue whose body starts with the hidden line
+            `<!-- competitor-pattern -->`, then the rival URL, what they do, the
+            query it serves, and whether shubhagya.com already does it. Use a
+            complete Evidence Block. Search open issues for the same pattern
+            first and comment there instead of filing twice.
+            A rival may tell us what to BUILD. It never tells us what is TRUE:
+            never copy an astrological claim, rule or interpretation from a
+            rival site. Any rule a pattern implies ships only once it traces to
+            knowledge/*.md (put `corpus: [UNSOURCED]` in the Evidence Block if
+            it does not yet).
+
             WRITE YOUR REPORT TO /tmp/report.md. This is not optional. In
             automation mode nothing you say reaches a human — the run log
             carries the prompt and the cost, not your findings. A previous run

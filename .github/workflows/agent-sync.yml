@@ -88,6 +88,24 @@ jobs:
             before escalating; escalating something already ruled on burns one of
             the three this cycle allows.
 
+            **The learning review (owner, 2026-11-06: "a continuous feedback
+            loop from their own actions and from researching other websites").**
+            Read measurements/lessons.md and measurements/llm-usage.json if
+            present. For each REPEATED error theme, each MISS verdict, each
+            competitor pattern we have not tried, and each cache-low or
+            token-ceiling finding, take ONE action and record it:
+              - a definition fix: when an agent's own instructions caused the
+                repeat, file an issue proposing the exact `.claude/` edit, citing
+                the ledger lines. Agents may edit their definitions through a
+                normal PR (CLAUDE.md, "Agents may edit their own definitions"),
+                never to widen what an agent may do;
+              - an issue with an Evidence Block, for work the loop should do;
+              - "no action", with the reason.
+            Never act on a competitor pattern by importing an astrological claim:
+            what a rival shows may shape what we build, never what we assert.
+            Prefer the cheapest lever on the token budget: cache and precompute
+            in a scheduled Claude Code job before any new per-request Groq call.
+
             WRITE THE SYNC RECORD TO /tmp/report.md, in the SYNC_LOG.md block
             format from sync.md: decisions, escalated, missed, blocked-twice,
             carried. Short and comparable week to week — a log that reads like

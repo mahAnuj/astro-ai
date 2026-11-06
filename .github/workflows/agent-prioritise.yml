@@ -105,6 +105,13 @@ jobs:
             nothing outranks nothing, and a page carrying real impressions
             outranks a page carrying none.
 
+            measurements/lessons.md is the loop's memory (scripts/collect_lessons.py):
+            the last 30 days of our own QA FAILs by theme, reverts, failed production
+            checks, the analyst's HIT/MISS verdicts, and competitor patterns. Read it
+            before choosing work. Do not repeat a kind of change that MISSED without
+            saying why this time differs, and treat a repeated error theme as a
+            reason to fix the cause, not just the instance.
+
             Rank by user harm, then unblocking power. Not by ease, not by age,
             not by label. At most 5-7 items in the queue.
 

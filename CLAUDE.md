@@ -363,6 +363,22 @@ What has NOT changed, and why it matters more now than before:
   `scripts/file_ops_findings.py` — run by `agent-steward` twice a day — files every finding
   as ONE issue per kind (commented on change, a single note when it clears, never closed
   by the carrier). Nothing ran that detector before; its own header said a carrier would.
+- **The loop learns from its own errors, its outcomes and its rivals — since 2026-11-06**
+  (owner: *"a continuous feedback loop from their own actions and as well as from researching
+  other websites"*). `scripts/collect_lessons.py`, an `agent-measure` collector with no LLM,
+  writes `measurements/lessons.md` and `lessons.json` from the last 30 days: QA FAIL verdicts
+  tagged by the defect they name, reverts, failed verify-production runs, current ops findings,
+  the analyst's HIT/MISS verdicts, and competitor patterns. Those are issues `discover` files
+  with a hidden `<!-- competitor-pattern -->` marker. Build cycles, discover and prioritise read
+  it before choosing work, and `/sync` runs a weekly learning review that turns a repeated theme,
+  a MISS or an untried rival pattern into a definition fix, an issue, or a stated "no action".
+  **A rival may shape what we build, never what we assert**: no astrological claim is copied
+  from a competitor, and the ledger prints that rule on every run.
+  **The app's own Groq budget is now judged too.** `scripts/collect_llm_usage.py` runs in the
+  analyst job, the only one with GCS credentials, and snapshots cache hits and tokens per route
+  into `measurements/llm-usage.json`. The detector raises `cache-low` (overall below 50%, or a
+  route below 30%) and `token-ceiling` (a peak day at 80% or more of ~200k TPD). Each names its
+  levers, cheapest first: cache key, TTL, precompute in a scheduled Claude Code job, prompt prefix.
 - **New mutation rows go in `scripts/mutations/<area>.py`, never in the central table —
   since 2026-11-03.** Every PR used to append to the one `MUTATIONS` list in
   `mutate_behaviour_suite.py`, so any two open PRs conflicted there by construction and
