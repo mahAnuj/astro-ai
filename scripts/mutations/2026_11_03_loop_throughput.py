@@ -43,7 +43,7 @@ MUTATIONS = [
      'test_idle_merges_overlapping_build_runs_and_ignores_QA_rounds'),
     ('ops carrier: the same finding is re-commented every run',
      'scripts/file_ops_findings.py',
-     '        if (last or cur["state"]) == _state(f) and not cleared:',
+     '        if _same(prev, _state(f)) and not cleared:',
      '        if False:',
      'test_the_same_finding_on_the_next_run_is_SILENCE'),
     ('ops carrier: adopts a marker issue anyone filed',
@@ -103,7 +103,7 @@ MUTATIONS = [
      "test_a_filed_issue_passes_the_loops_own_evidence_gate"),
     ("ops carrier: issue filed without the chore label (gsc:/ga4: then required)",
      "scripts/file_ops_findings.py",
-     '"-f", f"labels[]={LABEL}"])',
-     '])',
+     '                    "-f", f"labels[]={LABEL}"]',
+     '                    ]',
      "test_a_filed_issue_passes_the_loops_own_evidence_gate"),
 ]

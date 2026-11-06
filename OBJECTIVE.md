@@ -1,5 +1,32 @@
 # The objective
 
+> **The owner's objective, in their words (2026-11-06): "increase the user base for
+> shubhagya.com while ensuring fully grounded astrology on rules" — "keep astrology 100% true".**
+>
+> Both halves bind every agent, and the second is never traded for the first: a change that
+> grows traffic with an unsourced claim is not progress. The quarterly lever below serves the
+> first half. CLAUDE.md's rule that every astrological claim traces to `knowledge/*.md` is the
+> second half.
+>
+> **And it must scale on the free tier (owner, 2026-11-06):** *"we are working with free tier
+> llm calls from Groq and we need to ensure the token budget is monitored to not overshoot its
+> limit, we want our system to be scalable to support thousands of requests."* Growth that
+> overruns the Groq free tier is an outage, not progress: 8,000 TPM per model and about 200,000
+> TPD on the daily path (CLAUDE.md, "Token budget"). So every change that touches an LLM path
+> states its measured tokens per request and per day (`scripts/verify_token_budget.py`), and the
+> design target is **thousands of requests a day served inside that budget**. That means cache
+> first, deterministic before generated, and a shared prompt prefix. The paid `openai` fallback
+> is a safety net, not capacity.
+>
+> **Where Groq's budget is the limit, use Claude Code (owner, 2026-11-06):** *"we should also
+> guide agents to use claude code sessions if possible where we think are limited by Groq
+> budget."* Bulk or shared generation, meaning content every visitor of a page or rashi sees,
+> runs in a scheduled Claude Code job, is stored, and is served from cache. #515's nightly
+> rashifal is the pattern. Per-request Groq calls are kept for what is genuinely personal (a
+> chart, a question). Claude Code is not free either: it shares one Max subscription with
+> every agent (`measurements/claude_usage.json`), so a job is sized to that weekly window too.
+
+
 > **Move the 6–20 position band into the top 5 on the ten highest-impression queries.**
 
 Six teams run on separate schedules and cannot see each other's work. This is the one line they all

@@ -541,8 +541,10 @@ removed.
 **`partial/` is right ONLY when what remains is on this list:**
 
 1. **An act only the owner can take** — the five in CLAUDE.md's `chief` table: authoring a file
-   under `.github/workflows/`, editing `.claude/`, granting a scope or secret, a product or revenue
-   decision, a legal or privacy commitment.
+   under `.github/workflows/`, removing a pinned safety or grounding line, granting a scope or
+   secret, a product or revenue decision, a legal or privacy commitment. **Editing `.claude/` is
+   no longer on it** (owner grant 2026-11-06): improve a definition in the PR when that is what
+   the issue needs.
 2. **A source the corpus does not have.** Use `corpus_search.py --absent`, and say which books were
    present (CLAUDE.md: an absence measured against a partial corpus is worthless).
 3. **A ruling from `chief` that has not been given yet**, on a question you raised under Step 4.5.

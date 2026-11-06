@@ -1,0 +1,42 @@
+"""Planners read measurements/latest.md before a run artifact (2026-11-06)."""
+
+MUTATIONS = [
+    ("measure consumers: agent-work goes back to the artifact-only fetch",
+     ".github/workflows/agent-work.yml",
+     "            cp measurements/latest.md /tmp/measure/report.md\n",
+     "            true\n",
+     "test_the_committed_report_is_used_before_any_artifact"),
+    ("measure consumers: the analyst stops being told about the trend files",
+     ".github/workflows/agent-measure.yml",
+     "              /tmp/gsc-trend-page.json   per-page change, this window vs the previous one\n",
+     "",
+     "test_the_analyst_is_told_about_every_file_the_fetch_writes"),
+    ("ops carrier: a number wobble is a comment again (#697 got four)",
+     "scripts/file_ops_findings.py",
+     '    norm = lambda s: re.sub(r"\\d+(?:\\.\\d+)?", "#", s or "")',
+     '    norm = lambda s: s or ""',
+     "test_a_number_wobble_is_SILENCE_not_a_comment"),
+    ("ops carrier: findings are filed with no priority again",
+     "scripts/file_ops_findings.py",
+     '            if PRIORITY.get(f["level"]):\n                args += ["-f", f"labels[]={PRIORITY[f[\'level\']]}"]',
+     '            if False:\n                pass',
+     "test_a_red_finding_is_filed_at_priority_high"),
+    ("ops carrier: a level change no longer moves the priority label",
+     "scripts/file_ops_findings.py",
+     '            _set_priority(gh, repo, cur["number"], f["level"])',
+     '            pass',
+     "test_findings_are_prioritised_by_severity_and_follow_a_level_change"),
+    ("loop outcomes: the fetch step's first line stops naming agent-measure.yml (QA on #745)",
+     ".github/workflows/agent-work.yml",
+     # Anchored from the `run: |` line above: the harness refuses an anchor that
+     # BEGINS on a comment, and here the comment's first line is what the
+     # loop-outcomes report actually reads.
+     "        run: |\n          # PREFER THE COMMITTED REPORT (2026-11-06) over agent-measure.yml's artifact. It commits the\n",
+     "        run: |\n          # PREFER THE COMMITTED REPORT (2026-11-06). It commits the\n",
+     "test_the_REAL_fetch_step_still_reads_as_received_when_it_uses_the_committed_report"),
+    ("loop outcomes: the committed-report echo is no longer a receipt",
+     "scripts/report_loop_outcomes.py",
+     'if re.search(r"measurement from run \\d+|analyst report from measurements/latest\\.md", text):',
+     'if re.search(r"measurement from run \\d+", text):',
+     "test_the_REAL_fetch_step_still_reads_as_received_when_it_uses_the_committed_report"),
+]

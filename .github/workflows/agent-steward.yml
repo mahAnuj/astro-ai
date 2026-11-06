@@ -213,6 +213,15 @@ jobs:
             their check runs and the relevant run logs before writing any
             diagnosis. A finding you did not check is a guess.
 
+            **Comment only when something changed (2026-11-06).** Before you
+            write on a PR or issue, read your own last `steward` comment there.
+            If the kind, the head SHA and your action are the same as last time,
+            post NOTHING; put the repeat in your run output instead. Measured that
+            week: up to 7 steward comments on one thread, many saying only
+            "nothing dispatched" again. Every later agent that opens the thread
+            re-reads all of them on every turn, so a repeat costs far more to read
+            than to write.
+
             **IF A FINDING OBLIGES A CYCLE, DO NOT RUN `gh workflow run` --
             YOUR TOKEN IS REFUSED (HTTP 403, #442).** Write AT MOST ONE line,
             exactly `issue=<number>` OR `pr=<number>`, to
@@ -266,8 +275,10 @@ jobs:
             Your value is the diagnosis, not the detection. Read steward.md and
             obey its constraints exactly — in particular you may NOT apply or
             remove `qa-pass`/`qa-fail`, may not merge, close or push, and may
-            not edit `.github/workflows/**`, `.claude/**` or `CLAUDE.md`. File
-            an issue and dispatch a cycle instead.
+            not edit `.github/workflows/**` or `CLAUDE.md`. You may improve a
+            `.claude/` definition through a PR (owner grant 2026-11-06), but
+            never to widen what an agent may do. File an issue and dispatch a
+            cycle instead.
 
             If every finding turns out to be normal operation, say so and
             produce nothing. A quiet run is a correct run.
@@ -453,7 +464,9 @@ jobs:
             things. One dispatch per role, three total.
 
             You may not merge, close, push, label a QA verdict, or edit
-            `.github/workflows/**`, `.claude/**` or `CLAUDE.md`.
+            `.github/workflows/**` or `CLAUDE.md`. A `.claude/` definition may be
+            improved through a PR (owner grant 2026-11-06), never to widen
+            what an agent may do.
 
             **If you rule to CLEAR a trust-boundary hold, do not try to label
             it -- `gh pr edit` is denied here (#719).** Post the ruling comment

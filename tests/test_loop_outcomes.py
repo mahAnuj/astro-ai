@@ -707,3 +707,24 @@ def test_a_bot_merger_does_not_make_a_bot_close_an_auto_close():
                           {5: _closed_at(lo.BOT, "2026-10-09T00:00:02Z")}, WINDOW)
     assert f.verdict == lo.OK and "1 issue(s) owed a close, all closed by the loop" in f.sentence
     assert "keyword" not in f.sentence
+
+
+
+@pytest.mark.parametrize("wf", ["agent-work", "agent-discover", "agent-prioritise"])
+def test_the_REAL_fetch_step_still_reads_as_received_when_it_uses_the_committed_report(wf):
+    """QA on #745, three rounds: the fetch step gained a comment as its first
+    line, which no longer named `agent-measure.yml`, and its new success echo
+    matched no receipt pattern. measurement_receipt() went UNKNOWN, the report
+    exited 2, and loop-outcomes would have gone red. This renders the shipped
+    step exactly as Actions logs it, script first and output after."""
+    import yaml
+    doc = yaml.safe_load((Path(__file__).resolve().parents[1] / ".github" / "workflows"
+                          / f"{wf}.yml").read_text())
+    step = next(s for j in doc["jobs"].values() for s in j["steps"]
+                if s.get("name") == "Fetch the latest measurement")
+    script = step["run"].splitlines()
+    ts = "2026-11-06T09:00:00.0000000Z"
+    log = "\n".join([f"{ts} ##[group]Run {script[0]}"] + [f"{ts} {l}" for l in script[1:]]
+                    + [f"{ts} ##[endgroup]",
+                       f"{ts} analyst report from measurements/latest.md: # Analyst report"])
+    assert lo.measurement_receipt(log) == lo.RECEIVED

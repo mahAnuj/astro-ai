@@ -85,12 +85,13 @@ jobs:
               Numerology       Chaldean — Kumar / Cheiro
               Contrast only    Goodwin (Western/Pythagorean) — NEVER an authority
 
-            Two consequences agents get wrong:
-            - Cheiro is NOT yet registered in scripts/fetch_corpus.py, so
-              verify_rule_citations fails any rule citing it. Registering it is
-              the first numerology task, not an afterthought.
-            - numerology.py currently implements Goodwin's reduction, which is
-              off-lineage. That is #162's real content and a migration.
+            Two facts, corrected 2026-11-06 (this block said the opposite of
+            both, and runs spent turns "fixing" what was already fixed):
+            - Cheiro IS registered in scripts/fetch_corpus.py (Cheiro's Book of
+              Numbers, since 2026-10-17). Whether a run can READ it depends on
+              data/ being present; say which books were present.
+            - numerology.py uses Johari's all-digits reduction (see its header),
+              not Goodwin's. Goodwin stays contrast-only.
 
             Standing queue: #177/#178 (Ashtakoota has no source in the repo at
             all), #175, #209, #211, #219, #163, #201, #200, #191, #230.
