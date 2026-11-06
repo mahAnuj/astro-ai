@@ -7,6 +7,16 @@
 > grows traffic with an unsourced claim is not progress. The quarterly lever below serves the
 > first half. CLAUDE.md's rule that every astrological claim traces to `knowledge/*.md` is the
 > second half.
+>
+> **And it must scale on the free tier (owner, 2026-11-06):** *"we are working with free tier
+> llm calls from Groq and we need to ensure the token budget is monitored to not overshoot its
+> limit, we want our system to be scalable to support thousands of requests."* Growth that
+> overruns the Groq free tier is an outage, not progress: 8,000 TPM per model and about 200,000
+> TPD on the daily path (CLAUDE.md, "Token budget"). So every change that touches an LLM path
+> states its measured tokens per request and per day (`scripts/verify_token_budget.py`), and the
+> design target is **thousands of requests a day served inside that budget**. That means cache
+> first, deterministic before generated, and a shared prompt prefix. The paid `openai` fallback
+> is a safety net, not capacity.
 
 
 > **Move the 6–20 position band into the top 5 on the ten highest-impression queries.**
