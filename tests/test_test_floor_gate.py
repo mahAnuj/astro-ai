@@ -24,6 +24,7 @@ gate's exit code.
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -41,8 +42,24 @@ def _git(repo: Path, *args: str) -> str:
 
 
 def _run(repo: Path) -> subprocess.CompletedProcess:
+    # GITHUB_*/GH_* stripped: pr-gates runs this suite with GITHUB_REPOSITORY set,
+    # and a declared drop would then query the REAL repository from a unit test.
+    env = {k: v for k, v in os.environ.items() if not k.startswith(("GITHUB_", "GH_"))}
     return subprocess.run([sys.executable, str(repo / "scripts" / "verify_test_floor.py")],
-                          capture_output=True, text=True, timeout=300)
+                          capture_output=True, text=True, timeout=300, env=env)
+
+
+def _main_with_ruling(repo: Path, ruled: bool = True) -> int:
+    """Run the repo's gate in-process with the comment lookup injected (the gate
+    has no env override for it, by design). `ruled` supplies a valid ruling."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("floor_in_repo", repo / "scripts" / "verify_test_floor.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    sha = _git(repo, "rev-parse", "HEAD").strip()
+    comments = ([{"id": 5, "user": {"login": "claude[bot]"},
+                  "body": f"test-count-drop-ruled at {sha}"}] if ruled else [])
+    return mod.main(fetch=lambda repo_, sha_, pr_: comments, env={"GITHUB_REPOSITORY": "o/r"})
 
 
 @pytest.fixture
@@ -108,12 +125,23 @@ def test_a_method_removed_from_a_test_class_fails(repo: Path):
     assert "test_three" in r.stdout
 
 
-def test_a_declared_drop_passes_and_prints_the_reason(repo: Path):
+def test_a_declared_drop_passes_and_prints_the_reason(repo: Path, capsys):
+    """Declared AND ruled (#446 AC3): the reason is printed beside the pass."""
+    _git(repo, "rm", "-q", "tests/test_a.py")
+    _git(repo, "commit", "-q", "-m", "drop a file\n\nTest-Count-Drop: merged into test_b")
+    assert _main_with_ruling(repo) == 0
+    assert "merged into test_b" in capsys.readouterr().out
+
+
+def test_a_declared_drop_alone_no_longer_passes(repo: Path):
+    """#446 AC3: the trailer only DECLARES. With no ruling comment to look up
+    (no GITHUB_REPOSITORY here) the gate must not pass; exit 2, not 0. The
+    ruling-present path is pinned in tests/test_test_drop_ruling.py."""
     _git(repo, "rm", "-q", "tests/test_a.py")
     _git(repo, "commit", "-q", "-m", "drop a file\n\nTest-Count-Drop: merged into test_b")
     r = _run(repo)
-    assert r.returncode == 0, r.stdout
-    assert "merged into test_b" in r.stdout
+    assert r.returncode == 2, r.stdout
+    assert "NOT a pass" in r.stdout
 
 
 def test_a_declared_drop_needs_the_trailer_not_just_the_words(repo: Path):
@@ -249,9 +277,17 @@ def test_a_computed_base_is_not_compared(repo: Path):
     assert r.returncode == 0, r.stdout
 
 
-def test_a_declared_drop_passes_a_case_drop(param_repo: Path):
+def test_a_declared_drop_passes_a_case_drop(param_repo: Path, capsys):
+    _commit_param(param_repo, PARAM3.replace("[1, 2, 3]", "[1, 2]"),
+                  "trim\n\nTest-Count-Drop: case 3 duplicated case 2")
+    assert _main_with_ruling(param_repo) == 0
+    assert "case 3 duplicated case 2" in capsys.readouterr().out
+    assert _main_with_ruling(param_repo, ruled=False) == 1
+
+
+def test_a_declared_drop_alone_does_not_pass_a_case_drop(param_repo: Path):
     _commit_param(param_repo, PARAM3.replace("[1, 2, 3]", "[1, 2]"),
                   "trim\n\nTest-Count-Drop: case 3 duplicated case 2")
     r = _run(param_repo)
-    assert r.returncode == 0, r.stdout
-    assert "case 3 duplicated case 2" in r.stdout
+    assert r.returncode == 2, r.stdout
+    assert "tests/test_p.py::test_p: 3 -> 2 cases" in r.stdout
