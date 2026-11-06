@@ -2133,20 +2133,19 @@ def is_combust(planet, sun) -> tuple[bool, float]:
     return sep < orb, sep
 
 
-def format_planet_dignity_for_prompt(chart: "Chart") -> str:
-    """Planet dignity report (Issue #61).
+def planet_dignities(chart: "Chart") -> list[tuple["PlanetPosition", list[str]]]:
+    """(planet, dignity tags) for the 7 planets that have a dignity (#61, #399).
 
-    For each of the 7 luminary+non-luminary planets (Rahu/Ketu don't own
-    signs so are omitted here — their dignity theory is contested), report:
-    - Sign + house
-    - Dignity: EXALTED / OWN SIGN / DEBILITATED / neutral
-    - Combust flag per COMBUSTION_ORBS (per-planet, retrograde-aware)
+    Rahu/Ketu are skipped — they don't own signs and their dignity theory is
+    contested. Tags are the strings the prompt prints: "OWN SIGN", "EXALTED",
+    "DEBILITATED", "COMBUST (x.x° from Sun)"; an empty list means neutral.
 
-    Debilitation dramatically reverses a planet's expression; the LLM often
-    misses this in output. Explicit flag prevents "Sun in Libra is
-    authoritative" errors when Sun is deeply debilitated there.
+    Split out of format_planet_dignity_for_prompt so the remedy lookup
+    (knowledge_lookup.py) reads the SAME verdict the PLANET DIGNITY block
+    prints, instead of a second copy of the sign/orb logic that could disagree
+    with it.
     """
-    lines = ["--- PLANET DIGNITY (own sign / exalted / debilitated / combust) ---"]
+    result: list[tuple["PlanetPosition", list[str]]] = []
     sun = next((p for p in chart.planets if p.name == "Sun"), None)
     for p in chart.planets:
         if p.name in ("Rahu", "Ketu"):
@@ -2167,6 +2166,25 @@ def format_planet_dignity_for_prompt(chart: "Chart") -> str:
             combust, sep = is_combust(p, sun)
             if combust:
                 dignities.append(f"COMBUST ({sep:.1f}° from Sun)")
+        result.append((p, dignities))
+    return result
+
+
+def format_planet_dignity_for_prompt(chart: "Chart") -> str:
+    """Planet dignity report (Issue #61).
+
+    For each of the 7 luminary+non-luminary planets (Rahu/Ketu don't own
+    signs so are omitted here — their dignity theory is contested), report:
+    - Sign + house
+    - Dignity: EXALTED / OWN SIGN / DEBILITATED / neutral
+    - Combust flag per COMBUSTION_ORBS (per-planet, retrograde-aware)
+
+    Debilitation dramatically reverses a planet's expression; the LLM often
+    misses this in output. Explicit flag prevents "Sun in Libra is
+    authoritative" errors when Sun is deeply debilitated there.
+    """
+    lines = ["--- PLANET DIGNITY (own sign / exalted / debilitated / combust) ---"]
+    for p, dignities in planet_dignities(chart):
         tag = " — ".join(dignities) if dignities else "neutral"
         lines.append(f"  {p.name} in {p.rashi} (house {p.house}) — {tag}")
     return "\n".join(lines)
