@@ -1064,6 +1064,22 @@
    half, this is the half that covers a glyph someone adds later and forgets to
    mark. Unsupported browsers ignore the declaration; nothing regresses. #}
 <body hx-boost="true" class="bg-bhagya-cream text-bhagya-ink font-sans min-h-full antialiased [font-variant-emoji:text]">
+  {# Skip link (#731, WCAG 2.4.1). The FIRST focusable element on every page, so
+     a keyboard user's first Tab offers to jump past the nav to the page's
+     <main id="main-content"> — every page-level <main> carries that id (a test
+     iterates templates/*.html to keep it so). `sr-only` hides it until focus;
+     `focus:fixed` pins it top-left because `not-sr-only` alone restores
+     `position: static` and would shove the whole page down. Night ground with
+     cream text is 17.49:1 (charter above) and the saffron border is a non-text
+     ornament on night — no translucent utility, so nothing new for
+     verify_contrast's DECLARED_PAIRS. z-[60] clears the z-50 loader and modal.
+     A `#fragment` href is in-page navigation: htmx's hx-boost only boosts links
+     that resolve to a different URL, so this does not trigger a boosted fetch. #}
+  <a href="#main-content"
+     class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60]
+            focus:px-4 focus:py-2 focus:bg-bhagya-night focus:text-bhagya-cream
+            focus:font-semibold focus:border-2 focus:border-bhagya-saffron focus:outline-none
+            no-print">{{ t(lang, 'skip_to_content') }}</a>
   {# Global navigation loader — a thin animated bar pinned at the top of
      the page. Visible during every htmx-boosted nav and form POST so the
      user sees their click registered immediately (some routes take 3-8s

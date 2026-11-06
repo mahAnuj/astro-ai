@@ -1,0 +1,24 @@
+"""#731: the home page has a <main> landmark and every page a skip link to it."""
+
+MUTATIONS = [
+    ("#731: the skip link's href no longer matches the <main> id it targets",
+     "src/astro_ai/templates/base.html",
+     '<a href="#main-content"',
+     '<a href="#content"',
+     "test_skip_link_targets_exactly_one_main_landmark"),
+    ("#731: the skip link is always visible instead of hidden until focused",
+     "src/astro_ai/templates/base.html",
+     'class="sr-only focus:not-sr-only',
+     'class="focus:not-sr-only',
+     "test_skip_link_is_hidden_until_focused_and_not_printed"),
+    ("#731: the home page loses its <main> landmark again",
+     "src/astro_ai/templates/index.html",
+     '<main id="main-content">',
+     '<div id="main-content">',
+     "test_skip_link_targets_exactly_one_main_landmark"),
+    ("#731: the home page's <main> also pulls the panchang strip inside",
+     "src/astro_ai/templates/index.html",
+     '<main id="main-content">\n',
+     '<main id="main-content">\n{% include "_panchang_strip.html" %}\n',
+     "test_index_main_wraps_the_sections_but_not_the_nav_or_strip"),
+]
