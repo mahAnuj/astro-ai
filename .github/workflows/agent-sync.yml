@@ -13,6 +13,8 @@ name: Agent sync
 on:
   schedule:
     - cron: "0 18 * * 5"   # Fridays, 23:30 IST — after the week's loops have run
+    # The chief review alone, mid-week (owner, 2026-11-06). Friday runs both.
+    - cron: "41 17 * * 2"  # Tuesdays, 23:11 IST
   workflow_dispatch:
 
 concurrency:
@@ -40,6 +42,7 @@ jobs:
       - run: uv sync --all-groups
 
       # What each loop actually did this week, as evidence rather than memory.
+      # Also the chief review's input, so it runs on Tuesdays too.
       - name: Gather the week
         env:
           GH_TOKEN: ${{ github.token }}
@@ -56,10 +59,23 @@ jobs:
             echo "## Issues touched"
             gh issue list --state all --limit 100 --json number,title,updatedAt,labels \
               --jq '.[] | select(.updatedAt > (now - 604800 | todate)) | "#\(.number) \(.title[0:60])"'
+            echo
+            echo "## Each loop's runs, last 7 days, by conclusion"
+            gh run list --limit 300 --json workflowName,conclusion,createdAt \
+              --jq '[.[] | select(.createdAt > (now - 604800 | todate))]
+                    | group_by(.workflowName)[]
+                    | "\(.[0].workflowName): " + ([group_by(.conclusion)[] | "\(.[0].conclusion // "running") \(length)"] | join(", "))'
+            echo
+            echo "## PRs opened or closed in the last 7 days (author, state, labels)"
+            gh pr list --state all --limit 80 --json number,title,author,state,labels,updatedAt \
+              --jq '.[] | select(.updatedAt > (now - 604800 | todate))
+                    | "#\(.number) \(.state) \(.author.login) [\([.labels[].name] | join(","))] \(.title[0:60])"'
           } > /tmp/week.txt
           cat /tmp/week.txt
 
-      - uses: anthropics/claude-code-action@v1
+      - name: Sync
+        if: github.event.schedule != '41 17 * * 2'
+        uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
@@ -131,8 +147,83 @@ jobs:
             --allowedTools "Read,Write,Glob,Grep,TodoWrite,Bash"
             --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*),Bash(gh issue close:*)"
 
-      - name: Publish the sync record
+      # THE CHIEF REVIEW (owner, 2026-11-06): "since I am now giving fully
+      # autonomy to the agents, I want chief to monitor what each agent is doing
+      # and to be able to guide them to the right thing based on our
+      # objectives." Twice a week: Tuesday alone, Friday after the sync.
+      #
+      # Guidance, not authority. Chief writes /tmp/chief-guidance.md, which the
+      # commit job publishes to measurements/sync/chief-guidance.md, and every
+      # planning prompt reads it. It may file issues (a definition fix goes
+      # through the normal PR path, CLAUDE.md "Agents may edit their own
+      # definitions"). It cannot label, close, merge, dispatch or push: the
+      # deny list below is the same shape as the sync's, plus `gh pr edit`.
+      # It runs in this job, not a new workflow, so it gains no scope
+      # (verify_workflow_permissions refuses a new job that grants any).
+      - name: Chief review
         if: always()
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Dispatch the `chief` agent with `run_in_background: false` for its
+            scheduled oversight review (.claude/agents/chief.md, "Shape D").
+            Pass it everything below verbatim.
+
+            THE OBJECTIVE is OBJECTIVE.md: grow shubhagya.com's user base while
+            every astrological claim stays grounded in knowledge/*.md, inside
+            the Groq free tier and the Claude Max weekly window. Judge every
+            agent against that and nothing else.
+
+            READ, and cite a number from one of these for every verdict:
+              /tmp/week.txt                     each loop's runs by conclusion,
+                                                PRs by author and label, merges
+              measurements/agents.json          loops due/missed, comments per agent
+              measurements/loop.json            `waste`: minutes by outcome,
+                                                share without result, build idle
+              measurements/claude_usage.json    the weekly Claude window
+              measurements/lessons.md           repeated QA-FAIL themes, MISS
+                                                verdicts, reverts, rival patterns
+              measurements/latest.md            the analyst's latest report
+              measurements/sync/latest.md       the last sync record, if any
+              measurements/sync/chief-guidance.md  your previous guidance
+
+            FOR EACH AGENT (each agent-*.yml loop, and qa, steward, analyst,
+            project-manager inside them), one verdict:
+              on-objective  its output this week moved users or grounding, or
+                            unblocked something that does
+              drifting      busy on something the objective does not rank
+              wasting       runs that produced nothing, or the same QA-FAIL
+                            theme again, or spend the quota cannot afford
+            and ONE concrete instruction for the next half-week, naming the
+            issue or file. Check whether last time's instruction was followed;
+            say which were not.
+
+            WRITE /tmp/chief-guidance.md: a dated heading, a table
+            `| agent | verdict | evidence | guidance |`, then "Stop", "Start"
+            and "Definition fixes filed" lists. Under 120 lines. It is read by
+            every planner, so it must be terse and comparable run to run.
+
+            A DEFINITION FIX: when an agent's own `.claude/` text caused the
+            drift, file ONE issue proposing the exact edit, labelled
+            `chief-guidance`,
+            citing the evidence lines. Never one that widens what an agent may
+            do (merge, close, label a verdict, push, skip a gate, assert an
+            unsourced rule). Search open issues first; comment instead of
+            duplicating.
+
+            YOUR GUIDANCE CANNOT OVERRIDE a gate, CLAUDE.md, a QA verdict, a
+            standing ruling or knowledge/*.md, and must not direct work that
+            asserts an astrological claim without a source. You do not label,
+            close, merge, dispatch or push in this review.
+          claude_args: |
+            --max-turns 40
+            --effort high
+            --allowedTools "Read,Write,Glob,Grep,TodoWrite,Agent,Bash"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*),Bash(gh issue close:*),Bash(gh pr edit:*),Bash(gh pr merge:*),Bash(gh workflow:*),Bash(git push:*)"
+
+      - name: Publish the sync record
+        if: always() && github.event.schedule != '41 17 * * 2'
         run: |
           if [ -s /tmp/report.md ]; then
             tee -a "$GITHUB_STEP_SUMMARY" < /tmp/report.md
@@ -146,6 +237,8 @@ jobs:
         run: |
           mkdir -p /tmp/out
           cp -f /tmp/report.md /tmp/out/report.md 2>/dev/null || true
+          cp -f /tmp/chief-guidance.md /tmp/out/chief-guidance.md 2>/dev/null || true
+          [ -s /tmp/out/chief-guidance.md ] && tee -a "$GITHUB_STEP_SUMMARY" < /tmp/out/chief-guidance.md || true
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -204,11 +297,19 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          [ -s /tmp/out/report.md ] || { echo "nothing to persist"; exit 0; }
+          [ -s /tmp/out/report.md ] || [ -s /tmp/out/chief-guidance.md ] \
+            || { echo "nothing to persist"; exit 0; }
           mkdir -p measurements/sync
           stamp=$(date -u +%Y-%m-%d)
-          cp /tmp/out/report.md "measurements/sync/$stamp.md"
-          cp /tmp/out/report.md measurements/sync/latest.md
+          if [ -s /tmp/out/report.md ]; then
+            cp /tmp/out/report.md "measurements/sync/$stamp.md"
+            cp /tmp/out/report.md measurements/sync/latest.md
+          fi
+          # The chief review's guidance: every planning prompt reads this path.
+          if [ -s /tmp/out/chief-guidance.md ]; then
+            cp /tmp/out/chief-guidance.md "measurements/sync/chief-$stamp.md"
+            cp /tmp/out/chief-guidance.md measurements/sync/chief-guidance.md
+          fi
           # THROUGH A PULL REQUEST, not `git push origin HEAD:main` (#393).
           # `main` requires one, so the old direct push was rejected with
           # GH006. This loop is weekly, so its breakage was still latent when

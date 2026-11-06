@@ -47,6 +47,11 @@ jobs:
             not the templates — #253 served a stale stylesheet to returning
             visitors for six weeks and nothing in the tree showed it.
 
+            measurements/sync/chief-guidance.md is chief's twice-weekly review of
+            every agent against OBJECTIVE.md. Read your role's row and follow its
+            instruction, unless it conflicts with a gate, CLAUDE.md, a QA verdict
+            or knowledge/*.md; then say so in your output and do not follow it.
+
             Pages: ${{ github.event.inputs.pages || 'https://shubhagya.com/, /kundli, /matching, /numerology, /learn' }}
 
             Run these skills rather than re-deriving their work:

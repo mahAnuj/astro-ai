@@ -112,6 +112,11 @@ jobs:
             saying why this time differs, and treat a repeated error theme as a
             reason to fix the cause, not just the instance.
 
+            measurements/sync/chief-guidance.md is chief's twice-weekly review of
+            every agent against OBJECTIVE.md. Read your role's row and follow its
+            instruction, unless it conflicts with a gate, CLAUDE.md, a QA verdict
+            or knowledge/*.md; then say so in your output and do not follow it.
+
             Rank by user harm, then unblocking power. Not by ease, not by age,
             not by label. At most 5-7 items in the queue.
 

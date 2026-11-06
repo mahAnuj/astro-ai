@@ -110,6 +110,11 @@ jobs:
             saying why this time differs, and treat a repeated error theme as a
             reason to fix the cause, not just the instance.
 
+            measurements/sync/chief-guidance.md is chief's twice-weekly review of
+            every agent against OBJECTIVE.md. Read your role's row and follow its
+            instruction, unless it conflicts with a gate, CLAUDE.md, a QA verdict
+            or knowledge/*.md; then say so in your output and do not follow it.
+
             RECORD WHAT RIVALS DO, so the loop can learn from it (owner,
             2026-11-06). For each concrete pattern you see on a site that
             outranks us (a tool, a page structure, an answer format, a speed or

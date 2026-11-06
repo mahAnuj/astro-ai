@@ -69,6 +69,11 @@ jobs:
           prompt: |
             Act as the Research team. Domain: ${{ github.event.inputs.domain || 'both' }}.
 
+            measurements/sync/chief-guidance.md is chief's twice-weekly review of
+            every agent against OBJECTIVE.md. Read your role's row and follow its
+            instruction, unless it conflicts with a gate, CLAUDE.md, a QA verdict
+            or knowledge/*.md; then say so in your output and do not follow it.
+
             Read these first and follow them exactly:
               .claude/agents/astro-auditor.md    charts, dashas, muhurta, Ashtakoota
               .claude/agents/numerologist.md     the numbers

@@ -203,6 +203,11 @@ jobs:
           prompt: |
             Dispatch the `steward` agent with `run_in_background: false`.
 
+            measurements/sync/chief-guidance.md is chief's twice-weekly review of
+            every agent against OBJECTIVE.md. Read your role's row and follow its
+            instruction, unless it conflicts with a gate, CLAUDE.md, a QA verdict
+            or knowledge/*.md; then say so in your output and do not follow it.
+
             `scripts/detect_stalls.py` exited non-zero, so something is stuck
             or its state could not be determined.
 

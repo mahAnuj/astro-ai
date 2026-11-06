@@ -75,6 +75,11 @@ jobs:
             Act as `infra-lead`. Read .claude/agents/infra-lead.md first and
             follow it — it defines your remit and your constraints.
 
+            measurements/sync/chief-guidance.md is chief's twice-weekly review of
+            every agent against OBJECTIVE.md. Read your role's row and follow its
+            instruction, unless it conflicts with a gate, CLAUDE.md, a QA verdict
+            or knowledge/*.md; then say so in your output and do not follow it.
+
             Focus this run: ${{ github.event.inputs.focus || 'free-tier headroom, deploy truth, latency' }}
 
             /tmp/probe.txt holds a live probe of the main routes with status
