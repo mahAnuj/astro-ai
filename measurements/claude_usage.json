@@ -1,51 +1,27 @@
 {
- "generated_at": "2026-11-06T08:57:02Z",
+ "generated_at": "2026-11-06T12:44:23Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 42184436643,
-  "at": "2026-11-06T07:58:55Z",
-  "five_hour": 0.01,
-  "seven_day": 0.03,
+  "run": 42207965199,
+  "at": "2026-11-06T11:08:14Z",
+  "five_hour": 0.18,
+  "seven_day": 0.05,
   "status": "allowed",
   "resets": {
    "five_hour": 1793969400,
    "seven_day": 1794549600
   }
  },
- "peak_seven_day": 0.03,
+ "peak_seven_day": 0.05,
  "rejected_runs": [],
  "readings": [
   {
    "workflow": "agent-work",
-   "run": 42177393220,
-   "at": "2026-11-06T06:54:19Z",
-   "five_hour": 0.25,
-   "seven_day": 0.02,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1793951400,
-    "seven_day": 1794549600
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 42180782314,
-   "at": "2026-11-06T07:25:29Z",
-   "five_hour": 0.27,
-   "seven_day": 0.02,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1793951400,
-    "seven_day": 1794549600
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 42183125754,
-   "at": "2026-11-06T07:46:54Z",
-   "five_hour": 0.3,
-   "seven_day": 0.03,
+   "run": 42193997568,
+   "at": "2026-11-06T09:18:05Z",
+   "five_hour": 0.07,
+   "seven_day": 0.04,
    "status": "allowed",
    "resets": {
     "five_hour": 1793969400,
@@ -54,10 +30,34 @@
   },
   {
    "workflow": "agent-work",
-   "run": 42184436643,
-   "at": "2026-11-06T07:58:55Z",
-   "five_hour": 0.01,
-   "seven_day": 0.03,
+   "run": 42197154434,
+   "at": "2026-11-06T09:43:19Z",
+   "five_hour": 0.14,
+   "seven_day": 0.05,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1793969400,
+    "seven_day": 1794549600
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 42203864923,
+   "at": "2026-11-06T10:35:41Z",
+   "five_hour": 0.17,
+   "seven_day": 0.05,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1793969400,
+    "seven_day": 1794549600
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 42207965199,
+   "at": "2026-11-06T11:08:14Z",
+   "five_hour": 0.18,
+   "seven_day": 0.05,
    "status": "allowed",
    "resets": {
     "five_hour": 1793969400,
