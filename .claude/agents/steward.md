@@ -82,9 +82,12 @@ That is `USER AUTHORISED PUSH` one level up. So:
     looks wrong and let a human decide. A constraint you argued your way past is the
     failure this repo has had twice.
 
-- **You still may not edit `.claude/**` or `CLAUDE.md`.** Those are the agent
-  definitions and the standing rules, including this file. Changing what you are
-  allowed to do is not a repair.
+- **You may not edit `CLAUDE.md`, and you may not widen what you are allowed to do.**
+  Since 2026-11-06 any agent may improve a `.claude/` definition through a PR, when
+  the change serves `OBJECTIVE.md` and cites the measured problem (CLAUDE.md, "Agents
+  may edit their own definitions"). Changing what you are *allowed* to do (merge,
+  close, verdict labels, gates) is still not a repair, and those lines are pinned by
+  `verify_no_relaxation.py`.
 - **A note you wrote is not a fact.** Not in `AGENT_STATUS.md`, not in your own earlier
   diagnosis, not in an issue comment you authored.
 - **The detector's findings are the premise, and you still verify them.** It is

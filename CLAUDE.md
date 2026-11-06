@@ -487,7 +487,7 @@ the owner is closed**:
 | # | The act | Why no agent can do it |
 | --- | --- | --- |
 | 1 | Authoring a file under `.github/workflows/` | The App token is refused the `workflows` permission (#421) — the push is rejected. Merging such a PR is NOT on this list: `agent-merge` merges with `github.token`. |
-| 2 | Editing anything under `.claude/` | An agent may not author its own definition. |
+| 2 | Removing a pinned safety or grounding line from `.claude/` | `verify_no_relaxation.py` is red on it by construction (its `REQUIRED_SUBSTRINGS`). Editing `.claude/` is otherwise NOT on this list since 2026-11-06; see the grant below. |
 | 3 | Granting a scope, a secret or a permission | `verify_workflow_permissions.py` is red on it by construction, and a red run of it is never `chief`'s to rule on. |
 | 4 | A product or revenue decision | Which school a reading follows, whether a feature ships, what is charged for. |
 | 5 | A legal, licensing or privacy commitment | #279, and any copy promising a user something about their data. |
@@ -505,6 +505,39 @@ lose an entry. `chief.md` is written against it by name. It is a separate file f
 `verify_no_relaxation.py` because that gate's rule 7 refuses to land alongside any other file,
 its own tests included — so a tested addition to it is not expressible in one PR. The rule was
 respected rather than narrowed.
+
+If this permission is ever narrowed again, edit this block rather than relying on the
+conversation.
+
+#### Agents may edit their own definitions — granted by the user 2026-11-06
+
+The user's words, verbatim, across three messages: *"I want to give freedom to agents to edit
+their own definitions as well if that helps meet the objective that I have set"*; *"my main
+objective is to increase the user base for shubhagya.com while ensuring fully grounded astrology
+on rules"*; *"I want to accelerate the changes speed without waiting for anyone, if that meet the
+objective of increasing user base while keep astrology 100% true"*.
+
+So **any agent may edit `.claude/agents/` and `.claude/commands/`**, including its own definition,
+when the change serves `OBJECTIVE.md`. The PR goes through the normal path, with **no chief hold
+and no owner wait**: gates green and a `QA: PASS` bound to the head. `.claude/` is deliberately NOT
+in `TRUST_BOUNDARY`. Until this date it was owner-only act #2, and today's rules said the loop could
+not do it. #722 and #745 each waited on the owner for `.claude/` text that a measured defect
+already justified.
+
+**What the grant does NOT include, and this is what keeps "100% true" true:**
+
+- **Improving how you do your job, yes. Widening what you are allowed to do, no.** An edit that
+  lets an agent merge, close, apply or clear a QA verdict, push to `main`, skip or weaken a gate,
+  or assert an astrological rule without a `knowledge/*.md` source is not covered. Those lines are
+  pinned as `REQUIRED_SUBSTRINGS` in `scripts/verify_no_relaxation.py`, which goes red when one is
+  removed and refuses to land alongside any other file (rule 7). So a rule and its guard cannot
+  be removed in one PR. Removing a pin is the owner's act #2 above.
+- **Cite the measured problem in the PR,** the way #722 cited #518 and #706, and #745 cited #311
+  and #697. An edit justified by a sentence its author wrote is the pattern this file names
+  below: *write the justification down, then treat the writing as the fact*.
+- **`CLAUDE.md` is not covered.** The standing rules stay a session or owner edit.
+- **This session's own safety check is separate.** A Claude Code session may still need the
+  owner to approve exact `.claude/` text. That is a harness setting, not a repo rule.
 
 If this permission is ever narrowed again, edit this block rather than relying on the
 conversation.

@@ -1,5 +1,14 @@
 # The objective
 
+> **The owner's objective, in their words (2026-11-06): "increase the user base for
+> shubhagya.com while ensuring fully grounded astrology on rules" — "keep astrology 100% true".**
+>
+> Both halves bind every agent, and the second is never traded for the first: a change that
+> grows traffic with an unsourced claim is not progress. The quarterly lever below serves the
+> first half. CLAUDE.md's rule that every astrological claim traces to `knowledge/*.md` is the
+> second half.
+
+
 > **Move the 6–20 position band into the top 5 on the ten highest-impression queries.**
 
 Six teams run on separate schedules and cannot see each other's work. This is the one line they all
