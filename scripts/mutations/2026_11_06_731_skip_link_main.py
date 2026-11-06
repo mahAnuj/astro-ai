@@ -21,4 +21,9 @@ MUTATIONS = [
      '<main id="main-content">\n',
      '<main id="main-content">\n{% include "_panchang_strip.html" %}\n',
      "test_index_main_wraps_the_sections_but_not_the_nav_or_strip"),
+    ("#731: the skip target loses its scroll offset and the sticky nav covers the heading",
+     "src/astro_ai/templates/base.html",
+     "scroll-margin-top: 4.5rem;",
+     "scroll-margin-top: 0;",
+     "test_skip_target_clears_the_sticky_nav"),
 ]

@@ -94,3 +94,13 @@ def test_index_main_wraps_the_sections_but_not_the_nav_or_strip():
         "the panchang strip must stay where index.html's note puts it, outside <main>"
     )
     assert "<section" in src[start:end] and src.count("<section") == src[start:end].count("<section")
+
+
+def test_skip_target_clears_the_sticky_nav(client):
+    """The nav is `sticky top-0` (65px at 375px). A bare #main-content scrolls
+    flush to the viewport top and the nav covers the page heading (QA round 1,
+    #731). The offset must be at least the nav height, i.e. >= 4.5rem."""
+    html = client.get("/kundli").text
+    m = re.search(r"#main-content\s*\{[^}]*scroll-margin-top:\s*([\d.]+)rem", html)
+    assert m, "no #main-content scroll-margin-top rule in the rendered page"
+    assert float(m.group(1)) >= 4.5, f"{m.group(1)}rem < 72px: the nav would cover the heading"

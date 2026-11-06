@@ -1053,6 +1053,15 @@
   /* Momentum scrolling for any horizontally-scrollable strip (the panchang
      strip, wide tables), and no rubber-banding of the whole document. */
   .overflow-x-auto { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+
+  /* Skip-link landing offset (#731). The nav is `sticky top-0`, so without this
+     the browser scrolls #main-content flush to the viewport top and the nav
+     paints over the first lines of the page heading. Measured nav height:
+     65px at 375px, 57px at 1280px; 4.5rem (72px) clears both. Declared on the
+     id, not per-template, so every page inherits it. */
+  #main-content {
+    scroll-margin-top: 4.5rem;
+  }
 </style>
 </head>
 
