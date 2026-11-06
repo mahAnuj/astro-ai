@@ -65,6 +65,33 @@ def _state(f: dict) -> str:
     return f"{f['level']}|{f['title']}".replace("--", "-")
 
 
+def _same(a: str | None, b: str) -> bool:
+    """Whether two recorded states are the same FINDING. Numbers are ignored
+    (2026-11-06): the title carries a live percentage, so #697 got four comments
+    for "idle 90% -> 89% -> 88% -> 89%" while nothing about the finding changed.
+    The level still counts, so amber -> red is always said."""
+    norm = lambda s: re.sub(r"\d+(?:\.\d+)?", "#", s or "")
+    return a is not None and norm(a) == norm(b)
+
+
+#: Priority by severity (2026-11-06, owner: "such issues should also be
+#: prioritised"). Both labels exist on the repository; project-manager ranks
+#: on them. A red finding is a broken loop or a quota about to bind.
+PRIORITY = {"red": "priority:high", "amber": "priority:medium"}
+
+
+def _set_priority(gh: Runner, repo: str, number: int, level: str) -> None:
+    want = PRIORITY.get(level)
+    if not want:
+        return
+    gh(["api", "-X", "POST", f"repos/{repo}/issues/{number}/labels", "-f", f"labels[]={want}"])
+    for other in set(PRIORITY.values()) - {want}:
+        try:
+            gh(["api", "-X", "DELETE", f"repos/{repo}/issues/{number}/labels/{other}"])
+        except RuntimeError:
+            pass            # 404: it was not there
+
+
 def open_findings(gh: Runner, repo: str) -> dict[str, dict]:
     """kind -> {number, state, cleared} for every open ops-finding issue."""
     raw = gh(["api", "--paginate", f"repos/{repo}/issues?state=open&creator={WRITER}&per_page=100",
@@ -131,15 +158,21 @@ def carry(gh: Runner, repo: str, findings: list[dict], now: str) -> dict:
         seen.add(kind)
         cur = existing.get(kind)
         if cur is None:
-            gh(["api", "-X", "POST", f"repos/{repo}/issues",
-                "-f", f"title=[OPS] {f['title']}", "-f", f"body={body_for(f, now)}",
-                "-f", f"labels[]={LABEL}"])
+            args = ["api", "-X", "POST", f"repos/{repo}/issues",
+                    "-f", f"title=[OPS] {f['title']}", "-f", f"body={body_for(f, now)}",
+                    "-f", f"labels[]={LABEL}"]
+            if PRIORITY.get(f["level"]):
+                args += ["-f", f"labels[]={PRIORITY[f['level']]}"]
+            gh(args)
             stats["filed"] += 1
             continue
         last, cleared = last_comment_state(gh, repo, cur["number"])
-        if (last or cur["state"]) == _state(f) and not cleared:
+        prev = last or cur["state"]
+        if _same(prev, _state(f)) and not cleared:
             stats["unchanged"] += 1
             continue
+        if not prev or prev.split("|", 1)[0] != f["level"]:
+            _set_priority(gh, repo, cur["number"], f["level"])
         gh(["api", "-X", "POST", f"repos/{repo}/issues/{cur['number']}/comments",
             "-f", f"body=<!-- ops-state: {_state(f)} -->\n**Now {f['level'].upper()}: "
                   f"{f['title']}** ({now})\n\n{f['detail']}"])
