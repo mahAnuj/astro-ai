@@ -117,8 +117,14 @@ def test_every_shipped_prompt_file_is_covered_and_every_route_has_a_row():
     # same reason in reverse -- that route was measured on its system prompt
     # only, so the row read "+0.0%" while ~120 tok per rashi went into the USER
     # message and the gate passed BECAUSE it could not see the change.
+    # `ask+payload`, `ask+numerology+payload`, `ask+matching+payload` added
+    # 2026-11-04 (#402): /ask's user message gained a transit block while
+    # ask.txt shrank, and only the SUM says whether net input rose (AC4).
     assert set(gate.BUDGET) == set(routes) | {"natal+payload",
-                                              "rashifal_single+payload"}
+                                              "rashifal_single+payload",
+                                              "ask+payload",
+                                              "ask+numerology+payload",
+                                              "ask+matching+payload"}
     assert len(routes) == 11  # one per prompts/*.txt, overlays as ask.txt + overlay
 
 
@@ -200,3 +206,37 @@ def test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt(
     monkeypatch.setattr(gate, "evaluate", capture)
     assert gate.main([]) == 0
     assert seen["natal+payload"][0] > seen["natal"][0] + 500
+
+
+def test_the_ask_payload_rows_include_the_user_message_and_the_transit_block(
+    fake_tokenizer, monkeypatch
+):
+    """#402 AC4. System-only rows read -79 tokens while the user message grew
+    ~76; the payload rows are what make "net input did not rise" checkable."""
+    seen: dict = {}
+
+    def capture(measured, budget, pct):
+        seen.update(measured)
+        return []
+
+    monkeypatch.setattr(gate, "evaluate", capture)
+    assert gate.main([]) == 0
+    for payload, system in (("ask+payload", "ask"),
+                            ("ask+numerology+payload", "ask+numerology"),
+                            ("ask+matching+payload", "ask+matching")):
+        assert seen[payload][0] > seen[system][0] + 300, payload
+        # hi differs from en by the language suffix alone: the user message is
+        # the same text in both, so the transit block is not language-dependent.
+        assert seen[payload][1] - seen[payload][0] == seen[system][1] - seen[system][0]
+
+
+def test_the_ask_payload_rows_leave_no_slack_over_the_pre_change_request():
+    """AC4 is "not higher than the baseline measured BEFORE the change"
+    (chief's reading, #402). The ceiling is that request plus the Hindi suffix
+    and nothing else; raising it is a reviewed edit, not a slack that absorbs
+    the next 100 tokens."""
+    for row in ("ask+payload", "ask+numerology+payload", "ask+matching+payload"):
+        baseline, ceiling, _on, _why = gate.BUDGET[row]
+        assert ceiling - baseline == 132, row
+    assert [gate.BUDGET[r][0] for r in
+            ("ask+payload", "ask+numerology+payload", "ask+matching+payload")] == [1951, 2645, 3637]
