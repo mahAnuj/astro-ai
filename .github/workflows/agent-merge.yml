@@ -338,9 +338,24 @@ jobs:
             # answers UNKNOWN while it does. Treating that as eligible would
             # reintroduce the failure intermittently, which is worse than
             # reliably -- so it is skipped and the next sweep asks again.
+            #
+            # BUT ASK AGAIN BEFORE SKIPPING (2026-11-06). The first ask is what
+            # STARTS the computation, and every merge to `main` discards the
+            # cached answer -- the measurement PRs merge several times a day.
+            # So a single ask hit UNKNOWN on every sweep: #706 and #712 sat
+            # chief-cleared, independently passed and green for 18 hours while
+            # four consecutive sweeps (15:43, 21:50, 02:06 ...) each printed
+            # "skipping — mergeable=UNKNOWN" and the */30 cron, throttled by
+            # GitHub, came back ~6 hours later to do it again. Up to four asks,
+            # MERGEABLE_WAIT seconds apart; still UNKNOWN after that is skipped.
             n=""
             for cand in $candidates; do
-              m=$(gh pr view "$cand" --repo "$GH_REPO" --json mergeable --jq .mergeable 2>/dev/null || echo "")
+              m=""
+              for _ask in 1 2 3 4; do
+                m=$(gh pr view "$cand" --repo "$GH_REPO" --json mergeable --jq .mergeable 2>/dev/null || echo "")
+                [ "$m" = "UNKNOWN" ] || break
+                [ "$_ask" = 4 ] || sleep "${MERGEABLE_WAIT:-5}"
+              done  # asks
               if [ "$m" = "MERGEABLE" ]; then
                 n="$cand"
                 echo "::notice::sweep picked PR #$n — every condition is re-checked below"

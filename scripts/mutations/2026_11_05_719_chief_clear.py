@@ -80,4 +80,9 @@ MUTATIONS = [
      '            target="pr=${num}"\n            aim="PR #$num itself — its',
      '            aim="PR #$num itself — its',
      "test_a_stale_pass_is_aimed_at_the_PR_as_a_judge_round"),
+    ("agent-merge: the sweep asks once and skips on UNKNOWN again",
+     ".github/workflows/agent-merge.yml",
+     '                [ "$m" = "UNKNOWN" ] || break',
+     '                break',
+     "test_unknown_is_asked_again_before_the_candidate_is_skipped"),
 ]
