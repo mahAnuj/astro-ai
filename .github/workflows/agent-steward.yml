@@ -411,6 +411,21 @@ jobs:
                      --json createdAt --jq "[.[] | select(.createdAt > \"$SINCE\")] | length" 2>/dev/null || echo 0)
           echo "since $SINCE: cycles dispatched=$cycles, issues filed=$issues"
 
+          # A TRUST-BOUNDARY HOLD IS CHIEF'S, WHATEVER ELSE HAPPENED (2026-11-06).
+          # Neither a running cycle nor a steward dispatch or issue clears one,
+          # so neither may stand chief down. #706 sat held 52h with a QA PASS
+          # bound to its head while each run saw a QA round in flight and
+          # concluded chief had nothing to add. The detector counts these.
+          rulings=$(grep -oE '^CHIEF_RULINGS=[0-9]+$' /tmp/stalls.txt | tail -1 | cut -d= -f2)
+          rulings=${rulings:-0}
+          echo "trust-boundary holds awaiting chief: $rulings"
+
+          if [ "$rulings" -gt 0 ]; then
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::$rulings trust-boundary hold(s) need a chief ruling, which no cycle or queue entry can supply. Waking chief."
+            exit 0
+          fi
+
           if [ "$inflight" -gt 0 ]; then
             # Not "the steward acted" -- "there was nothing for it to do", which
             # is a different fact and is reported as one.
@@ -440,7 +455,17 @@ jobs:
           prompt: |
             Dispatch the `chief` agent with `run_in_background: false`.
 
-            **The steward just ran, was handed actionable stalls, and did
+            **If `/tmp/stalls.txt` names a `boundary-hold-clearable` PR, that
+            is why you were woken, and it comes first** (Shape C). If its
+            `QA: PASS` names the head but the PR carries `qa:in-cycle` and not
+            `qa:independent`, the loop cannot supply the independent verdict
+            your clearance requires (agent-cycle.md: its own rounds stay
+            `in-cycle` on purpose). Dispatch the `qa` agent yourself, as you did
+            for #706 on 2026-11-05, to review that head cold and record its
+            verdict with `scripts/qa_verdict.sh --provenance independent`. Then
+            rule on the result in this same run.
+
+            **Otherwise: the steward just ran, was handed actionable stalls, and did
             nothing.** No cycle was dispatched and no issue was filed. That is
             the defect the steward exists to catch, committed by the steward,
             and it has now happened on consecutive runs.

@@ -847,6 +847,12 @@ def main(argv: list[str]) -> int:
     # they route to an escalation or an issue, not a dispatch.
     obliged = obliged_actions(stalls)
     print(f"OBLIGED_ACTIONS={len(obliged)}")
+    # RULINGS ONLY CHIEF CAN MAKE (2026-11-06). The accountability step treated
+    # an in-flight cycle as "nothing for chief to add", which is true for a
+    # dispatch the queue will carry and false for a trust-boundary hold: no
+    # cycle and no queue entry clears one. #706 sat held 52h, QA PASS bound to
+    # its head, while every steward run stood down behind a running QA round.
+    print(f"CHIEF_RULINGS={sum(1 for x in obliged if x['kind'] in OBLIGED_RULING_KINDS)}")
 
     if not stalls:
         # Say it explicitly. A detector that prints nothing when it finds
