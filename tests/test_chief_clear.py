@@ -31,6 +31,7 @@ class FakeGh:
         self.state, self.head, self.labels, self.gates = state, head, labels, gates
         # (login, body)
         self.comments = comments if comments is not None else [
+            (cc.RULER, f"QA: PASS — independent round, verified at {SHA}\nbody"),
             (cc.RULER, f"**chief ruling**\n\nchief-cleared at {SHA}")]
         self.fail = fail or set()
         self.writes: list[list[str]] = []
@@ -47,10 +48,17 @@ class FakeGh:
             return f"{self.state}\t{self.head}\t{self.labels}\n"
         if "/check-runs" in url:
             return self.gates + "\n"
+        if "/comments" in url and 'startswith("QA: PASS")' in args[-1]:
+            want = re.search(r'contains\("([0-9a-f]{40})"\)', args[-1]).group(1)
+            m = re.search(r'login (==|!=) "([^"]+)"', args[-1])   # read the script's OWN filter
+            ok = (lambda l: l == m.group(2)) if m.group(1) == "==" else (lambda l: l != m.group(2))
+            return str(sum(1 for l, b in self.comments if ok(l) and b.startswith("QA: PASS")
+                           and want in b.split("\n")[0])) + "\n"
         if "/comments" in url:
             want = re.search(r'contains\("chief-cleared at ([0-9a-f]+)"\)', args[-1]).group(1)
-            who = re.search(r'login == "([^"]+)"', args[-1]).group(1)
-            return str(sum(1 for l, b in self.comments if l == who and f"chief-cleared at {want}" in b)) + "\n"
+            m = re.search(r'login (==|!=) "([^"]+)"', args[-1])
+            ok = (lambda l: l == m.group(2)) if m.group(1) == "==" else (lambda l: l != m.group(2))
+            return str(sum(1 for l, b in self.comments if ok(l) and f"chief-cleared at {want}" in b)) + "\n"
         raise AssertionError(args)
 
 
@@ -78,18 +86,20 @@ def test_a_ruling_for_an_OLD_head_is_refused(tmp_path, monkeypatch):
 def test_no_ruling_comment_means_no_label(tmp_path, monkeypatch, capsys):
     """The comment comes first: a label with no ruling above it is the
     fabrication shape this repo has been burned by twice."""
-    gh = FakeGh(comments=[])
+    gh = FakeGh(comments=[(cc.RULER, f"QA: PASS — verified at {SHA}")])
     assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
     assert "the ruling comes first" in capsys.readouterr().out
 
 
 def test_a_ruling_comment_by_anyone_but_claude_bot_does_not_count(tmp_path, monkeypatch):
-    gh = FakeGh(comments=[("someone", f"chief-cleared at {SHA}")])
+    gh = FakeGh(comments=[(cc.RULER, f"QA: PASS — verified at {SHA}"),
+                          ("someone", f"chief-cleared at {SHA}")])
     assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
 
 
 def test_a_ruling_bound_to_another_sha_does_not_count(tmp_path, monkeypatch):
-    gh = FakeGh(comments=[(cc.RULER, f"chief-cleared at {OTHER}")])
+    gh = FakeGh(comments=[(cc.RULER, f"QA: PASS — verified at {SHA}"),
+                          (cc.RULER, f"chief-cleared at {OTHER}")])
     assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
 
 
@@ -150,3 +160,20 @@ def test_the_workflow_runs_the_carrier_after_chief_with_no_new_scope():
     for n in agent_steps:
         assert "Bash(gh pr edit:*)" in steps[n]["with"]["claude_args"]
     assert job["permissions"]["pull-requests"] == "write"
+
+
+
+def test_QA_labels_left_over_from_an_earlier_commit_are_not_enough(tmp_path, monkeypatch, capsys):
+    """#706, 2026-11-05: `main` was merged in after an independent PASS at
+    b9077f6, and the labels stayed on the new head. The verdict comment names
+    its sha; the labels cannot."""
+    gh = FakeGh(comments=[(cc.RULER, f"QA: PASS — verified at {OTHER}"),
+                          (cc.RULER, f"chief-cleared at {SHA}")])
+    assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
+    assert "may be left over from an earlier commit" in capsys.readouterr().out
+
+
+def test_a_PASS_verdict_by_anyone_but_claude_bot_does_not_count(tmp_path, monkeypatch):
+    gh = FakeGh(comments=[("someone", f"QA: PASS — verified at {SHA}"),
+                          (cc.RULER, f"chief-cleared at {SHA}")])
+    assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []

@@ -306,6 +306,15 @@ one person. You may now clear it — by **removing `needs-human-review` and addi
 `chief-cleared`** — and the sweep then merges it on its own `qa-pass` check. You are not
 merging; you are removing a hold.
 
+**You do not apply those labels yourself, and you cannot (#719).** Both steps in
+`agent-steward.yml` that run you deny `gh pr edit`. After the ruling comment is posted, write
+`/tmp/chief-clear.txt` with one line per PR, exactly `pr=<number> sha=<full head sha>` (at
+most three). A later `run:` step, `scripts/chief_clear.py`, re-reads your preconditions from
+the API: head = sha, `qa-pass` and `qa:independent`, no `qa-fail`, `gates` green, a
+`claude[bot]` QA: PASS verdict naming the sha, and a `claude[bot]` comment containing
+`chief-cleared at <sha>`. Only then does it swap the labels. Do not route around the denial
+with `gh api` or any other label call. The file is the only path, and it is checked.
+
 **TWO THINGS ARE REQUIRED AND `agent-merge` CHECKS BOTH.** The label on its own does nothing:
 
 1. **A ruling comment that names the head SHA**, containing the literal string

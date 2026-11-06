@@ -87,7 +87,7 @@ case "$1" in
           if [ "$a" = "--jq" ]; then want=1; fi
         done
         printf '%s' "$FAKE_COMMENTS" | jq -r "$expr" ;;
-      *"pr comment"*|*"--add-label"*)
+      *"pr comment"*|*"--add-label"*|*"--remove-label"*)
         echo "gh $*" >> "$GH_CALLS" ;;
       *)
         echo "UNEXPECTED gh pr call: $*" >&2; exit 9 ;;
@@ -343,3 +343,26 @@ def test_the_release_block_sits_AFTER_the_gate_chain_steps():
     `chief.md` names both.
     """
     assert _boundary_step()["if"] == "steps.size.outputs.ok == 'true'"
+
+
+
+def test_a_STALE_clearance_label_is_removed_so_chief_is_woken_again(tmp_path):
+    """2026-11-05, #706: `main` was merged in after chief's ruling, so the head
+    moved and `chief-cleared` outlived its SHA. detect_stalls.py wakes chief
+    only when `chief-cleared` is ABSENT, and qa-on-green skips a held PR, so
+    nothing would ever have looked at it again. The hold stands AND the stale
+    label comes off."""
+    rc, log, out, calls = _drive(tmp_path, files=["src/astro_ai/prompts/ask.txt"],
+                                 labels="qa-pass,qa:independent,chief-cleared",
+                                 comments=[f"chief-cleared at {OTHER}\n"], sha=HEAD)
+    assert rc == 0, log
+    assert "ok=true" not in out
+    assert "--remove-label chief-cleared" in calls, calls
+    assert "removed the stale chief-cleared" in log
+
+
+def test_a_BOUND_clearance_label_is_left_alone(tmp_path):
+    _, log, out, calls = _drive(tmp_path, files=["src/astro_ai/prompts/ask.txt"],
+                                labels="chief-cleared", comments=[RULING])
+    assert "ok=true" in out, log
+    assert "--remove-label" not in calls

@@ -389,6 +389,15 @@ What has NOT changed, and why it matters more now than before:
   defects, re-verify them, and still only hand the PR to a human. The property worth keeping
   was never "a failure is permanent" but **"only a QA round may clear one"** — which routing
   every write through one script enforces and a bare `--add-label qa-pass` did not.
+- **`qa-pass` counts only for the commit it was given on — since 2026-11-05.** A label cannot
+  say which commit it is about, and it survives a push: #609 merged on a `qa-pass` from an
+  earlier commit, and a `main` merged into a passed PR used to ship with no QA round on the
+  merge result (the merge procedure's step 8 says it must have one). `agent-merge`'s `QA
+  verdict` step now also requires a `QA: PASS` comment from `claude[bot]` or the owner whose
+  first line names the head SHA. That is the line `qa_verdict.sh` writes. `qa-on-green` treats a
+  stale `qa-pass` as no verdict and dispatches a judge-only round (`pr=<n>`) on the head, so the
+  PR is not left refused by one workflow and ignored by the other. **Cost: every `main` merge
+  into a passed PR now earns one QA round.**
 - **A merge can arrive up to 30 minutes after the gates go green (#357).** `agent-merge`
   now also runs on a `*/30` cron and re-evaluates every open PR carrying `qa-pass` whose
   author is in `AGENT_AUTHORS` (`claude[bot]`, `github-actions[bot]`,
@@ -441,6 +450,12 @@ dispatches `chief` for every such hold instead of reporting "A HUMAN decides thi
   first re-reads every precondition from the API: head = sha, `qa-pass` + `qa:independent`,
   no `qa-fail`, `gates` green, and a `claude[bot]` comment naming the sha. Chief still
   cannot label anything itself.
+- **A clearance label that outlives its SHA comes off (2026-11-05).** When `agent-merge`
+  keeps a hold because `chief-cleared` names no ruling for the current head, it removes the
+  label. `detect_stalls.py` wakes chief only while `chief-cleared` is absent, so a stale one
+  hid the PR from everything. Measured on #706 after `main` was merged in. For the same
+  reason `chief_clear.py` also requires a `claude[bot]` `QA: PASS` verdict whose first line
+  names the head: the QA labels cannot say which commit they are about.
 - **Irreversible actions still stop and ask** — data migration, destructive storage, anything
   touching subscriber records. That carve-out is about reversibility, not trust: a wrong merge
   is one `git revert`, a deleted subscriber is gone. The grant is about who clears a *hold on a

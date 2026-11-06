@@ -150,9 +150,30 @@ jobs:
             exit 0
           fi
 
+          # A `qa-pass` FOR AN EARLIER COMMIT IS NOT A VERDICT ON THIS ONE
+          # (2026-11-05). `agent-merge` now merges only on a `QA: PASS` comment
+          # naming the head, so a passed PR that gets `main` merged in (or any
+          # push) needs a round on the new head -- and until this, this step
+          # read the stale label as "agent-merge owns it" and exited, leaving the
+          # PR refused by one workflow and ignored by the other. Same comment
+          # test as agent-merge; anything unreadable reads as stale, which only
+          # costs a round.
+          stale_pass=false
           case ",$labels," in
             *",qa-pass,"*)
-              say "PR #$num already carries \`qa-pass\` — \`agent-merge\` owns it from here."; exit 0 ;;
+              owner="${GH_REPO%%/*}"
+              bound=$(gh api "repos/$GH_REPO/issues/$num/comments?per_page=100" --paginate \
+                  --jq ".[] | select(.user.login == \"claude[bot]\" or .user.login == \"$owner\")
+                            | select(.body | startswith(\"QA: PASS\"))
+                            | select(.body | split(\"\\n\")[0] | contains(\"$head\")) | .id" \
+                  2>/dev/null | grep -c . || true)
+              case "$bound" in ''|*[!0-9]*) bound=0 ;; esac
+              if [ "$bound" -gt 0 ]; then
+                say "PR #$num already carries \`qa-pass\` for \`${head:0:7}\` — \`agent-merge\` owns it from here."; exit 0
+              fi
+              stale_pass=true ;;
+          esac
+          case ",$labels," in
             *",needs-human-review,"*)
               say "PR #$num carries \`needs-human-review\` — someone has been told."; exit 0 ;;
           esac
@@ -277,6 +298,12 @@ jobs:
           fi
           if [ "$refix" = true ]; then
             aim="PR #$num itself — \`qa-fail\` at \`${failed_at:0:7}\` and $fixes fix commit(s) since, so the round judges the fix"
+          fi
+          # A stale pass wants a ROUND ON THIS HEAD, not a cycle that may
+          # rebuild -- aimed at the PR whatever the branch is called, like a refix.
+          if [ "$stale_pass" = true ]; then
+            target="pr=${num}"
+            aim="PR #$num itself — its \`qa-pass\` names an earlier commit, so the round judges \`${head:0:7}\`"
           fi
 
           # THE LOOP GUARD, and it is the reason this workflow is safe to run on
