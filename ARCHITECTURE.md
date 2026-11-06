@@ -138,10 +138,9 @@ src/astro_ai/
   numerology.py    1,910  Chaldean + Lo Shu calculators
   festival_registry.py 1,509
   muhurat.py       1,475  electional scoring; shares angas with panchang
-  llm.py           1,538  prompt assembly, rashifal fan-out (re-measured 2026-11-04)
   ask_transit.py     103  /ask's slow-planet transit block (four movers from the natal Moon), the pinned
                         moment and the `tr` cache-key fingerprint (#402)
-  llm.py           1,557  prompt assembly, rashifal fan-out
+  llm.py           1,566  prompt assembly, rashifal fan-out (re-measured 2026-11-06)
   knowledge_lookup.py 206  chart-keyed read of knowledge/remedies.md §5.1 + §7.1 for the natal REMEDY RULES
                         block; the first runtime read of knowledge/ (#399)
   rashifal_derive.py 144  /rashifal/{rashi} reading cut from the cached combined text (#268)
