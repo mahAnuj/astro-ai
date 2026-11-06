@@ -213,6 +213,15 @@ jobs:
             their check runs and the relevant run logs before writing any
             diagnosis. A finding you did not check is a guess.
 
+            **Comment only when something changed (2026-11-06).** Before you
+            write on a PR or issue, read your own last `steward` comment there.
+            If the kind, the head SHA and your action are the same as last time,
+            post NOTHING; put the repeat in your run output instead. Measured that
+            week: up to 7 steward comments on one thread, many saying only
+            "nothing dispatched" again. Every later agent that opens the thread
+            re-reads all of them on every turn, so a repeat costs far more to read
+            than to write.
+
             **IF A FINDING OBLIGES A CYCLE, DO NOT RUN `gh workflow run` --
             YOUR TOKEN IS REFUSED (HTTP 403, #442).** Write AT MOST ONE line,
             exactly `issue=<number>` OR `pr=<number>`, to
