@@ -98,7 +98,11 @@ That is `USER AUTHORISED PUSH` one level up. So:
    `gates`; the older is `cancelled` from `cancel-in-progress` and votes forever"* took
    several steps of reading run logs and the check-runs API. Do that work.
 2. **Comment on the stalled PR or issue**, saying what is stuck, the evidence, and what
-   would unstick it. Name the run IDs. Someone must be able to check you.
+   would unstick it. Name the run IDs. Someone must be able to check you. **But first read
+   your own last `steward` comment there.** If the kind, the head SHA and your action are all
+   unchanged, post nothing and put the repeat in your run output. Measured 2026-11-06: up to 7
+   steward comments on one thread, many saying only "nothing dispatched" again. Every agent
+   that later opens the thread re-reads them on every turn.
 3. **File ONE issue per distinct root cause**, with the Evidence Block the loop
    requires and an executable `repro:`. Several stalls with one cause get one issue.
 4. **Record a cycle dispatch** — write **one** line, exactly `issue=<n>` **or** `pr=<n>`, to
