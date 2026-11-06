@@ -16,6 +16,7 @@ the "In short" callout. This pins the things a later edit can silently undo:
 """
 from __future__ import annotations
 
+import re
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -47,8 +48,34 @@ SLICE_4 = [
     ("gochar-2026-planetary-transits", "/sade-sati-check"),
 ]
 
+# Slice 5 — the last 30 zero-route articles, which closes #518's "0 articles with no route"
+# criterion. (slug, tool) pairs. Life-question articles go to /dasha only where the
+# question is WHEN (marriage-timing-kundli); the rest are about placement, so /kundli.
+# karva-chauth-2026 is outside the issue's table: its one tool-shaped question is "when
+# does the Moon rise in my city", which only /panchang's Moonrise / Moonset tile answers.
+SLICE_5 = (
+    [(f"{n}-nakshatra", "/kundli") for n in (
+        "ardra", "ashlesha", "bharani", "chitra", "hasta", "krittika", "magha",
+        "mrigashira", "punarvasu", "purva-phalguni", "rohini", "swati", "uttara-phalguni")]
+    + [(s, "/kundli") for s in (
+        "budha-mercury-in-vedic-astrology", "ketu-in-vedic-astrology",
+        "rahu-in-vedic-astrology", "surya-sun-in-vedic-astrology", "the-9-grahas-overview",
+        "chandra-moon-remedies", "surya-sun-remedies", "pitru-dosh-remedies",
+        "11th-lord-placement-gains-guide", "2nd-lord-placement-wealth-guide",
+        "foreign-career-yoga-kundli", "job-or-business-kundli-guide",
+        "love-vs-arranged-marriage-kundli", "second-marriage-yoga-kundli",
+        "dhana-yoga-wealth-combinations")]
+    + [("marriage-timing-kundli", "/dasha"), ("karva-chauth-2026", "/panchang")]
+)
+
 # Every article this file pins, with its expected tool.
-ROUTED = [(slug, "/kundli") for slug in SLICE_3] + SLICE_4
+ROUTED = [(slug, "/kundli") for slug in SLICE_3] + SLICE_4 + SLICE_5
+
+# The tool pages an in-body route may point at (the same set #518 counts).
+TOOL_HREF = re.compile(
+    r'href="/(kundli|matching|dasha|ask|rashifal|numerology|muhurat|panchang|'
+    r'manglik-check|kaal-sarp-check|sade-sati-check)\b'
+)
 
 # A route that sits past this share of the article body is the "92% depth" defect.
 FIRST_SCREEN_SHARE = 0.15
@@ -88,6 +115,48 @@ def test_slice4_article_renders_with_the_callout(client, slug, href):
     assert r.status_code == 200
     assert 'callout callout-tip' in r.text
     assert f'href="{href}"' in r.text
+
+
+@pytest.mark.parametrize("slug,href", SLICE_5)
+def test_slice5_first_tool_link_is_in_the_first_screen(slug, href):
+    src = (LEARN / f"{slug}.html").read_text()
+    pos = src.find(f'href="{href}"')
+    assert pos != -1, f"{slug}: no link to {href}"
+    assert pos / len(src) <= FIRST_SCREEN_SHARE, (
+        f"{slug}: first {href} link at {pos / len(src):.0%} of the article"
+    )
+
+
+@pytest.mark.parametrize("slug,href", SLICE_5)
+def test_slice5_article_renders_with_the_callout(client, slug, href):
+    r = client.get(f"/learn/{slug}/")
+    assert r.status_code == 200
+    assert 'callout callout-tip' in r.text
+    assert f'href="{href}"' in r.text
+
+
+def test_slice5_is_the_thirty_articles_the_issue_names():
+    slugs = [s for s, _ in SLICE_5]
+    assert len(slugs) == 30 and len(set(slugs)) == 30
+    for s in slugs:
+        assert (LEARN / f"{s}.html").exists(), s
+
+
+def test_every_learn_article_routes_to_a_tool():
+    """#518's target: 0 articles with no in-body route to a tool. This walks the directory,
+    so it also fires on any FUTURE article that ships without one — that is intended."""
+    bare = sorted(p.stem for p in LEARN.glob("*.html") if not TOOL_HREF.search(p.read_text()))
+    assert not bare, f"{len(bare)} learn article(s) with no link to any tool: {bare}"
+
+
+def test_saturn_in_10th_links_the_tool_not_the_homepage():
+    """PR #680 left three links to `/` (the homepage) on this article. Each said 'Generate
+    your free Janma Kundli'; they now go to /kundli. The 'aspects' promise beside one of them
+    is gone too: a rendered /kundli lists sign, house and nakshatra, not aspects."""
+    src = (LEARN / "saturn-in-10th-house-career.html").read_text()
+    assert 'href="/"' not in src
+    assert src.count('href="/kundli"') >= 4  # the tip + the three retargeted links
+    assert "exact placement, sign, and aspects" not in src
 
 
 def test_rahu_tip_was_moved_not_copied():
@@ -171,6 +240,22 @@ def test_the_first_tip_is_the_one_that_routes_to_the_tool(client, slug, href):
     html = client.get(f"/learn/{slug}/").text
     start = html.index("callout callout-tip")
     assert f'href="{href}"' in html[start:start + 1500], f"{slug}: first tip does not link {href}"
+
+
+@pytest.mark.parametrize("slug,href", SLICE_5)
+def test_slice5_tip_is_a_sibling_after_the_insight_callout_not_nested_in_it(client, slug, href):
+    _assert_tip_follows_insight_as_sibling(client, slug)
+
+
+def test_pitru_dosh_tip_does_not_promise_a_pitru_dosh_check():
+    """The render shows positions; chart.py has no Pitru Dosh detection (its only 'Pitru'
+    is an amavasya note). The tip must not read as a detector."""
+    src = (LEARN / "pitru-dosh-remedies.html").read_text()
+    start = src.index("callout callout-tip")
+    tip = src[start:src.index("</p>", start)]
+    assert "does not run a Pitru Dosh test" in tip
+    chart = (ROOT / "src" / "astro_ai" / "chart.py").read_text().lower()
+    assert "pitru_dosh" not in chart and "pitru dosh" not in chart
 
 
 def test_gajakesari_does_not_claim_matching_compares_yogas():

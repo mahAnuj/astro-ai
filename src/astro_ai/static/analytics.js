@@ -85,7 +85,9 @@
   // unclassified, so a new tool link cannot be silently ignored.
   var TOOL_ROOTS = [
     '/kundli', '/dasha', '/matching', '/ask', '/manglik-check',
-    '/sade-sati-check', '/kaal-sarp-check', '/numerology', '/muhurat'
+    '/sade-sati-check', '/kaal-sarp-check', '/numerology', '/muhurat',
+    // #518 slice 5: karva-chauth-2026's tip routes to the Panchang (Moonrise tile).
+    '/panchang'
   ];
   // SITE CHROME NEVER COUNTS, for any path. QA round 1 measured the rendered
   // /learn/sade-sati/: ~21 tool anchors sit in the desktop nav, the mobile tab
