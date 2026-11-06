@@ -168,6 +168,9 @@ def test_a_click_on_a_child_of_the_link_counts(tmp_path):
 
 @pytest.mark.parametrize("href", [
     "/learn/sade-sati/", "/learn/", "/about", "/privacy", "/rashifal",
+    # /panchang is a tool root since #518 slice 5; the lookalike keeps this list's count and
+    # pins that the root is matched on a path boundary, like "/kundlifoo" does for /kundli.
+    "/panchangfoo",
     "/kundlifoo", "/askew", "/numerology-fake/x",
 ])
 def test_navigation_and_lookalike_paths_send_nothing(tmp_path, href):
