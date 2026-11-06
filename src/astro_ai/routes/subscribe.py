@@ -75,9 +75,7 @@ def _rashifal_teaser(body: str, sentences: int = 2) -> str:
     import re as _re
     parts = _re.split(r"(?<=[.!?])\s+", (body or "").strip())
     teaser = " ".join(parts[:sentences]).strip()
-    if len(parts) > sentences and not teaser.endswith(("...", "…")):
-        # No ellipsis — the "Read full" button makes the truncation explicit.
-        pass
+    # No ellipsis is appended — the "Read full" button makes the truncation explicit.
     return teaser
 
 
@@ -277,7 +275,6 @@ async def subscribe(request: Request,
         except Exception as err:
             # Log and continue — the user is already subscribed; missing
             # welcome is a minor degradation, not a failure.
-            import logging
             logging.getLogger(__name__).warning("welcome email failed for %s: %s", email, err)
         # Only notify on brand-new subscriptions, not re-subscribes.
         notify.subscribed(email=email, source=(city or "unknown"), lang=lang)

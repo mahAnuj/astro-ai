@@ -132,7 +132,6 @@ async def auth_google(
         _ok, _is_new_user = users.upsert_user(sub=user.sub, email=user.email, name=user.name)
     except Exception as err:
         # Log and continue — never let a storage hiccup block sign-in.
-        import logging
         logging.getLogger(__name__).warning(
             "users.upsert_user failed for %s: %s", user.email, err
         )

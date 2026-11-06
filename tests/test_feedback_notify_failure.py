@@ -48,7 +48,7 @@ def _submit():
         headers: dict = {}
 
     return asyncio.new_event_loop().run_until_complete(
-        feedback_route.submit_feedback(_Req(), type="problem", message="hello",
+        feedback_route.submit_feedback(_Req(), feedback_type="problem", message="hello",
                                        email="", page="/x"))
 
 

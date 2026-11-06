@@ -48,7 +48,7 @@ def _submit(monkeypatch, sent, **fields):
 
     asyncio.get_event_loop_policy().new_event_loop().run_until_complete(
         feedback_route.submit_feedback(_Req(), **{
-            "type": entry["type"], "message": entry["message"],
+            "feedback_type": entry["type"], "message": entry["message"],
             "email": entry["email"], "page": entry["page"]}))
     assert sent, "no email was composed"
     return sent[-1]["html"]
@@ -94,7 +94,7 @@ def test_storage_keeps_the_raw_text(monkeypatch, sent):
         headers: dict = {}
 
     asyncio.get_event_loop_policy().new_event_loop().run_until_complete(
-        feedback_route.submit_feedback(_Req(), type="problem", message=PAYLOAD,
+        feedback_route.submit_feedback(_Req(), feedback_type="problem", message=PAYLOAD,
                                        email="", page=""))
     assert captured["message"] == PAYLOAD
 

@@ -71,7 +71,7 @@ _TG_CHAT_ENV = "BHAGYA_TELEGRAM_OWNER_CHAT_ID"
 # instance has its OWN in-memory _LAST_FIRED dict, so the same event
 # routed to different pods within the same window can still fire N
 # times. Fix that at the CALL SITE by skipping notify on cache hits
-# (see main.py _render_natal_for et al.) — that eliminates the vast
+# (see routes/kundli.py _render_natal_for et al.) — that eliminates the vast
 # majority of duplicates. The in-memory dedup here is a per-instance
 # safety net, not a distributed guarantee.
 _LAST_FIRED: dict[str, float] = {}
