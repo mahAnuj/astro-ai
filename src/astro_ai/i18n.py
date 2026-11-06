@@ -446,6 +446,7 @@ _EN: Final[dict[str, str]] = {
     # ─── Nav labels added cycle 10 ───────────────────────────────────
     "nav_numerology_link":     "Numerology",
     "nav_learn_link":          "Learn",
+    "skip_to_content":         "Skip to content",
     "nav_tools_menu":          "Tools",
     "nav_more_menu":           "More",
     "nav_tool_panchang":       "Panchang Today",
@@ -985,6 +986,7 @@ _HI: Final[dict[str, str]] = {
     # ─── Nav labels added cycle 10 ───────────────────────────────────
     "nav_numerology_link":     "अंकशास्त्र",
     "nav_learn_link":          "सीखें",
+    "skip_to_content":         "मुख्य सामग्री पर जाएँ",
     "nav_tools_menu":          "उपकरण",
     "nav_more_menu":           "अधिक",
     "nav_tool_panchang":       "आज का पंचांग",

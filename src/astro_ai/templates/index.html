@@ -17,6 +17,12 @@
    costs nothing on repeat homepage loads. #}
 {% include "_panchang_strip.html" %}
 
+{# #731: the page's <main> landmark and the skip link's target (base.html). It
+   opens AFTER the nav and the panchang strip — the strip stays where the note
+   above put it, and is site-header chrome rather than page content — and it
+   closes after the last section, before the footer block in base.html. #}
+<main id="main-content">
+
 {# If the seeker arrived here because they clicked a feature without a saved chart, name what they were trying to reach. #}
 {% if needs_chart_for %}
 {% set feature_label = {
@@ -852,6 +858,7 @@
     </div>
   </div>
 </section>
+</main>
 
 {# Site-wide footer comes from base.html — removed the page-specific copy
    so we don't render it twice. #}
