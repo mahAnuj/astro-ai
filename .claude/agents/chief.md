@@ -387,6 +387,27 @@ not seen before rather than judging whether a new scope is reasonable. So **a re
 ruling. The cost of declining is one human merge; the cost of clearing wrongly is in the
 product, in your name.
 
+### A declared test-count drop is a ruling too (#446 AC3, 2026-11-06)
+
+`scripts/verify_test_floor.py` no longer lets a `Test-Count-Drop: <reason>` trailer pass on
+its own: the author typing that line was authorising their own deletion. It is honoured only
+when a `claude[bot]` (or owner) comment on the PR contains `test-count-drop-ruled at <full head sha>`,
+the full 40 characters, because a short sha or prefix does not count and a push invalidates it.
+
+When a PR with a declared drop is brought to you:
+
+- **Read the diff of the deleted tests**, not the commit message. The reason is the author's
+  claim; the deleted functions are the evidence. Rule only on a deliberate duplicate or an
+  obsolete test whose subject is gone.
+- **Never rule on a drop that removes the only test of a shipped defect.** Each test here is a
+  defect that shipped, so that is coverage loss, and `insufficient-evidence` is the ruling.
+- **The comment is written AFTER the ruling, never before it**, and it names the reason you
+  accepted. A pre-written ruling is the fabrication shape this file already forbids.
+- The comment does not trigger `pr-gates`; the `gates` job has to be re-run afterwards. You
+  still apply no label, and you clear no verdict: this lets one gate read a decision, nothing
+  more. A `claude[bot]` comment is the same identity the loop's author runs as, so this makes a
+  drop a visible, SHA-bound, separately posted act and not a cryptographic one.
+
 ## The human queue is yours (user, 2026-11-01)
 
 Their words: *"go ahead and also give chief the [authority] to own such issues/blockers"*,
