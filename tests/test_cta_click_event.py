@@ -152,6 +152,8 @@ def test_tool_link_from_a_learn_page_sends_one_cta_click(tmp_path):
     "/kundli", "/dasha", "/matching", "/ask", "/sade-sati-check", "/kaal-sarp-check",
     "/numerology", "/numerology/compatibility", "/muhurat", "/muhurat/vivah",
     "/muhurat/griha-pravesh", "/dasha/deep-dive",
+    # #518 slice 5: karva-chauth-2026 routes to the Panchang, so it is a tool link now.
+    "/panchang",
 ])
 def test_every_tool_the_articles_link_to_counts(tmp_path, href):
     out = _run(tmp_path, clicks=[{"href": href, "ancestors": ["article"]}])
@@ -165,7 +167,7 @@ def test_a_click_on_a_child_of_the_link_counts(tmp_path):
 
 
 @pytest.mark.parametrize("href", [
-    "/learn/sade-sati/", "/learn/", "/about", "/privacy", "/rashifal", "/panchang",
+    "/learn/sade-sati/", "/learn/", "/about", "/privacy", "/rashifal",
     "/kundlifoo", "/askew", "/numerology-fake/x",
 ])
 def test_navigation_and_lookalike_paths_send_nothing(tmp_path, href):
