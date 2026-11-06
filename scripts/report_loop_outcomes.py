@@ -378,7 +378,9 @@ def measurement_receipt(log: str) -> str:
     text = "\n".join(lines)
     if re.search(r"HTTP 403|Resource not accessible", text):
         return DENIED
-    if re.search(r"measurement from run \d+", text):
+    # The committed report (2026-11-06, #745) is a receipt too: the planners now
+    # read measurements/latest.md before falling back to a run artifact.
+    if re.search(r"measurement from run \d+|analyst report from measurements/latest\.md", text):
         return RECEIVED
     if "no prior measurement" in text:
         return NONE_YET

@@ -74,7 +74,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          # PREFER THE COMMITTED REPORT (2026-11-06). `agent-measure` commits the
+          # PREFER THE COMMITTED REPORT (2026-11-06) over agent-measure.yml's artifact. It commits the
           # analyst's report as measurements/latest.md, which this checkout already
           # holds. The artifact download below picked the newest SUCCESSFUL
           # agent-measure run, which is usually a collectors-only run with the
