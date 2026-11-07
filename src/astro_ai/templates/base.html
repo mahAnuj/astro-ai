@@ -785,6 +785,29 @@
                 border-color 200ms ease-out;
   }
 
+  /* ─── Form focus border (#732) ──────────────────────────────────────
+     The saffron focus border (#E4913C) on a white input is 2.50:1; WCAG
+     1.4.11 asks 3:1 for the part of a component that shows its state. 59
+     utilities carry it, so one rule here repaints the border instead of
+     editing every template. The 16% saffron ring stays — it is the brand's
+     glow — and the border is what carries the indicator. #4A4238 is
+     bhagya-ink-soft: 9.87:1 on white, and scripts/verify_contrast.py Gate 5
+     re-measures it on every surface an input sits on.
+
+     Specificity: the utility is `.focus\:border-bhagya-saffron:focus`
+     (0,2,0); an attribute selector + :focus + element is (0,2,1), so this
+     wins without !important and without depending on source order.
+
+     name="lang" is excluded on purpose: the language picker sits INSIDE the
+     night nav bar, where saffron is 7:1 and a dark border would vanish. The
+     skip link (an <a>, not a field) is outside the element list for the same
+     reason. */
+  input[class*="focus:border-bhagya-saffron"]:focus,
+  textarea[class*="focus:border-bhagya-saffron"]:focus,
+  select[class*="focus:border-bhagya-saffron"]:not([name="lang"]):focus {
+    border-color: #4A4238;
+  }
+
   /* ─── Modal open/close transitions ──────────────────────────────────
      Any modal backdrop tagged with [data-modal-backdrop] fades in
      (opacity 0 → 1 over 220ms) and its child panel scales in (0.95 →
