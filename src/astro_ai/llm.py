@@ -22,6 +22,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from astro_ai import providers
+from astro_ai.ask_transit import ask_transit_moment, format_ask_transit
 
 _log = logging.getLogger(__name__)
 from astro_ai import rashifal_quality
@@ -672,6 +673,7 @@ def generate_ask_answer(
     guna_milan=None,
     guna_pair_label: str | None = None,
     overlay_path: Path | None = None,
+    transit_moment: datetime | None = None,
 ) -> str:
     """Personalised free-form Q&A grounded in the seeker's chart.
 
@@ -687,6 +689,8 @@ def generate_ask_answer(
       - `partner_chart` + `partner_label` — Chart of the second person in a
         Kundli match. Enables "is this a good match for career alignment?"
         style follow-ups from /matching that need BOTH charts.
+
+    Always carries the slow-planet transit block (`ask_transit`, #402).
     """
     chart_block = format_for_prompt(chart)
     dasha_block = format_dasha_for_prompt(dasha) if dasha else "(no dasha state)"
@@ -710,12 +714,17 @@ def generate_ask_answer(
             f"{format_guna_milan_for_prompt(guna_milan, guna_pair_label)}\n\n"
         )
 
+    # The route passes the SAME moment it keyed the cache on (#402); None means
+    # "today", which is what GET's key derivation uses too.
+    transit_block = format_ask_transit(chart, transit_moment or ask_transit_moment())
+
     user_message = (
         f"{today_anchor()}\n\n"
         f"--- SEEKER'S NATAL CHART ---\n{chart_block}\n\n"
         f"--- CURRENT DASHA ---\n{dasha_block}\n\n"
         f"{('--- VEDIC FLAGS ---' + chr(10) + flags_block + chr(10) + chr(10)) if flags_block else ''}"
         f"{optional_blocks}"
+        f"{transit_block}"
         f"--- QUESTION ---\n"
         f"Category hint: {category}\n"
         f"Question: {question.strip()}\n"

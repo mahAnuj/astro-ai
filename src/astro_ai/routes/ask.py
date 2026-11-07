@@ -21,6 +21,7 @@ from fastapi import APIRouter, Form, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from astro_ai import cache, events, notify, users
+from astro_ai.ask_transit import ask_transit_moment, transit_fingerprint
 from astro_ai import providers as llm_providers
 from astro_ai.chart import (
     ChartError,
@@ -122,7 +123,7 @@ _ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
 
 def _ask_cache_key(saved, question: str, category: str, lang: str,
                     context: str = "chart", pair_fp: str | None = None,
-                    role: str | None = None) -> str:
+                    role: str | None = None, transit_moment=None) -> str:
     """Stable cache key for a (chart, question, category, context, partner) tuple.
 
     `context` is one of chart|numerology|matching and is baked in so the
@@ -150,9 +151,18 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
 
     Key shapes:
 
-        chart       ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}
-        numerology  …:ctx=numerology:numrules={NUMEROLOGY_RULES_VERSION}
-        matching    …:ctx=matching:pair={groom_fp}~{bride_fp}:matchrules={MATCHING_RULES_VERSION}
+        chart       ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}:tr={transit_fp}
+        numerology  …:tr=…:ctx=numerology:numrules={NUMEROLOGY_RULES_VERSION}
+        matching    …:tr=…:ctx=matching:pair={groom_fp}~{bride_fp}:role={role}:matchrules={MATCHING_RULES_VERSION}
+
+    `tr` is `ask_transit.transit_fingerprint` of the pinned moment (#402): the
+    answer now depends on where the slow planets are, which neither the chart
+    fingerprint nor the prompt fingerprint covers. It is a pure function of the
+    date, so GET (no chart, no `transit_moment`) and POST (which passes the one
+    moment it also hands the generator) derive the same segment. It moves only
+    when Saturn, Jupiter or Rahu changes sign, so cached answers survive
+    between ingresses. EVERY branch below carries it, the matching fallback
+    included — that branch builds its own string.
 
     where `prompt_fp` additionally carries the overlay's fingerprint for the
     two contexts that have one.
@@ -187,7 +197,8 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
     import hashlib
     from astro_ai.numerology import NUMEROLOGY_RULES_VERSION
     q_fp = hashlib.sha1(question.strip().encode("utf-8")).hexdigest()[:16]
-    base = f"ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}"
+    tr = f":tr={transit_fingerprint(transit_moment or ask_transit_moment())}"
+    base = f"ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}{tr}"
     if context == "chart":
         return base
     key = f"{base}:ctx={context}"
@@ -208,7 +219,7 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
         # hazard matchrules exists to prevent. Callers should never reach here
         # (both handlers derive context and fingerprint from the same record),
         # so treat it as chart rather than emitting a half-formed matching key.
-        return f"ask:{chart_fp}:{q_fp}:{category}:{_base_prompt_fp}:{lang}"
+        return f"ask:{chart_fp}:{q_fp}:{category}:{_base_prompt_fp}:{lang}{tr}"
     if context == "matching" and pair_fp:
         # matchrules for exactly the reason numrules exists above. The Ashtakoota
         # scoring now reaches the prompt, and `prompt_fp` fingerprints only the
@@ -523,9 +534,13 @@ async def ask_submit(
     _post_role = _seeker_role(saved, _post_last) if context == "matching" else None
     if context != "matching":
         _post_pair_fp = None
+    # ONE moment for the key and the generator (#402): a day boundary crossed
+    # between the two calls must not file a with-transit answer under the key
+    # of a different sky.
+    _transit_moment = ask_transit_moment()
     cache_key = _ask_cache_key(saved, question, category, lang,
                                context=context, pair_fp=_post_pair_fp,
-                               role=_post_role)
+                               role=_post_role, transit_moment=_transit_moment)
     was_cached = cache.get(cache_key) is not None
     try:
         answer_text = _cached(
@@ -543,6 +558,7 @@ async def ask_submit(
                 partner_label=partner_label,
                 guna_milan=guna_milan,
                 guna_pair_label=guna_pair_label,
+                transit_moment=_transit_moment,
             ),
         )
     except Exception as err:

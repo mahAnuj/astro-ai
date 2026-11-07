@@ -1,76 +1,39 @@
-## 2026-10-30 — sync
-Read from: `gh issue view --comments`, issue events API, PR bodies, `gh run list`, live `/health`.
-Not read: AGENT_STATUS.md, BACKLOG.md (last scan 2026-08-25). No SYNC_LOG.md exists in the tree, so
-"blocked 2x" is taken from the 2026-10-23 sync comments (#493, #505, #279), not from a log.
-Checkout is shallow (1 commit): "merged this week" comes from `gh pr list`, not `git log`.
-
-Week: 78 PRs merged (43 measurement, 21 owner, 14 loop). 136 open issues (30 filed this week, 57 untouched >14d).
-Production serves `ff861450` (= #609 merge) per `/health`, so every merge before it is live.
+## 2026-11-06 — sync
+Read from the issue trail, `measurements/` and live production, not from `AGENT_STATUS.md` or `BACKLOG.md`. `SYNC_LOG.md` is not in the checkout, so this block is the first one on disk. #505 shows earlier syncs ran on 2026-10-23 or before. "Blocked twice" below is therefore judged from issue dates, not from a log.
 
 decisions:
-  - #362 — closure is wrong, propose REOPEN. Closed by owner 2026-10-24T00:00:50Z, one second after PR #492 merged.
-    #492 said `refs #362` and "deliberately does not close #362". The last cycle comment lists what is still open:
-    A2 (eval), Part B (PR-author provenance + `gate:prompt` label), AC4-6, AC8. No open issue carries any of it
-    (searched titles; #327/#230 are adjacent, not these). That work is now orphaned. Not reopened by me: the
-    close was an owner act, not close-on-evidence or project-manager. Owner call: reopen #362, or file the remainder.
-  - #515 — same shape, propose REOPEN. Closed by owner at the merge second of #516 (2026-10-24T09:22:10Z).
-    #516's body: "refs #513, #514, #515 — all three stay open", titled PARTIAL / unverified in production.
-    #513 and #514 are still open; only #515 was closed. Analyst scored it NOT SCOREABLE on 10-25, 10-28 and 10-29
-    (0 post-deploy days of data; rescore on/after 2026-11-21). A thesis with an unmeasured outcome is not closed.
-  - #493 — closure stands, but the check set last sync is only half answered. 10-23 sync said: read the next
-    `agent-prioritise` (10-25) and `agent-discover` (10-26) runs; reopen if green with no report. Neither is green:
-      prioritise 10-25 FAILURE (exit 1 before any report; `measurements/prioritise/` still holds only 10-08.md)
-      discover 10-26 FAILURE in `persist` ("could not enable auto-merge") — but `measurements/discover/2026-10-26.md`
-      exists, so the dispatch now works; the failure is #557 (open), not #493.
-    The "empty run goes red" half of #493 is observed working. "prioritise writes a non-empty report" is not:
-    no prioritise report since 10-08 despite a 10-18 success. Needs an owner: someone to read run 40225736898.
-  - Closure audit, 15 closed in the last 7 days. None is the #143 failure (a bare "fixed"). Breakdown:
-      close-on-evidence: #388 — all three facts present (PR #600, verify-production success on c932a8bc,
-        /health build_sha = c932a8bc). Clean.
-      project-manager: none this week.
-      keyword auto-close at merge (not either mechanism): #495, #607 — closed by github-actions[bot] at the merge
-        second, while agent-merge's own comment on each says "Not closing this". The comment is false.
-        Substance is fine (scripts/.claude only, never ships; #607's merge commit is the one `/health` reports).
-        Same class PR #562 taught `loop-outcomes` to excuse. Defect is the contradictory comment, not the closure.
-      owner closes at merge, no closing comment: #384, #387, #430, #493. #384 (scripts-only) fine. #387 and #430
-        shipped under src/ and verify-production was green on 7e075538 / 2949686f, but nothing on the issue says so.
-        #430's "left undone" item 3 (Gate 8 gap, cache-version-bump guard "worth its own issue") — I found no issue.
-      owner "Audited complete 2026-10-30" batch, five closes in 12 seconds (17:25:09–20): #573, #510, #468, #465,
-        #389. Comments name file:line, but only #389 quotes command output. I spot-checked from the
-        tree: #510 `q-fold` present (17); #468 saturn/ketu wording matches the comment, `festival_registry` in
-        verify_natal_prompt.py; #465 no "universal/classical/safe" on Vishnu Sahasranama, Sri Yantra keeps it.
-        All consistent. NOT checked by me: #573's four criteria, #389's live 'rows 533 -> 535' output
-        (`uv run` printed nothing here).
-      owner decision: #505 — decision recorded verbatim, defect fixed by #507 (merged). Clean.
-      #472 (10-22, test-only macOS fix) and #394 closed with 0 comments; low stakes, not reopened.
+- **Do not escalate #518→/panchang+/kundli routing, or the /muhurat traffic, against the open Research findings.** Standing ruling 3 already answers both: *"Authenticity wins on the claim; traffic wins on the roadmap… What to build next is ranked on traffic. What is already shipped is ranked on truth."* So #713, #714 and #715 (muhurat rules that do not match Raman, the canonical muhurta source in ruling 2) rank **ahead of** any new growth build on `/muhurat`. `/muhurat/griha-pravesh` is the best organic tool landing: 12 sessions at 2.17 pages/session. Its Panchak, Chandra Bala and Janma Tara scoring is what #713–#715 say is wrong. The same goes for #151 (/panchang) and #429 / #209 (/kundli): the claim gets qualified or fixed before the next link is added.
+- **Merge #502 into #678 and propose #502 for closure.** Same root cause: `qa_fail_age` reads the `qa-fail` label time, which does not move on round 2 or later. #678 closed 2026-11-04 on production evidence (PR #708, `build_sha` 36b6a4a). #502 has a second half, the `agent-cycle.md` Step 2.5 read of the verdict time. `/prioritise` should check that half before closing. If Step 2.5 still compares label time, split that half into its own issue rather than leave #502 open as a duplicate.
+- **Leave #697 (build lane 88% idle) open and do not act on it yet.** It conflicts with #726 (Claude weekly quota 86% used). The carrier text for #697 resolves it: *"check the Claude weekly quota first — if not, idle is the right answer."* Measured now: `claude_usage.json` shows `seven_day` **0.07** after the 2026-11-06 06:00Z reset. `loop.json` waste block: 97 cycles, 31 PRs shipped, 6.6% of minutes without a result. The loop is not wasteful. Last week's 86% was spent while the build lane sat idle, so the quota went on QA rounds, merges, steward and chief (judged 525 min vs shipped 968 min), not on build cycles. Adding a build lane would not have saved quota. Decision: re-read `claude_usage.json` at the next sync. Only if `seven_day` is still under ~40% by 2026-11-10 should a second `agent-work` cron slot be proposed.
+- **#513 (priority:high, daily email repeats its opening) is a broken chain.** It is blocked only by `needs-evidence`: its second `metric:` line has no number. The 2026-11-06 comment says any agent but the cycle can add the number. Owner: `product-manager` via `/discover`, to add the number to the issue body. It is not owner-only and not a chief matter. Without the number, the loop cannot touch a priority:high bug.
+- **Task for `astro-auditor`: #151 (/panchang anga material absent from knowledge/), open 2026-08-07, 0 comments in 13 weeks.** `knowledge/` has no panchang file by name; `vedic_reference.md` may cover it, and that is unmeasured here. #518 now sends 30 more learn articles toward `/panchang` and `/kundli` (`/panchang` added to `TOOL_ROOTS`), and live pages confirm the links. One measurement settles it: run `corpus_search.py` for the anga terms and say which books were present. Then either close #151 with the sourced rows or file the unsourced ones.
+- **The week file's "Merged this week" is wrong.** It lists one commit (`f581b1a`); `loop.json` says 31 PRs shipped. The sync job checks out at depth 1, the same defect as #666 (analyst job, depth 1). Fix in the same place; reference #666 rather than filing a fourth copy.
 
-escalated:   none. Candidate contradiction checked and already ruled:
-  - #518 (qa-pass, routes /learn traffic to /kundli /matching /numerology, 0 tokens, corpus n/a) vs open UNSOURCED
-    findings on those tools (#581-#584 numerology; #429 Manglik; #175 Vashya). chief.md Standing ruling 3:
-    "Authenticity wins on the claim; traffic wins on the roadmap … What to build next is ranked on traffic.
-    What is already shipped is ranked on truth." So #518 may proceed and the claims are fixed on their own issues.
-    Not escalated; no escalation budget spent (0 of 3 used).
-  - #508 (/matching title/meta test) — no open UNSOURCED finding against /matching's copy (#397 closed). No conflict.
+escalated: none this cycle (0 of 3 used). Two candidates were checked against `chief.md` and answered by standing ruling 3 (above). Nothing here is two leads in disagreement.
 
 missed:
-  - #515 / #516 — cannot score. Metric 1 (forbidden-planet share 31.0% → <5%) is a blob measurement nobody has taken;
-    metric 2 has 2 post-deploy days. Idea vs execution: undeterminable until 2026-11-21. Baseline: 0 organic
-    sessions to /rashifal*, GSC /rashifal 130 impressions, 0 clicks, position 10.2.
-  - No shipped thesis scored a miss this week.
+- **#311 (title/meta on four band pages), analyst 2026-11-06: 37 clicks / 4,677 impressions = 0.79% against a 1.5% bar, position 6.75, so a MISS.** Verdict: **the idea was wrong, not the execution.** The bar was set above what that position yields. The band's own weighted CTR is 1.06%, and `10th-lord-in-6th-house-career` at position 6.6 gets 2.46% on the same kind of page. A rewrite at unchanged position cannot move the OBJECTIVE ("into the top 5"). Position is the metric, and title copy does not move it. Remedy: stop sizing title tests against 1.5%. Re-run the experiment only on pages whose CTR is below ~0.6% at position ≤ 7. The analyst lists four such pages, 0.53–0.64%, and three were in #311.
+- **#685 (Sade Sati title) and #508 (/matching title) are the same lever and the same bar.** #508 was closed on 2026-11-06 with "a measurement after deploy" outstanding. Neither is scoreable until about 2026-12-04, and #685's own body says to stop filing title tests for this band if it misses. Decision: **no new title-only issue is filed until #685 is scored.** `/learn/sade-sati/` is also a joint test with #426 and #690, so a miss there cannot be attributed to the title alone.
+- **No clean pass on any traffic thesis this cycle.** #276 clears its bar (1.34 vs 1.20) but the channel mix (40 organic at 1.45, 13 direct at 1.00) can produce that alone. #329 has 3 organic sessions. #514, #515, #570 and #685 are NOT SCOREABLE. The next readable window for #311, #276 and #329 is about 2026-11-13.
 
 blocked 2x:
-  - #279 (CI corpus) — owner ruled on 10-23 (#505): CI never needs data/; #507 merged. #279 itself still open with
-    `needs-human-review`, untouched 7 days. Its own last comment says it can close as won't-do under the ruling
-    "— that is the owner's call". Second consecutive sync with no owner action. PROPOSED CLOSURE: close #279 as
-    won't-do under the 10-23 ruling, unless something other than citations reads data/ in CI.
-  - #362 remainder (A2 eval, Part B) — see decisions; blocked on nobody because nothing tracks it.
-    If not reopened or refiled by next sync it files `needs-human-review`.
+- **#513**: first named 2026-11-01 (#514 closing comment: "blocked only on its `metric:` line having no number") and again 2026-11-06. Owner named above. It becomes a `needs-human-review` issue if it is still unnumbered at the next sync.
+- **#151**: open 13 weeks with no comment, so it counts as blocked on nobody. Owner named above (`astro-auditor`).
+- **The `needs-human-review` issue queue is not draining.** 13 open issues carry it. By `updatedAt`: #365 (2026-10-15), #413 (10-17), #423 (10-19), #456 (10-20), #459 (10-21), #567 (10-27), #175 (08-16), #263, #233, #203, #198 (design, August–September). CLAUDE.md (2026-11-01) says chief owns every one and the list of acts it may hand back is closed. The technical ones, #365, #413, #423, #456, #459, #567, are not on that list. Decision: the steward should dispatch `chief` with `issue=<n>`, oldest first, one per run. If the detector only watches PRs, say so on the issue. I did not verify what `detect_stalls.py` does for issues. The four design ones (#233, #203, #198, #263) are act #4 (product decision) and may go to the owner, once, with a single named act each.
+
+closure audit (33 closed 2026-10-30 → 2026-11-06, closing comments read, closer read from the issue events):
+- **Real evidence (30 of 33).** close-on-evidence's three facts (merged PR, `verify-production` green for the SHA, `/health` `build_sha` equal to it): #621, #669, #678, #709, #466, #731, #570, #685. Session closures that cite SHA + `file:line` + a command: #628, #618, #610, #508, #475, #523 (live `curl`, build_sha 8199aaf), #553 (grep count 0), #727, #644, #557 (read-the-source level, no command output pasted), #485 (obsolete, premise argued with `agent-merge.yml:204`, reopen condition stated). QA-verdict-backed: #604, #602, #652, #607. #514: a table with a `curl` result per claim, `build_sha` and a "not verified: sent email" statement. #543: closed not planned, on the owner's measured decision. **Batch of 4 on 2026-10-30 17:25 (#573, #510, #468, #465): "Audited complete" with `file:line` but no command and no output.** They are verifiable but thin. No reopen.
+- **Three closures that need a note, none reopened.**
+  - **#518 and #616 were closed by GitHub's own keyword, not by `close-on-evidence`.** The closed event carries the merge commit (#518: `f89e923`; #616: `92f0236`), and both PR *titles* end `(closes #N)`. A squash puts the title in the commit message, so GitHub closes the issue at merge. That is the "do not close on a merge" failure CLAUDE.md names, with the opposite carrier comment sitting directly above it: **#518 closed at 18:32:25Z; the comment "Not closing this… it closes once `verify-production.yml` has asserted" was posted seconds earlier.** #616's says "This issue stays open." #604 and #607 closed the same way (merge-commit events), though both carry real evidence. Four of 33 closures.
+    - **#518: outcome fine, process wrong.** Production now serves `f581b1a`, which contains #754; I curled `karva-chauth-2026` (links to `/kundli`, `/dasha`, `/panchang`) and `marriage-timing-kundli` (`/dasha`, `/kundli`, `/panchang`). I did not re-verify all 30 articles; that remains the cycle's own claim (QA PASS at `c974b09`).
+    - **#616: outcome uncertain.** A *partial* slice closed an issue whose remainder is "in the PR body under what was deliberately not done"; the follow-ups were filed as #648 (open). Proposed: leave it closed because #648 holds the remainder, and have `/prioritise` confirm that nothing in the PR body's "not done" list is missing from #648.
+  - **#719 closed by `mahAnuj` with 0 comments and no PR.** The fix exists in the tree (`scripts/chief_clear.py`, and CLAUDE.md records it as shipped on 2026-11-05), so the substance is fine. A closure with nothing written on it fails "a closing comment must let someone else check you". Proposed: one comment with the file and commit. Not reopened.
+  - **#461 closed by `mahAnuj` one second after PR #550 merged (`closes #461` in the body), no closing comment.** QA PASS at `7210f90` is on the PR and a human merged it. It is a workflow-only diff, so no `verify-production` run could prove it. Not reopened; closure evidence is on the PR.
+- **Proposed new issue: `closes #N` in a PR title closes the issue at merge, bypassing the two-stage close.** Evidence is above. Candidate fix: `agent-cycle.md` and `agent-merge` forbid closing keywords in PR titles (body only) and rely on `close-on-evidence`. Not filed by this sync. `chief` or `/prioritise` decides whether to file it, and it touches `.claude/` text, which the 2026-11-06 grant covers.
 
 carried:
-  - Open PRs with `qa-fail`: #606, #564, #550, #544 (open 0-4 days; #564/#550/#544 updated 10-30 18:25Z).
-    Not diagnosed here; steward owns it. Next sync: any still `qa-fail` with no new commit.
-  - Four numerology UNSOURCED issues #581-#584 (filed 10-28, unworked) and #429 (Manglik ladder): shipped
-    claims, ranked on truth per ruling 3. Highest-severity class this loop produces; none has a PR.
-  - 57 issues untouched >14d; BACKLOG.md 2 months stale (36 vs 136 open) — /prioritise's job.
-  - Worth a human look (new, not filed): agent-merge's "Not closing this" comment is emitted even when the PR carries
-    `closes #N` and GitHub closes it in the same second. Either gate the comment or drop the sentence.
+- #697 (re-read at next sync), #151 (task assigned), #513 (owner named), the needs-human-review queue (steward → chief), #311/#276/#329 scoring (readable about 2026-11-13), #685/#426 joint score (about 2026-12-04), #570 `cta_click` (needs a GA4 event dimension, not in the exports).
+- #177 is not blocked: PR #750 cleared its trust-boundary hold and the five remaining source gaps are #751 (acquisition task, no agent builds from recall). #178 `[BLOCKER]` is still open at 10 weeks and its own thread recommends dropping the label, since it gates nothing.
+- Unchanged and not re-read: about 85 other open issues.
+
+Not checked: I did not post comments on any issue, reopen anything or file anything. The proposed comment for #719 and the proposed issue above are in this record only. I did not verify the 30 #518 articles individually or what `detect_stalls.py` does with `needs-human-review` issues. I could not run `corpus_search.py` (`data/` absent here), so no corpus absence is claimed anywhere in this record.

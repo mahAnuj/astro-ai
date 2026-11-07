@@ -1,66 +1,66 @@
 {
- "generated_at": "2026-11-06T08:57:02Z",
+ "generated_at": "2026-11-07T00:40:48Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 42184436643,
-  "at": "2026-11-06T07:58:55Z",
-  "five_hour": 0.01,
-  "seven_day": 0.03,
+  "run": 42318063491,
+  "at": "2026-11-07T00:24:51Z",
+  "five_hour": 0.16,
+  "seven_day": 0.09,
   "status": "allowed",
   "resets": {
-   "five_hour": 1793969400,
+   "five_hour": 1794023400,
    "seven_day": 1794549600
   }
  },
- "peak_seven_day": 0.03,
+ "peak_seven_day": 0.09,
  "rejected_runs": [],
  "readings": [
   {
    "workflow": "agent-work",
-   "run": 42177393220,
-   "at": "2026-11-06T06:54:19Z",
-   "five_hour": 0.25,
-   "seven_day": 0.02,
+   "run": 42270994831,
+   "at": "2026-11-06T18:28:18Z",
+   "five_hour": 0.04,
+   "seven_day": 0.07,
    "status": "allowed",
    "resets": {
-    "five_hour": 1793951400,
+    "five_hour": 1794005400,
     "seven_day": 1794549600
    }
   },
   {
    "workflow": "agent-work",
-   "run": 42180782314,
-   "at": "2026-11-06T07:25:29Z",
-   "five_hour": 0.27,
-   "seven_day": 0.02,
+   "run": 42290031841,
+   "at": "2026-11-06T20:38:16Z",
+   "five_hour": 0.06,
+   "seven_day": 0.07,
    "status": "allowed",
    "resets": {
-    "five_hour": 1793951400,
+    "five_hour": 1794005400,
     "seven_day": 1794549600
    }
   },
   {
    "workflow": "agent-work",
-   "run": 42183125754,
-   "at": "2026-11-06T07:46:54Z",
-   "five_hour": 0.3,
-   "seven_day": 0.03,
+   "run": 42313417723,
+   "at": "2026-11-06T23:40:06Z",
+   "five_hour": 0.15,
+   "seven_day": 0.09,
    "status": "allowed",
    "resets": {
-    "five_hour": 1793969400,
+    "five_hour": 1794023400,
     "seven_day": 1794549600
    }
   },
   {
    "workflow": "agent-work",
-   "run": 42184436643,
-   "at": "2026-11-06T07:58:55Z",
-   "five_hour": 0.01,
-   "seven_day": 0.03,
+   "run": 42318063491,
+   "at": "2026-11-07T00:24:51Z",
+   "five_hour": 0.16,
+   "seven_day": 0.09,
    "status": "allowed",
    "resets": {
-    "five_hour": 1793969400,
+    "five_hour": 1794023400,
     "seven_day": 1794549600
    }
   }

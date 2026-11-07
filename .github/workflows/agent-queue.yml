@@ -57,3 +57,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: python3 scripts/cycle_queue.py drain
+
+      # CHAIN THE NEXT RANKED CYCLE (owner, 2026-11-06: "I have been seeing a
+      # long queue of backlog issues for very long"). The build lane sat idle
+      # 89% of the week while a cycle waited up to four hours for its next cron
+      # slot. After the queue has had its turn, if the lane is still free, the
+      # weekly Claude window is under 70%, today's build runs are under the cap
+      # and the finished cycle produced a PR, start one ranked cycle now. Every
+      # guard and its measurement is in scripts/chain_cycle.py's header.
+      - name: Chain the next ranked cycle
+        if: always() && github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          WR_NAME: ${{ github.event.workflow_run.name }}
+          WR_TITLE: ${{ github.event.workflow_run.display_title }}
+          WR_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WR_STARTED: ${{ github.event.workflow_run.run_started_at }}
+        run: python3 scripts/chain_cycle.py
