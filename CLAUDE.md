@@ -423,6 +423,13 @@ What has NOT changed, and why it matters more now than before:
   The sweep re-reads every condition from the API; it cannot merge anything the
   edge-triggered path would have refused.
 
+  **A merge re-dispatches the sweep (2026-11-07).** The sweep takes ONE PR per run, and
+  GitHub throttles the `*/30` cron to roughly every 6 hours, so cleared PRs merged at about
+  one per 6h: #749 and #750 sat fully cleared and mergeable while the 22:16 sweep took #706
+  and nothing ran for 2.5h+. Each successful merge now dispatches `agent-merge.yml` again,
+  and the next run takes the next eligible PR with every condition re-checked. Only a run
+  that merged dispatches, so the chain ends at the first run with nothing eligible.
+
 If this permission is ever narrowed again, edit this block rather than relying on the
 conversation — the same instruction the 2026-08-16 grant carries, for the same reason.
 - **Do not infer standing permission from a previous push.** One approval is not a
