@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-07T00:39:56Z",
+  "generated_at": "2026-11-07T08:20:04Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for",
-  "open": 123,
-  "with_ask": 43,
+  "open": 121,
+  "with_ask": 41,
   "by_area": {
     "UNCLASSIFIED": 36,
     "UI": 13,
@@ -27,23 +27,21 @@
     "CHART": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
-    "KUNDLI": 1,
     "TASK": 1,
-    "BLOCKER": 1,
-    "KNOWLEDGE": 1
+    "BLOCKER": 1
   },
   "by_type": {
     "untyped": 33,
     "enhancement": 24,
     "bug": 23,
-    "correctness": 15,
+    "correctness": 13,
     "chore": 13,
     "design": 9,
     "ui": 6
   },
   "by_priority": {
-    "unset": 94,
-    "medium": 19,
+    "unset": 93,
+    "medium": 18,
     "high": 9,
     "low": 1
   },
@@ -1612,23 +1610,6 @@
       "needs_evidence": false
     },
     {
-      "number": 209,
-      "title": "kundli: /kundli landing and /about advertise nakshatra padas, moolatrikona and Swiss Ephemeris — none of the three is what the engine computes",
-      "ask": "This is a copy-versus-code mismatch, so either direction closes it — but pick one",
-      "area": "KUNDLI",
-      "type": "correctness",
-      "priority": "medium",
-      "labels": [
-        "priority:medium",
-        "astrology-correctness",
-        "qa-pass"
-      ],
-      "created": "2026-08-16T09:30:19Z",
-      "updated": "2026-11-06T06:15:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 203,
       "title": "[DESIGN] Name numerology: build a \"Your Name\" section inside the /numerology reading — not a name-correction tool",
       "ask": "",
@@ -1734,10 +1715,10 @@
         "enhancement",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-08-08T09:45:41Z",
-      "updated": "2026-11-06T21:06:41Z",
+      "updated": "2026-11-07T03:13:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1753,24 +1734,6 @@
       ],
       "created": "2026-08-08T09:02:35Z",
       "updated": "2026-08-25T14:17:35Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 177,
-      "title": "knowledge: no Ashtakoot Guna Milan material in the corpus or in data/ — the entire 36-point engine + verdict bands are untraceable, and rashis.md points at a vedic_reference.md §26.5 that does not exist",
-      "ask": "Write vedic_reference.md §26 — Ashtakoot Guna Milan",
-      "area": "KNOWLEDGE",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-11-06T21:29:04Z",
       "blocked": false,
       "needs_evidence": false
     },
