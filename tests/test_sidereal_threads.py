@@ -74,13 +74,23 @@ def test_panchang_and_month_naming_agree_across_threads(monkeypatch):
     monkeypatch.setattr(chart, "geocode_place", lambda place: MUMBAI)
 
     def panchang():
+        # compute_panchang memoises: without this the worker thread would be handed the
+        # main thread's cached object and the test could not see the ayanamsa at all.
+        chart._PANCHANG_CACHE.clear()
         c = chart.compute_chart("1990-04-12", "14:35", "Mumbai, India")
         p = chart.compute_panchang(c, datetime(2026, 11, 7, 9, 0, tzinfo=timezone.utc))
         return dataclasses.asdict(p)
 
+    # 2026-11-07: the nitya yoga differs under Fagan-Bradley.
     assert panchang() == _on_worker(panchang)
-    jd = swe.julday(2026, 4, 14, 0.0)  # near a sankranti: rashi is ayanamsa-sensitive
-    assert adhik_maas._sun_rashi(jd) == _on_worker(lambda: adhik_maas._sun_rashi(jd))
+
+    # Dates on which Lahiri and Fagan-Bradley name DIFFERENT rashis for the Sun, so the
+    # comparison cannot pass by both modes landing in the same sign. Each is pinned with
+    # its Lahiri answer so the dates stay discriminating if this test is edited.
+    for (y, m, d), lahiri_rashi in [((2026, 1, 15), 9), ((2026, 4, 15), 0), ((2026, 11, 17), 7)]:
+        jd = swe.julday(y, m, d, 0.0)
+        assert adhik_maas._sun_rashi(jd) == lahiri_rashi
+        assert _on_worker(lambda: adhik_maas._sun_rashi(jd)) == lahiri_rashi
 
 
 def test_no_module_calls_sidereal_swisseph_directly():

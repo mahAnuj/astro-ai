@@ -110,9 +110,9 @@ from zoneinfo import ZoneInfo
 import swisseph as swe
 
 # Private cross-module helpers, imported deliberately — same precedent and same
-# reasons as `lunar_observances.py:139-148` and `adhik_maas.py:104-118`. Importing
-# `astro_ai.chart` is also what sets the Lahiri sidereal mode process-globally,
-# which `adhik_maas._sun_rashi` needs to name a month at all.
+# reasons as `lunar_observances.py:139-148` and `adhik_maas.py:104-118`. `adhik_maas._sun_rashi`
+# names a month through `chart._sid_calc_ut`, which selects the Lahiri sidereal mode on
+# the calling thread (swisseph's mode is per thread, #762).
 from astro_ai.chart import _sunrise_sunset, _tithi_at
 from astro_ai import adhik_maas
 from astro_ai.lunar_observances import _tithi_index_at_sunrise
