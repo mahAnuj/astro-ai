@@ -4,6 +4,8 @@
 {% block meta_description %}{{ page_meta }}{% endblock %}
 
 {% block content %}
+{# #382: a rendered pair verdict is the result — see _subscribe_modal.html. #}
+{% if compat %}<span data-subscribe-defer hidden></span>{% endif %}
 {% set active_page = "numerology" %}
 {% set breadcrumbs = [
   ('Home', '/'),

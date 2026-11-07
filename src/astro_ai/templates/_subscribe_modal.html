@@ -341,6 +341,11 @@
     try {
       if (localStorage.getItem(DONE_KEY) === '1') return;
       if (localStorage.getItem(INTENT_KEY) !== '1') return;   // intent gate
+      // #382: a load that IS a tool result (matching, numerology) must not be
+      // covered by this modal — the visitor has just received what they came
+      // for. It is not counted as a visit either, so the very next load is the
+      // one that reaches the show threshold instead of the prompt being lost.
+      if (document.querySelector('[data-subscribe-defer]')) return;
       var visits = parseInt(localStorage.getItem(VISITS_KEY) || '0', 10) + 1;
       localStorage.setItem(VISITS_KEY, String(visits));
       var dismissed = parseInt(localStorage.getItem(DISMISSED_KEY) || '0', 10);
