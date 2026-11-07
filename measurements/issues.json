@@ -1,30 +1,29 @@
 {
-  "generated_at": "2026-11-07T18:28:48Z",
+  "generated_at": "2026-11-07T23:26:08Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for",
-  "open": 118,
-  "with_ask": 40,
+  "open": 115,
+  "with_ask": 39,
   "by_area": {
-    "UNCLASSIFIED": 37,
+    "UNCLASSIFIED": 38,
     "INFRA": 13,
-    "UI": 11,
     "REDESIGN": 10,
+    "UI": 9,
     "FEATURE": 7,
     "NUMEROLOGY": 5,
     "RETRIEVAL": 3,
-    "OPS": 3,
     "MEASURE": 3,
     "CHORE": 3,
     "MUHURAT": 3,
     "BUG": 3,
     "MATCHING": 2,
     "SECURITY": 2,
+    "OPS": 2,
     "SEO": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "PRIVACY": 1,
     "DETECT_STALLS": 1,
-    "CHART": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
     "TASK": 1,
@@ -35,18 +34,33 @@
     "enhancement": 23,
     "bug": 22,
     "correctness": 13,
-    "chore": 13,
-    "design": 8,
+    "chore": 12,
+    "design": 6,
     "ui": 5
   },
   "by_priority": {
-    "unset": 91,
-    "medium": 18,
+    "unset": 89,
+    "medium": 17,
     "high": 8,
     "low": 1
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 777,
+      "title": "Manglik tier ladder and the Venus-only downgrade need a source and an owner decision (split from #429)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-07T20:12:37Z",
+      "updated": "2026-11-07T20:16:22Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 773,
       "title": "numerology.md: re-check AnkitNotes description and the K.N. Rao / Dasa caveat claim against data/ (split from #200)",
@@ -85,7 +99,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-07T00:24:23Z",
-      "updated": "2026-11-07T00:26:35Z",
+      "updated": "2026-11-07T22:51:57Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -177,12 +191,14 @@
       "priority": "unset",
       "labels": [
         "enhancement",
-        "category:technical"
+        "category:technical",
+        "provenance:trusted",
+        "needs-evidence"
       ],
       "created": "2026-11-06T06:30:23Z",
-      "updated": "2026-11-06T06:30:23Z",
+      "updated": "2026-11-07T19:14:02Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 739,
@@ -196,21 +212,6 @@
       ],
       "created": "2026-11-06T06:16:27Z",
       "updated": "2026-11-06T06:16:27Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 738,
-      "title": "ops: the findings carrier never files a red last run, and the alert says \"not due again yet\" on verdict ok (#628 leftovers)",
-      "ask": "",
-      "area": "OPS",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "chore"
-      ],
-      "created": "2026-11-06T06:16:26Z",
-      "updated": "2026-11-06T06:16:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -241,22 +242,6 @@
       "created": "2026-11-06T00:49:38Z",
       "updated": "2026-11-06T00:49:38Z",
       "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 732,
-      "title": "[UI] Form focus indicator is a 1px saffron border at 2.50:1 on white — under WCAG 1.4.11's 3:1, and verify_contrast never checks focus",
-      "ask": "Keep the saffron glow ring (it is the brand's look) and change only the focused border colour to an existing token with >= 3:1 on white and cream: bhagya-night (18.84:1 on white)",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal"
-      ],
-      "created": "2026-11-06T00:47:34Z",
-      "updated": "2026-11-06T00:47:34Z",
-      "blocked": false,
       "needs_evidence": false
     },
     {
@@ -490,25 +475,6 @@
       "needs_evidence": true
     },
     {
-      "number": 597,
-      "title": "[UI] /kundli on mobile: the first form field sits 138px under the tab bar — / keeps the same form wholly in the fold",
-      "ask": "",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal",
-        "page:kundli",
-        "effort:s",
-        "risk:low"
-      ],
-      "created": "2026-10-29T23:50:53Z",
-      "updated": "2026-11-06T00:49:27Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 596,
       "title": "[UI] Six form controls (subscribe modal, feedback widget, /learn search) have a placeholder and no accessible name",
       "ask": "",
@@ -574,7 +540,7 @@
         "needs-evidence"
       ],
       "created": "2026-10-29T23:50:13Z",
-      "updated": "2026-11-04T21:03:15Z",
+      "updated": "2026-11-07T20:06:47Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -944,26 +910,6 @@
       "needs_evidence": true
     },
     {
-      "number": 429,
-      "title": "chart: the Manglik severity ladder is UNSOURCED, and its \"1st house = moderate\" tier is counter-indicated by the only corpus source that lists the houses",
-      "ask": "",
-      "area": "CHART",
-      "type": "correctness",
-      "priority": "medium",
-      "labels": [
-        "severity:medium",
-        "priority:medium",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-10-20T02:24:10Z",
-      "updated": "2026-11-07T17:25:54Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 423,
       "title": "verify_hindi_surface and verify_english_surface run nowhere — excluded from pr-gates on a move that was never made",
       "ask": "",
@@ -1021,10 +967,10 @@
         "priority:high",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-07T17:15:56Z",
+      "updated": "2026-11-07T19:52:50Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1737,7 +1683,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-08-07T15:59:16Z",
-      "updated": "2026-11-06T06:30:40Z",
+      "updated": "2026-11-07T20:05:09Z",
       "blocked": false,
       "needs_evidence": false
     },
