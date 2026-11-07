@@ -13,26 +13,47 @@
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
 
-<main id="main-content" class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
+{# #597 — BELOW sm (<640px) THE FORM IS LIFTED ABOVE THE LEAD AND TAGLINE.
+     At 375x667 the first input sat at y 725-775, 134px under the tab bar
+     (top 591), because the H1 + lead + tagline are 385px of header. DOM order,
+     the H1 and every word are untouched; only paint order changes, so
+     crawlers and screen readers still meet H1, lead, tagline, then the form.
+     How: <main> becomes a flex column below sm and <header> becomes
+     `contents`, so its three children join main's flex container and `order`
+     can place the form between the H1 and the lead. The `space-y` margins are
+     DOM-sibling rules, so they still apply after the reorder and flex margins
+     do not collapse: the sections keep their 40px, the tagline keeps its 16px
+     under the lead, and the form and lead take `!mt-6` (important, because
+     `space-y-10`'s selector outranks a plain utility). Do not add gap-* or
+     space-y-0 here: space-y-0 also beats any mt-* you set on a section. From
+     sm up none of this applies and the page is the block layout it always was.
+     KNOWN TRADEOFF (WCAG 1.3.2 / 2.4.3): below sm the visual order (H1, form,
+     lead, tagline) differs from DOM and tab order. Every form control is
+     after the header text in the DOM and the header holds no focusable
+     element, so keyboard focus still starts at the form's first field either
+     way; only the reading order of the two paragraphs differs for sighted
+     keyboard users. The orders are negative so the sections below keep their
+     default 0 and stay after the hero. #}
+<main id="main-content" class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10 max-sm:flex max-sm:flex-col">
 
   {# HERO — H1 + intro + form #}
-  <header class="text-center space-y-4">
-    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink">
+  <header class="text-center space-y-4 max-sm:contents">
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink max-sm:order-[-4]">
       Free Vedic Janma Kundli — Instant, Honest, No Signup
     </h1>
-    <p class="text-lg text-bhagya-ink-soft max-w-2xl mx-auto leading-relaxed">
+    <p class="text-lg text-bhagya-ink-soft max-w-2xl mx-auto leading-relaxed max-sm:order-[-2] max-sm:!mt-6">
       Your Janma Kundli (Vedic birth chart) computed on classical sidereal Lahiri ayanamsa —
       all 12 houses, planetary positions in nakshatra padas, ruling Mahadasha,
       Manglik &amp; Sade Sati status, and a plain-language reading you can actually use.
     </p>
-    <p class="text-sm text-bhagya-muted max-w-lg mx-auto">
+    <p class="text-sm text-bhagya-muted max-w-lg mx-auto max-sm:order-[-1]">
       Bhagya reads the sky, not your wallet. Never fear-based, never sold to astrologer-chat rooms.
     </p>
   </header>
 
   {# FORM #}
   <form method="post" action="/reading" id="kundli-form"
-        class="bg-white border border-bhagya-line p-6 sm:p-8 scroll-mt-20">
+        class="bg-white border border-bhagya-line p-6 sm:p-8 scroll-mt-20 max-sm:order-[-3] max-sm:!mt-6">
     <h2 class="font-marcellus text-2xl text-bhagya-ink mb-1">Start with your birth details</h2>
     <p class="text-sm text-bhagya-muted mb-5">All four fields take a few seconds. Your details are used to compute your chart and are kept in your browser cookie.</p>
 
