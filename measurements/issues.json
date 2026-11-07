@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-11-07T08:20:04Z",
+  "generated_at": "2026-11-07T11:31:46Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for",
-  "open": 121,
+  "open": 119,
   "with_ask": 41,
   "by_area": {
     "UNCLASSIFIED": 36,
-    "UI": 13,
     "INFRA": 13,
+    "UI": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
-    "CHORE": 4,
     "RETRIEVAL": 3,
     "OPS": 3,
     "MEASURE": 3,
+    "CHORE": 3,
     "MUHURAT": 3,
     "BUG": 3,
     "MATCHING": 2,
@@ -32,15 +32,15 @@
   },
   "by_type": {
     "untyped": 33,
-    "enhancement": 24,
+    "enhancement": 23,
     "bug": 23,
     "correctness": 13,
     "chore": 13,
     "design": 9,
-    "ui": 6
+    "ui": 5
   },
   "by_priority": {
-    "unset": 93,
+    "unset": 91,
     "medium": 18,
     "high": 9,
     "low": 1
@@ -951,7 +951,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-20T02:24:10Z",
-      "updated": "2026-11-06T06:15:40Z",
+      "updated": "2026-11-07T10:29:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1132,22 +1132,6 @@
       "needs_evidence": false
     },
     {
-      "number": 379,
-      "title": "[UI] PWA install banner: the Install button sits under the mobile tab bar — unreachable on Android/Chrome",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer"
-      ],
-      "created": "2026-10-15T22:59:00Z",
-      "updated": "2026-11-06T00:49:26Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 366,
       "title": "[UI] Sub-12px text remains on / (24 nodes), /panchang (9) and 16 other templates — remainder of #307",
       "ask": "",
@@ -1281,7 +1265,7 @@
         "design-proposal"
       ],
       "created": "2026-10-09T00:18:11Z",
-      "updated": "2026-10-15T22:59:18Z",
+      "updated": "2026-11-07T10:00:11Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1701,24 +1685,6 @@
       ],
       "created": "2026-08-08T09:45:58Z",
       "updated": "2026-08-26T12:11:39Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 184,
-      "title": "[CHORE] Post-#154 cleanup: stale main.py doc pointers + dead code",
-      "ask": "",
-      "area": "CHORE",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-08-08T09:45:41Z",
-      "updated": "2026-11-07T03:13:44Z",
       "blocked": false,
       "needs_evidence": false
     },
