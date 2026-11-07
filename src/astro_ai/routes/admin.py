@@ -58,7 +58,7 @@ async def admin_dashboard(request: Request, days: int = 1) -> HTMLResponse:
     Protected by HTTP Basic Auth (username 'admin', password from
     ADMIN_PASSWORD env var). Browser shows the standard login prompt.
     """
-    from astro_ai import llm_stats, feedback
+    from astro_ai import llm_stats
     # Persistent (GCS) usage summary — survives Cloud Run cold starts and
     # deploys, unlike the SQLite version which lives in /tmp and resets on
     # every push. We supplement with cache_entries from SQLite (that count

@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-11-06T20:15:02Z",
+  "generated_at": "2026-11-07T11:31:46Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for",
-  "open": 122,
-  "with_ask": 42,
+  "open": 119,
+  "with_ask": 41,
   "by_area": {
-    "UNCLASSIFIED": 35,
-    "UI": 13,
+    "UNCLASSIFIED": 36,
     "INFRA": 13,
+    "UI": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
-    "CHORE": 4,
     "RETRIEVAL": 3,
     "OPS": 3,
     "MEASURE": 3,
+    "CHORE": 3,
     "MUHURAT": 3,
     "BUG": 3,
     "MATCHING": 2,
@@ -27,28 +27,42 @@
     "CHART": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
-    "KUNDLI": 1,
     "TASK": 1,
-    "BLOCKER": 1,
-    "KNOWLEDGE": 1
+    "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 32,
-    "enhancement": 24,
+    "untyped": 33,
+    "enhancement": 23,
     "bug": 23,
-    "correctness": 15,
+    "correctness": 13,
     "chore": 13,
     "design": 9,
-    "ui": 6
+    "ui": 5
   },
   "by_priority": {
-    "unset": 93,
-    "medium": 19,
+    "unset": 91,
+    "medium": 18,
     "high": 9,
     "low": 1
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 759,
+      "title": "chief-cleared is applied with github.token, so agent-merge's label edge never fires and cleared PRs wait for a throttled sweep (#749, #750: 13-14h)",
+      "ask": "After apply() succeeds in chief_clear.py, dispatch agent-merge.yml with gh workflow run agent-merge.yml",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "provenance:trusted",
+        "needs-evidence"
+      ],
+      "created": "2026-11-07T00:24:23Z",
+      "updated": "2026-11-07T00:26:35Z",
+      "blocked": false,
+      "needs_evidence": true
+    },
     {
       "number": 751,
       "title": "matching: five rules blocked on a source the corpus lacks (split from #177)",
@@ -937,7 +951,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-20T02:24:10Z",
-      "updated": "2026-11-06T06:15:40Z",
+      "updated": "2026-11-07T10:29:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1002,7 +1016,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-06T11:31:07Z",
+      "updated": "2026-11-07T00:21:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1114,22 +1128,6 @@
       ],
       "created": "2026-10-15T22:59:01Z",
       "updated": "2026-10-29T23:50:56Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 379,
-      "title": "[UI] PWA install banner: the Install button sits under the mobile tab bar — unreachable on Android/Chrome",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer"
-      ],
-      "created": "2026-10-15T22:59:00Z",
-      "updated": "2026-11-06T00:49:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1267,7 +1265,7 @@
         "design-proposal"
       ],
       "created": "2026-10-09T00:18:11Z",
-      "updated": "2026-10-15T22:59:18Z",
+      "updated": "2026-11-07T10:00:11Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1596,23 +1594,6 @@
       "needs_evidence": false
     },
     {
-      "number": 209,
-      "title": "kundli: /kundli landing and /about advertise nakshatra padas, moolatrikona and Swiss Ephemeris — none of the three is what the engine computes",
-      "ask": "This is a copy-versus-code mismatch, so either direction closes it — but pick one",
-      "area": "KUNDLI",
-      "type": "correctness",
-      "priority": "medium",
-      "labels": [
-        "priority:medium",
-        "astrology-correctness",
-        "qa-pass"
-      ],
-      "created": "2026-08-16T09:30:19Z",
-      "updated": "2026-11-06T06:15:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 203,
       "title": "[DESIGN] Name numerology: build a \"Your Name\" section inside the /numerology reading — not a name-correction tool",
       "ask": "",
@@ -1708,24 +1689,6 @@
       "needs_evidence": false
     },
     {
-      "number": 184,
-      "title": "[CHORE] Post-#154 cleanup: stale main.py doc pointers + dead code",
-      "ask": "",
-      "area": "CHORE",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-08-08T09:45:41Z",
-      "updated": "2026-11-06T06:30:45Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 178,
       "title": "[BLOCKER] Ashtakoota + Lo Shu + Rudraksha rules have no source in repo — acquire Muhurtha and a Lo Shu source, or remove the claims",
       "ask": "Install ocrmypdf (or tesseract + a wrapper) locally.",
@@ -1737,24 +1700,6 @@
       ],
       "created": "2026-08-08T09:02:35Z",
       "updated": "2026-08-25T14:17:35Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 177,
-      "title": "knowledge: no Ashtakoot Guna Milan material in the corpus or in data/ — the entire 36-point engine + verdict bands are untraceable, and rashis.md points at a vedic_reference.md §26.5 that does not exist",
-      "ask": "Write vedic_reference.md §26 — Ashtakoot Guna Milan",
-      "area": "KNOWLEDGE",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-11-06T18:48:58Z",
       "blocked": false,
       "needs_evidence": false
     },

@@ -4,6 +4,9 @@
 {% block meta_description %}Your Kundali matching results — Ashtakoot Guna Milan score, dosha analysis, and a plain-language narrative explaining what the numbers mean for the relationship.{% endblock %}
 
 {% block content %}
+{# #382: tells _subscribe_modal.html this load IS the result, so the auto-show
+   waits for the visitor's next load instead of covering the Guna Milan score. #}
+<span data-subscribe-defer hidden></span>
 {# Pick a colour scheme based on verdict tier.
    #239 left the `hex` values here at their old purple/amber ramp on purpose.
    Each one is the literal twin of the utility classes in the SAME dict entry —
@@ -92,6 +95,10 @@
          the thresholds live in matching.py:_overall_verdict and are not moved here.
          Do not name a source for the bands. #}
       <p class="mt-2 max-w-md text-xs text-bhagya-muted leading-relaxed text-center">{{ t(lang, 'matching_bands_note') }}</p>
+      {# The school this page scores by (#177): the North Indian 36-guna Ashtakoota, the
+         choice knowledge/matching.md records ("Do not blend traditions"). Name the system,
+         not a book. #}
+      <p class="mt-2 max-w-md text-xs text-bhagya-muted leading-relaxed text-center">{{ t(lang, 'matching_school_note') }}</p>
 
     </div>
 
