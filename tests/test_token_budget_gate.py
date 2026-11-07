@@ -237,6 +237,9 @@ def test_the_ask_payload_rows_leave_no_slack_over_the_pre_change_request():
     the next 100 tokens."""
     for row in ("ask+payload", "ask+numerology+payload", "ask+matching+payload"):
         baseline, ceiling, _on, _why = gate.BUDGET[row]
-        assert ceiling - baseline == 132, row
+        # <=, not ==: the education entry (#402) lowered the ceilings below the
+        # pre-change request + the Hindi suffix. A ceiling ABOVE it is the
+        # slack this test exists to refuse.
+        assert ceiling - baseline <= 132, row
     assert [gate.BUDGET[r][0] for r in
             ("ask+payload", "ask+numerology+payload", "ask+matching+payload")] == [1951, 2645, 3637]

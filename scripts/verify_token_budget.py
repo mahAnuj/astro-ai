@@ -127,6 +127,12 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 #           is the backstop for a baseline someone has already raised.
 #           `natal+payload` is the exception; see its reason.
 #
+# RE-MEASURED 2026-11-06 (#402, education entry): ask 1172 -> 1160,
+# ask+matching 1946 -> 1934, third_party 2072 -> 2060, numerology 1743 -> 1731
+# (en; hi is +132). The new category entry was paid for by trimming wording
+# elsewhere in ask.txt, so the net is -12 against the 2026-11-04 figures.
+# Ceilings did not move except the three payload rows, which went DOWN.
+#
 # RE-MEASURED 2026-11-04 (#402, the ask rows only): ask.txt shed 79 tok when the
 # transit block arrived in the /ask user message (see the three ask+...+payload
 # rows below), so ask 1251/1383 -> 1172/1304, ask+numerology 1822 -> 1743 (en;
@@ -150,12 +156,12 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 # passes on anything). Do not "fix" a red run by editing a number you did not
 # mean to raise.
 _D = "2026-10-17"
-_D402 = "2026-11-04"
+_D402_ED = "2026-11-06"  # #402 education entry, paid for inside ask.txt
 BUDGET: dict[str, tuple[int, int, str, str]] = {
-    "ask":                      (1172, 1450, _D402, "hi 1304 + 10%"),
-    "ask+matching":             (1946, 2300, _D402, "hi 2078 + 10%"),
-    "ask+matching_third_party": (2072, 2450, _D402, "hi 2204 + 10%"),
-    "ask+numerology":           (1743, 2100, _D402, "hi 1875 + 10%"),
+    "ask":                      (1160, 1450, _D402_ED, "hi 1292 + 10%"),
+    "ask+matching":             (1934, 2300, _D402_ED, "hi 2066 + 10%"),
+    "ask+matching_third_party": (2060, 2450, _D402_ED, "hi 2192 + 10%"),
+    "ask+numerology":           (1731, 2100, _D402_ED, "hi 1863 + 10%"),
     # LOWERED 2026-11-04 (#399): 3,111 -> 3,001. The nine-planet remedy list
     # (189 tok) became a 107-tok rule line that fires on a REMEDY RULES block;
     # measured on main just before this edit, natal read 3,083 en. The ceiling
@@ -256,11 +262,17 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     #   numerology 1,822 + 823         = 2,645   (reading + overlay)
     #   matching   2,025 + 1,612       = 3,637   (kaal-sarp x strong-gajakesari,
     #                                             partner chart + Guna Milan)
-    "ask+payload":              (1951, 2083, _D402,
+    # LOWERED 2026-11-06 (#402, education entry): the ceilings follow the new
+    # measured hi (1,936 / 2,630 / 3,622 en + 132) and the BASELINES stay the
+    # pre-change 0d19cb7 figures, so AC4 keeps its reference. The `education`
+    # CATEGORY GUIDANCE entry (+~40 tok) was paid for inside ask.txt by trimming
+    # redundant prose (STRUCTURE-adjacent CLOSING/LANGUAGE/LENGTH wording); no
+    # pinned rule was touched. Nothing rose.
+    "ask+payload":              (1951, 2068, _D402_ED,
                                  "pre-change 0d19cb7, hi = en + 132; AC4: no growth"),
-    "ask+numerology+payload":   (2645, 2777, _D402,
+    "ask+numerology+payload":   (2645, 2762, _D402_ED,
                                  "pre-change 0d19cb7, hi = en + 132; AC4: no growth"),
-    "ask+matching+payload":     (3637, 3769, _D402,
+    "ask+matching+payload":     (3637, 3754, _D402_ED,
                                  "pre-change 0d19cb7, hi = en + 132; AC4: no growth"),
 }
 
