@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-06T20:15:02Z",
+  "generated_at": "2026-11-07T00:39:56Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for",
-  "open": 122,
-  "with_ask": 42,
+  "open": 123,
+  "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 35,
+    "UNCLASSIFIED": 36,
     "UI": 13,
     "INFRA": 13,
     "REDESIGN": 10,
@@ -33,7 +33,7 @@
     "KNOWLEDGE": 1
   },
   "by_type": {
-    "untyped": 32,
+    "untyped": 33,
     "enhancement": 24,
     "bug": 23,
     "correctness": 15,
@@ -42,13 +42,29 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 93,
+    "unset": 94,
     "medium": 19,
     "high": 9,
     "low": 1
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 759,
+      "title": "chief-cleared is applied with github.token, so agent-merge's label edge never fires and cleared PRs wait for a throttled sweep (#749, #750: 13-14h)",
+      "ask": "After apply() succeeds in chief_clear.py, dispatch agent-merge.yml with gh workflow run agent-merge.yml",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "provenance:trusted",
+        "needs-evidence"
+      ],
+      "created": "2026-11-07T00:24:23Z",
+      "updated": "2026-11-07T00:26:35Z",
+      "blocked": false,
+      "needs_evidence": true
+    },
     {
       "number": 751,
       "title": "matching: five rules blocked on a source the corpus lacks (split from #177)",
@@ -1002,7 +1018,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-06T11:31:07Z",
+      "updated": "2026-11-07T00:21:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1721,7 +1737,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-08-08T09:45:41Z",
-      "updated": "2026-11-06T06:30:45Z",
+      "updated": "2026-11-06T21:06:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1751,10 +1767,10 @@
         "astrology-correctness",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-11-06T18:48:58Z",
+      "updated": "2026-11-06T21:29:04Z",
       "blocked": false,
       "needs_evidence": false
     },
