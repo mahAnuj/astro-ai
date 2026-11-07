@@ -208,8 +208,55 @@ plain 5,220 lines; the ranges here are **`-layout`**, matching
 |---|---|---|
 | **Combust Mars cancels Manglik** (§1.3 rule 18, `chart.py` `mars_combust`, `effect="cancels"`, `source="Classical matching practice"`) | **still UNSOURCED, and now absent from the canonical authority too.** No change to the #218 verdict; the evidence against it is stronger | `kuja`/`dosha` = **0** in Rao's textbook (20,669 plain lines) and **0** in Rao's *Lessons*; absent from Raman's dedicated antidote list (`grahas.md` §12.4); Vasudev discusses the compensations at length and does not list it, while rejecting the whole family of them |
 | **Cancellation conditions and their orbs, generally** | **UNSOURCED in Rao; CONTESTED in the corpus.** Rao gives none because he gives no dosha. Raman gives a list that does not match `chart.py`. Vasudev gives a list and then disowns it. The only quantified orb anywhere near this is Rao's **6°** for a *Raja-Yoga* association (`yogas.md` §7.4) — a different rule about a different thing | as above |
-| **The severity ladder: "high" (7th/8th) / "moderate" (1st/4th/12th) / "low" (2nd)** — `chart.py:1031`, graded at `chart.py:1033–1037` | **still UNSOURCED as a ladder.** Rao does not grade it. Two parts have weak corroboration and one is positively counter-indicated | **"7th and 8th most serious"**: weakly corroborated by Vasudev's per-house prose (7th = separation at line 2648, 8th = *"tries to kill the husband"* at line 2655) — but he grades no tiers and the 8th reads worse than the 7th in his text, which is the opposite of a tie. **"1st in the moderate tier"**: counter-indicated — Vasudev's own list is 2/4/7/8/12 and the 1st is *"Some include 1 bhava also"* (line 2570). **"2nd alone is lowest"**: not stated anywhere |
+| **The severity ladder: "high" (7th/8th) / "moderate" (1st/4th/12th) / "low" (2nd)** — `chart.py:1031`, graded at `chart.py:1033–1037` | **still UNSOURCED as a ladder.** Rao does not grade it. Two parts have weak corroboration and one is positively counter-indicated | **"7th and 8th most serious"**: weakly corroborated by Vasudev's per-house prose (7th = separation at line 2648, 8th = *"tries to kill the husband"* at line 2655) — but he grades no tiers and the 8th reads worse than the 7th in his text, which is the opposite of a tie. **"1st in the moderate tier"**: counter-indicated — Vasudev's own list is 2/4/7/8/12 and the 1st is *"Some include 1 bhava also"* (line 2570). **"2nd alone is lowest"**: not stated anywhere. **The one-grade downgrade when only the Venus frame qualifies** (`chart.py`, `venus_axis_only`) is counter-indicated by a held source: Raman, *Muhurtha*, pp. 98–99, calls the dosha weak from Lagna, a little stronger from Moon and still more powerful from Venus — see §1.6.3 |
 | **§1.1's "The 7th and 8th are considered most serious"**, sourced to *BPHS*, *Mansagari*, *Jataka Parijata* | **citation defect, #216 class.** All three books are absent from `data/` and absent from `fetch_corpus.py`'s registry. The claim is now *partly* traceable to Vasudev, who is present — but Vasudev is an introductory text that opens by saying the dosha is not in the standard texts, which is a different claim from the one §1.1 makes | `SOURCES.md` → "Which books our claims depend on" |
+
+#### 1.6.3 Raman's frame-strength sentence — the Venus-axis downgrade is counter-indicated (#429)
+
+Raman, *Muhurtha or Electional Astrology* (1948), the "Kuja Dosha" passage in
+the marriage-adaptability chapter, printed pp. **98–99**, plain-text lines
+**3604–3631** of `matching/raman-muhurtha-1948-electional-astrology_djvu.txt`
+(the book `fetch_corpus.py` registers at **9,158** lines; the 2026-11-07 fetch
+matched that count). The sentence breaks across the page, so it is on **both**
+pages (line 3620 on p. 98, lines 3630–3631 on p. 99, past the running header
+"ANTIDOTES FOR KUJA DOSHA"). From the book's OCR text, with its spacing noise
+("refern ce", a stray asterisk) normalised and the words unchanged:
+
+> "The Lagna represents body, the Moon mind and Venus sexual relations.
+> Therefore the houses have to be reckoned with reference to all the three,
+> viz., Lagna, Moon and Venus. The Dosha (evil) is considered weak when it
+> exists from Lagna, a little stronger from Moon and still more powerful from
+> Venus."
+
+Two findings, and neither is a rule change:
+
+- **The Venus-axis downgrade runs the wrong way against this source.**
+  `chart.py` (`if venus_axis_only:`, right after the cancellations are reduced
+  to a status) caps a Venus-only chart at `mitigated` and lowers its severity one
+  grade, on the premise that the Venus frame is "weaker than the primary axes".
+  The only held text that ranks the three frames ranks Venus **strongest**. That
+  is not a classical grade for the code to follow either — Raman is ranking
+  frames, not tiers — but the downgrade is now counter-indicated by a held
+  source, not merely unsourced. The "K.N. Rao + Cheiro" attribution in that
+  comment is likewise untraceable: §1.6's table lists the only two held books
+  with any `kuja dosha` hit (Vasudev, Raman), and neither is named there.
+- **Both held house lists are five houses, and the 1st is not in either.**
+  Raman's translation of the Kerala stanza (lines 3610–3614) is *"2nd, 12th, 4th, 7th, and 8th"*;
+  Vasudev lists 2/4/7/8/12 and says *"Some include 1 bhava also"* (§1.6.1). The
+  code's six-house set and its "1st = moderate" tier go beyond both. Raman also
+  says *"much importance need not be given to"* the dosha (the OCR garbles the
+  last word; grahas.md §12.4 records the same line).
+
+Neither book grades houses into tiers, so the severity ladder's status in the
+verdict table above stands: still unsourced as a ladder.
+
+**Provenance of this entry.** The Raman quote was first reported by the #579 QA
+round and was re-checked on 2026-11-07 against the book itself, fetched with
+`scripts/fetch_corpus.py --fetch` (1 of 10 registry books usable on that runner;
+**Raman was the only book present** — the Vasudev and Rao PDFs downloaded but
+could not be verified without `pdftotext`, so nothing in this section was
+re-measured against them; the Vasudev line numbers above are as recorded in
+§1.6.1). The OCR is noisy ("Dosharn", "Doslmm"); the quoted sentence is clean.
 
 **Nothing here changes a rule.** `chart.py` and `matching.py` are untouched.
 
