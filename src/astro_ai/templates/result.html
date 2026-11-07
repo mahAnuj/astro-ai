@@ -394,7 +394,7 @@
             </td>
             <td class="py-2 text-bhagya-ink leading-relaxed">
               <div>{{ p.rashi }} <span class="text-bhagya-muted-2">&middot;</span> House {{ p.house }} <span class="text-bhagya-muted-2">&middot;</span> {{ "%.1f"|format(p.longitude) }}&deg;</div>
-              <div class="text-sm text-bhagya-muted">{{ p.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+              <div class="text-sm text-bhagya-muted">{{ p.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}{% if p.pada %} <span class="text-bhagya-muted-2">&middot;</span> <span data-pada>{{ t(lang, 'pada_label', n=p.pada) }}</span>{% endif %}</div>
             </td>
           </tr>
           {% endfor %}
