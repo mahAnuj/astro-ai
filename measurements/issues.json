@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-07T11:31:46Z",
+  "generated_at": "2026-11-07T18:28:48Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for",
-  "open": 119,
-  "with_ask": 41,
+  "open": 118,
+  "with_ask": 40,
   "by_area": {
-    "UNCLASSIFIED": 36,
+    "UNCLASSIFIED": 37,
     "INFRA": 13,
-    "UI": 12,
+    "UI": 11,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "NUMEROLOGY": 6,
+    "NUMEROLOGY": 5,
     "RETRIEVAL": 3,
     "OPS": 3,
     "MEASURE": 3,
@@ -31,22 +31,48 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 33,
+    "untyped": 34,
     "enhancement": 23,
-    "bug": 23,
+    "bug": 22,
     "correctness": 13,
     "chore": 13,
-    "design": 9,
+    "design": 8,
     "ui": 5
   },
   "by_priority": {
     "unset": 91,
     "medium": 18,
-    "high": 9,
+    "high": 8,
     "low": 1
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 773,
+      "title": "numerology.md: re-check AnkitNotes description and the K.N. Rao / Dasa caveat claim against data/ (split from #200)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-07T16:59:47Z",
+      "updated": "2026-11-07T17:05:47Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 770,
+      "title": "A test-count-drop ruling comment cannot turn gates green: nothing re-runs the gates job after it",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-07T14:12:55Z",
+      "updated": "2026-11-07T14:12:55Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 759,
       "title": "chief-cleared is applied with github.token, so agent-merge's label edge never fires and cleared PRs wait for a throttled sweep (#749, #750: 13-14h)",
@@ -705,24 +731,6 @@
       "needs_evidence": true
     },
     {
-      "number": 513,
-      "title": "Daily rashifal email repeats its opening every day — the per-rashi opening_style constant never varies by date",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:high",
-        "needs-evidence"
-      ],
-      "created": "2026-10-24T03:29:51Z",
-      "updated": "2026-11-06T06:30:49Z",
-      "blocked": false,
-      "needs_evidence": true
-    },
-    {
       "number": 503,
       "title": "stall routing: no independent-QA path for human-authored partial/ PRs, guard 2 misreads a working dispatch, chief-dispatched qa cannot record its label",
       "ask": "",
@@ -948,10 +956,10 @@
         "astrology-correctness",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-20T02:24:10Z",
-      "updated": "2026-11-07T10:29:27Z",
+      "updated": "2026-11-07T17:25:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1016,7 +1024,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-07T00:21:21Z",
+      "updated": "2026-11-07T17:15:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1078,23 +1086,6 @@
       ],
       "created": "2026-10-16T05:59:24Z",
       "updated": "2026-10-16T05:59:24Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 382,
-      "title": "[UI] Subscribe modal covers the /matching and /numerology result on a first visit — the htmx swap counts as visit 2",
-      "ask": "",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal",
-        "page:matching"
-      ],
-      "created": "2026-10-15T22:59:04Z",
-      "updated": "2026-11-06T00:49:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1621,22 +1612,6 @@
       ],
       "created": "2026-08-10T12:56:21Z",
       "updated": "2026-08-10T12:56:21Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 200,
-      "title": "numerology: user-facing copy names books and authors throughout, against CLAUDE.md's cite-the-tradition rule",
-      "ask": "Rewrite each to name the tradition rather than the author, matching the compound-number caption as the reference example.",
-      "area": "NUMEROLOGY",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "qa-pass",
-        "provenance:trusted"
-      ],
-      "created": "2026-08-10T12:55:44Z",
-      "updated": "2026-11-06T06:15:54Z",
       "blocked": false,
       "needs_evidence": false
     },
