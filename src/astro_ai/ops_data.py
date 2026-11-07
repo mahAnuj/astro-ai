@@ -1621,10 +1621,17 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
             # tell. But it must not be silent: nothing re-runs a weekly loop
             # before its next slot, so a red last run stays the loop's state
             # for days. #628 defect 2.
+            #
+            # The "not due again yet" clause is true ONLY for `not-due-yet`.
+            # Under `ok` the schedule is on track and a later slot may already
+            # have run, so the same sentence was false there (#738 item 2).
+            why = ("; the schedule is not due again yet, so nothing has re-run it. "
+                   if lp.get("verdict") == "not-due-yet" else
+                   "; the schedule itself is on track, but this is the most recent "
+                   "run the collector saw. ")
             add("amber", f"{lp.get('workflow')}'s last run failed",
                 f"Ended {lp.get('last_conclusion') or 'badly'} on {last or 'an unknown date'}"
-                f"; the schedule is not due again yet, so nothing has re-run it. "
-                "Check whether a fix has landed since.",
+                f"{why}Check whether a fix has landed since.",
                 lp.get("display") or "")
 
     # NOT gated on `loop["ok"]`: the tiles are live and the ribbon is not, so
