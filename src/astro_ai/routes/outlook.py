@@ -145,7 +145,6 @@ async def _render_outlook(
         saved_details.birth_date, saved_details.birth_time, saved_details.birth_place
     )
     prompt_fp = cache.fingerprint_prompt(prompt_path)
-    today_str = date.today().isoformat()
     # Monthly: bucket by week (cache for 7 days); Yearly: bucket by month (30 days).
     if active_page == "monthly":
         bucket = f"week-{date.today().isocalendar()[0]}-{date.today().isocalendar()[1]}"

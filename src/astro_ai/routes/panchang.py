@@ -19,7 +19,7 @@ here may import ``astro_ai.main``.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
@@ -54,7 +54,7 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
     `target_date` is a `datetime.date` — the day whose panchang we want.
     """
     from astro_ai.muhurat import _choghadiya_windows as _choghadiya
-    from datetime import datetime as _datetime, timedelta as _timedelta
+    from datetime import datetime as _datetime
     from zoneinfo import ZoneInfo as _ZoneInfo
     resolved_city = (city or "").strip()
     error = False
@@ -138,9 +138,8 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
     is_today = (target_iso == today_iso)
     # Prev / next day for navigation on archive pages (skip on today to
     # keep the today URL clean).
-    from datetime import timedelta as _td
-    prev_day = (target_date - _td(days=1)).isoformat()
-    next_day = (target_date + _td(days=1)).isoformat()
+    prev_day = (target_date - timedelta(days=1)).isoformat()
+    next_day = (target_date + timedelta(days=1)).isoformat()
     return templates.TemplateResponse(
         request, "panchang.html",
         {
