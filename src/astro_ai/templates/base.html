@@ -1385,7 +1385,16 @@
      Two paths — Chrome/Android fires `beforeinstallprompt` (real button),
      iOS Safari needs static instructions because Apple doesn't surface the
      event. Banner self-dismisses on close and remembers the choice. #}
-  <div id="pwa-install-banner" class="hidden fixed bottom-3 inset-x-3 sm:left-3 sm:right-auto sm:w-80
+  {# #379 — BELOW md THE BANNER IS LIFTED ABOVE #mobile-tab-bar. It was
+     `bottom-3` (12px), under the tab bar's ~76px, and the tab bar is later in
+     the DOM at the same z-index so it painted over the banner: elementFromPoint
+     at the Install button's centre returned the tab bar, i.e. the button could
+     not be tapped. `bottom-24` is the same lift the feedback FAB uses
+     (_feedback_widget.html) and clears the bar at 375x667 (banner bottom edge
+     571 against the bar's top at 591). `md:bottom-3` restores the old offset
+     exactly where the bar disappears (`md:hidden`). The dismiss button gets
+     p-1/-m-1 so its target is ~28px wide instead of 20px. #}
+  <div id="pwa-install-banner" class="hidden fixed bottom-24 md:bottom-3 inset-x-3 sm:left-3 sm:right-auto sm:w-80
                                        z-40 bg-bhagya-cream border border-bhagya-border rounded-md p-3 text-sm no-print">
     <div class="flex items-start gap-3">
       <img src="/static/icons/icon-192.png" alt="" loading="lazy" decoding="async" class="w-10 h-10 rounded shrink-0">
@@ -1393,7 +1402,7 @@
         <div class="font-semibold text-bhagya-ink">Install Shubh Bhagya</div>
         <div id="pwa-install-msg" class="text-bhagya-muted text-xs mt-0.5"></div>
       </div>
-      <button id="pwa-install-close" type="button" class="text-bhagya-muted-2 hover:text-bhagya-ink"
+      <button id="pwa-install-close" type="button" class="p-1 -m-1 text-bhagya-muted-2 hover:text-bhagya-ink"
               aria-label="Dismiss install banner">
         <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
