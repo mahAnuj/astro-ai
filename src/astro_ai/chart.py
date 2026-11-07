@@ -1175,7 +1175,8 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
     # and "2nd alone is lowest" is stated nowhere. The grades are kept as shipped
     # pending the owner's tier decision on #429; every surface that shows them
     # must say they are editorial (manglik_check_result.html, the LLM line in
-    # format_manglik_for_prompt). Do not cite a classical text for the tiers.
+    # format_manglik_for_prompt, and the tier text the /kundli result prints
+    # from i18n.py). Do not cite a classical text for the tiers.
     if {7, 8} & qualifying:
         severity = "high"
     elif {1, 4, 12} & qualifying:
@@ -1204,6 +1205,10 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
     # 'mitigated' so users don't panic over what their offline kundali
     # rightly calls a non-Manglik chart. Also downgrade severity by one
     # notch so the number-badge on the UI reads accurately.
+    # NOTE (#429): "weaker than the primary axes" is NOT what the one held source
+    # that ranks the frames says -- Raman, Muhurtha, says the dosha is weak from
+    # Lagna, a little stronger from Moon and still more powerful from Venus
+    # (vedic_reference.md §1.6.3). Kept as shipped pending the owner's decision.
     if venus_axis_only:
         if effective_status == "present":
             effective_status = "mitigated"
