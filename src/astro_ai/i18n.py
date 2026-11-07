@@ -38,6 +38,7 @@ _EN: Final[dict[str, str]] = {
     "sun_transits":        "Sun transits",
     "house_from_lagna":    "House {n} from natal Lagna",
     "nakshatra_suffix":    "Nakshatra",
+    "pada_label":          "Pada {n}",
 
     # sade sati badge
     "sade_sati":           "Sade Sati",
@@ -611,6 +612,7 @@ _HI: Final[dict[str, str]] = {
     "sun_transits":        "सूर्य गोचर",
     "house_from_lagna":    "जन्म लग्न से {n}वें भाव में",
     "nakshatra_suffix":    "नक्षत्र",
+    "pada_label":          "पाद {n}",
 
     "sade_sati":           "साढ़े साती",
     "phase_rising":        "आरोही चरण",
