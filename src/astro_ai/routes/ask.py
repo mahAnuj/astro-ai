@@ -118,7 +118,7 @@ async def ask_form(request: Request, q: str | None = None,
 
 
 _ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
-                   "spiritual", "travel", "relationships"}
+                   "spiritual", "travel", "relationships", "education"}
 
 
 def _ask_cache_key(saved, question: str, category: str, lang: str,
