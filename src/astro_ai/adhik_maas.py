@@ -110,12 +110,11 @@ import swisseph as swe
 # Chart, which requires compute_chart() -> geocode_place() -> a Nominatim network
 # call (chart.py:326) — unusable for a multi-day scan.
 #
-# This import is ALSO what executes `swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)`
-# (chart.py:162, process-global, set once at module import). `_sun_rashi` below is
-# sidereal and is meaningless without it. Do not "clean this up" into a
-# function-local import: the sid mode would then be unset the first time
-# `_sun_rashi` runs, and every month name would be silently wrong.
-from astro_ai.chart import _sunrise_sunset
+# `_sid_calc_ut` is how `_sun_rashi` below gets the Lahiri ayanamsa. swisseph's sidereal
+# mode is PER THREAD (#762), so importing chart does not configure this module's callers
+# on a worker thread; `_sid_calc_ut` configures the calling thread itself. Never call
+# `swe.calc_ut(..., FLG_SIDEREAL)` here directly.
+from astro_ai.chart import _sid_calc_ut, _sunrise_sunset
 
 _DELHI_LAT = 28.6139
 _DELHI_LON = 77.2090
@@ -208,10 +207,10 @@ def _sun_rashi(jd: float) -> int:
     FLG_SIDEREAL is REQUIRED. A rashi is an absolute position, not a difference, so
     it is not ayanamsa-invariant — tropical longitudes sit ~24° ahead of sidereal
     and would misassign roughly one date in twelve, plus every month name. The
-    Lahiri ayanamsa this relies on is set process-globally by importing
-    `astro_ai.chart` (see the import comment above).
+    Lahiri ayanamsa comes from `chart._sid_calc_ut`, which selects it on the calling
+    thread (swisseph's sidereal mode is per thread, #762).
     """
-    return int(swe.calc_ut(jd, swe.SUN, swe.FLG_SIDEREAL)[0][0] // 30)
+    return int(_sid_calc_ut(jd, swe.SUN)[0][0] // 30)
 
 
 def _new_moon_instants(jd_start: float, jd_end: float) -> list[float]:

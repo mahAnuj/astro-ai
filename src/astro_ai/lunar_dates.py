@@ -51,8 +51,9 @@ Provenance matches `festival_registry`, `lunar_observances` and `adhik_maas`
 exactly: New Delhi (NCT) 28.6139N 77.2090E, IST, Swiss Ephemeris (pyswisseph,
 Lahiri sidereal). Tithi is in fact ayanamsa-invariant — Sun and Moon shift
 equally and it cancels — but the month *names* are not, and they come from
-`adhik_maas._sun_rashi`, which is sidereal and requires the Lahiri mode that
-importing `astro_ai.chart` sets process-globally.
+`adhik_maas._sun_rashi`, which is sidereal and gets the Lahiri
+mode from `chart._sid_calc_ut`, which selects it on the calling thread (swisseph's
+sidereal mode is per thread, #762).
 
 PURNIMANTA VS AMANTA DOES NOT ARISE HERE
 ----------------------------------------
