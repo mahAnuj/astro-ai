@@ -173,11 +173,6 @@ jobs:
               fi
               stale_pass=true ;;
           esac
-          case ",$labels," in
-            *",needs-human-review,"*)
-              say "PR #$num carries \`needs-human-review\` — someone has been told."; exit 0 ;;
-          esac
-
           # A `qa-fail` PR WHOSE FIX HAS LANDED GETS ITS ROUND NOW (2026-11-02,
           # owner's request). Until then this step left every `qa-fail` PR
           # alone ("that needs a FIX, not a round"), which was right before the
@@ -215,6 +210,24 @@ jobs:
                 say "PR #$num carries \`qa-fail\` at \`${failed_at:0:7}\`; only merges have landed since — a merge is not a fix. Leaving it."; exit 0
               fi
               refix=true ;;
+          esac
+
+          # A HELD PR WHOSE FAIL HAS A FIX GETS ITS ROUND TOO (2026-11-07). The
+          # hold is chief's to clear, and chief clears only on a PASS for the
+          # head -- so declining every held PR declined exactly the re-check a
+          # held PR needs. Every workflow PR is held by design, and the App token
+          # cannot push to one, so those are the PRs whose fixes come from a
+          # session and then waited on nobody: #747 had its fix and a green
+          # `gates` at 18:18Z and this step printed "someone has been told".
+          # The round is judge-only and writes a verdict, never a clearance, so
+          # chief still decides the hold. Without a fix since the FAIL, a held
+          # PR is still left alone, as before.
+          case ",$labels," in
+            *",needs-human-review,"*)
+              if [ "$refix" != true ]; then
+                say "PR #$num carries \`needs-human-review\` — someone has been told."; exit 0
+              fi
+              say "PR #$num is held (\`needs-human-review\`), but a fix landed after its QA FAIL — a judge-only round re-checks it; chief still decides the hold." ;;
           esac
 
           # A JUDGING ROUND IS STILL POSSIBLE ON A BRANCH NOBODY CAN PUSH (#610).

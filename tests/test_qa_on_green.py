@@ -738,3 +738,38 @@ def test_no_qa_pass_label_leaves_the_block_inert(tmp_path):
 def test_a_stale_pass_is_aimed_at_the_PR_as_a_judge_round():
     code = _code(PICK)
     assert 'if [ "$stale_pass" = true ]; then\n  target="pr=${num}"' in code
+
+
+
+# --- 9. a HELD PR whose FAIL has a fix still gets its round (2026-11-07) ------
+
+def _hold_block() -> str:
+    m = re.search(r'(case ",\$labels," in\n\s*\*",needs-human-review,"\*\)\n.*?\nesac)', PICK, re.S)
+    assert m, "the needs-human-review block is no longer recognisable"
+    return m.group(1)
+
+
+def _held(tmp_path, labels, **kw):
+    """The real re-fix block, then the real hold block, against the fake gh."""
+    global _refix_block
+    real = _refix_block
+    try:
+        _refix_block = lambda: real() + "\n" + _hold_block()
+        return _refix(tmp_path, labels=labels, **kw)
+    finally:
+        _refix_block = real
+
+
+def test_a_held_PR_with_a_fix_since_its_fail_gets_a_round(tmp_path):
+    """#747: fix pushed, gates green at 18:18Z, and the step said "someone has been told"."""
+    out = _held(tmp_path, "needs-human-review,qa-fail,qa:independent")
+    assert "REFIX=true" in out and "chief still decides the hold" in out
+
+
+def test_a_held_PR_with_no_fix_is_still_left_alone(tmp_path):
+    out = _held(tmp_path, "needs-human-review,qa:in-cycle")
+    assert "someone has been told" in out and "REFIX=" not in out
+
+
+def test_the_hold_is_checked_after_the_refix_is_known():
+    assert PICK.index("refix=true ;;") < PICK.index('*",needs-human-review,"*)')

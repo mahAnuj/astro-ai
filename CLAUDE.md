@@ -265,6 +265,12 @@ What has NOT changed, and why it matters more now than before:
   bound to, read from `claude[bot]`'s own `QA: FAIL — verified at <sha>` comment, and the
   round is aimed at `pr=<n>`. Before that, every re-fixed PR waited for the steward or a
   human — #649, #636 and #675 each sat hours that way with the fix already pushed.
+  **A held PR gets that round too (2026-11-07).** The `needs-human-review` check runs
+  after the fix check, and stands down only when no fix has landed since the FAIL. Every
+  workflow PR is held by design and only a session can push to one, so those fixes waited
+  on nobody: #747 had its fix and a green `gates` and this step printed "someone has been
+  told". The round is judge-only and writes a verdict, never a clearance; chief still
+  decides the hold.
 
   **What it aims the dispatch at, since 2026-11-01, and the branch name is no longer a
   precondition.** `issue/<n>-`, `partial/<n>-` and `fix/<n>-` yield `issue=<n>` and the
