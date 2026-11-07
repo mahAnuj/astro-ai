@@ -54,6 +54,8 @@ from astro_ai.providers import AllProvidersExhausted
 from astro_ai.rashifal_derive import combined_keys, sections_by_rashi
 from astro_ai.routes.deps import (
     RASHIFAL_PROMPT_PATH,
+    _pretty_date,
+    _pretty_weekday,
     _site_url,
     require_admin,
     templates,
@@ -628,6 +630,23 @@ def _mask_email(email: object) -> str:
     return f"{local[:2]}***@{domain}"
 
 
+def daily_rashifal_subject(lang: str, day: date) -> str:
+    """The daily email's subject, carrying the day it was sent for (#513).
+
+    It used to be the constant "Today's Rashifal — Shubh Bhagya", identical on
+    every send, so a mail client threaded the whole series into one conversation
+    and trimmed each message down to what it had already shown. The owner, a
+    one-rashi subscriber, saw "the same content daily". A date in the subject
+    makes each send its own message, in both languages.
+
+    The weekday and date reuse the page helpers so the email, the page title and
+    `<time>` chrome all say the day the same way.
+    """
+    when = f"{_pretty_weekday(day, lang)}, {_pretty_date(day.isoformat(), lang)}"
+    head = "आज का राशिफल" if lang == "hi" else "Today's Rashifal"
+    return f"{head} · {when} — Shubh Bhagya"
+
+
 @router.post("/admin/send-daily-rashifal", dependencies=[Depends(require_admin)])
 async def send_daily_rashifal(request: Request) -> JSONResponse:
     """Send today's Rashifal email to every active subscriber.
@@ -637,7 +656,6 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     today's Rashifal per language, then per-subscriber sends via Brevo.
     """
     today_iso = date.today().isoformat()
-    today_pretty = date.today().strftime("%A, %d %B %Y")
     prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
     site_url = _site_url()
 
@@ -757,7 +775,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
                 f"&token={subscribers.unsubscribe_token(email)}"
             )
             html = template.render(**ctx)
-            subject = "आज का राशिफल — Shubh Bhagya" if lang == "hi" else "Today's Rashifal — Shubh Bhagya"
+            subject = daily_rashifal_subject(lang, date.fromisoformat(today_iso))
             ok = email_sender.send(email, subject=subject, html=html)
         except Exception as exc:  # noqa: BLE001 — one bad row must not end the blast
             # A raise here escaped past BOTH alerts below and past the outcome
