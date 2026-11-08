@@ -41,7 +41,8 @@ from __future__ import annotations
 
 import re
 
-__all__ = ["check_reading", "GROUNDING_RULES", "STYLE_RULES", "TITHIS", "NAKSHATRAS"]
+__all__ = ["check_reading", "opening_repeats", "GROUNDING_RULES", "STYLE_RULES",
+           "TITHIS", "NAKSHATRAS"]
 
 TITHIS: tuple[str, ...] = (
     "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami", "Shashthi",
@@ -129,3 +130,46 @@ def check_reading(body: str, *, tithi: str = "", nakshatra: str = "") -> dict:
     except Exception:  # noqa: BLE001 - see docstring
         return {"style": style, "grounding": grounding}
     return {"style": style, "grounding": grounding}
+
+
+# --- Cross-day check (#513) --------------------------------------------------
+#
+# `check_reading` looks at ONE reading. The defect the owner reported cannot be
+# seen that way: each reading was fine, and the same rashi opened with the same
+# image two days running. So this compares a reading with the previous day's
+# reading of the SAME rashi, on the sentence the reader meets first.
+#
+# English only. The stop list below is English, and a Hindi version would need
+# its own measured list; running this over Devanagari with an English list would
+# report every postposition as a repeat. Callers skip other languages.
+_STOP = frozenset("""
+about above after again also although among around because before being below
+between both could does doing down during each even every from further have
+having here into just like made make many more most much must only other over
+same should some such than that their them then there these they this those
+through under until very want what when where which while whom whose will with
+within without would your yours yourself you're
+""".split())
+_FIRST_SENTENCE = re.compile(r"\A\s*(.+?)(?:[.!?](?:\s|\Z)|\n|\Z)", re.S)
+_WORD = re.compile(r"[a-z]{4,}")
+
+
+def _opening_words(body: str) -> set[str]:
+    """Content words (4+ letters, not a stop word) of a reading's first sentence."""
+    m = _FIRST_SENTENCE.match(_MARKDOWN.sub("", body or ""))
+    if not m:
+        return set()
+    return {w for w in _WORD.findall(m.group(1).lower()) if w not in _STOP}
+
+
+def opening_repeats(previous: str, body: str) -> list[str]:
+    """Content words the two readings' FIRST SENTENCES share, sorted.
+
+    `previous` is yesterday's body for the same rashi. An empty list means the
+    openings share nothing -- or that either reading is empty, because absence
+    disables a check and never invents a verdict. Never raises.
+    """
+    try:
+        return sorted(_opening_words(previous) & _opening_words(body))
+    except Exception:  # noqa: BLE001 - same contract as check_reading
+        return []

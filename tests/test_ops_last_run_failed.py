@@ -111,3 +111,13 @@ def test_the_team_header_is_unchanged_when_nothing_failed(monkeypatch):
     body = _page(monkeypatch, [_loop(health="green", conclusion="success")])
     assert "every scheduled loop ran when due" in body
     assert "last run failed" not in body
+
+
+@pytest.mark.parametrize("verdict,says_not_due", [("not-due-yet", True), ("ok", False)])
+def test_the_not_due_again_clause_appears_only_under_not_due_yet(verdict, says_not_due):
+    """#738 item 2: under `ok` the schedule is on track, so "not due again yet"
+    was false there."""
+    hit = [a for a in _alerts(_loop(verdict=verdict)) if "last run failed" in a["title"]]
+    assert len(hit) == 1, hit
+    assert ("not due again yet" in hit[0]["detail"]) is says_not_due, hit[0]["detail"]
+    assert "2026-10-28" in hit[0]["detail"]

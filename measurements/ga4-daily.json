@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-08",
-    "2026-11-04"
+    "2026-10-09",
+    "2026-11-05"
   ],
   "dimensions": [
     "date"
@@ -12,12 +12,6 @@
   "days": 28,
   "days_with_traffic": 28,
   "rows": [
-    {
-      "date": "2026-10-08",
-      "active_users": 18,
-      "sessions": 19,
-      "new_users": 16
-    },
     {
       "date": "2026-10-09",
       "active_users": 9,
@@ -179,6 +173,12 @@
       "active_users": 29,
       "sessions": 32,
       "new_users": 25
+    },
+    {
+      "date": "2026-11-05",
+      "active_users": 24,
+      "sessions": 29,
+      "new_users": 22
     }
   ]
 }

@@ -163,8 +163,8 @@ _EN: Final[dict[str, str]] = {
     "manglik_houses_label":"Qualifying placements",
     "manglik_about_label": "What this means",
     "manglik_about_high":  "Mars sitting in the 7th or 8th house — counted from your Lagna, your Moon or your Venus — is the most-discussed form of Manglik. Classically it suggests friction, restlessness, or assertive energy in marital matters, with the 7th house (partnership) and 8th house (spouse's longevity, transformation) being the most-cited concerns. The actual effect varies enormously with the rest of the chart.",
-    "manglik_about_moderate":"Mars in the 1st, 4th, or 12th house is a moderate form of Manglik. The 1st affects personality and restlessness; the 4th affects home and inner peace; the 12th affects private life and expenses. Often less severe than 7th/8th placements but still worth noting.",
-    "manglik_about_low":   "Mars in the 2nd house is the mildest form of Manglik, primarily affecting speech and family dynamics. Some traditions exclude 2nd-house Manglik entirely.",
+    "manglik_about_moderate":"Mars in the 1st, 4th or 12th house counts toward Manglik here, and Bhagya grades it moderate, below the 7th and 8th. That grade is Bhagya's own weighting, not a classical grade, and it is not drawn from the classical texts we hold. The 1st affects personality and restlessness; the 4th affects home and inner peace; the 12th affects private life and expenses.",
+    "manglik_about_low":   "Mars in the 2nd house counts toward Manglik here, and Bhagya grades it low. That grade is Bhagya's own weighting, not a classical grade, and it is not drawn from the classical texts we hold. The 2nd mainly affects speech and family dynamics.",
     "manglik_cancel_label":"Possible cancellations",
 
     # Sade Sati explanatory panel
@@ -397,14 +397,17 @@ _EN: Final[dict[str, str]] = {
     # Numerology caveat — sourced from classical-source research (2026-08-04):
     # not in BPHS / Brihat Jataka / Saravali / Phaladeepika / Jataka Parijata /
     # Uttara Kalamrita. Modern "Indian" numerology descends from Cheiro (Wm
-    # John Warner, 1866-1936), L. Dow Balliett (1908), Julia Seton (coined
-    # the word ~1912), Juno Jordan (DeVorss). K.N. Rao was taught numerology
+    # John Warner, 1866-1936) — SOURCED, knowledge/numerology.md line 6 and
+    # §14.2. The Balliett / Seton / Jordan lineage (1908, ~1912) that this
+    # comment used to list is NOT in knowledge/ (0 hits, measured 2026-11-07)
+    # and was dropped from num_caveat_body_2 on chief's ruling (#200); it
+    # stays out until a book in data/ carries it. K.N. Rao was taught numerology
     # by his mother and DROPPED it; only Sanjay Rath defends it, and only on
     # philosophical (navagraha ↔ 1-9) rather than textual grounds. Shown at
     # TOP of /numerology, before both the form and any results.
     "num_caveat_heading":      "About this tool — honesty about the tradition",
     "num_caveat_body_1":       "The numerology systems on this page — Chaldean (Cheiro) and the Lo Shu grid — are modern traditions with 19th- and 20th-century Western and ancient Chinese roots, not branches of classical Vedic Jyotish. Foundational Sanskrit Jyotish texts (Brihat Parashara Hora Shastra, Brihat Jataka, Saravali, Phaladeepika, Jataka Parijata, Uttara Kalamrita) do not describe birth-date reduction or English-alphabet name numerology.",
-    "num_caveat_body_2":       "The Life Path / Expression / Soul Urge framework was built by three Americans between 1908 and mid-20th century — L. Dow Balliett, Julia Seton (who coined the word \"numerology\" ~1912), and Juno Jordan. The \"Chaldean\" name-number tables in wide circulation trace to Cheiro (William John Warner, 1866–1936). Respected Jyotish teachers such as K.N. Rao practice without numerology; scholar Shyamasundara Dasa argues the method is calendar- and alphabet-dependent (reduce your birthdate in Vikram Samvat vs Saka vs Gregorian and you get different numbers) rather than universal.",
+    "num_caveat_body_2":       "The \"Chaldean\" name-number tables in wide circulation trace to Cheiro (William John Warner, 1866–1936). Respected Jyotish teachers such as K.N. Rao practice without numerology; scholar Shyamasundara Dasa argues the method is calendar- and alphabet-dependent (reduce your birthdate in Vikram Samvat vs Saka vs Gregorian and you get different numbers) rather than universal.",
     "num_caveat_body_3":       "We publish these calculators because millions find them meaningful and they can prompt useful self-reflection. But treat the output as reflective, not predictive — and never as a substitute for a Jyotish analysis of your actual birth chart. Of the sections below, the Lo Shu grid is the most textually defensible (genuinely ancient Chinese, independent of the Gregorian calendar); the Life Path and Karmic Debt sections are 20th-century Western frameworks.",
     "num_reflective_header":   "Read the descriptions below as prompts for self-reflection, not predictions. \"Life Path 3\" isn't telling you what will happen — it's naming a pattern the tradition associates with your birth-date sum, one you can accept, question, or ignore.",
 
@@ -734,8 +737,8 @@ _HI: Final[dict[str, str]] = {
     "manglik_houses_label":"योग्य स्थितियाँ",
     "manglik_about_label": "इसका अर्थ",
     "manglik_about_high":  "लग्न, चंद्र अथवा शुक्र से सप्तम अथवा अष्टम भाव में मंगल का होना मंगल दोष का सबसे चर्चित स्वरूप है। शास्त्रीय रूप से यह वैवाहिक मामलों में टकराव, अस्थिरता या तीव्र ऊर्जा का सूचक माना जाता है, जहाँ सप्तम (साझेदारी) और अष्टम (जीवनसाथी की आयु, परिवर्तन) सबसे चिंतनीय हैं। वास्तविक प्रभाव शेष कुंडली पर बहुत निर्भर करता है।",
-    "manglik_about_moderate":"प्रथम, चतुर्थ अथवा द्वादश भाव में मंगल मंगल दोष का मध्यम स्वरूप है। प्रथम व्यक्तित्व व अस्थिरता को, चतुर्थ घर व मानसिक शांति को, और द्वादश निजी जीवन व व्यय को प्रभावित करता है। प्रायः सप्तम/अष्टम से कम गंभीर, परन्तु ध्यान देने योग्य।",
-    "manglik_about_low":   "द्वितीय भाव में मंगल मंगल दोष का सबसे हल्का स्वरूप है, जो मुख्य रूप से वाणी और पारिवारिक गतिविधि को प्रभावित करता है। कुछ परंपराएँ द्वितीय-मंगल को मंगल दोष से बाहर भी रखती हैं।",
+    "manglik_about_moderate":"प्रथम, चतुर्थ अथवा द्वादश भाव में मंगल यहाँ मंगल दोष में गिना जाता है, और शुभ भाग्य इसे सप्तम व अष्टम से नीचे, मध्यम श्रेणी में रखता है। यह श्रेणी शुभ भाग्य का अपना भार-निर्धारण है, कोई शास्त्रीय श्रेणी नहीं, और हमारे पास उपलब्ध शास्त्रीय ग्रंथों से नहीं ली गई है। प्रथम व्यक्तित्व व अस्थिरता को, चतुर्थ घर व मानसिक शांति को, और द्वादश निजी जीवन व व्यय को प्रभावित करता है।",
+    "manglik_about_low":   "द्वितीय भाव में मंगल यहाँ मंगल दोष में गिना जाता है, और शुभ भाग्य इसे अल्प श्रेणी में रखता है। यह श्रेणी शुभ भाग्य का अपना भार-निर्धारण है, कोई शास्त्रीय श्रेणी नहीं, और हमारे पास उपलब्ध शास्त्रीय ग्रंथों से नहीं ली गई है। द्वितीय मुख्य रूप से वाणी और पारिवारिक गतिविधि को प्रभावित करता है।",
     "manglik_cancel_label":"संभावित निवारण",
 
     # Sade Sati panel
@@ -951,7 +954,7 @@ _HI: Final[dict[str, str]] = {
 
     "num_caveat_heading":      "इस टूल के बारे में — परम्परा को लेकर ईमानदारी",
     "num_caveat_body_1":       "इस पृष्ठ पर दिखाई गई अंक-प्रणालियाँ — कालडियन (चीरो) और लो शू ग्रिड — 19वीं और 20वीं शताब्दी की पश्चिमी तथा प्राचीन चीनी जड़ों वाली आधुनिक परम्पराएँ हैं, शास्त्रीय वैदिक ज्योतिष की शाखाएँ नहीं। मूलभूत संस्कृत ज्योतिष ग्रंथ (बृहत् पराशर होरा शास्त्र, बृहज्जातक, सारावली, फलदीपिका, जातक पारिजात, उत्तर कालामृत) जन्मतिथि-न्यूनीकरण या अंग्रेजी-वर्णमाला नाम-अंकशास्त्र का वर्णन नहीं करते।",
-    "num_caveat_body_2":       "लाइफ पाथ / एक्सप्रेशन / सोल अर्ज ढाँचा 1908 से मध्य-20वीं शताब्दी के बीच तीन अमेरिकियों — एल. डो बैलियेट, जूलिया सीटन (जिन्होंने ~1912 में \"numerology\" शब्द गढ़ा), और जूनो जॉर्डन ने बनाया था। व्यापक प्रचलन में \"कालडियन\" नाम-अंक तालिकाएँ चीरो (विलियम जॉन वार्नर, 1866-1936) से आती हैं। के.एन. राव जैसे सम्मानित ज्योतिष आचार्य अंकशास्त्र के बिना अभ्यास करते हैं; विद्वान श्यामसुन्दर दास तर्क देते हैं कि यह विधि सर्वव्यापी न होकर पंचांग- और वर्णमाला-निर्भर है (विक्रम संवत बनाम शक बनाम ग्रेगोरियन में अपनी जन्मतिथि को न्यूनीकरण करें और आपको अलग अंक मिलेंगे)।",
+    "num_caveat_body_2":       "व्यापक प्रचलन में \"कालडियन\" नाम-अंक तालिकाएँ चीरो (विलियम जॉन वार्नर, 1866-1936) से आती हैं। के.एन. राव जैसे सम्मानित ज्योतिष आचार्य अंकशास्त्र के बिना अभ्यास करते हैं; विद्वान श्यामसुन्दर दास तर्क देते हैं कि यह विधि सर्वव्यापी न होकर पंचांग- और वर्णमाला-निर्भर है (विक्रम संवत बनाम शक बनाम ग्रेगोरियन में अपनी जन्मतिथि को न्यूनीकरण करें और आपको अलग अंक मिलेंगे)।",
     "num_caveat_body_3":       "हम ये कैलकुलेटर इसलिए प्रकाशित करते हैं क्योंकि लाखों लोगों को यह अर्थपूर्ण लगता है और यह उपयोगी आत्म-चिंतन को प्रेरित कर सकता है। किन्तु परिणाम को चिंतनशील मानें, भविष्यसूचक नहीं — और अपनी वास्तविक जन्म कुंडली के ज्योतिष विश्लेषण के विकल्प के रूप में कभी नहीं। नीचे के खण्डों में से लो शू ग्रिड सबसे पाठ-सम्मत है (वास्तव में प्राचीन चीनी, ग्रेगोरियन पंचांग से स्वतंत्र); लाइफ पाथ और कर्मिक डेब्ट खण्ड 20वीं शताब्दी के पश्चिमी ढाँचे हैं।",
     "num_reflective_header":   "नीचे दिए गए विवरणों को भविष्यवाणी नहीं, आत्म-चिंतन के संकेत के रूप में पढ़ें। \"लाइफ पाथ 3\" यह नहीं बता रहा कि क्या होगा — यह उस पैटर्न का नाम है जिसे परम्परा आपकी जन्म-तिथि के योग से जोड़ती है, जिसे आप स्वीकार कर सकते हैं, प्रश्न कर सकते हैं, या अनदेखा कर सकते हैं।",
 

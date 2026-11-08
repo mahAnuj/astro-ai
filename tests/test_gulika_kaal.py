@@ -101,7 +101,7 @@ def test_gulika_never_coincides_with_rahu_kaal():
 
 
 def test_the_almanac_gate_is_green_and_can_go_red(monkeypatch):
-    """Gate 8 of `scripts/verify_panchang_angas.py` drives the four Drik rows
+    """Gate 8 of `scripts/verify_panchang_angas.py` drives the seven Drik rows
     and Rao's table. It must pass on the shipped tree — and fail when a row is
     shifted by one eighth, which is what a wrong ordinal looks like. The second
     half is what stops the gate being a printout: it pins both the comparison
@@ -203,3 +203,28 @@ def test_gulika_adds_no_tokens_to_any_llm_prompt(monkeypatch):
         chart.format_day_windows_for_rashifal(p, "hi"),
     ):
         assert "gulik" not in text.lower()
+
+
+def test_the_almanac_gate_needs_a_row_for_every_weekday(monkeypatch):
+    """Fri/Sun/Mon/Thu shipped first; Sat/Tue/Wed were a stated gap that rested
+    on Rao's table alone (#150). Every weekday now has a published-almanac row,
+    and dropping any one must turn Gate 8 red rather than quietly reopen the gap.
+    """
+    from astro_ai import chart
+
+    monkeypatch.setattr(chart, "geocode_place", lambda place: DELHI[1:])
+    spec = importlib.util.spec_from_file_location(
+        "verify_panchang_angas_weekday_cover", ROOT / "scripts" / "verify_panchang_angas.py")
+    gate = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = gate
+    spec.loader.exec_module(gate)
+
+    assert {r[1] for r in gate.GULIKAI_ALMANAC} == set(gate._WEEKDAY_ABBR)
+    assert gate.gate_8_gulika() == []
+
+    full = gate.GULIKAI_ALMANAC
+    for dropped in ("Sat", "Tue", "Wed"):
+        rows = tuple(r for r in full if r[1] != dropped)
+        monkeypatch.setattr(gate, "GULIKAI_ALMANAC", rows)
+        failures = gate.gate_8_gulika()
+        assert any(f"no almanac row for {dropped}" in f for f in failures), failures

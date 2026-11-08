@@ -785,6 +785,29 @@
                 border-color 200ms ease-out;
   }
 
+  /* ─── Form focus border (#732) ──────────────────────────────────────
+     The saffron focus border (#E4913C) on a white input is 2.50:1; WCAG
+     1.4.11 asks 3:1 for the part of a component that shows its state. 59
+     utilities carry it, so one rule here repaints the border instead of
+     editing every template. The 16% saffron ring stays — it is the brand's
+     glow — and the border is what carries the indicator. #4A4238 is
+     bhagya-ink-soft: 9.87:1 on white, and scripts/verify_contrast.py Gate 5
+     re-measures it on every surface an input sits on.
+
+     Specificity: the utility is `.focus\:border-bhagya-saffron:focus`
+     (0,2,0); an attribute selector + :focus + element is (0,2,1), so this
+     wins without !important and without depending on source order.
+
+     name="lang" is excluded on purpose: the language picker sits INSIDE the
+     night nav bar, where saffron is 7:1 and a dark border would vanish. The
+     skip link (an <a>, not a field) is outside the element list for the same
+     reason. */
+  input[class*="focus:border-bhagya-saffron"]:focus,
+  textarea[class*="focus:border-bhagya-saffron"]:focus,
+  select[class*="focus:border-bhagya-saffron"]:not([name="lang"]):focus {
+    border-color: #4A4238;
+  }
+
   /* ─── Modal open/close transitions ──────────────────────────────────
      Any modal backdrop tagged with [data-modal-backdrop] fades in
      (opacity 0 → 1 over 220ms) and its child panel scales in (0.95 →
@@ -1385,7 +1408,16 @@
      Two paths — Chrome/Android fires `beforeinstallprompt` (real button),
      iOS Safari needs static instructions because Apple doesn't surface the
      event. Banner self-dismisses on close and remembers the choice. #}
-  <div id="pwa-install-banner" class="hidden fixed bottom-3 inset-x-3 sm:left-3 sm:right-auto sm:w-80
+  {# #379 — BELOW md THE BANNER IS LIFTED ABOVE #mobile-tab-bar. It was
+     `bottom-3` (12px), under the tab bar's ~76px, and the tab bar is later in
+     the DOM at the same z-index so it painted over the banner: elementFromPoint
+     at the Install button's centre returned the tab bar, i.e. the button could
+     not be tapped. `bottom-24` is the same lift the feedback FAB uses
+     (_feedback_widget.html) and clears the bar at 375x667 (banner bottom edge
+     571 against the bar's top at 591). `md:bottom-3` restores the old offset
+     exactly where the bar disappears (`md:hidden`). The dismiss button gets
+     p-1/-m-1 so its target is ~28px wide instead of 20px. #}
+  <div id="pwa-install-banner" class="hidden fixed bottom-24 md:bottom-3 inset-x-3 sm:left-3 sm:right-auto sm:w-80
                                        z-40 bg-bhagya-cream border border-bhagya-border rounded-md p-3 text-sm no-print">
     <div class="flex items-start gap-3">
       <img src="/static/icons/icon-192.png" alt="" loading="lazy" decoding="async" class="w-10 h-10 rounded shrink-0">
@@ -1393,7 +1425,7 @@
         <div class="font-semibold text-bhagya-ink">Install Shubh Bhagya</div>
         <div id="pwa-install-msg" class="text-bhagya-muted text-xs mt-0.5"></div>
       </div>
-      <button id="pwa-install-close" type="button" class="text-bhagya-muted-2 hover:text-bhagya-ink"
+      <button id="pwa-install-close" type="button" class="p-1 -m-1 text-bhagya-muted-2 hover:text-bhagya-ink"
               aria-label="Dismiss install banner">
         <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
