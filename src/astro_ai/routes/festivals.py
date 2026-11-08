@@ -19,11 +19,11 @@ AttributeError rather than an ImportError. Nothing here may import
 from __future__ import annotations
 
 import logging
-from datetime import date
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
+from astro_ai.chart import RASHIFAL_REFERENCE_TZ, local_today
 from astro_ai.routes.deps import (
     _HINDI_MONTHS,
     _lang,
@@ -53,7 +53,10 @@ async def festivals_page(request: Request) -> HTMLResponse:
     from astro_ai import festival_registry as _fest_reg
 
     lang = _lang(request)
-    today = date.today()
+    # IST civil day, not the server's UTC date: between 00:00 and 05:30 IST the
+    # UTC date is yesterday, and this page named a different "today" from the
+    # home strip and /panchang (#798, same defect as #593).
+    today = local_today(RASHIFAL_REFERENCE_TZ)
     today_iso = today.isoformat()
     # One window for the whole page: the cards, the grid and the lunar
     # observances below are all cut to [today, _window_end], which ends on the
