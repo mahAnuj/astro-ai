@@ -775,6 +775,35 @@ jobs:
           echo "::notice::trust boundary touched — holding PR #$PR_NUMBER for chief to rule on"
           sed 's/^/  /' /tmp/pr-protected.txt
 
+          # WAKE CHIEF NOW, ONCE PER HEAD (2026-11-08). Reaching this line means
+          # gates, a QA PASS bound to this head and the size limit all passed:
+          # the hold is the only thing left, and chief is the only one who
+          # clears it. Chief used to learn of that at the next scheduled
+          # steward run, twice a day -- #788 waited hours with nothing left to
+          # check until the owner merged it by hand. This dispatches the steward
+          # (detect_stalls.py lets a held PR that is ready past its age gate),
+          # which wakes chief on CHIEF_RULINGS. It costs no extra run: chief
+          # rules on this PR either way, only later. The marker comment is
+          # written BEFORE the dispatch and keyed on the head SHA, so a re-run
+          # on the same commit never wakes it twice; a new commit earns one.
+          # Before the "already labelled" exit below, which a push survives.
+          woke=$(gh api "repos/$GH_REPO/issues/$PR_NUMBER/comments?per_page=100" \
+                   --jq "[.[] | select(.user.login == \"github-actions[bot]\")
+                              | select(.body | startswith(\"agent-merge: chief woken at $PR_SHA\"))] | length" \
+                   2>/dev/null || echo unreadable)
+          case "$woke" in
+            0)
+              if gh pr comment "$PR_NUMBER" --repo "$GH_REPO" \
+                   --body "agent-merge: chief woken at $PR_SHA -- gates green and a QA PASS bound to this head; only the hold remains, so the steward was dispatched to wake chief now rather than at its next scheduled run." >/dev/null \
+                 && gh workflow run agent-steward.yml --repo "$GH_REPO" --ref main; then
+                echo "::notice::dispatched agent-steward to wake chief for PR #$PR_NUMBER at ${PR_SHA:0:7}"
+              else
+                echo "::warning::could not wake chief for PR #$PR_NUMBER; the scheduled steward run will reach it"
+              fi ;;
+            *[!0-9]*|'') echo "::warning::could not read whether chief was already woken for ${PR_SHA:0:7}; not dispatching twice" ;;
+            *) echo "chief already woken for ${PR_SHA:0:7}" ;;
+          esac
+
           # Idempotent: this job fires on every label and every gate run, so
           # comment once. The label is the record that it already did.
           labels=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json labels --jq '[.labels[].name] | join(",")')

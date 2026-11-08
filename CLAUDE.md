@@ -507,6 +507,13 @@ dispatches `chief` for every such hold instead of reporting "A HUMAN decides thi
   carrying only `qa:in-cycle` cannot be cleared (the loop's own rounds stay `in-cycle` on
   purpose, `agent-cycle.md`), so it dispatches the independent `qa` round itself first, as it
   did for #706 on 2026-11-05.
+- **A hold wakes chief the moment it is ready, not at the next steward run (2026-11-08).**
+  #788 waited hours with gates green and a QA PASS bound to its head, until the owner merged
+  it by hand, because chief only heard of a hold on the steward's twice-daily schedule. When
+  `agent-merge` applies the hold it now dispatches `agent-steward` once per head (a marker
+  comment written first), and `detect_stalls.py` lets a held PR that is ready for chief past
+  its 4h age gate. Every other young PR is still skipped. No extra Claude run: chief rules on
+  the PR either way, only sooner.
 - **Irreversible actions still stop and ask** — data migration, destructive storage, anything
   touching subscriber records. That carve-out is about reversibility, not trust: a wrong merge
   is one `git revert`, a deleted subscriber is gone. The grant is about who clears a *hold on a
