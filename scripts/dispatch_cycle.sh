@@ -182,6 +182,7 @@ before=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml \
 # silently dispatch a `pr=` ruling as an issue number -- and because the
 # number spaces overlap, the cycle would then work whatever issue happens
 # to carry that number.
+t0=$(date -u +%Y-%m-%dT%H:%M:%SZ)   # comments after this are the run's own
 gh workflow run agent-work.yml --repo "$GH_REPO" -f "$kind=$target"
 echo "::notice::requested agent-work at $kind #$target on ${WHO}'s ruling; verifying it started"
 
@@ -203,25 +204,48 @@ if [ -z "$run_id" ]; then
   exit 1
 fi
 
+export_dispatch() {
+  if [ -n "${GITHUB_ENV:-}" ]; then
+    # DISPATCHED keeps its name and its value: `agent-steward.yml` reads it to
+    # say "agent-work at #${DISPATCHED}". DISPATCHED_KIND is added beside it so a
+    # reader can tell an issue cycle from a QA round without re-deriving it.
+    echo "DISPATCHED=$target" >> "$GITHUB_ENV"
+    echo "DISPATCHED_KIND=$kind" >> "$GITHUB_ENV"
+    echo "DISPATCHED_RUN=$run_id" >> "$GITHUB_ENV"
+    echo "DISPATCHED_BY=$WHO" >> "$GITHUB_ENV"
+  fi
+}
+
 # A real cycle runs for tens of minutes, so anything `completed` inside this
-# window concluded without doing a cycle's work.
+# window concluded without doing a cycle's work -- UNLESS it ran and stood down.
+#
+# A QUICK, SUCCESSFUL STOP THAT LEFT A TRACE IS NOT A FAILED START (2026-11-08).
+# A cycle that reads its target and finds nothing it may build (the only
+# remaining act is a workflow edit, closed-list item 1) comments and stops in
+# well under 90s. Read as #421, that stop turned agent-queue red twice on issue
+# #782 and retried a cycle that had already ruled correctly. #421's shape is
+# different and still caught: a run that FAILS, or succeeds having written
+# nothing. The trace is a `claude[bot]` comment on the target posted after this
+# dispatch -- the cycle writes one even when it stands down.
 for _ in $(seq 1 18); do
   sleep 5
   read -r status conclusion <<<"$(gh run view "$run_id" --repo "$GH_REPO" \
     --json status,conclusion --jq '"\(.status) \(.conclusion // "")"' 2>/dev/null || echo "unknown ")"
   if [ "$status" = "completed" ]; then
+    if [ "$conclusion" = "success" ]; then
+      left=$(gh api "repos/$GH_REPO/issues/$target/comments?since=$t0&per_page=100" \
+               --jq '[.[] | select(.user.login == "claude[bot]")] | length' 2>/dev/null || echo 0)
+      case "$left" in ''|*[!0-9]*) left=0 ;; esac
+      if [ "$left" -gt 0 ]; then
+        echo "::notice::agent-work run $run_id finished within 90s and left $left claude[bot] comment(s) on #$target since dispatch: the cycle ran and stood down. Not a failed start."
+        export_dispatch
+        exit 0
+      fi
+    fi
     echo "::error::agent-work run $run_id concluded '$conclusion' within 90s of dispatch at $kind #$target -- it did not run a cycle. See #421."
     exit 1
   fi
 done
 
 echo "::notice::agent-work run $run_id is running a cycle at $kind #$target"
-if [ -n "${GITHUB_ENV:-}" ]; then
-  # DISPATCHED keeps its name and its value: `agent-steward.yml` reads it to
-  # say "agent-work at #${DISPATCHED}". DISPATCHED_KIND is added beside it so a
-  # reader can tell an issue cycle from a QA round without re-deriving it.
-  echo "DISPATCHED=$target" >> "$GITHUB_ENV"
-  echo "DISPATCHED_KIND=$kind" >> "$GITHUB_ENV"
-  echo "DISPATCHED_RUN=$run_id" >> "$GITHUB_ENV"
-  echo "DISPATCHED_BY=$WHO" >> "$GITHUB_ENV"
-fi
+export_dispatch
