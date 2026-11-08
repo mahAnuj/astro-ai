@@ -24,6 +24,19 @@ both. Asking for landing x channel x date multiplies the row count by the
 window and would hit the 1000-row limit the main report already reports
 truncation against -- and the page wants one number per day, not per day per
 page.
+
+--events IS A THIRD SEPARATE REQUEST SET (#782)
+-----------------------------------------------
+`cta_click` (#570, emitted by static/analytics.js with `from_path` / `to_path`)
+was unreadable here: no export asked for an event name, so every metric that
+claimed a click was "undetermined", not zero. `--events` asks two things as two
+requests, because they fail differently. The count of events by name needs
+nothing from the property. The from/to split needs `from_path` and `to_path`
+registered as custom dimensions in GA4 Admin > Custom definitions, and until
+they are the Data API answers HTTP 400, not `(not set)` -- so the total must
+survive that failure instead of dying with it. One request dimensioned by event x
+two params would also multiply rows. Only a 400 on the split is read as
+"unregistered"; a 403 or a 5xx still fails the run.
 """
 
 from __future__ import annotations
@@ -35,10 +48,15 @@ import sys
 from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _gapi import post, token, window  # noqa: E402
+from _gapi import ApiError, post, token, window  # noqa: E402
 
 LIMIT = 1000
 API = "https://analyticsdata.googleapis.com/v1beta/properties/{pid}:runReport"
+CTA_EVENT = "cta_click"
+NOT_SET = "(not set)"
+# The event is emitted from PR #688, merged 2026-11-03 04:42Z; before that a zero is
+# not a measurement of anything.
+CTA_SINCE = "2026-11-03"
 
 
 def daily(args, start: str, end: str, bearer: str) -> int:
@@ -92,13 +110,116 @@ def daily(args, start: str, end: str, bearer: str) -> int:
     return 0
 
 
+def events(args, start: str, end: str, bearer: str) -> int:
+    """Event counts by name, plus the `cta_click` from/to split (#782).
+
+    Two requests, not one (see the module docstring). A 400 on the split is the
+    Data API refusing `customEvent:from_path` because it is not a registered custom
+    dimension -- an owner-side GA4 setting the loop cannot make -- and is reported
+    in `coverage_note` while the total still stands. Any other error propagates.
+    """
+    url = API.format(pid=args.property)
+    ranges = [{"startDate": start, "endDate": end}]
+    data = post(url, {
+        "dateRanges": ranges,
+        "dimensions": [{"name": "eventName"}],
+        "metrics": [{"name": "eventCount"}],
+        "orderBys": [{"metric": {"metricName": "eventCount"}, "desc": True}],
+        "limit": LIMIT,
+    }, bearer)
+    rows = [{"event": r["dimensionValues"][0]["value"],
+             "count": int(r["metricValues"][0]["value"])}
+            for r in data.get("rows", [])]
+    row_count = data.get("rowCount", len(rows))
+    truncated = row_count > len(rows)
+    events_total = sum(r["count"] for r in rows)
+    cta_count = sum(r["count"] for r in rows if r["event"] == CTA_EVENT)
+
+    unregistered = False
+    split_raw, split_truncated = [], False
+    try:
+        split = post(url, {
+            "dateRanges": ranges,
+            "dimensions": [{"name": "eventName"},
+                           {"name": "customEvent:from_path"},
+                           {"name": "customEvent:to_path"}],
+            "metrics": [{"name": "eventCount"}],
+            "dimensionFilter": {"filter": {
+                "fieldName": "eventName",
+                "stringFilter": {"matchType": "EXACT", "value": CTA_EVENT}}},
+            "orderBys": [{"metric": {"metricName": "eventCount"}, "desc": True}],
+            "limit": LIMIT,
+        }, bearer)
+    except ApiError as e:
+        if e.status != 400:
+            raise
+        unregistered = True
+    else:
+        split_raw = [{"from_path": r["dimensionValues"][1]["value"],
+                      "to_path": r["dimensionValues"][2]["value"],
+                      "count": int(r["metricValues"][0]["value"])}
+                     for r in split.get("rows", [])]
+        split_truncated = split.get("rowCount", len(split_raw)) > len(split_raw)
+    all_not_set = bool(split_raw) and all(
+        r["from_path"] == NOT_SET and r["to_path"] == NOT_SET for r in split_raw)
+    split_rows = [] if (unregistered or all_not_set) else split_raw
+    split_available = bool(split_rows)
+
+    parts = []
+    if not rows:
+        parts.append("the property recorded no events at all in the window, so "
+                     f"{CTA_EVENT} 0 says only that the window is empty")
+    elif cta_count == 0:
+        parts.append(f"{CTA_EVENT}: 0 events recorded in the window -- a measurement, "
+                     "not an unreadable export")
+    else:
+        parts.append(f"{CTA_EVENT}: {cta_count} events recorded in the window")
+    if unregistered:
+        parts.append("the from/to split is NOT available: GA4 answered HTTP 400 for "
+                     "customEvent:from_path / customEvent:to_path, i.e. they are not "
+                     "registered as custom dimensions (GA4 Admin > Custom definitions), "
+                     "an owner-side property setting the loop cannot make; the TOTAL "
+                     "count above is still valid")
+    elif all_not_set:
+        parts.append("the from/to split is NOT available: every row reports "
+                     f"{NOT_SET} for from_path and to_path, so the parameters are not "
+                     "registered as custom dimensions (or were never collected); "
+                     "the TOTAL count above is still valid")
+    elif cta_count and not split_rows:
+        parts.append("the from/to split returned no rows although the total is "
+                     "non-zero; the TOTAL count is still valid")
+    if split_truncated:
+        parts.append("the from/to split was TRUNCATED at the row limit")
+    if truncated:
+        parts.append(f"TRUNCATED: {len(rows)} of {row_count} event names returned")
+    parts.append(f"{CTA_EVENT} exists only from {CTA_SINCE} 04:42Z (PR #688), so a "
+                 f"window starting before 2026-12-01 holds partial history")
+
+    print(json.dumps({
+        "source": "ga4", "property": args.property, "window": [start, end],
+        "dimensions": ["eventName"],
+        "note": "window excludes the last 3 days — GA4 standard reports lag 24-48h",
+        "row_count": row_count, "truncated": truncated,
+        "rows": rows, "events_total": events_total,
+        "coverage_note": "; ".join(parts),
+        CTA_EVENT: {"count": cta_count, "split_available": split_available,
+                    "rows": split_rows},
+    }, indent=2))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=28)
     ap.add_argument("--property", default=os.environ.get("GA4_PROPERTY_ID", ""))
     ap.add_argument("--daily", action="store_true",
                     help="one row per DAY (users/sessions) instead of per landing x channel")
+    ap.add_argument("--events", action="store_true",
+                    help="event counts by name plus the cta_click from/to split "
+                         "(mutually exclusive with --daily)")
     args = ap.parse_args()
+    if args.events and args.daily:
+        sys.exit("--events and --daily are separate reports; run them one at a time")
     if not args.property.isdigit():
         sys.exit("GA4_PROPERTY_ID must be the numeric property id "
                  "(GA4 > Admin > Property Settings), not the G- measurement id")
@@ -108,6 +229,8 @@ def main() -> int:
 
     if args.daily:
         return daily(args, start, end, bearer)
+    if args.events:
+        return events(args, start, end, bearer)
 
     body = {
         "dateRanges": [{"startDate": start, "endDate": end}],

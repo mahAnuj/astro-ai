@@ -30,6 +30,11 @@ uv run python scripts/fetch_gsc.py --days 28
 uv run python scripts/fetch_ga4.py --days 28
 ```
 
+`fetch_ga4.py --days 28 --events` (#782) reads event counts and the `cta_click` from/to split. `agent-measure`
+does not write it yet (AC3 of #782 pending), so never quote an events number from a run that lacks
+`/tmp/ga4-events.json`; say it is not in this run. Its `cta_click.count` of 0 is a measurement, and
+`split_available: false` means the total stands but the split is unread (read `coverage_note`).
+
 Both exports state their own coverage: read `coverage_pct` and `coverage_note` **before** any
 number. `fetch_gsc.py` defaults to `--by page` (~101% of impressions); `--by query` is a partial view
 (~9% — Google withholds anonymised queries, and that 91% cannot be recovered), so never conclude
