@@ -4055,6 +4055,20 @@ def _karana_at(julian_day: float) -> tuple[int, str, str]:
     return idx, name, _KARANA_SIGNIFICANCE.get(name, "")
 
 
+def local_today(tz: "str | ZoneInfo") -> date_:
+    """Today's civil date in `tz` (an IANA name or a ZoneInfo).
+
+    THE one source of "today" for every panchang surface (#593). `/panchang`
+    and its "Today" badge used `date.today()` -- the server's date, which is
+    UTC on Cloud Run -- while the home strip took the real moment in the city,
+    so for 00:00-05:30 IST the same site named two weekdays and two tithis.
+    The convention is the civil date (midnight to midnight) in the city's own
+    timezone, which is what the strip and drikpanchang already show; it is NOT
+    a sunrise-to-sunrise day (chief's ruling on #593).
+    """
+    return datetime.now(ZoneInfo(tz) if isinstance(tz, str) else tz).date()
+
+
 def _local_day(natal: Chart, when: datetime | None) -> tuple[ZoneInfo, date_]:
     """(birthplace tz, local calendar date) for the anchor moment `when`.
 
@@ -4065,7 +4079,7 @@ def _local_day(natal: Chart, when: datetime | None) -> tuple[ZoneInfo, date_]:
     day than the tithi returned for it.
     """
     tz = ZoneInfo(natal.birth_tz)
-    return tz, (when or datetime.now(tz)).astimezone(tz).date()
+    return tz, (when.astimezone(tz).date() if when else local_today(tz))
 
 
 def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchang:

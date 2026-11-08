@@ -37,7 +37,7 @@ from fastapi import Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
-from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
+from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot, local_today
 from astro_ai.i18n import translate as _i18n_translate
 
 # Deliberately copied UNPRUNED from main.py: several of these names are unused
@@ -793,6 +793,29 @@ sees the same city the reading was written for, labelled as such.
 """
 
 
+_WEEKDAY_NAMES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+                  "Saturday", "Sunday")
+
+
+def _strip_is_current(pan) -> bool:
+    """True while `pan` is still the city's civil day, by the city's own clock.
+
+    Needs no geocode and no GCS read: the panchang carries tz-aware datetimes
+    at the city, so its zone is already in hand. Weekday, not date, because the
+    polar case (`daylight_ordinary` False) can put the sunrise on D+1; and a
+    weekday is enough because the key's UTC date already limits an entry to at
+    most two local days. A mismatch means the city rolled past midnight since
+    the entry was solved, so the caller re-solves and overwrites the key.
+    """
+    if pan is None:
+        return True
+    try:
+        return pan.weekday == _WEEKDAY_NAMES[local_today(pan.sunrise.tzinfo).weekday()]
+    except Exception:
+        # Cannot tell: serve it. A cached strip must never take the page down.
+        return True
+
+
 def panchang_strip_for_city(city: str) -> tuple:
     """Return (panchang, moon_info, city_display) — cached per day/city.
 
@@ -803,8 +826,13 @@ def panchang_strip_for_city(city: str) -> tuple:
     itself. compute_panchang has its own (date, coarse lat/lon, tz) cache
     underneath, so two cities in the same 55km bucket also share one solve.
 
-    Uses date.today() implicitly so a new day naturally busts the cache.
-    Cache is per-process (Cloud Run instances rebuild once each per day).
+    The key carries the server's UTC date, which only BOUNDS an entry's life;
+    it is not the day the strip shows. The strip is solved at the real moment
+    in the city, so a hit is also checked against the city's own civil date
+    (`_strip_is_current`, #593) -- otherwise an entry solved at 23:00 IST was
+    served as "today" until 05:30 IST the next morning, the same wrong-weekday
+    window `/panchang` had. Cache is per-process (Cloud Run instances rebuild
+    once each per day).
 
     That last sentence used to end "which is fine — the compute is <200ms so
     cold-start latency is negligible". Measured 2026-09-04, it is not: the
@@ -820,8 +848,9 @@ def panchang_strip_for_city(city: str) -> tuple:
     # Key on the RESOLVED city, so "", "  " and None share the Mumbai entry
     # instead of each opening a duplicate slot for identical data (#214).
     key = (today, resolved_city.lower())
-    if key in _PANCHANG_STRIP_CACHE:
-        return _PANCHANG_STRIP_CACHE[key]
+    hit_today = _PANCHANG_STRIP_CACHE.get(key)
+    if hit_today is not None and _strip_is_current(hit_today[0]):
+        return hit_today
 
     def _solve(place: str) -> tuple:
         chart_for_loc = compute_chart("2000-01-01", "12:00", place)

@@ -21,6 +21,9 @@
       {% if is_today %}Today's Panchang{% else %}Panchang{% endif %} — <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </h1>
     <p class="text-bhagya-muted">Computed for <strong>{{ city_display }}</strong> · sunrise + Rahu Kaal shift by location.</p>
+    {# States the convention (#593): the civil day in the city's own timezone,
+       the same one the home strip uses -- not a sunrise-to-sunrise day. #}
+    <p class="text-xs text-bhagya-muted" data-day-convention>{{ t(lang, 'panchang_day_convention', city=city_display) }}</p>
     {# Prev / next day navigation — indexable so Google can crawl the
        rolling window without needing every URL in sitemap. #}
     <nav class="flex items-center justify-center gap-3 text-sm pt-2 no-print" aria-label="Day navigation">
