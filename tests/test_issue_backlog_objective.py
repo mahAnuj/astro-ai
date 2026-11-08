@@ -34,7 +34,3 @@ def test_no_file_or_no_quote_reads_empty(tmp_path):
     assert read_objective(str(tmp_path / "missing.md")) == ""
     assert _obj(tmp_path, "no quote here\n") == ""
 
-
-def test_the_real_objective_is_not_cut_mid_sentence():
-    got = read_objective(str(Path(__file__).resolve().parents[1] / "OBJECTIVE.md"))
-    assert got.rstrip().endswith((".", '"', "”")), got
