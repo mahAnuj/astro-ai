@@ -727,3 +727,66 @@ def test_an_unresolvable_base_falls_back_to_main_rather_than_failing(
     out = capsys.readouterr().out
     assert rc == 1, out
     assert "(via main)" in out
+
+
+# ------------------------------------------------------------------- #739
+
+NONE_TOP = "  contents: none\n"
+NONE_JOB = "      contents: none\n"
+
+
+def _rename_repo(tmp_path: Path, after_boundary: tuple[str, ...]) -> Path:
+    """A repo whose second commit RENAMES agent-merge.yml and changes its boundary.
+
+    `_repo` writes each state as files and never deletes, so the rename is done
+    by hand: the base keeps `agent-merge.yml`, HEAD holds only the new name.
+    """
+    # `contents: none` on purpose: check 1 reds a new job that effectively grants
+    # anything, so with a real scope the rename is caught by ACCIDENT and for the
+    # wrong reason. With nothing granted, only check 2 can see it.
+    root = _repo(tmp_path, {AM: _agent_merge(NONE_TOP, NONE_JOB, BOUNDARY)}, {})
+    new = ".github/workflows/agent-merge2.yml"
+    git = lambda *a: subprocess.run(  # noqa: E731
+        ("git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@t",
+         "-c", "commit.gpgsign=false", *a), check=True, timeout=60, capture_output=True)
+    git("mv", AM, new)
+    (root / new).write_text(_agent_merge(NONE_TOP, NONE_JOB, after_boundary), encoding="utf-8")
+    git("add", "-A")
+    git("commit", "-q", "-m", "rename")
+    return root
+
+
+def test_a_RENAMED_agent_merge_with_an_emptied_boundary_goes_red(tmp_path, monkeypatch, capsys):
+    """#739 item 1. `git diff --name-only` reports only the NEW name of a rename,
+    so `AGENT_MERGE` was never in the changed list and check 2 never ran: a PR
+    that moved the file and emptied `TRUST_BOUNDARY` in one commit passed."""
+    root = _rename_repo(tmp_path, ())
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 1, out
+    assert "TRUST_BOUNDARY" in out
+
+
+def test_a_rename_that_KEEPS_the_boundary_still_fails_because_agent_merge_is_gone(
+        tmp_path, monkeypatch, capsys):
+    """Moving the file the gate and `chief_clear.py` look for by name leaves
+    nothing at that path to hold the boundary. A human decides that, not a gate."""
+    root = _rename_repo(tmp_path, BOUNDARY)
+    rc, out = _run(root, monkeypatch, capsys)
+    assert rc == 1, out
+    assert "block is gone" in out
+
+
+def test_the_HEAD_minus_1_fallback_is_used_when_no_named_base_resolves(
+        tmp_path, monkeypatch, capsys):
+    """#739 item 2. The last candidate in the chain had no test: deleting it left
+    the suite green. Here `--base` and `main` and `origin/HEAD` all fail to
+    resolve, only `HEAD~1` does, and the widening in HEAD must still be seen."""
+    before = _agent_merge(READ_TOP, JOB_READ, BOUNDARY)
+    root = _repo(tmp_path, {AM: before}, {AM: _agent_merge(READ_TOP, JOB_WRITE, BOUNDARY)})
+    subprocess.run(("git", "-C", str(root), "branch", "-D", "base"),
+                   check=True, timeout=60, capture_output=True)
+    monkeypatch.chdir(root)
+    rc = gate.main(["verify_workflow_permissions.py", "--base", "origin/does-not-exist"])
+    out = capsys.readouterr().out
+    assert rc == 1, out
+    assert "(via HEAD~1)" in out
