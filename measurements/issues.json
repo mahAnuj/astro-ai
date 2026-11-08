@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-08T11:42:51Z",
+  "generated_at": "2026-11-08T18:40:04Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 115,
+  "open": 116,
   "with_ask": 39,
   "by_area": {
     "UNCLASSIFIED": 37,
@@ -12,13 +12,13 @@
     "FEATURE": 7,
     "NUMEROLOGY": 5,
     "MEASURE": 4,
+    "BUG": 3,
+    "OPS": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "MUHURAT": 3,
-    "BUG": 3,
     "MATCHING": 2,
     "SECURITY": 2,
-    "OPS": 2,
     "SEO": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
@@ -34,18 +34,54 @@
     "enhancement": 24,
     "bug": 22,
     "correctness": 13,
-    "chore": 11,
+    "chore": 12,
     "design": 6,
     "ui": 5
   },
   "by_priority": {
     "unset": 89,
     "medium": 17,
-    "high": 8,
+    "high": 9,
     "low": 1
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 798,
+      "title": "[BUG] /festivals window starts at the UTC date (same shape as #593/#794)",
+      "ask": "",
+      "area": "BUG",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:low",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-08T17:15:47Z",
+      "updated": "2026-11-08T17:36:50Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 795,
+      "title": "[OPS] agent-work.yml is broken",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "high",
+      "labels": [
+        "priority:high",
+        "chore"
+      ],
+      "created": "2026-11-08T14:38:56Z",
+      "updated": "2026-11-08T14:38:56Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 782,
       "title": "[MEASURE] fetch_ga4.py cannot export events, so #570's cta_click metric is undeterminable and #518/#276/#329 can only be scored through pages/session",
@@ -526,26 +562,7 @@
         "needs-evidence"
       ],
       "created": "2026-10-29T23:50:30Z",
-      "updated": "2026-11-03T23:58:15Z",
-      "blocked": false,
-      "needs_evidence": true
-    },
-    {
-      "number": 593,
-      "title": "[BUG] /panchang shows yesterday's date, weekday and tithi from 00:00 to 05:30 IST while the home strip shows today's",
-      "ask": "",
-      "area": "BUG",
-      "type": "bug",
-      "priority": "low",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:low",
-        "provenance:trusted",
-        "needs-evidence"
-      ],
-      "created": "2026-10-29T23:50:13Z",
-      "updated": "2026-11-07T20:06:47Z",
+      "updated": "2026-11-08T14:10:03Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -780,13 +797,14 @@
       "priority": "unset",
       "labels": [
         "bug",
+        "qa-pass",
         "provenance:trusted",
-        "needs-evidence"
+        "qa:in-cycle"
       ],
       "created": "2026-10-21T04:47:37Z",
-      "updated": "2026-10-24T14:22:11Z",
+      "updated": "2026-11-08T14:56:55Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 462,
