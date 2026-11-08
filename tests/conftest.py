@@ -400,7 +400,10 @@ def _no_outbound_sockets(monkeypatch, request):
 
 @pytest.fixture
 def today_iso() -> str:
-    return date.today().isoformat()
+    # The rashifal day is the IST day (#794); date.today() is UTC and would
+    # disagree with the routes from 18:30 to 24:00 UTC.
+    from astro_ai.chart import reading_today
+    return reading_today().isoformat()
 
 
 @pytest.fixture

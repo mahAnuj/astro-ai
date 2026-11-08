@@ -44,6 +44,7 @@ from astro_ai.chart import (
     compute_transit_snapshot,
     gochara_for_rashi,
     rashifal_day_moment,
+    reading_today,
     remedy_for_rashi,
 )
 
@@ -454,7 +455,7 @@ def test_the_panel_helpers_compute_from_the_pinned_moment(
 
     seen = _spy(monkeypatch, rashifal, "compute_transit_snapshot")
     getattr(rashifal, helper)(*args)
-    _assert_all_pinned(seen, date.today(), f"rashifal.{helper}")
+    _assert_all_pinned(seen, reading_today(), f"rashifal.{helper}")
 
 
 def test_the_reading_path_pins_both_the_transit_and_the_panchang(
@@ -476,8 +477,8 @@ def test_the_reading_path_pins_both_the_transit_and_the_panchang(
     r = client.get("/rashifal/aries")
 
     assert r.status_code == 200, r.status_code
-    _assert_all_pinned(transits, date.today(), "rashifal_single transit")
-    _assert_all_pinned(panchangs, date.today(), "rashifal_single panchang")
+    _assert_all_pinned(transits, reading_today(), "rashifal_single transit")
+    _assert_all_pinned(panchangs, reading_today(), "rashifal_single panchang")
 
 
 def _disarm_mail_and_generation(monkeypatch):
@@ -511,7 +512,7 @@ def test_the_morning_blast_pins_the_transit(client, _admin, monkeypatch):
     r = client.post("/admin/send-daily-rashifal")
 
     assert r.status_code == 200, r.text
-    _assert_all_pinned(seen, date.today(), "send_daily_rashifal")
+    _assert_all_pinned(seen, reading_today(), "send_daily_rashifal")
 
 
 def test_the_warm_job_pins_the_transit(client, _admin, monkeypatch):
@@ -521,7 +522,7 @@ def test_the_warm_job_pins_the_transit(client, _admin, monkeypatch):
 
     client.post("/admin/warm-rashifal?lang=en")
 
-    _assert_all_pinned(seen, date.today(), "warm_rashifal")
+    _assert_all_pinned(seen, reading_today(), "warm_rashifal")
 
 
 def test_the_welcome_email_pins_every_transit_it_computes(monkeypatch):
@@ -539,7 +540,7 @@ def test_the_welcome_email_pins_every_transit_it_computes(monkeypatch):
     assert subscribe._send_welcome_email("a@example.test", "en") is True
 
     assert len(seen) == 2, f"expected the reading's and the panel's transit, got {len(seen)}"
-    _assert_all_pinned(seen, date.today(), "_send_welcome_email")
+    _assert_all_pinned(seen, reading_today(), "_send_welcome_email")
 
 
 def test_the_nightly_brief_pins_the_day_it_was_asked_for(monkeypatch):

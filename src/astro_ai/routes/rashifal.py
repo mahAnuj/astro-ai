@@ -18,8 +18,6 @@ from __future__ import annotations
 import logging
 import os
 import time as _time
-from datetime import date
-
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
@@ -29,6 +27,7 @@ from astro_ai import hot_cache, muhurat
 from astro_ai.chart import (compute_chart, compute_panchang,
                             compute_transit_snapshot, gochara_for_rashi,
                             RASHIFAL_REFERENCE_PLACE, rashifal_day_moment,
+                            reading_today,
                             area_ratings_for_rashi, remedy_for_rashi)
 from astro_ai.llm import parse_sectioned_reading
 from astro_ai.rashifal_derive import derive_single_reading
@@ -136,7 +135,7 @@ async def rashifal(request: Request) -> HTMLResponse:
     unless another visitor already warmed the cache for that rashi today.
     """
     lang = _lang(request)
-    today_iso = date.today().isoformat()
+    today_iso = reading_today().isoformat()
     return _no_cdn_cache(templates.TemplateResponse(
         request, "rashifal_grid.html",
         {
@@ -185,13 +184,13 @@ def _day_detail_today(rashi_index: int, lang: str = "en"):
     """
     def compute() -> dict:
         natal = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
-        snapshot = compute_transit_snapshot(natal, when=rashifal_day_moment(date.today()))
+        snapshot = compute_transit_snapshot(natal, when=rashifal_day_moment(reading_today()))
         return {i: {"areas": area_ratings_for_rashi(i, snapshot),
                     "remedy": remedy_for_rashi(i, snapshot, lang)} for i in range(12)}
 
     try:
         table = hot_cache.get_or_compute(
-            f"rashifal:day_detail:{lang}:{date.today().isoformat()}", 900.0, compute)
+            f"rashifal:day_detail:{lang}:{reading_today().isoformat()}", 900.0, compute)
         entry = (table or {}).get(rashi_index)
         return entry if entry and entry.get("areas") else None
     except Exception:  # noqa: BLE001 - a panel must never 500 a page
@@ -212,12 +211,12 @@ def _gochara_today(rashi_index: int):
     """
     def compute() -> dict:
         natal = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
-        snapshot = compute_transit_snapshot(natal, when=rashifal_day_moment(date.today()))
+        snapshot = compute_transit_snapshot(natal, when=rashifal_day_moment(reading_today()))
         return {i: gochara_for_rashi(i, snapshot) for i in range(12)}
 
     try:
         table = hot_cache.get_or_compute(
-            f"rashifal:gochara:{date.today().isoformat()}", 900.0, compute)
+            f"rashifal:gochara:{reading_today().isoformat()}", 900.0, compute)
         entries = (table or {}).get(rashi_index) or []
         if not entries:
             return None
@@ -244,7 +243,7 @@ def _chandra_bala_today(slug: str):
     """
     def compute() -> dict:
         natal = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
-        snapshot = compute_transit_snapshot(natal, when=rashifal_day_moment(date.today()))
+        snapshot = compute_transit_snapshot(natal, when=rashifal_day_moment(reading_today()))
         moon = next((pl for pl in snapshot.planets if pl.name == "Moon"), None)
         return muhurat.chandra_bala_by_rashi(moon.rashi) if moon else {}
 
@@ -255,7 +254,7 @@ def _chandra_bala_today(slug: str):
         # few milliseconds, not a network round-trip, so blocking once per
         # quarter-hour is cheaper than rendering an empty panel.
         table = hot_cache.get_or_compute(
-            f"rashifal:chandra_bala:{date.today().isoformat()}", 900.0, compute)
+            f"rashifal:chandra_bala:{reading_today().isoformat()}", 900.0, compute)
         pair = (table or {}).get(slug)
         return pair if pair and pair[1] else None
     except Exception:  # noqa: BLE001 - see docstring
@@ -309,7 +308,7 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         )
     canonical_slug = RASHI_CANONICAL_SLUGS[idx]
     ui = _RASHIFAL_UI_META[canonical_slug]
-    today_iso = date.today().isoformat()
+    today_iso = reading_today().isoformat()
     # `hx-boost=true` on <body> means EVERY internal link sends HX-Request,
     # so we can't use the generic HX-Request header to decide fragment vs
     # full-page. The card-click on /rashifal grid explicitly sets
@@ -416,16 +415,16 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
             # Day-PINNED, not now(): the panel beside this reading, the email
             # and the nightly job all pin with chart.rashifal_day_moment for the same
             # date, and under now() they disagreed (QA: 9 of 90 days).
-            transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
+            transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(reading_today()))
             panchang_now = compute_panchang(
-                neutral_chart, when=rashifal_day_moment(date.today()))
+                neutral_chart, when=rashifal_day_moment(reading_today()))
             # DELIBERATELY singular — see the note at the /panchang call site.
             # llm._build_rashifal_day_signals takes `dict | None` and emits one
             # "Today is X" sentence into an already-crowded signal block; a list
             # would raise AttributeError there. festivals.festival_for_date()
             # tie-breaks in registry order, which puts the pan-Indian festival
             # first, so the one-slot prompt gets the right one.
-            festival_now = festivals.festival_for_date(date.today())
+            festival_now = festivals.festival_for_date(reading_today())
             raw = generate_rashifal_for_rashi(
                 rashi_index=idx, transit=transit, today_iso=today_iso,
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
