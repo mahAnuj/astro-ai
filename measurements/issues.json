@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-07T23:26:08Z",
+  "generated_at": "2026-11-08T00:14:11Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for",
-  "open": 115,
+  "open": 116,
   "with_ask": 39,
   "by_area": {
     "UNCLASSIFIED": 38,
@@ -11,8 +11,8 @@
     "UI": 9,
     "FEATURE": 7,
     "NUMEROLOGY": 5,
+    "MEASURE": 4,
     "RETRIEVAL": 3,
-    "MEASURE": 3,
     "CHORE": 3,
     "MUHURAT": 3,
     "BUG": 3,
@@ -31,7 +31,7 @@
   },
   "by_type": {
     "untyped": 34,
-    "enhancement": 23,
+    "enhancement": 24,
     "bug": 22,
     "correctness": 13,
     "chore": 12,
@@ -39,13 +39,28 @@
     "ui": 5
   },
   "by_priority": {
-    "unset": 89,
+    "unset": 90,
     "medium": 17,
     "high": 8,
     "low": 1
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 782,
+      "title": "[MEASURE] fetch_ga4.py cannot export events, so #570's cta_click metric is undeterminable and #518/#276/#329 can only be scored through pages/session",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-11-08T00:11:51Z",
+      "updated": "2026-11-08T00:11:51Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 777,
       "title": "Manglik tier ladder and the Venus-only downgrade need a source and an owner decision (split from #429)",
@@ -970,7 +985,7 @@
         "qa:independent"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-07T19:52:50Z",
+      "updated": "2026-11-07T23:49:58Z",
       "blocked": false,
       "needs_evidence": false
     },

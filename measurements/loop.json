@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-07T23:25:52Z",
+  "generated_at": "2026-11-08T00:14:05Z",
   "rows": [
     {
       "run": 42422395806,
@@ -101,8 +101,8 @@
       "minutes": 9.8,
       "issue": 402,
       "pr": 758,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "issue"
     },
@@ -311,8 +311,8 @@
       "minutes": 41.5,
       "issue": 402,
       "pr": 758,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked"
     },
@@ -3201,8 +3201,8 @@
     "days": 7,
     "cycles": 116,
     "minutes_by_outcome": {
-      "shipped": 1375.9,
-      "pr open": 51.3,
+      "shipped": 1427.2,
+      "pr open": 0.0,
       "judged": 565.0,
       "nothing": 80.6,
       "failed": 24.5,
@@ -3211,7 +3211,7 @@
     "minutes_total": 2097.3,
     "minutes_without_result": 105.1,
     "share_without_result": 0.05,
-    "shipped_prs": 44,
+    "shipped_prs": 45,
     "build_idle_hours": 142.7,
     "build_idle_share": 0.85
   }
