@@ -30,11 +30,12 @@ router = APIRouter()
 async def switch(
     request: Request,
     chart_id: str = Form(...),
-    next: str = Form(default="/"),
+    # Python name avoids shadowing the builtin; the posted field stays `next`.
+    next_url: str = Form(default="/", alias="next"),
 ) -> RedirectResponse:
     """Activate the named saved chart, then redirect to `next` (default home)."""
     collection = load_collection(request).set_active(chart_id)
-    response = RedirectResponse(_safe_redirect_target(next), status_code=303)
+    response = RedirectResponse(_safe_redirect_target(next_url), status_code=303)
     _save_collection_synced(response, collection, request)
     return response
 

@@ -100,8 +100,8 @@ PROVENANCE
 Matches `festival_registry`, `lunar_dates` and `adhik_maas` exactly: New Delhi
 (NCT) 28.6139N 77.2090E, IST, Swiss Ephemeris (pyswisseph, Lahiri sidereal). A
 rashi boundary is an absolute sidereal position and is NOT ayanamsa-invariant —
-`adhik_maas._sun_rashi` requires the Lahiri mode that importing `astro_ai.chart`
-sets process-globally. Under a different ayanamsa every date in this file moves.
+`adhik_maas._sun_rashi` gets the Lahiri mode from `chart._sid_calc_ut`, which selects
+it on the calling thread (swisseph's mode is per thread, #762). Under a different ayanamsa every date in this file moves.
 """
 
 from __future__ import annotations
@@ -113,10 +113,9 @@ from zoneinfo import ZoneInfo
 import swisseph as swe
 
 # Private cross-module helpers, imported deliberately — same precedent and same
-# reasons as `lunar_dates.py:115` and `adhik_maas.py:104-118`. This import is ALSO
-# what executes `swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)` (chart.py:162,
-# process-global, once at module import); `_sun_rashi` is sidereal and is
-# meaningless without it, so do not make either import function-local.
+# reasons as `lunar_dates.py:115` and `adhik_maas.py:104-118`. `_sun_rashi` is sidereal
+# and reaches the Lahiri ayanamsa through `chart._sid_calc_ut`, which selects it on the
+# CALLING thread (swisseph's sidereal mode is per thread, #762).
 from astro_ai.chart import _sunrise_sunset
 from astro_ai.adhik_maas import SUPPORTED_YEARS, _jd_to_utc, _sun_rashi
 

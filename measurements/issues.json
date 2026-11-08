@@ -1,54 +1,107 @@
 {
-  "generated_at": "2026-11-07T00:39:56Z",
+  "generated_at": "2026-11-08T00:14:11Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for",
-  "open": 123,
-  "with_ask": 43,
+  "open": 116,
+  "with_ask": 39,
   "by_area": {
-    "UNCLASSIFIED": 36,
-    "UI": 13,
+    "UNCLASSIFIED": 38,
     "INFRA": 13,
     "REDESIGN": 10,
+    "UI": 9,
     "FEATURE": 7,
-    "NUMEROLOGY": 6,
-    "CHORE": 4,
+    "NUMEROLOGY": 5,
+    "MEASURE": 4,
     "RETRIEVAL": 3,
-    "OPS": 3,
-    "MEASURE": 3,
+    "CHORE": 3,
     "MUHURAT": 3,
     "BUG": 3,
     "MATCHING": 2,
     "SECURITY": 2,
+    "OPS": 2,
     "SEO": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "PRIVACY": 1,
     "DETECT_STALLS": 1,
-    "CHART": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
-    "KUNDLI": 1,
     "TASK": 1,
-    "BLOCKER": 1,
-    "KNOWLEDGE": 1
+    "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 33,
+    "untyped": 34,
     "enhancement": 24,
-    "bug": 23,
-    "correctness": 15,
-    "chore": 13,
-    "design": 9,
-    "ui": 6
+    "bug": 22,
+    "correctness": 13,
+    "chore": 12,
+    "design": 6,
+    "ui": 5
   },
   "by_priority": {
-    "unset": 94,
-    "medium": 19,
-    "high": 9,
+    "unset": 90,
+    "medium": 17,
+    "high": 8,
     "low": 1
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 782,
+      "title": "[MEASURE] fetch_ga4.py cannot export events, so #570's cta_click metric is undeterminable and #518/#276/#329 can only be scored through pages/session",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-11-08T00:11:51Z",
+      "updated": "2026-11-08T00:11:51Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 777,
+      "title": "Manglik tier ladder and the Venus-only downgrade need a source and an owner decision (split from #429)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-07T20:12:37Z",
+      "updated": "2026-11-07T20:16:22Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 773,
+      "title": "numerology.md: re-check AnkitNotes description and the K.N. Rao / Dasa caveat claim against data/ (split from #200)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-07T16:59:47Z",
+      "updated": "2026-11-07T17:05:47Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 770,
+      "title": "A test-count-drop ruling comment cannot turn gates green: nothing re-runs the gates job after it",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-07T14:12:55Z",
+      "updated": "2026-11-07T14:12:55Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 759,
       "title": "chief-cleared is applied with github.token, so agent-merge's label edge never fires and cleared PRs wait for a throttled sweep (#749, #750: 13-14h)",
@@ -61,7 +114,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-07T00:24:23Z",
-      "updated": "2026-11-07T00:26:35Z",
+      "updated": "2026-11-07T22:51:57Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -153,12 +206,14 @@
       "priority": "unset",
       "labels": [
         "enhancement",
-        "category:technical"
+        "category:technical",
+        "provenance:trusted",
+        "needs-evidence"
       ],
       "created": "2026-11-06T06:30:23Z",
-      "updated": "2026-11-06T06:30:23Z",
+      "updated": "2026-11-07T19:14:02Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 739,
@@ -172,21 +227,6 @@
       ],
       "created": "2026-11-06T06:16:27Z",
       "updated": "2026-11-06T06:16:27Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 738,
-      "title": "ops: the findings carrier never files a red last run, and the alert says \"not due again yet\" on verdict ok (#628 leftovers)",
-      "ask": "",
-      "area": "OPS",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "chore"
-      ],
-      "created": "2026-11-06T06:16:26Z",
-      "updated": "2026-11-06T06:16:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -217,22 +257,6 @@
       "created": "2026-11-06T00:49:38Z",
       "updated": "2026-11-06T00:49:38Z",
       "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 732,
-      "title": "[UI] Form focus indicator is a 1px saffron border at 2.50:1 on white — under WCAG 1.4.11's 3:1, and verify_contrast never checks focus",
-      "ask": "Keep the saffron glow ring (it is the brand's look) and change only the focused border colour to an existing token with >= 3:1 on white and cream: bhagya-night (18.84:1 on white)",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal"
-      ],
-      "created": "2026-11-06T00:47:34Z",
-      "updated": "2026-11-06T00:47:34Z",
-      "blocked": false,
       "needs_evidence": false
     },
     {
@@ -466,25 +490,6 @@
       "needs_evidence": true
     },
     {
-      "number": 597,
-      "title": "[UI] /kundli on mobile: the first form field sits 138px under the tab bar — / keeps the same form wholly in the fold",
-      "ask": "",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal",
-        "page:kundli",
-        "effort:s",
-        "risk:low"
-      ],
-      "created": "2026-10-29T23:50:53Z",
-      "updated": "2026-11-06T00:49:27Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 596,
       "title": "[UI] Six form controls (subscribe modal, feedback widget, /learn search) have a placeholder and no accessible name",
       "ask": "",
@@ -550,7 +555,7 @@
         "needs-evidence"
       ],
       "created": "2026-10-29T23:50:13Z",
-      "updated": "2026-11-04T21:03:15Z",
+      "updated": "2026-11-07T20:06:47Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -703,24 +708,6 @@
       ],
       "created": "2026-10-24T22:53:58Z",
       "updated": "2026-11-02T23:00:42Z",
-      "blocked": false,
-      "needs_evidence": true
-    },
-    {
-      "number": 513,
-      "title": "Daily rashifal email repeats its opening every day — the per-rashi opening_style constant never varies by date",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:high",
-        "needs-evidence"
-      ],
-      "created": "2026-10-24T03:29:51Z",
-      "updated": "2026-11-06T06:30:49Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -938,26 +925,6 @@
       "needs_evidence": true
     },
     {
-      "number": 429,
-      "title": "chart: the Manglik severity ladder is UNSOURCED, and its \"1st house = moderate\" tier is counter-indicated by the only corpus source that lists the houses",
-      "ask": "",
-      "area": "CHART",
-      "type": "correctness",
-      "priority": "medium",
-      "labels": [
-        "severity:medium",
-        "priority:medium",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-20T02:24:10Z",
-      "updated": "2026-11-06T06:15:40Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 423,
       "title": "verify_hindi_surface and verify_english_surface run nowhere — excluded from pr-gates on a move that was never made",
       "ask": "",
@@ -1015,10 +982,10 @@
         "priority:high",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-07T00:21:21Z",
+      "updated": "2026-11-07T23:49:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1084,23 +1051,6 @@
       "needs_evidence": false
     },
     {
-      "number": 382,
-      "title": "[UI] Subscribe modal covers the /matching and /numerology result on a first visit — the htmx swap counts as visit 2",
-      "ask": "",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal",
-        "page:matching"
-      ],
-      "created": "2026-10-15T22:59:04Z",
-      "updated": "2026-11-06T00:49:28Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 381,
       "title": "[UI] Install/favicon icons are still the retired purple — #233 moved the site to night/gold and the manifest says night",
       "ask": "",
@@ -1130,22 +1080,6 @@
       ],
       "created": "2026-10-15T22:59:01Z",
       "updated": "2026-10-29T23:50:56Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 379,
-      "title": "[UI] PWA install banner: the Install button sits under the mobile tab bar — unreachable on Android/Chrome",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer"
-      ],
-      "created": "2026-10-15T22:59:00Z",
-      "updated": "2026-11-06T00:49:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1283,7 +1217,7 @@
         "design-proposal"
       ],
       "created": "2026-10-09T00:18:11Z",
-      "updated": "2026-10-15T22:59:18Z",
+      "updated": "2026-11-07T10:00:11Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1612,23 +1546,6 @@
       "needs_evidence": false
     },
     {
-      "number": 209,
-      "title": "kundli: /kundli landing and /about advertise nakshatra padas, moolatrikona and Swiss Ephemeris — none of the three is what the engine computes",
-      "ask": "This is a copy-versus-code mismatch, so either direction closes it — but pick one",
-      "area": "KUNDLI",
-      "type": "correctness",
-      "priority": "medium",
-      "labels": [
-        "priority:medium",
-        "astrology-correctness",
-        "qa-pass"
-      ],
-      "created": "2026-08-16T09:30:19Z",
-      "updated": "2026-11-06T06:15:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 203,
       "title": "[DESIGN] Name numerology: build a \"Your Name\" section inside the /numerology reading — not a name-correction tool",
       "ask": "",
@@ -1656,22 +1573,6 @@
       ],
       "created": "2026-08-10T12:56:21Z",
       "updated": "2026-08-10T12:56:21Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 200,
-      "title": "numerology: user-facing copy names books and authors throughout, against CLAUDE.md's cite-the-tradition rule",
-      "ask": "Rewrite each to name the tradition rather than the author, matching the compound-number caption as the reference example.",
-      "area": "NUMEROLOGY",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "qa-pass",
-        "provenance:trusted"
-      ],
-      "created": "2026-08-10T12:55:44Z",
-      "updated": "2026-11-06T06:15:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1724,24 +1625,6 @@
       "needs_evidence": false
     },
     {
-      "number": 184,
-      "title": "[CHORE] Post-#154 cleanup: stale main.py doc pointers + dead code",
-      "ask": "",
-      "area": "CHORE",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-08-08T09:45:41Z",
-      "updated": "2026-11-06T21:06:41Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 178,
       "title": "[BLOCKER] Ashtakoota + Lo Shu + Rudraksha rules have no source in repo — acquire Muhurtha and a Lo Shu source, or remove the claims",
       "ask": "Install ocrmypdf (or tesseract + a wrapper) locally.",
@@ -1753,24 +1636,6 @@
       ],
       "created": "2026-08-08T09:02:35Z",
       "updated": "2026-08-25T14:17:35Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 177,
-      "title": "knowledge: no Ashtakoot Guna Milan material in the corpus or in data/ — the entire 36-point engine + verdict bands are untraceable, and rashis.md points at a vedic_reference.md §26.5 that does not exist",
-      "ask": "Write vedic_reference.md §26 — Ashtakoot Guna Milan",
-      "area": "KNOWLEDGE",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-11-06T21:29:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1833,7 +1698,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-08-07T15:59:16Z",
-      "updated": "2026-11-06T06:30:40Z",
+      "updated": "2026-11-07T20:05:09Z",
       "blocked": false,
       "needs_evidence": false
     },

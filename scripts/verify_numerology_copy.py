@@ -19,6 +19,14 @@ constants count (docstrings, `#` comments and identifiers are free to say
 "Johari §4 / Kumar Ch.1"). It scans SOURCE, not rendered pages: a string built at
 runtime from pieces would not be seen.
 
+Two more surfaces were added on chief's ruling on #200 (2026-11-07): the SEO
+strings in `routes/numerology.py` (`page_title` / `page_meta`, read through `ast`
+like `numerology.py`) and the `num_caveat_body_*` strings in `i18n.py`, which
+must not name the Balliett / Seton / Jordan lineage. That lineage is not in
+knowledge/*.md (0 hits, measured 2026-11-07), so a user-facing sentence stating
+it was a claim nothing could source. The Cheiro / Chaldean-table sentence in
+`num_caveat_body_2` stays: it IS sourced (knowledge/numerology.md line 6, §14.2).
+
 RULES FOR ANYONE EDITING THIS FILE
 ----------------------------------
 1. A missing anchor is a FAIL, not a skip. A gate that cannot find its subject
@@ -27,7 +35,8 @@ RULES FOR ANYONE EDITING THIS FILE
 2. Every author name left in rendered copy must be in `_ALLOWED`, with a reason.
    The expected count is derived from that list, in both directions: more is an
    unjustified mention; fewer means an allowance outlived its reason and should
-   be deleted rather than left as a standing licence.
+   be deleted rather than left as a standing licence. The list is EMPTY since
+   2026-11-07; adding to it again needs a ruling, not a reason string.
 3. The self-test runs on every invocation. It puts each removed phrase back and
    asserts this gate goes red, then does the same for a bare new mention. A
    mutation whose anchor has gone is a FAIL ("re-point this mutation").
@@ -43,6 +52,8 @@ PKG = Path(__file__).resolve().parent.parent / "src" / "astro_ai"
 TEMPLATES = PKG / "templates"
 FILES = ("numerology.html", "numerology_compat.html")
 PYFILE = "numerology.py"
+ROUTEFILE = "routes/numerology.py"   # page_title / page_meta: the SEO strings
+I18NFILE = "i18n.py"                 # num_caveat_body_*: the on-page caveat
 
 # Author names that must not appear as the source of a rule in rendered copy.
 # Includes the given names and secondary names that ride along with a surname
@@ -52,21 +63,25 @@ PYFILE = "numerology.py"
 _NAMES = re.compile(r"Johari|Harish|Kumar|Jayant|Cheiro|Warner|Hamon|Balliett|"
                     r"Seton|Juno Jordan|Goodwin", re.IGNORECASE)
 
+# The lineage the on-page caveat may not state: knowledge/*.md has no Balliett,
+# Seton, Juno Jordan or 1908 (0 hits, 2026-11-07), so naming them in a sentence
+# readers see is an unsourced claim. English and Hindi (बैलियेट, सीटन, जूनो).
+_CAVEAT_BANNED = re.compile(r"Balliett|Seton|Juno Jordan|बैलियेट|सीटन|जूनो",
+                            re.IGNORECASE)
+
 # (file, fragment containing the mention, reason). Each carries exactly one
-# mention. These are SEO strings, not citations of a rule: "Chaldean (Cheiro)" is
-# how people search for the system, and the same string heads page_title and
-# page_meta in routes/numerology.py. Changing search-facing text is a ranking
-# decision for a human, not a copy fix (#200 deliberately left it).
-_ALLOWED: tuple[tuple[str, str, str], ...] = (
-    ("numerology.html",
-     'Free numerology calculator — Chaldean (Cheiro) and the Lo Shu grid.',
-     "JSON-LD tool_desc mirrors the page_title/page_meta search term "
-     "'Chaldean (Cheiro)'; a ranking decision, not a citation"),
-)
+# mention. EMPTY since 2026-11-07: it held one entry, the `tool_desc` that
+# mirrored the "Chaldean (Cheiro)" search term, and chief ruled the author out of
+# the SEO strings (#200: the only "cheiro" query in 19,608 GSC impressions had 1).
+# The count checks below still run, at zero.
+_ALLOWED: tuple[tuple[str, str, str], ...] = ()
 
 # (file, rewritten wording that must be present, the phrase it replaced). The
 # replaced phrase is what the self-test puts back.
 _ANCHORS: tuple[tuple[str, str, str], ...] = (
+    ("numerology.html",
+     "Free numerology calculator — Chaldean and the Lo Shu grid.",
+     "Free numerology calculator — Chaldean (Cheiro) and the Lo Shu grid."),
     ("numerology.html",
      "Chaldean and Lo Shu grid calculators",
      "Chaldean (Cheiro) and Lo Shu grid calculators"),
@@ -131,6 +146,36 @@ _PY_ANCHORS: tuple[tuple[str, str], ...] = (
      "are Johari's ideal partner for 9-men"),
 )
 
+# routes/numerology.py string constants that are the SEO strings. (replacement
+# fragment, phrase it replaced). Missing = FAIL, like the others.
+_ROUTE_ANCHORS: tuple[tuple[str, str], ...] = (
+    ("Free Numerology Calculator — Chaldean and Lo Shu (with honest tradition note)",
+     "Free Numerology Calculator — Chaldean (Cheiro) and Lo Shu (with honest tradition note)"),
+    ("Free numerology calculator using the Chaldean system plus the Chinese Lo Shu grid.",
+     "Free numerology calculator using the Chaldean (Cheiro) system plus the Chinese Lo Shu grid."),
+    ("Free numerology calculator using the Chaldean system.",
+     "Free numerology calculator using the Chaldean (Cheiro) system."),
+)
+
+# i18n.py num_caveat_body_2, EN and HI. The first words of the sentence that
+# survives; the self-test puts the deleted Balliett/Seton/Jordan sentence back in
+# front of it. (raw-source start of the surviving value, the same with the deleted
+# sentence restored, language).
+_CAVEAT_ANCHORS: tuple[tuple[str, str, str], ...] = (
+    ('"num_caveat_body_2":       "The \\"Chaldean\\" name-number tables',
+     '"num_caveat_body_2":       "The Life Path / Expression / Soul Urge framework '
+     'was built by three Americans between 1908 and mid-20th century — L. Dow '
+     'Balliett, Julia Seton (who coined the word \\"numerology\\" ~1912), and Juno '
+     'Jordan. The \\"Chaldean\\" name-number tables',
+     "EN"),
+    ('"num_caveat_body_2":       "व्यापक प्रचलन में',
+     '"num_caveat_body_2":       "लाइफ पाथ / एक्सप्रेशन / सोल अर्ज ढाँचा 1908 से '
+     'मध्य-20वीं शताब्दी के बीच तीन अमेरिकियों — एल. डो बैलियेट, जूलिया सीटन '
+     '(जिन्होंने ~1912 में \\"numerology\\" शब्द गढ़ा), और जूनो जॉर्डन ने बनाया था। '
+     'व्यापक प्रचलन में',
+     "HI"),
+)
+
 _COMMENT = re.compile(r"\{#.*?#\}", re.DOTALL)
 
 
@@ -155,8 +200,46 @@ def _py_literals(text: str) -> list[tuple[int, str]]:
             and id(n) not in docs]
 
 
+def _caveat_values(text: str) -> list[tuple[int, str, str]]:
+    """(line, key, value) of every `num_caveat_body_*` entry in i18n.py."""
+    out: list[tuple[int, str, str]] = []
+    for n in ast.walk(ast.parse(text)):
+        if isinstance(n, ast.Dict):
+            for k, v in zip(n.keys, n.values):
+                if (isinstance(k, ast.Constant) and isinstance(k.value, str)
+                        and k.value.startswith("num_caveat_body_")
+                        and isinstance(v, ast.Constant) and isinstance(v.value, str)):
+                    out.append((v.lineno, k.value, v.value))
+    return out
+
+
 def _problems(texts: dict[str, str]) -> list[str]:
     problems: list[str] = []
+    caveats = _caveat_values(texts[I18NFILE])
+    # 3 bodies x EN + HI. A parse that finds fewer would pass vacuously (#193).
+    if len(caveats) != 6:
+        problems.append(f"{I18NFILE}: found {len(caveats)} num_caveat_body_* strings, "
+                        "expected 6 (3 x EN+HI). Re-point the scan if the keys moved.")
+    for line, key, value in caveats:
+        for m in _CAVEAT_BANNED.finditer(value):
+            problems.append(f"{I18NFILE}:{line}: {key} names an unsourced lineage — "
+                            f"{m.group(0)!r} (not in knowledge/*.md, #200)")
+    for new, _old, lang in _CAVEAT_ANCHORS:
+        if new not in texts[I18NFILE]:
+            problems.append(f"{I18NFILE}: {lang} num_caveat_body_2 anchor not found — "
+                            f"{new!r}. Re-point it if the string was reworded; do not "
+                            "delete it.")
+    route_literals = _py_literals(texts[ROUTEFILE])
+    joined_route = "\n".join(v for _l, v in route_literals)
+    for new, _old in _ROUTE_ANCHORS:
+        if new not in joined_route:
+            problems.append(f"{ROUTEFILE}: SEO anchor not found in string literals — "
+                            f"{new!r}. Re-point it if the string was reworded; do not "
+                            "delete it.")
+    for line, value in route_literals:
+        for m in _NAMES.finditer(value):
+            problems.append(f"{ROUTEFILE}:{line}: author named in an SEO/string literal — "
+                            f"{m.group(0)!r} in …{value[max(0, m.start() - 50):m.end() + 30]!r}…")
     literals = _py_literals(texts[PYFILE])
     joined_py = "\n".join(v for _l, v in literals)
     for new, _old in _PY_ANCHORS:
@@ -206,6 +289,10 @@ def _self_test(texts: dict[str, str]) -> int:
         (f"{old!r} restored", fname, new, old) for fname, new, old in _ANCHORS]
     mutations += [(f"{PYFILE}: {old!r} restored", PYFILE, new, old)
                   for new, old in _PY_ANCHORS]
+    mutations += [(f"{ROUTEFILE}: {old!r} restored", ROUTEFILE, new, old)
+                  for new, old in _ROUTE_ANCHORS]
+    mutations += [(f"{I18NFILE}: {lang} Balliett/Seton/Jordan sentence restored",
+                   I18NFILE, new, old) for new, old, lang in _CAVEAT_ANCHORS]
     mutations.append(("a bare new mention", "numerology_compat.html",
                       "Numerology Compatibility Check",
                       "Numerology Compatibility Check (after Kumar)"))
@@ -250,6 +337,8 @@ def main(argv: list[str]) -> int:
     root = Path(args[0]) if args else TEMPLATES
     texts = {name: (root / name).read_text(encoding="utf-8") for name in FILES}
     texts[PYFILE] = (PKG / PYFILE).read_text(encoding="utf-8")
+    texts[ROUTEFILE] = (PKG / ROUTEFILE).read_text(encoding="utf-8")
+    texts[I18NFILE] = (PKG / I18NFILE).read_text(encoding="utf-8")
 
     problems = _problems(texts)
     for p in problems:
@@ -258,8 +347,9 @@ def main(argv: list[str]) -> int:
         return 1
 
     print(f"Numerology template source and {PYFILE} string literals clean — "
-          f"{len(_ANCHORS)} template + {len(_PY_ANCHORS)} literal anchors present, "
-          f"{len(_ALLOWED)} allowed mention(s) (SEO term), no other author named.")
+          f"{len(_ANCHORS)} template + {len(_PY_ANCHORS)} literal + "
+          f"{len(_ROUTE_ANCHORS)} SEO anchors present, {len(_CAVEAT_ANCHORS)} caveat "
+          f"anchors present, {len(_ALLOWED)} allowed mention(s), no author named.")
     print("Self-test (each known defect must turn this gate red):")
     if _self_test(texts):
         print("FAIL — the gate does not bite. A gate that cannot fail is worse "

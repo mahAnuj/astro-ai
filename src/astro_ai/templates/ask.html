@@ -180,7 +180,7 @@
       <div class="pt-2 border-t border-bhagya-line-2">
         <div class="text-[11px] text-bhagya-muted mb-2 uppercase tracking-wider font-semibold">Focus area <span class="font-normal normal-case text-bhagya-muted-2">(optional)</span></div>
         <div class="flex flex-wrap gap-1.5">
-          {% for cat in ['general', 'career', 'marriage', 'money', 'health', 'spiritual', 'travel', 'relationships'] %}
+          {% for cat in ['general', 'career', 'marriage', 'money', 'health', 'spiritual', 'travel', 'relationships', 'education'] %}
           <label class="relative cursor-pointer">
             <input type="radio" name="category" value="{{ cat }}" class="peer sr-only"
                    {% if (current_category or 'general') == cat %}checked{% endif %}>

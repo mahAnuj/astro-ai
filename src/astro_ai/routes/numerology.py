@@ -45,8 +45,8 @@ async def numerology_form(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
         request, "numerology.html",
         {
-            "page_title": "Free Numerology Calculator — Chaldean (Cheiro) and Lo Shu (with honest tradition note)",
-            "page_meta": "Free numerology calculator using the Chaldean (Cheiro) system plus the Chinese Lo Shu grid. Life Path, Destiny/Expression, Soul Urge, Personality, Name Number, per-Life-Path profile, Personal Year, Karmic Debt (13/14/16/19), traditional per-number practices, and 2-person compatibility. Honest about tradition: these systems are 19th-20th century Western and ancient Chinese, not classical Vedic Jyotish. No signup.",
+            "page_title": "Free Numerology Calculator — Chaldean and Lo Shu (with honest tradition note)",
+            "page_meta": "Free numerology calculator using the Chaldean system plus the Chinese Lo Shu grid. Life Path, Destiny/Expression, Soul Urge, Personality, Name Number, per-Life-Path profile, Personal Year, Karmic Debt (13/14/16/19), traditional per-number practices, and 2-person compatibility. Honest about tradition: these systems are 19th-20th century Western and ancient Chinese, not classical Vedic Jyotish. No signup.",
             "reading": None,
             "error": None,
             "lang": _lang(request),
@@ -68,7 +68,7 @@ async def numerology_calculate(
             request, "numerology.html",
             {
                 "page_title": "Free Numerology Calculator",
-                "page_meta": "Free numerology calculator using the Chaldean (Cheiro) system.",
+                "page_meta": "Free numerology calculator using the Chaldean system.",
                 "reading": None,
                 "error": "Please enter your full name (at least 2 characters).",
                 "lang": _lang(request),
@@ -89,7 +89,7 @@ async def numerology_calculate(
             request, "numerology.html",
             {
                 "page_title": "Free Numerology Calculator",
-                "page_meta": "Free numerology calculator using the Chaldean (Cheiro) system.",
+                "page_meta": "Free numerology calculator using the Chaldean system.",
                 "reading": None,
                 "error": "Please enter your name in English letters — the Chaldean letter values are defined over the Latin alphabet, so a name written in Devanagari or another script can't be scored.",
                 "lang": _lang(request),
@@ -110,7 +110,7 @@ async def numerology_calculate(
         return templates.TemplateResponse(
             request, "numerology.html",
             {"page_title": "Free Numerology Calculator",
-             "page_meta": "Free numerology calculator using the Chaldean (Cheiro) system.",
+             "page_meta": "Free numerology calculator using the Chaldean system.",
              "reading": None, "error": str(err), "lang": _lang(request)},
             status_code=400,
         )

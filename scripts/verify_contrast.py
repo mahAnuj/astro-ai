@@ -24,12 +24,18 @@ change is exactly the kind of edit where nobody re-runs the arithmetic. So:
           with `/[.NN]` utilities composited onto their surface first
   Gate 4  no template uses a translucent bhagya text utility that Gate 3 has
           not been told about
+  Gate 5  the focused form-field border (#732) is >= 3:1 (WCAG 1.4.11) on every
+          surface a field sits on, and no saffron-focus-border utility sits on
+          an element the override rule does not repaint
 
 COLOURS COME FROM THE BUILT CSS, NOT FROM A TABLE HERE. `app.css` carries the
 rgb() each utility actually emits, which covers config colours and Tailwind's
 own defaults uniformly and cannot drift from what the browser receives. The
 one thing this file declares is design INTENT — which colour is allowed on
 which surface — because that is a decision, not a measurement.
+
+WCAG 2.1 SC 1.4.11 (Gate 5): 3.0:1 for the visual information that identifies a
+component's state — the focus indicator included.
 
 WCAG 2.1 SC 1.4.3: 4.5:1 for normal text, 3.0:1 only for large text, where
 large means >=24px, or >=18.66px when bold. None of the uses this gate covers
@@ -396,6 +402,77 @@ def gate_4_alpha_declared(colours) -> list[str]:
     return fails
 
 
+# Gate 5 (#732) ---------------------------------------------------------------
+# The saffron focus border is 2.50:1 on white. 59 utilities carry it, so
+# base.html repaints it with ONE rule rather than 59 edits; this gate reads that
+# rule back out of base.html and measures it.
+FOCUS_MIN = 3.0
+FOCUS_SURFACES = ("bg-white", "bg-bhagya-cream", "bg-bhagya-cream-2")
+FOCUS_MARKER = 'class*="focus:border-bhagya-saffron"'
+FOCUS_UTILITY = "focus:border-bhagya-saffron"
+FOCUS_FIELD_TAGS = ("input", "textarea", "select")
+# Elements that keep the saffron border on purpose: it is on a night surface,
+# where it is >= 7:1 and a dark border would vanish. file -> tags.
+FOCUS_NON_FIELD_ALLOWED = {"src/astro_ai/templates/base.html": {"a"}}  # skip link
+_FOCUS_RULE = re.compile(
+    r"((?:input|textarea|select)\[" + re.escape(FOCUS_MARKER) + r"\][^{}]*)\{\s*"
+    r"border-color:\s*#([0-9a-fA-F]{6})\s*;?\s*\}"
+)
+
+
+def focus_rule(base_text: str) -> tuple[str, tuple[int, int, int]] | None:
+    """(selector list, border rgb) of the #732 override in base.html, or None."""
+    m = _FOCUS_RULE.search(base_text)
+    if not m:
+        return None
+    h = m.group(2)
+    return m.group(1), tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))  # type: ignore[return-value]
+
+
+def _strip_comments(text: str) -> str:
+    text = re.sub(r"<!--.*?-->", " ", text, flags=re.DOTALL)
+    return re.sub(r"\{#.*?#\}", " ", text, flags=re.DOTALL)
+
+
+def gate_5_focus_border(colours) -> list[str]:
+    fails: list[str] = []
+    rule = focus_rule(BASE_HTML.read_text(encoding="utf-8"))
+    if rule is None:
+        return [f"base.html has no `{{element}}[{FOCUS_MARKER}]:focus {{ border-color: #hex }}` "
+                "rule — the saffron focus border (2.50:1 on white) is back, or the rule "
+                "was reshaped and this gate is asserting nothing."]
+    selectors, rgb = rule
+    for tag in FOCUS_FIELD_TAGS:
+        if f"{tag}[" not in selectors:
+            fails.append(f"the focus-border rule does not cover <{tag}>")
+    for surface in FOCUS_SURFACES:
+        bg = colours.get(surface)
+        if bg is None:
+            fails.append(f"{surface} is unknown, so the focus border cannot be measured on it")
+            continue
+        ratio = contrast_ratio(rgb, bg)
+        print(f"  note focus border #{''.join(f'{c:02X}' for c in rgb)} on {surface}: {ratio:.2f}:1")
+        if ratio < FOCUS_MIN:
+            fails.append(f"focus border on {surface} is {ratio:.2f}:1 (needs {FOCUS_MIN}:1, WCAG 1.4.11)")
+
+    seen = 0
+    for path in sorted(TEMPLATES.rglob("*.html")):
+        rel = str(path.relative_to(REPO_ROOT))
+        text = _strip_comments(path.read_text(encoding="utf-8"))
+        for m in re.finditer(re.escape(FOCUS_UTILITY), text):
+            seen += 1
+            tags = re.findall(r"<([a-zA-Z][a-zA-Z0-9]*)\b", text[:m.start()])
+            tag = tags[-1].lower() if tags else ""
+            if tag in FOCUS_FIELD_TAGS or tag in FOCUS_NON_FIELD_ALLOWED.get(rel, set()):
+                continue
+            fails.append(f"{rel}: `{FOCUS_UTILITY}` on a <{tag or '?'}> the override rule "
+                         "does not repaint — it keeps the 2.50:1 border")
+    if seen == 0:
+        fails.append(f"no `{FOCUS_UTILITY}` in any template — did the class naming change? "
+                     "This gate is asserting nothing.")
+    return fails
+
+
 def report_decorative(colours) -> None:
     """Not a gate. Surfaces how much weight the decorative exemption carries."""
     for util in sorted(DECORATIVE):
@@ -436,6 +513,7 @@ def main() -> int:
         ("Gate 2 - the base.html charter states true ratios", gate_2_charter_is_honest),
         ("Gate 3 - declared text-on-surface pairs meet AA", gate_3_declared_pairs),
         ("Gate 4 - every translucent text utility is declared", gate_4_alpha_declared),
+        ("Gate 5 - the focused form-field border is >= 3:1 (WCAG 1.4.11)", gate_5_focus_border),
     )
 
     all_failures: list[str] = []

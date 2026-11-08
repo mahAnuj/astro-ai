@@ -307,7 +307,13 @@ def main(argv: list[str]) -> int:
         print("This is NOT a pass: an unverified diff may be granting a power.")
         return 2
     try:
-        changed = [l for l in git("diff", "--name-only", f"{base}..HEAD").splitlines() if l]
+        # --no-renames (#739): with rename detection on, `--name-only` lists only the
+        # NEW name of a moved file, so a PR that renamed agent-merge.yml and emptied
+        # its TRUST_BOUNDARY never put AGENT_MERGE in this list and check 2 never ran.
+        # Off, a rename is a delete plus an add: both paths are listed, and the
+        # missing boundary at the old path is judged like any other lost one.
+        changed = [l for l in git("diff", "--name-only", "--no-renames",
+                                  f"{base}..HEAD").splitlines() if l]
     except RuntimeError as exc:
         print(f"COULD NOT VERIFY (exit 2) — {exc}")
         print("This is NOT a pass: an unverified diff may be granting a power.")

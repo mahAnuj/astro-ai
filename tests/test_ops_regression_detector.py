@@ -208,6 +208,43 @@ def test_no_flagged_loops_reports_no_loop_finding(tmp_path, monkeypatch):
     assert "loop-broken" not in _kinds(f)
 
 
+def _wf(workflow, verdict="not-due-yet", health="red"):
+    return {"workflow": workflow, "verdict": verdict, "last_run_health": health}
+
+
+def test_a_red_last_run_under_a_quiet_verdict_is_a_finding(tmp_path, monkeypatch):
+    """#738 item 1. `alerts` is empty because the verdict grades the schedule;
+    the page shows the loop amber and this carrier used to file nothing."""
+    agents = _agents(alerts=[], loops=[_wf("agent-research.yml"),
+                                       _wf("agent-design.yml", verdict="ok")])
+    f, _ = _find(tmp_path, monkeypatch, agents, [(8, _issues()), (0, _issues())])
+    hit = [x for x in f if x["kind"] == "loop-last-run-failed"]
+    assert len(hit) == 1, f
+    assert hit[0]["level"] == "amber"
+    # one finding names BOTH: the carrier files one issue per kind
+    assert "agent-research.yml" in hit[0]["title"] and "agent-design.yml" in hit[0]["title"]
+
+
+@pytest.mark.parametrize("verdict,health", [
+    ("not-due-yet", "green"),
+    ("not-due-yet", "amber"),     # a `reporting` loop that exits non-zero by contract
+    ("not-due-yet", "unknown"),   # never ran
+    ("on-demand", "red"),         # event-driven; "failed today" covers it
+    ("broken", "red"),            # announced as loop-broken already
+])
+def test_every_other_state_files_no_last_run_finding(verdict, health, tmp_path, monkeypatch):
+    agents = _agents(alerts=[], loops=[_wf("agent-research.yml", verdict, health)])
+    f, _ = _find(tmp_path, monkeypatch, agents, [(8, _issues()), (0, _issues())])
+    assert "loop-last-run-failed" not in _kinds(f), f
+
+
+def test_a_loop_already_in_alerts_is_not_announced_twice(tmp_path, monkeypatch):
+    agents = _agents(alerts=["agent-research.yml"],
+                     loops=[_wf("agent-research.yml", verdict="ok")])
+    f, _ = _find(tmp_path, monkeypatch, agents, [(8, _issues()), (0, _issues())])
+    assert "loop-last-run-failed" not in _kinds(f), f
+
+
 @pytest.mark.parametrize("pct,fires", [(51, False), (35, False), (34, True), (9, True)])
 def test_delivery_yield_fires_only_BELOW_the_floor(pct, fires, tmp_path, monkeypatch):
     f, _ = _find(tmp_path, monkeypatch, _agents(yield_pct=pct),

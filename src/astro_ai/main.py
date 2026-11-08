@@ -331,7 +331,7 @@ class _CachedStaticFiles(StaticFiles):
       are linked at stable URLs, so they must stay re-fetchable.
 
     `sw.js` is NOT affected and must never be: it is served by its own route at
-    `/sw.js` (routes/seo.py:119) so that its scope is `/` rather than
+    `/sw.js` (routes/seo.py, the /sw.js route) so that its scope is `/` rather than
     `/static/`. Giving the service worker an immutable year would make #253
     permanent rather than better.
     """

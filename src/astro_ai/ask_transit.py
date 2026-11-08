@@ -16,10 +16,11 @@ THREE THINGS THAT ARE DELIBERATE
   Jupiter or Rahu changes sign (~4.4 times a year), so a cached answer is
   reused across days for the same question without ever going stale against
   the block it was written under.
-* THREAD. `chart` sets the sidereal mode once, at import, and Swiss Ephemeris
-  keeps it per thread (measured: a worker thread reads ayanamsa 25.10 where the
-  importing thread reads 24.22, at JD 2461000). Both /ask handlers are
-  `async def`, so they and the block all run on the loop thread; a test pins it.
+* THREAD. Swiss Ephemeris keeps the sidereal mode per thread (measured: a worker
+  thread read ayanamsa 25.10 where the importing thread read 24.22, at JD 2461000).
+  Since #762 every sidereal call goes through `chart._sid_calc_ut`, which selects
+  Lahiri on the calling thread, so the thread no longer matters. Both /ask handlers
+  are still `async def`, and a test still pins that.
 * NO SWALLOWING `try/except`. A failure here must fail the request: returning
   "" would generate a no-transit answer and cache it under a with-transit key.
 

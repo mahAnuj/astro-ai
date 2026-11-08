@@ -80,7 +80,7 @@ async def sitemap() -> Response:
     ]
     # Muhurat per-event landing pages — evergreen SEO copy per event type.
     from astro_ai.muhurat import EVENT_LANDING
-    for event_key, landing in EVENT_LANDING.items():
+    for landing in EVENT_LANDING.values():
         # Evergreen copy with no edit date behind it — no lastmod.
         pages.append((f"/muhurat/{landing['slug']}", "monthly", "0.7", None))
     # Per-rashi Rashifal URLs — 12 daily-fresh pages Google can rank

@@ -99,7 +99,7 @@ MUTATIONS = [
      "test_an_outcome_question_is_told_to_describe_the_chart_not_to_answer_yes_or_no"),
     ("#402 AC4: the ask+payload ceiling gains slack over the pre-change request",
      _GATE,
-     '    "ask+payload":              (1951, 2083, _D402,',
-     '    "ask+payload":              (1951, 2400, _D402,',
+     '    "ask+payload":              (1951, 2068, _D402_ED,',
+     '    "ask+payload":              (1951, 2400, _D402_ED,',
      "test_the_ask_payload_rows_leave_no_slack_over_the_pre_change_request"),
 ]

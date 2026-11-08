@@ -4,11 +4,13 @@
 {% block meta_description %}{{ page_meta }}{% endblock %}
 
 {% block content %}
+{# #382: a rendered reading is the result — see _subscribe_modal.html. #}
+{% if reading %}<span data-subscribe-defer hidden></span>{% endif %}
 {% set active_page = "numerology" %}
 {% set breadcrumbs = [('Home', '/'), ('Numerology', '/numerology')] %}
 {% include "_breadcrumb_schema.html" %}
 {% set tool_name = "Numerology Calculator (Chaldean + Lo Shu)" %}
-{% set tool_desc = "Free numerology calculator — Chaldean (Cheiro) and the Lo Shu grid. Honest about tradition: these are 19th-20th century Western and ancient Chinese systems, not classical Vedic Jyotish." %}
+{% set tool_desc = "Free numerology calculator — Chaldean and the Lo Shu grid. Honest about tradition: these are 19th-20th century Western and ancient Chinese systems, not classical Vedic Jyotish." %}
 {% set tool_url = "/numerology" %}
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
@@ -19,8 +21,11 @@
      disclosure collapsed behind a details/summary so it doesn't push
      the form off-screen on mobile. Classical-source research from
      2026-08-04 lives in the expanded body: BPHS/Phaladeepika/etc.
-     don't contain numerology; Cheiro/Balliett/Seton invented the
-     modern Life Path framework; K.N. Rao dropped it. #}
+     don't contain numerology; the Chaldean table traces to Cheiro
+     (knowledge/numerology.md §14.2); K.N. Rao dropped it (that last
+     claim is NOT in knowledge/*.md, see #773). The earlier "Balliett/
+     Seton invented the Life Path framework" line is removed — also
+     unsourced there (#200, chief's ruling 2026-11-07). #}
   <details class="border border-amber-300 bg-amber-50/60 px-4 py-3 group">
     <summary class="cursor-pointer flex items-start gap-2 text-sm text-amber-900 leading-snug list-none">
       <svg class="shrink-0 mt-0.5 w-4 h-4 text-amber-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -39,10 +44,11 @@
   <header class="text-center">
     <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink mb-3">Free Numerology Calculator</h1>
     <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
-      {# Was "Chaldean (Cheiro) and Lo Shu grid" (#200). Visible body copy, so the
-         author goes; the SEO strings that carry "(Cheiro)" — page_title/page_meta
-         in routes/numerology.py and tool_desc above — are a search-term decision
-         and are left for a human, see scripts/verify_numerology_copy.py. #}
+      {# Was "Chaldean (Cheiro) and Lo Shu grid" (#200). The author went from the
+         visible copy first and from the SEO strings (page_title/page_meta in
+         routes/numerology.py, tool_desc above) on chief's ruling: "cheiro
+         numerology calculator" had 1 impression in 19,608 (measurements/
+         gsc-trend-query.json, 2026-10-08..11-04), so nothing was being kept. #}
       Chaldean and Lo Shu grid calculators — Life Path, Birthday, Destiny/Expression, Soul Urge, Personality numbers plus Personal Year forecast, Karmic Debt flags, per-number remedies (gemstone, colour, deity, mantra), and the 3×3 Lo Shu birth-number matrix. Free, no sign-up. See caveat above about tradition.
     </p>
   </header>
@@ -119,9 +125,10 @@
          Jordan, USA, ~1908-1940s — NOT sourced in knowledge/*.md (grep for
          Balliett / Juno Jordan / 1908 there returns nothing, 2026-10-16). It
          comes from the "classical-source research (2026-08-04)" recorded in the
-         comment above i18n.py num_caveat_heading, and is stated in
-         num_caveat_body_2, which keeps the authors visible on this page.
-         Treat the bullets' dating as that research's claim, not the corpus's. #}
+         comment above i18n.py num_caveat_heading. num_caveat_body_2 stated it
+         until chief's ruling on #200 (2026-11-07) removed that sentence, so no
+         visible copy names those authors any more. Treat the bullets' dating as
+         that research's claim, not the corpus's. #}
     <h3 class="font-marcellus text-xl text-bhagya-ink mb-3">The 5 numbers we compute (and where they come from)</h3>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6">
       <ul class="space-y-2.5 text-sm sm:text-base text-bhagya-ink leading-relaxed">

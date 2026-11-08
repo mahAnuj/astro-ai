@@ -195,8 +195,41 @@ def _tf():
     return _TF
 
 # Configure Swiss Ephemeris for Vedic/sidereal mode with Lahiri ayanamsa.
-# This is process-global state — set once at module import.
-swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
+#
+# NOT process-global, despite what this comment used to say (#762). swisseph keeps the
+# sidereal-mode setting PER THREAD: a module-import call configures only the importing
+# thread, and every other thread silently computes with swisseph's default ayanamsa,
+# Fagan-Bradley, 0.883 deg larger than Lahiri (measured: 24.6047 vs 23.7215 at JD
+# 2448000). Starlette runs a plain `def` route on a worker thread, `hot_cache` refreshes
+# on a `threading.Thread`, and the rashifal job fans out over a `ThreadPoolExecutor`.
+#
+# So every sidereal call goes through `_sid_calc_ut` / `_sid_houses` below, which
+# configure the CURRENT thread on first use. Do not call `swe.calc_ut(..., FLG_SIDEREAL)`
+# or `swe.houses_ex` directly; `tests/test_sidereal_threads.py` fails if a call site does.
+_SID_TLS = threading.local()
+
+
+def _ensure_lahiri() -> None:
+    """Select Lahiri on the calling thread (once per thread; swisseph state is per thread)."""
+    if not getattr(_SID_TLS, "lahiri", False):
+        swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
+        _SID_TLS.lahiri = True
+
+
+def _sid_calc_ut(jd: float, body: int, flags: int = 0):
+    """`swe.calc_ut` in the Lahiri sidereal frame, whichever thread this runs on."""
+    _ensure_lahiri()
+    return swe.calc_ut(jd, body, flags | swe.FLG_SIDEREAL)
+
+
+def _sid_houses(jd: float, lat: float, lon: float):
+    """Whole-sign `swe.houses_ex` in the Lahiri sidereal frame, whichever thread this runs on."""
+    _ensure_lahiri()
+    return swe.houses_ex(jd, lat, lon, b"W", swe.FLG_SIDEREAL)
+
+
+# Kept for the import-thread side effect other modules once relied on.
+_ensure_lahiri()
 
 
 # ---------------------------------------------------------------------------
@@ -424,7 +457,7 @@ def compute_chart(birth_date: str, birth_time: str, place: str) -> Chart:
     )
 
     # Ascendant + cusps via Whole Sign houses ('W' = whole-sign in pyswisseph).
-    _, ascmc = swe.houses_ex(julian_day, lat, lon, b"W", swe.FLG_SIDEREAL)
+    _, ascmc = _sid_houses(julian_day, lat, lon)
     asc_long = float(ascmc[0])  # sidereal ascendant longitude
     lagna_sign_idx = int(asc_long // 30)
     lagna_rashi = RASHIS[lagna_sign_idx]
@@ -605,7 +638,7 @@ def compute_vedic_flags(natal: Chart, when: datetime | None = None) -> VedicFlag
     details = compute_manglik_details(natal)
 
     # SADE SATI — Saturn currently transiting 12th, 1st, or 2nd house from natal Moon.
-    saturn_pos, _ = swe.calc_ut(julian_day, swe.SATURN, swe.FLG_SIDEREAL)
+    saturn_pos, _ = _sid_calc_ut(julian_day, swe.SATURN)
     saturn_sign_now = int(float(saturn_pos[0]) // 30)
     saturn_house_from_moon = ((saturn_sign_now - moon_idx) % 12) + 1
     sade_sati_phase: str | None = None
@@ -1142,7 +1175,8 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
     # and "2nd alone is lowest" is stated nowhere. The grades are kept as shipped
     # pending the owner's tier decision on #429; every surface that shows them
     # must say they are editorial (manglik_check_result.html, the LLM line in
-    # format_manglik_for_prompt). Do not cite a classical text for the tiers.
+    # format_manglik_for_prompt, and the tier text the /kundli result prints
+    # from i18n.py). Do not cite a classical text for the tiers.
     if {7, 8} & qualifying:
         severity = "high"
     elif {1, 4, 12} & qualifying:
@@ -1171,6 +1205,10 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
     # 'mitigated' so users don't panic over what their offline kundali
     # rightly calls a non-Manglik chart. Also downgrade severity by one
     # notch so the number-badge on the UI reads accurately.
+    # NOTE (#429): "weaker than the primary axes" is NOT what the one held source
+    # that ranks the frames says -- Raman, Muhurtha, says the dosha is weak from
+    # Lagna, a little stronger from Moon and still more powerful from Venus
+    # (vedic_reference.md §1.6.3). Kept as shipped pending the owner's decision.
     if venus_axis_only:
         if effective_status == "present":
             effective_status = "mitigated"
@@ -2449,7 +2487,7 @@ def compute_sade_sati_details(chart: Chart, when: datetime | None = None) -> Sad
 def _saturn_house_from_natal_moon(moon_idx: int, at: datetime) -> int:
     """Compute Saturn's house (from natal Moon) at moment `at` — single swisseph call."""
     jd = swe.julday(at.year, at.month, at.day, at.hour + at.minute / 60.0)
-    pos, _ = swe.calc_ut(jd, swe.SATURN, swe.FLG_SIDEREAL)
+    pos, _ = _sid_calc_ut(jd, swe.SATURN)
     sign_idx = int(float(pos[0]) // 30)
     return ((sign_idx - moon_idx) % 12) + 1
 
@@ -3537,7 +3575,7 @@ def _sun_angular_diff(natal: Chart, at: datetime, target_long: float) -> float:
         at.year, at.month, at.day,
         at.hour + at.minute / 60 + at.second / 3600,
     )
-    pos, _ = swe.calc_ut(jd, swe.SUN, swe.FLG_SIDEREAL)
+    pos, _ = _sid_calc_ut(jd, swe.SUN)
     sun_now = float(pos[0])
     diff = (sun_now - target_long) % 360
     return diff if diff <= 180 else diff - 360
@@ -3554,7 +3592,7 @@ def _cast_chart_at(moment: datetime, lat: float, lon: float, tz_name: str) -> Ch
         moment_utc.year, moment_utc.month, moment_utc.day,
         moment_utc.hour + moment_utc.minute / 60 + moment_utc.second / 3600,
     )
-    _, ascmc = swe.houses_ex(jd, lat, lon, b"W", swe.FLG_SIDEREAL)
+    _, ascmc = _sid_houses(jd, lat, lon)
     asc_long = float(ascmc[0])
     lagna_sign_idx = int(asc_long // 30)
     planets = _compute_planet_positions(jd, lagna_sign_idx)
@@ -3921,8 +3959,8 @@ def _tithi_at(julian_day: float) -> tuple[int, str, str, str]:
     Uses sidereal Lahiri to match the rest of the chart code (though tithi is
     actually invariant under ayanamsa choice — both Sun and Moon shift equally).
     """
-    sun_pos, _ = swe.calc_ut(julian_day, swe.SUN, swe.FLG_SIDEREAL)
-    moon_pos, _ = swe.calc_ut(julian_day, swe.MOON, swe.FLG_SIDEREAL)
+    sun_pos, _ = _sid_calc_ut(julian_day, swe.SUN)
+    moon_pos, _ = _sid_calc_ut(julian_day, swe.MOON)
     diff = (float(moon_pos[0]) - float(sun_pos[0])) % 360.0
     idx = int(diff / 12.0)
     name = _TITHI_NAMES[idx]
@@ -3986,8 +4024,8 @@ def _nitya_yoga_at(julian_day: float) -> tuple[int, str, str]:
     under ayanamsa choice (the two ayanamsa shifts add rather than cancel), so
     the sidereal convention shared with the rest of the almanac is load-bearing.
     """
-    sun_pos, _ = swe.calc_ut(julian_day, swe.SUN, swe.FLG_SIDEREAL)
-    moon_pos, _ = swe.calc_ut(julian_day, swe.MOON, swe.FLG_SIDEREAL)
+    sun_pos, _ = _sid_calc_ut(julian_day, swe.SUN)
+    moon_pos, _ = _sid_calc_ut(julian_day, swe.MOON)
     combined = (float(sun_pos[0]) + float(moon_pos[0])) % 360.0
     idx = int(combined / (360.0 / 27.0)) % 27
     name = _NITYA_YOGA_NAMES[idx]
@@ -4004,8 +4042,8 @@ def _karana_at(julian_day: float) -> tuple[int, str, str]:
     the 7 movable karanas eight times; 57/58/59 are the fixed Shakuni,
     Chatushpada and Naga closing the lunar month.
     """
-    sun_pos, _ = swe.calc_ut(julian_day, swe.SUN, swe.FLG_SIDEREAL)
-    moon_pos, _ = swe.calc_ut(julian_day, swe.MOON, swe.FLG_SIDEREAL)
+    sun_pos, _ = _sid_calc_ut(julian_day, swe.SUN)
+    moon_pos, _ = _sid_calc_ut(julian_day, swe.MOON)
     diff = (float(moon_pos[0]) - float(sun_pos[0])) % 360.0
     idx = int(diff / 6.0) % 60
     if idx == 0:
@@ -4461,9 +4499,9 @@ def _compute_planet_positions(julian_day: float, lagna_sign_idx: int) -> list[Pl
     """
     planets: list[PlanetPosition] = []
     rahu_long_abs: float = 0.0
-    flags = swe.FLG_SIDEREAL | swe.FLG_SPEED  # SPEED so we can detect retrograde
+    flags = swe.FLG_SPEED  # SPEED so we can detect retrograde; _sid_calc_ut adds FLG_SIDEREAL
     for name, swe_id in PLANETS:
-        position, _ = swe.calc_ut(julian_day, swe_id, flags)
+        position, _ = _sid_calc_ut(julian_day, swe_id, flags)
         long_abs = float(position[0])
         long_speed = float(position[3])  # deg/day; negative = retrograde
         sign_idx = int(long_abs // 30)

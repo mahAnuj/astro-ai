@@ -72,9 +72,8 @@ like `scripts/verify_adhik_maas.py` and `scripts/verify_festivals.py`.
       (no import from this codebase); (B) `compute_panchang()` reproduces the
       same window from its OWN sunrise; (C) `_GULIKA_SEGMENT` equals the
       ordinals re-derived here from Rao's 8-slot cycle, for all 7 weekdays.
-      KNOWN GAP: the almanac rows cover Fri/Sun/Mon/Thu only. Tuesday, Wednesday
-      and Saturday rest on Rao's table (Gate C) with no almanac confirmation;
-      Saturday, the ordinal-1 case, is the cheapest next row to add.
+      The almanac rows cover all seven weekdays (Fri/Sun/Mon/Thu 2026-11-05,
+      Sat/Tue/Wed 2026-11-07); the closing line fails if one goes missing.
 
 HOW TO EXTEND THE ALMANAC TABLE
 -------------------------------
@@ -1069,11 +1068,14 @@ def gate_7_moon_rise_set() -> list[str]:
 # Fields: (iso date, weekday, drik sunrise, drik sunset, drik Gulikai start,
 #          drik Gulikai end) — 24h HH:MM, New Delhi.
 #
-# KNOWN GAP: Fri, Sun, Mon and Thu only. Tuesday (5th part), Wednesday (4th) and
-# Saturday (1st) have NO almanac row, so those three weekdays are confirmed by
-# Rao's Table 10 alone (Gate 8C), not by a published almanac. Saturday, the
-# ordinal-1 case, is the cheapest row to add next. Do not derive a row from this
-# codebase; read the URL.
+# The last three rows (Sat 11-07, Tue 11-10, Wed 11-11) were added 2026-11-07
+# from the RAW HTML of each page (curl, then the "Gulikai Kalam" cell read out of
+# the markup), not a WebFetch summary, so every weekday now has an almanac row.
+# They fill the gap the first four left: Saturday (1st part), Tuesday (5th) and
+# Wednesday (4th). Drik's markup lists a second time range after the Tuesday
+# Gulikai cell (10:46 PM-11:39 PM); it belongs to the Dur Muhurtam row that
+# follows, and Drik prints exactly one Gulikai window per day. Do not derive a
+# row from this codebase; read the URL.
 GULIKAI_ALMANAC: tuple[tuple[str, str, str, str, str, str], ...] = (
     # https://www.drikpanchang.com/panchang/day-panchang.html?date=06/11/2026
     ("2026-11-06", "Fri", "06:37", "17:33", "07:59", "09:21"),
@@ -1083,6 +1085,12 @@ GULIKAI_ALMANAC: tuple[tuple[str, str, str, str, str, str], ...] = (
     ("2026-11-09", "Mon", "06:39", "17:31", "13:26", "14:48"),
     # https://www.drikpanchang.com/panchang/day-panchang.html?date=12/11/2026
     ("2026-11-12", "Thu", "06:41", "17:29", "09:23", "10:44"),
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=07/11/2026
+    ("2026-11-07", "Sat", "06:37", "17:32", "06:37", "07:59"),
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=10/11/2026
+    ("2026-11-10", "Tue", "06:40", "17:30", "12:05", "13:26"),
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=11/11/2026
+    ("2026-11-11", "Wed", "06:40", "17:29", "10:44", "12:05"),
 )
 
 # Drik prints whole minutes and the app computes to the second. Measured
@@ -1191,9 +1199,15 @@ def gate_8_gulika() -> list[str]:
                 f"{SUNRISE_TOLERANCE_MIN}; daylight_ordinary={p.daylight_ordinary})"
             )
 
-    covered = sorted({r[1] for r in GULIKAI_ALMANAC})
-    print(f"  almanac rows cover {', '.join(covered)}; "
-          f"Tue/Wed/Sat rest on Rao's table alone (known gap)")
+    covered = {r[1] for r in GULIKAI_ALMANAC}
+    missing = [a for a in _WEEKDAY_ABBR if a not in covered]
+    print(f"  {'ok  ' if not missing else 'FAIL'} almanac rows cover "
+          f"{', '.join(a for a in _WEEKDAY_ABBR if a in covered)}")
+    if missing:
+        failures.append(
+            f"no almanac row for {', '.join(missing)} — those weekdays would rest "
+            "on Rao's table alone, which is the gap this gate exists to close"
+        )
     return failures
 
 

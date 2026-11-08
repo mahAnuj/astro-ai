@@ -86,6 +86,10 @@ from datetime import datetime, timedelta, timezone
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 MEASUREMENTS = ROOT / "measurements"
 
+sys.path.insert(0, str(ROOT / "src"))
+
+from astro_ai.ops_data import _last_run_failed  # noqa: E402
+
 #: A week. Both trend findings compare the newest committed snapshot against
 #: the oldest one at least this old, so a single bad day cannot fire either.
 TREND_DAYS = 7
@@ -236,6 +240,25 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
                 "`collect_agent_performance.py` flagged this loop. A loop that "
                 "does not run produces nothing, and nothing is indistinguishable "
                 "from a quiet day on every other tile.", "/admin/ops")
+        # #738 item 1. `alerts` grades the SCHEDULE, so a weekly loop whose
+        # last run was red between slots (`not-due-yet` / `ok` + `last_run_health:
+        # red`) is in no alert and this carrier filed nothing, while /admin/ops
+        # showed it amber. The predicate is ops_data's own -- one fact, one
+        # definition, so the page and the issue cannot disagree (#628).
+        #
+        # ONE finding naming every such loop: the carrier files one issue per
+        # `kind` and drops repeats, so a finding per loop would announce only
+        # the first and hide the rest.
+        flagged = set(agents.get("alerts") or [])
+        failed = sorted(r.get("workflow") or "?" for r in agents.get("loops") or []
+                        if _last_run_failed(r) and r.get("workflow") not in flagged)
+        if failed:
+            add("loop-last-run-failed", "amber",
+                f"{', '.join(failed)}: last run failed",
+                "The schedule verdict is fine, so `agents.json` raised no alert, but the "
+                "most recent run of each loop named here was red. A weekly loop is not "
+                "re-run before its next slot, so nothing else will notice. Check whether "
+                "a fix has landed since; if one has, dispatch the workflow.", "/admin/ops")
         d = agents.get("delivery") or {}
         y = d.get("yield_pct")
         if isinstance(y, (int, float)) and d.get("ok") and y < YIELD_FLOOR_PCT:

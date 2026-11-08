@@ -311,8 +311,8 @@ def _sun_rashi_at_ist_noon(d: date) -> int:
 
     Independent of `adhik_maas` — this calls the ephemeris directly, so Gate 2
     never asks the detector where a month boundary is. (The Lahiri sidereal mode
-    it needs is process-global and is set by importing `astro_ai.chart`, which
-    importing `adhik_maas` above already did.) Noon is far enough from a
+    it needs is per thread (#762); this gate runs on the main thread, where importing
+    `astro_ai.chart` selects it, so the direct call is safe here and only here.) Noon is far enough from a
     sankranti instant for every case in range; the gate fails loudly rather than
     guessing if a year does not yield exactly one candidate.
     """

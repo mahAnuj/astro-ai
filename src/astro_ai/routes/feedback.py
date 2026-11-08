@@ -26,7 +26,8 @@ router = APIRouter()
 @router.post("/feedback")
 async def submit_feedback(
     request: Request,
-    type: str = Form("other"),
+    # Python name avoids shadowing the builtin; the posted field stays `type`.
+    feedback_type: str = Form("other", alias="type"),
     message: str = Form(""),
     email: str = Form(""),
     page: str = Form(""),
@@ -39,7 +40,7 @@ async def submit_feedback(
     """
     user_agent = request.headers.get("user-agent", "")
     ok, msg, entry = feedback.add(
-        type=type, message=message, email=email,
+        type=feedback_type, message=message, email=email,
         page=page, user_agent=user_agent,
     )
     if not ok:
@@ -48,7 +49,7 @@ async def submit_feedback(
     # Telegram alert for the owner — feedback should never sit unread.
     try:
         notify.feedback_submitted(
-            type=entry["type"] if entry else type,
+            type=entry["type"] if entry else feedback_type,
             message=entry["message"] if entry else message,
             page=entry.get("page", "") if entry else page,
             email=entry.get("email", "") if entry else email,

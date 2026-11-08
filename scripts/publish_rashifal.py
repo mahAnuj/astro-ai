@@ -20,6 +20,10 @@ Checks, in order, all of them fatal:
   4. No body names Rahu Kaal / Abhijit, or any clock time (#513).
   5. No markdown survived (the page renders raw under `whitespace-pre-line`).
 
+Then one check that is REPORTED, not fatal (#513): English only, each rashi's
+opening sentence against yesterday's published reading of the same rashi.
+`opening_notes` says why it is not fatal yet.
+
 Usage:
     uv run python scripts/publish_rashifal.py --lang en --file /tmp/rashifal-en.txt
     uv run python scripts/publish_rashifal.py --lang en --file ... --dry-run
@@ -34,14 +38,14 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from astro_ai import storage                                              # noqa: E402
-from astro_ai.rashifal_quality import NAKSHATRAS, check_reading
+from astro_ai.rashifal_quality import NAKSHATRAS, check_reading, opening_repeats
 from astro_ai.rashifal_derive import (combined_keys, parse_sectioned_reading,  # noqa: E402
                                       sections_by_rashi)
 
@@ -142,6 +146,27 @@ def validate(text: str, day: str = "") -> list[str]:
         if not _MIN_WORDS <= words <= _MAX_WORDS:
             fails.append(f"{name}: {words} words, outside {_MIN_WORDS}-{_MAX_WORDS}")
     return fails
+
+
+def opening_notes(text: str, previous_text: str) -> list[str]:
+    """One line per rashi whose opening sentence repeats yesterday's (#513).
+
+    REPORTED, NOT FATAL, deliberately. Every check in `validate` can be answered
+    by regenerating; this one has no measured base rate yet (the stored history
+    was not readable when it was written), and a fatal check with an unknown
+    firing rate would drop whole days to the Groq fallback. The job log carries
+    the lines, so the rate becomes a number; make it fatal only once it is one.
+    English only -- `opening_repeats` documents why. An empty `previous_text`
+    (no blob for yesterday under today's prompt fingerprint) yields no notes.
+    """
+    before = {_rashi_of(t): b for t, b in parse_sectioned_reading(previous_text or "")}
+    notes = []
+    for title, body in parse_sectioned_reading(text or ""):
+        shared = opening_repeats(before.get(_rashi_of(title), ""), body)
+        if shared:
+            notes.append(f"{_rashi_of(title)}: opening shares {', '.join(shared)} "
+                         f"with yesterday's")
+    return notes
 
 
 # The rashifal day is the IST day, and this job runs when the two calendars
@@ -300,6 +325,17 @@ def main() -> int:
 
     print("\nOK — 12 sections, all attributable, none naming a planet, "
           "a window, a clock time or carrying markdown.")
+    if args.lang == "en":
+        try:
+            yesterday = (date.fromisoformat(args.date) - timedelta(days=1)).isoformat()
+            prior = storage.get(combined_keys(args.lang, yesterday)[1]) or ""
+            notes = opening_notes(text, prior) if prior.strip() else []
+            print(f"cross-day openings (not fatal): "
+                  f"{len(notes) if prior.strip() else 'yesterday unreadable, not checked'}")
+            for n in notes:
+                print(f"  - {n}")
+        except Exception as exc:  # noqa: BLE001 - a measurement never blocks the publish
+            print(f"publish_rashifal: cross-day check skipped ({exc}).", file=sys.stderr)
     if args.dry_run:
         print("--dry-run: nothing written.")
         return 0
