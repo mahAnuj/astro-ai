@@ -316,11 +316,24 @@ def read_objective(path: str = "OBJECTIVE.md") -> str:
     p = Path(path)
     if not p.is_file():
         return ""
+    # The FIRST PARAGRAPH of the first blockquote, joined, not its first line
+    # (2026-11-08). A quote that wraps -- OBJECTIVE.md's did when the owner's
+    # words were set down on 2026-11-06 -- cut /admin/ops off mid-sentence at
+    # "increase the user base for". The paragraph ends at a bare `>` line or the
+    # end of the quote.
+    parts: list[str] = []
     for line in p.read_text().split("\n"):
         s = line.strip()
         if s.startswith(">"):
-            return _strip_markup(s.lstrip("> ").strip())
-    return ""
+            body = s.lstrip(">").strip()
+            if not body:
+                if parts:
+                    break
+                continue
+            parts.append(body)
+        elif parts:
+            break
+    return _strip_markup(" ".join(parts)) if parts else ""
 
 
 def build(issues: list[dict], *, repo: str, objective: str = "",

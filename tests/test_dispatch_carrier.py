@@ -32,7 +32,8 @@ SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "dispatch_cycle.sh"
 
 
 def _fake_gh(tmp_path: Path, *, state="OPEN", busy=0, busy_qa=0, runs=("11", "22"),
-             status_seq=("in_progress",), pr_state=None, issue_url=None) -> Path:
+             status_seq=("in_progress",), pr_state=None, issue_url=None,
+             comments_left=0) -> Path:
     """A `gh` that answers only what the script asks, from shell case matching.
 
     `issue view` and `pr view` are answered SEPARATELY because the script must
@@ -59,6 +60,7 @@ case "$*" in
       if [ -f "{tmp_path}/dispatched" ]; then echo '{runs[1]}'; else echo '{runs[0]}'; fi ;;
   *"workflow run"*)       : > "{tmp_path}/dispatched"; echo 'dispatched' ;;
   *"run view"*)           echo '{status_seq[0]} ' ;;
+  *"api repos/"*"/comments"*) echo '{comments_left}' ;;
   *) echo "UNEXPECTED gh $*" >&2; exit 9 ;;
 esac
 """)
@@ -368,3 +370,30 @@ def test_a_QA_round_IS_queued_behind_another_QA_round(tmp_path):
 def test_a_build_cycle_still_waits_for_a_build_cycle_and_ignores_QA_rounds(tmp_path):
     assert "QUEUED" in _run(tmp_path, "issue=409", busy=1, busy_qa=0).stdout
     assert "would dispatch" in _run(tmp_path, "issue=409", busy=0, busy_qa=1).stdout
+
+
+
+# --- a run that finishes within 90s (2026-11-08, #782) ----------------------
+
+def test_a_run_that_FAILS_within_90s_is_still_a_failed_start(tmp_path):
+    """#421's shape: the run concluded failure on arrival -- even if a comment
+    landed, a failed run is a failed run."""
+    p = _run(tmp_path, "issue=782\n", dry=False, status_seq=("completed failure",),
+             comments_left=1)
+    assert p.returncode == 1 and "See #421" in p.stdout
+
+
+def test_a_quick_success_that_left_NO_trace_is_still_a_failed_start(tmp_path):
+    """A green run that wrote nothing is indistinguishable from a no-op."""
+    p = _run(tmp_path, "issue=782\n", dry=False, status_seq=("completed success",),
+             comments_left=0)
+    assert p.returncode == 1 and "See #421" in p.stdout
+
+
+def test_a_quick_success_that_commented_is_a_cycle_that_stood_down(tmp_path):
+    """#782: the cycle read the issue, found only a workflow edit left, commented
+    and stopped. The queue retried it twice and went red both times."""
+    p = _run(tmp_path, "issue=782\n", dry=False, status_seq=("completed success",),
+             comments_left=1)
+    assert p.returncode == 0, p.stdout + p.stderr
+    assert "stood down" in p.stdout and "See #421" not in p.stdout
