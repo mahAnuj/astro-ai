@@ -35,6 +35,20 @@ TIMEOUT = 60
 SA = "agent-analytics@bhagya-500701.iam.gserviceaccount.com"
 
 
+class ApiError(SystemExit):
+    """A SystemExit that remembers the HTTP status (#782).
+
+    It stays a SystemExit with the same message so every caller that lets it
+    propagate behaves exactly as before; a caller that needs to tell a 400 (GA4:
+    an unregistered customEvent dimension) from a 403 or a 5xx catches this and
+    reads `.status`. Without it the two are indistinguishable strings.
+    """
+
+    def __init__(self, message: str, status: int):
+        super().__init__(message)
+        self.status = status
+
+
 def token() -> str:
     import google.auth
     import google.auth.transport.requests as _tr
@@ -76,7 +90,7 @@ def post(url: str, body: dict, bearer: str) -> dict:
         # must be added inside GA4 (Property access management) and Search
         # Console (Users and permissions) separately. Project IAM does not cover
         # either of them.
-        raise SystemExit(f"HTTP {e.code} from {url.split('/')[2]}\n{detail}") from None
+        raise ApiError(f"HTTP {e.code} from {url.split('/')[2]}\n{detail}", e.code) from None
 
 
 def window(days: int) -> tuple[str, str]:
