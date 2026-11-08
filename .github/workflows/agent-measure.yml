@@ -125,6 +125,14 @@ jobs:
           # one query away. Measured 2026-10-14: 97 days of GA4 back to
           # 2026-06-28, which is when the property started collecting.
           uv run python scripts/fetch_ga4.py --days 28 --daily        > /tmp/ga4-daily.json
+          # GA4 event counts, including `cta_click` (#782; the flag is #785).
+          # NON-FATAL, unlike the lines above: it has never run against the
+          # live property, and the split it asks for needs custom dimensions the
+          # owner has to register. A failure leaves the file absent with a
+          # warning, which the analyst is told to read as "not measured", rather
+          # than failing the whole measurement run.
+          uv run python scripts/fetch_ga4.py --days 28 --events > /tmp/ga4-events.json \
+            || { echo "::warning::GA4 event export failed; /tmp/ga4-events.json is absent this run (#782)"; rm -f /tmp/ga4-events.json; }
           uv run python scripts/fetch_gsc.py --days 28 --by date      > /tmp/gsc-daily.json
           uv run python scripts/fetch_gsc.py --days 28 --trend --by page  > /tmp/gsc-trend-page.json
           uv run python scripts/fetch_gsc.py --days 28 --trend --by query > /tmp/gsc-trend-query.json
@@ -151,7 +159,9 @@ jobs:
               /tmp/ga4-daily.json        site-level sessions per day
               /tmp/gsc-trend-page.json   per-page change, this window vs the previous one
               /tmp/gsc-trend-query.json  per-query change, this window vs the previous one
-            All seven are written by the fetch step above. Until 2026-11-06 this list
+              /tmp/ga4-events.json       GA4 event counts incl. cta_click (#782); may be absent
+            All eight are written by the fetch step above (the events file only when its
+            export succeeded; absent means not measured, never zero). Until 2026-11-06 this list
             named only the first three, and runs reported decay as "not determinable"
             while the trend files sat unread on disk.
 
@@ -251,6 +261,7 @@ jobs:
           cp -f /tmp/gsc-band.json /tmp/gsc-all.json /tmp/ga4.json \
                 /tmp/gsc-daily.json /tmp/ga4-daily.json \
                 /tmp/gsc-trend-page.json /tmp/gsc-trend-query.json /tmp/measure/ 2>/dev/null || true
+          cp -f /tmp/ga4-events.json /tmp/measure/ 2>/dev/null || true
           date -u +%Y-%m-%dT%H:%M:%SZ > /tmp/measure/generated-at.txt
 
       - uses: actions/upload-artifact@v4
