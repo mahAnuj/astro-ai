@@ -47,6 +47,7 @@ from astro_ai.chart import (
     compute_transit_snapshot,
     RASHIFAL_REFERENCE_PLACE,
     rashifal_day_moment,
+    reading_today,
     symbol_for_rashi_label,
 )
 from astro_ai.llm import generate_rashifal, parse_sectioned_reading
@@ -320,7 +321,7 @@ def _email_context(*, lang: str, city: str | None, request_cache: dict | None = 
     date + lang, so they're computed once per (lang, date) and reused inside
     the same send call. Panchang is per-city.
     """
-    today = date.today()
+    today = reading_today()
     panchang = _panchang_for_city(city, request_cache=request_cache)
     return {
         "lang": lang,
@@ -425,13 +426,13 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
     Reuses _shared_three_tier so the Rashifal piggybacks on the same daily
     generation the morning blast uses — zero extra LLM cost.
     """
-    today_iso = date.today().isoformat()
+    today_iso = reading_today().isoformat()
     prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
 
     # Build today's Rashifal sections (may trigger generation if cold).
     try:
         neutral_chart = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
-        transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
+        transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(reading_today()))
         text = _daily_rashifal_text(
             lang=lang,
             today_iso=today_iso,
@@ -445,7 +446,7 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
                 # (llm.py takes `dict | None`). The welcome email's own
                 # festival CALLOUT does show all of them; this only shapes
                 # the generated prose.
-                festival=festivals.festival_for_date(date.today()),
+                festival=festivals.festival_for_date(reading_today()),
             ),
         )
         sections = [
@@ -467,7 +468,7 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
     # spies on this site, so an unpinned call is caught, not just a visible one.
     _welcome_transit = compute_transit_snapshot(
         compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE),
-        when=rashifal_day_moment(date.today()))
+        when=rashifal_day_moment(reading_today()))
     ctx["chandra_bala"] = _chandra_bala_for(_welcome_transit)
     ctx["gochara"] = _gochara_for(_welcome_transit)
     ctx["day_detail"] = _day_detail_for(_welcome_transit, lang)
@@ -533,13 +534,13 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
     if lang not in ("en", "hi"):
         return JSONResponse({"ok": False, "error": f"unsupported lang: {lang}"}, status_code=400)
 
-    today_iso = date.today().isoformat()
+    today_iso = reading_today().isoformat()
     started = _time.time()
     try:
         neutral_chart = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
     except ChartError as err:
         return JSONResponse({"ok": False, "error": f"Couldn't compute reference chart: {err}"}, status_code=500)
-    transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
+    transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(reading_today()))
     # A batch job: nobody is waiting, so the bucket may make a call wait up to the
     # job budget -- but never past this deadline (#475). One language fits today;
     # the deadline is the guarantee, not the arithmetic.
@@ -556,7 +557,7 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
                 transit=transit, today_iso=today_iso,
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
                 panchang=compute_panchang(neutral_chart),
-                festival=festivals.festival_for_date(date.today()),
+                festival=festivals.festival_for_date(reading_today()),
                 pace_deadline=pace_deadline,
             ),
         )
@@ -655,7 +656,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     so a leaked URL can't drain Brevo quota. Reads (or generates if needed)
     today's Rashifal per language, then per-subscriber sends via Brevo.
     """
-    today_iso = date.today().isoformat()
+    today_iso = reading_today().isoformat()
     prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
     site_url = _site_url()
 
@@ -666,7 +667,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
         neutral_chart = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
     except ChartError as err:
         return JSONResponse({"ok": False, "error": f"Couldn't compute reference chart: {err}"}, status_code=500)
-    transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
+    transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(reading_today()))
 
     sections_by_lang: dict[str, list] = {}
     # ONE deadline for the whole job, computed before the first language: en and
@@ -691,7 +692,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
                     # (llm.py takes `dict | None`), and this is the daily
                     # blast: a type error here fails the whole 7 AM send.
                     # The email's festival callout renders all of them.
-                    festival=festivals.festival_for_date(date.today()),
+                    festival=festivals.festival_for_date(reading_today()),
                     # Batch job (the 7 AM blast): see /admin/warm-rashifal.
                     pace_deadline=pace_deadline,
                 ),

@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import logging
 import os
-from datetime import date
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -26,6 +25,7 @@ from astro_ai.chart import (
     compute_panchang,
     compute_transit_snapshot,
     compute_vedic_flags,
+    reading_today,
 )
 from astro_ai.llm import generate_daily_reading
 from astro_ai.providers import AllProvidersExhausted
@@ -85,7 +85,7 @@ async def today(request: Request) -> HTMLResponse:
         saved_details.birth_date, saved_details.birth_time, saved_details.birth_place
     )
     prompt_fp = cache.fingerprint_prompt(DAILY_PROMPT_PATH)
-    cache_key = f"today:{chart_fp}:{date.today().isoformat()}:{lang}:{prompt_fp}"
+    cache_key = f"today:{chart_fp}:{reading_today().isoformat()}:{lang}:{prompt_fp}"
     try:
         reading_text = _cached(
             cache_key, route="today", lang=lang, ttl_days=1,
@@ -124,8 +124,8 @@ async def today(request: Request) -> HTMLResponse:
             "panchang": panchang,
             "gochar_impacts": gochar_impacts,
             "reading": reading_text,
-            "today_date": date.today().isoformat(),
-            "today_pretty": _pretty_date(date.today().isoformat(), lang),
+            "today_date": reading_today().isoformat(),
+            "today_pretty": _pretty_date(reading_today().isoformat(), lang),
             "lang": lang,
         },
     )
