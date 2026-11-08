@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-08T00:14:11Z",
+  "generated_at": "2026-11-08T08:37:27Z",
   "repo": "mahAnuj/astro-ai",
-  "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for",
-  "open": 116,
+  "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
+  "open": 115,
   "with_ask": 39,
   "by_area": {
-    "UNCLASSIFIED": 38,
+    "UNCLASSIFIED": 37,
     "INFRA": 13,
     "REDESIGN": 10,
     "UI": 9,
@@ -34,12 +34,12 @@
     "enhancement": 24,
     "bug": 22,
     "correctness": 13,
-    "chore": 12,
+    "chore": 11,
     "design": 6,
     "ui": 5
   },
   "by_priority": {
-    "unset": 90,
+    "unset": 89,
     "medium": 17,
     "high": 8,
     "low": 1
@@ -54,10 +54,13 @@
       "type": "enhancement",
       "priority": "unset",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-08T00:11:51Z",
-      "updated": "2026-11-08T00:11:51Z",
+      "updated": "2026-11-08T08:17:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -190,12 +193,14 @@
       "priority": "unset",
       "labels": [
         "enhancement",
-        "category:technical"
+        "category:technical",
+        "provenance:trusted",
+        "needs-evidence"
       ],
       "created": "2026-11-06T06:30:24Z",
-      "updated": "2026-11-06T06:30:24Z",
+      "updated": "2026-11-08T02:12:32Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 740,
@@ -214,21 +219,6 @@
       "updated": "2026-11-07T19:14:02Z",
       "blocked": false,
       "needs_evidence": true
-    },
-    {
-      "number": 739,
-      "title": "verify_workflow_permissions: a renamed workflow can slip past the TRUST_BOUNDARY check; HEAD~1 fallback untested (#610/#636 leftovers)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "chore"
-      ],
-      "created": "2026-11-06T06:16:27Z",
-      "updated": "2026-11-06T06:16:27Z",
-      "blocked": false,
-      "needs_evidence": false
     },
     {
       "number": 735,
