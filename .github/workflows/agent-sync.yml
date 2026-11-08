@@ -156,13 +156,20 @@ jobs:
       # commit job publishes to measurements/sync/chief-guidance.md, and every
       # planning prompt reads it. It may file issues (a definition fix goes
       # through the normal PR path, CLAUDE.md "Agents may edit their own
-      # definitions"). It cannot label, close, merge, dispatch or push: the
-      # deny list below names every command this repo uses for those -- `gh pr
-      # edit`/`close`/`review`/`merge`, `gh issue edit`/`close`, `gh label`,
-      # `gh api`, `gh workflow`, `git push`, `qa_verdict.sh`, `chief_clear.py`
-      # (independent QA on #747 found `gh issue edit` and `gh api` open). The
-      # list matches by command prefix, so it is a control on these commands,
-      # not a sandbox; the job's token scopes are the outer bound.
+      # definitions"). It is DENIED the commands this repo uses to label,
+      # close, merge, dispatch or push -- `gh pr edit`/`close`/`review`/
+      # `merge`, `gh issue edit`/`close`, `gh label`, `gh api`, `gh workflow`,
+      # `git push`, `qa_verdict.sh` (three spellings), `chief_clear.py`.
+      #
+      # WHAT THAT DOES NOT COVER, stated because independent QA on #747 found
+      # the earlier comment overclaiming it. The deny list is the ONLY
+      # mechanical control, and it matches by command prefix. The agent's `gh`
+      # and git run on the Claude App token, not `github.token`, so this job's
+      # `permissions:` block does NOT bound it (agent-steward.yml and
+      # agent-work.yml record the same). A form outside the prefixes -- `sh
+      # scripts/qa_verdict.sh`, `bash -c '...'`, `git -C . push`, a direct API
+      # call -- is held back by the prompt alone. Closing that for real needs a
+      # carrier `run:` step to hold every write, a design change not made here.
       # It runs in this job, not a new workflow, so it gains no scope
       # (verify_workflow_permissions refuses a new job that grants any).
       - name: Chief review
