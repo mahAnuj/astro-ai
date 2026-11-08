@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-08T11:42:51Z",
+  "generated_at": "2026-11-08T23:26:11Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 115,
@@ -11,17 +11,17 @@
     "UI": 9,
     "FEATURE": 7,
     "NUMEROLOGY": 5,
+    "BUG": 4,
     "MEASURE": 4,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "MUHURAT": 3,
-    "BUG": 3,
     "MATCHING": 2,
     "SECURITY": 2,
-    "OPS": 2,
     "SEO": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
+    "OPS": 1,
     "PRIVACY": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
@@ -32,20 +32,55 @@
   "by_type": {
     "untyped": 34,
     "enhancement": 24,
-    "bug": 22,
+    "bug": 23,
     "correctness": 13,
-    "chore": 11,
+    "chore": 10,
     "design": 6,
     "ui": 5
   },
   "by_priority": {
-    "unset": 89,
-    "medium": 17,
+    "unset": 90,
+    "medium": 16,
     "high": 8,
     "low": 1
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 803,
+      "title": "[BUG] test_panchang_strip_cache fails 18:30-24:00 UTC: #797 moved the today_iso fixture to IST, the strip cache keys on UTC — pr-gates red for every PR",
+      "ask": "",
+      "area": "BUG",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-08T22:55:37Z",
+      "updated": "2026-11-08T22:55:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 798,
+      "title": "[BUG] /festivals window starts at the UTC date (same shape as #593/#794)",
+      "ask": "",
+      "area": "BUG",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:low",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-08T17:15:47Z",
+      "updated": "2026-11-08T19:47:05Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 782,
       "title": "[MEASURE] fetch_ga4.py cannot export events, so #570's cta_click metric is undeterminable and #518/#276/#329 can only be scored through pages/session",
@@ -75,7 +110,7 @@
         "astrology-correctness"
       ],
       "created": "2026-11-07T20:12:37Z",
-      "updated": "2026-11-07T20:16:22Z",
+      "updated": "2026-11-08T21:00:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -117,7 +152,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-07T00:24:23Z",
-      "updated": "2026-11-07T22:51:57Z",
+      "updated": "2026-11-08T21:00:57Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -161,10 +196,13 @@
       "priority": "unset",
       "labels": [
         "category:technical",
-        "chore"
+        "chore",
+        "qa-fail",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-06T06:31:30Z",
-      "updated": "2026-11-06T06:31:30Z",
+      "updated": "2026-11-08T23:24:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -250,22 +288,6 @@
       "needs_evidence": false
     },
     {
-      "number": 726,
-      "title": "[OPS] Claude weekly quota 86% used",
-      "ask": "",
-      "area": "OPS",
-      "type": "chore",
-      "priority": "medium",
-      "labels": [
-        "priority:medium",
-        "chore"
-      ],
-      "created": "2026-11-05T15:43:27Z",
-      "updated": "2026-11-06T09:02:26Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 716,
       "title": "verify_rule_citations scans only chart.py — muhurat.py still cites BPHS, Muhurta Chintamani and Phaladeepika, none registered or held (UNSOURCED + gate gap)",
       "ask": "",
@@ -321,7 +343,7 @@
         "astrology-correctness"
       ],
       "created": "2026-11-05T00:20:33Z",
-      "updated": "2026-11-05T00:20:33Z",
+      "updated": "2026-11-08T20:59:59Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -365,7 +387,7 @@
         "chore"
       ],
       "created": "2026-11-03T20:55:15Z",
-      "updated": "2026-11-06T06:44:20Z",
+      "updated": "2026-11-08T21:00:59Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -526,26 +548,7 @@
         "needs-evidence"
       ],
       "created": "2026-10-29T23:50:30Z",
-      "updated": "2026-11-03T23:58:15Z",
-      "blocked": false,
-      "needs_evidence": true
-    },
-    {
-      "number": 593,
-      "title": "[BUG] /panchang shows yesterday's date, weekday and tithi from 00:00 to 05:30 IST while the home strip shows today's",
-      "ask": "",
-      "area": "BUG",
-      "type": "bug",
-      "priority": "low",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:low",
-        "provenance:trusted",
-        "needs-evidence"
-      ],
-      "created": "2026-10-29T23:50:13Z",
-      "updated": "2026-11-07T20:06:47Z",
+      "updated": "2026-11-08T14:10:03Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -608,7 +611,7 @@
         "needs-evidence"
       ],
       "created": "2026-10-28T23:11:01Z",
-      "updated": "2026-11-03T23:58:18Z",
+      "updated": "2026-11-08T21:00:56Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -694,12 +697,14 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "needs-evidence"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-24T22:53:58Z",
-      "updated": "2026-11-02T23:00:42Z",
+      "updated": "2026-11-08T19:30:11Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 503,
@@ -780,13 +785,14 @@
       "priority": "unset",
       "labels": [
         "bug",
+        "qa-pass",
         "provenance:trusted",
-        "needs-evidence"
+        "qa:in-cycle"
       ],
       "created": "2026-10-21T04:47:37Z",
-      "updated": "2026-10-24T14:22:11Z",
+      "updated": "2026-11-08T19:29:32Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 462,
@@ -975,7 +981,7 @@
         "qa:independent"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-07T23:49:58Z",
+      "updated": "2026-11-08T21:00:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1670,7 +1676,7 @@
         "bug"
       ],
       "created": "2026-08-07T15:59:26Z",
-      "updated": "2026-08-07T15:59:26Z",
+      "updated": "2026-11-08T21:00:01Z",
       "blocked": false,
       "needs_evidence": false
     },

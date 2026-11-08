@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-08T11:44:04Z)
+# Lessons — last 30 days (generated 2026-11-08T23:27:13Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -16,16 +16,15 @@ deterministic, no LLM.
 - **performance** — 6 QA FAIL(s): #524, #536, #565, #675, #747
 - **regression** — 15 QA FAIL(s): #536, #544, #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747
 - **security** — 8 QA FAIL(s): #328, #544, #564, #636, #712, #747
-- **tests** — 10 QA FAIL(s): #448, #536, #544, #550, #701, #747, #754
+- **tests** — 12 QA FAIL(s): #448, #536, #544, #550, #701, #747, #754, #801, #804
 - **tokens** — 12 QA FAIL(s): #536, #564, #649, #654, #660, #675, #747
 
 ## Our errors
 
-- QA FAIL verdicts: 54
+- QA FAIL verdicts: 56
 - reverted commits on main: 0
 - failed verify-production runs: 3
-- ops findings now: 2
-  - [red] loop-broken: agent-work.yml is broken
+- ops findings now: 1
   - [amber] loop-idle: Build lane idle 86% of the last 7d
 
 ## Our outcomes (analyst verdicts, latest per issue)

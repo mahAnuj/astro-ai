@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-08T11:44:04Z",
+ "generated_at": "2026-11-08T23:27:13Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -494,6 +494,24 @@
     "themes": [
      "grounding"
     ]
+   },
+   {
+    "number": 801,
+    "at": "2026-11-08T19:23:32Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/801#issuecomment-6725985824",
+    "summary": "QA: FAIL \u2014 verified at `e2227a3d01646f0ec0ed2d6b64e6e28dd3a495f1` Provenance qa:in-cycle. Defect reproduced on main; branch fixes a hard load of /ask?q=. FAIL: a boosted POST /ask -> 303 -> /ask?q=... starts with gaOverridden=false so the htmx:pushedIntoHistory handler returns, and ask.html:211 Anal",
+    "themes": [
+     "tests"
+    ]
+   },
+   {
+    "number": 804,
+    "at": "2026-11-08T23:04:03Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/804#issuecomment-6728402249",
+    "summary": "QA: FAIL \u2014 verified at `a8ffaeefa3e2e6c3332f2f8621caf4ddb66a38e3` Round 1 (independent dispatch, qa:in-cycle). Tree exits 0, 16 tests + 10 rows pass, each row red for the right reason, 10/10 caught by the scoped sweep (CONTROL not certifiable: #803 time-windowed failure). FAILS: (1) 'https://api.gro",
+    "themes": [
+     "tests"
+    ]
    }
   ],
   "reverts": [],
@@ -516,17 +534,10 @@
   ],
   "ops_findings": [
    {
-    "kind": "loop-broken",
-    "level": "red",
-    "title": "agent-work.yml is broken",
-    "detail": "`collect_agent_performance.py` flagged this loop. A loop that does not run produces nothing, and nothing is indistinguishable from a quiet day on every other tile.",
-    "where": "/admin/ops"
-   },
-   {
     "kind": "loop-idle",
     "level": "amber",
     "title": "Build lane idle 86% of the last 7d",
-    "detail": "144.8h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "detail": "144.9h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
@@ -534,8 +545,8 @@
  "error_themes": {
   "regression": 15,
   "copy": 13,
+  "tests": 12,
   "tokens": 12,
-  "tests": 10,
   "security": 8,
   "grounding": 8,
   "performance": 6,
@@ -743,8 +754,8 @@
   }
  ],
  "outcome_counts": {
-  "OTHER": 2,
   "PASS": 5,
+  "OTHER": 2,
   "PENDING": 9,
   "HIT": 2,
   "UNSCOREABLE": 8,
