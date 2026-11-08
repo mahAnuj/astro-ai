@@ -91,6 +91,22 @@ jobs:
       # Fetch first, as data, so the agent reads numbers rather than calling an
       # API mid-reasoning — and so a 403 fails here with a clear message instead
       # of halfway through a cycle.
+      # The app's own LLM usage: cache hits and tokens per route, from the GCS usage
+      # doc. HERE because this is the only job with GCS credentials; written
+      # straight into /tmp/measure so the commit job's `cp /tmp/measure/*.json`
+      # carries it to measurements/llm-usage.json with the GSC/GA4 files. The
+      # detector raises cache-low / token-ceiling from it (owner, 2026-11-06:
+      # "monitor the cache usage and see if it can increase the caching").
+      # continue-on-error: a GCS read failure must never cost the analyst's run.
+      - name: Snapshot the app's LLM usage
+        continue-on-error: true
+        env:
+          BHAGYA_STORAGE_BUCKET: shubhagya-cache-us
+        run: |
+          mkdir -p /tmp/measure
+          uv run python scripts/collect_llm_usage.py --out /tmp/measure/llm-usage.json \
+            || echo "::warning::LLM usage not snapshotted; measurements/llm-usage.json is the previous one"
+
       - name: Pull the numbers
         env:
           GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
@@ -340,6 +356,20 @@ jobs:
         run: |
           python3 scripts/collect_claude_usage.py --repo "$GH_REPO" --out measurements/claude_usage.json \
             || echo "::warning::Claude usage not refreshed; measurements/claude_usage.json is the previous one"
+
+      # The lessons ledger (owner, 2026-11-06: agents should "learn what they did
+      # but not helped" and "learn from other competitors"): our QA FAILs by theme,
+      # reverts, failed production checks, the analyst's verdicts, competitor
+      # patterns, current ops findings. AFTER the other collectors, because it
+      # runs the ops detector over the files they just wrote. No LLM.
+      - name: Collect lessons
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/collect_lessons.py --repo "$GH_REPO" --out-dir measurements \
+            || echo "::warning::lessons not refreshed; measurements/lessons.md is the previous one"
 
       # #393: the PR opened below must NOT be authored by `github-actions[bot]`.
       # Since 2026-06-11 GitHub holds the `pull_request` runs of a PR that bot

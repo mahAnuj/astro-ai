@@ -61,9 +61,10 @@ actually uses, which means the ranked queue rather than the label. That is not
 machine-readable today -- `latest.md` is an agent's prose -- and inventing a
 parser for it here would be guessing.
 
-CACHE HIT RATIO is a genuine gap and stays in `NOT_COVERED`: `ops_data`
-computes `hits` and `misses` (~line 1306) and raises nothing at any threshold.
-The number is rendered and never judged. It needs the GCS usage doc.
+CACHE HIT RATIO AND THE DAILY TOKEN CEILING were gaps in `NOT_COVERED` until
+2026-11-06: `ops_data` computed them and raised nothing. They are judged now from
+measurements/llm-usage.json (`cache-low`, `token-ceiling`), which
+scripts/collect_llm_usage.py writes from the GCS usage doc in agent-measure.
 
 EXIT CODES
   0  nothing found
@@ -124,6 +125,17 @@ WASTE_SHARE_ALERT = 0.40
 WASTE_MIN_CYCLES = 5
 #: The build lane idle this share of the window, with work open, is a finding.
 IDLE_SHARE_ALERT = 0.75
+#: The app's own Groq budget and cache (owner, 2026-11-06: "monitor the cache usage
+#: and see if it can increase the caching to reduce the token usage"). From
+#: measurements/llm-usage.json, written by scripts/collect_llm_usage.py in
+#: agent-measure's analyst job, the only job with GCS credentials. Absent file =
+#: not collected yet = no finding; these are judged only once a reading exists.
+CACHE_HIT_ALERT_PCT = 50       # overall, over the file's window (7 days)
+CACHE_MIN_CALLS = 200
+ROUTE_HIT_ALERT_PCT = 30       # any one route
+ROUTE_MIN_CALLS = 50
+GROQ_TPD = 200_000             # CLAUDE.md, "Token budget": the daily rashifal path's ceiling
+TOKEN_DAY_ALERT = 0.80
 
 #: What this script cannot see, named so silence is never read as health. Each
 #: entry is (concern, where it is computed, why a checkout cannot reach it).
@@ -132,9 +144,6 @@ NOT_COVERED = (
     ("provider exhaustion (the 'high demand' page)", "ops_data._alerts", "GCS event log"),
     ("RequestTooLarge / 413s", "ops_data._alerts", "GCS event log"),
     ("fallback rate", "ops_data._alerts", "GCS usage doc"),
-    ("daily token ceiling", "ops_data._alerts", "GCS usage doc"),
-    ("cache hit ratio", "NOTHING — computed, never alerted on",
-     "GCS usage doc; see this file's header"),
     ("whether a high-priority issue is getting fixed",
      "NOTHING — and the `priority:` label cannot answer it",
      "the loop ranks from measurements/prioritise/latest.md, which is prose"),
@@ -278,6 +287,42 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
                 f"first: stop dispatching ranked (`/agent-cycle`) cycles that end in "
                 f"nothing; space out the weekly agent loops; keep QA rounds to one "
                 f"per head. Do not add a parallel build lane until it resets.", "/admin/ops")
+    # --- the app's Groq budget and cache (2026-11-06) ------------------------
+    try:
+        llm = _read("llm-usage.json")
+    except FileNotFoundError:
+        llm = None                        # not collected yet: judge nothing
+    except (OSError, json.JSONDecodeError) as exc:
+        llm = None
+        unreadable.append(f"llm-usage.json ({exc.__class__.__name__})")
+    if llm:
+        calls, rate = int(llm.get("total_calls") or 0), int(llm.get("hit_rate_pct") or 0)
+        cold = [r for r in llm.get("by_route") or []
+                if int(r.get("calls") or 0) >= ROUTE_MIN_CALLS
+                and int(r.get("hit_rate_pct") or 0) < ROUTE_HIT_ALERT_PCT]
+        if (calls >= CACHE_MIN_CALLS and rate < CACHE_HIT_ALERT_PCT) or cold:
+            worst = ", ".join(f"{r['route']} {r['hit_rate_pct']}% of {r['calls']} calls "
+                              f"(~{r.get('tokens_per_miss', 0)} tok/miss)" for r in cold[:4])
+            add("cache-low", "amber",
+                f"LLM cache hit rate {rate}% over {llm.get('days')}d"
+                + (f"; cold routes: {len(cold)}" if cold else ""),
+                f"{calls} calls, {llm.get('cache_misses')} misses. Every miss spends Groq "
+                f"free-tier tokens. Cold routes: {worst or 'none below the route floor'}. "
+                f"Levers, cheapest first: normalise the cache key (date, rashi, language) so "
+                f"equivalent requests share an entry; lengthen the TTL where the output is "
+                f"date-stable; precompute the shared part in a scheduled Claude Code job (the "
+                f"#515 nightly-rashifal pattern) and serve it from cache; keep the shared "
+                f"prompt prefix ahead of the per-request part. Measure tokens before and "
+                f"after with scripts/verify_token_budget.py.", "/admin/ops")
+        peak = llm.get("peak_day_tokens")
+        if isinstance(peak, (int, float)) and peak >= GROQ_TPD * TOKEN_DAY_ALERT:
+            add("token-ceiling", "red" if peak >= GROQ_TPD else "amber",
+                f"Peak day used {round(peak / GROQ_TPD * 100)}% of the Groq daily budget",
+                f"{int(peak)} tokens on {llm.get('peak_day')} against ~{GROQ_TPD} TPD per "
+                f"model (CLAUDE.md, \"Token budget\"). Overshooting it is an outage, not "
+                f"slowness. Raise the cache hit rate first (see cache-low); move bulk generation "
+                f"to a scheduled Claude Code job; never widen a prompt to fill the gap. Adding "
+                f"a model is the owner's decision.", "/admin/ops")
     try:
         loop = _read("loop.json")
     except (OSError, json.JSONDecodeError) as exc:

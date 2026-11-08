@@ -384,20 +384,18 @@ def test_coverage_names_the_product_checks_this_script_cannot_see():
     """
     concerns = {c for c, _, _ in det.NOT_COVERED}
     assert "LLM error rate" in concerns
-    assert "daily token ceiling" in concerns
-    assert any("cache hit ratio" in c for c in concerns)
 
 
-def test_the_cache_hit_ratio_is_declared_as_alerted_on_by_NOTHING():
-    """Found while writing this, and it is a gap not a blind spot.
-
-    `ops_data` computes `cache_hits` and `cache_misses` and raises no alert at
-    any threshold. The number is rendered and never judged. Recording that in
-    `NOT_COVERED` is what stops the next reader assuming the dashboard has it
-    covered.
+def test_the_cache_hit_ratio_and_token_ceiling_are_no_longer_declared_uncovered():
+    """Replaced test_the_cache_hit_ratio_is_declared_as_alerted_on_by_NOTHING
+    on 2026-11-06. That test asserted a GAP, and this PR closes the gap:
+    `cache-low` and `token-ceiling` now judge measurements/llm-usage.json. So the
+    entry leaves NOT_COVERED, and this asserts it stays out, so the header
+    cannot claim a blind spot the detector no longer has. The findings
+    themselves are tested at the end of this file.
     """
-    entry = next(e for e in det.NOT_COVERED if "cache hit ratio" in e[0])
-    assert "NOTHING" in entry[1]
+    concerns = " ".join(c for c, _, _ in det.NOT_COVERED)
+    assert "cache hit ratio" not in concerns and "daily token ceiling" not in concerns
 
 
 def test_coverage_is_printed_on_request_and_not_by_default(tmp_path, monkeypatch, capsys):
@@ -491,3 +489,55 @@ def test_an_idle_build_lane_is_a_finding_that_points_at_the_quota_first(tmp_path
     f, _ = _with(tmp_path, monkeypatch, waste=_waste(idle=0.80))
     hit = next(x for x in f if x["kind"] == "loop-idle")
     assert "Claude weekly quota first" in hit["detail"]
+
+
+
+# ------------------------------------------- the app's Groq budget and cache
+
+def _with_llm(tmp_path, monkeypatch, llm: dict | None):
+    root = _repo(tmp_path, _agents(), [(8, _issues()), (0, _issues())])
+    if llm is not None:
+        (root / "measurements" / "llm-usage.json").write_text(json.dumps(llm))
+    monkeypatch.setattr(det, "ROOT", root)
+    monkeypatch.setattr(det, "MEASUREMENTS", root / "measurements")
+    return det.find(now=NOW)
+
+
+def _llm(rate=80, calls=1000, routes=(), peak=50_000):
+    return {"days": 7, "total_calls": calls, "cache_misses": calls * (100 - rate) // 100,
+            "hit_rate_pct": rate, "peak_day_tokens": peak, "peak_day": "2026-11-05",
+            "by_route": list(routes)}
+
+
+def test_a_low_overall_cache_hit_rate_is_a_finding_that_names_its_levers(tmp_path, monkeypatch):
+    """Owner, 2026-11-06: watch the cache and raise it to cut tokens."""
+    findings, _ = _with_llm(tmp_path, monkeypatch, _llm(rate=30))
+    f = next(f for f in findings if f["kind"] == "cache-low")
+    assert "Claude Code job" in f["detail"] and "cache key" in f["detail"]
+
+
+def test_one_cold_route_is_named_even_when_the_overall_rate_is_fine(tmp_path, monkeypatch):
+    cold = {"route": "ask", "calls": 120, "hit_rate_pct": 10, "tokens_per_miss": 1900}
+    findings, _ = _with_llm(tmp_path, monkeypatch, _llm(rate=85, routes=[cold]))
+    f = next(f for f in findings if f["kind"] == "cache-low")
+    assert "ask 10% of 120 calls" in f["detail"]
+
+
+def test_a_healthy_cache_and_a_quiet_route_raise_nothing(tmp_path, monkeypatch):
+    quiet = {"route": "rare", "calls": 5, "hit_rate_pct": 0}
+    findings, _ = _with_llm(tmp_path, monkeypatch, _llm(rate=85, routes=[quiet]))
+    assert "cache-low" not in _kinds(findings) and "token-ceiling" not in _kinds(findings)
+
+
+def test_the_daily_token_ceiling_goes_amber_at_80pc_and_red_at_100pc(tmp_path, monkeypatch):
+    findings, _ = _with_llm(tmp_path, monkeypatch, _llm(peak=170_000))
+    assert next(f for f in findings if f["kind"] == "token-ceiling")["level"] == "amber"
+    findings, _ = _with_llm(tmp_path / "red", monkeypatch, _llm(peak=210_000))
+    assert next(f for f in findings if f["kind"] == "token-ceiling")["level"] == "red"
+
+
+def test_no_usage_file_yet_is_neither_a_finding_nor_unreadable(tmp_path, monkeypatch):
+    """Judged only once a reading exists; an absent file is not zero."""
+    findings, unreadable = _with_llm(tmp_path, monkeypatch, None)
+    assert not ({"cache-low", "token-ceiling"} & _kinds(findings))
+    assert not any("llm-usage" in u for u in unreadable)
