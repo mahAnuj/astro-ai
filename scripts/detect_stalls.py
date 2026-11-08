@@ -317,7 +317,17 @@ def find_stalls(hours: float) -> list[dict]:
 
     for pr in prs:
         n, age = pr["number"], age_hours(pr["createdAt"])
-        if age < hours:
+        # A HELD PR THAT IS READY FOR CHIEF IS NOT TOO YOUNG (2026-11-08). The
+        # age gate exists so a PR still being built is not called stuck. A PR
+        # held by `needs-human-review` with `qa-pass` and no `qa-fail` has
+        # nothing left to build; only chief's ruling remains. `agent-merge` now
+        # dispatches the steward the moment it applies the hold, and with the
+        # 4h gate in front that dispatch saw nothing. Every other young PR is
+        # still skipped, and this one only reaches the boundary arm (below).
+        young_held = (age < hours and not pr["isDraft"]
+                      and {"needs-human-review", "qa-pass"} <= {l["name"] for l in pr["labels"]}
+                      and not {"qa-fail", "chief-cleared"} & {l["name"] for l in pr["labels"]})
+        if age < hours and not young_held:
             continue
         # The owning issue, taken from the branch name rather than guessed. The
         # steward routes on this, so leaving it to be inferred downstream is how
@@ -347,6 +357,8 @@ def find_stalls(hours: float) -> list[dict]:
         checks = {k: v for k, v in latest_checks(pr["headRefOid"]).items() if k != "merge"}
         green = bool(checks) and all(v == "success" for v in checks.values())
         pushable = agent_pushable(n)
+        if young_held and not green:
+            continue
 
         if pr["isDraft"] and "qa-fail" in labels:
             # A DRAFT HELD OPEN BY A VERDICT IS NOT A DRAFT NOBODY READIED, and
