@@ -1,0 +1,747 @@
+{
+ "generated_at": "2026-11-08T08:38:34Z",
+ "window_days": 30,
+ "errors": {
+  "qa_fail": [
+   {
+    "number": 328,
+    "at": "2026-10-12T03:00:53Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/328#issuecomment-6116961722",
+    "summary": "QA: FAIL (round 1, tip 312e3ed) \u2014 code half passes, copy half does not.  **Passes (executed):** real-route TestClient runs with `httpx.AsyncClient.post` captured. On main, Telegram alerts and `form_*` events carried name/DOB/time/place; on the branch they carry only rashi triple, lang, model, tokens",
+    "themes": [
+     "security",
+     "copy"
+    ]
+   },
+   {
+    "number": 448,
+    "at": "2026-10-20T14:25:46Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/448#issuecomment-6293171933",
+    "summary": "## QA verdict: FAIL (qa:independent) -- one claim does not hold when measured; everything else passed  Reviewed cold in a detached worktree of 2becf8b against origin/main 69353a5. `data/` is absent; no astrological or numerological claim is shipped, so the sourcing rule has nothing to check. No prom",
+    "themes": [
+     "tests",
+     "i18n"
+    ]
+   },
+   {
+    "number": 524,
+    "at": "2026-10-25T16:36:18Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/524#issuecomment-6400257351",
+    "summary": "QA: FAIL \u2014 verified at `029d1f55ccf870a48ae1bcc7ad0565239ed9b491` QA r3: criterion 6 FIXED (0 of 90 days diverge, was 10) but B1 the day-moment pin is unguarded (reverting it at all 5 call sites leaves 1229 tests green; chart.py:542 claims otherwise), B2 house-8 remedy tier unsourced (vedic_referenc",
+    "themes": [
+     "grounding"
+    ]
+   },
+   {
+    "number": 524,
+    "at": "2026-10-25T17:05:01Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/524#issuecomment-6400563265",
+    "summary": "QA: FAIL \u2014 verified at `8ab47b24dfa0426353a3d97d43a7e372db39b2ad` QA r4: B1 (11 pin sites each go red when reverted, redone independently), B2 (house 8 dropped; 90 Leo rashi-days change, nothing else), T1 (gate hi 6,116 vs real 6,118), T2, S1 all FIXED; 1271 passed, 15 gates exit 0, 55/55 scoped mut",
+    "themes": [
+     "grounding",
+     "i18n",
+     "performance"
+    ]
+   },
+   {
+    "number": 536,
+    "at": "2026-10-26T01:50:17Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406442682",
+    "summary": "QA: FAIL \u2014 verified at `9caa9b6637d300c52621bce0a2baae2aa7bb1942` Round 3: BUG-1..5 fixed; 3 new defects from the fix commit: garbled panel sentence (D1), over-claimed skip_full diagnostic (D2), test gaps on skip_full/raw_mid/zero-remaining (D3)",
+    "themes": [
+     "grounding",
+     "tokens",
+     "tests",
+     "regression"
+    ]
+   },
+   {
+    "number": 536,
+    "at": "2026-10-26T02:03:33Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406590521",
+    "summary": "QA: FAIL \u2014 verified at `3857f27f5f06f27f6a3797694b98bff01fb92260` Round 4: D1/D3 fixed and mutant-verified; one blocker: stale 'fires forever / cannot be measured' comment at ops_data.py:1152-1157 (D2 over-claim survives); N1/N2/N3 non-blocking wording",
+    "themes": [
+     "tokens",
+     "copy"
+    ]
+   },
+   {
+    "number": 536,
+    "at": "2026-10-26T02:11:54Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406687161",
+    "summary": "QA: FAIL \u2014 verified at `67635814690438b7c4b6b5ff2b4a8908538ff298` Round 5: F1 fixed; N2 sentence 'closer calls cannot help a bucket-sized request' over-claims (fake clock: counted sample in a ~1s window); N1 wording not applied in probe comment/test docstring",
+    "themes": [
+     "tokens",
+     "tests",
+     "copy",
+     "performance"
+    ]
+   },
+   {
+    "number": 536,
+    "at": "2026-10-26T02:20:49Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406792982",
+    "summary": "QA: FAIL \u2014 verified at `6beaf8a7dd8d613f8f1ce285ebc1eecf5b9da2a6` Round 6: one blocker: ratelimit_probe.py:229-232 claims a bucket-sized request 'still yields a counted sample in a window about a second wide'; fake clock shows none under admission charging at realistic latency and none for the hi re",
+    "themes": [
+     "tokens",
+     "tests",
+     "copy",
+     "performance"
+    ]
+   },
+   {
+    "number": 544,
+    "at": "2026-10-26T16:27:28Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6421317944",
+    "summary": "QA: FAIL \u2014 verified at `2a78417d0822f55b123931056b2e5cbeb33d1e1f` Allow-list is not read-only, proven by execution through validate_issue.py with a trusted-author fixture: sed 1e/s///e executes commands and w writes files; git ls-remote --upload-pack=id runs a program; sort -o, uniq in out, git diff",
+    "themes": []
+   },
+   {
+    "number": 544,
+    "at": "2026-10-26T16:44:19Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6421710987",
+    "summary": "QA: FAIL \u2014 verified at `47762ba2998a53d8d8f88d441c248a99dd88e0c8` Round 2 (re-verifying the cycle's own fix; round 1 fixes held: sed e/w, upload-pack, sort/uniq/jq/rg, -i.bak, gh --method=/-XDELETE/-fa=b, comment gate, exit-code and trusted/comment wiring all RED under mutation; 125 tests pass; live",
+    "themes": [
+     "security",
+     "regression"
+    ]
+   },
+   {
+    "number": 544,
+    "at": "2026-10-26T18:02:22Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6423584656",
+    "summary": "QA: FAIL \u2014 verified at `e37a411eff5049fdcdd490a37764de640964202d` Round 3 (dispatched qa agent, attacked e37a411 by execution). BLOCKING: gh api --jq string interpolation prints GH_TOKEN: _bad_jq strips \"...\" literals first, so '\"\\(env.GH_TOKEN|split(\"\")|join(\".\"))\"' vets read-only, child gets GH_TO",
+    "themes": [
+     "tests",
+     "copy"
+    ]
+   },
+   {
+    "number": 544,
+    "at": "2026-10-30T18:24:03Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6530377333",
+    "summary": "QA: FAIL \u2014 verified at `bf2b17df67f81ba5e8d5a1b283b8ec0fe22f78bb` (round 4, independent, dispatched by chief; I had no hand in this PR)  **One secret read remains, found by execution through the real pipeline. A fix that can be broken is a FAIL.**  ## BLOCKING: a glob that expands to a name equal to",
+    "themes": [
+     "tests",
+     "security"
+    ]
+   },
+   {
+    "number": 556,
+    "at": "2026-10-27T02:32:25Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/556#issuecomment-6432293873",
+    "summary": "QA: FAIL \u2014 verified at `b96ef93a5c65acdb1e7e3e6cccf80a2979579900` QA round 1 FAIL at b96ef93. Prose, tokens (8 golden messages identical, worst case 6,757/8,000), pytest 1397 passed, mutation 2908/0 hold. D1 (blocking): gate misses a live copy of the retired claim \u2014 mars-remedies.html:139 'does not ",
+    "themes": []
+   },
+   {
+    "number": 550,
+    "at": "2026-10-28T17:54:44Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/550#issuecomment-6476537145",
+    "summary": "QA: FAIL (independent round, provenance `independent`) \u2014 verified at `0b1ffc0f02a04e44c17774dc7c73296704bad721`  All three earlier findings are closed by execution. But the round-2 fix that made `success` reach the reporter introduced a new defect: a red `main` gets its sentinel closed by the next d",
+    "themes": [
+     "tests",
+     "copy"
+    ]
+   },
+   {
+    "number": 562,
+    "at": "2026-10-27T16:46:13Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/562#issuecomment-6447897527",
+    "summary": "QA: FAIL \u2014 verified at `87e3bd4` QA round 1 FAIL, one defect: the count '4 of the 7 shortfalls ... PRs #481/#474/#471/#410' in ARCHITECTURE.md (2026-10-27 row) and the comment above KEYWORD_CLOSE_WINDOW is wrong -- the change excuses 5 of 7 (also #394 via PR #454, closed by mahAnuj 1s after the 2026",
+    "themes": []
+   },
+   {
+    "number": 565,
+    "at": "2026-10-27T18:41:28Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/565#issuecomment-6450592207",
+    "summary": "QA: FAIL \u2014 verified at `7a946a6debfa7bf56124496ac3431aa928cb8cc3` QA round 1 FAIL, 2 prose defects, code correct. (1) ARCHITECTURE.md:814 'Rejected' list still says the start-pacer is 'built, tested, and disabled... Code retained for if pressure returns' - code is deleted and 'tested' is the claim t",
+    "themes": [
+     "performance"
+    ]
+   },
+   {
+    "number": 564,
+    "at": "2026-10-28T15:52:28Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/564#issuecomment-6473747270",
+    "summary": "## QA verdict: FAIL (round 1, independent) -- head `f0d3f736c4c14f6cae3395601b3f6e7b085609eb`  I had no hand in this PR and read it cold. This is a docs-only change (README +97, `docs/agent-cycle.html` +699), so there is no runtime code, no token budget and no latency claim to measure. Its stated pu",
+    "themes": [
+     "tokens",
+     "security",
+     "copy"
+    ]
+   },
+   {
+    "number": 564,
+    "at": "2026-10-30T18:11:12Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/564#issuecomment-6530091127",
+    "summary": "## QA verdict: FAIL (round 4, independent) \u2014 head `027d734a12102578f5c7c2871526c3b32c9267ce`  Read cold in a fresh detached worktree at the head, then again with current `main` (`ff86145`) merged in. Claims re-derived from `.github/workflows/*`, `.claude/agents/*`, `.claude/commands/*` and `scripts/",
+    "themes": [
+     "tokens",
+     "i18n",
+     "copy"
+    ]
+   },
+   {
+    "number": 635,
+    "at": "2026-11-01T02:37:44Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/635#issuecomment-6552420968",
+    "summary": "QA: FAIL \u2014 verified at `28c70d5a7ce3118168b96aba59f0a3ece62d5624` Change is disclosure-only and clean (1603 passed, mutations (a)-(d) red, 375px ok, 0 tokens) but the same page family still calls the bands classical: templates/matching.html:167, learn/kundali-matching-ashtakoot-guna-milan.html:80-86",
+    "themes": [
+     "grounding"
+    ]
+   },
+   {
+    "number": 645,
+    "at": "2026-11-01T04:32:02Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/645#issuecomment-6553438016",
+    "summary": "QA: FAIL \u2014 verified at `76da6b08a411e1bd356042a34bd20fdc1078e9c0` FAIL (narrow; the code is correct). Finding 1: the kundli call-site guard in routes/kundli.py (_render_natal_for) is unprotected against inversion. Flipping 'if not probe.suppresses_owner_alert(request, \"kundli_generated\")' to 'if pro",
+    "themes": []
+   },
+   {
+    "number": 642,
+    "at": "2026-11-02T12:46:46Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/642#issuecomment-6577506479",
+    "summary": "QA: FAIL \u2014 verified at `95df052b7460a49b3de8a1a518850c1a6b4ae9ba` Fix reproduces-and-resolves the #616 defect (14 new tests pass, 3 mutation rows go red by hand-applied mutation, gates pass), but: (A) the older CONFLICTING arm under 'elif not checks:' in detect_stalls.py is now dead code and its com",
+    "themes": []
+   },
+   {
+    "number": 636,
+    "at": "2026-11-01T20:03:50Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/636#issuecomment-6563169383",
+    "summary": "QA: FAIL \u2014 verified at `f7519a71edf1913793a94e1c230529441d866adb` FAIL: merge turns main red (CITED_BUT_ABSENT entry for verify_workflow_permissions.py in tests/test_chief_proceeds_by_default.py must be deleted); step-level TRUST_BOUNDARY env override bypasses check 2. Full findings in the comment a",
+    "themes": [
+     "security",
+     "regression"
+    ]
+   },
+   {
+    "number": 649,
+    "at": "2026-11-01T16:39:57Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/649#issuecomment-6560809998",
+    "summary": "QA: FAIL \u2014 verified at `91fb30d6dbc1996ff3f96790a8385d3bb8403bd5` QA round (qa:in-cycle, Step 0c) on head 91fb30d. Code is correct and behaviour-neutral; FAIL is for one false claim and one test gap, both small.  PASSED by execution: mode line correct for 8 env combos (loop only for GITHUB_ACTIONS==",
+    "themes": [
+     "tokens",
+     "copy"
+    ]
+   },
+   {
+    "number": 649,
+    "at": "2026-11-02T04:48:36Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/649#issuecomment-6569321786",
+    "summary": "QA: FAIL \u2014 verified at `bab8e54d8834a804c613a54cc2ccde2c830bbc7d` QA round (qa:in-cycle, Step 0c) on head bab8e54d (= round-2 fix 16ffd1c4 + a clean merge of main 7439582). Round-1's two defects are FIXED; one new false claim of the same class remains. Behaviour is correct.  FIXED, verified by execu",
+    "themes": [
+     "copy",
+     "regression"
+    ]
+   },
+   {
+    "number": 654,
+    "at": "2026-11-01T17:31:16Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/654#issuecomment-6561411678",
+    "summary": "## QA verdict: FAIL (provenance: independent)  Examined SHA: `5ec7dccc812cf6172464b69aaf847ed3434f9ab8` (checked out as a separate worktree; main = 141915b).  **The code is correct and I would pass it. It fails on stale rule text the change disproved, which is an explicit FAIL condition for this rol",
+    "themes": [
+     "tokens",
+     "copy",
+     "regression"
+    ]
+   },
+   {
+    "number": 658,
+    "at": "2026-11-01T17:14:57Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/658#issuecomment-6561219757",
+    "summary": "QA: FAIL \u2014 verified at `07218ffbc7398621dc4859aeb2e2efa724944c32` Round 1 FAIL. Every sentence checked against a render held (7 charts + 300-chart scan: Moon tile, nine-graha Planetary positions with whole-sign houses, Gaja-Kesari listing, /matching koota+Mangal Dosh, /manglik-check 200, no 'compare",
+    "themes": []
+   },
+   {
+    "number": 660,
+    "at": "2026-11-01T18:38:37Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/660#issuecomment-6562194179",
+    "summary": "QA: FAIL \u2014 verified at `1ed696a5eb0bad1efefbed11598ddef758aec824` qa:in-cycle round 1, examined 1ed696a. The detector fix is correct; one NEW mutation row is a no-op.  DEFECT (scripts/mutate_behaviour_suite.py, new row 'no-op loop: the freshness floor runs before the landed-fix arm again'): the muta",
+    "themes": [
+     "tokens",
+     "regression"
+    ]
+   },
+   {
+    "number": 675,
+    "at": "2026-11-02T13:38:06Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/675#issuecomment-6578589618",
+    "summary": "QA: FAIL \u2014 verified at `e6a1d1de3a5842b510ab42cff82da9d14fc7fbb1` FAIL (qa:in-cycle, judge-only round \u2014 no push attempted). Executed on head e6a1d1de: uv run pytest 1925 passed/0 failed on the branch; 1946 passed on a scratch merge with origin/main 955587f (clean merge). verify_workflows 19 files, v",
+    "themes": [
+     "copy"
+    ]
+   },
+   {
+    "number": 675,
+    "at": "2026-11-02T17:03:57Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/675#issuecomment-6583198572",
+    "summary": "QA: FAIL \u2014 verified at `33036d45115bac53b50d95d83669061d2ab911a7` FAIL (qa:in-cycle, judge-only round 2, no push attempted). Executed on head 33036d45: full uv run pytest 1933 passed/0 failed; tests/test_cycle_queue.py + test_dispatch_carrier.py green; verify_workflows (19 files), verify_no_relaxati",
+    "themes": [
+     "tokens",
+     "performance"
+    ]
+   },
+   {
+    "number": 675,
+    "at": "2026-11-02T18:33:15Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/675#issuecomment-6585103084",
+    "summary": "QA: FAIL \u2014 verified at `7ffcec137a10dc4f464ff31a9ff76bba22c528c7` FAIL (qa:in-cycle, judge-only round 3, no push attempted) at 7ffcec137a10dc4f464ff31a9ff76bba22c528c7. Round-2 findings CLOSED and pinned: N1 (MAX_RETRIES=2: simulated failing carrier gives pending, pending, dropped, then empty; rc 1,",
+    "themes": [
+     "tokens",
+     "regression"
+    ]
+   },
+   {
+    "number": 688,
+    "at": "2026-11-03T04:13:59Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/688#issuecomment-6595277375",
+    "summary": "QA: FAIL \u2014 verified at `46c66e16b8289f36788ced247598a43f6cfa7998` Round 1 (qa:in-cycle) FAIL. Executed: 47 new tests pass (0 skipped), verify_behaviour 2141 pass, 9 verify gates exit 0, 4 mutations caught, Hindi (?lang=hi, same /learn/ paths) OK, privacy OK, ?v= fingerprint OK. DEFECT: listener excl",
+    "themes": []
+   },
+   {
+    "number": 691,
+    "at": "2026-11-03T11:53:48Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/691#issuecomment-6603105418",
+    "summary": "QA: FAIL \u2014 verified at `c20f9a3137b1be8f8efcca3375d729a0a6fceb5e` BLOCKING 1: scripts/collect_claude_usage.py reads nothing on a GitHub-hosted runner with gh 2.103.2 (also reproduced by the cycle): 'gh api .../actions/jobs/<id>/logs' is refused with 'the response contains terminal escape sequences; ",
+    "themes": [
+     "copy"
+    ]
+   },
+   {
+    "number": 691,
+    "at": "2026-11-03T14:35:59Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/691#issuecomment-6606616073",
+    "summary": "QA: FAIL \u2014 verified at `e46dbd95fa04f3692c7c0ac3815f520d95066f05` QA: FAIL at e46dbd9 (round 2). Round-1 findings are FIXED (2015b27): --allow-escape-sequences with unknown-flag fallback, fetch/parse warnings split, 'one per free lane' wording. PASSED by execution: full pytest 2268 pass rc=0; verify",
+    "themes": [
+     "regression"
+    ]
+   },
+   {
+    "number": 693,
+    "at": "2026-11-03T15:27:32Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/693#issuecomment-6607845855",
+    "summary": "QA: FAIL \u2014 verified at `f9433693e1a295d5fa5a9daa17f2e5f4ac91c4bb` Round 1 (qa:in-cycle). Behaviour verified by execution and green: Jinja if-block claim reproduced (before: /kundli AND /r/{id} both og:image=/kundli/card 1080x1920; after: both /static/og/default.png 1200x630, IHDR matches, twitter:im",
+    "themes": []
+   },
+   {
+    "number": 693,
+    "at": "2026-11-03T15:36:32Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/693#issuecomment-6608059818",
+    "summary": "QA: FAIL \u2014 verified at `de1444188bee9adf7a2873a16bc6c924c65127b1` Round 2 (qa:in-cycle). Round-1's two stale comments verified fixed; commit de14441 is comment-only (4 pages byte-identical, sha256 equal), pytest 2192 passed rc=0, test_floor/css_build/redesign_tokens/contrast pass. FAIL on one more s",
+    "themes": []
+   },
+   {
+    "number": 701,
+    "at": "2026-11-04T00:13:30Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/701#issuecomment-6618861197",
+    "summary": "QA: FAIL \u2014 verified at `aa5877c5c363d1f21157b1292333f97652dbf5ab` Round 1 (verified by execution at aa5877c). The deletion itself is correct: file dead (no loader, no dynamic name), rashifal_subtitle used only by it, /rashifal and /hi/rashifal 200 on branch and main, /rashifal/aries 503 identically ",
+    "themes": [
+     "grounding",
+     "tests"
+    ]
+   },
+   {
+    "number": 704,
+    "at": "2026-11-04T07:38:37Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/704#issuecomment-6625400658",
+    "summary": "QA: FAIL \u2014 verified at `3bc0bec1c8c7a087f79a613c073eb9fbfe348dd6` Examined 3bc0bec1. Executed: full pytest 2295 passed; new issue-entry test FAILS on origin/main's cycle_queue.py (IndexError: carrier called) and passes on head; mutation row find-string matches once and the named test goes red (1 fai",
+    "themes": [
+     "regression"
+    ]
+   },
+   {
+    "number": 706,
+    "at": "2026-11-04T11:37:56Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/706#issuecomment-6629602622",
+    "summary": "QA: FAIL \u2014 verified at `3401e211448025d0018e5a2d13908a53a47fe051` QA: FAIL \u2014 verified at 3401e211448025d0018e5a2d13908a53a47fe051. Token claim re-measured independently and holds (plain/numerology/worst-matching each -3: 1951->1948, 2645->2642, 3637->3634); pytest 2327 passed; 12 gates pass; scoped ",
+    "themes": []
+   },
+   {
+    "number": 706,
+    "at": "2026-11-06T06:39:36Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/706#issuecomment-6678887458",
+    "summary": "QA: FAIL \u2014 verified at `0be26aa830ef50332dd47fa8933fa309837d3691` Round on the merge result (main merged twice since the last PASS at b9077f6). ONE defect, doc-only: ARCHITECTURE.md module tree has two llm.py rows (line 141 '1,538 ... (re-measured 2026-11-04)' from this PR's older base, line 144 '1,",
+    "themes": [
+     "grounding"
+    ]
+   },
+   {
+    "number": 712,
+    "at": "2026-11-04T21:59:05Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/712#issuecomment-6643180753",
+    "summary": "QA: FAIL \u2014 verified at `14e9103fa141cdc4f01106420d5fe02e4262c332` 1 defect: non-UTF-8 remedies.md raises UnicodeDecodeError out of knowledge_lookup._tables() (catches only OSError) -> GET /kundli 502 on ~81% of charts (2,434/3,000 seeded). Tokens, auditor changes, leak, byte-identity, 2353 tests, 30",
+    "themes": [
+     "security",
+     "regression"
+    ]
+   },
+   {
+    "number": 737,
+    "at": "2026-11-06T03:35:11Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/737#issuecomment-6676171130",
+    "summary": "QA: FAIL \u2014 verified at e1fb7a5fa1d17ed29aaa2aa24b2650a7d31316f9 (qa:in-cycle, round 1)  One minor, user-visible defect introduced by the change; everything else I could execute passes. Cheap to fix, so FAIL rather than ship it.  ## DEFECT 1 \u2014 after \"Skip to content\", the sticky nav covers the top of",
+    "themes": [
+     "i18n",
+     "regression"
+    ]
+   },
+   {
+    "number": 745,
+    "at": "2026-11-06T07:06:10Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/745#issuecomment-6679285830",
+    "summary": "QA: FAIL \u2014 verified at `26475ddc1343812e490151b5bcae6c4ae7ad8851` JUDGE-ONLY round (diff touches .github/workflows/, no push possible). One defect, a regression: the loop-outcomes monitor loses sight of the measurement fetch. scripts/report_loop_outcomes.py:131 sets MEASURE_ANCHOR = \"agent-measure.y",
+    "themes": [
+     "regression"
+    ]
+   },
+   {
+    "number": 745,
+    "at": "2026-11-06T07:26:58Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/745#issuecomment-6679623161",
+    "summary": "QA: FAIL \u2014 verified at `3fcc5d7c67e6532188aeb33826e2ccdc3ede1635` JUDGE-ONLY round (diff touches .github/workflows/). The defect from the 26475dd round is NOT fixed: the two commits since (77a4870, 3fcc5d7) touch only .claude/, CLAUDE.md, OBJECTIVE.md and agent-steward.yml; scripts/report_loop_outco",
+    "themes": []
+   },
+   {
+    "number": 745,
+    "at": "2026-11-06T09:01:38Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/745#issuecomment-6681185956",
+    "summary": "QA: FAIL \u2014 verified at `e5ff0a3a766c73d2eff8d6e251e0f2976f0b46bc` JUDGE-ONLY round (diff touches .github/workflows/). Third round, same single defect, still unfixed: since the 3fcc5d7 verdict the head moved only in CLAUDE.md and OBJECTIVE.md; scripts/report_loop_outcomes.py, tests/test_loop_outcomes",
+    "themes": []
+   },
+   {
+    "number": 747,
+    "at": "2026-11-06T08:02:32Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/747#issuecomment-6680192263",
+    "summary": "QA: FAIL \u2014 verified at `4dc93305a6cad9b549bf7c5b6ddf688c65678579` JUDGE-ONLY round (diff touches .github/workflows/; no push attempted, no fix applied). Provenance: qa:in-cycle. EXECUTED: checked out head 4dc93305; pytest on the four new/changed test files green; mutated CACHE_HIT_ALERT_PCT 50->5 an",
+    "themes": [
+     "regression"
+    ]
+   },
+   {
+    "number": 747,
+    "at": "2026-11-06T09:58:56Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/747#issuecomment-6682196994",
+    "summary": "QA: FAIL \u2014 verified at `42ab533dfa8629e20f6c8b9e4c5e9f72b04acdd9` JUDGE-ONLY round (diff touches .github/workflows/; no push attempted, no fix applied). Provenance: qa:in-cycle. Head is newer than the FAIL at 4dc93305; this round judged the fix since. EXECUTED: full uv run pytest 2468 passed 0 faile",
+    "themes": [
+     "performance"
+    ]
+   },
+   {
+    "number": 747,
+    "at": "2026-11-06T13:07:14Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/747#issuecomment-6685526602",
+    "summary": "QA: FAIL \u2014 verified at `0de50ed71acee1abf6fa0a2d990dbf4588c7a6ec` JUDGE-ONLY round (diff touches .github/workflows/; no push attempted, no fix applied). Provenance: qa:in-cycle. Head is newer than the FAIL at 42ab533; this round judged the fix since (collect_lessons.py, its mutation file, its tests)",
+    "themes": []
+   },
+   {
+    "number": 747,
+    "at": "2026-11-07T03:20:22Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/747#issuecomment-6701568046",
+    "summary": "QA: FAIL \u2014 verified at `90f302113ab39f2dd1948b6bfdc0dbc5342ffd28` (qa:independent)  Independent, judge-only round on the merge head. I had no hand in the work and read it cold. A FAIL blocks. Everything below was executed in my own worktree of the head unless marked otherwise.  ## BLOCKING: outsider",
+    "themes": [
+     "grounding",
+     "tokens",
+     "tests",
+     "security",
+     "regression"
+    ]
+   },
+   {
+    "number": 747,
+    "at": "2026-11-07T23:05:06Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/747#issuecomment-6714232348",
+    "summary": "QA: FAIL \u2014 verified at `58fb41d76aeb41bc55a97605b351af089eb32ada`  INDEPENDENT, judge-only round (qa:independent). I had no hand in this change; I did not rely on the earlier in-cycle PASS or the PR body. Head confirmed with `gh pr view 747 --json headRefOid` before and after. Nothing pushed, no fix",
+    "themes": [
+     "security",
+     "regression"
+    ]
+   },
+   {
+    "number": 747,
+    "at": "2026-11-08T05:22:04Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/747#issuecomment-6717682230",
+    "summary": "QA: FAIL \u2014 verified at 72720878f96959c905a75dec3a810d47dd389e58  Independent, judge-only round (qa:independent). Head confirmed 72720878f before and after; no push, no edit. The PR has no linked issue, author is the repo owner, so no provenance:outsider path applies. `data/` is not present on this r",
+    "themes": []
+   },
+   {
+    "number": 754,
+    "at": "2026-11-06T18:17:11Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/754#issuecomment-6692099132",
+    "summary": "QA: FAIL \u2014 verified at `43ad056391d42420a2f0044d03e3d8ab7c8958e0` Round 1: content verified against real renders (stubbed LLM prose only), 2572 passed, 0 articles without a tool route, mutations caught, analytics.js scoping correct. FAIL on one defect: pr-gates red \u2014 verify_test_floor, tests/test_ct",
+    "themes": [
+     "tests"
+    ]
+   },
+   {
+    "number": 764,
+    "at": "2026-11-07T03:26:23Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/764#issuecomment-6701632091",
+    "summary": "QA: FAIL \u2014 verified at `b5b9c6eb9c2658b56114bfc32271db2560825e13` Round 1 (in-cycle). Fix verified by execution: lagna 28.35067 on main/Thread/ThreadPool(6 tasks)/Starlette def route on branch vs 27.46746 on main; 365-day panchang 0 differing days on branch (47 on main). FAIL on two counts: (1) test",
+    "themes": []
+   },
+   {
+    "number": 761,
+    "at": "2026-11-07T07:02:54Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/761#issuecomment-6703686370",
+    "summary": "QA: FAIL \u2014 verified at `4ded2da8b5c1f91cea47816abae9fe9dab7d7008` Behaviour verified (pytest 2644 green, floor 1799>=1793, 38/38 mutations caught, all gates exit 0) but docs falsified by this change: .claude/agents/chief.md:394 and verify_test_floor.py:59 still say a ruling 'contains' the phrase, an",
+    "themes": []
+   },
+   {
+    "number": 772,
+    "at": "2026-11-07T17:03:26Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/772#issuecomment-6710362191",
+    "summary": "QA: FAIL \u2014 verified at `168db86c5c90d5a556a1c8a986102a4c7cfdb6d0` Round 1: all gates/behaviour pass (verify_numerology_copy PASS, 31 self-test rows caught; pytest 2653 passed; verify_no_relaxation PASS; EN+HI render checked; 6 independent mutations all red). One FAIL item: stale comment numerology.h",
+    "themes": [
+     "grounding"
+    ]
+   }
+  ],
+  "reverts": [],
+  "verify_production_failed": [
+   {
+    "run": 38333011428,
+    "at": "2026-10-13T01:37:27Z",
+    "sha": "be4046b"
+   },
+   {
+    "run": 38270665641,
+    "at": "2026-10-12T15:29:53Z",
+    "sha": "be4046b"
+   },
+   {
+    "run": 38160697735,
+    "at": "2026-10-11T17:41:26Z",
+    "sha": "39dedb4"
+   }
+  ],
+  "ops_findings": [
+   {
+    "kind": "loop-idle",
+    "level": "amber",
+    "title": "Build lane idle 86% of the last 7d",
+    "detail": "144.0h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "where": "/admin/ops"
+   }
+  ]
+ },
+ "error_themes": {
+  "regression": 15,
+  "copy": 13,
+  "tokens": 12,
+  "tests": 10,
+  "security": 8,
+  "grounding": 8,
+  "performance": 6,
+  "i18n": 4
+ },
+ "repeated_themes": [
+  "copy",
+  "grounding",
+  "i18n",
+  "performance",
+  "regression",
+  "security",
+  "tests",
+  "tokens"
+ ],
+ "outcomes": [
+  {
+   "number": 272,
+   "verdict": "PASS",
+   "headline": "PASS on shape; the query-level half is NOT MET",
+   "at": "2026-11-05T01:18:33Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/272#issuecomment-6646928325"
+  },
+  {
+   "number": 276,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-11-14",
+   "at": "2026-11-08T00:12:28Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/276#issuecomment-6714891135"
+  },
+  {
+   "number": 311,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-11-13",
+   "at": "2026-11-08T00:12:27Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/311#issuecomment-6714890987"
+  },
+  {
+   "number": 313,
+   "verdict": "OTHER",
+   "headline": "#313 (closed 2026-10-11)",
+   "at": "2026-10-12T00:11:27Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/313#issuecomment-6115455782"
+  },
+  {
+   "number": 316,
+   "verdict": "OTHER",
+   "headline": "#316 (closed 2026-10-11)",
+   "at": "2026-10-12T00:11:26Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/316#issuecomment-6115455653"
+  },
+  {
+   "number": 320,
+   "verdict": "HIT",
+   "headline": "HIT on `main`'s history; residual disclosed",
+   "at": "2026-10-14T00:09:07Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/320#issuecomment-6157875164"
+  },
+  {
+   "number": 329,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-11-14, and likely unscoreable at this traffic",
+   "at": "2026-11-08T00:12:29Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/329#issuecomment-6714891302"
+  },
+  {
+   "number": 338,
+   "verdict": "PASS",
+   "headline": "PASS",
+   "at": "2026-10-31T00:23:33Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/338#issuecomment-6536437917"
+  },
+  {
+   "number": 345,
+   "verdict": "UNSCOREABLE",
+   "headline": "UNSCORED (not determinable this run)",
+   "at": "2026-10-16T23:17:39Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/345#issuecomment-6226484649"
+  },
+  {
+   "number": 349,
+   "verdict": "UNSCOREABLE",
+   "headline": "UNSCORED (not determinable this run)",
+   "at": "2026-10-16T23:17:40Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/349#issuecomment-6226484800"
+  },
+  {
+   "number": 355,
+   "verdict": "UNSCOREABLE",
+   "headline": "UNSCORED (not determinable this run)",
+   "at": "2026-10-16T23:17:41Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/355#issuecomment-6226484958"
+  },
+  {
+   "number": 369,
+   "verdict": "UNSCOREABLE",
+   "headline": "UNSCORED (not determinable this run)",
+   "at": "2026-10-16T23:17:42Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/369#issuecomment-6226485129"
+  },
+  {
+   "number": 373,
+   "verdict": "PARTIAL",
+   "headline": "PARTIAL",
+   "at": "2026-10-22T23:55:48Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/373#issuecomment-6353962512"
+  },
+  {
+   "number": 374,
+   "verdict": "UNSCOREABLE",
+   "headline": "UNSCORED (not determinable this run)",
+   "at": "2026-10-17T22:53:28Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/374#issuecomment-6242618584"
+  },
+  {
+   "number": 396,
+   "verdict": "PASS",
+   "headline": "PASS on the first clause only",
+   "at": "2026-10-22T23:55:47Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/396#issuecomment-6353962282"
+  },
+  {
+   "number": 397,
+   "verdict": "PASS",
+   "headline": "PASS on the countable clause; the behavioural clause was not checked",
+   "at": "2026-10-22T23:55:46Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/397#issuecomment-6353962033"
+  },
+  {
+   "number": 400,
+   "verdict": "HIT",
+   "headline": "HIT (partial read) \u2014 ceiling gate present and green",
+   "at": "2026-10-17T22:53:26Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/400#issuecomment-6242618012"
+  },
+  {
+   "number": 426,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-03",
+   "at": "2026-11-08T00:12:31Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/426#issuecomment-6714891661"
+  },
+  {
+   "number": 493,
+   "verdict": "UNSCOREABLE",
+   "headline": "UNSCORED \u2014 the measured event has not happened yet",
+   "at": "2026-10-23T23:46:57Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/493#issuecomment-6377014633"
+  },
+  {
+   "number": 508,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-04",
+   "at": "2026-11-07T00:38:23Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/508#issuecomment-6699714202"
+  },
+  {
+   "number": 514,
+   "verdict": "UNSCOREABLE",
+   "headline": "NOT SCOREABLE YET",
+   "at": "2026-11-06T01:23:33Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/514#issuecomment-6674107445"
+  },
+  {
+   "number": 515,
+   "verdict": "UNSCOREABLE",
+   "headline": "NOT SCOREABLE YET",
+   "at": "2026-11-06T01:23:32Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/515#issuecomment-6674107166"
+  },
+  {
+   "number": 518,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-07",
+   "at": "2026-11-07T00:38:25Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/518#issuecomment-6699714732"
+  },
+  {
+   "number": 553,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-01",
+   "at": "2026-11-07T00:38:24Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/553#issuecomment-6699714449"
+  },
+  {
+   "number": 570,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 not scoreable until the export exists (#782); earliest clean window 2026-12-04",
+   "at": "2026-11-08T00:12:32Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/570#issuecomment-6714891831"
+  },
+  {
+   "number": 607,
+   "verdict": "PASS",
+   "headline": "PASS",
+   "at": "2026-10-31T00:23:32Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/607#issuecomment-6536437703"
+  },
+  {
+   "number": 685,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-04",
+   "at": "2026-11-08T00:12:30Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/685#issuecomment-6714891475"
+  }
+ ],
+ "outcome_counts": {
+  "OTHER": 2,
+  "PASS": 5,
+  "PENDING": 9,
+  "HIT": 2,
+  "UNSCOREABLE": 8,
+  "PARTIAL": 1
+ },
+ "competitor_patterns": []
+}
