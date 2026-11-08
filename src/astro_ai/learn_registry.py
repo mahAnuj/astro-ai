@@ -1690,7 +1690,7 @@ ARTICLES: tuple[Article, ...] = (
         title="When Will I Get Married? Reading Marriage Timing in Your Kundli",
         summary="Your Kundali shows a marriage timing WINDOW, not a specific date. Classical Vedic tradition reads timing through four primary signals: the 7th house condition, the 7th lord's placement, Venus (male chart) or Jupiter (female chart) as karakas, and the current Vimshottari Dasha. When multiple signals converge — a marriage-karaka Mahadasha runs, the 7th lord's Antardasha activates, Jupiter transits over natal 7th — the classical marriage window is at peak. This guide walks each signal, the Dasha triggers, transit refinements, and honest limits on what any chart can say about the specific month.",
         seo_title="When Will I Get Married? Kundli Marriage Timing Guide",
-        seo_description="Marriage timing in your Kundli — 4 primary signals, Vimshottari Dasha triggers (Venus, Jupiter, 7th lord), Antardasha refinement, transit windows, honest limits.",
+        seo_description="Marriage timing in your Kundli — 4 primary signals, Vimshottari Dasha triggers (Venus, Jupiter, 7th lord), Antardasha refinement, transit windows.",
         category="Life Questions",
         hero_image="/static/learn/marriage-timing-kundli/hero.svg",
         read_time="11 min",
@@ -2646,7 +2646,7 @@ ARTICLES: tuple[Article, ...] = (
         title="Planets in the 7th House and What They Mean for Your Marriage",
         summary="The 7th house is the mirror of your Ascendant — the partner it attracts. This guide walks each of the nine grahas placed in the 7th house (Sun through Ketu), the classical marriage pattern each one produces, and the per-Ascendant shifts that turn the same placement into a very different reading depending on your Lagna.",
         seo_title="Planets in 7th House: Marriage Meaning of Each Graha",
-        seo_description="What Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, or Ketu in the 7th house means for your marriage — classical Vedic reading with per-Ascendant shifts.",
+        seo_description="What Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, or Ketu in the 7th house means for your marriage — classical reading with per-Ascendant shifts.",
         category="Life Questions",
         hero_image="/static/learn/planets-in-7th-house-marriage/hero.svg",
         read_time="13 min",
@@ -2825,7 +2825,7 @@ ARTICLES: tuple[Article, ...] = (
         slug="ketu-remedies", title="Ketu Remedies: Classical Practices for Ketu's Detachment Effects",
         summary="Ketu is Rahu's shadow twin — karaka of detachment, past-life karma, spiritual insight, and mysterious losses. Classical remedies center on Ganesha worship (Ketu's presiding deity), Ketu Beej mantra, service to ascetics/elderly/orphans, Tuesday charity, fasting, and Pitru Paksha shraddha. Ketu is a spiritual planet — remedies help you cooperate with detachment consciously rather than being blindsided by it.",
         seo_title="Ketu Remedies: Ganesha, Mantra, Service — What Actually Works",
-        seo_description="Classical Ketu remedies — Ganesha worship, Ketu Beej mantra, service to elderly/ascetics, Tuesday charity, ancestral shraddha. Honest, safe, no expensive rituals.",
+        seo_description="Classical Ketu remedies — Ganesha worship, Ketu Beej mantra, service to elderly/ascetics, Tuesday charity, ancestral shraddha. No expensive rituals.",
         category="Grahas", hero_image="/static/learn/ketu-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
         related=("ketu-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha", "kaal-sarp-dosh", "pitru-dosh"),
         faqs=(
@@ -2879,7 +2879,7 @@ ARTICLES: tuple[Article, ...] = (
         slug="pitru-dosh-remedies", title="Pitru Dosh Remedies: Classical Rituals to Clear Ancestral Karma",
         summary="Pitru Dosh — ancestral karmic debt — is one of the most misdiagnosed categories in Indian astrology commerce. Genuine remedies are simple: Pitru Paksha shraddha, tarpan (water offering), feeding a Brahmin+cow+crow on death anniversaries, monthly Amavasya practice, and Gaya tri-pindi shraddha for serious cases. This guide walks the classical remedies with strong guardrails against exploitation.",
         seo_title="Pitru Dosh Remedies: Shraddha, Tarpan, Gaya Pilgrimage",
-        seo_description="Classical Pitru Dosh remedies — Pitru Paksha shraddha, tarpan, Ganesha worship, Gaya pilgrimage. Anti-exploitation guide; every remedy under ₹500 (except optional Gaya trip).",
+        seo_description="Classical Pitru Dosh remedies — Pitru Paksha shraddha, tarpan, Ganesha worship, Gaya pilgrimage. Every remedy under ₹500 (except optional Gaya trip).",
         category="Doshas", hero_image="/static/learn/pitru-dosh-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
         related=("pitru-dosh", "kaal-sarp-dosh", "sade-sati", "chandra-moon-remedies"),
         faqs=(
@@ -2897,7 +2897,7 @@ ARTICLES: tuple[Article, ...] = (
         slug="kaal-sarp-dosh-remedies", title="Kaal Sarp Dosh Remedies: Classical Practices That Actually Work",
         summary="Kaal Sarp Dosh — all 7 non-shadow planets on one side of the Rahu-Ketu axis — is the most exploited category in Indian astrology commerce. Real remedies are simple: worship of Rahu's and Ketu's own deities (Durga or Narasimha, Ganesha), the combined Rahu+Ketu Beej mantras, and traditional practices such as Nag Panchami observance, Shiva worship on Mondays and the silver serpent offering, with Trimbakeshwar Nagbali for severe cases. This guide walks seven remedies, says which are classical and which are tradition, and keeps strong guardrails against exploitation.",
         seo_title="Kaal Sarp Dosh Remedies: Shiva Puja, Nag Panchami, Trimbakeshwar",
-        seo_description="Kaal Sarp Dosh remedies — Rahu and Ketu's deities, Nag Panchami, silver serpent offering, Trimbakeshwar Nagbali. Anti-exploitation guide with cost sanity checks.",
+        seo_description="Kaal Sarp Dosh remedies — Rahu and Ketu's deities, Nag Panchami, silver serpent offering, Trimbakeshwar Nagbali. Anti-exploitation guide with cost checks.",
         category="Doshas", hero_image="/static/learn/kaal-sarp-dosh-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
         related=("kaal-sarp-dosh", "rahu-remedies", "ketu-remedies", "pitru-dosh-remedies"),
         faqs=(
@@ -2915,7 +2915,7 @@ ARTICLES: tuple[Article, ...] = (
         slug="manglik-remedies", title="Manglik Remedies: Classical Practices to Soften Mars in Marriage Charts",
         summary="Manglik Dosh (Mangal Dosh) remedies focus on softening Mars's placement in the six qualifying houses (1, 2, 4, 7, 8, 12) that classical tradition flags for marriage friction. The most powerful remedies are Hanuman worship (Mars's presiding deity), Tuesday practices, Kumbh Vivah for severe cases, and Ashtakoot matching. This guide walks the seven classically-cited remedies with the honest note that cancellation rules often mean no remedy is even needed.",
         seo_title="Manglik Remedies: Hanuman Worship, Kumbh Vivah, Matching",
-        seo_description="Classical Manglik Dosh remedies — Hanuman Chalisa, Tuesday practices, Kumbh Vivah, matching another Manglik. Check cancellation rules first — most 'Manglik' charts are actually cancelled.",
+        seo_description="Classical Manglik Dosh remedies — Hanuman Chalisa, Tuesday practices, Kumbh Vivah, matching another Manglik. Check cancellation rules first.",
         category="Doshas", hero_image="/static/learn/manglik-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
         related=("manglik-dosh", "mangal-mars-in-vedic-astrology", "mars-remedies", "kundali-matching-ashtakoot-guna-milan"),
         faqs=(
@@ -2933,7 +2933,7 @@ ARTICLES: tuple[Article, ...] = (
         slug="dhana-yoga-wealth-combinations", title="Dhana Yogas: 9 Classical Wealth Combinations to Check in Your Kundli",
         summary="Dhana Yogas — wealth combinations in your Kundli — form when the lords of the 2nd, 5th, 9th, and 11th houses interact favourably with each other or with strong benefics. Classical texts (BPHS, Phaladeepika, Saravali) list dozens; this guide covers the 9 most consequential: Lakshmi Yoga, Chandra-Mangala, Guru-Mangala, Kubera Yoga, Vasumati, Adhi Yoga, Neelkantha, Panch Mahapurush wealth angles, and Vipreeta Raja Yoga.",
         seo_title="Dhana Yogas: 9 Wealth Combinations in Your Kundli",
-        seo_description="9 classical Dhana Yogas (wealth combinations) in Vedic astrology — Lakshmi Yoga, Kubera Yoga, Vasumati, Vipreeta Raja Yoga. When Dasha activates them, wealth arrives.",
+        seo_description="9 classical Dhana Yogas (wealth combinations) — Lakshmi Yoga, Kubera Yoga, Vasumati, Vipreeta Raja Yoga. When Dasha activates them, wealth arrives.",
         category="Yogas", hero_image="/static/learn/dhana-yoga-wealth-combinations/hero.svg", read_time="10 min", last_updated="2026-07",
         related=("panch-mahapurush-yoga", "gajakesari-yoga", "financial-struggles", "shukra-venus-in-vedic-astrology", "2nd-lord-placement-wealth-guide", "11th-lord-placement-gains-guide"),
         faqs=(
