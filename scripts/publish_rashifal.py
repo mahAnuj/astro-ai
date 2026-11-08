@@ -208,12 +208,22 @@ def _record_run(day: str, lang: str, sections: int) -> None:
             doc.pop(stale, None)
         return doc
 
+    # update_json RETURNS None on failure rather than raising (2026-11-08). This
+    # printed "recorded ->" either way, so the job log claimed a record that
+    # /admin/ops then could not find ("no run recorded" beside a green job).
+    # The publish still never fails over it; the log and the step summary now
+    # say the record is missing, as a ::warning:: the run page shows.
     try:
-        storage.update_json(RUNS_KEY, mutate, default={})
-        print(f"recorded -> {RUNS_KEY}[{day}][{lang}] = {sections} sections")
+        written = storage.update_json(RUNS_KEY, mutate, default={})
     except Exception as exc:  # noqa: BLE001 - the reading is already published
-        print(f"publish_rashifal: could not record the run ({exc}); the reading "
-              f"IS published and serving.", file=sys.stderr)
+        written, why = None, f"{exc.__class__.__name__}: {exc}"
+    else:
+        why = "storage.update_json returned None (no bucket, or the write was refused)"
+    if written is None:
+        print(f"::warning::publish_rashifal: the run record {RUNS_KEY} was NOT written ({why}). "
+              f"The reading IS published and serving; /admin/ops will show no run for {day}.")
+        return
+    print(f"recorded -> {RUNS_KEY}[{day}][{lang}] = {sections} sections")
 
 
 def _rashi_of(title: str) -> str:
