@@ -11,8 +11,19 @@ which says nothing about a NEW file that opens a socket.
 
 WHAT IT CHECKS (static, stdlib `ast`; nothing is fetched)
 
-  1. Every `http(s)://host` inside a string literal in `src/**/*.py` is a key of
-     `ALLOWED_HOSTS`. F-strings count (their literal parts are scanned).
+  1. Every `http(s)://`, `ws(s)://` or `ftp(s)://` host inside a `str` or `bytes`
+     literal in `src/**/*.py` is a key of `ALLOWED_HOSTS`. F-strings count (their
+     literal parts are scanned). The scheme is matched case-insensitively and the
+     host is the AUTHORITY, parsed rather than pattern-matched: everything after
+     `scheme://` up to the first `/ ? # space quote < >` (a backslash is NOT a
+     delimiter, and tab/CR/LF are deleted first because urllib deletes them), then
+     the part after the LAST `@`, then the `:port` removed, ASCII-lowercased,
+     trailing dot dropped.
+     Bracketed IPv6 and non-ASCII hosts are therefore REPORTED (as unlisted), never
+     skipped. A literal carrying `userinfo@` is a violation of its own, even when the
+     real host is listed: `https://api.groq.com@evil.com/` shows an allowed name to a
+     reader while a client connects to evil.com, and a credential in a URL literal in
+     `src/` is never needed (put it in an environment variable and a header).
      Docstrings and comments are NOT scanned: they cannot be executed, and the
      ones naming hosts (`app.brevo.com`, drikpanchang in `sankranti.py`) are prose.
   2. Every module that imports a network client (`CLIENT_ROOTS`, at top level or
@@ -33,7 +44,16 @@ than none:
   * redirects, DNS, and what a listed host does with the data it receives;
   * hosts contacted by the BROWSER (templates, `static/`), which is not server
     egress and is not scanned;
-  * dynamic imports (`importlib`, `__import__`) and clients not in `CLIENT_ROOTS`;
+  * dynamic imports (`importlib`, `__import__`) and anything not in `CLIENT_ROOTS`:
+    `asyncio` (open_connection, create_subprocess_exec) is deliberately NOT a root,
+    because `notify.py` and `routes/admin.py` import it for non-network work, so a
+    raw `asyncio` stream to a host built at runtime passes; `os.system`, `ctypes`
+    and `multiprocessing` likewise. `ssl` and `subprocess` ARE roots (no file in
+    `src/` imported either on 2026-11-08), so a `curl` shell-out or a hand-rolled
+    TLS socket needs a reviewed `CLIENT_MODULES` entry;
+  * a protocol-relative `//host/path` or any scheme outside `http(s)`, `ws(s)`,
+    `ftp(s)`: a bare `//host` is too common in non-URL strings to scan;
+  * a host in a non-`.py` file under `src/` (see the browser-side bullet);
   * a string literal that is the real host but is a docstring (it is skipped).
 It is a tripwire that forces a reviewed edit, not a sandbox. Run-time egress
 control would be a Cloud Run VPC egress rule, which is infrastructure, not tree.
@@ -76,6 +96,7 @@ CLIENT_ROOTS = (
     "httpx", "requests", "urllib.request", "urllib3", "aiohttp", "http.client", "socket",
     "smtplib", "ftplib", "imaplib", "poplib", "telnetlib", "xmlrpc.client", "websockets",
     "websocket", "openai", "geopy", "google.cloud", "google.oauth2", "google.auth",
+    "ssl", "subprocess",
 )
 
 # path -> (client roots it may import, reason incl. the host that is NOT a literal).
@@ -94,7 +115,32 @@ CLIENT_MODULES: dict[str, tuple[set[str], str]] = {
                                        "(www.googleapis.com/oauth2/v1/certs)"),
 }
 
-_HOST = re.compile(r"https?://([A-Za-z0-9.-]+)")
+# The AUTHORITY, not a guess at the host. An allow-list of host characters is the
+# wrong shape: `https://api.groq.com@evil.com` and `https://évil.com` both slip past
+# one (the first captures the userinfo, the second captures nothing). Everything up
+# to the first delimiter is taken and `_host_of` decides what it means.
+# A backslash is NOT a delimiter: `urlsplit` ends the netloc at `/ ? #` only, so in
+# `https://api.groq.com\@evil.com/` the host urllib dials is evil.com.
+_URL = re.compile(r"(?:https?|wss?|ftps?)://([^\s/?#\"'<>]*)", re.IGNORECASE)
+# urllib deletes these from a URL before parsing it (CVE-2022-0391 hardening), so
+# `https://api.groq.com<TAB>@evil.com` dials evil.com; scan the stripped text as well.
+# Side effect, accepted: a URL at the end of a line glues to the next line's first word
+# in the stripped copy and reads as an unlisted host -- fail-closed, fixed by a space.
+_URLLIB_STRIPS = re.compile(r"[\t\r\n]")
+
+
+def _host_of(authority: str) -> tuple[str, bool]:
+    """(host, had_userinfo) for the text between `scheme://` and the first delimiter."""
+    had_userinfo = "@" in authority
+    hostport = authority.rsplit("@", 1)[-1]  # what follows the LAST @ is what is dialled
+    if hostport.startswith("["):  # bracketed IPv6: the colons are not a port
+        end = hostport.find("]")
+        host = hostport if end == -1 else hostport[: end + 1]
+    else:
+        host = hostport.split(":", 1)[0]
+    # bytes.lower() is ASCII-only: str.lower() would fold U+212A (Kelvin) to "k".
+    host = host.encode("utf-8", "surrogatepass").lower().decode("utf-8", "replace")
+    return host.rstrip("."), had_userinfo
 
 
 def _docstring_ids(tree: ast.AST) -> set[int]:
@@ -115,16 +161,21 @@ def _client_root(name: str) -> str | None:
     return None
 
 
-def scan_file(path: Path, rel: str) -> tuple[list[tuple[int, str]], list[tuple[int, str]]]:
-    """(hosts as (line, host), client imports as (line, root)); SyntaxError propagates."""
+def scan_file(path: Path, rel: str) -> tuple[list[tuple[int, str, bool]], list[tuple[int, str]]]:
+    """(hosts as (line, host, had_userinfo), client imports as (line, root)); SyntaxError propagates."""
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=rel)
     skip = _docstring_ids(tree)
-    hosts: list[tuple[int, str]] = []
+    hosts: list[tuple[int, str, bool]] = []
     clients: list[tuple[int, str]] = []
     for node in ast.walk(tree):
-        if isinstance(node, ast.Constant) and isinstance(node.value, str) and id(node) not in skip:
-            for m in _HOST.finditer(node.value):
-                hosts.append((node.lineno, m.group(1).rstrip(".").lower()))
+        if isinstance(node, ast.Constant) and isinstance(node.value, (str, bytes)) and id(node) not in skip:
+            text = node.value if isinstance(node.value, str) else node.value.decode("latin-1")
+            found: set[tuple[str, bool]] = set()
+            for variant in (text, _URLLIB_STRIPS.sub("", text)):
+                found.update(_host_of(m.group(1)) for m in _URL.finditer(variant))
+            for host, had_userinfo in sorted(found):
+                if host or had_userinfo:  # `"https://" + h` leaves an empty authority: nothing to read
+                    hosts.append((node.lineno, host, had_userinfo))
         elif isinstance(node, ast.Import):
             names = [a.name for a in node.names]
             clients += [(node.lineno, r) for n in names if (r := _client_root(n))]
@@ -157,7 +208,13 @@ def check(root: Path, allowed_hosts=None, client_modules=None) -> tuple[list[str
         except (SyntaxError, UnicodeDecodeError, ValueError) as exc:
             errors.append(f"{rel}: cannot parse ({type(exc).__name__}: {exc})")
             continue
-        for line, host in hosts:
+        for line, host, had_userinfo in hosts:
+            if had_userinfo:
+                violations.append(f"{rel}:{line}: URL literal carries userinfo (`user@host`) -- the dialled host is "
+                                  f"what follows the last '@' ({host!r}); a credential in a URL literal is never "
+                                  "needed, remove it")
+            if not host:
+                continue
             seen_hosts.add(host)
             if host not in allowed_hosts:
                 violations.append(f"{rel}:{line}: unlisted outbound host {host!r} -- {REMEDY} (ALLOWED_HOSTS)")
