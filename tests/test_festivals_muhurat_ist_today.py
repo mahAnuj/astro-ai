@@ -2,7 +2,7 @@
 
 Defect this guards: both routes read `date.today()` -- the server's UTC date on
 Cloud Run -- so from 00:00 to 05:30 IST they were a day behind the home strip
-and `/panchang`, which #593/#793 had already moved onto `chart.local_today`.
+and `/panchang`, which #593/#793 had already moved onto `chart.reading_today`.
 `/festivals` cut its whole six-month window, its "in N days" copy and its
 `today_iso` from that date; `/muhurat` and `/muhurat/<event>` pre-filled the
 start-date input with it, so a visitor at 04:30 IST was offered yesterday as the

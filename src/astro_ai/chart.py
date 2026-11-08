@@ -4069,6 +4069,23 @@ def local_today(tz: "str | ZoneInfo") -> date_:
     return datetime.now(ZoneInfo(tz) if isinstance(tz, str) else tz).date()
 
 
+def reading_today() -> date_:
+    """The site's "today" for every reading that is not one city's panchang (#794).
+
+    The rashifal, /today, /outlook and the subscribe/email paths took "today"
+    from `date.today()` -- UTC on Cloud Run -- so from 00:00 to 05:30 IST they
+    named, cached and fetched YESTERDAY: the page date, the day-pinned sky
+    (`rashifal_day_moment`) and the cache key all lagged, and the nightly job
+    (#515) publishes the new IST day's blob at ~04:15 IST, which a UTC-keyed
+    page could not see. The reading's day is the IST day -- the same one
+    `llm.today_anchor`, `ask_transit`, `publish_rashifal` and the email job
+    already use -- so this is `local_today(RASHIFAL_REFERENCE_TZ)`. A surface
+    that belongs to a chosen city (`/panchang`, the strip) uses `local_today`
+    with that city's tz instead.
+    """
+    return local_today(RASHIFAL_REFERENCE_TZ)
+
+
 def _local_day(natal: Chart, when: datetime | None) -> tuple[ZoneInfo, date_]:
     """(birthplace tz, local calendar date) for the anchor moment `when`.
 

@@ -29,7 +29,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from astro_ai import notify
-from astro_ai.chart import RASHIFAL_REFERENCE_TZ, compute_chart, local_today
+from astro_ai.chart import compute_chart, reading_today
 from astro_ai.routes.deps import _lang, templates
 from astro_ai.routes.llm_support import _fire_error_alert
 from astro_ai.session import load_collection, load_user
@@ -62,7 +62,7 @@ async def muhurat_landing(request: Request, event_slug: str) -> HTMLResponse:
         {"landing": landing, "event_key": event_key,
          "event_label": rules["label"],
          "prefill_city": prefill_city,
-         "prefill_start": local_today(RASHIFAL_REFERENCE_TZ).isoformat(),
+         "prefill_start": reading_today().isoformat(),
          "has_saved_chart": saved is not None,
          "lang": _lang(request)},
     )
@@ -82,7 +82,7 @@ async def muhurat_finder_form(request: Request) -> HTMLResponse:
         request, "muhurat_finder.html",
         {"candidates": None, "error": None, "lang": _lang(request),
          "prefill_city": prefill_city,
-         "prefill_start": local_today(RASHIFAL_REFERENCE_TZ).isoformat(),
+         "prefill_start": reading_today().isoformat(),
          "event_types": event_types,
          "selected_event": "vivah",
          "has_saved_chart": saved is not None,
