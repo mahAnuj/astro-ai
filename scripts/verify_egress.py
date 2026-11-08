@@ -14,16 +14,33 @@ WHAT IT CHECKS (static, stdlib `ast`; nothing is fetched)
   1. Every `http(s)://`, `ws(s)://` or `ftp(s)://` host inside a `str` or `bytes`
      literal in `src/**/*.py` is a key of `ALLOWED_HOSTS`. F-strings count (their
      literal parts are scanned). The scheme is matched case-insensitively and the
-     host is the AUTHORITY, parsed rather than pattern-matched: everything after
-     `scheme://` up to the first `/ ? # space quote < >` (a backslash is NOT a
-     delimiter, and tab/CR/LF are deleted first because urllib deletes them), then
-     the part after the LAST `@`, then the `:port` removed, ASCII-lowercased,
-     trailing dot dropped.
-     Bracketed IPv6 and non-ASCII hosts are therefore REPORTED (as unlisted), never
-     skipped. A literal carrying `userinfo@` is a violation of its own, even when the
-     real host is listed: `https://api.groq.com@evil.com/` shows an allowed name to a
-     reader while a client connects to evil.com, and a credential in a URL literal in
-     `src/` is never needed (put it in an environment variable and a header).
+     host is the AUTHORITY, parsed rather than pattern-matched. Each candidate is
+     read through TWO views, after deleting tab/CR/LF (urllib deletes them, so the
+     literal is scanned both as written and stripped):
+       - the TIGHT view ends the authority at the first `/ ? #`, whitespace, quote,
+         `<` or `>`. It gives the host check, so prose like "see https://shubhagya.com
+         for details" is not a false positive (a real client would reject it anyway);
+       - the WIDE view ends it at `/ ? #` ONLY, which is what `urlsplit`, `httpx.URL`
+         and `requests` do: space, quotes, `<`, `>`, NBSP, U+3000, NEL, VT, FF, FS and
+         a backslash all stay INSIDE the authority (checked 2026-11-08 with
+         `urlsplit(...).hostname`; httpx agrees except that it refuses VT, FF, FS, GS
+         and tab/CR/LF outright). The wide view is consulted only to find an `@`.
+     If the wide authority holds an `@` anywhere, the literal is a userinfo violation
+     of its own AND the host after its LAST `@` is checked as well, so
+     `https://api.groq.com @evil.com/x` reports evil.com as unlisted. `#@` and `?@`
+     are not in the authority (every client dials the host before them) and pass.
+     The host is then the part after the last `@`, `:port` removed, ASCII-lowercased,
+     trailing dot dropped. Bracketed IPv6 and non-ASCII hosts are REPORTED (as
+     unlisted), never skipped. Userinfo is a violation even when the real host is
+     listed: `https://api.groq.com@evil.com/` shows an allowed name to a reader while
+     a client connects to evil.com, and a credential in a URL literal in `src/` is
+     never needed (put it in an environment variable and a header).
+     TWO FALSE POSITIVES, both fail-closed and both fixed by rewording:
+       - "see https://shubhagya.com or mail a@b.c": no `/ ? #` between the URL and an
+         `@`, so the wide view sees userinfo and reports `b.c`;
+       - a URL that ends a line or a concatenated piece: `'https://api.groq.com<LF>.x/'`
+         and `'http://evil.com' 'x'` glue to `api.groq.com.x` / `evil.comx`, because
+         the newline is deleted (and implicit concatenation is one constant).
      Docstrings and comments are NOT scanned: they cannot be executed, and the
      ones naming hosts (`app.brevo.com`, drikpanchang in `sankranti.py`) are prose.
   2. Every module that imports a network client (`CLIENT_ROOTS`, at top level or
@@ -117,11 +134,13 @@ CLIENT_MODULES: dict[str, tuple[set[str], str]] = {
 
 # The AUTHORITY, not a guess at the host. An allow-list of host characters is the
 # wrong shape: `https://api.groq.com@evil.com` and `https://évil.com` both slip past
-# one (the first captures the userinfo, the second captures nothing). Everything up
-# to the first delimiter is taken and `_host_of` decides what it means.
-# A backslash is NOT a delimiter: `urlsplit` ends the netloc at `/ ? #` only, so in
-# `https://api.groq.com\@evil.com/` the host urllib dials is evil.com.
+# one (the first captures the userinfo, the second captures nothing). Two views:
+# TIGHT (group 1) stops at whitespace, quote, `<`, `>` as well as `/ ? #` and gives the
+# host, so prose is not a false positive. WIDE stops at `/ ? #` only, as `urlsplit`
+# and httpx do, and is read ONLY for an `@`: in `https://api.groq.com @evil.com/` the
+# space and a backslash stay inside the authority, so the host dialled is evil.com.
 _URL = re.compile(r"(?:https?|wss?|ftps?)://([^\s/?#\"'<>]*)", re.IGNORECASE)
+_WIDE = re.compile(r"[^/?#]*")
 # urllib deletes these from a URL before parsing it (CVE-2022-0391 hardening), so
 # `https://api.groq.com<TAB>@evil.com` dials evil.com; scan the stripped text as well.
 # Side effect, accepted: a URL at the end of a line glues to the next line's first word
@@ -129,9 +148,8 @@ _URL = re.compile(r"(?:https?|wss?|ftps?)://([^\s/?#\"'<>]*)", re.IGNORECASE)
 _URLLIB_STRIPS = re.compile(r"[\t\r\n]")
 
 
-def _host_of(authority: str) -> tuple[str, bool]:
-    """(host, had_userinfo) for the text between `scheme://` and the first delimiter."""
-    had_userinfo = "@" in authority
+def _host_of(authority: str) -> str:
+    """The host a client dials for the text between `scheme://` and the end of the authority."""
     hostport = authority.rsplit("@", 1)[-1]  # what follows the LAST @ is what is dialled
     if hostport.startswith("["):  # bracketed IPv6: the colons are not a port
         end = hostport.find("]")
@@ -140,7 +158,7 @@ def _host_of(authority: str) -> tuple[str, bool]:
         host = hostport.split(":", 1)[0]
     # bytes.lower() is ASCII-only: str.lower() would fold U+212A (Kelvin) to "k".
     host = host.encode("utf-8", "surrogatepass").lower().decode("utf-8", "replace")
-    return host.rstrip("."), had_userinfo
+    return host.rstrip(".")
 
 
 def _docstring_ids(tree: ast.AST) -> set[int]:
@@ -172,7 +190,13 @@ def scan_file(path: Path, rel: str) -> tuple[list[tuple[int, str, bool]], list[t
             text = node.value if isinstance(node.value, str) else node.value.decode("latin-1")
             found: set[tuple[str, bool]] = set()
             for variant in (text, _URLLIB_STRIPS.sub("", text)):
-                found.update(_host_of(m.group(1)) for m in _URL.finditer(variant))
+                for m in _URL.finditer(variant):
+                    tight = _host_of(m.group(1))
+                    wide = _WIDE.match(variant, m.start(1)).group()
+                    had_userinfo = "@" in wide
+                    found.add((tight, had_userinfo))
+                    if had_userinfo and _host_of(wide) != tight:
+                        found.add((_host_of(wide), False))  # the host a real client dials
             for host, had_userinfo in sorted(found):
                 if host or had_userinfo:  # `"https://" + h` leaves an empty authority: nothing to read
                     hosts.append((node.lineno, host, had_userinfo))
@@ -210,9 +234,9 @@ def check(root: Path, allowed_hosts=None, client_modules=None) -> tuple[list[str
             continue
         for line, host, had_userinfo in hosts:
             if had_userinfo:
-                violations.append(f"{rel}:{line}: URL literal carries userinfo (`user@host`) -- the dialled host is "
-                                  f"what follows the last '@' ({host!r}); a credential in a URL literal is never "
-                                  "needed, remove it")
+                violations.append(f"{rel}:{line}: URL literal has an '@' in its authority (userinfo) -- a client "
+                                  "dials what follows the LAST '@' (reported separately), and a credential in a "
+                                  f"URL literal is never needed, remove it [before the '@': {host!r}]")
             if not host:
                 continue
             seen_hosts.add(host)

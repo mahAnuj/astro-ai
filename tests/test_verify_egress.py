@@ -153,13 +153,53 @@ def test_userinfo_on_a_listed_host_is_a_violation_of_its_own(tmp_path):
     assert len(v) == 1 and "userinfo" in v[0] and "'api.ok.example'" in v[0]
 
 
-def test_a_backslash_or_tab_does_not_end_the_authority(tmp_path):
-    # urllib's netloc runs to `/ ? #`, and it deletes tab/CR/LF before parsing:
-    # both of these dial evil.example.org although the text reads api.ok.example.
-    for lit in ("U = 'https://api.ok.example\\\\@evil.example.org/x'",
-                "U = 'https://api.ok.example\\t@evil.example.org/x'"):
-        v = _only_host_violations(tmp_path, lit)
-        assert any("evil.example.org" in x and "unlisted" in x for x in v), lit
+# What a real client leaves INSIDE the authority: it ends only at `/ ? #`. Checked
+# 2026-11-08 with urlsplit(...).hostname == 'evil.example.org' for every one of these.
+_INSIDE_THE_AUTHORITY = [" ", '"', "'", "<", ">", "\xa0", "\u3000", "\x85", "\x0b", "\x0c",
+                         "\x1c", "\x1d", "\\", "\t", "\r", "\n"]
+
+
+def test_an_at_after_any_non_delimiter_character_is_userinfo(tmp_path):
+    # `https://api.ok.example<c>@evil.example.org/x` dials evil.example.org.
+    for c in _INSIDE_THE_AUTHORITY:
+        v = _only_host_violations(tmp_path, "U = " + repr(f"https://api.ok.example{c}@evil.example.org/x"))
+        assert any("evil.example.org" in x and "unlisted" in x for x in v), repr(c)
+        assert any("userinfo" in x for x in v), repr(c)
+
+
+def test_a_backslash_is_inside_the_authority(tmp_path):
+    v = _only_host_violations(tmp_path, "U = 'https://api.ok.example\\\\@evil.example.org/x'")
+    assert any("evil.example.org" in x and "unlisted" in x for x in v)
+    assert any("userinfo" in x for x in v)  # the wide view must see the `@` past the backslash
+
+
+def test_an_at_after_a_hash_or_a_query_is_not_userinfo(tmp_path):
+    # Every client dials api.ok.example here: the `@` sits in the fragment / query, not
+    # the authority. Pins the wide view ending at `/ ? #` against a "simplification" to
+    # "an @ anywhere in the literal".
+    for lit in ("https://api.ok.example#@evil.example.org", "https://api.ok.example?@evil.example.org",
+                "https://api.ok.example/path@evil.example.org"):
+        assert _only_host_violations(tmp_path, "U = " + repr(lit)) == [], lit
+
+
+def test_prose_after_a_url_is_not_part_of_its_host(tmp_path):
+    # The tight view gives the host: a real client would reject this, so it is no finding.
+    assert _only_host_violations(tmp_path, "U = 'see https://api.ok.example for details'") == []
+
+
+def test_an_at_with_no_delimiter_after_the_url_fails_closed(tmp_path):
+    # The documented false positive: no `/ ? #` between the URL and an `@`.
+    v = _only_host_violations(tmp_path, "U = 'see https://api.ok.example or mail a@b.example'")
+    assert any("userinfo" in x for x in v) and any("'b.example'" in x for x in v)
+
+
+def test_tab_cr_and_lf_are_each_deleted_before_the_host_is_read(tmp_path):
+    # urlsplit deletes each of these, so `api.ok.example<c>.evil.example.org` dials
+    # api.ok.example.evil.example.org. One assertion per character: a strip set missing
+    # one of them passes the other two.
+    for c, name in (("\t", "tab"), ("\r", "CR"), ("\n", "LF")):
+        v = _only_host_violations(tmp_path, "U = " + repr(f"https://api.ok.example{c}.evil.example.org/x"))
+        assert any("'api.ok.example.evil.example.org'" in x for x in v), name
 
 
 def test_an_uppercase_scheme_is_still_a_url(tmp_path):
