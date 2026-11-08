@@ -176,3 +176,19 @@ def test_the_gate_has_no_override_for_the_lookup():
     assert "fetch: Fetch = fetch_comments" in src
     for forbidden in ("TEST_DROP_RULING", "TEST_COUNT_DROP_RULING", "RULING_FILE", "SKIP_RULING"):
         assert forbidden not in src
+
+
+def test_a_quoted_phrase_is_a_mention_not_a_ruling(gate):
+    """#747, 2026-11-07: the author's note, posted as the owner, quoted the phrase in
+    backticks to say it was NOT ruling, and the gate went green on it."""
+    note = (f"Since #753 a declared drop needs a ruling comment containing "
+            f"`test-count-drop-ruled at {gate.HEAD}` from chief or the owner. "
+            f"As the author I am not posting it.")
+    quoted = f"Chief wrote:\n> test-count-drop-ruled at {gate.HEAD}"
+    for body in (note, quoted):
+        assert gate.main(fetch=Fetch([_comment(OWNER, body)]), env=_env()) == 1, body
+
+
+def test_the_phrase_on_its_own_line_is_a_ruling_even_with_a_full_stop(gate):
+    body = f"Read both deleted tests; obsolete subject.\n\ntest-count-drop-ruled at {gate.HEAD}."
+    assert gate.main(fetch=Fetch([_comment("claude[bot]", body)]), env=_env()) == 0

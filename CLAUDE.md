@@ -265,6 +265,12 @@ What has NOT changed, and why it matters more now than before:
   bound to, read from `claude[bot]`'s own `QA: FAIL — verified at <sha>` comment, and the
   round is aimed at `pr=<n>`. Before that, every re-fixed PR waited for the steward or a
   human — #649, #636 and #675 each sat hours that way with the fix already pushed.
+  **A held PR gets that round too (2026-11-07).** The `needs-human-review` check runs
+  after the fix check, and stands down only when no fix has landed since the FAIL. Every
+  workflow PR is held by design and only a session can push to one, so those fixes waited
+  on nobody: #747 had its fix and a green `gates` and this step printed "someone has been
+  told". The round is judge-only and writes a verdict, never a clearance; chief still
+  decides the hold.
 
   **What it aims the dispatch at, since 2026-11-01, and the branch name is no longer a
   precondition.** `issue/<n>-`, `partial/<n>-` and `fix/<n>-` yield `issue=<n>` and the
@@ -422,6 +428,13 @@ What has NOT changed, and why it matters more now than before:
   agent-merge.yml` before concluding anything, and never re-push to force a new edge.
   The sweep re-reads every condition from the API; it cannot merge anything the
   edge-triggered path would have refused.
+
+  **A merge re-dispatches the sweep (2026-11-07).** The sweep takes ONE PR per run, and
+  GitHub throttles the `*/30` cron to roughly every 6 hours, so cleared PRs merged at about
+  one per 6h: #749 and #750 sat fully cleared and mergeable while the 22:16 sweep took #706
+  and nothing ran for 2.5h+. Each successful merge now dispatches `agent-merge.yml` again,
+  and the next run takes the next eligible PR with every condition re-checked. Only a run
+  that merged dispatches, so the chain ends at the first run with nothing eligible.
 
 If this permission is ever narrowed again, edit this block rather than relying on the
 conversation — the same instruction the 2026-08-16 grant carries, for the same reason.

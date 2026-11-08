@@ -391,8 +391,10 @@ product, in your name.
 
 `scripts/verify_test_floor.py` no longer lets a `Test-Count-Drop: <reason>` trailer pass on
 its own: the author typing that line was authorising their own deletion. It is honoured only
-when a `claude[bot]` (or owner) comment on the PR contains `test-count-drop-ruled at <full head sha>`,
-the full 40 characters, because a short sha or prefix does not count and a push invalidates it.
+when a `claude[bot]` (or owner) comment on the PR has `test-count-drop-ruled at <full head sha>`
+on a line of its own (a mention inside a sentence, in backticks or behind a `>` quote does not
+count), the full 40 characters, because a short sha or prefix does not count and a push
+invalidates it.
 
 When a PR with a declared drop is brought to you:
 

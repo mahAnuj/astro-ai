@@ -932,6 +932,29 @@ jobs:
             echo "::warning::could not dispatch verify-production — #$PR_NUMBER is merged and deploying, but NOTHING will assert against production and its issue will not auto-close. Dispatch it by hand: gh workflow run verify-production.yml --ref main"
           fi
 
+      # SWEEP AGAIN AFTER A MERGE (2026-11-07). The sweep takes ONE PR per run
+      # and the */30 cron is throttled by GitHub to roughly every 6 hours, so
+      # eligible PRs merged at one per ~6h. Measured 2026-11-06/07: #749 and
+      # #750 were chief-cleared, independently passed, green and mergeable at
+      # 21:29; the 22:16 sweep took #706 (lowest number) and no sweep ran again
+      # for over 2.5 hours. A merge therefore re-dispatches this workflow: the
+      # next run sweeps, takes the next eligible PR and re-checks every
+      # condition for it. It ends on its own -- only a run that MERGED
+      # dispatches, so the first run with nothing eligible stops the chain.
+      # `workflow_dispatch` is the documented exception to the GITHUB_TOKEN
+      # recursion guard (see the step above); `actions: write` is already held.
+      - name: Sweep again after a merge
+        if: steps.boundary.outputs.ok == 'true' && success()
+        continue-on-error: true
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          if gh workflow run agent-merge.yml --repo "$GH_REPO" --ref main; then
+            echo "::notice::merged #$PR_NUMBER; dispatched another sweep for the next eligible PR"
+          else
+            echo "::warning::merged #$PR_NUMBER but could not dispatch the next sweep; the cron will reach it"
+          fi
+
       # A red gate is information the issue needs, not just a failed run nobody reads.
       - name: Report a failure onto the issue
         # `== failure` only. `cancelled` is not a red gate — pr-gates sets

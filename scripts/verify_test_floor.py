@@ -56,7 +56,8 @@ time, not the discovery.
 A DELIBERATE DELETION IS STILL POSSIBLE, but it is a REVIEWED act (#446 AC3).
 `Test-Count-Drop: <reason>` in a commit message only DECLARES the deletion. It is
 honoured when, and only when, a comment on the pull request by `claude[bot]` or
-the repository owner contains the literal
+the repository owner has the following literal on a line of its own (a mention
+inside a sentence, in backticks or behind a `>` quote does not count)
 
     test-count-drop-ruled at <the full 40-character PR head sha>
 
@@ -240,7 +241,13 @@ def drop_declared() -> str | None:
 # hex token and compared for EQUALITY, so a short sha, a prefix, or a longer hex
 # string that merely begins with the sha never matches.
 RULING_PHRASE = "test-count-drop-ruled at"
-_RULING = re.compile(re.escape(RULING_PHRASE) + r" ([0-9a-f]+)", re.IGNORECASE)
+#: A ruling is the phrase STANDING ALONE ON ITS OWN LINE (2026-11-07). Matching it
+#: anywhere read a quotation as a ruling: the author's note on #747 quoted the
+#: phrase in backticks to say it was NOT ruling, the note posts as the owner, and
+#: the gate went green on the author's own deletion -- the case #753 exists to
+#: close (caught by independent QA at 03:05Z). A line inside a sentence, in
+#: backticks, or behind a `>` quote is a mention, not an act.
+_RULING_LINE = re.compile(re.escape(RULING_PHRASE) + r" ([0-9a-f]+)\.?", re.IGNORECASE)
 _SHA = re.compile(r"[0-9a-f]{40}")
 _API = "https://api.github.com"
 
@@ -306,8 +313,10 @@ def find_ruling(comments: list, sha: str, owner: str) -> dict | None:
         login = str(user.get("login", "")).lower() if isinstance(user, dict) else ""
         if login not in allowed:
             continue
-        if any(m.lower() == sha for m in _RULING.findall(str(c.get("body") or ""))):
-            return c
+        for line in str(c.get("body") or "").splitlines():
+            m = _RULING_LINE.fullmatch(line.strip())
+            if m and m.group(1).lower() == sha:
+                return c
     return None
 
 
