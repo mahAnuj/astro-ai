@@ -48,6 +48,9 @@ _EN: Final[dict[str, str]] = {
 
     # panchang section
     "todays_panchang":     "Today's Panchang",
+    # #593: states which day /panchang means. Tithi/yoga/karana at local sunrise
+    # is what chart.compute_panchang does; the civil-day rule is chief's ruling.
+    "panchang_day_convention": "Date and weekday follow the civil day (midnight to midnight) in {city}'s own timezone, the same day the home page shows. Tithi, yoga and karana are read at that day's local sunrise.",
     "ruled_by":            "ruled by",
     "rahu_kaal":           "Rahu Kaal",
     "rahu_kaal_tag":       "Avoid",
@@ -623,6 +626,7 @@ _HI: Final[dict[str, str]] = {
     "phase_setting":       "अवरोही चरण",
 
     "todays_panchang":     "आज का पंचांग",
+    "panchang_day_convention": "तारीख़ और वार {city} के अपने समय-क्षेत्र के नागरिक दिन (मध्यरात्रि से मध्यरात्रि) के अनुसार हैं, वही दिन जो मुखपृष्ठ पर दिखता है। तिथि, योग और करण उस दिन के स्थानीय सूर्योदय पर लिए गए हैं।",
     "ruled_by":            "अधिपति",
     "rahu_kaal":           "राहु काल",
     "rahu_kaal_tag":       "वर्जित",
