@@ -58,6 +58,10 @@ Any of those failing: say which, and stop. This is Step 0a's substitute in this 
 - **Do Step 2.5's adoption**: switch to the branch, read any prior verdict and what changed since
   it, and put those findings in the round's brief.
 - **One round**, then **Step 3.5** with `--pr <n>` and `--sha <the SHA QA examined>`. Then stop.
+- **The round ends with a verdict posted.** Never background a command or end the turn waiting
+  on one: in Actions nothing resumes you. #761's round (run 42443249923) ended with "I'll resume
+  when the watcher reports it finished" and left no verdict. Run long commands in the foreground
+  with a timeout; whatever does not finish is reported as NOT RUN in the verdict.
 - **Do not** dispatch an engineer, open a PR, push a fix, or start new work. If the round FAILS,
   that is the outcome: `qa-fail` and a comment naming what broke.
 

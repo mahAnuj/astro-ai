@@ -41,6 +41,14 @@ So: **execute it.** Reading the diff and agreeing with it is not QA, however car
 6. **Run the gates**: `uv run pytest`, the relevant `scripts/verify_*.py`, and
    `scripts/mutate_behaviour_suite.py` where tests were added.
 
+   **Run them in the foreground and wait for the result.** In GitHub Actions nothing wakes you
+   once your turn ends, so a command left in the background, or a turn that ends "waiting for a
+   watcher", produces no verdict at all. Measured on #761 (run 42443249923): the round
+   backgrounded the scoped mutation sweep, ended with "I'll resume when the watcher reports it
+   finished", and the PR got no verdict while `qa-on-green`'s one dispatch for that commit was
+   spent. If the sweep cannot finish in the time you have, skip it, report it as NOT RUN in the
+   verdict, and still post the verdict. Every round ends with a posted verdict.
+
 ## What makes a FAIL
 
 Fail it for: the defect still reproduces; a new defect; a claim that does not hold when
