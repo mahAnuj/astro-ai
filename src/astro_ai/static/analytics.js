@@ -33,18 +33,39 @@
  */
 (function () {
   var cfg = window.BHAGYA_ANALYTICS_CONFIG || {};
-  var gaOverridden = false;
+  // The last page_location this file `set` on GA4, or null while GA4's own
+  // default (the real URL) is in force.
+  var gaSet = null;
 
-  // The current URL with the free-text `q` parameter removed (#528). Everything
-  // else -- path, `c`, utm_* -- is kept, so reports still split by them. Returns
-  // `location.href` unchanged when there is no `q`.
-  function gaLocation() {
+  // `url` with the free-text `q` parameter removed (#528). Everything else --
+  // path, `c`, utm_* -- is kept, so reports still split by them. Returns `url`
+  // unchanged when there is no `q`.
+  function stripQ(url) {
     try {
-      var u = new URL(location.href);
-      if (!u.searchParams.has('q')) return location.href;
+      var u = new URL(url, location.href);
+      if (!u.searchParams.has('q')) return url;
       u.searchParams.delete('q');
       return u.toString();
-    } catch (err) { return location.href; }
+    } catch (err) { return url; }
+  }
+  function gaLocation() { return stripQ(location.href); }
+
+  // Keep GA4's page_location `q`-free, and put it back when we leave. Called
+  // before EVERY event and after every hx-boost history push, because a boosted
+  // submit of the /ask form lands on /ask?q=<question> without re-running this
+  // file: the config call below never sees that URL, and an event such as
+  // `ask_answered` would carry GA4's default, document.location.href, i.e. the
+  // question (QA round 1 on #528). Sends nothing unless the value changes.
+  function syncLocation() {
+    if (!window.gtag) return;
+    var loc = gaLocation(), dirty = loc !== location.href;
+    if (dirty && loc !== gaSet) {
+      window.gtag('set', { page_location: loc });
+      gaSet = loc;
+    } else if (!dirty && gaSet !== null) {
+      window.gtag('set', { page_location: location.href });
+      gaSet = null;
+    }
   }
 
   // ── GA4 bootstrap ────────────────────────────────────────────────────
@@ -68,18 +89,17 @@
     var cleanLoc = gaLocation();
     if (cleanLoc !== location.href) {
       gaCfg.page_location = cleanLoc;
-      gaOverridden = true;
+      gaSet = cleanLoc;
+    }
+    // A full reload FROM /ask?q=... (a non-boosted link, the language switch)
+    // makes document.referrer the question URL; send it without `q` as well.
+    if (document.referrer) {
+      var cleanRef = stripQ(document.referrer);
+      if (cleanRef !== document.referrer) gaCfg.page_referrer = cleanRef;
     }
     window.gtag('config', cfg.ga4, gaCfg);
-    // hx-boost swaps pages without reloading this script, so the override above
-    // would outlive /ask. After each history push, point `page_location` back at
-    // the real (still `q`-free) URL, once, and only if we had overridden it.
-    document.addEventListener('htmx:pushedIntoHistory', function () {
-      if (!gaOverridden) return;
-      var loc = gaLocation();
-      window.gtag('set', { page_location: loc });
-      gaOverridden = loc !== location.href;
-    });
+    // hx-boost swaps pages without reloading this script.
+    document.addEventListener('htmx:pushedIntoHistory', syncLocation);
   }
 
   // ── Microsoft Clarity bootstrap ──────────────────────────────────────
@@ -96,6 +116,7 @@
   // ── Internal: send an event to every configured provider ─────────────
   function track(name, params) {
     params = params || {};
+    syncLocation();
     if (window.gtag) window.gtag('event', name, params);
     // Clarity has its own custom-event API — gives us tagged session
     // recordings filterable by event name in the Clarity dashboard.

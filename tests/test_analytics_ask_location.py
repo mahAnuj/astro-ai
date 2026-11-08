@@ -13,7 +13,11 @@ Nothing in the Python suite executes JavaScript, so these tests RUN the real
   * the question text appears nowhere in anything sent to `gtag`;
   * on every other URL `config` carries NO `page_location` (a config parameter
     sticks to later events, so a blanket override would mis-attribute them);
-  * after an hx-boost navigation the override is reset to the real URL, once.
+  * after an hx-boost navigation the override is reset to the real URL, once;
+  * QA round 1: a boosted submit lands on /ask?q=... WITHOUT re-running the script
+    (the form is plain POST inside <body hx-boost>), so the event that follows
+    (`ask_answered`) must still carry a `q`-free page_location;
+  * a full reload from /ask?q=... sends `page_referrer` without `q`.
 
 Node: under CI a missing `node` FAILS; locally it skips (same stance as
 test_cta_click_event.py).
@@ -45,6 +49,7 @@ const loc = { origin: spec.origin, href: spec.origin + spec.path };
 Object.defineProperty(loc, 'pathname', { get: () => new URL(loc.href).pathname });
 ctx.location = loc;
 ctx.document = {
+  referrer: spec.referrer || '',
   addEventListener: (t, f) => listeners.push([t, f]),
   createElement: () => ({}), head: { appendChild() {} },
   getElementsByTagName: () => [], getElementById: () => null,
@@ -58,10 +63,16 @@ try {
   out.initial = seen();
   if (spec.navigateTo) {
     loc.href = spec.origin + spec.navigateTo;
-    for (const [t, f] of listeners) if (t === 'htmx:pushedIntoHistory') f({});
+    if (!spec.noHistoryEvent)
+      for (const [t, f] of listeners) if (t === 'htmx:pushedIntoHistory') f({});
     out.afterNav = seen();
-    for (const [t, f] of listeners) if (t === 'htmx:pushedIntoHistory') f({});
+    if (!spec.noHistoryEvent)
+      for (const [t, f] of listeners) if (t === 'htmx:pushedIntoHistory') f({});
     out.afterSecondNav = seen();
+  }
+  if (spec.trackAfterNav) {
+    ctx.Analytics.track('ask_answered', { category: 'love', lang: 'en' });
+    out.afterTrack = seen();
   }
   if (spec.pageView) { ctx.Analytics.pageView(); out.afterPageView = seen(); }
 } catch (e) { out.thrown.push(String(e)); }
@@ -148,3 +159,53 @@ def test_manual_page_view_carries_the_sanitised_location(tmp_path):
     assert len(ev) == 1
     assert ev[0][2]["page_location"] == f"{ORIGIN}/ask?c=general"
     assert "relstionship" not in json.dumps(ev)
+
+
+def _loc_before_event(calls, name):
+    """The page_location in force when `name` fires: the last `set`/`config` before it."""
+    loc = None
+    for c in calls:
+        if c[0] == "config" and "page_location" in c[2]:
+            loc = c[2]["page_location"]
+        if c[0] == "set" and "page_location" in c[1]:
+            loc = c[1]["page_location"]
+        if c[0] == "event" and c[1] == name:
+            return loc
+    raise AssertionError(f"no {name} event in {calls}")
+
+
+def test_boosted_entry_into_ask_q_keeps_the_question_out_of_the_event(tmp_path):
+    """QA round 1 on #528: the visitor starts on /ask (no q, so no override at
+    load), submits the boosted form, htmx pushes /ask?q=<question>, the script is
+    NOT re-run, and `ask_answered` fires. It must not carry the raw URL."""
+    out = _run(tmp_path, "/ask", navigateTo=f"/ask?q={QUESTION}&c=love",
+               trackAfterNav=True)
+    assert "page_location" not in _config(out["initial"])
+    assert _loc_before_event(out["afterTrack"], "ask_answered") == f"{ORIGIN}/ask?c=love"
+    assert "relstionship" not in json.dumps(out["afterTrack"])
+
+
+def test_track_alone_sanitises_even_if_the_history_event_never_fires(tmp_path):
+    """htmx's event order is not something to lean on: track() syncs too."""
+    out = _run(tmp_path, "/ask", navigateTo=f"/ask?q={QUESTION}", trackAfterNav=True,
+               noHistoryEvent=True)
+    assert _loc_before_event(out["afterTrack"], "ask_answered") == f"{ORIGIN}/ask"
+
+
+def test_no_set_is_repeated_while_the_value_is_unchanged(tmp_path):
+    out = _run(tmp_path, "/ask", navigateTo=f"/ask?q={QUESTION}", trackAfterNav=True)
+    sets = [c for c in out["afterTrack"] if c[0] == "set" and "page_location" in c[1]]
+    assert len(sets) == 1, sets
+
+
+def test_referrer_carrying_q_is_sent_without_it(tmp_path):
+    out = _run(tmp_path, "/kundli", referrer=f"{ORIGIN}/ask?q={QUESTION}&c=love")
+    cfg = _config(out["initial"])
+    assert cfg["page_referrer"] == f"{ORIGIN}/ask?c=love"
+    assert "relstionship" not in json.dumps(out["initial"])
+
+
+@pytest.mark.parametrize("ref", ["", "https://www.google.com/", f"{ORIGIN}/learn/sade-sati/"])
+def test_referrer_without_q_is_left_alone(tmp_path, ref):
+    out = _run(tmp_path, "/kundli", referrer=ref)
+    assert "page_referrer" not in _config(out["initial"])
