@@ -33,6 +33,19 @@
  */
 (function () {
   var cfg = window.BHAGYA_ANALYTICS_CONFIG || {};
+  var gaOverridden = false;
+
+  // The current URL with the free-text `q` parameter removed (#528). Everything
+  // else -- path, `c`, utm_* -- is kept, so reports still split by them. Returns
+  // `location.href` unchanged when there is no `q`.
+  function gaLocation() {
+    try {
+      var u = new URL(location.href);
+      if (!u.searchParams.has('q')) return location.href;
+      u.searchParams.delete('q');
+      return u.toString();
+    } catch (err) { return location.href; }
+  }
 
   // ── GA4 bootstrap ────────────────────────────────────────────────────
   if (cfg.ga4) {
@@ -44,7 +57,29 @@
     window.gtag = function () { window.dataLayer.push(arguments); };
     window.gtag('js', new Date());
     // anonymize_ip — required for GDPR/DPDP compliance in IN/EU markets.
-    window.gtag('config', cfg.ga4, { anonymize_ip: true });
+    var gaCfg = { anonymize_ip: true };
+    // #528: POST /ask answers with a 303 to /ask?q=<the visitor's whole question>
+    // (a deliberate, shareable URL -- routes/ask.py), and GA4 records the full
+    // URL as the page. `anonymize_ip` covers the address, not the page, so a
+    // sentence about someone's marriage prospects sat in the property as a
+    // landing page. Override `page_location` ONLY when the URL carries `q`: on
+    // every other page the default is left alone, because a config parameter
+    // sticks to later events and a blanket override would mis-attribute them.
+    var cleanLoc = gaLocation();
+    if (cleanLoc !== location.href) {
+      gaCfg.page_location = cleanLoc;
+      gaOverridden = true;
+    }
+    window.gtag('config', cfg.ga4, gaCfg);
+    // hx-boost swaps pages without reloading this script, so the override above
+    // would outlive /ask. After each history push, point `page_location` back at
+    // the real (still `q`-free) URL, once, and only if we had overridden it.
+    document.addEventListener('htmx:pushedIntoHistory', function () {
+      if (!gaOverridden) return;
+      var loc = gaLocation();
+      window.gtag('set', { page_location: loc });
+      gaOverridden = loc !== location.href;
+    });
   }
 
   // ── Microsoft Clarity bootstrap ──────────────────────────────────────
@@ -186,7 +221,10 @@
     // register. Path defaults to the current URL.
     pageView: function (path) {
       if (window.gtag) {
-        window.gtag('event', 'page_view', { page_path: path || location.pathname });
+        window.gtag('event', 'page_view', {
+          page_path: path || location.pathname,
+          page_location: gaLocation()
+        });
       }
     },
   };
