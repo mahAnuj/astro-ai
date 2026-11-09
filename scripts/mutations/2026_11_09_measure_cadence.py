@@ -5,7 +5,7 @@ MUTATIONS = [
      ".github/workflows/agent-measure.yml",
      "    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *'\n",
      "    if: github.event.schedule == '' || github.event.schedule == '0 21 * * *'\n",
-     "test_the_collector_runs_never_invoke_the_analyst"),
+     "test_the_second_slot_runs_the_collectors_without_the_analyst"),
     ("measure cadence: a collector run cancels the analyst again",
      ".github/workflows/agent-measure.yml",
      "  cancel-in-progress: false\n",

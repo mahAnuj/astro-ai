@@ -460,7 +460,7 @@ COLLECTORS_ONLY_CRON = "23 9 * * *"
 ANALYST_CRON = "0 21 * * *"
 
 
-def test_the_collector_runs_never_invoke_the_analyst():
+def test_the_second_slot_runs_the_collectors_without_the_analyst():
     """A collectors-only run -- the backstop slot or a cycle completing -- must
     NOT invoke the analyst.
 
