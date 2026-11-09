@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-08T11:44:04Z",
+ "generated_at": "2026-11-09T00:32:43Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -494,6 +494,31 @@
     "themes": [
      "grounding"
     ]
+   },
+   {
+    "number": 801,
+    "at": "2026-11-08T19:23:32Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/801#issuecomment-6725985824",
+    "summary": "QA: FAIL \u2014 verified at `e2227a3d01646f0ec0ed2d6b64e6e28dd3a495f1` Provenance qa:in-cycle. Defect reproduced on main; branch fixes a hard load of /ask?q=. FAIL: a boosted POST /ask -> 303 -> /ask?q=... starts with gaOverridden=false so the htmx:pushedIntoHistory handler returns, and ask.html:211 Anal",
+    "themes": [
+     "tests"
+    ]
+   },
+   {
+    "number": 804,
+    "at": "2026-11-08T23:04:03Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/804#issuecomment-6728402249",
+    "summary": "QA: FAIL \u2014 verified at `a8ffaeefa3e2e6c3332f2f8621caf4ddb66a38e3` Round 1 (independent dispatch, qa:in-cycle). Tree exits 0, 16 tests + 10 rows pass, each row red for the right reason, 10/10 caught by the scoped sweep (CONTROL not certifiable: #803 time-windowed failure). FAILS: (1) 'https://api.gro",
+    "themes": [
+     "tests"
+    ]
+   },
+   {
+    "number": 804,
+    "at": "2026-11-08T23:27:38Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/804#issuecomment-6728659652",
+    "summary": "QA: FAIL \u2014 verified at `ec397c102524aad93cc7367e52e4c3ee9d4fa8ed` Round 2 (qa:in-cycle). Round-1 findings F1-F5 all re-checked and closed; 26/26 rows hand-verified red for their stated reason; scoped sweep 26/26 caught but CONTROL not certifiable (#803, 23:27Z). FAILS: F-A (blocking) the authority r",
+    "themes": []
    }
   ],
   "reverts": [],
@@ -516,17 +541,10 @@
   ],
   "ops_findings": [
    {
-    "kind": "loop-broken",
-    "level": "red",
-    "title": "agent-work.yml is broken",
-    "detail": "`collect_agent_performance.py` flagged this loop. A loop that does not run produces nothing, and nothing is indistinguishable from a quiet day on every other tile.",
-    "where": "/admin/ops"
-   },
-   {
     "kind": "loop-idle",
     "level": "amber",
-    "title": "Build lane idle 86% of the last 7d",
-    "detail": "144.8h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "title": "Build lane idle 85% of the last 7d",
+    "detail": "143.1h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
@@ -534,8 +552,8 @@
  "error_themes": {
   "regression": 15,
   "copy": 13,
+  "tests": 12,
   "tokens": 12,
-  "tests": 10,
   "security": 8,
   "grounding": 8,
   "performance": 6,
@@ -693,18 +711,25 @@
    "url": "https://github.com/mahAnuj/astro-ai/issues/508#issuecomment-6699714202"
   },
   {
+   "number": 513,
+   "verdict": "UNSCOREABLE",
+   "headline": "unscoreable at this traffic",
+   "at": "2026-11-09T00:30:17Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/513#issuecomment-6729378584"
+  },
+  {
    "number": 514,
    "verdict": "UNSCOREABLE",
-   "headline": "NOT SCOREABLE YET",
-   "at": "2026-11-06T01:23:33Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/514#issuecomment-6674107445"
+   "headline": "unscoreable at this traffic",
+   "at": "2026-11-09T00:30:15Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/514#issuecomment-6729377948"
   },
   {
    "number": 515,
    "verdict": "UNSCOREABLE",
-   "headline": "NOT SCOREABLE YET",
-   "at": "2026-11-06T01:23:32Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/515#issuecomment-6674107166"
+   "headline": "unscoreable at this traffic",
+   "at": "2026-11-09T00:30:13Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/515#issuecomment-6729377717"
   },
   {
    "number": 518,
@@ -712,6 +737,13 @@
    "headline": "pending \u2014 scoreable from 2026-12-07",
    "at": "2026-11-07T00:38:25Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/518#issuecomment-6699714732"
+  },
+  {
+   "number": 523,
+   "verdict": "UNSCOREABLE",
+   "headline": "unscoreable at this traffic",
+   "at": "2026-11-09T00:30:16Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/523#issuecomment-6729378284"
   },
   {
    "number": 553,
@@ -744,10 +776,10 @@
  ],
  "outcome_counts": {
   "OTHER": 2,
-  "PASS": 5,
   "PENDING": 9,
+  "PASS": 5,
   "HIT": 2,
-  "UNSCOREABLE": 8,
+  "UNSCOREABLE": 10,
   "PARTIAL": 1
  },
  "competitor_patterns": []

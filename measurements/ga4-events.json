@@ -1,0 +1,87 @@
+{
+  "source": "ga4",
+  "property": "543505751",
+  "window": [
+    "2026-10-10",
+    "2026-11-06"
+  ],
+  "dimensions": [
+    "eventName"
+  ],
+  "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
+  "row_count": 16,
+  "truncated": false,
+  "rows": [
+    {
+      "event": "page_view",
+      "count": 1026
+    },
+    {
+      "event": "user_identified",
+      "count": 609
+    },
+    {
+      "event": "feature_view",
+      "count": 592
+    },
+    {
+      "event": "session_start",
+      "count": 586
+    },
+    {
+      "event": "first_visit",
+      "count": 462
+    },
+    {
+      "event": "user_engagement",
+      "count": 265
+    },
+    {
+      "event": "scroll",
+      "count": 149
+    },
+    {
+      "event": "ask_answered",
+      "count": 137
+    },
+    {
+      "event": "form_start",
+      "count": 130
+    },
+    {
+      "event": "kundli_generated",
+      "count": 52
+    },
+    {
+      "event": "view_search_results",
+      "count": 5
+    },
+    {
+      "event": "cta_click",
+      "count": 4
+    },
+    {
+      "event": "click",
+      "count": 2
+    },
+    {
+      "event": "feedback_sent",
+      "count": 2
+    },
+    {
+      "event": "form_submit",
+      "count": 1
+    },
+    {
+      "event": "subscribe_completed",
+      "count": 1
+    }
+  ],
+  "events_total": 4023,
+  "coverage_note": "cta_click: 4 events recorded in the window; the from/to split is NOT available: every row reports (not set) for from_path and to_path, so the parameters are not registered as custom dimensions (or were never collected); the TOTAL count above is still valid; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "cta_click": {
+    "count": 4,
+    "split_available": false,
+    "rows": []
+  }
+}
