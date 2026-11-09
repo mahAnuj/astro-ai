@@ -454,52 +454,42 @@ def test_commit_job_grants_exactly_the_scopes_the_collector_needs_and_orders_its
     assert "scripts/publish_measurements.sh" in run_text
 
 
-COLLECTORS_ONLY_CRON = "0 2 * * *"
-#: Added by #353. The team panel is the one on /admin/ops that cannot be read
-#: live -- 46 GitHub requests against a 60/hour budget, and it needs
-#: `.github/workflows/*.yml` and `git log`, neither of which is in the
-#: container. Collection frequency is therefore its only freshness lever.
-EXTRA_COLLECTOR_CRON = "0 5,8,11,14,17,20 * * *"
+#: Since 2026-11-09 the collectors run on `agent-work` completing (debounced by
+#: scripts/measure_due.py); this one clock slot is the backstop for a day on
+#: which no cycle runs. Before that: "0 2 * * *" (2026-10-14) and
+#: "0 5,8,11,14,17,20 * * *" (#353), which GitHub throttled to ~4 runs a day.
+COLLECTORS_ONLY_CRON = "23 9 * * *"
 #: The only schedule that may invoke the analyst.
 ANALYST_CRON = "0 21 * * *"
 
 
 def test_the_second_slot_runs_the_collectors_without_the_analyst():
-    """The 02:00 slot exists so a cycle's own outcome lands the same day, and it
-    must NOT invoke the analyst.
+    """A collectors-only run -- the backstop slot or a cycle completing -- must
+    NOT invoke the analyst.
 
-    The 21:00 run is two hours AHEAD of agent-work because the cycle plans from
-    its report, so the cycle's result waits ~21.5 h for the next one -- measured
-    2026-10-14, when /admin/ops read "1 shipped today" while #276 and #329 had
-    both shipped. The fix is a second slot that runs the `commit` job only.
-
-    Dropping `measure.if` would silently double the analyst's spend against the
-    Claude 5 h rolling cap this repo has already exhausted once, and nothing
-    else in the suite would notice: both runs would simply go green.
+    Dropping or loosening `measure.if` would silently multiply the analyst's
+    spend against the Claude cap, and nothing else in the suite would notice:
+    every run would simply go green. Since 2026-11-09 the stakes are higher: a
+    run fires on every `agent-work` completion, up to ~20 a day.
     """
     doc = yaml.safe_load(MEASURE.read_text())
     on = doc.get(True) or doc.get("on")
     crons = [c["cron"] for c in on["schedule"]]
-    assert COLLECTORS_ONLY_CRON in crons
-    assert EXTRA_COLLECTOR_CRON in crons
-    assert crons.index(ANALYST_CRON) < crons.index(COLLECTORS_ONLY_CRON)
+    assert crons == [ANALYST_CRON, COLLECTORS_ONLY_CRON]
+    assert on["workflow_run"]["workflows"] == ["Agent work"]
 
-    # An ALLOW-LIST. With seven collector slots a deny-list has to be edited
-    # every time one is added, and a forgotten entry runs the analyst six extra
-    # times a day against the Claude 5 h rolling cap -- going green both times.
-    # Anything unlisted must fail safe, so this asserts the SHAPE, not just the
-    # current string: no `!=` may appear in it.
+    # An ALLOW-LIST naming what MAY run the analyst. `github.event.schedule ==
+    # ''` used to stand in for "dispatched", and a `workflow_run` event matches
+    # it too -- so it must be gone, and no `!=` (a deny-list fails open).
     cond = doc["jobs"]["measure"]["if"]
     assert "!=" not in cond, "a deny-list here fails open; list what MAY run the analyst"
-    assert cond == f"github.event.schedule == '' || github.event.schedule == '{ANALYST_CRON}'"
-
-    # And every collector slot is excluded by it, which is the property the
-    # string above only implies.
-    for cron in (COLLECTORS_ONLY_CRON, EXTRA_COLLECTOR_CRON):
-        assert f"== '{cron}'" not in cond
+    assert cond == f"github.event_name == 'workflow_dispatch' || github.event.schedule == '{ANALYST_CRON}'"
+    assert "workflow_run" not in cond and "schedule == ''" not in cond
+    assert f"== '{COLLECTORS_ONLY_CRON}'" not in cond
 
     # ...and the collectors still run, which only holds while `commit` is
-    # always() over a needs: measure that may be skipped.
+    # always() over a needs: measure that may be skipped (the debounce lives in
+    # its own steps -- tests/test_measure_cadence.py).
     commit = doc["jobs"]["commit"]
     assert commit["needs"] == "measure"
     assert commit["if"] == "always()"
