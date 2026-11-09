@@ -5201,12 +5201,14 @@ _SANDBOX_DIRS: list[str] = []
 # `.claude/worktrees/` is untracked scratch space holding git worktrees, 4.2 GB
 # of it when this was measured, and copying it per sandbox would make the sweep
 # unrunnable rather than merely slow.
-_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude")
+# `docs` and ARCHITECTURE.md since 2026-11-09: tests/test_decision_log_frozen.py reads
+# both, and a test that reads a file the sandbox lacks reports every row blind.
+_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude", "docs")
 # Repo-root FILES the sandbox needs. `CLAUDE.md` is load-bearing behaviour in this
 # repo the same way `.claude/` is -- it is loaded into every session, several gates
 # and tests read it, and a mutation row targeting it could not run at all before
 # #607. Keep this list short: every entry is copied into every worker sandbox.
-_SANDBOX_FILES = ("CLAUDE.md",)
+_SANDBOX_FILES = ("CLAUDE.md", "ARCHITECTURE.md")
 
 
 def _drop_worker_sandbox() -> None:
