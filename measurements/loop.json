@@ -1,8 +1,40 @@
 {
-  "generated_at": "2026-11-09T21:43:55Z",
+  "generated_at": "2026-11-09T23:44:39Z",
   "rows": [
     {
+      "owner_helped": false,
+      "run": 42722087227,
+      "workflow": "agent-work",
+      "date": "2026-11-09",
+      "started": "2026-11-09T23:38:24Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 6.1,
+      "issue": 594,
+      "pr": 830,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked"
+    },
+    {
       "owner_helped": null,
+      "run": 42705276556,
+      "workflow": "agent-work",
+      "date": "2026-11-09",
+      "started": "2026-11-09T21:44:03Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 8.9,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "nothing",
+      "attribution": "receipt",
+      "kind": "ranked"
+    },
+    {
+      "owner_helped": false,
       "run": 42701413923,
       "workflow": "agent-work",
       "date": "2026-11-09",
@@ -12,13 +44,13 @@
       "minutes": 24.2,
       "issue": 594,
       "pr": 830,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked"
     },
     {
-      "owner_helped": null,
+      "owner_helped": false,
       "run": 42667025951,
       "workflow": "agent-work",
       "date": "2026-11-09",
@@ -28,8 +60,8 @@
       "minutes": 32.2,
       "issue": 817,
       "pr": 829,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked"
     },
@@ -4148,20 +4180,20 @@
   ],
   "waste": {
     "days": 7,
-    "cycles": 124,
+    "cycles": 125,
     "minutes_by_outcome": {
-      "shipped": 1459.0,
-      "pr open": 56.4,
+      "shipped": 1505.9,
+      "pr open": 0.0,
       "judged": 499.5,
-      "nothing": 38.9,
+      "nothing": 47.8,
       "failed": 3.3,
       "unknown": 0.0
     },
-    "minutes_total": 2057.1,
-    "minutes_without_result": 42.2,
-    "share_without_result": 0.021,
-    "shipped_prs": 48,
-    "build_idle_hours": 142.0,
-    "build_idle_share": 0.845
+    "minutes_total": 2056.5,
+    "minutes_without_result": 51.1,
+    "share_without_result": 0.025,
+    "shipped_prs": 49,
+    "build_idle_hours": 142.1,
+    "build_idle_share": 0.846
   }
 }
