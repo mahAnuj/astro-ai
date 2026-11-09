@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-08T11:44:04Z)
+# Lessons — last 30 days (generated 2026-11-09T00:32:43Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -16,21 +16,20 @@ deterministic, no LLM.
 - **performance** — 6 QA FAIL(s): #524, #536, #565, #675, #747
 - **regression** — 15 QA FAIL(s): #536, #544, #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747
 - **security** — 8 QA FAIL(s): #328, #544, #564, #636, #712, #747
-- **tests** — 10 QA FAIL(s): #448, #536, #544, #550, #701, #747, #754
+- **tests** — 12 QA FAIL(s): #448, #536, #544, #550, #701, #747, #754, #801, #804
 - **tokens** — 12 QA FAIL(s): #536, #564, #649, #654, #660, #675, #747
 
 ## Our errors
 
-- QA FAIL verdicts: 54
+- QA FAIL verdicts: 57
 - reverted commits on main: 0
 - failed verify-production runs: 3
-- ops findings now: 2
-  - [red] loop-broken: agent-work.yml is broken
-  - [amber] loop-idle: Build lane idle 86% of the last 7d
+- ops findings now: 1
+  - [amber] loop-idle: Build lane idle 85% of the last 7d
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 2, OTHER 2, PARTIAL 1, PASS 5, PENDING 9, UNSCOREABLE 8
+counts: HIT 2, OTHER 2, PARTIAL 1, PASS 5, PENDING 9, UNSCOREABLE 10
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: PENDING — pending — scoreable from 2026-11-14
 - #311: PENDING — pending — scoreable from 2026-11-13
@@ -51,9 +50,11 @@ counts: HIT 2, OTHER 2, PARTIAL 1, PASS 5, PENDING 9, UNSCOREABLE 8
 - #426: PENDING — pending — scoreable from 2026-12-03
 - #493: UNSCOREABLE — UNSCORED — the measured event has not happened yet
 - #508: PENDING — pending — scoreable from 2026-12-04
-- #514: UNSCOREABLE — NOT SCOREABLE YET
-- #515: UNSCOREABLE — NOT SCOREABLE YET
+- #513: UNSCOREABLE — unscoreable at this traffic
+- #514: UNSCOREABLE — unscoreable at this traffic
+- #515: UNSCOREABLE — unscoreable at this traffic
 - #518: PENDING — pending — scoreable from 2026-12-07
+- #523: UNSCOREABLE — unscoreable at this traffic
 - #553: PENDING — pending — scoreable from 2026-12-01
 - #570: PENDING — pending — not scoreable until the export exists (#782); earliest clean window 2026-12-04
 - #607: PASS — PASS
