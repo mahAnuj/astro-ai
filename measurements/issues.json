@@ -1,27 +1,27 @@
 {
-  "generated_at": "2026-11-09T00:31:33Z",
+  "generated_at": "2026-11-09T09:08:03Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 116,
-  "with_ask": 39,
+  "with_ask": 38,
   "by_area": {
-    "UNCLASSIFIED": 37,
+    "UNCLASSIFIED": 40,
     "INFRA": 13,
     "REDESIGN": 10,
     "UI": 9,
     "FEATURE": 7,
     "NUMEROLOGY": 5,
-    "BUG": 4,
-    "MEASURE": 4,
+    "BUG": 3,
     "RETRIEVAL": 3,
+    "MEASURE": 3,
     "CHORE": 3,
     "MUHURAT": 3,
     "OPS": 2,
     "MATCHING": 2,
-    "SECURITY": 2,
     "SEO": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
+    "SECURITY": 1,
     "PRIVACY": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
@@ -30,22 +30,79 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 34,
-    "enhancement": 24,
+    "untyped": 35,
     "bug": 23,
+    "enhancement": 23,
     "correctness": 13,
     "chore": 11,
     "design": 6,
     "ui": 5
   },
   "by_priority": {
-    "unset": 90,
+    "unset": 91,
     "medium": 16,
-    "high": 9,
-    "low": 1
+    "high": 9
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 821,
+      "title": "Build cycles past 60 minutes lose push and comment access (claude[bot] token expiry)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-09T03:39:09Z",
+      "updated": "2026-11-09T03:39:09Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 819,
+      "title": "PII egress policy allows classes privacy.html does not disclose: geocoder, stored questions, email in logs (found by #744)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-09T03:30:35Z",
+      "updated": "2026-11-09T03:30:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 818,
+      "title": "Natal cache may serve one visitor's name to another with identical birth data (suspected, found by #744)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-09T03:30:34Z",
+      "updated": "2026-11-09T03:30:34Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 817,
+      "title": "Visitor name is in the server-rendered <title> of 8 routes, which gtag collects by default (found by #744)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-09T03:30:21Z",
+      "updated": "2026-11-09T03:30:21Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 807,
       "title": "[OPS] agent-work.yml is broken",
@@ -58,7 +115,7 @@
         "chore"
       ],
       "created": "2026-11-09T00:26:38Z",
-      "updated": "2026-11-09T00:26:38Z",
+      "updated": "2026-11-09T00:55:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -74,44 +131,6 @@
       ],
       "created": "2026-11-08T22:55:37Z",
       "updated": "2026-11-08T22:55:37Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 798,
-      "title": "[BUG] /festivals window starts at the UTC date (same shape as #593/#794)",
-      "ask": "",
-      "area": "BUG",
-      "type": "bug",
-      "priority": "low",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:low",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-08T17:15:47Z",
-      "updated": "2026-11-08T19:47:05Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 782,
-      "title": "[MEASURE] fetch_ga4.py cannot export events, so #570's cta_click metric is undeterminable and #518/#276/#329 can only be scored through pages/session",
-      "ask": "",
-      "area": "MEASURE",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-08T00:11:51Z",
-      "updated": "2026-11-09T00:30:18Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -184,22 +203,6 @@
       ],
       "created": "2026-11-06T11:07:25Z",
       "updated": "2026-11-06T11:07:25Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 744,
-      "title": "security: verify_pii_egress.py, a sentinel sweep over every sink that leaves the process (split from #354)",
-      "ask": "",
-      "area": "SECURITY",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "category:technical",
-        "chore"
-      ],
-      "created": "2026-11-06T06:31:31Z",
-      "updated": "2026-11-06T06:31:31Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -718,7 +721,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-24T22:53:58Z",
-      "updated": "2026-11-08T19:30:11Z",
+      "updated": "2026-11-09T00:53:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -789,24 +792,6 @@
       ],
       "created": "2026-10-21T04:48:02Z",
       "updated": "2026-10-21T04:48:02Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 463,
-      "title": "No gate measures seo_description length — 8 of 38 exceed 160 chars decoded, up to 187 (#398 F6)",
-      "ask": "A gate added inside #451 would have been red on arrival — 8 pre-existing violations — and this repo's rule is that a gate lands green or it does not land.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-21T04:47:37Z",
-      "updated": "2026-11-09T00:28:17Z",
       "blocked": false,
       "needs_evidence": false
     },

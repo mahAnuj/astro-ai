@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-09T00:32:43Z",
+ "generated_at": "2026-11-09T09:09:36Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -519,6 +519,42 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/804#issuecomment-6728659652",
     "summary": "QA: FAIL \u2014 verified at `ec397c102524aad93cc7367e52e4c3ee9d4fa8ed` Round 2 (qa:in-cycle). Round-1 findings F1-F5 all re-checked and closed; 26/26 rows hand-verified red for their stated reason; scoped sweep 26/26 caught but CONTROL not certifiable (#803, 23:27Z). FAILS: F-A (blocking) the authority r",
     "themes": []
+   },
+   {
+    "number": 810,
+    "at": "2026-11-09T02:43:50Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/810#issuecomment-6730978619",
+    "summary": "QA: FAIL \u2014 verified at `a72c85b5c2463a63259a641a1d74b1b902890c63` The re-mint cannot run in the agent step: ACTIONS_ID_TOKEN_REQUEST_URL/TOKEN are absent from the Bash subprocess env in this very job (Agent work / cycle); 'python3 scripts/claude_token.py' there exits 1 'no ACTIONS_ID_TOKEN_REQUEST_U",
+    "themes": []
+   },
+   {
+    "number": 815,
+    "at": "2026-11-09T03:08:31Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/815#issuecomment-6731276599",
+    "summary": "QA: FAIL \u2014 verified at `02645554ab1a481b6774ce98e27d7c792d5138b8` The rashi-level opening_style in llm.py _RASHI_ANCHORS (lines 873-897) is untouched and is sent in the SAME user message as the rewritten opening moves (llm.py:1167: 'THE RASHI'S OWN CHARACTER (express the opening move in THIS charact",
+    "themes": [
+     "copy"
+    ]
+   },
+   {
+    "number": 815,
+    "at": "2026-11-09T03:42:19Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/815#issuecomment-6731691358",
+    "summary": "QA: FAIL \u2014 verified at `9eba97408a452258c687647e3a9bcbc16f34da97` Round on the fix pushed since the 02645554a FAIL. The earlier defects are gone: opening_style, _OPENING_MOVES and 'concrete image' no longer appear in src/ and the live Cancer message (EN and HI) asks the model to assert nothing about",
+    "themes": [
+     "tokens",
+     "i18n"
+    ]
+   },
+   {
+    "number": 815,
+    "at": "2026-11-09T07:10:35Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/815#issuecomment-6734389547",
+    "summary": "QA: FAIL \u2014 verified at `c932423d04976abe5e49294afaaf66e9e6e1fb47` Round on the 4 commits pushed since the 9eba974 FAIL (head c932423). BLOCKING 1 (carried over, NOT fixed): the 9eba974 FAIL named the false safeguard claim. It still stands, unchanged in all three places: llm.py:841 ('the publish gate",
+    "themes": [
+     "i18n",
+     "performance"
+    ]
    }
   ],
   "reverts": [],
@@ -543,21 +579,21 @@
    {
     "kind": "loop-idle",
     "level": "amber",
-    "title": "Build lane idle 85% of the last 7d",
-    "detail": "143.1h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "title": "Build lane idle 84% of the last 7d",
+    "detail": "142.0h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
  },
  "error_themes": {
   "regression": 15,
-  "copy": 13,
+  "copy": 14,
+  "tokens": 13,
   "tests": 12,
-  "tokens": 12,
   "security": 8,
   "grounding": 8,
-  "performance": 6,
-  "i18n": 4
+  "performance": 7,
+  "i18n": 6
  },
  "repeated_themes": [
   "copy",
@@ -775,8 +811,8 @@
   }
  ],
  "outcome_counts": {
-  "OTHER": 2,
   "PENDING": 9,
+  "OTHER": 2,
   "PASS": 5,
   "HIT": 2,
   "UNSCOREABLE": 10,
