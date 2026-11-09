@@ -30,6 +30,7 @@ from astro_ai.chart import (
     compute_moon_rise_set,
     compute_panchang,
     compute_transit_snapshot,
+    local_today,
 )
 from astro_ai.routes.deps import _lang, _no_cdn_cache, _pretty_date, templates
 from astro_ai.session import load_collection
@@ -51,7 +52,11 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
     throwaway chart_for_loc; degrade gracefully to Mumbai if geocoding
     fails.
 
-    `target_date` is a `datetime.date` — the day whose panchang we want.
+    `target_date` is a `datetime.date` — the day whose panchang we want — or
+    None for "today", which is the civil date in the RESOLVED city's timezone
+    (#593): not `date.today()`, which is the server's UTC date and made this
+    page a day behind the home strip from 00:00 to 05:30 IST. That is why the
+    city has to be resolved before the date is known.
     """
     from astro_ai.muhurat import _choghadiya_windows as _choghadiya
     from datetime import datetime as _datetime
@@ -61,6 +66,7 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
     if not resolved_city:
         saved = load_collection(request).active
         resolved_city = (saved.birth_place if saved else "") or "Mumbai, India"
+    want_today = target_date is None
     # Anchor the compute at local noon on the target date so daily-shifting
     # signals (tithi, sunrise, choghadiya) fall on the intended day.
     def _target_moment(chart) -> _datetime:
@@ -68,16 +74,27 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
         return _datetime(target_date.year, target_date.month, target_date.day, 12, 0, tzinfo=tz)
     try:
         chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
+        if want_today:
+            target_date = local_today(chart_for_loc.birth_tz)
         p = compute_panchang(chart_for_loc, when=_target_moment(chart_for_loc))
     except Exception:
         error = True
         resolved_city = "Mumbai, India"
         try:
             chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
+            # Re-derived, not carried over: the first city's "today" may be a
+            # different calendar day from Mumbai's.
+            if want_today:
+                target_date = local_today(chart_for_loc.birth_tz)
             p = compute_panchang(chart_for_loc, when=_target_moment(chart_for_loc))
         except Exception:
             p = None
             chart_for_loc = None
+    if target_date is None:
+        # Nothing resolved at all, so there is no city timezone to ask. India
+        # is the audience and the default city's zone, as `llm.today_anchor`
+        # also assumes.
+        target_date = local_today("Asia/Kolkata")
     choghadiya_windows = []
     moon_info = None
     moon_times = None
@@ -133,7 +150,10 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
         except Exception:
             moon_times = None
     lang = _lang(request)
-    today_iso = date.today().isoformat()
+    # The "Today" badge compares against the same city-local date the strip
+    # uses, so /panchang/2026-10-30 is badged at 05:15 IST on 30 Oct (#593).
+    today_iso = local_today(
+        chart_for_loc.birth_tz if chart_for_loc else "Asia/Kolkata").isoformat()
     target_iso = target_date.isoformat()
     is_today = (target_iso == today_iso)
     # Prev / next day for navigation on archive pages (skip on today to
@@ -169,8 +189,9 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
 
 @router.get("/panchang", response_class=HTMLResponse)
 async def panchang_page(request: Request, city: str = "") -> HTMLResponse:
-    """Today's Panchang. Delegates to _render_panchang with today's date."""
-    return _no_cdn_cache(_render_panchang(request, date.today(), city))
+    """Today's Panchang. Delegates to _render_panchang, which resolves "today"
+    in the city's own timezone (#593) -- so no date is passed here."""
+    return _no_cdn_cache(_render_panchang(request, None, city))
 
 
 @router.get("/panchang/{date_str}", response_class=HTMLResponse)

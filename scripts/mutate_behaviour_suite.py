@@ -3090,9 +3090,9 @@ MUTATIONS = [
     # provider's pacing reaches llm_stats.
     ("#475: /admin/warm-rashifal stops passing a job deadline (jobs get the 6 s default)",
      "src/astro_ai/routes/subscribe.py",
-     "                festival=festivals.festival_for_date(date.today()),\n"
+     "                festival=festivals.festival_for_date(reading_today()),\n"
      "                pace_deadline=pace_deadline,\n",
-     "                festival=festivals.festival_for_date(date.today()),\n",
+     "                festival=festivals.festival_for_date(reading_today()),\n",
      "test_warm_rashifal_passes_a_job_deadline"),
 
     ("#475: /admin/send-daily-rashifal stops passing the deadline",
@@ -3110,8 +3110,8 @@ MUTATIONS = [
 
     ("#475: the welcome email (interactive) is given a job deadline",
      "src/astro_ai/routes/subscribe.py",
-     "                festival=festivals.festival_for_date(date.today()),\n            ),\n        )\n        sections = [",
-     "                festival=festivals.festival_for_date(date.today()),\n"
+     "                festival=festivals.festival_for_date(reading_today()),\n            ),\n        )\n        sections = [",
+     "                festival=festivals.festival_for_date(reading_today()),\n"
      "                pace_deadline=llm_providers.pace_deadline(),\n            ),\n        )\n        sections = [",
      "test_the_welcome_email_is_interactive_and_passes_no_deadline"),
 

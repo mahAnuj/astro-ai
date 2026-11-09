@@ -69,7 +69,7 @@ def test_the_blast_sends_the_dated_subject(client, monkeypatch):
     finally:
         app.dependency_overrides.pop(require_admin, None)
     assert r.status_code == 200, r.text
-    today = date.today()
+    today = subscribe.reading_today()
     assert subscribe._pretty_date(today.isoformat(), "en") in got["a@x.test"], got
     assert subscribe._pretty_date(today.isoformat(), "hi") in got["b@x.test"], got
 

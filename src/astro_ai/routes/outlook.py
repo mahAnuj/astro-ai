@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import logging
 import os
-from datetime import date
 from pathlib import Path
 
 from fastapi import APIRouter, Request
@@ -31,6 +30,7 @@ from astro_ai.chart import (
     compute_transit_snapshot,
     compute_varshaphala,
     compute_vedic_flags,
+    reading_today,
 )
 from astro_ai.llm import generate_outlook_reading, parse_intro_and_sections
 from astro_ai.providers import AllProvidersExhausted
@@ -147,10 +147,10 @@ async def _render_outlook(
     prompt_fp = cache.fingerprint_prompt(prompt_path)
     # Monthly: bucket by week (cache for 7 days); Yearly: bucket by month (30 days).
     if active_page == "monthly":
-        bucket = f"week-{date.today().isocalendar()[0]}-{date.today().isocalendar()[1]}"
+        bucket = f"week-{reading_today().isocalendar()[0]}-{reading_today().isocalendar()[1]}"
         ttl = 7
     else:
-        bucket = date.today().strftime("%Y-%m")  # year-month
+        bucket = reading_today().strftime("%Y-%m")  # year-month
         ttl = 30
     cache_key = f"{active_page}:{chart_fp}:{bucket}:{lang}:{prompt_fp}"
     try:
@@ -207,7 +207,7 @@ async def _render_outlook(
             "subtitle_key": subtitle_key,
             "reading_label_key": reading_label_key,
             "window_label": window_label,
-            "today_date": date.today().isoformat(),
-            "today_pretty": _pretty_date(date.today().isoformat(), lang),
+            "today_date": reading_today().isoformat(),
+            "today_pretty": _pretty_date(reading_today().isoformat(), lang),
         },
     )

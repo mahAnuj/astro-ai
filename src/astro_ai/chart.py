@@ -4055,6 +4055,37 @@ def _karana_at(julian_day: float) -> tuple[int, str, str]:
     return idx, name, _KARANA_SIGNIFICANCE.get(name, "")
 
 
+def local_today(tz: "str | ZoneInfo") -> date_:
+    """Today's civil date in `tz` (an IANA name or a ZoneInfo).
+
+    THE one source of "today" for every panchang surface (#593). `/panchang`
+    and its "Today" badge used `date.today()` -- the server's date, which is
+    UTC on Cloud Run -- while the home strip took the real moment in the city,
+    so for 00:00-05:30 IST the same site named two weekdays and two tithis.
+    The convention is the civil date (midnight to midnight) in the city's own
+    timezone, which is what the strip and drikpanchang already show; it is NOT
+    a sunrise-to-sunrise day (chief's ruling on #593).
+    """
+    return datetime.now(ZoneInfo(tz) if isinstance(tz, str) else tz).date()
+
+
+def reading_today() -> date_:
+    """The site's "today" for every reading that is not one city's panchang (#794).
+
+    The rashifal, /today, /outlook and the subscribe/email paths took "today"
+    from `date.today()` -- UTC on Cloud Run -- so from 00:00 to 05:30 IST they
+    named, cached and fetched YESTERDAY: the page date, the day-pinned sky
+    (`rashifal_day_moment`) and the cache key all lagged, and the nightly job
+    (#515) publishes the new IST day's blob at ~04:15 IST, which a UTC-keyed
+    page could not see. The reading's day is the IST day -- the same one
+    `llm.today_anchor`, `ask_transit`, `publish_rashifal` and the email job
+    already use -- so this is `local_today(RASHIFAL_REFERENCE_TZ)`. A surface
+    that belongs to a chosen city (`/panchang`, the strip) uses `local_today`
+    with that city's tz instead.
+    """
+    return local_today(RASHIFAL_REFERENCE_TZ)
+
+
 def _local_day(natal: Chart, when: datetime | None) -> tuple[ZoneInfo, date_]:
     """(birthplace tz, local calendar date) for the anchor moment `when`.
 
@@ -4065,7 +4096,7 @@ def _local_day(natal: Chart, when: datetime | None) -> tuple[ZoneInfo, date_]:
     day than the tithi returned for it.
     """
     tz = ZoneInfo(natal.birth_tz)
-    return tz, (when or datetime.now(tz)).astimezone(tz).date()
+    return tz, (when.astimezone(tz).date() if when else local_today(tz))
 
 
 def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchang:
