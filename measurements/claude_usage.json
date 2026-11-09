@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-09T09:09:04Z",
+ "generated_at": "2026-11-09T17:43:16Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 42579047094,
-  "at": "2026-11-09T07:23:34Z",
-  "five_hour": 0.08,
-  "seven_day": 0.31,
+  "run": 42661649574,
+  "at": "2026-11-09T17:08:17Z",
+  "five_hour": 0.04,
+  "seven_day": 0.35,
   "status": "allowed",
   "resets": {
-   "five_hour": 1794224400,
+   "five_hour": 1794261000,
    "seven_day": 1794549600
   }
  },
- "peak_seven_day": 0.31,
+ "peak_seven_day": 0.35,
  "rejected_runs": [],
  "readings": [
   {
@@ -30,10 +30,10 @@
   },
   {
    "workflow": "agent-work",
-   "run": 42576093972,
-   "at": "2026-11-09T06:55:54Z",
-   "five_hour": 0.06,
-   "seven_day": 0.31,
+   "run": 42607155308,
+   "at": "2026-11-09T11:12:33Z",
+   "five_hour": 0.19,
+   "seven_day": 0.33,
    "status": "allowed",
    "resets": {
     "five_hour": 1794224400,
@@ -42,10 +42,10 @@
   },
   {
    "workflow": "agent-work",
-   "run": 42577690004,
-   "at": "2026-11-09T07:11:08Z",
-   "five_hour": 0.07,
-   "seven_day": 0.31,
+   "run": 42607411654,
+   "at": "2026-11-09T11:14:24Z",
+   "five_hour": 0.21,
+   "seven_day": 0.33,
    "status": "allowed",
    "resets": {
     "five_hour": 1794224400,
@@ -54,25 +54,25 @@
   },
   {
    "workflow": "agent-work",
-   "run": 42577973047,
-   "at": "2026-11-09T07:13:44Z",
-   "five_hour": 0.08,
-   "seven_day": 0.31,
+   "run": 42612715190,
+   "at": "2026-11-09T11:54:41Z",
+   "five_hour": 0,
+   "seven_day": 0.34,
    "status": "allowed",
    "resets": {
-    "five_hour": 1794224400,
+    "five_hour": 1794243000,
     "seven_day": 1794549600
    }
   },
   {
    "workflow": "agent-work",
-   "run": 42579047094,
-   "at": "2026-11-09T07:23:34Z",
-   "five_hour": 0.08,
-   "seven_day": 0.31,
+   "run": 42661649574,
+   "at": "2026-11-09T17:08:17Z",
+   "five_hour": 0.04,
+   "seven_day": 0.35,
    "status": "allowed",
    "resets": {
-    "five_hour": 1794224400,
+    "five_hour": 1794261000,
     "seven_day": 1794549600
    }
   }

@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-09T09:09:36Z",
+ "generated_at": "2026-11-09T17:43:42Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -555,6 +555,19 @@
      "i18n",
      "performance"
     ]
+   },
+   {
+    "number": 815,
+    "at": "2026-11-09T10:51:18Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/815#issuecomment-6738198042",
+    "summary": "QA: FAIL \u2014 verified at `fdc7d76d1c4fff9587bbc44e6d42ba90193dd011`  Independent round (`qa:independent`). The head matched the expected SHA. I re-derived the checks and treated the in-cycle PASS as a claim only. The prose and the gates hold. One blocking defect: the token-budget gate was loosened usi",
+    "themes": [
+     "grounding",
+     "tokens",
+     "i18n",
+     "performance",
+     "regression"
+    ]
    }
   ],
   "reverts": [],
@@ -579,21 +592,21 @@
    {
     "kind": "loop-idle",
     "level": "amber",
-    "title": "Build lane idle 84% of the last 7d",
-    "detail": "142.0h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "title": "Build lane idle 85% of the last 7d",
+    "detail": "142.5h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
  },
  "error_themes": {
-  "regression": 15,
+  "regression": 16,
   "copy": 14,
-  "tokens": 13,
+  "tokens": 14,
   "tests": 12,
+  "grounding": 9,
   "security": 8,
-  "grounding": 8,
-  "performance": 7,
-  "i18n": 6
+  "performance": 8,
+  "i18n": 7
  },
  "repeated_themes": [
   "copy",
