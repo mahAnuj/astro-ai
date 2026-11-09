@@ -765,17 +765,12 @@ def generate_dasha_deep_dive(
 
 # 12 rashis in canonical order, each described with the classical facts
 # (English + Sanskrit name, ruling planet/Swami, element/Tattva, quality/Guna)
-# plus a per-rashi OPENING STYLE HINT — the second layer of the anti-
-# convergence fix. Because the 12 LLM calls run in parallel and can't see
-# each other's outputs, they all default to horoscope-boilerplate openings
-# ("Today, you may feel..."). Passing each rashi a DIFFERENT opening-style
-# instruction forces structural variety across the 12 outputs on the page.
-# The style hint targets the rashi's own character — Aries opens with a
-# body-image, Taurus with a sensory image, Gemini with a question, etc.
+# The per-rashi OPENING STYLE HINT that used to ride along here was removed on
+# 2026-11-09; see the note where _OPENING_MOVES stood.
 # --- The day's SHAPE, rotated per (date, rashi) (#513) -----------------------
 #
-# `opening_style` below varies across the twelve and is CONSTANT across days.
-# The output format was the same: four paragraphs, in one fixed order, with
+# The (now removed) `opening_style` varied across the twelve and was CONSTANT across
+# days. The output format was the same: four paragraphs, in one fixed order, with
 # work-and-money second and a closing instruction fourth. Both were written to
 # stop the twelve converging with each other on one page, and both succeeded at
 # that -- while creating the other convergence nobody was measuring, the one a
@@ -805,7 +800,8 @@ def generate_dasha_deep_dive(
 # index differs -- the original anti-convergence property, preserved. Across
 # days one rashi walks the whole pool, because the ordinal advances. Pool sizes
 # are coprime-ish with 12 and with each other so the (shape, move) PAIR does
-# not repeat on a 12-day cycle: 7 shapes x 11 moves = 77 pairings before a
+# not repeat on a 12-day cycle (the 11 opening moves it paired with were removed
+# 2026-11-09; the 7 shapes still rotate per date and rashi) before a
 # rashi sees the same combination again.
 #
 # Costs nothing: these replace text that was already in the prompt. The shapes
@@ -832,28 +828,17 @@ _RASHIFAL_SHAPES: tuple[str, ...] = (
     "body rather than about work. Work gets one sentence at most today.",
 )
 
-_OPENING_MOVES: tuple[str, ...] = (
-    # 2026-11-09: rewritten. Five of the previous eleven asked the model to
-    # assert something about the reader's own life -- "something that happened
-    # yesterday and is not finished", "a person they have not replied to", "an
-    # object in the room with them", "a number ... that matters to them", "a
-    # decision they have deliberately not made". It obliged: the owner's Aries
-    # email opened "You left the kitchen conversation with your sister
-    # hanging", a scene the reader never had, and the reading read as fiction.
-    # Every move now starts from the DAY, which the model knows, not from the
-    # reader's life, which it does not. Still 11, so the 7 x 11 rotation holds.
-    "Open flatly, with a plain statement about the day, and no image at all.",
-    "Open on what today's weekday asks of everyone, then narrow it to this rashi.",
-    "Open on the one thing the day suits, stated as plain advice.",
-    "Open on what the day does not reward, then say what it does.",
-    "Open on the character of today's tithi in plain words, if it fits this rashi.",
-    "Open on the kind of attention today's Moon nakshatra favours, without naming it.",
-    "Open on where this rashi's element and today's day-lord agree or pull apart.",
-    "Open on a question the reader can ask themselves -- asked, never answered for them.",
-    "Open on the light or pace of the day in general terms, and make it mean something.",
-    "Open on a small gesture anyone can make today -- a breath, a pause -- as advice.",
-    "Open on how the day starts compared with how it ends.",
-)
+# _OPENING_MOVES was removed on 2026-11-09 at the owner's request ("Don't map
+# any fixed lines for the opening"), together with each rashi's fixed
+# `opening_style`. Both were assigned openings: the rotating move told the
+# model HOW to begin and the per-rashi hint told it in WHAT CHARACTER, and
+# between them they produced invented scenes ("You left the kitchen
+# conversation with your sister hanging") and openings the owner found hard to
+# follow. The model now opens in its own words from what is most true about
+# today for this rashi. What still keeps the twelve from converging: the banned
+# opening phrases in the prompt, "Do not open two readings the same way", the
+# rotating SHAPE above, and the publish gate's `opening_repeats` cross-day
+# check, which refuses a rashi opening the way it did yesterday.
 
 
 def _rotation_index(today_iso: str, rashi_index: int, pool: int) -> int:
@@ -871,30 +856,18 @@ def _rotation_index(today_iso: str, rashi_index: int, pool: int) -> int:
 
 
 _RASHI_ANCHORS: tuple[dict[str, str], ...] = (
-    {"en": "Aries",       "sa": "Mesha",       "lord": "Mars",    "element": "Fire",  "quality": "Movable",
-     "opening_style": "Open with an active body image (a stance, a stride, a raised hand). Aries moves first — the sentence should move."},
-    {"en": "Taurus",      "sa": "Vrishabha",   "lord": "Venus",   "element": "Earth", "quality": "Fixed",
-     "opening_style": "Open with a sensory image — a smell, a texture, a taste, a piece of music. Taurus lives in the body's five senses."},
-    {"en": "Gemini",      "sa": "Mithuna",     "lord": "Mercury", "element": "Air",   "quality": "Dual",
-     "opening_style": "Open with a question the reader is likely turning over today. Gemini thinks in questions."},
-    {"en": "Cancer",      "sa": "Karka",       "lord": "Moon",    "element": "Water", "quality": "Movable",
-     "opening_style": "Open with a memory or a small home-image — a room, a person from earlier life, a familiar object. Cancer holds the past."},
-    {"en": "Leo",         "sa": "Simha",       "lord": "Sun",     "element": "Fire",  "quality": "Fixed",
-     "opening_style": "Open with a scene where the reader is being seen — a stage moment, a small audience, a photo, a compliment. Leo wants presence."},
-    {"en": "Virgo",       "sa": "Kanya",       "lord": "Mercury", "element": "Earth", "quality": "Dual",
-     "opening_style": "Open with a specific small thing that needs attention — a list item, an unfinished detail, a numbered step. Virgo notices."},
-    {"en": "Libra",       "sa": "Tula",        "lord": "Venus",   "element": "Air",   "quality": "Movable",
-     "opening_style": "Open with a scene of two people — a conversation, a choice between options, a room where balance is required."},
-    {"en": "Scorpio",     "sa": "Vrishchika",  "lord": "Mars",    "element": "Water", "quality": "Fixed",
-     "opening_style": "Open with something hidden the reader knows but hasn't named — a suspicion, a private feeling, an undercurrent."},
-    {"en": "Sagittarius", "sa": "Dhanu",       "lord": "Jupiter", "element": "Fire",  "quality": "Dual",
-     "opening_style": "Open with a horizon image — a road, a book, a travel plan, a distant idea calling for movement or study."},
-    {"en": "Capricorn",   "sa": "Makara",      "lord": "Saturn",  "element": "Earth", "quality": "Movable",
-     "opening_style": "Open with a structure or a milestone — a schedule, a ladder, a target date, something being built. Capricorn thinks in stages."},
-    {"en": "Aquarius",    "sa": "Kumbha",      "lord": "Saturn",  "element": "Air",   "quality": "Fixed",
-     "opening_style": "Open with a group or a wider circle — a community, a cause, a shared interest, an outsider's angle on a familiar situation."},
-    {"en": "Pisces",      "sa": "Meena",       "lord": "Jupiter", "element": "Water", "quality": "Dual",
-     "opening_style": "Open with a dream, an intuition, a piece of music, a boundary that is dissolving. Pisces feels before it thinks."},
+    {"en": "Aries",       "sa": "Mesha",       "lord": "Mars",    "element": "Fire",  "quality": "Movable"},
+    {"en": "Taurus",      "sa": "Vrishabha",   "lord": "Venus",   "element": "Earth", "quality": "Fixed"},
+    {"en": "Gemini",      "sa": "Mithuna",     "lord": "Mercury", "element": "Air",   "quality": "Dual"},
+    {"en": "Cancer",      "sa": "Karka",       "lord": "Moon",    "element": "Water", "quality": "Movable"},
+    {"en": "Leo",         "sa": "Simha",       "lord": "Sun",     "element": "Fire",  "quality": "Fixed"},
+    {"en": "Virgo",       "sa": "Kanya",       "lord": "Mercury", "element": "Earth", "quality": "Dual"},
+    {"en": "Libra",       "sa": "Tula",        "lord": "Venus",   "element": "Air",   "quality": "Movable"},
+    {"en": "Scorpio",     "sa": "Vrishchika",  "lord": "Mars",    "element": "Water", "quality": "Fixed"},
+    {"en": "Sagittarius", "sa": "Dhanu",       "lord": "Jupiter", "element": "Fire",  "quality": "Dual"},
+    {"en": "Capricorn",   "sa": "Makara",      "lord": "Saturn",  "element": "Earth", "quality": "Movable"},
+    {"en": "Aquarius",    "sa": "Kumbha",      "lord": "Saturn",  "element": "Air",   "quality": "Fixed"},
+    {"en": "Pisces",      "sa": "Meena",       "lord": "Jupiter", "element": "Water", "quality": "Dual"},
 )
 
 
@@ -1019,8 +992,6 @@ def generate_rashifal_for_rashi(
         _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,
         shape=_RASHIFAL_SHAPES[_rotation_index(today_iso, rashi_index,
                                                len(_RASHIFAL_SHAPES))],
-        opening_move=_OPENING_MOVES[_rotation_index(today_iso, rashi_index,
-                                                    len(_OPENING_MOVES))],
         gochara_block=_gochara_block(rashi_index, transit),
     )
 
@@ -1121,7 +1092,7 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
 
 
 def _format_rashifal_message(anchor: dict, day_signals_block: str, transit_block: str,
-                             gochara_block: str, shape: str, opening_move: str) -> str:
+                             gochara_block: str, shape: str) -> str:
     """The per-rashi USER message, exactly as `chat()` receives it.
 
     Extracted from `_generate_rashifal_single` so `verify_token_budget` can
@@ -1158,17 +1129,10 @@ def _format_rashifal_message(anchor: dict, day_signals_block: str, transit_block
         f"prompt — follow THIS):\n"
         f"{shape}\n"
         f"\n"
-        f"OPENING MOVE FOR TODAY (how to start; it changes every day so the "
-        f"reading does not open the same way it did yesterday):\n"
-        f"{opening_move}\n"
-        f"\n"
-        f"THE RASHI'S OWN CHARACTER (express the opening move in THIS "
-        f"character — it is what keeps the twelve from sounding alike):\n"
-        f"{anchor.get('opening_style', 'Open with a concrete image, not a generic feeling.')}\n"
-        f"\n"
         f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
         f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose. "
-        f"Follow the opening-style hint above. Do not use any banned opening phrase."
+        f"Open in your own words with what matters most today for this rashi. "
+        f"Do not use any banned opening phrase."
     ))
 
 
@@ -1180,7 +1144,6 @@ def _generate_rashifal_single(
     lang: str,
     pace_deadline: float | None = None,
     shape: str = _RASHIFAL_SHAPES[0],
-    opening_move: str = _OPENING_MOVES[0],
     gochara_block: str = "",
 ) -> str:
     """Generate a single rashi's daily reading — one LLM call, ~200 tokens output.
@@ -1195,8 +1158,7 @@ def _generate_rashifal_single(
     runs in a ThreadPoolExecutor worker and context does not propagate into one.
     """
     user_message = _format_rashifal_message(
-        anchor, day_signals_block, transit_block, gochara_block, shape,
-        opening_move)
+        anchor, day_signals_block, transit_block, gochara_block, shape)
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
@@ -1390,8 +1352,6 @@ def generate_rashifal(
                 pace_deadline,
                 _RASHIFAL_SHAPES[_rotation_index(today_iso, idx,
                                                  len(_RASHIFAL_SHAPES))],
-                _OPENING_MOVES[_rotation_index(today_iso, idx,
-                                               len(_OPENING_MOVES))],
                 _gochara_block(idx, transit),
             ): idx
             for idx, anchor in enumerate(_RASHI_ANCHORS)

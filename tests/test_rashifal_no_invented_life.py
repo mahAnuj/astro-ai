@@ -20,14 +20,22 @@ _INVENTING = re.compile(
     r"|deliberately not made|mid-situation|has been avoiding", re.I)
 
 
-def test_no_opening_move_or_shape_asks_for_a_fact_about_the_reader():
-    hits = [t for t in llm._OPENING_MOVES + llm._RASHIFAL_SHAPES if _INVENTING.search(t)]
+def test_no_shape_asks_for_a_fact_about_the_reader():
+    hits = [t for t in llm._RASHIFAL_SHAPES if _INVENTING.search(t)]
     assert not hits, f"these tell the model to invent the reader's life: {hits}"
 
 
-def test_the_rotation_pools_keep_their_sizes():
-    # 7 x 11 = 77 pairings before a rashi repeats (llm.py's rotation comment).
-    assert (len(llm._RASHIFAL_SHAPES), len(llm._OPENING_MOVES)) == (7, 11)
+def test_no_fixed_opening_line_is_handed_to_the_model():
+    # Owner, 2026-11-09: "Don't map any fixed lines for the opening."
+    assert not hasattr(llm, "_OPENING_MOVES")
+    assert not any("opening_style" in a for a in llm._RASHI_ANCHORS)
+    msg = llm._format_rashifal_message(llm._RASHI_ANCHORS[0], "- sig", "tb", "", llm._RASHIFAL_SHAPES[0])
+    assert "OPENING MOVE" not in msg and "OPENING STYLE" not in msg and "CHARACTER" not in msg
+
+
+def test_the_prompt_asks_for_plain_everyday_language():
+    text = RASHIFAL_PROMPT_PATH.read_text()
+    assert "Class 8" in text and "No idioms, metaphors or poetic images" in text
 
 
 def test_the_prompt_forbids_inventing_the_readers_life():

@@ -720,6 +720,6 @@ all = ['No astrology disclaimers']
 
 [[prompts."rashifal_single.txt".rules]]
 id = "the-opening-move-rotates-and-the-frames-are-banned"
-why = "RENAMED 2026-10-24 (#513). Was `opening-style-hint-is-honoured`, requiring 'opened per the OPENING STYLE HINT' — a per-rashi constant that never varied by date, so each rashi opened the same way every day (opening-sentence similarity 0.360 against body similarity 0.089, 4x). The character hint still travels, but a rotating OPENING MOVE now leads it, and the five frames the old fixed shape produced are banned by name."
-all = ['OPENING MOVE FOR TODAY', 'NEVER begin a sentence with', 'Take a', 'At work', 'Hold off', 'A modest', 'Family conversations']
-forbid = ['opened per the OPENING STYLE HINT']
+why = "CHANGED 2026-11-09 (owner: 'Don't map any fixed lines for the opening'): the rotating OPENING MOVE and the per-rashi hint are both gone, because together they produced invented scenes and openings readers found hard to follow; the model now opens in its own words, the five frames stay banned, and the publish gate's cross-day opening check still refuses a repeat. Earlier: RENAMED 2026-10-24 (#513). Was `opening-style-hint-is-honoured`, requiring 'opened per the OPENING STYLE HINT' — a per-rashi constant that never varied by date, so each rashi opened the same way every day (opening-sentence similarity 0.360 against body similarity 0.089, 4x). The character hint still travels, but a rotating OPENING MOVE now leads it, and the five frames the old fixed shape produced are banned by name."
+all = ['Open each reading in your own words', 'There is no set opening', 'NEVER begin a sentence with', 'Take a', 'At work', 'Hold off', 'A modest', 'Family conversations']
+forbid = ['opened per the OPENING STYLE HINT', 'OPENING MOVE FOR TODAY', 'OPENING STYLE HINT']

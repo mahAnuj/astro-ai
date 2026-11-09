@@ -330,7 +330,7 @@ def rashifal_payload(llm, chart_mod, lang: str = "en") -> str:
 
     1. It re-concatenated the message's parts BY HAND and so omitted the
        section headers ("TODAY'S SKY SIGNALS", "RASHI TO WRITE FOR:", "THE
-       SHAPE FOR TODAY", "OPENING MOVE") and the closing instruction --
+       SHAPE FOR TODAY") and the closing instruction --
        undercounting the real request by 4.8% and leaving a later edit
        confined to those strings invisible, the same blind spot again. It now
        calls `llm._format_rashifal_message`, the function the serving path
@@ -364,8 +364,7 @@ def rashifal_payload(llm, chart_mod, lang: str = "en") -> str:
     # measurement does not swing on which sign happens to be worst today.
     return llm._format_rashifal_message(
         llm._RASHI_ANCHORS[0], signals, llm.format_transit_for_prompt(transit),
-        llm._gochara_block(0, transit), llm._RASHIFAL_SHAPES[0],
-        llm._OPENING_MOVES[0])
+        llm._gochara_block(0, transit), llm._RASHIFAL_SHAPES[0])
 
 
 _ASK_QUESTION = "Will I clear my UPSC exam this year? I have been preparing for three years."
