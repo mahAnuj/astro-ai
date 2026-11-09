@@ -224,6 +224,7 @@ jobs:
           git config user.email "agent@users.noreply.github.com"
 
 
+
       # Plan from the analyst's latest run rather than re-deriving it. Falls
       # through quietly when no measurement exists yet — a first run must not be
       # blocked by the absence of a prior one.
@@ -430,8 +431,8 @@ jobs:
       # two such suites and sat `mergeable_state: blocked` with every check
       # green. The six measurement workflows already avoid this by opening
       # their PRs with the publisher App; this net now does the same for the
-      # `gh pr create` call ONLY. The push stays on `github.token` (it never
-      # expires mid-job, which is why this net uses it -- see below).
+      # `gh pr create` call and, since 2026-11-09, for the push too (a
+      # github.token push holds the PR's checks the same way; see below).
       # `continue-on-error` + the `||` fallback keep a missing key from being
       # worse than today: the PR still opens, as `github-actions[bot]`, which
       # AGENT_AUTHORS now also accepts.
@@ -519,8 +520,15 @@ jobs:
           # job rather than sixty minutes. With contents: write it can push. So
           # the rescue was always available; the step was just aimed at the wrong
           # credential.
+          # PR_TOKEN (the publisher App, minted seconds ago) rather than
+          # github.token (2026-11-09): a push made with github.token starts
+          # `pull_request` runs as github-actions[bot], which GitHub holds in
+          # `action_required` until a human approves them -- #804's head sat
+          # that way from 00:26Z. A fresh App token cannot have expired, which
+          # was the reason this push used github.token. Falls back to
+          # github.token when the publisher key is missing, as before.
           git remote set-url origin \
-            "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
+            "https://x-access-token:${PR_TOKEN}@github.com/${GH_REPO}.git"
 
           # A LOCAL ALIAS OF WORK ALREADY ON THE REMOTE IS NOT WORK TO RESCUE.
           # A judge-only QA round checks an existing PR out under a local name
