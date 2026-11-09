@@ -166,5 +166,9 @@ MUTATIONS = [
      "    if not files:\n",
      "    if False:\n",
      "test_a_src_dir_with_no_python_is_exit_2_not_a_pass"),
+    ("egress: a credential with no literal host (`https://user@` + runtime host) is not a finding",
+     "scripts/verify_egress.py",
+     "                if host or had_userinfo:",
+     "                if host:",
+     "test_userinfo_with_no_host_literal_is_still_a_violation"),
 ]
-

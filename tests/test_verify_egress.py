@@ -187,6 +187,14 @@ def test_prose_after_a_url_is_not_part_of_its_host(tmp_path):
     assert _only_host_violations(tmp_path, "U = 'see https://api.ok.example for details'") == []
 
 
+def test_userinfo_with_no_host_literal_is_still_a_violation(tmp_path):
+    # `'https://user@'` and `'https://u:p@' + h` leave an EMPTY host after the last `@`;
+    # the credential is the finding, and the runtime-built host cannot be read.
+    for lit in ("U = 'https://user@'", "h = 'x'\nU = 'https://u:p@' + h"):
+        v = _only_host_violations(tmp_path, lit)
+        assert len(v) == 1 and "userinfo" in v[0], lit
+
+
 def test_an_at_with_no_delimiter_after_the_url_fails_closed(tmp_path):
     # The documented false positive: no `/ ? #` between the URL and an `@`.
     v = _only_host_violations(tmp_path, "U = 'see https://api.ok.example or mail a@b.example'")
