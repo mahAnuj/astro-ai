@@ -114,43 +114,31 @@ def build(lang: str, today_iso: str, rashi: str = "all") -> tuple[str, str]:
                   f"day is re-validated. Write only this one.", ""]
     for anchor in wanted:
         parts += [f"### {anchor['en']} / {anchor['sa']}", "", "```",
-                  llm._rashifal_user_message(anchor, day_signals_block, transit_block)
-                  if hasattr(llm, "_rashifal_user_message")
-                  else _inline_user_message(anchor, day_signals_block, transit_block),
+                  user_message(anchor, day_signals_block, transit_block, transit, today_iso),
                   "```", ""]
     return storage_key, "\n".join(parts)
 
 
-def _inline_user_message(anchor: dict, day_signals_block: str, transit_block: str) -> str:
-    """The user message, built the way `_generate_rashifal_single` builds it.
+def user_message(anchor: dict, day_signals_block: str, transit_block: str,
+                 transit, today_iso: str) -> str:
+    """The per-rashi user message, built by the SAME function and with the SAME
+    per-rashi arguments `llm.generate_rashifal` gives each of its twelve calls:
+    `_format_rashifal_message` with this rashi's gochara block and today's
+    rotated shape.
 
-    Only reached while that function composes the string inline rather than
-    through a helper. It is a literal transcription, and
-    `tests/test_rashifal_brief.py` pins it against a real call so the two
-    cannot drift silently — if llm.py grows a helper, this is dead code and
-    the `hasattr` branch above takes over.
+    It used to call `llm._rashifal_user_message`, a helper that never existed,
+    and fall back to a hand-written copy of the message that predated #513 and
+    #523. Measured 2026-11-09: every nightly brief therefore carried no
+    TODAY'S GOCHARA block, no SHAPE FOR TODAY and no gochara-agreement rule, so
+    the Claude job wrote prose that could not agree with the counts and Chandra
+    Bala printed beside it -- the owner's "doesn't make any sense". The docstring
+    of that copy cited `tests/test_rashifal_brief.py` as pinning the two
+    together; that file did not exist. It does now.
     """
-    return (
-        f"TODAY'S SKY SIGNALS (use these to make the reading feel like TODAY):\n"
-        f"{day_signals_block}\n"
-        f"\n"
-        f"Raw planetary positions (background context — do NOT recite):\n"
-        f"{transit_block}\n"
-        f"\n"
-        f"RASHI TO WRITE FOR:\n"
-        f"- Name: {anchor['en']} / {anchor['sa']}\n"
-        f"- Ruling planet (Swami): {anchor['lord']}\n"
-        f"- Element (Tattva): {anchor['element']}\n"
-        f"- Quality (Guna): {anchor['quality']}\n"
-        f"\n"
-        f"OPENING STYLE HINT (CRITICAL — this is how you avoid opening with "
-        f"'Today, you may feel...' like every other rashi will):\n"
-        f"{anchor.get('opening_style', 'Open with a concrete image, not a generic feeling.')}\n"
-        f"\n"
-        f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
-        f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose. "
-        f"Follow the opening-style hint above. Do not use any banned opening phrase."
-    )
+    idx = llm._RASHI_ANCHORS.index(anchor)
+    return llm._format_rashifal_message(
+        anchor, day_signals_block, transit_block, llm._gochara_block(idx, transit),
+        llm._RASHIFAL_SHAPES[llm._rotation_index(today_iso, idx, len(llm._RASHIFAL_SHAPES))])
 
 
 def main() -> int:

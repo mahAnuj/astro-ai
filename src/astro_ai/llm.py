@@ -28,6 +28,7 @@ _log = logging.getLogger(__name__)
 from astro_ai import rashifal_quality
 from astro_ai.chart import (
     area_ratings_for_rashi as chart_area_ratings,
+    reader_groups_for_rashi as chart_reader_groups,
     gochara_for_rashi,
     remedy_for_rashi as chart_remedy,
     Chart,
@@ -765,17 +766,12 @@ def generate_dasha_deep_dive(
 
 # 12 rashis in canonical order, each described with the classical facts
 # (English + Sanskrit name, ruling planet/Swami, element/Tattva, quality/Guna)
-# plus a per-rashi OPENING STYLE HINT — the second layer of the anti-
-# convergence fix. Because the 12 LLM calls run in parallel and can't see
-# each other's outputs, they all default to horoscope-boilerplate openings
-# ("Today, you may feel..."). Passing each rashi a DIFFERENT opening-style
-# instruction forces structural variety across the 12 outputs on the page.
-# The style hint targets the rashi's own character — Aries opens with a
-# body-image, Taurus with a sensory image, Gemini with a question, etc.
+# The per-rashi OPENING STYLE HINT that used to ride along here was removed on
+# 2026-11-09; see the note where _OPENING_MOVES stood.
 # --- The day's SHAPE, rotated per (date, rashi) (#513) -----------------------
 #
-# `opening_style` below varies across the twelve and is CONSTANT across days.
-# The output format was the same: four paragraphs, in one fixed order, with
+# The (now removed) `opening_style` varied across the twelve and was CONSTANT across
+# days. The output format was the same: four paragraphs, in one fixed order, with
 # work-and-money second and a closing instruction fourth. Both were written to
 # stop the twelve converging with each other on one page, and both succeeded at
 # that -- while creating the other convergence nobody was measuring, the one a
@@ -805,7 +801,8 @@ def generate_dasha_deep_dive(
 # index differs -- the original anti-convergence property, preserved. Across
 # days one rashi walks the whole pool, because the ordinal advances. Pool sizes
 # are coprime-ish with 12 and with each other so the (shape, move) PAIR does
-# not repeat on a 12-day cycle: 7 shapes x 11 moves = 77 pairings before a
+# not repeat on a 12-day cycle (the 11 opening moves it paired with were removed
+# 2026-11-09; the 7 shapes still rotate per date and rashi) before a
 # rashi sees the same combination again.
 #
 # Costs nothing: these replace text that was already in the prompt. The shapes
@@ -814,12 +811,12 @@ def generate_dasha_deep_dive(
 _RASHIFAL_SHAPES: tuple[str, ...] = (
     "Four short paragraphs: the day's feeling, then work and money, then "
     "people, then one concrete thing to do.",
-    "Three paragraphs. Lead with PEOPLE -- a conversation, a household, "
-    "someone the reader has been avoiding -- then work, then close on a "
-    "single action. Do not mention money at all today.",
-    "Three paragraphs, no closing instruction. Open mid-situation, develop "
-    "it, and end on an observation rather than advice. Let the reader draw "
-    "the action themselves.",
+    "Three paragraphs. Lead with PEOPLE in general -- how the day treats "
+    "conversations and the household, never who those people are -- then "
+    "work, then close on a single action. Do not mention money at all today.",
+    "Three paragraphs, no closing instruction. Open on the day's central "
+    "tension, develop it, and end on an observation rather than advice. Let "
+    "the reader draw the action themselves.",
     "Four paragraphs, but lead with the ONE thing to do today and spend the "
     "rest of the reading explaining why the day suits it.",
     "Two longer paragraphs. First the shape of the day across work and "
@@ -832,19 +829,22 @@ _RASHIFAL_SHAPES: tuple[str, ...] = (
     "body rather than about work. Work gets one sentence at most today.",
 )
 
-_OPENING_MOVES: tuple[str, ...] = (
-    "Open on something the reader is already doing as they read.",
-    "Open on a question they have been turning over.",
-    "Open on an object in the room with them.",
-    "Open on something that happened yesterday and is not finished.",
-    "Open on a sound, or on the absence of one.",
-    "Open on a person they have not replied to.",
-    "Open on a decision they have deliberately not made.",
-    "Open on the weather or the light, and make it mean something.",
-    "Open on a small physical gesture -- a hand, a breath, a step.",
-    "Open on a number, a date or a count that matters to them.",
-    "Open flatly, with a plain statement about the day, and no image at all.",
-)
+# _OPENING_MOVES was removed on 2026-11-09 at the owner's request ("Don't map
+# any fixed lines for the opening"), together with each rashi's fixed
+# `opening_style`. Both were assigned openings: the rotating move told the
+# model HOW to begin and the per-rashi hint told it in WHAT CHARACTER, and
+# between them they produced invented scenes ("You left the kitchen
+# conversation with your sister hanging") and openings the owner found hard to
+# follow. The model now opens in its own words from what is most true about
+# today for this rashi. What still keeps the twelve from converging: the banned
+# opening phrases in the prompt, "Do not open two readings the same way", and
+# the rotating SHAPE above. The publish gate's `opening_repeats` cross-day check
+# is LOGGED, NOT FATAL, and English only (publish_rashifal.opening_notes: its
+# firing rate is unmeasured, so a fatal version could drop whole days to the
+# Groq fallback). So nothing now REFUSES a rashi that opens the way it did
+# yesterday -- the protection #513 relied on is weaker than it was. The job log
+# carries the count; making the check fatal is a decision for once that count
+# is a number.
 
 
 def _rotation_index(today_iso: str, rashi_index: int, pool: int) -> int:
@@ -862,31 +862,48 @@ def _rotation_index(today_iso: str, rashi_index: int, pool: int) -> int:
 
 
 _RASHI_ANCHORS: tuple[dict[str, str], ...] = (
-    {"en": "Aries",       "sa": "Mesha",       "lord": "Mars",    "element": "Fire",  "quality": "Movable",
-     "opening_style": "Open with an active body image (a stance, a stride, a raised hand). Aries moves first — the sentence should move."},
-    {"en": "Taurus",      "sa": "Vrishabha",   "lord": "Venus",   "element": "Earth", "quality": "Fixed",
-     "opening_style": "Open with a sensory image — a smell, a texture, a taste, a piece of music. Taurus lives in the body's five senses."},
-    {"en": "Gemini",      "sa": "Mithuna",     "lord": "Mercury", "element": "Air",   "quality": "Dual",
-     "opening_style": "Open with a question the reader is likely turning over today. Gemini thinks in questions."},
-    {"en": "Cancer",      "sa": "Karka",       "lord": "Moon",    "element": "Water", "quality": "Movable",
-     "opening_style": "Open with a memory or a small home-image — a room, a person from earlier life, a familiar object. Cancer holds the past."},
-    {"en": "Leo",         "sa": "Simha",       "lord": "Sun",     "element": "Fire",  "quality": "Fixed",
-     "opening_style": "Open with a scene where the reader is being seen — a stage moment, a small audience, a photo, a compliment. Leo wants presence."},
-    {"en": "Virgo",       "sa": "Kanya",       "lord": "Mercury", "element": "Earth", "quality": "Dual",
-     "opening_style": "Open with a specific small thing that needs attention — a list item, an unfinished detail, a numbered step. Virgo notices."},
-    {"en": "Libra",       "sa": "Tula",        "lord": "Venus",   "element": "Air",   "quality": "Movable",
-     "opening_style": "Open with a scene of two people — a conversation, a choice between options, a room where balance is required."},
-    {"en": "Scorpio",     "sa": "Vrishchika",  "lord": "Mars",    "element": "Water", "quality": "Fixed",
-     "opening_style": "Open with something hidden the reader knows but hasn't named — a suspicion, a private feeling, an undercurrent."},
-    {"en": "Sagittarius", "sa": "Dhanu",       "lord": "Jupiter", "element": "Fire",  "quality": "Dual",
-     "opening_style": "Open with a horizon image — a road, a book, a travel plan, a distant idea calling for movement or study."},
-    {"en": "Capricorn",   "sa": "Makara",      "lord": "Saturn",  "element": "Earth", "quality": "Movable",
-     "opening_style": "Open with a structure or a milestone — a schedule, a ladder, a target date, something being built. Capricorn thinks in stages."},
-    {"en": "Aquarius",    "sa": "Kumbha",      "lord": "Saturn",  "element": "Air",   "quality": "Fixed",
-     "opening_style": "Open with a group or a wider circle — a community, a cause, a shared interest, an outsider's angle on a familiar situation."},
-    {"en": "Pisces",      "sa": "Meena",       "lord": "Jupiter", "element": "Water", "quality": "Dual",
-     "opening_style": "Open with a dream, an intuition, a piece of music, a boundary that is dissolving. Pisces feels before it thinks."},
+    {"en": "Aries",       "sa": "Mesha",       "lord": "Mars",    "element": "Fire",  "quality": "Movable"},
+    {"en": "Taurus",      "sa": "Vrishabha",   "lord": "Venus",   "element": "Earth", "quality": "Fixed"},
+    {"en": "Gemini",      "sa": "Mithuna",     "lord": "Mercury", "element": "Air",   "quality": "Dual"},
+    {"en": "Cancer",      "sa": "Karka",       "lord": "Moon",    "element": "Water", "quality": "Movable"},
+    {"en": "Leo",         "sa": "Simha",       "lord": "Sun",     "element": "Fire",  "quality": "Fixed"},
+    {"en": "Virgo",       "sa": "Kanya",       "lord": "Mercury", "element": "Earth", "quality": "Dual"},
+    {"en": "Libra",       "sa": "Tula",        "lord": "Venus",   "element": "Air",   "quality": "Movable"},
+    {"en": "Scorpio",     "sa": "Vrishchika",  "lord": "Mars",    "element": "Water", "quality": "Fixed"},
+    {"en": "Sagittarius", "sa": "Dhanu",       "lord": "Jupiter", "element": "Fire",  "quality": "Dual"},
+    {"en": "Capricorn",   "sa": "Makara",      "lord": "Saturn",  "element": "Earth", "quality": "Movable"},
+    {"en": "Aquarius",    "sa": "Kumbha",      "lord": "Saturn",  "element": "Air",   "quality": "Fixed"},
+    {"en": "Pisces",      "sa": "Meena",       "lord": "Jupiter", "element": "Water", "quality": "Dual"},
 )
+
+
+# What each weekday lord signifies, VERBATIM from knowledge/grahas.md's karaka
+# table (owner, 2026-11-09: "ensure nothing is cooked up but grounded in
+# astrology rules"). The prompt's old weekday table had drifted from it --
+# "rest" for the Moon, "competition, disputes" for Mars, "expansion,
+# generosity" for Jupiter, "structure, reflection" for Saturn appear nowhere in
+# the corpus. The model now gets the corpus line and nothing else.
+_DAY_LORD_SIGNIFIES: dict[str, str] = {
+    "Sun": "soul (atma), authority, father, health, government",
+    "Moon": "mind (manas), mother, emotions, home, water",
+    "Mars": "strength, courage, siblings, land, warriors",
+    "Mercury": "speech, intellect, communication, trade, education",
+    "Jupiter": "knowledge, happiness, children, wisdom, wealth, guru",
+    "Venus": "potency, marriage, love, luxury, arts, vehicles",
+    "Saturn": "grief, longevity, service, discipline, delays",
+}
+
+#: Raman's lunar days "unsuitable for undertaking any auspicious work": the 4th,
+#: 6th, 8th, 12th and 14th of either half, plus full and new moon (Muhurtha Ch.
+#: II line 802; Panchanga Suddhi line 1329 -- knowledge/vedic_reference.md
+#: §29.8). The ONLY tithi claim the rashifal is now given; the popular per-tithi
+#: characters (chart._TITHI_SIGNIFICANCE, "quiet resets" and the like) stay on
+#: /panchang, labelled, and no longer reach the reading.
+_RAMAN_AVOID_TITHI_DAYS = frozenset({4, 6, 8, 12, 14})
+
+
+def _tithi_is_raman_avoid(tithi_index: int) -> bool:
+    return tithi_index in (14, 29) or (tithi_index % 15) + 1 in _RAMAN_AVOID_TITHI_DAYS
 
 
 def _build_rashifal_day_signals(
@@ -918,20 +935,20 @@ def _build_rashifal_day_signals(
         f"priors is wrong."
     ]
     if panchang:
+        lord_sig = _DAY_LORD_SIGNIFIES.get(panchang.day_lord, "")
         signals.append(
-            f"Weekday: {panchang.weekday} — ruled by {panchang.day_lord}. "
-            f"Classical Vedic tradition treats this day's overall tone as "
-            f"{panchang.day_lord}-coloured; that mood must shape today's reading."
+            f"Weekday: {panchang.weekday}, whose lord is {panchang.day_lord} (the "
+            f"weekday is counted from its lord, Rao §1.3.11)."
+            + (f" {panchang.day_lord}'s significations (grahas.md): {lord_sig}." if lord_sig else "")
         )
-        tithi_note = (
-            f"Today's tithi: {panchang.tithi_paksha} Paksha, {panchang.tithi_name}"
+        avoid = _tithi_is_raman_avoid(panchang.tithi_index)
+        signals.append(
+            f"Today's tithi: {panchang.tithi_paksha} Paksha, {panchang.tithi_name}. "
+            + ("Raman lists this lunar day as unsuitable for starting auspicious work "
+               "(Muhurtha Ch. II; Panchanga Suddhi): favour finishing over starting."
+               if avoid else
+               "Raman gives this lunar day no caution. Give it no character of its own.")
         )
-        if panchang.tithi_significance:
-            tithi_note += f" ({panchang.tithi_significance})"
-        tithi_note += (
-            ". Tithi shifts every ~24 hours and colours the day's karmic character."
-        )
-        signals.append(tithi_note)
         # Named, never clocked — see format_day_windows_for_rashifal. This
         # replaces times the model used to invent outright: the prompt itself
         # asked for a "time window" and offered "avoid hot debates after 4 pm"
@@ -940,13 +957,15 @@ def _build_rashifal_day_signals(
         signals.append(format_day_windows_for_rashifal(panchang, lang))
     if moon:
         signals.append(
-            f"Moon today: {moon.rashi} in {moon.nakshatra} nakshatra. "
-            f"This is the fastest-changing sky signal — reference it if it fits."
+            f"Moon today: {moon.rashi} in {moon.nakshatra} nakshatra. Name it at "
+            f"most; give it no qualities of its own."
         )
     if retrogrades:
         signals.append(
-            f"Planets currently retrograde: {', '.join(retrogrades)}. "
-            f"Their significations feel internal/reflective/second-look right now."
+            f"Planets currently retrograde: {', '.join(retrogrades)}. Classical "
+            f"rule (grahas.md §13): a retrograde planet is STRONGER and its "
+            f"significations play out with more intensity. Never write it as "
+            f"weakness, delay or a 'second look' -- that reading is Western, not Vedic."
         )
     if festival:
         fname = festival.get(f"name_{lang}") or festival.get("name_en", "festival")
@@ -1010,8 +1029,6 @@ def generate_rashifal_for_rashi(
         _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,
         shape=_RASHIFAL_SHAPES[_rotation_index(today_iso, rashi_index,
                                                len(_RASHIFAL_SHAPES))],
-        opening_move=_OPENING_MOVES[_rotation_index(today_iso, rashi_index,
-                                                    len(_OPENING_MOVES))],
         gochara_block=_gochara_block(rashi_index, transit),
     )
 
@@ -1064,6 +1081,28 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
             f"  Your reading must not contradict these. Do not promise a good "
             f"day at work on a low Work count, or trouble at home on a high one. "
             f"Weight the reading toward whichever area is most extreme.\n")
+    # THE EIGHT LINES UNDER THE READING (owner, 2026-11-09): one per life area
+    # and per reader group, each with the karaka verdicts it must agree with.
+    # The three partner lines share the 7th house evidence, so it is listed once.
+    lines_block = ""
+    try:
+        groups = {g["area"]: g for g in (areas or []) + chart_reader_groups(rashi_index, transit)}
+    except Exception:  # noqa: BLE001 - a missing group must not fail the call
+        groups = {}
+
+    def evidence(g):
+        sup = ", ".join(f"{k['planet']} ({_HOUSE_ORD[k['house']]})" for k in g["karakas"]
+                        if k["verdict"] == "favourable") or "none"
+        ag = ", ".join(f"{k['planet']} ({_HOUSE_ORD[k['house']]})" for k in g["karakas"]
+                       if k["verdict"] != "favourable") or "none"
+        return f"supporting {sup}; against {ag}"
+    rows = [(label, groups.get(key)) for label, key in (
+        ("Work", "Work"), ("Money", "Money"), ("Health", "Health"), ("Family", "Family"),
+        ("In a relationship, Married, Single and looking to marry", "Relationships"),
+        ("Students", "Students"))]
+    if all(g for _, g in rows):
+        lines_block = ("- EVIDENCE FOR THE EIGHT LINES (each line must agree with its own):\n"
+                       + "".join(f"  {label}: {evidence(g)}\n" for label, g in rows))
     # The remedy is rendered as its own line, so the prose must not repeat it --
     # the day colour taught that lesson (#514): a duplicate in prose reads as
     # filler and, when invented, contradicts the computed field.
@@ -1103,6 +1142,7 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
         f"- Saturn, Jupiter and Rahu weigh most (classical); the Moon is the part "
         f"that changes every day.\n"
         f"{areas_line}"
+        f"{lines_block}"
         f"{remedy_line}"
         f"- {tone}\n"
         f"Do not name any planet in your prose — describe the qualities, as the "
@@ -1112,7 +1152,7 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
 
 
 def _format_rashifal_message(anchor: dict, day_signals_block: str, transit_block: str,
-                             gochara_block: str, shape: str, opening_move: str) -> str:
+                             gochara_block: str, shape: str) -> str:
     """The per-rashi USER message, exactly as `chat()` receives it.
 
     Extracted from `_generate_rashifal_single` so `verify_token_budget` can
@@ -1149,17 +1189,10 @@ def _format_rashifal_message(anchor: dict, day_signals_block: str, transit_block
         f"prompt — follow THIS):\n"
         f"{shape}\n"
         f"\n"
-        f"OPENING MOVE FOR TODAY (how to start; it changes every day so the "
-        f"reading does not open the same way it did yesterday):\n"
-        f"{opening_move}\n"
-        f"\n"
-        f"THE RASHI'S OWN CHARACTER (express the opening move in THIS "
-        f"character — it is what keeps the twelve from sounding alike):\n"
-        f"{anchor.get('opening_style', 'Open with a concrete image, not a generic feeling.')}\n"
-        f"\n"
         f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
         f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose. "
-        f"Follow the opening-style hint above. Do not use any banned opening phrase."
+        f"Open in your own words with what matters most today for this rashi. "
+        f"Do not use any banned opening phrase."
     ))
 
 
@@ -1171,7 +1204,6 @@ def _generate_rashifal_single(
     lang: str,
     pace_deadline: float | None = None,
     shape: str = _RASHIFAL_SHAPES[0],
-    opening_move: str = _OPENING_MOVES[0],
     gochara_block: str = "",
 ) -> str:
     """Generate a single rashi's daily reading — one LLM call, ~200 tokens output.
@@ -1186,8 +1218,7 @@ def _generate_rashifal_single(
     runs in a ThreadPoolExecutor worker and context does not propagate into one.
     """
     user_message = _format_rashifal_message(
-        anchor, day_signals_block, transit_block, gochara_block, shape,
-        opening_move)
+        anchor, day_signals_block, transit_block, gochara_block, shape)
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
@@ -1381,8 +1412,6 @@ def generate_rashifal(
                 pace_deadline,
                 _RASHIFAL_SHAPES[_rotation_index(today_iso, idx,
                                                  len(_RASHIFAL_SHAPES))],
-                _OPENING_MOVES[_rotation_index(today_iso, idx,
-                                               len(_OPENING_MOVES))],
                 _gochara_block(idx, transit),
             ): idx
             for idx, anchor in enumerate(_RASHI_ANCHORS)

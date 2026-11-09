@@ -3249,6 +3249,61 @@ def area_ratings_for_rashi(rashi_index: int, transit: "TransitSnapshot") -> list
         return []
 
 
+
+# --- The groups the reading's eight lines speak to (owner, 2026-11-09) ----------
+#
+# The owner asked for lines aimed at "students, married, in relationship,
+# bachelors looking to marry", and for AstroSage's coverage (health, wealth,
+# family, love, occupation, married life). Work, Money and Health already come
+# from _AREA_KARAKAS. Two more groups, each sourced in knowledge/houses.md:
+#
+#   Family    Moon, Venus     4th house Karakas: field (houses.md:135-136): Moon
+#                             "mother, mind", Venus "home comforts"; Venus is
+#                             also the 2nd house's "family comfort" karaka
+#                             (houses.md:83-84). Mercury, the 4th's third karaka,
+#                             is listed there for EDUCATION and so belongs to
+#                             Students, not here.
+#   Students  Mercury,        Rao's karakas for learning: "Mercury (scholarship)
+#             Jupiter         and Jupiter (intelligence)" (houses.md:544, Rao
+#                             lines 8983-8985).
+#
+# "In a relationship", "Married" and "Single and looking to marry" all read the
+# 7th house set already in _AREA_KARAKAS (Relationships: Venus, Jupiter, Mars).
+# The three lines differ in who they speak to, not in their evidence: no source
+# gives a separate karaka for courtship. And Rao gives NO exam pass/fail rule
+# (houses.md, "What Rao does NOT give"), so the Students line may describe the
+# day for studying and must never predict a result.
+_READER_GROUPS: tuple[tuple[str, tuple[str, ...], str], ...] = (
+    ("Family",   ("Moon", "Venus"), "4th house karakas (and Venus for the 2nd's family comfort)"),
+    ("Students", ("Mercury", "Jupiter"), "Rao's karakas for learning"),
+)
+
+
+def reader_groups_for_rashi(rashi_index: int, transit: "TransitSnapshot") -> list[dict]:
+    """Family and Students, in the same shape as `area_ratings_for_rashi`.
+
+    Same `gochara_for_rashi` verdicts, so these lines and the rest of the card
+    cannot disagree. Returns [] rather than raising, as its sibling does.
+    """
+    try:
+        verdicts = {e["planet"]: e for e in gochara_for_rashi(rashi_index, transit)}
+        out = []
+        for area, karakas, basis in _READER_GROUPS:
+            seen = [verdicts[k] for k in karakas if k in verdicts]
+            if not seen:
+                continue
+            out.append({
+                "area": area,
+                "favourable": sum(1 for e in seen if e["verdict"] == "favourable"),
+                "total": len(seen),
+                "basis": basis,
+                "karakas": [{"planet": e["planet"], "house": e["house"],
+                             "verdict": e["verdict"]} for e in seen],
+            })
+        return out
+    except Exception:  # noqa: BLE001 - see docstring
+        return []
+
 # --- The day's remedy, for the graha weighing most against this rashi (#523) --
 #
 # AstroSage carries a one-line Remedy and it is a real part of why its page

@@ -3947,22 +3947,24 @@ MUTATIONS = [
     # sharpest tension §29 found between shipped copy and the corpus" and
     # recommended saying BOTH rather than deleting either. These rows re-break
     # that resolution on each of the three surfaces it landed on.
+    # Re-pointed 2026-11-09: the popular tithi table left the prompt; the
+    # caution is now computed per day in llm._build_rashifal_day_signals.
     ("#398 tithi: the prompt presents the table as classical again",
      "src/astro_ai/prompts/rashifal_single.txt",
-     'Tithi character. The CHARACTERS below are POPULAR ASSOCIATION, NOT A CLASSICAL RULE\n(§29.10) — use one only if it fits, never as what the texts prescribe. The explicit\ncautions ARE sourced, and you may state them:\n',
-     "Tithi character (reference in the reading only if it genuinely fits):\n",
+     "Give the tithi no other character: popular tithi characters are not classical rules (§29.10).",
+     "Chaturthi brings Ganesh energy.",
      "test_the_prompt_does_not_present_the_table_as_classical"),
 
     ("#398 tithi: the prompt tells the reader to start things on the 4th again",
-     "src/astro_ai/prompts/rashifal_single.txt",
-     "- Chaturthi \u2192 Ganesh energy, removing obstacles. NOT a day to start things.\n",
-     "- Chaturthi \u2192 Ganesh energy, start small things, remove obstacles\n",
+     "src/astro_ai/llm.py",
+     "_RAMAN_AVOID_TITHI_DAYS = frozenset({4, 6, 8, 12, 14})\n",
+     "_RAMAN_AVOID_TITHI_DAYS = frozenset({6, 8, 12, 14})\n",
      "test_the_prompt_does_not_tell_the_reader_to_start_things_on_the_fourth"),
 
     ("#398 tithi: the prompt drops the 8th's caution",
-     "src/astro_ai/prompts/rashifal_single.txt",
-     "- Ashtami \u2192 Durga/Shakti, courage, inner resolve. NOT a day to launch or decide.\n",
-     "- Ashtami \u2192 Durga/Shakti, courage, focused action\n",
+     "src/astro_ai/llm.py",
+     "    return tithi_index in (14, 29) or (tithi_index % 15) + 1 in _RAMAN_AVOID_TITHI_DAYS\n",
+     "    return tithi_index in (14, 29) or (tithi_index % 15) + 1 in (_RAMAN_AVOID_TITHI_DAYS - {8})\n",
      "test_the_prompt_cautions_the_eighth_too"),
 
     ("#398 tithi: /panchang says start small things again",

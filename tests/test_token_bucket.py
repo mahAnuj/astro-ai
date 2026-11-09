@@ -146,7 +146,9 @@ def test_the_completion_reserve_is_per_route_with_a_default():
     empty = [{"role": "user", "content": ""}]
     single = providers.estimate_request_tokens(empty, "rashifal_single")
     other = providers.estimate_request_tokens(empty, "natal")
-    assert single == providers._SCAFFOLD_TOKENS + 500
+    # 750 since 2026-11-09: the reading gained eight labelled lines (~110 words,
+    # more in Devanagari). Raised on purpose in providers._COMPLETION_RESERVE.
+    assert single == providers._SCAFFOLD_TOKENS + 750
     assert other == providers._SCAFFOLD_TOKENS + 800
     assert providers.estimate_request_tokens(empty) == other, "unlabelled routes take the default"
 

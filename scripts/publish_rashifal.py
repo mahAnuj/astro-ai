@@ -45,7 +45,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from astro_ai import storage                                              # noqa: E402
-from astro_ai.rashifal_quality import NAKSHATRAS, check_reading, opening_repeats
+from astro_ai.rashifal_quality import (NAKSHATRAS, check_reading, missing_reader_lines,
+                                      opening_repeats, tone_conflicts)
 from astro_ai.rashifal_derive import (combined_keys, parse_sectioned_reading,  # noqa: E402
                                       sections_by_rashi)
 
@@ -53,7 +54,9 @@ from astro_ai.rashifal_derive import (combined_keys, parse_sectioned_reading,  #
 # instruction: a reading at 118 words is a style miss, not a reason to drop the
 # whole day back to Groq. It is narrow enough to catch a truncated generation
 # (the real failure, and what an interrupted job produces) and a runaway one.
-_MIN_WORDS, _MAX_WORDS = 90, 220
+# 2026-11-09: raised from 220 for the eight labelled lines (8 x <20 words) that
+# now follow the 80-130 word reading.
+_MIN_WORDS, _MAX_WORDS = 90, 330
 
 # `Rahu` is matched only when NOT followed by `Kaal`, so the window ban below
 # reports it once rather than twice.
@@ -116,6 +119,38 @@ def _todays_sky(day: str) -> tuple[str, str]:
         return "", ""
 
 
+def _todays_evidence(day: str) -> dict[int, tuple[dict[str, tuple[int, int]], int]]:
+    """{rashi index: ({group: (favourable, total)}, favourable grahas of 9)}.
+
+    The SAME computation the brief hands the writer -- the neutral chart, the
+    day's pinned moment, `area_ratings_for_rashi` + `reader_groups_for_rashi` --
+    so the tone check judges the reading against exactly what it was told.
+    {} when unavailable: absence disables the check, never the publish.
+    """
+    try:
+        from astro_ai.chart import (area_ratings_for_rashi, compute_chart,
+                                    compute_transit_snapshot, gochara_for_rashi,
+                                    reader_groups_for_rashi, rashifal_day_moment)
+        transit = compute_transit_snapshot(compute_chart("2000-01-01", "12:00", "Mumbai, India"),
+                                           when=rashifal_day_moment(date.fromisoformat(day)))
+        out = {}
+        for i in range(12):
+            groups = {g["area"]: (g["favourable"], g["total"]) for g in
+                      area_ratings_for_rashi(i, transit) + reader_groups_for_rashi(i, transit)}
+            fav = sum(1 for e in gochara_for_rashi(i, transit) if e["verdict"] == "favourable")
+            out[i] = (groups, fav)
+        return out
+    except Exception:  # noqa: BLE001 - see docstring
+        print("publish_rashifal: could not compute today's evidence; the tone check "
+              "is SKIPPED for this run.", file=sys.stderr)
+        return {}
+
+
+def llm_name(idx: int) -> str:
+    from astro_ai.llm import _RASHI_ANCHORS
+    return _RASHI_ANCHORS[idx]["en"]
+
+
 def grounding_fails(title: str, body: str, tithi: str, nakshatra: str) -> list[str]:
     """Every style and grounding problem in one reading, named by its rashi."""
     name = title.split("/")[0].strip() or title.strip()
@@ -139,9 +174,19 @@ def validate(text: str, day: str = "") -> list[str]:
                      f"section, need 12 — a heading is missing, duplicated or misspelt")
 
     tithi, nakshatra = _todays_sky(day) if day else ("", "")
+    evidence = _todays_evidence(day) if day else {}
+    index_of = {i: body for i, body in attributed.items()}
+    for idx, body in index_of.items():
+        if idx in evidence:
+            name = llm_name(idx)
+            fails += [f"{name}: {c}" for c in tone_conflicts(body, *evidence[idx])]
     for title, body in sections:
         name = title.split("/")[0].strip() or title.strip()
         fails += grounding_fails(title, body, tithi, nakshatra)
+        gone = missing_reader_lines(body)
+        if gone:
+            fails.append(f"{name}: missing the line(s) {', '.join(gone)} -- every reading ends "
+                         f"with the eight labelled lines the prompt lists")
         words = len(body.split())
         if not _MIN_WORDS <= words <= _MAX_WORDS:
             fails.append(f"{name}: {words} words, outside {_MIN_WORDS}-{_MAX_WORDS}")

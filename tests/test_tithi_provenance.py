@@ -36,38 +36,41 @@ def _tithi_block() -> str:
     return text[start:text.index("Moon's nakshatra today", start)]
 
 
+# Since 2026-11-09 (owner: "ensure nothing is cooked up but grounded in
+# astrology rules") the prompt carries NO tithi characters at all, labelled or
+# not. The only tithi claim a reading gets is Raman's avoid-list caution,
+# computed per day into the user message by llm._build_rashifal_day_signals.
+# These three tests keep their #398 names and now guard that mechanism.
+
 def test_the_prompt_does_not_present_the_table_as_classical():
-    block = _tithi_block()
-    assert "NOT A CLASSICAL RULE" in block, (
-        "the tithi table must say it is not a classical rule — #398 criterion 4 "
-        "allows sourced, removed or relabelled, and it is not sourceable"
-    )
-    assert "§29.10" in block, "the relabel must cite the section that found it unsourced"
+    text = PROMPT.read_text()
+    assert "Give the tithi no other character" in text and "§29.10" in text
+    for popular in ("Ganesh", "Durga", "quiet resets", "ancestral rites", "Pradosh"):
+        assert popular not in text, f"a popular tithi character is back in the prompt: {popular!r}"
 
 
-def test_the_prompt_does_not_tell_the_reader_to_start_things_on_the_fourth():
-    block = _tithi_block()
-    line = next(l for l in block.splitlines() if "Chaturthi" in l)
-    # the caution may wrap, so judge the row plus its continuation
-    rows = block.split("- ")
-    chaturthi = next(r for r in rows if r.startswith("Chaturthi"))
-    assert "NOT a day to start things" in chaturthi, (
-        f"Chaturthi must carry Raman's caution; got: {line!r}"
-    )
-    assert "start small things" not in chaturthi, (
-        "the exact phrase §29.8 flagged is back in the prompt"
-    )
+def _signal(tithi_index: int, monkeypatch) -> str:
+    from types import SimpleNamespace
+    from astro_ai import llm
+    p = SimpleNamespace(weekday="Monday", day_lord="Moon", tithi_index=tithi_index,
+                        tithi_paksha="Shukla", tithi_name="x", tithi_significance="POPULAR")
+    monkeypatch.setattr(llm, "format_day_windows_for_rashifal", lambda *a, **k: "windows")
+    sig = llm._build_rashifal_day_signals(SimpleNamespace(planets=[]), "2026-11-09", "en", p, None)
+    return next(s for s in sig if s.startswith("Today's tithi"))
 
 
-def test_the_prompt_cautions_the_eighth_too():
-    rows = _tithi_block().split("- ")
-    ashtami = next(r for r in rows if r.startswith("Ashtami"))
-    assert "NOT a day to launch or decide" in ashtami, (
-        f"the 8th is on Ch. II line 802's list and must say so; got: {ashtami!r}"
-    )
-    assert "focused action" not in ashtami, (
-        "the Ashtami row must not read as a licence to launch or decide"
-    )
+def test_the_prompt_does_not_tell_the_reader_to_start_things_on_the_fourth(monkeypatch):
+    line = _signal(3, monkeypatch)                       # Shukla Chaturthi, the 4th
+    assert "unsuitable for starting auspicious work" in line
+    assert "POPULAR" not in line, "the popular tithi character reached the reading"
+    assert "start small things" not in PROMPT.read_text()
+
+
+def test_the_prompt_cautions_the_eighth_too(monkeypatch):
+    from astro_ai.llm import _tithi_is_raman_avoid
+    # Raman: the 4th, 6th, 8th, 12th, 14th of both halves, and Purnima, Amavasya.
+    assert [i for i in range(30) if _tithi_is_raman_avoid(i)] == [3, 5, 7, 11, 13, 14, 18, 20, 22, 26, 28, 29]
+    assert "no caution" in _signal(4, monkeypatch)       # the 5th carries none
 
 
 def test_panchang_says_both_on_the_fourth():

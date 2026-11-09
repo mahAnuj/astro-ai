@@ -608,9 +608,9 @@ all = ['Do NOT output any other rashi.s reading']
 
 [[prompts."rashifal_single.txt".rules]]
 id = "tithi-character-provenance"
-why = "#398 criterion 4. The REASONING lives in knowledge/vedic_reference.md 29.8/29.10 and tests/test_tithi_provenance.py, not in the prompt -- the prompt is sent on every one of twelve daily calls against a free-tier budget, so it carries the instruction and a section number, nothing more. None of the four books this repo holds gives per-tithi characters (29.10), and the Chaturthi row actively contradicted 29.8: Raman's Muhurtha Ch. II line 802 names the 4th lunar day unsuitable for undertaking auspicious work, while the prompt said 'start small things'. The table is kept and RELABELLED rather than deleted, which is the resolution 29.8 itself recommends -- the Ganesh association is widely held and real; presenting it as a classical green light is the defect. The 8th carries the same caution because Ch. II line 802 lists it too."
-all = ['POPULAR ASSOCIATION, NOT A CLASSICAL RULE', '§29.10', 'NOT a day to start things', 'NOT a day to launch or decide']
-forbid = ['start small things', 'courage, focused action']
+why = "TIGHTENED 2026-11-09 (owner: 'ensure nothing is cooked up but grounded in astrology rules'): the popular tithi table is gone, not relabelled. The prompt now states only Raman's avoid-list caution, which the user message computes per day (llm._build_rashifal_day_signals), and forbids any other tithi character. Earlier: #398 criterion 4. The REASONING lives in knowledge/vedic_reference.md 29.8/29.10 and tests/test_tithi_provenance.py, not in the prompt -- the prompt is sent on every one of twelve daily calls against a free-tier budget, so it carries the instruction and a section number, nothing more. None of the four books this repo holds gives per-tithi characters (29.10), and the Chaturthi row actively contradicted 29.8: Raman's Muhurtha Ch. II line 802 names the 4th lunar day unsuitable for undertaking auspicious work, while the prompt said 'start small things'. The table is kept and RELABELLED rather than deleted, which is the resolution 29.8 itself recommends -- the Ganesh association is widely held and real; presenting it as a classical green light is the defect. The 8th carries the same caution because Ch. II line 802 lists it too."
+all = ['§29.10', 'unsuitable for starting auspicious work', 'Give the tithi no other character']
+forbid = ['start small things', 'courage, focused action', 'ancestral rites, quiet resets', 'Ganesh energy']
 
 [[prompts."rashifal_single.txt".rules]]
 id = "the-shape-is-not-fixed"
@@ -720,6 +720,6 @@ all = ['No astrology disclaimers']
 
 [[prompts."rashifal_single.txt".rules]]
 id = "the-opening-move-rotates-and-the-frames-are-banned"
-why = "RENAMED 2026-10-24 (#513). Was `opening-style-hint-is-honoured`, requiring 'opened per the OPENING STYLE HINT' — a per-rashi constant that never varied by date, so each rashi opened the same way every day (opening-sentence similarity 0.360 against body similarity 0.089, 4x). The character hint still travels, but a rotating OPENING MOVE now leads it, and the five frames the old fixed shape produced are banned by name."
-all = ['OPENING MOVE FOR TODAY', 'NEVER begin a sentence with', 'Take a', 'At work', 'Hold off', 'A modest', 'Family conversations']
-forbid = ['opened per the OPENING STYLE HINT']
+why = "CHANGED 2026-11-09 (owner: 'Don't map any fixed lines for the opening'): the rotating OPENING MOVE and the per-rashi hint are both gone, because together they produced invented scenes and openings readers found hard to follow; the model now opens in its own words and the five frames stay banned. The publish gate's cross-day opening check is logged, not fatal, and English only, so nothing refuses a repeated opening. Earlier: RENAMED 2026-10-24 (#513). Was `opening-style-hint-is-honoured`, requiring 'opened per the OPENING STYLE HINT' — a per-rashi constant that never varied by date, so each rashi opened the same way every day (opening-sentence similarity 0.360 against body similarity 0.089, 4x). The character hint still travels, but a rotating OPENING MOVE now leads it, and the five frames the old fixed shape produced are banned by name."
+all = ['Open each reading in your own words', 'There is no set opening', 'NEVER begin a sentence with', 'Take a', 'At work', 'Hold off', 'A modest', 'Family conversations']
+forbid = ['opened per the OPENING STYLE HINT', 'OPENING MOVE FOR TODAY', 'OPENING STYLE HINT']

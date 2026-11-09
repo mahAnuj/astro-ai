@@ -41,7 +41,9 @@ from __future__ import annotations
 
 import re
 
-__all__ = ["check_reading", "opening_repeats", "GROUNDING_RULES", "STYLE_RULES",
+__all__ = ["check_reading", "opening_repeats", "missing_reader_lines", "READER_LABELS",
+           "tone_conflicts", "LINE_EVIDENCE",
+           "GROUNDING_RULES", "STYLE_RULES",
            "TITHIS", "NAKSHATRAS"]
 
 TITHIS: tuple[str, ...] = (
@@ -93,6 +95,19 @@ STYLE_RULES: dict[str, re.Pattern[str]] = {
         r"|\bdiagnos\w+\b|\bprescrib\w+\b", re.I),
     "gives a money directive": re.compile(
         r"\binvest in\b|\bsell your\b|\bbuy (?:shares|stock)\b|\btake a loan\b", re.I),
+    # 2026-11-09: the reading may not invent the reader's people. The owner's
+    # Aries email opened "You left the kitchen conversation with your sister
+    # hanging"; the live page the same week had "your mother's kitchen". The
+    # prompt now forbids it (NEVER INVENT THE READER'S LIFE). This catches the
+    # narrow, unambiguous form -- "your" + a named relation or a boss -- and
+    # deliberately not "your family", "your home" or "people you work with",
+    # which are generic. Invented events and dialogue are not regex-shaped;
+    # the prompt carries those.
+    "invents the reader's people": re.compile(
+        r"\byour (?:(?:older|younger|elder|little|big) )?(?:sister|brother|sibling|mother|"
+        r"father|mom|mum|dad|wife|husband|spouse|son|daughter|boss|manager|aunt|uncle|"
+        r"cousin|niece|nephew|grandmother|grandfather|grandparent|mother-in-law|"
+        r"father-in-law|in-laws?|girlfriend|boyfriend|fianc[ée]e?)s?\b", re.I),
     "uses fear framing": re.compile(
         r"\bfatal\b|\bdisaster\b|\bcatastroph\w+\b|\bruinous\b|\bcursed?\b", re.I),
 }
@@ -130,6 +145,79 @@ def check_reading(body: str, *, tithi: str = "", nakshatra: str = "") -> dict:
     except Exception:  # noqa: BLE001 - see docstring
         return {"style": style, "grounding": grounding}
     return {"style": style, "grounding": grounding}
+
+
+# --- The eight lines under the reading (owner, 2026-11-09) -------------------
+#
+# Every reading ends with one line per life area and reader group, in a fixed
+# order, so a reader can find "Students" or "Married" on any day. The prompt
+# asks for them; this is what makes it more than a request on the nightly path.
+READER_LABELS: dict[str, tuple[str, ...]] = {
+    "en": ("Work", "Money", "Health", "Family", "In a relationship", "Married",
+           "Students", "Single and looking to marry"),
+    "hi": ("काम", "पैसा", "सेहत", "परिवार", "रिश्ते में", "शादीशुदा", "विद्यार्थी",
+           "शादी की तलाश में"),
+}
+
+
+def missing_reader_lines(body: str) -> list[str]:
+    """Labels of the eight lines the body lacks, in whichever language it is
+    closer to complete in. [] when every line of one language is present."""
+    best: list[str] | None = None
+    for labels in READER_LABELS.values():
+        missing = [l for l in labels
+                   if not re.search(rf"^\s*{re.escape(l)}\s*:", body or "", re.M)]
+        if best is None or len(missing) < len(best):
+            best = missing
+    return best or []
+
+
+# --- Tone must agree with the evidence (owner, 2026-11-09) -------------------
+#
+# "Ensure nothing is cooked up but grounded in astrology rules." The model is
+# told each line's karaka verdicts; this checks it listened, at the two ends
+# where a contradiction is unambiguous: a line with NO supporting planet may
+# not sound positive, a line with EVERY planet supporting may not warn, and a
+# day with at most one favourable graha of nine may not be called good. Mixed
+# evidence is left to the writer. English only: the lexicons are English.
+_POSITIVE = re.compile(
+    r"\b(?:go(?:es|ing)? well|good day|great|excellent|lucky|favourable|favorable"
+    r"|smooth(?:ly)?|success(?:ful)?|gains?|profit(?:s|able)?|blessed|strong day)\b", re.I)
+_CAUTION = re.compile(
+    r"\b(?:avoid|careful(?:ly)?|slow|difficult|tense|tension|delay(?:s|ed)?|trouble"
+    r"|problems?|mistakes?|argu(?:e|ing|ment)s?|upset|stress(?:ful)?)\b", re.I)
+_HARD_DAY_POSITIVE = re.compile(r"\b(?:good day|great day|lucky day|excellent day|a fine day)\b", re.I)
+#: Each English line label -> the evidence group it is written from.
+LINE_EVIDENCE = {"Work": "Work", "Money": "Money", "Health": "Health", "Family": "Family",
+                 "In a relationship": "Relationships", "Married": "Relationships",
+                 "Students": "Students", "Single and looking to marry": "Relationships"}
+
+
+def tone_conflicts(body: str, evidence: dict[str, tuple[int, int]],
+                   day_favourable: int | None = None) -> list[str]:
+    """Lines whose tone the evidence cannot support. `evidence` maps a group
+    (Work, Money, Health, Family, Relationships, Students) to (favourable,
+    total). A missing group skips its lines -- absence never invents a verdict.
+    Never raises."""
+    out: list[str] = []
+    try:
+        for label, group in LINE_EVIDENCE.items():
+            m = re.search(rf"^\s*{re.escape(label)}\s*:(.*)$", body or "", re.M)
+            if not m or group not in evidence:
+                continue
+            fav, total = evidence[group]
+            line = m.group(1)
+            if fav == 0 and (hit := _POSITIVE.search(line)):
+                out.append(f"{label}: says {hit.group(0)!r} with no supporting planet")
+            elif total and fav == total and (hit := _CAUTION.search(line)):
+                out.append(f"{label}: warns ({hit.group(0)!r}) when every planet supports it")
+        if day_favourable is not None and day_favourable <= 1:
+            prose = re.split(r"^\s*Work\s*:", body or "", maxsplit=1, flags=re.M)[0]
+            if (hit := _HARD_DAY_POSITIVE.search(prose)):
+                out.append(f"calls a hard day ({day_favourable} of 9 favourable) {hit.group(0)!r}")
+    except Exception:  # noqa: BLE001 - a linter must not 500 or crash the gate
+        return out
+    return out
 
 
 # --- Cross-day check (#513) --------------------------------------------------

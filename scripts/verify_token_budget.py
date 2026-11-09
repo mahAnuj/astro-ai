@@ -200,8 +200,16 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     # above. If this row grows again, re-measure the FULL REQUEST, not the
     # system prompt -- the bucket is what bites, and this number is only a
     # tripwire in front of it.
-    "rashifal_single":          (2874, 3350, "2026-10-24",
-                                 "hi 3006 + 10%; sent on a cache miss of "
+    # RE-MEASURED 2026-11-09, end of #815. The eight reader lines first raised
+    # this row to 3,156 (en); the grounding change in the same PR then cut the
+    # prompt to 2,837, and the row was left at 3,156 / 3,650 -- ~13% of slack the
+    # gate did not measure, found by an independent QA round (QA appended ~360
+    # tokens and the gate still passed). Baseline is now the measured en figure;
+    # ceiling is hi 2,969 + 10% rounded up to the next 50. The full request
+    # reserves hi 6,427 of the 7,400 bucket.
+    "rashifal_single":          (2837, 3300, "2026-11-09",
+                                 "hi 2969 + 10%; re-measured after #815's grounding "
+                                 "change (was 2874 on 2026-10-24); sent on a cache miss of "
                                  "/rashifal/{rashi}, a free-tier TPD path, and "
                                  "on every Groq fallback day"),
     "dasha_deep_dive":          (944, 1200, _D, "hi 1076 + 10%"),
@@ -228,8 +236,11 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     # hi, each from its own language's message. This row is the tripwire in
     # front of it; if it grows again, read the printed figure rather than this
     # comment.
-    "rashifal_single+payload":  (4133, 4600, "2026-10-25",
-                                 "hi 4332 + 6%; the per-rashi user message, "
+    "rashifal_single+payload":  (4211, 4700, "2026-11-09",
+                                 "hi 4410 + 6%; RE-MEASURED at the end of #815 (the "
+                                 "eight reader lines' evidence in, the grounded day "
+                                 "signals shorter; was 4133 on 2026-10-25); the "
+                                 "per-rashi user message, "
                                  "which carries the day's computed verdicts. "
                                  "RAISED from 3,997 (recorded 2026-10-24) "
                                  "because that figure came from a hand-written "
@@ -330,7 +341,7 @@ def rashifal_payload(llm, chart_mod, lang: str = "en") -> str:
 
     1. It re-concatenated the message's parts BY HAND and so omitted the
        section headers ("TODAY'S SKY SIGNALS", "RASHI TO WRITE FOR:", "THE
-       SHAPE FOR TODAY", "OPENING MOVE") and the closing instruction --
+       SHAPE FOR TODAY") and the closing instruction --
        undercounting the real request by 4.8% and leaving a later edit
        confined to those strings invisible, the same blind spot again. It now
        calls `llm._format_rashifal_message`, the function the serving path
@@ -364,8 +375,7 @@ def rashifal_payload(llm, chart_mod, lang: str = "en") -> str:
     # measurement does not swing on which sign happens to be worst today.
     return llm._format_rashifal_message(
         llm._RASHI_ANCHORS[0], signals, llm.format_transit_for_prompt(transit),
-        llm._gochara_block(0, transit), llm._RASHIFAL_SHAPES[0],
-        llm._OPENING_MOVES[0])
+        llm._gochara_block(0, transit), llm._RASHIFAL_SHAPES[0])
 
 
 _ASK_QUESTION = "Will I clear my UPSC exam this year? I have been preparing for three years."
