@@ -15,7 +15,7 @@ MUTATIONS = [
      "src/astro_ai/llm.py",
      '               "Raman gives this lunar day no caution. Give it no character of its own.")\n',
      '               f"Raman gives this lunar day no caution. ({panchang.tithi_significance})")\n',
-     "test_the_prompt_cautions_the_eighth_too"),
+     "test_the_popular_tithi_character_never_reaches_the_reading"),
     ("grounded: a no-support line may sound positive",
      "src/astro_ai/rashifal_quality.py",
      "            if fav == 0 and (hit := _POSITIVE.search(line)):\n",
