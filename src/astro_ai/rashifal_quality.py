@@ -42,6 +42,7 @@ from __future__ import annotations
 import re
 
 __all__ = ["check_reading", "opening_repeats", "missing_reader_lines", "READER_LABELS",
+           "tone_conflicts", "LINE_EVIDENCE",
            "GROUNDING_RULES", "STYLE_RULES",
            "TITHIS", "NAKSHATRAS"]
 
@@ -169,6 +170,54 @@ def missing_reader_lines(body: str) -> list[str]:
         if best is None or len(missing) < len(best):
             best = missing
     return best or []
+
+
+# --- Tone must agree with the evidence (owner, 2026-11-09) -------------------
+#
+# "Ensure nothing is cooked up but grounded in astrology rules." The model is
+# told each line's karaka verdicts; this checks it listened, at the two ends
+# where a contradiction is unambiguous: a line with NO supporting planet may
+# not sound positive, a line with EVERY planet supporting may not warn, and a
+# day with at most one favourable graha of nine may not be called good. Mixed
+# evidence is left to the writer. English only: the lexicons are English.
+_POSITIVE = re.compile(
+    r"\b(?:go(?:es|ing)? well|good day|great|excellent|lucky|favourable|favorable"
+    r"|smooth(?:ly)?|success(?:ful)?|gains?|profit(?:s|able)?|blessed|strong day)\b", re.I)
+_CAUTION = re.compile(
+    r"\b(?:avoid|careful(?:ly)?|slow|difficult|tense|tension|delay(?:s|ed)?|trouble"
+    r"|problems?|mistakes?|argu(?:e|ing|ment)s?|upset|stress(?:ful)?|do not|don't)\b", re.I)
+_HARD_DAY_POSITIVE = re.compile(r"\b(?:good day|great day|lucky day|excellent day|a fine day)\b", re.I)
+#: Each English line label -> the evidence group it is written from.
+LINE_EVIDENCE = {"Work": "Work", "Money": "Money", "Health": "Health", "Family": "Family",
+                 "In a relationship": "Relationships", "Married": "Relationships",
+                 "Students": "Students", "Single and looking to marry": "Relationships"}
+
+
+def tone_conflicts(body: str, evidence: dict[str, tuple[int, int]],
+                   day_favourable: int | None = None) -> list[str]:
+    """Lines whose tone the evidence cannot support. `evidence` maps a group
+    (Work, Money, Health, Family, Relationships, Students) to (favourable,
+    total). A missing group skips its lines -- absence never invents a verdict.
+    Never raises."""
+    out: list[str] = []
+    try:
+        for label, group in LINE_EVIDENCE.items():
+            m = re.search(rf"^\s*{re.escape(label)}\s*:(.*)$", body or "", re.M)
+            if not m or group not in evidence:
+                continue
+            fav, total = evidence[group]
+            line = m.group(1)
+            if fav == 0 and (hit := _POSITIVE.search(line)):
+                out.append(f"{label}: says {hit.group(0)!r} with no supporting planet")
+            elif total and fav == total and (hit := _CAUTION.search(line)):
+                out.append(f"{label}: warns ({hit.group(0)!r}) when every planet supports it")
+        if day_favourable is not None and day_favourable <= 1:
+            prose = re.split(r"^\s*Work\s*:", body or "", maxsplit=1, flags=re.M)[0]
+            if (hit := _HARD_DAY_POSITIVE.search(prose)):
+                out.append(f"calls a hard day ({day_favourable} of 9 favourable) {hit.group(0)!r}")
+    except Exception:  # noqa: BLE001 - a linter must not 500 or crash the gate
+        return out
+    return out
 
 
 # --- Cross-day check (#513) --------------------------------------------------

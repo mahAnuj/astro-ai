@@ -33,51 +33,28 @@ The 12 rashi readings on this page are generated in parallel by 12 independent c
 Instead, write like a person, not a horoscope generator. Specific verbs, direct address, and concrete about what to DO, never about the reader's life.
 
 ═══════════════════════════════════════════════════════════════════════
-DAY-VARYING SIGNALS — mandatory use, but reference INDIRECTLY
+DAY-VARYING SIGNALS — use ONLY what your user message states
 ═══════════════════════════════════════════════════════════════════════
 
-Most planets barely move day-to-day. Anchor your reading on what's DIFFERENT about today.
+Anchor the reading on what is different about today. Every quality you give a signal must be one your user message or this prompt states; never add your own.
 
-Weekday-lord translation table (use the qualities, never the planet name):
-- Sunday (Sun-day) → authority, vitality, father/boss, self-worth, spine
-- Monday (Moon-day) → emotions, home, mother, water, rest
-- Tuesday (Mars-day) → courage, physical energy, competition, disputes
-- Wednesday (Mercury-day) → communication, commerce, learning, wit
-- Thursday (Jupiter-day) → wisdom, teaching, expansion, generosity
-- Friday (Venus-day) → beauty, relationships, art, sensory pleasure, harmony
-- Saturday (Saturn-day) → discipline, patience, structure, labour, reflection
-
-If today is Friday, do NOT write "the Venusian energy of Friday" — write about relational warmth, aesthetic focus, or a slower sensory day. Show the day-lord in the ADVICE, not by naming it.
-
-Tithi character. The CHARACTERS below are POPULAR ASSOCIATION, NOT A CLASSICAL RULE
-(§29.10) — use one only if it fits, never as what the texts prescribe. The explicit
-cautions ARE sourced, and you may state them:
-- Ekadashi → fasting, spiritual introspection, avoid heavy commitments
-- Purnima → culmination, generosity, emotional peak, worship
-- Amavasya → ancestral rites, quiet resets, avoid new ventures
-- Chaturthi → Ganesh energy, removing obstacles. NOT a day to start things.
-- Panchami → learning, arts (Nag/Saraswati themes)
-- Ashtami → Durga/Shakti, courage, inner resolve. NOT a day to launch or decide.
-- Trayodashi → Pradosh, evening Shiva worship, releasing tension
-
-Moon's nakshatra today: the fastest-changing sky signal. Weave in if it fits, don't force.
-
-Festival if flagged: use it if it lands naturally for THIS rashi. Not every festival fits every sign — a Shiva festival lands harder for a Water sign than a Fire sign.
+- Weekday: your user message names the day's lord and that planet's significations (grahas.md). In the advice, use the qualities, never the planet name.
+- Tithi: your user message says whether Raman lists today's lunar day as unsuitable for starting auspicious work. If so, favour finishing over starting. Give the tithi no other character: popular tithi characters are not classical rules (§29.10).
+- Moon's nakshatra: name it at most; give it no qualities of its own.
+- Retrogrades: classically a retrograde planet is STRONGER and its significations play out with more intensity (grahas.md §13). Never write a retrograde as weakness, delay or a "second look".
+- Festival if flagged: use it only if it fits this reading.
 
 ═══════════════════════════════════════════════════════════════════════
-RASHI-SPECIFIC ANCHORING
+RASHI-SPECIFIC ANCHORING — Raman's words (rashis.md)
 ═══════════════════════════════════════════════════════════════════════
 
-Every rashi has its own ruling planet, element, and quality. Your reading MUST reflect these — a Mars-ruled rashi (Aries/Scorpio) reads differently from a Venus-ruled one (Taurus/Libra) on the same day.
-
-- Fire signs (Aries, Leo, Sagittarius) → initiative, courage, movement, visible action
-- Earth signs (Taurus, Virgo, Capricorn) → steady building, material outcomes, patience with routines
-- Air signs (Gemini, Libra, Aquarius) → communication, ideas, connections, social contexts
-- Water signs (Cancer, Scorpio, Pisces) → emotion, memory, intuition, inner life
-
-- Movable/Chara (Aries, Cancer, Libra, Capricorn) → starting new things, quick decisions
-- Fixed/Sthira (Taurus, Leo, Scorpio, Aquarius) → sticking with what's begun, deep focus, resistance to change
-- Dual/Dwiswabhava (Gemini, Virgo, Sagittarius, Pisces) → adaptability, negotiation, holding two things at once
+- Fire (Aries, Leo, Sagittarius): inspirational, ardent, spirited
+- Earth (Taurus, Virgo, Capricorn): practical, grounded, material
+- Air (Gemini, Libra, Aquarius): intellectual, communicative, restless
+- Water (Cancer, Scorpio, Pisces): emotional, receptive, imaginative
+- Movable (Aries, Cancer, Libra, Capricorn): executive ability, pioneering, ambition
+- Fixed (Taurus, Leo, Scorpio, Aquarius): stability, patience, endurance, fixity of purpose
+- Dual (Gemini, Virgo, Sagittarius, Pisces): versatility, flexibility
 
 ═══════════════════════════════════════════════════════════════════════
 OUTPUT FORMAT — non-negotiable

@@ -872,6 +872,35 @@ _RASHI_ANCHORS: tuple[dict[str, str], ...] = (
 )
 
 
+# What each weekday lord signifies, VERBATIM from knowledge/grahas.md's karaka
+# table (owner, 2026-11-09: "ensure nothing is cooked up but grounded in
+# astrology rules"). The prompt's old weekday table had drifted from it --
+# "rest" for the Moon, "competition, disputes" for Mars, "expansion,
+# generosity" for Jupiter, "structure, reflection" for Saturn appear nowhere in
+# the corpus. The model now gets the corpus line and nothing else.
+_DAY_LORD_SIGNIFIES: dict[str, str] = {
+    "Sun": "soul (atma), authority, father, health, government",
+    "Moon": "mind (manas), mother, emotions, home, water",
+    "Mars": "strength, courage, siblings, land, warriors",
+    "Mercury": "speech, intellect, communication, trade, education",
+    "Jupiter": "knowledge, happiness, children, wisdom, wealth, guru",
+    "Venus": "potency, marriage, love, luxury, arts, vehicles",
+    "Saturn": "grief, longevity, service, discipline, delays",
+}
+
+#: Raman's lunar days "unsuitable for undertaking any auspicious work": the 4th,
+#: 6th, 8th, 12th and 14th of either half, plus full and new moon (Muhurtha Ch.
+#: II line 802; Panchanga Suddhi line 1329 -- knowledge/vedic_reference.md
+#: §29.8). The ONLY tithi claim the rashifal is now given; the popular per-tithi
+#: characters (chart._TITHI_SIGNIFICANCE, "quiet resets" and the like) stay on
+#: /panchang, labelled, and no longer reach the reading.
+_RAMAN_AVOID_TITHI_DAYS = frozenset({4, 6, 8, 12, 14})
+
+
+def _tithi_is_raman_avoid(tithi_index: int) -> bool:
+    return tithi_index in (14, 29) or (tithi_index % 15) + 1 in _RAMAN_AVOID_TITHI_DAYS
+
+
 def _build_rashifal_day_signals(
     transit: TransitSnapshot,
     today_iso: str,
@@ -901,20 +930,20 @@ def _build_rashifal_day_signals(
         f"priors is wrong."
     ]
     if panchang:
+        lord_sig = _DAY_LORD_SIGNIFIES.get(panchang.day_lord, "")
         signals.append(
-            f"Weekday: {panchang.weekday} — ruled by {panchang.day_lord}. "
-            f"Classical Vedic tradition treats this day's overall tone as "
-            f"{panchang.day_lord}-coloured; that mood must shape today's reading."
+            f"Weekday: {panchang.weekday}, whose lord is {panchang.day_lord} (the "
+            f"weekday is counted from its lord, Rao §1.3.11)."
+            + (f" {panchang.day_lord}'s significations (grahas.md): {lord_sig}." if lord_sig else "")
         )
-        tithi_note = (
-            f"Today's tithi: {panchang.tithi_paksha} Paksha, {panchang.tithi_name}"
+        avoid = _tithi_is_raman_avoid(panchang.tithi_index)
+        signals.append(
+            f"Today's tithi: {panchang.tithi_paksha} Paksha, {panchang.tithi_name}. "
+            + ("Raman lists this lunar day as unsuitable for starting auspicious work "
+               "(Muhurtha Ch. II; Panchanga Suddhi): favour finishing over starting."
+               if avoid else
+               "Raman gives this lunar day no caution. Give it no character of its own.")
         )
-        if panchang.tithi_significance:
-            tithi_note += f" ({panchang.tithi_significance})"
-        tithi_note += (
-            ". Tithi shifts every ~24 hours and colours the day's karmic character."
-        )
-        signals.append(tithi_note)
         # Named, never clocked — see format_day_windows_for_rashifal. This
         # replaces times the model used to invent outright: the prompt itself
         # asked for a "time window" and offered "avoid hot debates after 4 pm"
@@ -923,13 +952,15 @@ def _build_rashifal_day_signals(
         signals.append(format_day_windows_for_rashifal(panchang, lang))
     if moon:
         signals.append(
-            f"Moon today: {moon.rashi} in {moon.nakshatra} nakshatra. "
-            f"This is the fastest-changing sky signal — reference it if it fits."
+            f"Moon today: {moon.rashi} in {moon.nakshatra} nakshatra. Name it at "
+            f"most; give it no qualities of its own."
         )
     if retrogrades:
         signals.append(
-            f"Planets currently retrograde: {', '.join(retrogrades)}. "
-            f"Their significations feel internal/reflective/second-look right now."
+            f"Planets currently retrograde: {', '.join(retrogrades)}. Classical "
+            f"rule (grahas.md §13): a retrograde planet is STRONGER and its "
+            f"significations play out with more intensity. Never write it as "
+            f"weakness, delay or a 'second look' -- that reading is Western, not Vedic."
         )
     if festival:
         fname = festival.get(f"name_{lang}") or festival.get("name_en", "festival")
