@@ -10,11 +10,10 @@ masks is not knowable from here (`ARCHITECTURE.md` section 11).
 `privacy.html` says of analytics: "No birth details, no email, no question text is
 included", and defines birth details as name, date, time and place. Measured on
 the first run of this sweep: the <title> of EIGHT routes carries the visitor's
-name (`details.name` rendered into `{% block title %}`). That is pinned in
-`KNOWN_GAPS`, asserted by EQUALITY: a new leak fails, and a fixed one fails too
-with an instruction to delete the entry. It is not `xfail`, because
-`verify_behaviour.py` treats any xfail as "tests did not run". Fixing the titles
-is a product call (tab titles, bookmarks, SEO titles) filed separately.
+name (`details.name` rendered into `{% block title %}`). #817 made all eight
+name-free and `KNOWN_GAPS` is now EMPTY. It is still asserted by EQUALITY: a new
+leak fails, and a pin for something that does not leak fails too. It is not
+`xfail`, because `verify_behaviour.py` treats any xfail as "tests did not run".
 """
 from __future__ import annotations
 
@@ -88,8 +87,8 @@ def test_the_config_and_props_blocks_carry_no_sentinel_for_a_signed_in_visitor(r
 
 
 def test_a_title_outside_the_known_gaps_carries_nothing(run):
-    """/dasha is not pinned, so its title must be free of every sentinel. This is
-    the check that a NEW title which embeds the name or email fails on."""
+    """/dasha's title must be free of every sentinel. This is the check that a NEW
+    title which embeds the name or email fails on (the ratchet above covers the rest)."""
     e = run("dasha")
     titles = {r["route"] for r in e.responses if r["html"]}
     assert {"/dasha", "/dasha/deep-dive"} <= titles, titles

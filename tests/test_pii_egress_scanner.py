@@ -243,8 +243,11 @@ def test_a_page_with_a_sentinel_in_each_surface_is_flagged_per_surface():
 
 
 def test_known_gaps_are_all_page_titles_carrying_a_name():
-    assert pii.KNOWN_GAPS and all(s == "analytics:title" and c == "name"
-                                  for s, _, c in pii.KNOWN_GAPS)
+    """#817 cleared the eight title pins. An entry returning is a regression to be
+    fixed, not a pin to re-add; if one is ever added on purpose it must still be a
+    page title carrying a name, the only shape the equality ratchet was built for."""
+    assert pii.KNOWN_GAPS == frozenset()
+    assert all(s == "analytics:title" and c == "name" for s, _, c in pii.KNOWN_GAPS)
 
 
 # ─── anti-vacuity: a sweep that saw nothing, or less than it declared, fails ─

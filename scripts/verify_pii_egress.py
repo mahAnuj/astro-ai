@@ -198,20 +198,12 @@ def allowed(sink: str, key: str = "") -> frozenset[str]:
 
 #: Known leaks, asserted by EQUALITY (not xfail: verify_behaviour.py fails any
 #: xfail). A new leak is a failure, and so is a fixed one -- delete the entry.
-#: (sink, key, class). Every entry is the page <title> carrying the visitor's name:
-#: templates render `details.name` into {% block title %} and static/analytics.js
-#: sets no `page_title`, so gtag collects document.title. privacy.html says
-#: analytics carry "no birth details". Filed separately; the fix is a product call.
-KNOWN_GAPS: frozenset[tuple[str, str, str]] = frozenset({
-    ("analytics:title", "/kundli", "name"),
-    ("analytics:title", "/monthly", "name"),
-    ("analytics:title", "/yearly", "name"),
-    ("analytics:title", "/manglik-check", "name"),
-    ("analytics:title", "/sade-sati-check", "name"),
-    ("analytics:title", "/kaal-sarp-check", "name"),
-    ("analytics:title", "/numerology", "name"),
-    ("analytics:title", "/numerology/compatibility", "name"),
-})
+#: (sink, key, class). CURRENTLY EMPTY. It held eight entries, each the page
+#: <title> carrying the visitor's name (templates rendered `details.name` into
+#: {% block title %}, and static/analytics.js sets no `page_title`, so gtag
+#: collects document.title); #817 made every one of those titles name-free.
+#: A leak that reappears is a failure, not a pin to add back.
+KNOWN_GAPS: frozenset[tuple[str, str, str]] = frozenset()
 
 Finding = tuple[str, str, str]      # (sink, key, class)
 
