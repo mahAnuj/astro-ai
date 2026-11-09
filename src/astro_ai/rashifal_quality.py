@@ -185,7 +185,7 @@ _POSITIVE = re.compile(
     r"|smooth(?:ly)?|success(?:ful)?|gains?|profit(?:s|able)?|blessed|strong day)\b", re.I)
 _CAUTION = re.compile(
     r"\b(?:avoid|careful(?:ly)?|slow|difficult|tense|tension|delay(?:s|ed)?|trouble"
-    r"|problems?|mistakes?|argu(?:e|ing|ment)s?|upset|stress(?:ful)?|do not|don't)\b", re.I)
+    r"|problems?|mistakes?|argu(?:e|ing|ment)s?|upset|stress(?:ful)?)\b", re.I)
 _HARD_DAY_POSITIVE = re.compile(r"\b(?:good day|great day|lucky day|excellent day|a fine day)\b", re.I)
 #: Each English line label -> the evidence group it is written from.
 LINE_EVIDENCE = {"Work": "Work", "Money": "Money", "Health": "Health", "Family": "Family",

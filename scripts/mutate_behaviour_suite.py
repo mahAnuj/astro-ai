@@ -4894,8 +4894,8 @@ MUTATIONS = [
      'test_a_round_that_already_ruled_on_the_CURRENT_head_since_queueing_drops_the_entry'),
     ('queue: a PR that already has qa-pass is given another round',
      'scripts/cycle_queue.py',
-     '    if passed:\n        return f"PR #',
-     '    if False:\n        return f"PR #',
+     '    if passed and head and _pass_names_head(pass_lines, repo, head):\n        return (f"PR #',
+     '    if False and head and _pass_names_head(pass_lines, repo, head):\n        return (f"PR #',
      'test_a_pr_that_already_carries_qa_pass_is_dropped_without_a_cycle'),
     ('queue: the busy carrier drops the ruling again instead of queueing it',
      'scripts/dispatch_cycle.sh',
@@ -5203,12 +5203,14 @@ _SANDBOX_DIRS: list[str] = []
 # `.claude/worktrees/` is untracked scratch space holding git worktrees, 4.2 GB
 # of it when this was measured, and copying it per sandbox would make the sweep
 # unrunnable rather than merely slow.
-_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude")
+# `docs` and ARCHITECTURE.md since 2026-11-09: tests/test_decision_log_frozen.py reads
+# both, and a test that reads a file the sandbox lacks reports every row blind.
+_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude", "docs")
 # Repo-root FILES the sandbox needs. `CLAUDE.md` is load-bearing behaviour in this
 # repo the same way `.claude/` is -- it is loaded into every session, several gates
 # and tests read it, and a mutation row targeting it could not run at all before
 # #607. Keep this list short: every entry is copied into every worker sandbox.
-_SANDBOX_FILES = ("CLAUDE.md",)
+_SANDBOX_FILES = ("CLAUDE.md", "ARCHITECTURE.md")
 
 
 def _drop_worker_sandbox() -> None:

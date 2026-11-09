@@ -837,9 +837,14 @@ _RASHIFAL_SHAPES: tuple[str, ...] = (
 # conversation with your sister hanging") and openings the owner found hard to
 # follow. The model now opens in its own words from what is most true about
 # today for this rashi. What still keeps the twelve from converging: the banned
-# opening phrases in the prompt, "Do not open two readings the same way", the
-# rotating SHAPE above, and the publish gate's `opening_repeats` cross-day
-# check, which refuses a rashi opening the way it did yesterday.
+# opening phrases in the prompt, "Do not open two readings the same way", and
+# the rotating SHAPE above. The publish gate's `opening_repeats` cross-day check
+# is LOGGED, NOT FATAL, and English only (publish_rashifal.opening_notes: its
+# firing rate is unmeasured, so a fatal version could drop whole days to the
+# Groq fallback). So nothing now REFUSES a rashi that opens the way it did
+# yesterday -- the protection #513 relied on is weaker than it was. The job log
+# carries the count; making the check fatal is a decision for once that count
+# is a number.
 
 
 def _rotation_index(today_iso: str, rashi_index: int, pool: int) -> int:
