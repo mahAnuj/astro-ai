@@ -965,18 +965,18 @@ Dated, with the evidence. **Check here before proposing a change.**
   can still be established out of band by fetching the css2 URL and summing the woff2
   responses (that is where #242's numbers came from); which FACE painted a given node
   cannot be, and needs the browser.
-- **The page `<title>` of eight routes carries the visitor's name, and GA4 collects it (#744).**
+- **The page `<title>` of eight routes carried the visitor's name, and GA4 collects `document.title` (#744, fixed #817).**
   `/kundli`, `/monthly`, `/yearly`, `/manglik-check`, `/sade-sati-check`, `/kaal-sarp-check`,
-  `/numerology` and `/numerology/compatibility` render `details.name` into `{% block title %}`;
-  `static/analytics.js` sets no `page_title`, so gtag sends `document.title`, and `privacy.html`
-  says analytics carry "no birth details" (it defines them as name, date, time and place). Found by
-  the sweep on its first run and pinned in `KNOWN_GAPS` (`scripts/verify_pii_egress.py`) by equality,
-  so the gate is green and cannot widen. **Not measured:** what GA4 actually stores for titles
-  (`scripts/fetch_ga4.py` does not export them) and whether production sets `GA4_MEASUREMENT_ID`.
-  Fix options, neither taken: override `page_title` in `analytics.js` (the #528 technique, with a
-  Node test), or render the `*_anon` title keys, which also changes tab and bookmark titles and so
-  is a product call. Whoever fixes it deletes the matching `KNOWN_GAPS` entries; the gate fails
-  until they do.
+  `/numerology` and `/numerology/compatibility` rendered the name into `{% block title %}`;
+  `static/analytics.js` sets no `page_title`, and `privacy.html` says analytics carry "no birth
+  details" (it defines them as name, date, time and place). #817 (chief's ruling, option B) made all
+  eight titles name-free: the `*_anon` i18n keys on the three i18n pages, a fixed English string on the
+  three dosha pages, and Life Path / score on the two numerology pages. `base.html` copies
+  `self.title()` into `og:title` and `twitter:title`, so those are clean too; the numerology
+  `page_meta` (meta and `og:description`) carried the name as well and no longer does. The visible h1
+  still names the visitor. `KNOWN_GAPS` is now empty and a reappearing leak fails the gate.
+  **Not measured:** what GA4 stored before the fix (`scripts/fetch_ga4.py` does not export titles)
+  and whether production sets `GA4_MEASUREMENT_ID`. Tab and bookmark titles no longer carry the name.
 - **What Clarity records is unknown.** Session replay captures the rendered DOM, which on `/kundli`
   includes the reading and the name. `grep data-clarity` over the templates returns nothing, so no
   element is masked, and whether `CLARITY_PROJECT_ID` is set in production could not be determined.

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}{% if details.name %}{{ t(lang, title_key, name=details.name) }}{% else %}{{ t(lang, title_anon_key) }}{% endif %} — Shubh Bhagya{% endblock %}
+{# Never the visitor's name: gtag collects document.title and og:title/twitter:title copy it (#817). The h1 below may name them. #}
+{% block title %}{{ t(lang, title_anon_key) }} — Shubh Bhagya{% endblock %}
 {% block meta_description %}Your {{ 'monthly' if active_page == 'monthly' else 'yearly' }} Vedic horoscope — career, money, love, health, and wellbeing across each phase, grounded in your natal chart and current transits.{% endblock %}
 
 {% block content %}

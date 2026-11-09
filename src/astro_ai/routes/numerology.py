@@ -148,11 +148,13 @@ async def numerology_calculate(
     return templates.TemplateResponse(
         request, "numerology.html",
         {
-            "page_title": f"Numerology Reading for {reading.name} — Life Path {reading.life_path}",
+            # No name in the title or description: gtag collects document.title and
+            # og:/twitter: tags copy both (#817). The h1 in the template names them.
+            "page_title": f"Numerology Reading — Life Path {reading.life_path}",
             # Destiny and Name Number are the same quantity (#167 — name_number
             # is an alias of destiny), so print it once under both labels
             # rather than twice with the same value.
-            "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny/Name Number {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}. Character profile, life challenges, career fields, best partners, traditional per-number practices, and the Chinese Lo Shu birth-number matrix. Framework is modern Western (Chaldean) + ancient Chinese, not classical Vedic Jyotish.",
+            "page_meta": f"Free numerology reading: Life Path {reading.life_path}, Destiny/Name Number {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}. Character profile, life challenges, career fields, best partners, traditional per-number practices, and the Chinese Lo Shu birth-number matrix. Framework is modern Western (Chaldean) + ancient Chinese, not classical Vedic Jyotish.",
             "reading": reading,
             "num_bhagya_score": _num_bhagya(reading, lang=_lang(request)),
             "error": None,
@@ -243,8 +245,9 @@ async def numerology_compat_compute(
     return templates.TemplateResponse(
         request, "numerology_compat.html",
         {
-            "page_title": f"Compatibility: {compat.person_a_name} × {compat.person_b_name}",
-            "page_meta": f"Numerology compatibility {compat.person_a_name} + {compat.person_b_name}: {compat.overall_score}/100. {compat.overall_summary[:100]}",
+            # Names stay out of the head (#817); the score is not personal.
+            "page_title": f"Numerology Compatibility — {compat.overall_score}/100",
+            "page_meta": f"Numerology compatibility: {compat.overall_score}/100. {compat.overall_summary[:100]}",
             "compat": compat, "context": context,
             "error": None,
             "lang": _lang(request),

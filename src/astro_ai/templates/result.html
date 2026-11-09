@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}{% if details.name %}{{ t(lang, 'natal_title', name=details.name) }}{% else %}{{ t(lang, 'natal_title_anon') }}{% endif %} — Shubh Bhagya{% endblock %}
+{# Never the visitor's name: gtag collects document.title and og:title/twitter:title copy it (#817). The h1 below may name them. #}
+{% block title %}{{ t(lang, 'natal_title_anon') }} — Shubh Bhagya{% endblock %}
 {% block meta_description %}Your instant Vedic Janma Kundli reading online — personality, career, wealth, marriage, Manglik &amp; Sade Sati timing, Dasha periods, and life-stage predictions from your own birth chart.{% endblock %}
 {# Snapshot pages (/r/{id}) contain PII + expire in 30 days — never index them.
    Regular /kundli renders keep the default (index, follow). Note: Jinja

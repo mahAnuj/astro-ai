@@ -3,7 +3,7 @@
 Rows re-break each sink the sweep guards -- Telegram, the events log, the logs,
 the analytics blocks and a page title, the storage keys, the feedback mail, the
 shared LLM prompt -- plus three rows aimed at the sweep itself: a silenced alert
-(`expects`), a widened policy row, a deleted KNOWN_GAPS pin. One area file, a
+(`expects`), a widened policy row, a KNOWN_GAPS pin for a leak that is gone. One area file, a
 literal list (test_mutation_tables.py requires it); each row names the test that
 must be the one to catch it.
 """
@@ -64,9 +64,9 @@ MUTATIONS = [
      '"email question message",',
      '"email question message dob",',
      "test_policy_telegram_forbids_birth_details"),
-    ("#744: a KNOWN_GAPS pin is deleted while its title still leaks the name",
+    ("#744: a KNOWN_GAPS pin is added for a title that no longer leaks (the ratchet's other direction)",
      "scripts/verify_pii_egress.py",
-     '    ("analytics:title", "/kundli", "name"),\n',
-     "",
+     "KNOWN_GAPS: frozenset[tuple[str, str, str]] = frozenset()",
+     'KNOWN_GAPS: frozenset[tuple[str, str, str]] = frozenset({("analytics:title", "/kundli", "name")})',
      "test_the_known_gaps_equal_what_the_scenarios_observe"),
 ]
