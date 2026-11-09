@@ -249,6 +249,18 @@ def _mergeable_passed_pr(gh: Runner, repo: str, issue: int) -> int | None:
     return None
 
 
+def _pass_names_head(lines: str, repo: str, head: str) -> bool:
+    """True when a `QA: PASS` verdict from `claude[bot]` or the repo owner names
+    `head` on its first line -- the same test agent-merge's `QA verdict` step
+    applies before it will merge."""
+    trusted = {"claude[bot]", repo.split("/")[0]}
+    for line in lines.splitlines():
+        who, _, first = line.partition("\t")
+        if who in trusted and head in first:
+            return True
+    return False
+
+
 def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
     """A reason NOT to start this entry that the carrier would not catch. The
     carrier already refuses a closed target; a PR that has since been given
@@ -281,8 +293,6 @@ def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
             return None
         return (f"issue #{e.target}'s PR #{pr} carries `qa-pass` and is mergeable; it is "
                 f"waiting to merge, and a cycle would re-decide passed work.")
-    if passed:
-        return f"PR #{e.target} already carries `qa-pass`; a round would re-decide it."
     # A round that has ALREADY ruled on the current head since this entry was
     # queued. The case QA round 1 on #675 exposed: once a busy loop is no
     # reason to hold back, the steward can queue a round for the very PR the
@@ -293,8 +303,21 @@ def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
         ruled = gh(["api", "--paginate", f"repos/{repo}/issues/{e.target}/comments?per_page=100",
                     "--jq", '.[] | select(.body | test("^QA: (PASS|FAIL)")) '
                             '| "\\(.created_at) \\(.body | split("\\n")[0])"'])
+        # `qa-pass` decides the PR only for the commit it was given on (#823).
+        # A label cannot say which commit it is about and survives a push, so
+        # agent-merge also needs a `QA: PASS` comment naming the head, and
+        # qa-on-green treats a stale label as no verdict and queues a round on
+        # the new head. Dropping that round on the bare label stranded PR #812:
+        # refused by agent-merge, ignored by every dispatcher, and the one
+        # dispatch qa-on-green gets per commit already spent.
+        pass_lines = gh(["api", "--paginate", f"repos/{repo}/issues/{e.target}/comments?per_page=100",
+                         "--jq", '.[] | select(.body | startswith("QA: PASS")) '
+                                 '| "\\(.user.login)\\t\\(.body | split("\\n")[0])"']) if passed else ""
     except RuntimeError:
         return None
+    if passed and head and _pass_names_head(pass_lines, repo, head):
+        return (f"PR #{e.target} already carries `qa-pass` for its head `{head[:7]}`; "
+                f"a round would re-decide it.")
     for line in ruled.splitlines():
         when, _, first = line.partition(" ")
         if head and when > e.created_at and f"`{head}`" in first:

@@ -20,7 +20,7 @@
    route computed day_detail and discarded it on this branch. Same numbers,
    one line, since the card has no room for the footnote the full page shows. -#}
 {%- if day_detail and day_detail.areas %}
-{% for a in day_detail.areas %}{% if lang == 'hi' %}{{ {'Work':'कार्य','Money':'धन','Relationships':'संबंध','Health':'स्वास्थ्य'}[a.area] }}{% else %}{{ a.area }}{% endif %} {{ a.favourable }}/{{ a.total }}{% if not loop.last %} · {% endif %}{% endfor %}
+{%- set sup = day_detail.areas|selectattr('favourable')|list %}{% if sup %}{% if lang == 'hi' %}आज साथ देने वाले क्षेत्र: {% else %}Supported today: {% endif %}{% for a in sup %}{% if lang == 'hi' %}{{ {'Work':'कार्य','Money':'धन','Relationships':'संबंध','Health':'स्वास्थ्य'}[a.area] }}{% else %}{{ a.area }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}{% if lang == 'hi' %}आज किसी क्षेत्र को ग्रहों का अतिरिक्त साथ नहीं है{% else %}No area has extra support from the planets today{% endif %}{% endif %}
 {%- endif %}
 {%- if chandra_bala %}
 
