@@ -1,17 +1,16 @@
 {
-  "generated_at": "2026-11-09T09:08:03Z",
+  "generated_at": "2026-11-09T17:42:14Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 116,
-  "with_ask": 38,
+  "open": 114,
+  "with_ask": 39,
   "by_area": {
-    "UNCLASSIFIED": 40,
+    "UNCLASSIFIED": 41,
     "INFRA": 13,
     "REDESIGN": 10,
     "UI": 9,
     "FEATURE": 7,
     "NUMEROLOGY": 5,
-    "BUG": 3,
     "RETRIEVAL": 3,
     "MEASURE": 3,
     "CHORE": 3,
@@ -21,8 +20,7 @@
     "SEO": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
-    "SECURITY": 1,
-    "PRIVACY": 1,
+    "BUG": 2,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
@@ -30,21 +28,36 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 35,
-    "bug": 23,
+    "untyped": 36,
     "enhancement": 23,
+    "bug": 21,
     "correctness": 13,
-    "chore": 11,
+    "chore": 10,
     "design": 6,
     "ui": 5
   },
   "by_priority": {
-    "unset": 91,
+    "unset": 89,
     "medium": 16,
     "high": 9
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 826,
+      "title": "agent-queue never drains after a qa-on-green or queue-started run: queued rulings for #804 and #810 sat 3h+",
+      "ask": "Options for chief / a session with workflows permission, cheapest first: (a) add a cron to agent-queue.yml",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "needs-evidence"
+      ],
+      "created": "2026-11-09T10:20:41Z",
+      "updated": "2026-11-09T10:20:41Z",
+      "blocked": false,
+      "needs_evidence": true
+    },
     {
       "number": 821,
       "title": "Build cycles past 60 minutes lose push and comment access (claude[bot] token expiry)",
@@ -81,10 +94,13 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-09T03:30:34Z",
-      "updated": "2026-11-09T03:30:34Z",
+      "updated": "2026-11-09T17:40:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -99,7 +115,7 @@
         "bug"
       ],
       "created": "2026-11-09T03:30:21Z",
-      "updated": "2026-11-09T03:30:21Z",
+      "updated": "2026-11-09T17:14:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -116,21 +132,6 @@
       ],
       "created": "2026-11-09T00:26:38Z",
       "updated": "2026-11-09T00:55:04Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 803,
-      "title": "[BUG] test_panchang_strip_cache fails 18:30-24:00 UTC: #797 moved the today_iso fixture to IST, the strip cache keys on UTC — pr-gates red for every PR",
-      "ask": "",
-      "area": "BUG",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-11-08T22:55:37Z",
-      "updated": "2026-11-08T22:55:37Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -203,25 +204,6 @@
       ],
       "created": "2026-11-06T11:07:25Z",
       "updated": "2026-11-06T11:07:25Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 743,
-      "title": "security: verify_egress.py, an allow-list of runtime outbound hosts (split from #354)",
-      "ask": "",
-      "area": "SECURITY",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "category:technical",
-        "chore",
-        "qa-fail",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-06T06:31:30Z",
-      "updated": "2026-11-08T23:24:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -708,24 +690,6 @@
       "needs_evidence": false
     },
     {
-      "number": 528,
-      "title": "privacy: the visitor's /ask question travels in the URL and is recorded by GA4 as a landing page",
-      "ask": "",
-      "area": "PRIVACY",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-24T22:53:58Z",
-      "updated": "2026-11-09T00:53:07Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 503,
       "title": "stall routing: no independent-QA path for human-authored partial/ PRs, guard 2 misreads a working dispatch, chief-dispatched qa cannot record its label",
       "ask": "",
@@ -932,7 +896,7 @@
         "bug"
       ],
       "created": "2026-10-19T09:37:16Z",
-      "updated": "2026-10-19T09:37:16Z",
+      "updated": "2026-11-09T11:20:17Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -982,7 +946,7 @@
         "qa:independent"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-08T21:00:06Z",
+      "updated": "2026-11-09T11:11:46Z",
       "blocked": false,
       "needs_evidence": false
     },
