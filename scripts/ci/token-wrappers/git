@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# git, with a fresh claude[bot] token on origin before every network command.
+# See scripts/claude_token.py for why. Inert unless CLAUDE_TOKEN_REFRESH=1,
+# which agent-work.yml sets on the agent step only, so every other step's git
+# (the rescue push included) behaves exactly as before.
+self_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+real=$(PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF "$self_dir" | paste -sd: -) command -v git)
+[ -n "$real" ] || { echo "git wrapper: no real git on PATH" >&2; exit 127; }
+
+if [ "${CLAUDE_TOKEN_REFRESH:-}" = 1 ] && [ -n "${GITHUB_REPOSITORY:-}" ]; then
+  # Options that come before the subcommand, kept so `remote set-url` touches
+  # the same repository (`git -C dir push` is how subagents often call it).
+  pre=(); args=("$@"); i=0; sub=""
+  while [ $i -lt ${#args[@]} ]; do
+    a=${args[$i]}
+    case "$a" in
+      -C|-c|--git-dir|--work-tree) pre+=("$a" "${args[$((i+1))]}"); i=$((i+2)) ;;
+      --git-dir=*|--work-tree=*) pre+=("$a"); i=$((i+1)) ;;
+      -*) i=$((i+1)) ;;
+      *) sub=$a; break ;;
+    esac
+  done
+  case "$sub" in
+    push|fetch|pull|ls-remote)
+      url=$("$real" "${pre[@]}" remote get-url origin 2>/dev/null || true)
+      # Only THIS repository's origin -- never a scratch clone of another one.
+      if printf '%s' "$url" | grep -qiE "github\.com/${GITHUB_REPOSITORY}(\.git)?$"; then
+        if tok=$(python3 "$self_dir/claude_token.py"); then
+          "$real" "${pre[@]}" remote set-url origin \
+            "https://x-access-token:${tok}@github.com/${GITHUB_REPOSITORY}.git"
+        fi
+      fi ;;
+  esac
+fi
+exec "$real" "$@"

@@ -223,6 +223,24 @@ jobs:
           git config user.name  "shubhagya-agent"
           git config user.email "agent@users.noreply.github.com"
 
+      # A cycle longer than an hour outlives the ONE claude[bot] token the
+      # action mints (2026-11-09). On #804 (run 42531382900, 1h46m) the cycle
+      # could not push or post a QA verdict after ~23:40; the rescue step then
+      # pushed its commits with github.token and GitHub held their checks for
+      # a human. These wrappers put `git` and `gh` on PATH ahead of the real
+      # ones and re-mint the SAME claude[bot] token through the same OIDC
+      # exchange the action uses, so identity, scopes and every gate that
+      # trusts claude[bot]'s verdicts are unchanged. Copied OUT of the working
+      # tree, so a cycle editing scripts/ cannot change what this job runs.
+      # Inert outside the agent step: they act only when CLAUDE_TOKEN_REFRESH=1.
+      - name: Install the token refresher
+        run: |
+          bin="$RUNNER_TEMP/claude-token-bin"
+          mkdir -p "$bin"
+          cp scripts/ci/token-wrappers/git scripts/ci/token-wrappers/gh scripts/claude_token.py "$bin/"
+          chmod 0755 "$bin/git" "$bin/gh"
+          echo "$bin" >> "$GITHUB_PATH"
+
 
       # Plan from the analyst's latest run rather than re-deriving it. Falls
       # through quietly when no measurement exists yet — a first run must not be
@@ -401,6 +419,8 @@ jobs:
         env:
           GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
           GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+          # Turns on the git/gh wrappers installed above, for this step only.
+          CLAUDE_TOKEN_REFRESH: "1"
 
       # A cycle that dies on quota leaves a branch behind. Say so on the run,
       # because a silent half-finished branch is how GROWTH_LOG.md stopped for
@@ -430,8 +450,8 @@ jobs:
       # two such suites and sat `mergeable_state: blocked` with every check
       # green. The six measurement workflows already avoid this by opening
       # their PRs with the publisher App; this net now does the same for the
-      # `gh pr create` call ONLY. The push stays on `github.token` (it never
-      # expires mid-job, which is why this net uses it -- see below).
+      # `gh pr create` call and, since 2026-11-09, for the push too (a
+      # github.token push holds the PR's checks the same way; see below).
       # `continue-on-error` + the `||` fallback keep a missing key from being
       # worse than today: the PR still opens, as `github-actions[bot]`, which
       # AGENT_AUTHORS now also accepts.
@@ -519,8 +539,15 @@ jobs:
           # job rather than sixty minutes. With contents: write it can push. So
           # the rescue was always available; the step was just aimed at the wrong
           # credential.
+          # PR_TOKEN (the publisher App, minted seconds ago) rather than
+          # github.token (2026-11-09): a push made with github.token starts
+          # `pull_request` runs as github-actions[bot], which GitHub holds in
+          # `action_required` until a human approves them -- #804's head sat
+          # that way from 00:26Z. A fresh App token cannot have expired, which
+          # was the reason this push used github.token. Falls back to
+          # github.token when the publisher key is missing, as before.
           git remote set-url origin \
-            "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
+            "https://x-access-token:${PR_TOKEN}@github.com/${GH_REPO}.git"
 
           # A LOCAL ALIAS OF WORK ALREADY ON THE REMOTE IS NOT WORK TO RESCUE.
           # A judge-only QA round checks an existing PR out under a local name
