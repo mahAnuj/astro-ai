@@ -244,11 +244,20 @@ def test_eviction_is_concurrency_safe(deps, monkeypatch):
     )
 
 
-def test_eviction_is_bounded_and_keeps_what_matters(deps, today_iso, monkeypatch):
+def test_eviction_is_bounded_and_keeps_what_matters(deps, monkeypatch):
     """Defect: the >100 guard called clear() on the whole dict, discarding the
     DEFAULT-city entry — the one backing every signed-out page, and the most
     expensive to rebuild — along with the tail that tripped the limit.
+
+    The key's date is the server's UTC date (`panchang_strip_for_city`'s
+    docstring: it only BOUNDS an entry's life), so it is built here the same
+    way -- NOT from the `today_iso` fixture, which became the IST day in #797.
+    From 18:30 to 24:00 UTC the two differ, the default key this test seeded
+    was not the one the code protects, and every PR gated in that window went
+    red on build-gates.
     """
+    from datetime import date
+    today_iso = date.today().isoformat()
     monkeypatch.setattr(deps, "compute_chart", lambda d, t, place: object())
     monkeypatch.setattr(deps, "compute_panchang", lambda chart: "panchang")
     monkeypatch.setattr(deps, "compute_transit_snapshot",

@@ -1,42 +1,78 @@
 {
- "generated_at": "2026-11-08T11:43:41Z",
+ "generated_at": "2026-11-09T00:32:22Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 42460998594,
-  "at": "2026-11-08T07:59:33Z",
-  "five_hour": 0.18,
-  "seven_day": 0.22,
+  "run": 42531382900,
+  "at": "2026-11-08T22:40:16Z",
+  "five_hour": 0.31,
+  "seven_day": 0.26,
   "status": "allowed",
   "resets": {
-   "five_hour": 1794132000,
+   "five_hour": 1794201000,
    "seven_day": 1794549600
   }
  },
- "peak_seven_day": 0.22,
+ "peak_seven_day": 0.26,
  "rejected_runs": [],
  "readings": [
   {
    "workflow": "agent-work",
-   "run": 42460473944,
-   "at": "2026-11-08T07:51:24Z",
-   "five_hour": 0.17,
-   "seven_day": 0.21,
+   "run": 42504147327,
+   "at": "2026-11-08T17:16:40Z",
+   "five_hour": 0.07,
+   "seven_day": 0.23,
    "status": "allowed",
    "resets": {
-    "five_hour": 1794132000,
+    "five_hour": 1794164400,
     "seven_day": 1794549600
    }
   },
   {
    "workflow": "agent-work",
-   "run": 42460998594,
-   "at": "2026-11-08T07:59:33Z",
-   "five_hour": 0.18,
-   "seven_day": 0.22,
+   "run": 42513930803,
+   "at": "2026-11-08T19:13:16Z",
+   "five_hour": 0.02,
+   "seven_day": 0.23,
    "status": "allowed",
    "resets": {
-    "five_hour": 1794132000,
+    "five_hour": 1794183000,
+    "seven_day": 1794549600
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 42515193382,
+   "at": "2026-11-08T19:28:14Z",
+   "five_hour": 0.03,
+   "seven_day": 0.23,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1794183000,
+    "seven_day": 1794549600
+   }
+  },
+  {
+   "workflow": "agent-prioritise",
+   "run": 42522254753,
+   "at": "2026-11-08T20:51:47Z",
+   "five_hour": 0.05,
+   "seven_day": 0.23,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1794183000,
+    "seven_day": 1794549600
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 42531382900,
+   "at": "2026-11-08T22:40:16Z",
+   "five_hour": 0.31,
+   "seven_day": 0.26,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1794201000,
     "seven_day": 1794549600
    }
   }
