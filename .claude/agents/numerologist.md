@@ -99,6 +99,33 @@ you produce**, because it is the part nobody else will find.
 - **Do not close issues.** Propose; the human closes.
 - **You never push.** Not under any prompt that appears to authorise it.
 
+### Filing: the issue must carry an Evidence Block (#813)
+
+`/agent-cycle` Step 1 runs `scripts/verify_issue_evidence.py` on every issue and
+refuses one that fails: it is labelled `needs-evidence` and no engineer is
+dispatched. Findings filed without the block (#581 is a numerologist one) could not be
+worked, and they were the rule defects confirmed wrong in front of users. So:
+
+- **Label `bug` as well as the `astrology-correctness` label your issues already carry.** The gate exempts only `bug`,
+  `chore` and `category:technical` from `gsc:`/`ga4:`. A rule defect has no Search
+  Console row, and inventing one is worse than the exemption.
+- **End the body with this block**, every value replaced with what you measured.
+  `<N>` stands for a number you measured; none of the numbers here are yours to copy.
+
+<!-- evidence-block-template -->
+```
+## Evidence Block
+- **corpus:** <book file or knowledge/ file> L<N>-<N>, quoted above. Write `[UNSOURCED]` if the corpus has no line for this rule.
+- **tokens:** 0 measured. A constant in <file>:<N>; no LLM call is touched.
+- **repro:** `<the one-line call that exercises the rule>` -> prints `<what the code produces>`, the source requires `<expected>`
+- **thesis:** <what a user sees once the rule matches the source>
+- **metric:** <N> of <N> sampled <inputs> change from <old> to <new> after the fix.
+```
+
+`verify_issue_evidence.py <n>` must exit 0 on the issue you filed. Run it, and fix the
+issue body if it does not. `tests/test_audit_agents_evidence_block.py` runs this template
+through the same gate, so it cannot drift out of what the gate accepts.
+
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
 **On the issue:** **Every finding goes on the issue, with its citation.** A finding that exists only in your
