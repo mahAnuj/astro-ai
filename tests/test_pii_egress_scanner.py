@@ -242,7 +242,7 @@ def test_a_page_with_a_sentinel_in_each_surface_is_flagged_per_surface():
         ("analytics:props", "/p", "name"), ("analytics:calls", "/p", "question")}
 
 
-def test_known_gaps_is_empty_and_would_only_ever_hold_page_titles_carrying_a_name():
+def test_known_gaps_are_all_page_titles_carrying_a_name():
     """#817 cleared the eight title pins. An entry returning is a regression to be
     fixed, not a pin to re-add; if one is ever added on purpose it must still be a
     page title carrying a name, the only shape the equality ratchet was built for."""
