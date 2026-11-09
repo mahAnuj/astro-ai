@@ -77,7 +77,7 @@ job in agent-measure.yml grants exactly these.
 
   actions/workflows/agent-work.yml/runs, actions/runs/{id}/jobs,
   actions/jobs/{id}/logs ........................ actions: read
-  pulls, pulls/{n} .............................. pull-requests: read
+  pulls, pulls/{n}, pulls/{n}/commits ........... pull-requests: read
 
 (`contents: write` on that job is for the push, not for any read here.)
 
@@ -123,7 +123,14 @@ ATTRIBUTIONS = ("receipt", "log", "unattributed")
 #   unknown    no prompt line in the log (expired, or older than this field)
 KINDS = ("qa-round", "issue", "ranked", "unknown")
 LOOP_FIELDS = ("run", "workflow", "date", "started", "trigger", "conclusion", "minutes",
-               "issue", "pr", "pr_merged", "outcome", "attribution", "kind")
+               "issue", "pr", "pr_merged", "outcome", "attribution", "kind", "owner_helped")
+# `owner_helped` (2026-11-09, owner: "at many times, I am also pushing things moving the
+# PRs opened by loop to completion"). On a SHIPPED row: True when the PR was merged by,
+# or carries a commit authored by, anyone outside LOOP_IDENTITIES -- the owner directly
+# (`mahAnuj`) or a top-level session pushing for them (commits authored `claude`); False
+# when the loop did all of it; None when it could not be read, or the row did not ship.
+# Without it the "shipped" count credited the loop with PRs a human finished.
+LOOP_IDENTITIES = frozenset({"github-actions[bot]", "claude[bot]", "shubhagya-publisher[bot]"})
 # The action step's env listing prints the RESOLVED prompt (`PROMPT: /agent-cycle
 # --qa-pr 679`), never the template, so this cannot match a step's echoed source.
 PROMPT = re.compile(r"\bPROMPT: /agent-cycle(?: (--qa-pr )?(\d+))?[ \t]*$", re.M)
@@ -209,6 +216,9 @@ def validate_loop(doc) -> list[str]:
         # valid snapshot -- its rows read as kind `unknown` until re-collected.
         if "kind" not in r:
             r = {**r, "kind": "unknown"}
+        # `owner_helped` arrived 2026-11-09; older rows read as not-yet-known.
+        if "owner_helped" not in r:
+            r = {**r, "owner_helped": None}
         if set(r) != set(LOOP_FIELDS):
             errs.append(f"{where} fields differ: missing {sorted(set(LOOP_FIELDS) - set(r))} "
                         f"extra {sorted(set(r) - set(LOOP_FIELDS))}")
@@ -228,6 +238,10 @@ def validate_loop(doc) -> list[str]:
                 errs.append(f"{where} {k} is neither null nor an int")
         if r["pr_merged"] not in (True, False, None):
             errs.append(f"{where} pr_merged is not true/false/null")
+        if r["owner_helped"] not in (True, False, None):
+            errs.append(f"{where} owner_helped is not true/false/null")
+        elif r["owner_helped"] is not None and r["outcome"] != "shipped":
+            errs.append(f"{where} owner_helped is set on a row that did not ship")
         if r["outcome"] not in OUTCOMES:
             errs.append(f"{where} outcome {r['outcome']!r} not in {OUTCOMES}")
         if r["attribution"] not in ATTRIBUTIONS:
@@ -410,6 +424,28 @@ def read_pr(src: Source, pr: int):
     return d.get("state"), bool(d.get("merged_at") or d.get("merged"))
 
 
+def read_owner_helped(src: Source, pr: int):
+    """True when anyone outside LOOP_IDENTITIES merged the PR or authored a commit on
+    it, False when only the loop did, None when it cannot be read. A commit whose
+    author GitHub cannot link to an account counts as outside: crediting the loop
+    with work nobody can attribute to it is the claim this field exists to stop."""
+    try:
+        d = src.get(f"pulls/{pr}")
+        merger = (d.get("merged_by") or {}).get("login")
+        if merger and merger not in LOOP_IDENTITIES:
+            return True
+        commits = src.get(f"pulls/{pr}/commits?per_page=100")
+    except ApiError:
+        return None
+    return any(((c.get("author") or {}).get("login")) not in LOOP_IDENTITIES for c in commits)
+
+
+def _with_helped(src: Source, row: dict) -> dict:
+    if row["outcome"] != "shipped" or row["pr"] is None:
+        return {**row, "owner_helped": None}
+    return {**row, "owner_helped": read_owner_helped(src, row["pr"])}
+
+
 def _minutes(run: dict) -> float:
     start = ts(run.get("run_started_at") or run["created_at"])
     return round(max((ts(run["updated_at"]) - start).total_seconds(), 0) / 60, 1)
@@ -437,6 +473,7 @@ def make_row(run: dict, a: dict, state, merged) -> dict:
             run.get("conclusion") or "unknown", pr, merged, state, a["attribution"], a["no_pr_recorded"]),
         "attribution": a["attribution"],
         "kind": a.get("kind", "unknown"),
+        "owner_helped": None,
     })
 
 
@@ -474,6 +511,12 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
                 prev = judged({**prev, "kind": k})
                 merged_rows[run["id"]] = prev
                 stats["migrated"] += 1
+            if prev is not None and prev.get("outcome") == "shipped" and prev.get("owner_helped") is None:
+                # Shipped before `owner_helped` existed, or unread last time: read
+                # who finished it ONCE (two requests), then it is frozen again.
+                prev = _with_helped(src, prev)
+                merged_rows[run["id"]] = prev
+                stats["migrated"] += 1
             if prev is not None and not reopen(prev):
                 stats["frozen"] += 1
                 continue
@@ -481,7 +524,7 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
                 a = {"issue": prev["issue"], "pr": prev["pr"], "attribution": prev["attribution"],
                      "no_pr_recorded": False, "kind": prev.get("kind", "unknown")}
                 state, merged = read_pr(src, prev["pr"])
-                merged_rows[run["id"]] = make_row(run, a, state, merged)
+                merged_rows[run["id"]] = _with_helped(src, make_row(run, a, state, merged))
                 stats["refreshed"] += 1
                 continue
             try:
@@ -499,7 +542,7 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
                     print(f"::warning::run {run['id']}: {e}", file=sys.stderr)
                     continue
             state, merged = (read_pr(src, a["pr"]) if a["pr"] is not None else (None, None))
-            merged_rows[run["id"]] = make_row(run, a, state, merged)
+            merged_rows[run["id"]] = _with_helped(src, make_row(run, a, state, merged))
             stats["new"] += 1
         except ApiError as e:
             stats["deferred"] += 1
@@ -507,7 +550,7 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
     floor = iso(now - RETAIN)
     # Rows older than the listing window that predate `kind` are not re-read
     # (their runs are no longer listed): they are honestly `unknown`.
-    kept = {k: (v if "kind" in v else {**v, "kind": "unknown"})
+    kept = {k: {"owner_helped": None, **(v if "kind" in v else {**v, "kind": "unknown"})}
             for k, v in merged_rows.items() if v["started"] >= floor}
     stats["pruned"] = len(merged_rows) - len(kept)
     rows = sorted(kept.values(), key=lambda r: r["started"], reverse=True)
