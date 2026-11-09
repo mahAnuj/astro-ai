@@ -814,12 +814,12 @@ def generate_dasha_deep_dive(
 _RASHIFAL_SHAPES: tuple[str, ...] = (
     "Four short paragraphs: the day's feeling, then work and money, then "
     "people, then one concrete thing to do.",
-    "Three paragraphs. Lead with PEOPLE -- a conversation, a household, "
-    "someone the reader has been avoiding -- then work, then close on a "
-    "single action. Do not mention money at all today.",
-    "Three paragraphs, no closing instruction. Open mid-situation, develop "
-    "it, and end on an observation rather than advice. Let the reader draw "
-    "the action themselves.",
+    "Three paragraphs. Lead with PEOPLE in general -- how the day treats "
+    "conversations and the household, never who those people are -- then "
+    "work, then close on a single action. Do not mention money at all today.",
+    "Three paragraphs, no closing instruction. Open on the day's central "
+    "tension, develop it, and end on an observation rather than advice. Let "
+    "the reader draw the action themselves.",
     "Four paragraphs, but lead with the ONE thing to do today and spend the "
     "rest of the reading explaining why the day suits it.",
     "Two longer paragraphs. First the shape of the day across work and "
@@ -833,17 +833,26 @@ _RASHIFAL_SHAPES: tuple[str, ...] = (
 )
 
 _OPENING_MOVES: tuple[str, ...] = (
-    "Open on something the reader is already doing as they read.",
-    "Open on a question they have been turning over.",
-    "Open on an object in the room with them.",
-    "Open on something that happened yesterday and is not finished.",
-    "Open on a sound, or on the absence of one.",
-    "Open on a person they have not replied to.",
-    "Open on a decision they have deliberately not made.",
-    "Open on the weather or the light, and make it mean something.",
-    "Open on a small physical gesture -- a hand, a breath, a step.",
-    "Open on a number, a date or a count that matters to them.",
+    # 2026-11-09: rewritten. Five of the previous eleven asked the model to
+    # assert something about the reader's own life -- "something that happened
+    # yesterday and is not finished", "a person they have not replied to", "an
+    # object in the room with them", "a number ... that matters to them", "a
+    # decision they have deliberately not made". It obliged: the owner's Aries
+    # email opened "You left the kitchen conversation with your sister
+    # hanging", a scene the reader never had, and the reading read as fiction.
+    # Every move now starts from the DAY, which the model knows, not from the
+    # reader's life, which it does not. Still 11, so the 7 x 11 rotation holds.
     "Open flatly, with a plain statement about the day, and no image at all.",
+    "Open on what today's weekday asks of everyone, then narrow it to this rashi.",
+    "Open on the one thing the day suits, stated as plain advice.",
+    "Open on what the day does not reward, then say what it does.",
+    "Open on the character of today's tithi in plain words, if it fits this rashi.",
+    "Open on the kind of attention today's Moon nakshatra favours, without naming it.",
+    "Open on where this rashi's element and today's day-lord agree or pull apart.",
+    "Open on a question the reader can ask themselves -- asked, never answered for them.",
+    "Open on the light or pace of the day in general terms, and make it mean something.",
+    "Open on a small gesture anyone can make today -- a breath, a pause -- as advice.",
+    "Open on how the day starts compared with how it ends.",
 )
 
 

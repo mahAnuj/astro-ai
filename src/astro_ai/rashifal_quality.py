@@ -93,6 +93,19 @@ STYLE_RULES: dict[str, re.Pattern[str]] = {
         r"|\bdiagnos\w+\b|\bprescrib\w+\b", re.I),
     "gives a money directive": re.compile(
         r"\binvest in\b|\bsell your\b|\bbuy (?:shares|stock)\b|\btake a loan\b", re.I),
+    # 2026-11-09: the reading may not invent the reader's people. The owner's
+    # Aries email opened "You left the kitchen conversation with your sister
+    # hanging"; the live page the same week had "your mother's kitchen". The
+    # prompt now forbids it (NEVER INVENT THE READER'S LIFE). This catches the
+    # narrow, unambiguous form -- "your" + a named relation or a boss -- and
+    # deliberately not "your family", "your home" or "people you work with",
+    # which are generic. Invented events and dialogue are not regex-shaped;
+    # the prompt carries those.
+    "invents the reader's people": re.compile(
+        r"\byour (?:(?:older|younger|elder|little|big) )?(?:sister|brother|sibling|mother|"
+        r"father|mom|mum|dad|wife|husband|spouse|son|daughter|boss|manager|aunt|uncle|"
+        r"cousin|niece|nephew|grandmother|grandfather|grandparent|mother-in-law|"
+        r"father-in-law|in-laws?|girlfriend|boyfriend|fianc[ée]e?)s?\b", re.I),
     "uses fear framing": re.compile(
         r"\bfatal\b|\bdisaster\b|\bcatastroph\w+\b|\bruinous\b|\bcursed?\b", re.I),
 }
