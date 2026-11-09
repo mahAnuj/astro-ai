@@ -35,7 +35,7 @@ enables auto-merge. Three things follow:
   already on.
 - **`allow_auto_merge` is on for the repository** (set 2026-10-21). Turn it off
   and every measurement PR stays open forever with no error anywhere.
-- **Expect ~8 short-lived `measurements/<run-id>-<attempt>` branches a day.**
+- **Expect a short-lived `measurements/<run-id>-<attempt>` branch after most build cycles** (since 2026-11-09: `agent-measure`'s collectors run on `agent-work` completing, debounced by `scripts/measure_due.py`, plus one backstop slot; it was ~8 clock slots that GitHub throttled to ~4 runs a day).
   Not `feat/**`, which would trigger a second `pr-gates` run. The `issue/*`
   half of this warning expired on 2026-10-25: `agent-merge` no longer gates on
   the branch NAME at all, so no name keeps a PR away from its sweep. What keeps

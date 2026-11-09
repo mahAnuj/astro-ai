@@ -44,30 +44,72 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # the scope step diffs against origin/main
+
+      # A MEASUREMENTS-ONLY DIFF HAS NOTHING TO BUILD (2026-11-09). Every
+      # measurement PR used to run this whole job -- Node, Chromium, the CSS
+      # build and the full behaviour suite, ~2 min -- over a diff that cannot
+      # change any of it (`measurements/**` is outside the image and the deploy
+      # trigger). Worse, whenever `main` was red every measurement PR failed
+      # here, never auto-merged, and the next run opened another on top of it:
+      # #800 and #805 stacked that way on 2026-11-08 behind #797's red test.
+      # `pr-gates` has skipped its suite for such diffs since #393.
+      #
+      # The job still RUNS and concludes success, because `build-gates` is a
+      # required check: a skipped workflow would leave the PR waiting forever.
+      #
+      # The diff is taken against the merge base with origin/main, so it is the
+      # branch's own change for a PR, a dispatched measurement branch and a
+      # merge ref alike. It skips ONLY when that diff is non-empty and EVERY
+      # path is under `measurements/` -- the boundary publish_measurements.sh
+      # already enforces. Empty, unreadable or anything else: full build.
+      # A push to `main` diffs as empty, so `main` is always fully built.
+      - name: Does this touch anything built?
+        id: scope
+        run: |
+          git fetch --quiet origin main || true
+          base=$(git merge-base origin/main HEAD 2>/dev/null || true)
+          changed=$( [ -n "$base" ] && git diff --name-only "$base" HEAD || true )
+          echo "changed files:"; printf '%s\n' "$changed" | sed 's/^/  /'
+          if [ -n "$changed" ] && ! grep -qv '^measurements/' <<<"$changed"; then
+            echo "build=false" >> "$GITHUB_OUTPUT"
+            echo "-> measurements only: nothing here can change; build-gates passes without building"
+            echo "### build-gates skipped — measurements only" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            echo "-> running the full build gates"
+          fi
 
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.build == 'true'
         with:
           node-version: '22'
           cache: 'npm'
 
       - name: Install Node deps
+        if: steps.scope.outputs.build == 'true'
         # `npm ci` and never `npm install`. Gate 1 is a raw byte comparison and
         # Tailwind embeds its version banner in the output, so an unpinned
         # resolve would turn the gate red with no change to the repo.
         run: npm ci
 
       - name: Install Python deps
+        if: steps.scope.outputs.build == 'true'
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Sync Python env
+        if: steps.scope.outputs.build == 'true'
         run: uv sync --group dev
 
       - name: Install Chromium for the Devanagari gate
+        if: steps.scope.outputs.build == 'true'
         run: uv run playwright install --with-deps chromium
 
       - name: CSS build is fresh
+        if: steps.scope.outputs.build == 'true'
         # Fails if the committed app.css differs from a fresh build, i.e. if
         # someone changed a class and did not re-run `npm run build:css`.
         run: |
@@ -80,9 +122,11 @@ jobs:
           exit "${code:-0}"
 
       - name: Behaviour suite
+        if: steps.scope.outputs.build == 'true'
         run: uv run python scripts/verify_behaviour.py
 
       - name: Redesign tokens have not drifted
+        if: steps.scope.outputs.build == 'true'
         # #239. The emails, the cosmic card and the feedback notification hold
         # the palette as literal hexes because Tailwind cannot reach any of
         # them — no <style> survives an email client, and SVG attributes are
@@ -100,6 +144,7 @@ jobs:
           exit "$code"
 
       - name: Devanagari serif gate
+        if: steps.scope.outputs.build == 'true'
         # Two halves. The static half reads the font <link> and needs nothing;
         # the browser half drives Chromium and reads the fonts the renderer
         # actually painted, so it needs the app up AND network access to
