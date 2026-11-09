@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-09T21:45:31Z)
+# Lessons — last 30 days (generated 2026-11-09T23:45:55Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -24,9 +24,8 @@ deterministic, no LLM.
 - QA FAIL verdicts: 62
 - reverted commits on main: 0
 - failed verify-production runs: 3
-- ops findings now: 2
-  - [red] loop-broken: pr-gates.yml is dormant
-  - [amber] loop-idle: Build lane idle 84% of the last 7d
+- ops findings now: 1
+  - [amber] loop-idle: Build lane idle 85% of the last 7d
 
 ## Our outcomes (analyst verdicts, latest per issue)
 

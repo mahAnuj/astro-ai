@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-09T21:44:06Z",
+  "generated_at": "2026-11-09T23:44:48Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 113,
+  "open": 112,
   "with_ask": 39,
   "by_area": {
-    "UNCLASSIFIED": 40,
+    "UNCLASSIFIED": 39,
     "INFRA": 13,
     "REDESIGN": 10,
     "UI": 9,
@@ -30,14 +30,14 @@
   "by_type": {
     "untyped": 36,
     "enhancement": 23,
-    "bug": 20,
+    "bug": 19,
     "correctness": 13,
     "chore": 10,
     "design": 6,
     "ui": 5
   },
   "by_priority": {
-    "unset": 88,
+    "unset": 87,
     "medium": 16,
     "high": 9
   },
@@ -83,24 +83,6 @@
       ],
       "created": "2026-11-09T03:30:35Z",
       "updated": "2026-11-09T03:30:35Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 817,
-      "title": "Visitor name is in the server-rendered <title> of 8 routes, which gtag collects by default (found by #744)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-09T03:30:21Z",
-      "updated": "2026-11-09T18:15:11Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -531,11 +513,13 @@
       "labels": [
         "ui",
         "skill:ui-fixer",
+        "qa-pass",
         "provenance:trusted",
-        "needs-evidence"
+        "needs-evidence",
+        "qa:in-cycle"
       ],
       "created": "2026-10-29T23:50:30Z",
-      "updated": "2026-11-09T21:25:30Z",
+      "updated": "2026-11-09T23:44:21Z",
       "blocked": false,
       "needs_evidence": true
     },
