@@ -109,6 +109,23 @@ on:
   push:
     branches: [main]
 
+  # 2026-11-09: A DAILY RUN OF `main`, AT AN HOUR WHEN THE IST AND UTC DATES
+  # DIFFER. Two holes the push leg above cannot close:
+  #   * a merge by `agent-merge` uses GITHUB_TOKEN, whose pushes start no
+  #     workflow. agent-merge now dispatches this workflow after a merge, but a
+  #     failed dispatch would leave the merge ungated again with no signal;
+  #   * a test that depends on the time of day passes whenever its run happens
+  #     to land outside the bad window. #797 changed the `today_iso` fixture to
+  #     the IST day at 17:28Z; every gate that day ran before 18:30Z and passed,
+  #     and from 18:30Z to 24:00Z the suite was red on `main` and on all seven
+  #     open PRs. 20:47Z is inside that window on purpose.
+  # A scheduled run reads as code=true in the scope step (there is no diff to
+  # scope by) and sweeps every mutation row, like a push run. Cost: one main
+  # run a day, ~15 min measured on 2026-11-08's push runs. `main-red-report.yml`
+  # files the sentinel from it the same way it does for a push.
+  schedule:
+    - cron: '47 20 * * *'
+
 concurrency:
   # ONE GROUP PER REF, and `main` is deliberately NOT cancellable.
   #
@@ -176,7 +193,19 @@ jobs:
       # expensive steps when nothing they test has changed.
       - name: Does this touch code?
         id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
+          # A scheduled run, or agent-merge's post-merge dispatch on `main`,
+          # has no diff of its own -- HEAD~1 could be a measurements-only commit
+          # that would skip everything. Both exist to sweep `main` as it is, so
+          # they always run the full gates (2026-11-09). A dispatch on any other
+          # branch (#322's fallback) is still scoped by its diff.
+          if [ "$EVENT_NAME" = schedule ] || { [ "$EVENT_NAME" = workflow_dispatch ] && [ "$GITHUB_REF" = refs/heads/main ]; }; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "-> $EVENT_NAME sweep of main: running the full gates"
+            exit 0
+          fi
           base="${{ github.event.pull_request.base.sha }}"
           [ -n "$base" ] || base=$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)
           changed=$(git diff --name-only "$base" HEAD || echo "")

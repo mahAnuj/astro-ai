@@ -136,6 +136,10 @@ ROUTE_HIT_ALERT_PCT = 30       # any one route
 ROUTE_MIN_CALLS = 50
 GROQ_TPD = 200_000             # CLAUDE.md, "Token budget": the daily rashifal path's ceiling
 TOKEN_DAY_ALERT = 0.80
+#: `main-red-suspected` (2026-11-09): one test failing on this many open PRs at
+#: once. Two is enough -- two unrelated diffs failing the same test is the
+#: defect living on `main`, which is what #797 left for seven PRs overnight.
+SHARED_FAILURE_MIN_PRS = 2
 
 #: What this script cannot see, named so silence is never read as health. Each
 #: entry is (concern, where it is computed, why a checkout cannot reach it).
@@ -348,6 +352,42 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
             f"that is unused capacity: the schedule, not the work, is the limit. Check the "
             f"Claude weekly quota first -- if it has headroom, more cron slots in "
             f"agent-work.yml are the lever; if not, idle is the right answer.", "/admin/ops")
+
+    # --- one test red on several PRs = `main` is red (2026-11-09) -----------
+    # `collect_gate_failures.py` tallies the pytest failures on every open PR's
+    # gates. A test failing on two PRs with unrelated diffs is on `main`; each
+    # PR alone reads it as its own defect, and a red PR gets no QA round. #797
+    # left seven PRs red on one date-dependent test overnight while nothing
+    # connected them -- this is the connection.
+    try:
+        gates = _read("gate_failures.json")
+    except FileNotFoundError:
+        gates = None                      # not collected yet: judge nothing
+    except (OSError, json.JSONDecodeError) as exc:
+        gates = None
+        unreadable.append(f"gate_failures.json ({exc.__class__.__name__})")
+    if gates:
+        gen = _instant(gates.get("generated_at", ""))
+        if gen is None or (now - gen) > timedelta(hours=STALE_HOURS):
+            unreadable.append("gate_failures.json (stale or no generated_at)")
+        else:
+            if gates.get("fetch_failed") and not gates.get("logs_fetched"):
+                unreadable.append(f"gate_failures.json (all {gates['fetch_failed']} "
+                                  f"job-log fetches failed)")
+            shared = [r for r in gates.get("by_test") or []
+                      if len(r.get("prs") or []) >= SHARED_FAILURE_MIN_PRS]
+            if shared:
+                names = "; ".join(f"`{r['test']}` on " + ", ".join(f"#{n}" for n in r["prs"])
+                                  for r in shared[:5])
+                add("main-red-suspected", "red",
+                    f"{len(shared)} test(s) fail on {SHARED_FAILURE_MIN_PRS}+ open PRs at once",
+                    f"{names}. The same test failing on PRs with unrelated diffs is a defect "
+                    f"on `main`, not in any of them -- do not fix it per PR. Reproduce on "
+                    f"`origin/main` with `uv run pytest <test>`; if it passes, suspect the "
+                    f"clock (a date or timezone the test and the code disagree on, as with "
+                    f"#797's IST fixture against a UTC-keyed cache) and re-run it with the "
+                    f"date skewed. Fix once, on one branch; the PRs go green on their next "
+                    f"gates run.", "measurements/gate_failures.json")
 
     # --- the backlog, and the triage debt under it ------------------------
     try:
