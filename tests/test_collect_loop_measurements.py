@@ -303,7 +303,10 @@ def _row(**kw):
     base = {"run": 1, "workflow": "agent-work", "date": "2026-10-13", "started": "2026-10-13T10:00:00Z",
             "trigger": "schedule", "conclusion": "success", "minutes": 20.0, "issue": 5, "pr": 42,
             "pr_merged": True, "outcome": "shipped", "attribution": "receipt", "kind": "issue"}
-    return {**base, **kw}
+    row = {**base, **kw}
+    # A settled shipped row already knows who finished it (2026-11-09); any other row is null.
+    row.setdefault("owner_helped", False if row["outcome"] == "shipped" else None)
+    return row
 
 
 def test_a_frozen_row_is_not_re_fetched_at_all():
@@ -630,3 +633,57 @@ def test_idle_merges_overlapping_build_runs_and_ignores_QA_rounds():
 def test_rows_outside_the_window_are_not_counted():
     w = cm.waste([_w("nothing", "ranked", "2026-09-01T00:00:00Z", 999)], NOW)
     assert w["cycles"] == 0 and w["share_without_result"] is None and w["build_idle_hours"] == 7 * 24
+
+
+# --- owner_helped (2026-11-09) ----------------------------------------------
+# The owner pushes and merges loop PRs routinely; "shipped" must say who finished it.
+
+def _pr_api(merger, authors):
+    return {"merged_by": {"login": merger} if merger else None, "merged_at": "x", "state": "closed"}, \
+        [{"author": ({"login": a} if a else None)} for a in authors]
+
+
+class _Src:
+    def __init__(self, pr, commits, fail=False):
+        self.pr, self.commits, self.fail = pr, commits, fail
+
+    def get(self, path):
+        if self.fail:
+            raise cm.ApiError(503, "pulls/1", "down")
+        return self.commits if path.endswith("/commits?per_page=100") else self.pr
+
+
+def test_a_pr_the_owner_merged_was_helped():
+    assert cm.read_owner_helped(_Src(*_pr_api("mahAnuj", ["github-actions[bot]"])), 750) is True
+
+
+def test_a_session_commit_on_a_loop_pr_was_helped():
+    assert cm.read_owner_helped(_Src(*_pr_api("github-actions[bot]", ["github-actions[bot]", "claude"])), 778) is True
+
+
+def test_an_unlinked_commit_author_is_not_credited_to_the_loop():
+    assert cm.read_owner_helped(_Src(*_pr_api("github-actions[bot]", [None])), 1) is True
+
+
+def test_a_pr_only_loop_bots_touched_was_the_loop_alone():
+    src = _Src(*_pr_api("github-actions[bot]", ["github-actions[bot]", "claude[bot]", "shubhagya-publisher[bot]"]))
+    assert cm.read_owner_helped(src, 797) is False
+
+
+def test_an_unreadable_pr_is_unknown_not_loop_alone():
+    assert cm.read_owner_helped(_Src(None, None, fail=True), 1) is None
+
+
+def test_owner_helped_on_a_row_that_did_not_ship_is_invalid():
+    errs = cm.validate_loop({"generated_at": "2026-10-13T00:00:00Z",
+                             "rows": [_row(outcome="pr open", pr_merged=False, owner_helped=True)]})
+    assert any("did not ship" in e for e in errs)
+
+
+def test_a_settled_shipped_row_without_the_field_is_read_once():
+    src = Fake({**runs_listing(run(1)), "pulls/42": {"merged_by": {"login": "mahAnuj"}, "merged_at": "x"},
+                "pulls/42/commits?per_page=100": []})
+    old = _row()
+    del old["owner_helped"]
+    doc, stats = collect(src, {"rows": [old]})
+    assert doc["rows"][0]["owner_helped"] is True and stats["migrated"] == 1

@@ -59,6 +59,11 @@ class FakeGh:
         if args[:2] == ["api", "--paginate"] and "/issues/comments?" in args[2]:
             return "\n".join(json.dumps({k: c[k] for k in ("id", "body", "created_at", "login")})
                              for c in self.comments)
+        if args[:2] == ["api", "--paginate"] and "user.login" in args[-1]:   # PASS verdicts + author
+            n = int(args[2].split("/issues/")[1].split("/")[0])
+            return "\n".join(f"{c['login']}\t{c['body'].splitlines()[0]}"
+                             for c in self.comments
+                             if c["on"] == n and c["body"].startswith("QA: PASS"))
         if args[:2] == ["api", "--paginate"]:          # one PR's comments: QA verdicts
             n = int(args[2].split("/issues/")[1].split("/")[0])
             return "\n".join(f"{c['created_at']} {c['body'].splitlines()[0]}"
@@ -242,12 +247,64 @@ def test_a_race_with_another_dispatcher_leaves_EXACTLY_ONE_live_entry():
     assert f"{cq.MARK}-dropped: " in gh.comments[0]["body"]
 
 def test_a_pr_that_already_carries_qa_pass_is_dropped_without_a_cycle():
-    gh = FakeGh(labels={649: "qa-pass,qa:in-cycle"})
-    gh.add(entry("pr", 649))
+    """`qa-pass` AND a `QA: PASS` verdict naming the head: really decided."""
+    sha = "a" * 40
+    gh = FakeGh(labels={649: "qa-pass,qa:in-cycle"}, heads={649: sha})
+    gh.add(f"QA: PASS — verified at `{sha}`\nnotes", login="claude[bot]", on=649)
+    gh.add(entry("pr", 649), on=649)
     car = FakeCarrier([])
     cq.drain(gh, REPO, car)
     assert car.calls == []
-    assert "already carries `qa-pass`" in gh.comments[0]["body"]
+    assert "already carries `qa-pass`" in gh.comments[-1]["body"]
+
+
+def _stale_pass(pass_login="claude[bot]", head="b" * 40, passed_at="a" * 40, labels="qa-pass,qa:in-cycle"):
+    gh = FakeGh(labels={812: labels}, heads={812: head})
+    gh.add(f"QA: PASS — verified at `{passed_at}`\nnotes", login=pass_login, on=812)
+    gh.add(entry("pr", 812), on=812)
+    return gh
+
+
+def test_a_qa_pass_bound_to_an_EARLIER_commit_does_not_drop_the_round():
+    """#823 / PR #812: `qa-pass` was given at d182529, two `Merge origin/main`
+    commits followed, and the queue dropped the very round qa-on-green had
+    queued for the new head ("already carries qa-pass"). agent-merge refused
+    the PR, every dispatcher ignored it, and qa-on-green's one dispatch for
+    that commit was spent."""
+    gh = _stale_pass()
+    assert cq.stale_reason(gh, REPO, cq.pending(gh, REPO)[0]) is None
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls == [("pr=812", "queue(qa-on-green)")]
+
+
+def test_a_PASS_comment_from_a_stranger_does_not_count_as_binding():
+    """agent-merge accepts only claude[bot] or the repo owner."""
+    gh = _stale_pass(pass_login="someone-else", head="a" * 40, passed_at="a" * 40)
+    assert cq.stale_reason(gh, REPO, cq.pending(gh, REPO)[0]) is None
+
+
+def test_a_PASS_comment_from_the_repo_owner_binds_the_head():
+    """A top-level session records its verdict as the owner."""
+    gh = _stale_pass(pass_login="owner", head="a" * 40, passed_at="a" * 40)
+    assert "for its head `aaaaaaa`" in cq.stale_reason(gh, REPO, cq.pending(gh, REPO)[0])
+
+
+def test_qa_pass_with_NO_pass_comment_at_all_still_starts_a_round():
+    gh = FakeGh(labels={812: "qa-pass"}, heads={812: "b" * 40})
+    gh.add(entry("pr", 812), on=812)
+    assert cq.stale_reason(gh, REPO, cq.pending(gh, REPO)[0]) is None
+
+
+def test_an_unreadable_head_starts_the_round_rather_than_dropping_it():
+    """A wasted round costs minutes; a wrongly dropped entry is permanent."""
+    gh = _stale_pass()
+    inner = gh.__call__
+    def broken(args):
+        if args[0] == "api" and "/pulls/" in args[1]:
+            raise RuntimeError("gh api failed")
+        return inner(args)
+    assert cq.stale_reason(broken, REPO, cq.pending(gh, REPO)[0]) is None
 
 
 def _issue_431(mergeable="true", ref="issue/431-prefix-row-known-shapes", pr_labels="qa-pass,qa:in-cycle"):
