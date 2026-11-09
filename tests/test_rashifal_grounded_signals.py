@@ -24,11 +24,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 GRAHAS = (ROOT / "src/astro_ai/knowledge/grahas.md").read_text()
 
 
-def _signals(monkeypatch, retro=True):
+def _signals(monkeypatch, retro=True, tithi_index=29):
     monkeypatch.setattr(llm, "format_day_windows_for_rashifal", lambda *a, **k: "windows")
     planets = [SimpleNamespace(name="Mercury", retrograde=retro, rashi="Libra", nakshatra="Swati"),
                SimpleNamespace(name="Moon", retrograde=False, rashi="Libra", nakshatra="Vishakha")]
-    p = SimpleNamespace(weekday="Monday", day_lord="Moon", tithi_index=29,
+    p = SimpleNamespace(weekday="Monday", day_lord="Moon", tithi_index=tithi_index,
                         tithi_paksha="Krishna", tithi_name="Amavasya", tithi_significance="POPULAR")
     return llm._build_rashifal_day_signals(SimpleNamespace(planets=planets), "2026-11-09", "en", p, None)
 
@@ -51,7 +51,9 @@ def test_the_nakshatra_gets_no_invented_qualities(monkeypatch):
 
 
 def test_the_popular_tithi_character_never_reaches_the_reading(monkeypatch):
-    assert not any("POPULAR" in s for s in _signals(monkeypatch))
+    # Both branches: a day on Raman's avoid-list (Amavasya) and one with no caution (the 5th).
+    for idx in (29, 4):
+        assert not any("POPULAR" in s for s in _signals(monkeypatch, tithi_index=idx)), idx
 
 
 EV = {"Work": (1, 4), "Money": (1, 3), "Health": (0, 4), "Family": (2, 2),
