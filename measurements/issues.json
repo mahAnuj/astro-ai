@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-09T17:42:14Z",
+  "generated_at": "2026-11-09T21:44:06Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 114,
+  "open": 113,
   "with_ask": 39,
   "by_area": {
-    "UNCLASSIFIED": 41,
+    "UNCLASSIFIED": 40,
     "INFRA": 13,
     "REDESIGN": 10,
     "UI": 9,
@@ -30,14 +30,14 @@
   "by_type": {
     "untyped": 36,
     "enhancement": 23,
-    "bug": 21,
+    "bug": 20,
     "correctness": 13,
     "chore": 10,
     "design": 6,
     "ui": 5
   },
   "by_priority": {
-    "unset": 89,
+    "unset": 88,
     "medium": 16,
     "high": 9
   },
@@ -87,8 +87,8 @@
       "needs_evidence": false
     },
     {
-      "number": 818,
-      "title": "Natal cache may serve one visitor's name to another with identical birth data (suspected, found by #744)",
+      "number": 817,
+      "title": "Visitor name is in the server-rendered <title> of 8 routes, which gtag collects by default (found by #744)",
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
@@ -99,23 +99,8 @@
         "provenance:trusted",
         "qa:in-cycle"
       ],
-      "created": "2026-11-09T03:30:34Z",
-      "updated": "2026-11-09T17:40:27Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 817,
-      "title": "Visitor name is in the server-rendered <title> of 8 routes, which gtag collects by default (found by #744)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
       "created": "2026-11-09T03:30:21Z",
-      "updated": "2026-11-09T17:14:26Z",
+      "updated": "2026-11-09T18:15:11Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -546,10 +531,11 @@
       "labels": [
         "ui",
         "skill:ui-fixer",
+        "provenance:trusted",
         "needs-evidence"
       ],
       "created": "2026-10-29T23:50:30Z",
-      "updated": "2026-11-08T14:10:03Z",
+      "updated": "2026-11-09T21:25:30Z",
       "blocked": false,
       "needs_evidence": true
     },
