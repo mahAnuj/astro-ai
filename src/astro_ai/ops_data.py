@@ -397,9 +397,160 @@ def next_cycle_ist(now: datetime | None = None) -> datetime:
     return best.astimezone(IST)
 
 
+#: Days the per-day loop table shows, newest first.
+BY_DAY_LIMIT = 14
+
+
+def _by_day(rows: list[dict], now_ist: datetime | None = None,
+            limit: int = BY_DAY_LIMIT) -> list[dict]:
+    """One row per IST day: what the loop ran, what it produced, how long the
+    build lane sat idle. Replaces the cycle ribbon (2026-11-09).
+
+    WHY A TABLE, NOT THE RIBBON
+    ---------------------------
+    The ribbon placed each cycle on a 24 h axis against two dashed cron lines
+    (04:30 and 16:30 IST), built to show a cron firing LATE (#345, 2026-10-14).
+    By 2026-11-09 `agent-work` had six cron slots and finished cycles chain the
+    next one (`chain_cycle.py`), so most blocks had no slot to be late against
+    and the two lines it still drew were wrong. The owner could not read a
+    benefit off it. The question the page exists for is "is the loop earning
+    its time", and per-day counts answer that directly.
+
+    `shipped` splits into `shipped_loop` (the loop alone), `shipped_helped` (the
+    owner, or a session pushing for them, merged it or committed to it) and
+    `shipped_unread` (not yet known), from loop.json's `owner_helped`.
+
+    `build_cycles` excludes QA rounds (`kind == 'qa-round'`), which run in their
+    own lane. `idle_h` is the build lane's idle time: the day (only up to now,
+    for today) minus the union of build-cycle intervals clipped to the day, so
+    two overlapping runs are not double-counted. A row whose start cannot be
+    parsed is counted but contributes no busy time.
+    """
+    days: dict[str, dict] = {}
+    spans: dict[str, list[tuple[datetime, datetime]]] = {}
+    for r in rows:
+        d = r.get("date_ist")
+        if not d:
+            continue
+        day = days.setdefault(d, {"date": d, "build_cycles": 0, "qa_rounds": 0,
+                                  "shipped": 0, "shipped_loop": 0, "shipped_helped": 0,
+                                  "shipped_unread": 0, "pr_open": 0, "nothing": 0,
+                                  "failed": 0})
+        outcome = r.get("outcome")
+        if r.get("kind") == "qa-round":
+            day["qa_rounds"] += 1
+        else:
+            day["build_cycles"] += 1
+            started = _ist(r.get("started"))
+            if started is not None:
+                end = started + timedelta(minutes=float(r.get("minutes") or 0))
+                spans.setdefault(d, []).append((started, end))
+        if outcome == "shipped":
+            day["shipped"] += 1
+            # Who finished it (collect_loop_measurements.py `owner_helped`, 2026-11-09):
+            # the owner pushes and merges loop PRs routinely, and a "shipped" count
+            # that credited all of it to the loop overstated what the loop did alone.
+            helped = r.get("owner_helped")
+            key = ("shipped_helped" if helped is True else
+                   "shipped_loop" if helped is False else "shipped_unread")
+            day[key] += 1
+        elif outcome == "pr open":
+            day["pr_open"] += 1
+        elif outcome == "nothing":
+            day["nothing"] += 1
+        elif outcome in ("failed", "unknown"):
+            day["failed"] += 1
+    out = []
+    for d in sorted(days, reverse=True)[:limit]:
+        start = datetime.strptime(d, "%Y-%m-%d").replace(tzinfo=IST)
+        stop = start + timedelta(days=1)
+        if now_ist is not None and start <= now_ist < stop:
+            stop = now_ist
+        busy, cur = 0.0, None
+        for a, b in sorted((max(a, start), min(b, stop)) for a, b in spans.get(d, [])):
+            if b <= a:
+                continue
+            if cur is None or a > cur[1]:
+                if cur is not None:
+                    busy += (cur[1] - cur[0]).total_seconds()
+                cur = [a, b]
+            else:
+                cur[1] = max(cur[1], b)
+        if cur is not None:
+            busy += (cur[1] - cur[0]).total_seconds()
+        span = max((stop - start).total_seconds(), 0)
+        out.append({**days[d], "busy_h": round(busy / 3600, 1),
+                    "idle_h": round(max(span - busy, 0) / 3600, 1)})
+    return out
+
+
+
+#: Stack order, bottom up: results first, waste on top.
+_CHART_SEGS = (("shipped_loop", "loop", "shipped, loop alone"),
+               ("shipped_helped", "helped", "shipped, you helped"),
+               ("shipped_unread", "unread", "shipped, not read yet"),
+               ("pr_open", "open", "PR open"),
+               ("nothing", "nothing", "nothing"),
+               ("failed", "failed", "failed"))
+
+
+def _by_day_chart(by_day: list[dict], *, width: int = 700, plot_h: int = 110,
+                  strip_h: int = 18, gap: int = 2) -> dict | None:
+    """SVG geometry for the per-day chart (2026-11-09: the owner asked for a graph
+    instead of the table, to take less room). Computed here so the template holds
+    no arithmetic, the rule `_loop_view` already follows.
+
+    One column per day, oldest left. A column stacks the day's outcomes bottom up
+    in `_CHART_SEGS` order -- one count per BUILD cycle except `failed`, which also
+    counts failed QA rounds, as the table does. Under it a thin strip shows the
+    build lane's busy hours out of 24: a different measure, so it gets its own
+    track rather than a second axis. A 2px surface gap separates stacked segments.
+    """
+    if not by_day:
+        return None
+    days = list(reversed(by_day))
+    ymax = max(4, max(sum(d.get(k, 0) for k, _, _ in _CHART_SEGS) for d in days))
+    left, right = 26, 4
+    slot = (width - left - right) / len(days)
+    bar_w = max(min(slot * 0.62, 34), 6)
+    strip_top = plot_h + 32
+    cols = []
+    for i, d in enumerate(days):
+        x = left + i * slot + (slot - bar_w) / 2
+        y = plot_h
+        segs = []
+        for key, cls, name in _CHART_SEGS:
+            n = d.get(key, 0)
+            if not n:
+                continue
+            h = n / ymax * plot_h
+            y -= h
+            segs.append({"cls": cls, "name": name, "n": n, "x": round(x, 2),
+                         "y": round(y + gap / 2, 2), "w": round(bar_w, 2),
+                         "h": round(max(h - gap, 1), 2)})
+        busy = min(max(float(d.get("busy_h") or 0), 0), 24)
+        bh = busy / 24 * strip_h
+        unread = f", {d['shipped_unread']} not read yet" if d.get("shipped_unread") else ""
+        tip = (f"{d['date']}: {d.get('build_cycles', 0)} build cycles, "
+               f"{d.get('shipped', 0)} shipped ({d.get('shipped_helped', 0)} with your help{unread}), "
+               f"{d.get('pr_open', 0)} PR open, {d.get('nothing', 0)} nothing, "
+               f"{d.get('failed', 0)} failed, {d.get('qa_rounds', 0)} QA rounds; "
+               f"busy {d.get('busy_h', 0)} h, idle {d.get('idle_h', 0)} h")
+        cols.append({"date": d["date"], "label": d["date"][5:],
+                     "show_label": i % 2 == (len(days) - 1) % 2,
+                     "x": round(left + i * slot, 2), "slot": round(slot, 2),
+                     "cx": round(x + bar_w / 2, 2), "bar_x": round(x, 2), "bar_w": round(bar_w, 2),
+                     "segs": segs, "tip": tip,
+                     "busy_y": round(strip_top + strip_h - bh, 2), "busy_h": round(bh, 2)})
+    return {"w": width, "h": strip_top + strip_h + 4, "plot_h": plot_h, "left": left,
+            "ymax": ymax, "mid": ymax // 2, "mid_y": round(plot_h - (ymax // 2) / ymax * plot_h, 2),
+            "strip_top": strip_top, "strip_h": strip_h, "strip_mid": strip_top + strip_h / 2, "label_y": plot_h + 20, "cols": cols}
+
+
 def _loop_view(doc: dict | None, today_ist: str,
                live_today: dict | None = None,
-               *, fell_back: bool = False) -> dict:
+               *, fell_back: bool = False,
+               now_ist: datetime | None = None) -> dict:
     """Rows for the ribbon, plus the counts the tiles show.
 
     `started_ist_minutes` is minutes past IST midnight, which is what the
@@ -432,6 +583,7 @@ def _loop_view(doc: dict | None, today_ist: str,
         # exists to report.
         return {"ok": False, "rows": [], "generated_at": None,
                 "outcomes": {}, "attribution": {}, "days": [], "latest": None,
+                "by_day": [], "by_day_chart": None,
                 "today": [],
                 "today_live": live_today is not None,
                 "today_shipped": (live_today or {}).get("shipped", []),
@@ -503,6 +655,8 @@ def _loop_view(doc: dict | None, today_ist: str,
         "fell_back": fell_back,
         # Newest first in the file; the ribbon wants oldest-day at the bottom.
         "days": sorted({r["date_ist"] for r in rows if r["date_ist"]}, reverse=True),
+        "by_day": (by_day := _by_day(rows, now_ist)),
+        "by_day_chart": _by_day_chart(by_day),
         "latest": rows[0] if rows else None,
     }
 
@@ -1882,7 +2036,7 @@ def snapshot(now: datetime | None = None,
     # from one injected clock.
     day_start = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)
     live_today = _live_today(day_start.astimezone(timezone.utc)) if LIVE_TODAY else None
-    loop = _loop_view(loop_doc, today_ist, live_today,
+    loop = _loop_view(loop_doc, today_ist, live_today, now_ist=now_ist,
                       fell_back=LIVE_TODAY and live_today is None)
     issues = _issues_view(issues_doc, today_ist, live=live_doc is not None,
                           fell_back=LIVE_ISSUES and live_doc is None)
