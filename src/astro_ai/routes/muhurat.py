@@ -29,7 +29,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from astro_ai import notify
-from astro_ai.chart import compute_chart
+from astro_ai.chart import compute_chart, reading_today
 from astro_ai.routes.deps import _lang, templates
 from astro_ai.routes.llm_support import _fire_error_alert
 from astro_ai.session import load_collection, load_user
@@ -48,7 +48,6 @@ async def muhurat_landing(request: Request, event_slug: str) -> HTMLResponse:
     pre-selected to the event type. Slug (with hyphens) maps to EVENT_RULES key
     (with underscores) via replace.
     """
-    from datetime import date as _date
     from astro_ai.muhurat import EVENT_RULES, EVENT_LANDING
     # Accept both hyphenated URL slugs and underscored keys for robustness.
     event_key = event_slug.replace("-", "_")
@@ -63,7 +62,7 @@ async def muhurat_landing(request: Request, event_slug: str) -> HTMLResponse:
         {"landing": landing, "event_key": event_key,
          "event_label": rules["label"],
          "prefill_city": prefill_city,
-         "prefill_start": _date.today().isoformat(),
+         "prefill_start": reading_today().isoformat(),
          "has_saved_chart": saved is not None,
          "lang": _lang(request)},
     )
@@ -75,7 +74,6 @@ async def muhurat_finder_form(request: Request) -> HTMLResponse:
     personal-chart matching (Tara Bala + Chandra Bala + Sade Sati + Dasha
     caution when a saved chart is in session).
     """
-    from datetime import date as _date
     from astro_ai.muhurat import EVENT_RULES
     saved = load_collection(request).active
     prefill_city = saved.birth_place if saved else ""
@@ -84,7 +82,7 @@ async def muhurat_finder_form(request: Request) -> HTMLResponse:
         request, "muhurat_finder.html",
         {"candidates": None, "error": None, "lang": _lang(request),
          "prefill_city": prefill_city,
-         "prefill_start": _date.today().isoformat(),
+         "prefill_start": reading_today().isoformat(),
          "event_types": event_types,
          "selected_event": "vivah",
          "has_saved_chart": saved is not None,

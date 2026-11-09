@@ -203,9 +203,16 @@ def test_query_string_and_hash_never_reach_ga4(tmp_path):
     ev = _events(out)
     assert [e[3]["to_path"] for e in ev] == ["/kundli", "/ask"]
     assert all(e[3]["from_path"] == "/learn/manglik-dosh/" for e in ev)
-    blob = json.dumps(out["calls"])
+    # #528: this PAGE url carries `q`, so analytics.js now `set`s a q-free page_location
+    # (utm_* is kept on purpose: GA4 attributes campaigns from it). That call describes the
+    # page, not the clicked link, so it is checked on its own; every other call must still
+    # carry nothing from the link or the page's query string.
+    sets = [c for c in out["calls"] if c[0] == "gtag" and c[1] == "set"]
+    assert [c[2]["page_location"] for c in sets] == [ORIGIN + "/learn/manglik-dosh/?utm_source=x"]
+    blob = json.dumps([c for c in out["calls"] if c not in sets])
     for leak in ("name=", "Asha", "1990", "section", "utm_", "private", "ctx=", "#", "?"):
         assert leak not in blob, f"{leak!r} reached an analytics call: {blob}"
+    assert "private" not in json.dumps(sets)
 
 
 def test_only_the_two_paths_and_the_transport_option_are_sent(tmp_path):
