@@ -223,23 +223,6 @@ jobs:
           git config user.name  "shubhagya-agent"
           git config user.email "agent@users.noreply.github.com"
 
-      # A cycle longer than an hour outlives the ONE claude[bot] token the
-      # action mints (2026-11-09). On #804 (run 42531382900, 1h46m) the cycle
-      # could not push or post a QA verdict after ~23:40; the rescue step then
-      # pushed its commits with github.token and GitHub held their checks for
-      # a human. These wrappers put `git` and `gh` on PATH ahead of the real
-      # ones and re-mint the SAME claude[bot] token through the same OIDC
-      # exchange the action uses, so identity, scopes and every gate that
-      # trusts claude[bot]'s verdicts are unchanged. Copied OUT of the working
-      # tree, so a cycle editing scripts/ cannot change what this job runs.
-      # Inert outside the agent step: they act only when CLAUDE_TOKEN_REFRESH=1.
-      - name: Install the token refresher
-        run: |
-          bin="$RUNNER_TEMP/claude-token-bin"
-          mkdir -p "$bin"
-          cp scripts/ci/token-wrappers/git scripts/ci/token-wrappers/gh scripts/claude_token.py "$bin/"
-          chmod 0755 "$bin/git" "$bin/gh"
-          echo "$bin" >> "$GITHUB_PATH"
 
 
       # Plan from the analyst's latest run rather than re-deriving it. Falls
@@ -419,8 +402,6 @@ jobs:
         env:
           GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
           GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
-          # Turns on the git/gh wrappers installed above, for this step only.
-          CLAUDE_TOKEN_REFRESH: "1"
 
       # A cycle that dies on quota leaves a branch behind. Say so on the run,
       # because a silent half-finished branch is how GROWTH_LOG.md stopped for
