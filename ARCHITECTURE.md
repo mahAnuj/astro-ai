@@ -250,6 +250,21 @@ reading" and silently meant English.
   It is an **unkeyed fingerprint, not a secret**: the input space is small and it is a GCS
   path component. Never put it in the events log or a Telegram alert; `identity.identity_key`
   (keyed HMAC, #255) is the one that may leave the app.
+- **`fingerprint_name` (#818)** — the seeker's NAME as a key segment, `n=<12 hex>`, or `anon` when
+  blank. `fingerprint_chart` leaves the name out on purpose (twins and repeat visits share a
+  reading), but the natal, outlook, today and matching prompts all send it and may use it in the
+  prose, so a key without it served one visitor's name to another. Normalised (NFC, strip,
+  casefold, whitespace collapsed) so one person's spellings are one generation. Where it sits:
+  natal `natal:{chart}:n={name}:{lang}:{prompt}` and the blob `llm/natal/{lang}/{prompt}/{chart}.{name}.txt`
+  (both built by one helper, `kundli._natal_cache_keys`, used by the render and the snapshot path);
+  outlook and today, one `n=` segment after the chart; matching, each person's name hash attached
+  to THAT person's chart fingerprint before the sort, so swapping the two people still hits.
+  `/dasha`, `/ask` and `/rashifal` do not send the name and are unchanged. The old key shapes are
+  never built or read, so existing entries are orphaned rather than invalidated (no
+  `PROMPT_LOGIC_VERSION` bump, which would also regenerate rashifal and daily against the same
+  daily token ceiling). The hash is unsalted: the bucket already holds the name in plaintext inside
+  the blob. Cost: 0 added tokens per call; a one-off regeneration of each returning visitor's natal
+  reading. `tests/test_cache_name_isolation.py`.
 - `fingerprint_prompt` — hashes the prompt **file** plus `PROMPT_LOGIC_VERSION`.
 - **`PROMPT_LOGIC_VERSION` is the manual lever.** The file hash cannot see changes to the
   Python that *assembles* the user message. Bump it whenever assembly logic changes.
@@ -986,13 +1001,16 @@ Dated, with the evidence. **Check here before proposing a change.**
   client never goes through either, and the sweep scans only `astro_ai*` loggers (httpx's own
   client log names the URL too, which is the harness talking to itself). `privacy.html` says
   operational logs are kept "a few weeks" and does not say they hold the question.
-- **The natal reading cache can serve one visitor's name to another.** `prompts/natal.txt:59`
-  allows "the seeker's NAME, used naturally", and `cache.fingerprint_chart` hashes date, time and
-  place only ("twins share cached readings"), so the durable blob `llm/natal/*`, kept indefinitely,
-  can hold one visitor's name inside prose served to a different visitor with identical birth
-  data. `privacy.html` says the cached text "can include the name you entered" but not that it is
-  served to anyone else. **Read in code, not executed**: a stubbed LLM cannot show it. Not decided
-  here.
+- **Fixed (#818): the LLM cache keys now carry the visitor's name.** `prompts/natal.txt:59`
+  allows "the seeker's NAME, used naturally" and `cache.fingerprint_chart` hashes date, time and
+  place only, so the durable blob `llm/natal/*`, kept indefinitely, could hold one visitor's name
+  inside prose served to a different visitor with identical birth data; the outlook, today and
+  matching prompts carry the name too, within one instance's lifetime. See "Cache keying for LLM
+  output". **Still true:** blobs written under the old path shape stay in the bucket unread
+  (`storage.py` cannot list, and deleting them is the owner's call), and `privacy.html` still
+  says the cached text "can include the name you entered". Adjacent and NOT fixed: `/ask` with
+  `context=numerology` feeds the saved name to `numerology.compute`, so another visitor's
+  name-derived numbers can be served from `_ask_cache_key`, which has no name segment.
 - **What the egress sweep cannot see (#744).** It checks the routes it drives with the values it
   plants. A NEW caller of an existing sink, or a new LLM payload builder, is invisible until a
   scenario is added (the design's optional AST ledger was not built). The failure path of

@@ -113,8 +113,13 @@ async def matching_result(
     llm_secs: list[float | None] = [None]
     if os.environ.get("OPENAI_API_KEY"):
         try:
-            g_fp = cache.fingerprint_chart(g_birth_date, g_birth_time, g_birth_place)
-            b_fp = cache.fingerprint_chart(b_birth_date, b_birth_time, b_birth_place)
+            # Each person's name is attached to THEIR chart before the sort, so
+            # both names reach the key (the prompt names GROOM and BRIDE, #818)
+            # and swapping the two people still hits the same entry.
+            g_fp = (cache.fingerprint_chart(g_birth_date, g_birth_time, g_birth_place)
+                    + "." + cache.fingerprint_name(g_name))
+            b_fp = (cache.fingerprint_chart(b_birth_date, b_birth_time, b_birth_place)
+                    + "." + cache.fingerprint_name(b_name))
             # Sort so the order of the two people doesn't matter for cache hits.
             pair_key = ":".join(sorted([g_fp, b_fp]))
             prompt_fp = cache.fingerprint_prompt(MATCHING_PROMPT_PATH)

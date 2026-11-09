@@ -33,6 +33,7 @@ import hashlib
 import os
 import sqlite3
 import threading
+import unicodedata
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -103,6 +104,33 @@ def fingerprint_chart(birth_date: str, birth_time: str, birth_place: str) -> str
     """
     raw = f"{birth_date}|{birth_time}|{birth_place.lower().strip()}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
+def fingerprint_name(name: str | None) -> str:
+    """Stable 12-char hash of the seeker's NAME, or "anon" when there is none.
+
+    A cache-key segment for every route whose prompt carries the name (#818).
+    `fingerprint_chart` deliberately leaves the name out so twins and repeat
+    visits share a reading, but the natal, outlook, today and matching prompts
+    all send `Name: ...` / `GROOM:` / `BRIDE:` and tell the model it may address
+    the seeker by it -- so a reading generated for one name was served, verbatim,
+    to anyone else with the same date, time and place. For natal that is a GCS
+    blob that never expires and is shared by every instance.
+
+    Normalised (NFC, strip, casefold, runs of whitespace collapsed) so the same
+    person typing "asha " and "Asha" is one reading, not two paid generations.
+    A blank name is the constant "anon", never a hash of the empty string, so it
+    reads as a different kind of key at a glance and cannot collide with a name.
+
+    Unsalted on purpose: the bucket already holds this name in plaintext inside
+    the blob, so the hash in a path adds no exposure. `identity.identity_key` is
+    not used because its HMAC rotates with the cookie secret and nothing durable
+    may be keyed by that.
+    """
+    norm = " ".join(unicodedata.normalize("NFC", name or "").casefold().split())
+    if not norm:
+        return "anon"
+    return hashlib.sha256(norm.encode("utf-8")).hexdigest()[:12]
 
 
 # Manual invalidation lever. This token is prefixed onto every value
