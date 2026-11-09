@@ -961,6 +961,30 @@ jobs:
             echo "::warning::could not dispatch verify-production — #$PR_NUMBER is merged and deploying, but NOTHING will assert against production and its issue will not auto-close. Dispatch it by hand: gh workflow run verify-production.yml --ref main"
           fi
 
+      # GATE THE MERGE RESULT ON `main` (2026-11-09). This job merges with
+      # GITHUB_TOKEN, and a push made with that token starts no workflow -- so
+      # `pr-gates`' `push: branches: [main]` leg (#461) never ran on a loop
+      # merge, and `main-red-report.yml`, which listens only to `main` runs of
+      # `pr-gates`, had nothing to report. Measured on #797 (merged 17:28Z
+      # 2026-11-08): its merge commit carries no `PR gates` run at all, `main`
+      # went red from 18:30Z that evening on a date-dependent test, and seven
+      # open PRs failed on it overnight while the sentinel stayed closed.
+      # `workflow_dispatch` is the documented exception to the recursion guard
+      # (see "Verify production after the merge" above); `actions: write` is
+      # already held. The reporter accepts a dispatched `main` run as well as a
+      # pushed one.
+      - name: Gate the merge result on main
+        if: steps.boundary.outputs.ok == 'true' && success()
+        continue-on-error: true
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          if gh workflow run pr-gates.yml --repo "$GH_REPO" --ref main; then
+            echo "::notice::merged #$PR_NUMBER; dispatched pr-gates on main so the merge result is gated"
+          else
+            echo "::warning::merged #$PR_NUMBER but could not dispatch pr-gates on main; the daily scheduled run will gate it"
+          fi
+
       # SWEEP AGAIN AFTER A MERGE (2026-11-07). The sweep takes ONE PR per run
       # and the */30 cron is throttled by GitHub to roughly every 6 hours, so
       # eligible PRs merged at one per ~6h. Measured 2026-11-06/07: #749 and

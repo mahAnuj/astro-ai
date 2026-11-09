@@ -75,6 +75,13 @@ permissions:
 
 jobs:
   report:
+    # `schedule` and `workflow_dispatch` count too (2026-11-09): agent-merge
+    # merges with GITHUB_TOKEN, whose pushes start no workflow, so it now
+    # DISPATCHES pr-gates on `main` after each merge, and pr-gates also sweeps
+    # `main` daily. Before this, no loop merge was ever reported on (#797).
+    # A dispatched run on any other branch (#322's fallback) is still excluded
+    # by `head_branch == 'main'`.
+    #
     # `event == 'push'` and `head_branch == 'main'`, because only the `main` leg
     # of pr-gates asserts against the merge result. A PR run going red is
     # already reported on the PR and `agent-merge` already refuses it; filing an
@@ -96,7 +103,7 @@ jobs:
     # green path is a ~10s no-op when no sentinel is open, which is the common
     # case.
     if: >-
-      github.event.workflow_run.event == 'push' &&
+      contains(fromJSON('["push", "schedule", "workflow_dispatch"]'), github.event.workflow_run.event) &&
       github.event.workflow_run.head_branch == 'main' &&
       github.event.workflow_run.conclusion != 'skipped'
     runs-on: ubuntu-latest
