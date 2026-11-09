@@ -368,6 +368,21 @@ jobs:
           python3 scripts/collect_claude_usage.py --repo "$GH_REPO" --out measurements/claude_usage.json \
             || echo "::warning::Claude usage not refreshed; measurements/claude_usage.json is the previous one"
 
+      # 2026-11-09: which tests fail on the open PRs' gates. One test red on two
+      # PRs with unrelated diffs is a defect on `main`; the detector raises
+      # `main-red-suspected` from this file and the lessons step below carries
+      # it. #797 left seven PRs red on one test overnight and nothing linked
+      # them. Actions API and the open-PR list only -- scopes this job holds.
+      # BEFORE "Collect lessons", which runs the detector over these files.
+      - name: Collect gate failures
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/collect_gate_failures.py --repo "$GH_REPO" --out measurements/gate_failures.json \
+            || echo "::warning::gate failures not refreshed; measurements/gate_failures.json is the previous one"
+
       # The lessons ledger (owner, 2026-11-06: agents should "learn what they did
       # but not helped" and "learn from other competitors"): our QA FAILs by theme,
       # reverts, failed production checks, the analyst's verdicts, competitor
