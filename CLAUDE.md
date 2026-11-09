@@ -888,6 +888,14 @@ is read on demand. Merging them would raise the cost of every task to help a few
 **Update it in the same commit as the change it describes.** A decision log that lags
 reads as current and is not — the same drift this file warns about elsewhere.
 
+**A new DECISION goes in its own file, `docs/decisions/YYYY-MM-DD-<slug>.md` — never a new row
+in `ARCHITECTURE.md` §10 (frozen after 2026-11-09).** Every PR used to append a row to that one
+table, so any two open PRs conflicted on it by construction: #804, #809, #810, #811 and #812
+each went conflicting on it on 2026-11-09 alone, and each conflict cost a `main` merge and a
+fresh QA round. Same fix as `scripts/mutations/`. The format is in `docs/decisions/README.md`;
+`tests/test_decision_log_frozen.py` enforces it. ARCHITECTURE.md's prose sections (module map,
+cache layers) are still edited in place when they change — those are rarely touched by two PRs.
+
 ## The agent team
 
 `.claude/agents/` holds **15** roles — the count said "seven" until 2026-10-10 while fifteen files sat in the directory, which is the same stale-number defect this file warns about elsewhere. The seven below are the ones an implementation task reaches for; the rest (`analyst`, `chief`, `conversion-lead`, `frontend-engineer`, `infra-lead`, `numerologist`, `qa-lead`, `steward`) are driven by their own scheduled loops.
