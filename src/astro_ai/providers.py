@@ -638,7 +638,9 @@ _TPM_MARGIN = 600
 # half is a reserve, not a cap. Calibrated against tiktoken by
 # tests/test_token_bucket.py::test_the_request_estimate_*.
 _SCAFFOLD_TOKENS = 250
-_COMPLETION_RESERVE: dict[str, int] = {"rashifal_single": 500}
+# rashifal_single 500 -> 750 (2026-11-09): a reading now ends with eight labelled
+# lines, ~110 more words, and Devanagari costs several tokens a word.
+_COMPLETION_RESERVE: dict[str, int] = {"rashifal_single": 750}
 _COMPLETION_RESERVE_DEFAULT = 800
 
 

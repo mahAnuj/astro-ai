@@ -200,8 +200,14 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     # above. If this row grows again, re-measure the FULL REQUEST, not the
     # system prompt -- the bucket is what bites, and this number is only a
     # tripwire in front of it.
-    "rashifal_single":          (2874, 3350, "2026-10-24",
-                                 "hi 3006 + 10%; sent on a cache miss of "
+    # RAISED 2026-11-09 (owner: lines for "students, married, in relationship,
+    # bachelors looking to marry", and AstroSage's coverage): the reading now
+    # ends with eight labelled lines, and the prompt carries their format, the
+    # never-invent rule and the plain-language rules. Measured en 3,156 / hi
+    # 3,288; the full request still reserves hi 6,702 of the 7,400 bucket.
+    "rashifal_single":          (3156, 3650, "2026-11-09",
+                                 "hi 3288 + 10%; was 2874 (2026-10-24) before the "
+                                 "eight reader lines; sent on a cache miss of "
                                  "/rashifal/{rashi}, a free-tier TPD path, and "
                                  "on every Groq fallback day"),
     "dasha_deep_dive":          (944, 1200, _D, "hi 1076 + 10%"),
@@ -228,8 +234,10 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     # hi, each from its own language's message. This row is the tripwire in
     # front of it; if it grows again, read the printed figure rather than this
     # comment.
-    "rashifal_single+payload":  (4133, 4600, "2026-10-25",
-                                 "hi 4332 + 6%; the per-rashi user message, "
+    "rashifal_single+payload":  (4489, 5000, "2026-11-09",
+                                 "hi 4688 + 6%; RAISED 2026-11-09 from 4133 for "
+                                 "the evidence of the eight reader lines (owner's "
+                                 "request); the per-rashi user message, "
                                  "which carries the day's computed verdicts. "
                                  "RAISED from 3,997 (recorded 2026-10-24) "
                                  "because that figure came from a hand-written "

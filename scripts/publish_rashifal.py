@@ -45,7 +45,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from astro_ai import storage                                              # noqa: E402
-from astro_ai.rashifal_quality import NAKSHATRAS, check_reading, opening_repeats
+from astro_ai.rashifal_quality import (NAKSHATRAS, check_reading, missing_reader_lines,
+                                      opening_repeats)
 from astro_ai.rashifal_derive import (combined_keys, parse_sectioned_reading,  # noqa: E402
                                       sections_by_rashi)
 
@@ -53,7 +54,9 @@ from astro_ai.rashifal_derive import (combined_keys, parse_sectioned_reading,  #
 # instruction: a reading at 118 words is a style miss, not a reason to drop the
 # whole day back to Groq. It is narrow enough to catch a truncated generation
 # (the real failure, and what an interrupted job produces) and a runaway one.
-_MIN_WORDS, _MAX_WORDS = 90, 220
+# 2026-11-09: raised from 220 for the eight labelled lines (8 x <20 words) that
+# now follow the 80-130 word reading.
+_MIN_WORDS, _MAX_WORDS = 90, 330
 
 # `Rahu` is matched only when NOT followed by `Kaal`, so the window ban below
 # reports it once rather than twice.
@@ -142,6 +145,10 @@ def validate(text: str, day: str = "") -> list[str]:
     for title, body in sections:
         name = title.split("/")[0].strip() or title.strip()
         fails += grounding_fails(title, body, tithi, nakshatra)
+        gone = missing_reader_lines(body)
+        if gone:
+            fails.append(f"{name}: missing the line(s) {', '.join(gone)} -- every reading ends "
+                         f"with the eight labelled lines the prompt lists")
         words = len(body.split())
         if not _MIN_WORDS <= words <= _MAX_WORDS:
             fails.append(f"{name}: {words} words, outside {_MIN_WORDS}-{_MAX_WORDS}")

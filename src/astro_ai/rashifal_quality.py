@@ -41,7 +41,8 @@ from __future__ import annotations
 
 import re
 
-__all__ = ["check_reading", "opening_repeats", "GROUNDING_RULES", "STYLE_RULES",
+__all__ = ["check_reading", "opening_repeats", "missing_reader_lines", "READER_LABELS",
+           "GROUNDING_RULES", "STYLE_RULES",
            "TITHIS", "NAKSHATRAS"]
 
 TITHIS: tuple[str, ...] = (
@@ -143,6 +144,31 @@ def check_reading(body: str, *, tithi: str = "", nakshatra: str = "") -> dict:
     except Exception:  # noqa: BLE001 - see docstring
         return {"style": style, "grounding": grounding}
     return {"style": style, "grounding": grounding}
+
+
+# --- The eight lines under the reading (owner, 2026-11-09) -------------------
+#
+# Every reading ends with one line per life area and reader group, in a fixed
+# order, so a reader can find "Students" or "Married" on any day. The prompt
+# asks for them; this is what makes it more than a request on the nightly path.
+READER_LABELS: dict[str, tuple[str, ...]] = {
+    "en": ("Work", "Money", "Health", "Family", "In a relationship", "Married",
+           "Students", "Single and looking to marry"),
+    "hi": ("काम", "पैसा", "सेहत", "परिवार", "रिश्ते में", "शादीशुदा", "विद्यार्थी",
+           "शादी की तलाश में"),
+}
+
+
+def missing_reader_lines(body: str) -> list[str]:
+    """Labels of the eight lines the body lacks, in whichever language it is
+    closer to complete in. [] when every line of one language is present."""
+    best: list[str] | None = None
+    for labels in READER_LABELS.values():
+        missing = [l for l in labels
+                   if not re.search(rf"^\s*{re.escape(l)}\s*:", body or "", re.M)]
+        if best is None or len(missing) < len(best):
+            best = missing
+    return best or []
 
 
 # --- Cross-day check (#513) --------------------------------------------------

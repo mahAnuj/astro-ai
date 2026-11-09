@@ -87,7 +87,9 @@ Start with EXACTLY this line, no preamble before it (matching the rashi name giv
 
 ## {Rashi English} / {Rashi Sanskrit}
 
-Then 110-170 words of substantive content, as plain flowing paragraphs — no sub-headings, no bullets, no labels, no markdown.
+Then 80-130 words of substantive content, as plain flowing paragraphs — no sub-headings, no bullets, no labels, no markdown. The SHAPE FOR TODAY governs these paragraphs only.
+
+Then a blank line and EXACTLY eight lines, in this order, each on its own line and starting with its label and a colon: Work, Money, Health, Family, In a relationship, Married, Students, Single and looking to marry. In Hindi use these labels: काम, पैसा, सेहत, परिवार, रिश्ते में, शादीशुदा, विद्यार्थी, शादी की तलाश में. After each label write one or two short sentences, under 20 words, that agree with that line's evidence in your user message. Speak to the group by its label; never assume the reader belongs to it. Never predict an exam result or a wedding.
 
 THE SHAPE IS NOT FIXED, AND THIS IS THE RULE THAT MATTERS MOST. Your user message carries a SHAPE FOR TODAY. Follow it. It tells you how many paragraphs, which concern leads, and how to end. It CHANGES every day and differs between rashis on the same day, deliberately — a reader who opens this email daily sees the shape before they read a word of it, and for 21 measured days every reading had the same one.
 

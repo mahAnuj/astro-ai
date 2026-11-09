@@ -28,6 +28,7 @@ _log = logging.getLogger(__name__)
 from astro_ai import rashifal_quality
 from astro_ai.chart import (
     area_ratings_for_rashi as chart_area_ratings,
+    reader_groups_for_rashi as chart_reader_groups,
     gochara_for_rashi,
     remedy_for_rashi as chart_remedy,
     Chart,
@@ -1044,6 +1045,28 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
             f"  Your reading must not contradict these. Do not promise a good "
             f"day at work on a low Work count, or trouble at home on a high one. "
             f"Weight the reading toward whichever area is most extreme.\n")
+    # THE EIGHT LINES UNDER THE READING (owner, 2026-11-09): one per life area
+    # and per reader group, each with the karaka verdicts it must agree with.
+    # The three partner lines share the 7th house evidence, so it is listed once.
+    lines_block = ""
+    try:
+        groups = {g["area"]: g for g in (areas or []) + chart_reader_groups(rashi_index, transit)}
+    except Exception:  # noqa: BLE001 - a missing group must not fail the call
+        groups = {}
+
+    def evidence(g):
+        sup = ", ".join(f"{k['planet']} ({_HOUSE_ORD[k['house']]})" for k in g["karakas"]
+                        if k["verdict"] == "favourable") or "none"
+        ag = ", ".join(f"{k['planet']} ({_HOUSE_ORD[k['house']]})" for k in g["karakas"]
+                       if k["verdict"] != "favourable") or "none"
+        return f"supporting {sup}; against {ag}"
+    rows = [(label, groups.get(key)) for label, key in (
+        ("Work", "Work"), ("Money", "Money"), ("Health", "Health"), ("Family", "Family"),
+        ("In a relationship, Married, Single and looking to marry", "Relationships"),
+        ("Students", "Students"))]
+    if all(g for _, g in rows):
+        lines_block = ("- EVIDENCE FOR THE EIGHT LINES (each line must agree with its own):\n"
+                       + "".join(f"  {label}: {evidence(g)}\n" for label, g in rows))
     # The remedy is rendered as its own line, so the prose must not repeat it --
     # the day colour taught that lesson (#514): a duplicate in prose reads as
     # filler and, when invented, contradicts the computed field.
@@ -1083,6 +1106,7 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
         f"- Saturn, Jupiter and Rahu weigh most (classical); the Moon is the part "
         f"that changes every day.\n"
         f"{areas_line}"
+        f"{lines_block}"
         f"{remedy_line}"
         f"- {tone}\n"
         f"Do not name any planet in your prose — describe the qualities, as the "

@@ -56,3 +56,59 @@ def test_the_gate_leaves_generic_people_alone():
                  "If a conversation has been left hanging, today suits finishing it.",
                  "Someone close to you may need a quieter word."):
         assert not any("invents" in s for s in check_reading(body)["style"]), body
+
+
+# --- the eight reader lines (owner, 2026-11-09) ------------------------------
+
+from datetime import datetime, timezone  # noqa: E402
+
+from astro_ai import chart  # noqa: E402
+from astro_ai.rashifal_quality import READER_LABELS, missing_reader_lines  # noqa: E402
+
+
+def _transit():
+    natal = chart.compute_chart("1990-01-01", "06:00", "Delhi, India")
+    return chart.compute_transit_snapshot(natal, when=datetime(2026, 11, 9, 6, 30, tzinfo=timezone.utc))
+
+
+def test_family_and_students_read_their_sourced_karakas():
+    groups = {g["area"]: [k["planet"] for k in g["karakas"]]
+              for g in chart.reader_groups_for_rashi(0, _transit())}
+    assert groups == {"Family": ["Moon", "Venus"], "Students": ["Mercury", "Jupiter"]}
+
+
+def test_the_message_carries_evidence_for_every_line():
+    msg = llm._gochara_block(0, _transit())
+    for label in ("Work:", "Money:", "Health:", "Family:", "Students:",
+                  "In a relationship, Married, Single and looking to marry:"):
+        assert f"  {label} supporting" in msg, label
+
+
+def test_the_prompt_asks_for_the_eight_lines_in_both_languages():
+    text = RASHIFAL_PROMPT_PATH.read_text()
+    for lang in ("en", "hi"):
+        for label in READER_LABELS[lang]:
+            assert label in text, label
+    assert "Never predict an exam result or a wedding" in text
+
+
+def test_the_gate_finds_a_missing_line_in_either_language():
+    en = "\n".join(f"{l}: A plain line." for l in READER_LABELS["en"])
+    hi = "\n".join(f"{l}: एक सरल पंक्ति।" for l in READER_LABELS["hi"])
+    assert missing_reader_lines("Some prose.\n\n" + en) == []
+    assert missing_reader_lines("Some prose.\n\n" + hi) == []
+    assert missing_reader_lines(en.replace("Students:", "Learners:")) == ["Students"]
+
+
+def test_the_publish_gate_refuses_a_reading_without_its_lines():
+    import importlib.util, pathlib, sys as _sys
+    root = pathlib.Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location("publish_rashifal", root / "scripts" / "publish_rashifal.py")
+    pr = importlib.util.module_from_spec(spec); _sys.modules["publish_rashifal"] = pr
+    spec.loader.exec_module(pr)
+    prose = " ".join(["Today is a quiet day and suits finishing work already started."] * 10)
+    lines = "\n".join(f"{l}: A plain line for today." for l in READER_LABELS["en"])
+    doc_ok = "\n\n".join(f"## {a['en']} / {a['sa']}\n\n{prose}\n\n{lines}" for a in llm._RASHI_ANCHORS)
+    doc_bad = doc_ok.replace("Students: A plain line for today.", "", 1)
+    assert not [f for f in pr.validate(doc_ok) if "missing the line" in f]
+    assert any("missing the line(s) Students" in f for f in pr.validate(doc_bad))
