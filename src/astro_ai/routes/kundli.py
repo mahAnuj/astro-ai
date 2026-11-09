@@ -66,19 +66,32 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def _natal_durable_key(*, lang: str, prompt_fp: str, chart_fp: str) -> str:
-    """GCS blob path for a natal reading — the durable half of `_cached`.
+def _natal_cache_keys(details: BirthDetails, *, lang: str) -> tuple[str, str]:
+    """`(cache_key, durable_key)` for a natal reading: the SQLite key and the GCS
+    blob path, built together so the two tiers can never disagree about what a
+    given reading is.
 
-    Same three components as the SQLite `cache_key`, so the two tiers can
-    never disagree about what a given reading is. Built here rather than
-    inline at each call site because there are two of them (the render path
-    and the snapshot path) and a divergence would be silent: the snapshot
-    would simply regenerate a reading the render path had already paid for.
+    One helper for the render path and the snapshot path because a divergence
+    would be silent: the snapshot would simply regenerate a reading the render
+    path had already paid for -- or, worse after #818, serve one generated for a
+    different name. It used to be two restated key strings plus a durable-path helper.
+
+    The NAME is a key segment (#818). The prompt sends `Name: ...` and the model
+    may address the seeker by it, but `fingerprint_chart` hashes birth data only,
+    so one visitor's reading used to be served to anyone with the same date, time
+    and place -- from a GCS blob that never expires. A key that omitted the name
+    still hit, silently, which is why nothing flagged it.
 
     Path-shaped for a human reading the bucket in the console; nothing ever
     lists it (`storage.py` has no prefix listing) so the shape is cosmetic.
     """
-    return f"llm/natal/{lang}/{prompt_fp}/{chart_fp}.txt"
+    chart_fp = cache.fingerprint_chart(details.birth_date, details.birth_time, details.birth_place)
+    name_fp = cache.fingerprint_name(details.name)
+    prompt_fp = cache.fingerprint_prompt(PROMPT_PATH)
+    return (
+        f"natal:{chart_fp}:n={name_fp}:{lang}:{prompt_fp}",
+        f"llm/natal/{lang}/{prompt_fp}/{chart_fp}.{name_fp}.txt",
+    )
 
 
 @router.post("/reading")
@@ -202,9 +215,7 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     life_chapters = compute_life_chapters(chart)
     dasha_state = compute_dasha_state(chart)
     lang = _lang(request)
-    chart_fp = cache.fingerprint_chart(details.birth_date, details.birth_time, details.birth_place)
-    prompt_fp = cache.fingerprint_prompt(PROMPT_PATH)
-    cache_key = f"natal:{chart_fp}:{lang}:{prompt_fp}"
+    cache_key, durable_key = _natal_cache_keys(details, lang=lang)
     # Whether this render counts as a fresh generation (worth notifying
     # about) or a re-view of an already-generated reading (silent — the user
     # is refreshing or navigating back to their chart).
@@ -236,8 +247,7 @@ async def _render_natal_for(request: Request, details: BirthDetails,
         reading_text = _cached(
             cache_key, route="natal", lang=lang, ttl_days=None,
             call_fn=_generate,
-            durable_key=_natal_durable_key(
-                lang=lang, prompt_fp=prompt_fp, chart_fp=chart_fp),
+            durable_key=durable_key,
         )
     except Exception as err:
         log.exception("natal LLM generation failed")
@@ -564,9 +574,7 @@ async def create_kundli_snapshot(request: Request) -> JSONResponse:
             flags = compute_vedic_flags(chart)
             life_chapters = compute_life_chapters(chart)
             dasha_state = compute_dasha_state(chart)
-            chart_fp = cache.fingerprint_chart(details.birth_date, details.birth_time, details.birth_place)
-            prompt_fp = cache.fingerprint_prompt(PROMPT_PATH)
-            cache_key = f"natal:{chart_fp}:{lang}:{prompt_fp}"
+            cache_key, durable_key = _natal_cache_keys(details, lang=lang)
             reading_text = _cached(
                 cache_key, route="natal", lang=lang, ttl_days=None,
                 call_fn=lambda: generate_reading(
@@ -575,8 +583,7 @@ async def create_kundli_snapshot(request: Request) -> JSONResponse:
                 ),
                 # Same durable blob the render path writes — a seeker sharing a
                 # reading they already viewed must not pay to generate it again.
-                durable_key=_natal_durable_key(
-                    lang=lang, prompt_fp=prompt_fp, chart_fp=chart_fp),
+                durable_key=durable_key,
             )
         except Exception as err:  # noqa: BLE001 — snapshot can't be built without a reading
             log.exception("snapshot: reading generation failed")

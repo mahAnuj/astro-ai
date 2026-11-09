@@ -152,7 +152,9 @@ async def _render_outlook(
     else:
         bucket = reading_today().strftime("%Y-%m")  # year-month
         ttl = 30
-    cache_key = f"{active_page}:{chart_fp}:{bucket}:{lang}:{prompt_fp}"
+    # The name is in the prompt, so it is in the key (#818).
+    name_fp = cache.fingerprint_name(saved_details.name)
+    cache_key = f"{active_page}:{chart_fp}:n={name_fp}:{bucket}:{lang}:{prompt_fp}"
     try:
         reading_text = _cached(
             cache_key, route=active_page, lang=lang, ttl_days=ttl,

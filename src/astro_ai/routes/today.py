@@ -85,7 +85,9 @@ async def today(request: Request) -> HTMLResponse:
         saved_details.birth_date, saved_details.birth_time, saved_details.birth_place
     )
     prompt_fp = cache.fingerprint_prompt(DAILY_PROMPT_PATH)
-    cache_key = f"today:{chart_fp}:{reading_today().isoformat()}:{lang}:{prompt_fp}"
+    # The name is in the prompt, so it is in the key (#818).
+    name_fp = cache.fingerprint_name(saved_details.name)
+    cache_key = f"today:{chart_fp}:n={name_fp}:{reading_today().isoformat()}:{lang}:{prompt_fp}"
     try:
         reading_text = _cached(
             cache_key, route="today", lang=lang, ttl_days=1,
