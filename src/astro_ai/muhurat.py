@@ -97,13 +97,22 @@ _TARA_BALA_NAMES = {
 }
 
 # Chandra Bala (Moon strength): count from user's natal Moon rashi to
-# transit-day Moon rashi (1..12). The strong set equals the Moon's benefic
-# houses in knowledge/vedic_reference.md 2A (Gochara, Raman Ch. XII). The weak
-# set lists only 4, 8, 12 where that table has 2, 4, 5, 8, 9, 12; the gap is
-# tracked in #715. The attribution that stood here before #716 named a text
-# that is not held and is withdrawn.
+# transit-day Moon rashi (1..12). Both sets are the Moon row of
+# knowledge/vedic_reference.md 2A (Gochara, Raman Ch. XII): benefic 1, 3, 6, 7,
+# 10, 11 / malefic 2, 4, 5, 8, 9, 12. Every house is classified there and the
+# section says "no neutral third category", so there is no third grade (#715;
+# until then 2, 5 and 9 fell through to an invented "neutral" that
+# _couple_verdict let pass). The attribution that stood here before #716 named
+# a text that is not held and is withdrawn.
+# NOT sourced and NOT changed here: #715 also claims the muhurta surface should
+# treat the 6th house as unfavourable. That rests on a Raman Muhurtha passage
+# that is not in knowledge/*.md, so the 6th stays "strong" on every surface.
 _CHANDRA_BALA_STRONG = {1, 3, 6, 7, 10, 11}
-_CHANDRA_BALA_WEAK   = {4, 8, 12}
+_CHANDRA_BALA_WEAK   = {2, 4, 5, 8, 9, 12}
+# Fail at import rather than grade a house by fall-through: every house is one or
+# the other, as in the source table.
+assert (_CHANDRA_BALA_STRONG | _CHANDRA_BALA_WEAK == set(range(1, 13))
+        and not _CHANDRA_BALA_STRONG & _CHANDRA_BALA_WEAK)
 
 
 @dataclass(frozen=True)
@@ -115,7 +124,7 @@ class PartnerFactors:
     """
     tara_bala: str          # "excellent" | "good" | "ok" | "avoid"
     tara_bala_name: str
-    chandra_bala: str       # "strong" | "neutral" | "weak"
+    chandra_bala: str       # "strong" | "weak" ("" when no Moon was placed)
     manglik_status: str     # "none" | "cancelled" | "mitigated" | "present"
     sade_sati_flag: str     # "" | "Sade Sati Peak/Rising/Setting" | "Ashtama Shani" | "Kantaka Shani"
     dasha_flag: str         # "" | "Rahu Mahadasha" | "Ketu Antardasha" etc.
@@ -146,7 +155,7 @@ class PersonalMatch:
     tara_bala: str          # "excellent" | "good" | "ok" | "avoid"
     tara_bala_name: str     # "Sampat" (position 2) etc.
     tara_position: int      # 1..9
-    chandra_bala: str       # "strong" | "neutral" | "weak"
+    chandra_bala: str       # "strong" | "weak"
     chandra_house: int      # 1..12
     notes: tuple[str, ...]  # e.g. ["Sade Sati Peak — cautious with major events"]
 
@@ -1074,8 +1083,8 @@ def chandra_bala_by_rashi(transit_moon_rashi: str) -> dict[str, tuple[int, str]]
     Chandra Bala varies on BOTH axes the prose failed on -- day to day, and
     across the twelve on one day -- and unlike a star rating it is computed from
     a fixed house list rather than invented (#514); that list matches
-    knowledge/vedic_reference.md 2A for the strong houses and not for the
-    weak ones (#715).
+    knowledge/vedic_reference.md 2A, the Moon row, for both the strong and
+    the weak houses (#715 closed the gap where 2, 5, 9 were "neutral").
 
     Returns "" as the verdict for a rashi it cannot place, same as
     `_chandra_bala`; the caller renders nothing rather than guessing.
@@ -1092,12 +1101,8 @@ def _chandra_bala(user_moon_rashi: str, transit_moon_rashi: str) -> tuple[int, s
     except ValueError:
         return 0, ""
     house = ((t_idx - u_idx) % 12) + 1
-    if house in _CHANDRA_BALA_STRONG:
-        verdict = "strong"
-    elif house in _CHANDRA_BALA_WEAK:
-        verdict = "weak"
-    else:
-        verdict = "neutral"
+    # Two grades only: the sets above partition 1..12 (asserted at import).
+    verdict = "strong" if house in _CHANDRA_BALA_STRONG else "weak"
     return house, verdict
 
 
@@ -1160,8 +1165,8 @@ def _couple_verdict(bride: PartnerFactors, groom: PartnerFactors) -> str:
     """Reduce both partners' factors to a single wedding-day verdict."""
     b_tara_ok = bride.tara_bala in ("excellent", "good", "ok")
     g_tara_ok = groom.tara_bala in ("excellent", "good", "ok")
-    b_chandra_ok = bride.chandra_bala in ("strong", "neutral")
-    g_chandra_ok = groom.chandra_bala in ("strong", "neutral")
+    b_chandra_ok = bride.chandra_bala == "strong"
+    g_chandra_ok = groom.chandra_bala == "strong"
 
     both_tara_avoid = (bride.tara_bala == "avoid" and groom.tara_bala == "avoid")
     if both_tara_avoid:

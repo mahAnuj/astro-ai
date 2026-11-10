@@ -241,7 +241,7 @@
             values, not just fallbacks. -#}
         {% set colors = {'excellent': 'bg-emerald-100 text-emerald-800', 'good': 'bg-emerald-100 text-emerald-800', 'acceptable': 'bg-amber-100 text-amber-800', 'caution': 'bg-amber-100 text-amber-800'} %}
         {% set color = colors.get(c.rating, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
-        {% set personal_colors = {'excellent': 'bg-emerald-100 text-emerald-800', 'good': 'bg-emerald-100 text-emerald-800', 'ok': 'bg-bhagya-cream-2 text-bhagya-ink-soft', 'avoid': 'bg-rose-100 text-rose-800', 'strong': 'bg-emerald-100 text-emerald-800', 'neutral': 'bg-bhagya-cream-2 text-bhagya-ink-soft', 'weak': 'bg-rose-100 text-rose-800'} %}
+        {% set personal_colors = {'excellent': 'bg-emerald-100 text-emerald-800', 'good': 'bg-emerald-100 text-emerald-800', 'ok': 'bg-bhagya-cream-2 text-bhagya-ink-soft', 'avoid': 'bg-rose-100 text-rose-800', 'strong': 'bg-emerald-100 text-emerald-800', 'weak': 'bg-rose-100 text-rose-800'} %}
         <tr class="border-b border-bhagya-line-2 align-top">
           <td data-label="Date" class="py-2 pr-3 tabular-nums whitespace-nowrap font-medium">{{ c.d.strftime('%b %d, %Y') }}</td>
           <td data-label="Day" class="py-2 pr-3">{{ c.weekday[:3] }}</td>
@@ -387,7 +387,12 @@
     <div class="text-xs text-bhagya-muted mt-4 space-y-1">
       <p><strong>Classical criteria applied:</strong> tithi + nakshatra + weekday scoring; hard exclusions for Panchak, Chaturmas (Devshayani → Devuthani), Kharmas / Malmas (Sun in Sagittarius/Pisces), Adhik Maas (computed from the ephemeris for each date searched, not read from a fixed table), Dagdha tithi-weekday combinations, the Vaidhriti and Vyatipata nitya-yogas, Guru + Shukra + Budh combustion per event karaka, and eclipse days (±1 day universal blocker). Bhadra / Vishti Karana sub-day windows are computed and shown on each day so you can plan the ceremony around them.</p>
       {% if personal_active %}
-      <p><strong>Personal matching:</strong> Tara Bala counts transit-day nakshatra from your natal Moon nakshatra (mod 9); positions Sampat, Kshema, Sadhaka, Mitra, Ati-Mitra are auspicious; Vipat, Pratyari, Vadha are avoided. Chandra Bala checks the transit Moon's house from your natal Moon; houses 1/3/6/7/10/11 are strong, 4/8/12 are weak. Sade Sati and Rahu/Ketu Mahadasha surface as chart-level cautions above.</p>
+      <p><strong>Personal matching:</strong> Tara Bala counts transit-day nakshatra from your natal Moon nakshatra (mod 9); positions Sampat, Kshema, Sadhaka, Mitra, Ati-Mitra are auspicious; Vipat, Pratyari, Vadha are avoided. Chandra Bala checks the transit Moon's house from your natal Moon (see below). Sade Sati and Rahu/Ketu Mahadasha surface as chart-level cautions above.</p>
+      {% endif %}
+      {% if personal_active or couple_active %}
+      {#- #715: states only what knowledge/vedic_reference.md 2A holds. No claim about
+         what muhurta texts say: that is not held. -#}
+      <p><strong>Chandra Bala:</strong> counted from the natal Moon using Raman's Gochara table (<em>Astrology for Beginners</em>); houses 1, 3, 6, 7, 10 and 11 are counted as favourable (strong) and houses 2, 4, 5, 8, 9 and 12 as unfavourable (weak).</p>
       {% endif %}
       <p><strong>Not yet included:</strong> South Indian regional variants. Cross-check final date with your family priest.</p>
       <p><strong>Sources:</strong> Brihat Parashara Hora Shastra, Muhurtha Chintamani, Phaladeepika. Astronomical positions via Swiss Ephemeris (pyswisseph) in sidereal Lahiri ayanamsa. Eclipse dates from NASA / Drik Panchang.</p>

@@ -275,8 +275,9 @@
                     </tr>
                   </table>
 
-                  {#- Chandra Bala: today's Moon counted from THIS rashi (BPHS
-                     houses 1,3,6,7,10,11 strong / 4,8,12 weak), computed in
+                  {#- Chandra Bala: today's Moon counted from THIS rashi (Raman's
+                     Gochara table, vedic_reference.md 2A: houses 1,3,6,7,10,11
+                     strong / 2,4,5,8,9,12 weak, no third grade), computed in
                      muhurat.chandra_bala_by_rashi. The one field that varies on
                      both axes the prose failed on -- day to day, and across the
                      twelve on one day (#513, #514). Rendered only when the
@@ -287,7 +288,7 @@
                   {%- set cb_color = '#15803d' if cb[1] == 'strong' else ('#b45309' if cb[1] == 'weak' else '#78716c') %}
                   <div style="font-size:12px;color:#57534e;margin-top:6px;line-height:1.5;">
                     <strong style="color:{{ cb_color }};">{% if lang == 'hi' %}चंद्र बल{% else %}Chandra Bala{% endif %}</strong>
-                    <span style="color:{{ cb_color }};">{% if lang == 'hi' %}{{ {'strong':'बलवान','neutral':'सामान्य','weak':'कमज़ोर'}[cb[1]] }}{% else %}{{ cb[1] }}{% endif %}</span>
+                    <span style="color:{{ cb_color }};">{% if lang == 'hi' %}{{ {'strong':'बलवान','weak':'कमज़ोर'}[cb[1]] }}{% else %}{{ cb[1] }}{% endif %}</span>
                     <span style="color:#a8a29e;font-size:11px;">{% if lang == 'hi' %}(चंद्रमा {{ cb[0] }}वें भाव में){% else %}(Moon in house {{ cb[0] }} from this rashi){% endif %}</span>
                   </div>
                   {%- endif %}
