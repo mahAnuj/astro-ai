@@ -29,24 +29,25 @@ WHAT STOPS IT, each one a measured failure mode rather than caution
 - **Only a successful BUILD run chains.** A QA round, a failed run, or the
   steward completing (agent-queue's backstop trigger) never does.
 
-WHEN THE LANE STARVES, IT ASSIGNS THE EVIDENCE RETROFIT (2026-11-10)
--------------------------------------------------------------------
-Measured 2026-11-10: 112 issues open, 63 failing `verify_issue_evidence.py`,
-and the two build cycles that day ended "nothing" -- every ranked item was
-refused at Step 1, the cycle may not write its own eligibility, and nobody
-else owned writing the missing Evidence Blocks. Not chaining was correct; it
-was also the end of the line, because nothing then fixed the reason.
+WHEN ISSUES ARE LOCKED OUT, IT ASSIGNS THE EVIDENCE RETROFIT (2026-11-10)
+-------------------------------------------------------------------------
+Measured 2026-11-10: 112 issues open and 63 failing `verify_issue_evidence.py`,
+including every wrong-in-front-of-users finding the auditors had filed. The
+cycle refuses those at Step 1 and may not write its own eligibility, and
+nobody else owned writing the missing blocks, so half the cycles that day
+built nothing while the ranker circled the few eligible items.
 
-So when the finished cycle produced nothing AND the build run before it did
-too (no loop PR moved since that earlier run started), this dispatches
-`agent-prioritise.yml` with `mode=evidence`: project-manager, which already
-holds `issues: write` and the four-kind close grant there, measures each
-failing issue and either closes it with evidence or posts the block. One
-retrofit per `RETROFIT_COOLDOWN`, none while one is running, and never on an
-unread or exhausted quota. Same scope as the chain: `actions: write`.
+So on every run that does not chain, `retrofit_reason` counts the refused
+issues (scripts/evidence_backlog.py) and, at `RETROFIT_MIN_REFUSED` or more,
+dispatches `agent-prioritise.yml` with `mode=evidence`: project-manager, which
+already holds `issues: write` and the four-kind close grant there, measures
+each one and closes it with evidence or posts the block. At most one retrofit
+per `RETROFIT_COOLDOWN`, none while one runs, never on an unread or exhausted
+quota. Same scope as the chain: `actions: write`.
 
-It writes no label and no comment, and needs no scope `agent-queue.yml` lacks:
-dispatching `agent-work` is what `dispatch_cycle.sh` already does there.
+`produced_something` also stopped counting measurement PRs and PRs merged
+mid-window as cycle output (QA on #841): both bumped `updated_at`, so an
+empty cycle read as productive and chained.
 
 EXIT CODES: 0 decided (chained or not -- the reason is printed)   2 bad env
 """
@@ -69,6 +70,9 @@ QUOTA_CEILING = 0.70
 QUOTA_MAX_AGE = timedelta(hours=36)
 MAX_BUILD_RUNS_PER_DAY = 16
 RETROFIT_COOLDOWN = timedelta(hours=6)
+#: Refused issues worth a retrofit run. One is #444-shaped noise (a standing
+#: report issue with no defect); three is a ranker with real work locked out.
+RETROFIT_MIN_REFUSED = 3
 #: agent-prioritise.yml's run-name in mode=evidence. `gh run list` cannot show
 #: inputs, so the title is how a retrofit run is recognised -- the same reason
 #: the QA lane is told apart by QA_TITLE. tests/test_evidence_retrofit.py pins both copies.
@@ -110,10 +114,40 @@ def build_runs_today(gh: Runner, repo: str, now: datetime) -> int:
     return sum(1 for r in runs if not (r.get("display_title") or "").startswith(QA_TITLE))
 
 
+def _head_pushed_since(gh: Runner, repo: str, number: int, since: datetime) -> bool:
+    out = gh(["api", f"repos/{repo}/pulls/{number}/commits?per_page=100"])
+    commits = json.loads(out)
+    if not commits:
+        return False
+    date = ((commits[-1].get("commit") or {}).get("committer") or {}).get("date")
+    return bool(date) and _ts(date) >= since
+
+
 def produced_something(gh: Runner, repo: str, since: datetime) -> bool:
+    """Did a cycle open a PR, or push to one, at or after `since`?
+
+    `updated_at` alone over-counts (QA on #841, replaying 2026-11-10): a
+    `measurements/<run>-<attempt>` PR is the publisher landing a report, and a
+    PR `agent-merge` merged inside the window was built earlier. Both bumped
+    `updated_at`, so the two empty cycles that day both read "produced
+    something". So: skip measurement PRs; count a PR opened in the window; for
+    an older PR, count it only if its head commit landed in the window (a cycle
+    pushing a fix). A fixture with no `created_at` keeps the old reading.
+    """
     out = gh(["api", f"repos/{repo}/pulls?state=all&sort=updated&direction=desc&per_page=30"])
-    return any((p.get("user") or {}).get("login") in LOOP_AUTHORS
-               and _ts(p["updated_at"]) >= since for p in json.loads(out))
+    for p in json.loads(out):
+        if (p.get("user") or {}).get("login") not in LOOP_AUTHORS:
+            continue
+        if ((p.get("head") or {}).get("ref") or "").startswith("measurements/"):
+            continue
+        if _ts(p["updated_at"]) < since:
+            continue
+        created = p.get("created_at")
+        if not created or _ts(created) >= since:
+            return True
+        if p.get("number") and _head_pushed_since(gh, repo, p["number"], since):
+            return True
+    return False
 
 
 def decide(gh: Runner, repo: str, run: dict, usage: dict | None, now: datetime) -> str | None:
@@ -137,26 +171,30 @@ def decide(gh: Runner, repo: str, run: dict, usage: dict | None, now: datetime) 
     return None
 
 
-def previous_build_start(gh: Runner, repo: str, started: datetime) -> datetime | None:
-    """When the successful build run before the finished one started."""
-    out = gh(["api", f"repos/{repo}/actions/workflows/agent-work.yml/runs"
-              f"?status=completed&per_page=30"])
-    for r in json.loads(out).get("workflow_runs") or []:
-        if (r.get("display_title") or "").startswith(QA_TITLE) or r.get("conclusion") != "success":
-            continue
-        st = _ts(r.get("run_started_at") or r["created_at"])
-        if st < started - timedelta(minutes=1):
-            return st
-    return None
+def refused_count(gh: Runner, repo: str) -> int:
+    """Open issues `verify_issue_evidence.py` fails -- the ones a cycle refuses."""
+    from evidence_backlog import failing  # noqa: PLC0415 -- only on the retrofit path
+    return len(failing(gh, repo))
 
 
-def retrofit_reason(gh: Runner, repo: str, run: dict, now: datetime) -> str | None:
-    """None to dispatch the evidence retrofit, else why not. Called only after NOTHING."""
-    prev = previous_build_start(gh, repo, _ts(run["started"]))
-    if prev is None:
-        return "no earlier build run to compare with"
-    if produced_something(gh, repo, prev):
-        return "the build run before this one moved a PR -- one empty cycle is not starvation"
+def retrofit_reason(gh: Runner, repo: str, usage: dict | None, now: datetime) -> str | None:
+    """None to dispatch the evidence retrofit, else why not.
+
+    Judged on the CAUSE, not on cycle outcomes. Replayed 2026-11-10 (QA on
+    #841): the empty cycles alternated with productive ones -- 01:53 moved
+    #833, 02:06 nothing, 04:30 opened #839, 05:02 nothing -- because every
+    ranked cycle circled the one or two evidence-complete items while 63 issues
+    sat refused. "Two empty cycles in a row" never happened, and a trigger on
+    the finished cycle could not see the chained ones anyway (agent-queue ran
+    after 8 of 8 scheduled cycles and 0 of 26 dispatched ones). So: on every
+    agent-queue run that does not chain (the steward's completion reliably gets
+    here), count the refused issues and dispatch when there are enough.
+    The cooldown is checked first so the ~100 issue reads happen at most once
+    per `RETROFIT_COOLDOWN`.
+    """
+    reason = quota_reason(usage, now)
+    if reason:
+        return reason
     out = gh(["api", f"repos/{repo}/actions/workflows/agent-prioritise.yml/runs?per_page=20"])
     for r in json.loads(out).get("workflow_runs") or []:
         if not (r.get("display_title") or "").startswith(RETROFIT_TITLE):
@@ -166,6 +204,9 @@ def retrofit_reason(gh: Runner, repo: str, run: dict, now: datetime) -> str | No
         age = now - _ts(r["created_at"])
         if age < RETROFIT_COOLDOWN:
             return f"an evidence retrofit ran {age.total_seconds() / 3600:.1f}h ago"
+    n = refused_count(gh, repo)
+    if n < RETROFIT_MIN_REFUSED:
+        return f"{n} open issue(s) fail the Evidence Block gate, under {RETROFIT_MIN_REFUSED}"
     return None
 
 
@@ -188,17 +229,16 @@ def main(argv: list[str], gh: Runner = run_gh, now: datetime | None = None,
         reason = f"could not decide ({exc.__class__.__name__}: {str(exc)[:120]})"
     if reason:
         print(f"no chain: {reason}.")
-        if reason == NOTHING:
-            try:
-                why = retrofit_reason(gh, repo, run, now)
-            except (RuntimeError, ValueError, KeyError) as exc:
-                why = f"could not decide ({exc.__class__.__name__}: {str(exc)[:120]})"
-            if why:
-                print(f"no evidence retrofit: {why}.")
-            else:
-                gh(["workflow", "run", "agent-prioritise.yml", "--repo", repo, "-f", "mode=evidence"])
-                print("starved: two build cycles in a row produced nothing -- dispatched "
-                      "agent-prioritise mode=evidence to retrofit or close the refused issues.")
+        try:
+            why = retrofit_reason(gh, repo, usage, now)
+        except (RuntimeError, ValueError, KeyError) as exc:
+            why = f"could not decide ({exc.__class__.__name__}: {str(exc)[:120]})"
+        if why:
+            print(f"no evidence retrofit: {why}.")
+        else:
+            gh(["workflow", "run", "agent-prioritise.yml", "--repo", repo, "-f", "mode=evidence"])
+            print("refused backlog: dispatched agent-prioritise mode=evidence to "
+                  "retrofit or close the issues the build loop refuses.")
         return 0
     gh(["workflow", "run", "agent-work.yml", "--repo", repo])
     print("chained: dispatched one ranked agent-work cycle (project-manager picks).")

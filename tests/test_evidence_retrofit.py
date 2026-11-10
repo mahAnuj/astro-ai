@@ -44,6 +44,8 @@ USAGE = {"generated_at": "2026-11-10T05:03:00Z", "latest": {"seven_day": 0.39, "
 # The finished cycle (05:02) and the one before it (02:06), as on 2026-11-10.
 RUN = {"name": "Agent work", "title": "Agent work", "conclusion": "success",
        "started": "2026-11-10T05:02:00Z"}
+STEWARD = {"name": "Agent steward", "title": "Agent steward", "conclusion": "success",
+           "started": "2026-11-10T05:01:00Z"}
 BUILDS = [{"display_title": "Agent work", "conclusion": "success", "run_started_at": "2026-11-10T05:02:00Z",
            "created_at": "2026-11-10T05:02:00Z"},
           {"display_title": "QA round: PR #833", "conclusion": "success",
@@ -52,23 +54,42 @@ BUILDS = [{"display_title": "Agent work", "conclusion": "success", "run_started_
            "created_at": "2026-11-10T02:06:00Z"}]
 
 
+def pr(n, created, updated, ref="issue/1-x", login="claude[bot]"):
+    return {"number": n, "user": {"login": login}, "head": {"ref": ref},
+            "created_at": created, "updated_at": updated}
+
+
+# What the API really returned for that window (QA on #841): measurement PRs
+# #834/#840 and #833/#839, built earlier and merged by agent-merge mid-window.
+REPLAY = [pr(840, "2026-11-10T05:04:00Z", "2026-11-10T05:04:18Z", "measurements/42759-1",
+             "shubhagya-publisher[bot]"),
+          pr(839, "2026-11-10T04:55:00Z", "2026-11-10T05:08:09Z"),
+          pr(833, "2026-11-09T23:50:00Z", "2026-11-10T05:08:36Z"),
+          pr(834, "2026-11-10T02:09:00Z", "2026-11-10T02:09:04Z", "measurements/42740-1",
+             "shubhagya-publisher[bot]")]
+HEADS = {839: "2026-11-10T04:50:00Z", 833: "2026-11-10T01:40:00Z"}
+
+
 class FakeGh:
-    def __init__(self, pr_updated="2026-11-10T01:00:00Z", retrofits=()):
-        self.prs = [{"user": {"login": "claude[bot]"}, "updated_at": pr_updated}]
-        self.retrofits = list(retrofits)
+    def __init__(self, prs=REPLAY, heads=HEADS, builds=BUILDS, retrofits=(), busy=0):
+        self.prs, self.heads, self.builds = list(prs), dict(heads), list(builds)
+        self.retrofits, self.busy = list(retrofits), busy
         self.calls: list[list[str]] = []
 
     def __call__(self, args):
         self.calls.append(args)
         if args[:2] == ["run", "list"]:
-            return "0\n"
+            return f"{self.busy}\n"
         url = args[1] if args[0] == "api" else ""
         if "agent-work.yml/runs" in url and "status=completed" in url:
-            return json.dumps({"workflow_runs": BUILDS})
+            return json.dumps({"workflow_runs": self.builds})
         if "agent-work.yml/runs" in url:
             return json.dumps({"workflow_runs": [{"display_title": "Agent work"}] * 3})
         if "agent-prioritise.yml/runs" in url:
             return json.dumps({"workflow_runs": self.retrofits})
+        if "/commits?" in url:
+            n = int(url.split("/pulls/")[1].split("/")[0])
+            return json.dumps([{"commit": {"committer": {"date": self.heads[n]}}}])
         if "/pulls?" in url:
             return json.dumps(self.prs)
         if args[:2] == ["workflow", "run"]:
@@ -90,26 +111,52 @@ def _main(gh, monkeypatch, tmp_path, run=RUN, usage=USAGE):
 
 # --- 1. the trigger ----------------------------------------------------------
 
-def test_two_empty_build_cycles_in_a_row_dispatch_the_retrofit(monkeypatch, tmp_path, capsys):
+def _refused(monkeypatch, n):
+    monkeypatch.setattr(cc, "refused_count", lambda gh, repo: n)
+
+
+def test_a_locked_out_backlog_dispatches_the_retrofit_after_an_empty_cycle(monkeypatch, tmp_path, capsys):
+    _refused(monkeypatch, 63)                     # 2026-11-10
     gh = FakeGh()
     _main(gh, monkeypatch, tmp_path)
     (call,) = gh.dispatched("agent-prioritise.yml")
     assert call[-2:] == ["-f", "mode=evidence"]
     assert not gh.dispatched("agent-work.yml"), "an empty cycle still must not chain"
-    assert "starved" in capsys.readouterr().out
+    assert "refused backlog" in capsys.readouterr().out
 
 
-def test_one_empty_cycle_after_a_productive_one_is_not_starvation(monkeypatch, tmp_path):
-    gh = FakeGh(pr_updated="2026-11-10T03:30:00Z")    # moved after the 02:06 run started
-    _main(gh, monkeypatch, tmp_path)
+def test_the_steward_trigger_reaches_it_too(monkeypatch, tmp_path):
+    # Dispatched cycles never reach agent-queue (0 of 26); the steward's completion does.
+    _refused(monkeypatch, 63)
+    gh = FakeGh()
+    _main(gh, monkeypatch, tmp_path, run=STEWARD)
+    assert gh.dispatched("agent-prioritise.yml")
+
+
+def test_a_clean_backlog_dispatches_nothing(monkeypatch, tmp_path):
+    _refused(monkeypatch, cc.RETROFIT_MIN_REFUSED - 1)    # 2026-11-10 after the retrofit: 1 (#444)
+    gh = FakeGh()
+    _main(gh, monkeypatch, tmp_path, run=STEWARD)
     assert not gh.dispatched("agent-prioritise.yml")
 
 
-def test_a_recent_or_running_retrofit_blocks_another(monkeypatch, tmp_path):
+def test_the_count_is_the_evidence_backlog_list(monkeypatch):
+    monkeypatch.setattr(eb, "failing", lambda gh, repo: [{}] * 7)
+    assert cc.refused_count(None, REPO) == 7
+
+
+def test_the_cooldown_is_checked_before_the_expensive_count(monkeypatch, tmp_path):
+    def boom(gh, repo):
+        raise AssertionError("counted the backlog inside the cooldown")
+    monkeypatch.setattr(cc, "refused_count", boom)
     recent = {"display_title": cc.RETROFIT_TITLE, "status": "completed", "created_at": "2026-11-10T01:00:00Z"}
     gh = FakeGh(retrofits=[recent])
     _main(gh, monkeypatch, tmp_path)
     assert not gh.dispatched("agent-prioritise.yml")
+
+
+def test_a_running_retrofit_blocks_another(monkeypatch, tmp_path):
+    _refused(monkeypatch, 63)
     running = {"display_title": cc.RETROFIT_TITLE, "status": "in_progress", "created_at": "2026-11-09T01:00:00Z"}
     gh = FakeGh(retrofits=[running])
     _main(gh, monkeypatch, tmp_path)
@@ -117,6 +164,7 @@ def test_a_recent_or_running_retrofit_blocks_another(monkeypatch, tmp_path):
 
 
 def test_an_old_retrofit_or_a_weekly_ranking_does_not_block(monkeypatch, tmp_path):
+    _refused(monkeypatch, 63)
     old = {"display_title": cc.RETROFIT_TITLE, "status": "completed", "created_at": "2026-11-09T20:00:00Z"}
     weekly = {"display_title": "Agent prioritise", "status": "completed", "created_at": "2026-11-10T04:00:00Z"}
     gh = FakeGh(retrofits=[weekly, old])
@@ -125,16 +173,28 @@ def test_an_old_retrofit_or_a_weekly_ranking_does_not_block(monkeypatch, tmp_pat
 
 
 def test_an_exhausted_quota_dispatches_nothing(monkeypatch, tmp_path):
+    _refused(monkeypatch, 63)
     gh = FakeGh()
     _main(gh, monkeypatch, tmp_path, usage={**USAGE, "latest": {"seven_day": 0.75, "status": "allowed"}})
     assert not gh.dispatched("agent-prioritise.yml")
 
 
-def test_a_qa_round_or_failed_cycle_dispatches_nothing(monkeypatch, tmp_path):
-    for run in ({**RUN, "title": "QA round: PR #5"}, {**RUN, "conclusion": "failure"}):
-        gh = FakeGh()
-        _main(gh, monkeypatch, tmp_path, run=run)
-        assert not gh.dispatched("agent-prioritise.yml")
+# --- what counts as a cycle's output (QA on #841, defect 2) ------------------
+
+def test_measurement_prs_and_mid_window_merges_are_not_cycle_output():
+    # The 05:02 run's own window: #840 is a report, #839 and #833 were built
+    # before it and merged by agent-merge during it.
+    assert not cc.produced_something(FakeGh(), REPO, cc._ts("2026-11-10T05:02:00Z"))
+
+
+def test_a_pr_opened_in_the_window_is_output():
+    gh = FakeGh(prs=REPLAY + [pr(850, "2026-11-10T05:05:00Z", "2026-11-10T05:06:00Z")])
+    assert cc.produced_something(gh, REPO, cc._ts("2026-11-10T05:02:00Z"))
+
+
+def test_a_fix_pushed_to_an_older_pr_in_the_window_is_output():
+    gh = FakeGh(heads={**HEADS, 833: "2026-11-10T05:05:00Z"})
+    assert cc.produced_something(gh, REPO, cc._ts("2026-11-10T05:02:00Z"))
 
 
 # --- 2. the workflow ---------------------------------------------------------
@@ -187,6 +247,7 @@ def test_the_list_holds_only_failures_in_harm_order_and_reads_comments():
               _issue(7, ["bug", "astrology-correctness"], ""),
               _issue(6, ["bug"], "", comments=1),                     # fixed by a comment
               _issue(5, [], "", created="2026-09-01T00:00:00Z"),      # exempt by date
+              _issue(3, ["bug", "provenance:outsider"], ""),           # triaged elsewhere
               {"number": 4, "pull_request": {}, "labels": []}]
 
     def gh(args):
@@ -214,13 +275,16 @@ def _find(tmp_path, monkeypatch, outcomes):
     return {f["kind"]: f for f in tod.det.find(now=tod.NOW)[0]}
 
 
-def test_two_empty_build_cycles_raise_loop_starved(tmp_path, monkeypatch):
-    f = _find(tmp_path, monkeypatch, [("ranked", "shipped"), ("ranked", "nothing"),
-                                      ("qa-round", "judged"), ("ranked", "nothing")])
+def test_the_2026_11_10_alternating_pattern_raises_loop_starved(tmp_path, monkeypatch):
+    f = _find(tmp_path, monkeypatch, [("ranked", "pr open"), ("ranked", "nothing"),
+                                      ("qa-round", "judged"), ("ranked", "pr open"),
+                                      ("ranked", "nothing")])
     assert f["loop-starved"]["level"] == "amber"
+    assert "2 of the last 4" in f["loop-starved"]["title"]
     assert "mode=evidence" in f["loop-starved"]["detail"]
 
 
-def test_one_empty_cycle_is_not_starved(tmp_path, monkeypatch):
-    f = _find(tmp_path, monkeypatch, [("ranked", "nothing"), ("ranked", "pr open")])
+def test_one_empty_cycle_in_four_is_not_starved(tmp_path, monkeypatch):
+    f = _find(tmp_path, monkeypatch, [("ranked", "nothing"), ("ranked", "pr open"),
+                                      ("ranked", "shipped"), ("issue", "pr open")])
     assert "loop-starved" not in f

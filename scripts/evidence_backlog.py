@@ -68,10 +68,14 @@ def failing(gh: Runner, repo: str) -> list[dict]:
             break
     out = []
     for i in issues:
+        labels = [lb["name"] for lb in i.get("labels") or []]
+        if "provenance:outsider" in labels:
+            # An outsider's issue is triaged before it is built
+            # (triage_outsider_issues.py); a retrofit would launder its claims.
+            continue
         comments = json.loads(gh(["api", f"repos/{repo}/issues/{i['number']}/comments?per_page=100"])) \
             if i.get("comments") else []
         text = "\n".join([i.get("body") or ""] + [c.get("body") or "" for c in comments])
-        labels = [lb["name"] for lb in i.get("labels") or []]
         code, lines = vie.check(text, labels, i.get("created_at") or "")
         if code != 0:
             out.append({"number": i["number"], "title": i["title"], "labels": labels,
