@@ -2474,6 +2474,21 @@ With those caveats, it independently confirms and materially extends §29.
   do with `muhurat.py`'s five nakshatras Dhanishta→Revati. **So the rule stays
   UNSOURCED, and a hit count is not what makes it sourced or not** — 0 under
   one spelling and 31 under another, with the 31 irrelevant.
+
+  **Update 2026-11-09 (#713) — the "31 irrelevant" above is wrong for one of
+  the 31, and the rule has a source.** Raman's Ch. III also uses *Nakshatra
+  Panchaka* (index "Nakshatra Panchaka 26", L8459) for the Moon window the app
+  calls Panchak: per #713, L1227-1235 read "Beginning from the third quarter of
+  Dhanishta and ending with the last part of Revati, the time is held to be
+  highly unsuitable for any kind of auspicious work. This period goes under the
+  special name of Nakshatra Panchaka". So the span is Dhanishta **pada 3**
+  through the end of Revati, not the whole of Dhanishta; `muhurat._is_panchak`
+  now follows it. **Not re-read by whoever applied this note:** the runner had
+  no `data/`, so the quotation and line numbers are the #713 filer's
+  transcription of an OCR text, and the sentence's own list of what it forbids
+  (a journey south, house repair, fuel, cots and beds) beside "any kind of
+  auspicious work" is a source ambiguity, not something the code resolves. The
+  numeric Panchaka of lines 961-991 remains a different rule.
 - **`kharmas` and `chaturmas`** — re-measured across all four books,
   **0 hits** (3 and 5 spellings, 38,197 `-layout` lines).
 
