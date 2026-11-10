@@ -288,7 +288,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What's the connection between Mars and Manglik Dosh?",
-                "a": "Manglik Dosh forms when Mars sits in the 1st, 2nd, 4th, 7th, 8th, or 12th house counted from Lagna, Moon, or Venus. Because Mars is the karaka for aggression, its presence in the houses affecting marriage (7th) or its immediate neighbours can classically indicate friction in marital life. Multiple cancellation rules apply — Mars in own sign, exalted Mars, Jupiter aspect, Cancer/Leo Yogakaraka exclusion — see the dedicated Manglik article.",
+                "a": "Manglik Dosh forms when Mars sits in the 1st, 2nd, 4th, 7th, 8th, or 12th house counted from Lagna, Moon, or Venus (the sources we work from list five and treat the 1st as an optional addition, which Shubh Bhagya counts). Because Mars is the karaka for aggression, its presence in the houses affecting marriage (7th) or its immediate neighbours is said to bring friction into marital life. Multiple cancellation rules apply — Mars in own sign, exalted Mars, Jupiter aspect, Cancer/Leo Yogakaraka exclusion — see the dedicated Manglik article.",
             },
             {
                 "q": "What is 'strong Mars' in a chart?",
@@ -309,7 +309,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Own signs: Aries, Scorpio. Exalted: Capricorn (deepest 28°). Debilitated: Cancer (deepest 28°)\n'
             '• Mulatrikona: Aries 0-12°. Digbala in 10th house (shared with Sun)\n'
             '• Friends: Sun, Moon, Jupiter. Enemies: Mercury. Neutral: Venus, Saturn\n'
-            '• Manglik Dosha: Mars in houses 1/2/4/7/8/12 counted from Lagna, Moon AND Venus — any one frame qualifying is enough (marriage caveat)\n'
+            '• Manglik Dosha: Mars in houses 1/2/4/7/8/12 counted from Lagna, Moon AND Venus — any one frame qualifying is enough; the sources we work from list 2/4/7/8/12 and treat the 1st as an optional addition, which Shubh Bhagya counts (marriage caveat)\n'
             '• Strong Mars: courage, victory, real estate, athletic ability\n'
             '• Weak Mars: accidents, conflict, blood-related health, sibling stress\n'
             '• Safe remedies: Tuesday fasting, Hanuman Chalisa daily, red-item Tuesday charity, red-coral only with consultation'
@@ -813,7 +813,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is Manglik Dosh real, or is it just superstition?",
-                "a": "It's a real concept in Vedic astrology — Mars in the 1st, 2nd, 4th, 7th, 8th, or 12th house, counted from Lagna, Moon, or Venus, is documented in classical compilations. Whether its effects play out depends heavily on Mars's strength, conjunctions, and aspects in your specific chart. Many seemingly Manglik people live happily married lives because of cancellation rules most online calculators ignore.",
+                "a": "It's a real concept in Vedic astrology — Mars in the 1st, 2nd, 4th, 7th, 8th, or 12th house, counted from Lagna, Moon, or Venus (the sources we work from list five and treat the 1st as an optional addition, which Shubh Bhagya counts), is how the rule is usually stated, though one of the sources we work from notes that it \"is not to be found in the standard astrological texts\". Whether its effects play out depends heavily on Mars's strength, conjunctions, and aspects in your specific chart. Many seemingly Manglik people live happily married lives because of cancellation rules most online calculators ignore.",
             },
             {
                 "q": "Does Cancer or Leo rising exclude me from Manglik?",
@@ -838,7 +838,7 @@ ARTICLES: tuple[Article, ...] = (
         ),
         llm_summary=(
             "Keypoints:\n"
-            "• Mars in the 1st, 2nd, 4th, 7th, 8th, or 12th house = Manglik — counted from ALL THREE of Lagna, Moon and Venus (any one frame qualifying is enough)\n"
+            "• Mars in the 1st, 2nd, 4th, 7th, 8th, or 12th house = Manglik — counted from ALL THREE of Lagna, Moon and Venus (any one frame qualifying is enough); the sources we work from list five and treat the 1st as an optional addition, which Shubh Bhagya counts\n"
             "• Classically linked to marriage delay or spouse conflict — NOT to marriage denial\n"
             "• Cancellations (any ONE cancels): Jupiter aspect on Mars, mutual-Manglik partnership where both partners are Manglik of comparable severity, Mars in own/exalted sign, Cancer/Leo Ascendant exemption, Mars in same house from both charts\n"
             "• 'Comparable severity' is the classical requirement; the texts set no band, so Bhagya's own convention (state it as ours, not scripture) is that equal or adjacent grades on low/moderate/high are comparable and a low does NOT cancel a high\n"
@@ -2913,7 +2913,7 @@ ARTICLES: tuple[Article, ...] = (
     ),
     Article(
         slug="manglik-remedies", title="Manglik Remedies: Classical Practices to Soften Mars in Marriage Charts",
-        summary="Manglik Dosh (Mangal Dosh) remedies focus on softening Mars's placement in the six qualifying houses (1, 2, 4, 7, 8, 12) that classical tradition flags for marriage friction. The most powerful remedies are Hanuman worship (Mars's presiding deity), Tuesday practices, Kumbh Vivah for severe cases, and Ashtakoot matching. This guide walks the seven classically-cited remedies with the honest note that cancellation rules often mean no remedy is even needed.",
+        summary="Manglik Dosh (Mangal Dosh) remedies focus on softening Mars's placement in the six qualifying houses (1, 2, 4, 7, 8, 12; the sources we work from list five and treat the 1st as an optional addition, which Shubh Bhagya counts) that the tradition flags for marriage friction. The most powerful remedies are Hanuman worship (Mars's presiding deity), Tuesday practices, Kumbh Vivah for severe cases, and Ashtakoot matching. This guide walks the seven classically-cited remedies with the honest note that cancellation rules often mean no remedy is even needed.",
         seo_title="Manglik Remedies: Hanuman Worship, Kumbh Vivah, Matching",
         seo_description="Classical Manglik Dosh remedies — Hanuman Chalisa, Tuesday practices, Kumbh Vivah, matching another Manglik. Check cancellation rules first.",
         category="Doshas", hero_image="/static/learn/manglik-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
