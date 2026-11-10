@@ -1,12 +1,15 @@
-"""A starved build lane assigns the Evidence Block retrofit (2026-11-10).
+"""Issues locked out by the Evidence Block gate get a retrofit (2026-11-10).
 
-Measured that day: 112 issues open, 63 failing `verify_issue_evidence.py`, and
-the last two build cycles built nothing. Every ranked item was refused at Step
-1, the cycle may not write its own eligibility, and nobody else owned writing
-the missing blocks. Three pieces close that:
+Measured that day: 112 issues open and 63 failing `verify_issue_evidence.py`.
+The cycle refuses those at Step 1 and may not write its own eligibility, and
+nobody else owned writing the missing blocks, so the build runs alternated
+between the one or two eligible items and nothing (01:53 moved #833, 02:06
+nothing, 04:30 opened #839, 05:02 nothing). Three pieces close that:
 
-  1. `chain_cycle.py` dispatches `agent-prioritise.yml` with `mode=evidence`
-     on the second empty build cycle in a row (rate-limited).
+  1. `chain_cycle.py`, on any agent-queue run that does not chain, counts the
+     issues failing the gate and, at 3 or more, dispatches
+     `agent-prioritise.yml` with `mode=evidence` (quota, 6h cooldown and an
+     already-running check come first).
   2. `agent-prioritise.yml` in that mode lists the refused issues with
      `scripts/evidence_backlog.py` and has project-manager retrofit or close.
   3. `detect_ops_regressions.py` raises `loop-starved` so /admin/ops shows it.

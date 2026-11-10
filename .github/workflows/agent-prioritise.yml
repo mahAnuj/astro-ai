@@ -21,10 +21,11 @@ on:
     inputs:
       # EVIDENCE MODE (2026-11-10). Measured that day: 63 of 112 open issues
       # failed verify_issue_evidence.py, so the build loop refused them at
-      # Step 1 and two cycles in a row built nothing. The cycle may not write
-      # its own eligibility; this loop's project-manager is a different agent
-      # that already holds issues: write and the four-kind close grant below.
-      # chain_cycle.py dispatches this mode when the build lane starves.
+      # Step 1 and its runs alternated between the few eligible items and
+      # nothing. The cycle may not write its own eligibility; this loop's
+      # project-manager is a different agent that already holds issues: write
+      # and the four-kind close grant. chain_cycle.py dispatches this mode when
+      # 3 or more open issues fail the gate (at most once per 6h).
       mode:
         description: "rank (the weekly queue) or evidence (retrofit or close issues failing the Evidence Block gate)"
         type: choice
@@ -116,7 +117,7 @@ jobs:
             number, a line range or a rule from the issue's own text.
 
             1. If it is one of the four kinds below, close it, exactly as the
-               close grant further down requires: already fixed (quote the commit
+               closing rules at the end of this prompt require: already fixed (quote the commit
                and what you checked), does not reproduce (the command and its
                output), overtaken by events (the grep returning nothing), or
                duplicate (name the survivor). Never close for age or low value.

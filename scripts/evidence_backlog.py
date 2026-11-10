@@ -18,7 +18,7 @@ the LAST occurrence of each field), runs the same `check()` the loop runs, and
 writes the failing ones in harm order: astrology-correctness first, then
 priority:high, then bug, then the rest, oldest first within each. The agent
 half is `agent-prioritise.yml` in `mode=evidence`, which retrofits or closes
-from this list; `chain_cycle.py` dispatches it when the build lane starves.
+from this list; `chain_cycle.py` dispatches it when 3 or more issues fail the gate.
 
 Prints the markdown list (or writes it to --out). No arguments beyond that.
 
