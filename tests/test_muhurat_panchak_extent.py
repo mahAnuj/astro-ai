@@ -1,10 +1,10 @@
 """Panchak starts at the THIRD QUARTER of Dhanishta, not at Dhanishta (#713).
 
-Raman, Muhurtha (1948) ch. III, "Nakshatra Panchaka": from the third quarter of
+Raman, Muhurtha (1948) ch. IV, p. 26, "Nakshatra Panchaka": from the third quarter of
 Dhanishta to the end of Revati. `muhurat._PANCHAK_NAKSHATRAS` flagged the whole
 of Dhanishta while its own comment said "latter half", so a day whose noon Moon
 sat in Dhanishta pada 1-2 was marked `panchak` and demoted to "avoid". The quote
-is the #713 filer's transcription; data/ was absent when this was written.
+was re-read against the book (data/ L1227-1235) on 2026-11-10.
 
 The expected sets below are written out from the source sentence, not derived
 from the helper under test, and the integration test reads the Moon through

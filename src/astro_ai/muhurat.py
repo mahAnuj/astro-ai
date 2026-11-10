@@ -40,10 +40,10 @@ from astro_ai.chart import (
 # ─── Panchak (Nakshatra Panchaka — avoided for most ceremonies) ──────
 # Moon from the THIRD QUARTER (pada 3) of Dhanishta to the end of Revati: the
 # last half of Dhanishta, then Shatabhisha, Purva Bhadrapada, Uttara Bhadrapada
-# and Revati whole. Source: Raman, Muhurtha (1948) ch. III, "Nakshatra
-# Panchaka" — the quotation is the one filed in #713 (data/ L1227-1235), taken
-# from the filer's transcription; the runner that applied this fix had no
-# data/ and did not re-read it. The old constant flagged ALL of Dhanishta while
+# and Revati whole. Source: Raman, Muhurtha (1948) ch. IV "Influence of
+# Constellations", p. 26, "Nakshatra Panchaka" (data/ L1227-1235; index L8459).
+# Re-read against the book on 2026-11-10 after being filed in #713 as a
+# transcription. The old constant flagged ALL of Dhanishta while
 # its own comment said "latter half", so a Moon in pada 1-2 was marked Panchak
 # too (2026-11-17 noon, pada 2, for one). Whole-nakshatra membership
 # cannot say "pada 3 onward"; the rule lives in _is_panchak so it is one

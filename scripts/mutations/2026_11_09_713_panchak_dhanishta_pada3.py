@@ -1,5 +1,5 @@
 """#713: Panchak opens at the third quarter of Dhanishta, not at the nakshatra
-(Raman, Muhurtha ch. III, Nakshatra Panchaka -- per the issue; not re-read)."""
+(Raman, Muhurtha ch. IV, p. 26, Nakshatra Panchaka -- re-read 2026-11-10)."""
 
 MUTATIONS = [
     ("#713: all of Dhanishta is Panchak again (pada 1-2 flagged, the original defect)",
