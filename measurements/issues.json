@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-10T16:11:47Z",
+  "generated_at": "2026-11-10T17:07:09Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 110,
+  "open": 109,
   "with_ask": 39,
   "by_area": {
     "UNCLASSIFIED": 37,
@@ -10,7 +10,7 @@
     "REDESIGN": 10,
     "UI": 8,
     "FEATURE": 7,
-    "NUMEROLOGY": 6,
+    "NUMEROLOGY": 5,
     "OPS": 3,
     "SEO": 3,
     "RETRIEVAL": 3,
@@ -32,12 +32,12 @@
     "enhancement": 23,
     "bug": 19,
     "chore": 13,
-    "correctness": 12,
+    "correctness": 11,
     "design": 6,
     "ui": 4
   },
   "by_priority": {
-    "unset": 84,
+    "unset": 83,
     "medium": 17,
     "high": 9
   },
@@ -55,22 +55,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-10T15:40:41Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 843,
-      "title": "numerology: show per-word compounds on /numerology (follow-up to #581)",
-      "ask": "",
-      "area": "NUMEROLOGY",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness"
-      ],
-      "created": "2026-11-10T11:11:53Z",
-      "updated": "2026-11-10T11:11:53Z",
+      "updated": "2026-11-10T16:49:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -577,7 +562,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-28T23:12:01Z",
-      "updated": "2026-11-10T16:11:01Z",
+      "updated": "2026-11-10T16:16:20Z",
       "blocked": false,
       "needs_evidence": false
     },
