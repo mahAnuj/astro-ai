@@ -154,7 +154,7 @@ jobs:
           claude_args: |
             --max-turns 80
             --effort high
-            --allowedTools "Agent,Read,Write,Glob,Grep,TodoWrite,Bash,WebFetch"
+            --allowedTools "Read,Write,Glob,Grep,TodoWrite,Bash,WebFetch,Agent"
             --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*),Bash(gh pr:*)"
 
       - name: Rank
