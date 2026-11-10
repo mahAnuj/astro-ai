@@ -2585,7 +2585,8 @@ that was 0 against three books genuinely is **no longer absent**:
 **A zero proves the TERM is absent, not the CONCEPT, and a non-zero proves
 neither.** Both failure directions are now demonstrated inside this one
 section: Siddha Yoga (concept present under another name, terms score 0) and
-Panchaka (a near-name scoring 31 for an unrelated rule). The `SOURCES.md`
+Panchaka (a near-name scoring 31, mostly for an unrelated rule; one hit is the
+pada-3 window, #713). The `SOURCES.md`
 warning should carry the second example as well as the first.
 
 What the four books *do* hold on this ground is Rao's Table 79 (§29.7),
