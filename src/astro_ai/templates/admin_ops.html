@@ -32,7 +32,7 @@
 <title>Ops — Shubh Bhagya agents</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ── Tokens ───────────────────────────────────────────────────────────────
    A night ground with WARM ink (#e8e4da is the public site's cream, not a
@@ -276,12 +276,15 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 /* Window filter. Sits in an <h2> beside .lbl, so it inherits nothing from the
    heading's weight — every state is declared. The selected one is the only
    one that gets ink; the rest read as what you could switch to. */
+.rng{font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink-mute);margin-left:4px}
 .winsel{display:inline-flex;gap:1px;margin-left:9px;vertical-align:middle;
   border:1px solid var(--line-2);border-radius:5px;overflow:hidden}
 .win{font:600 10px/1 Manrope,sans-serif;letter-spacing:.07em;text-transform:uppercase;
   padding:4px 8px;color:var(--ink-mute);text-decoration:none;background:transparent}
 .win:hover{color:var(--ink);background:var(--line-2)}
-.win.on{color:var(--night);background:var(--ink)}
+/* --night is not defined on this page: the selected chip rendered ink on ink,
+   a blank box (owner's screenshot, 2026-11-10). --ground is the page's darkest. */
+.win.on{color:var(--ground);background:var(--ink)}
 .win:focus-visible{outline:2px solid var(--open);outline-offset:-2px}
 /* Token trend. The SVG is stretched by viewBox, so every stroke would scale
    with it — hence no strokes on the bars and vector-effect on the one line. */
@@ -578,6 +581,91 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
 }
+
+/* ══ READABILITY LAYER (owner, 2026-11-10) ═════════════════════════════════
+   "a lot of data … is not readable properly, possibly bad font and background".
+   Measured on the page before this block:
+   - Marcellus has old-style digits: "109" read as "1O9", "2026-11-06" as
+     "2O26-II-O6", on the headline tiles, the objective and every panel label.
+   - Micro-labels were 10-11px uppercase with .1em tracking in #9ba2ae.
+   - --ink-mute #838a97 on --panel was 4.2:1, the floor for half the page.
+   One override layer, last in the cascade, so the markup and every test that
+   reads it are untouched. Contrast below measured against --panel #151922:
+   ink 15.6:1, ink-dim 10.1:1, ink-mute 6.6:1. */
+:root{
+  --ground:#0c0f14; --panel:#151922; --panel-2:#1b212c; --panel-3:#232a37;
+  --line:#2a3140; --line-2:#3b4456;
+  --ink:#f1f3f7; --ink-dim:#c4cad5; --ink-mute:#9ea7b7;
+  --shipped:#4cc38a; --open:#f2b24c; --failed:#f06a55; --judged:#6aa8f0;
+  --nothing:#6b7486; --nothing-text:#a3abba; --accent:#f2b24c; --accent-dim:#9a7330;
+  --ui:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+body{font:400 15px/1.6 var(--ui);font-feature-settings:"tnum" 1,"cv11" 1;
+  background-image:radial-gradient(1100px 380px at 15% -10%,rgba(106,168,240,.06),transparent 70%)}
+.wrap{max-width:1240px}
+/* every display face back to one legible family, with lining tabular figures */
+.num,.mark,.obj p,.chart .big,.panel > h2,h1,h2,h3{font-family:var(--ui)!important;
+  font-variant-numeric:lining-nums tabular-nums}
+.mark{font-size:18px;font-weight:700;letter-spacing:-.01em}
+.mono,.age,.rt td.n,.kv .n,.kv .mono,.mv .d,.mv .was,.loops .c,.bar-row .n{font-family:var(--mono)}
+/* labels: bigger, brighter, less tracking */
+.lbl,.rt th,.loops th,table.cost th,.mv h3,.gap h3{font-family:var(--ui)!important;
+  font-size:12px!important;letter-spacing:.04em!important;color:var(--ink-dim)!important;font-weight:600!important}
+.rt th{padding-bottom:10px}
+.win{font:600 12px/1 var(--ui);letter-spacing:.03em;padding:6px 10px}
+.winsel{border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
+.win.on{color:#0c0f14;background:var(--accent)}
+/* panels: rounded cards with a clear header band */
+.panel,.tile,.verdict,.obj,.alert{border-radius:12px!important}
+.panel{border-color:var(--line);box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 8px 24px rgba(0,0,0,.25)}
+.panel > h2{font-size:18px;font-weight:650;letter-spacing:-.01em;padding:16px 20px;
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));border-radius:12px 12px 0 0}
+.panel > h2{flex-wrap:wrap;align-items:center;row-gap:8px;line-height:1.3;white-space:nowrap}
+.panel > h2 > .lbl,.panel > h2 > .age{white-space:normal}
+.panel .body{padding:20px}
+.panel h3.lbl{color:var(--ink)!important;font-size:13px!important;margin-top:26px!important}
+/* tables: zebra, hover, roomier rows, brighter sub-lines */
+.rt{font-size:14px}
+.rt td{padding:12px 0}
+.rt tbody tr:nth-child(even) td{background:rgba(255,255,255,.018)}
+.rt tbody tr:hover td{background:rgba(106,168,240,.07)}
+.rt td.n{font-size:13.5px}
+.rt .sub{font-size:12.5px;color:var(--ink-mute)}
+/* tiles: big lining numbers, colour carries state */
+.tile{padding:18px 18px 16px}
+.tile .v .num{font-size:40px;font-weight:700;letter-spacing:-.02em}
+.tile .foot{font-size:13px}
+.tile .lbl{color:var(--ink-dim)!important}
+/* alerts: a solid severity bar on the left, tinted fill, readable body */
+.alert{border-left-width:5px!important;padding:14px 18px!important}
+.alert .sev{font:700 11px/1 var(--ui)!important;letter-spacing:.06em!important;
+  padding:5px 8px;border-radius:999px}
+.alert .t{font-size:16px}
+.alert .d{font-size:14px;color:var(--ink-dim)}
+.alert.red{border-color:#7a3226!important;border-left-color:var(--failed)!important;
+  background:linear-gradient(90deg,rgba(240,106,85,.14),rgba(240,106,85,.03) 70%)!important}
+.alert.red .sev{background:rgba(240,106,85,.18);border-color:transparent!important;color:#ffb3a6!important}
+.alert.red .t{color:#ffc2b8}
+.alert.amber{border-color:#6e5420!important;border-left-color:var(--open)!important;
+  background:linear-gradient(90deg,rgba(242,178,76,.13),rgba(242,178,76,.03) 70%)!important}
+.alert.amber .sev{background:rgba(242,178,76,.18);border-color:transparent!important;color:#ffd58f!important}
+/* status chips: a pill with a dot, coloured by state */
+.age{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px;border-radius:999px;
+  background:var(--panel-3);color:var(--ink-dim)}
+.age.live{background:rgba(76,195,138,.14);color:#8fe0b6}
+.age.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--shipped)}
+.age.stale{background:rgba(242,178,76,.14);color:#ffd58f}
+.verdict{border-left-width:5px!important;padding:22px 24px}
+.verdict p{font-size:20px}
+.obj{border-left-width:5px!important}
+.obj p{font-size:16px!important;line-height:1.55!important}
+.empty{color:var(--ink-dim)}
+details > summary{color:var(--ink-dim);cursor:pointer}
+details > summary:hover{color:var(--ink)}
+a{color:#7fb6f5} a:hover{color:#a8cdf8}
+.alert .d a{color:#ffd58f}
+@media (max-width:720px){.tile .v .num{font-size:32px}.panel > h2{font-size:16px}}
 </style>
 </head>
 <body>
@@ -766,7 +854,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
      figure the limit actually counts, without a seventh column in a 1fr box. #}
   <section class="panel">
     <h2>Token budget
-      <span class="lbl">last {{ ops.app.days }} d · {{ "{:,}".format(ops.tpm_per_model) }} TPM per model</span>
+      <span class="lbl" title="{{ ops.app.range.label }}">{{ ops.app.range.label }} · {{ "{:,}".format(ops.tpm_per_model) }} TPM per model</span>
       {#- The window filter. Plain links, not JS: the figures are computed
           server-side from a different span of GCS blobs, so there is nothing
           in the page for a script to re-filter. A link also makes the window
@@ -910,7 +998,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       </div>
       {% endif %}
 
-      <h3 class="lbl" style="margin:22px 0 10px">Tokens per request, by feature</h3>
+      <h3 class="lbl" style="margin:22px 0 10px">Tokens per request, by feature <span class="rng">· {{ ops.app.range.short }}</span></h3>
       <div class="tscroll" role="region" aria-label="Tokens per request, by feature"><table class="rt cols7">
         <thead><tr><th>feature</th><th class="n">calls</th><th class="n">cache</th>
           <th class="n">total / request</th><th class="n">of one bucket</th>
@@ -973,7 +1061,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
            so two buckets can fill while every feature row reads comfortable.
            This is the grain the limit is enforced at. No Tailwind and no
            app.css: this page carries its own <style>. -#}
-      <h3 class="lbl" style="margin:22px 0 10px">Tokens per minute, by model</h3>
+      <h3 class="lbl" style="margin:22px 0 10px">Tokens per minute, by model <span class="rng">· {{ ops.app.range.short }}</span></h3>
       <div class="tscroll" role="region" aria-label="Tokens per minute, by model"><table class="rt cols8">
         <thead><tr><th>model</th><th class="n">calls</th><th class="n">input</th>
           <th class="n">output</th><th class="n">busiest minute</th>
@@ -1538,7 +1626,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     {# ── App health. The product, not the team. Live, 60 s cache. ───── #}
     <section class="panel">
       <h2>App health
-        <span class="lbl">last {{ ops.app.days }} d{% if not ops.app.measured %} · nothing recorded{% endif %}</span>
+        <span class="lbl" title="{{ ops.app.range.label }}">{{ ops.app.range.short }} · {{ ops.app.days }} d{% if not ops.app.measured %} · nothing recorded{% endif %}</span>
         {% if ops.app.measured %}<span class="age live"
               title="read from this app's own GCS stores on the request, 60 s cache">live</span>{% endif %}
         {% if ops.app.store_is_local %}<span class="age stale" style="margin-left:7px"
@@ -1573,7 +1661,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         </div>
 
         {% if ops.app.sources %}
-        <h3 class="lbl" style="margin:22px 0 10px">Where the errors are</h3>
+        <h3 class="lbl" style="margin:22px 0 10px">Where the errors are <span class="rng">· {{ ops.app.range.short }}</span></h3>
         <div class="tscroll" role="region" aria-label="Where the errors are"><table class="rt">
           <thead><tr><th>source</th><th class="n">events</th></tr></thead>
           <tbody>
