@@ -1858,14 +1858,26 @@ def compute(name: str, birth_date: str,
     karmic = _karmic_debt_flags(birth_date, name, table)
 
     # Compound name number (before reduction) — CHEIRO, not Johari (#160).
-    # Cheiro reads compound numbers off a NAME total, e.g. "the compound
-    # number of the name, 16" (Cheiro -layout line 6906) and the Austen
-    # Chamberlain worked example at lines 3243-3277. The 10-52 clamp is
-    # his series bound, not an arbitrary cut: "compound numbers up to
-    # that mysterious number of 52" (3463), "the 52 numbers which
-    # represent the 52 weeks of our year" (3757-3758). Johari's compound
-    # numbers are a different thing — birthdate-scoped, 10-31 — and are
-    # NOT implemented here. See _COMPOUND_NUMBER_MEANING and corpus §5.
+    # THIS IS THE ALL-LETTER WHOLE-NAME TOTAL: every Chaldean letter of every
+    # word summed in one pass. It is one of two reductions Cheiro uses, not
+    # the only one. knowledge/numerology.md §14.2 records that he scores a
+    # name word by word and reads each word separately, and that he adds
+    # word SINGLES for some names (Lloyd George 9 + 7 = 16; this code shows
+    # 43) and word COMPOUNDS for others (Ramsay MacDonald 12 + 32 = 44, which
+    # equals the all-letter total this code computes). Do not describe this
+    # line as "what Cheiro does": it is the reading that agrees with the
+    # MacDonald example and disagrees with the Lloyd George one (#581).
+    # Switching to word singles was ruled out by chief (2026-11-10): it moves
+    # every user's Bhagya score, makes 19-52 nearly unreachable for a
+    # two-word name, and rests on an unsourced per-word 11 -> 2 reduction.
+    # Per-word compounds are the follow-up. Pinned by
+    # tests/test_name_compound_581.py so a change here is deliberate.
+    # The 10-52 clamp is his series bound, not an arbitrary cut: "compound
+    # numbers up to that mysterious number of 52" (Cheiro -layout 3463), "the
+    # 52 numbers which represent the 52 weeks of our year" (3757-3758).
+    # Johari's compound numbers are a different thing — birthdate-scoped,
+    # 10-31 — and are NOT implemented here. See _COMPOUND_NUMBER_MEANING and
+    # corpus §5 and §14.2.
     name_raw = sum(_CHALDEAN.get(c, 0) for c in letters)
     name_compound = name_raw if 10 <= name_raw <= 52 else 0
     name_compound_meaning = _get_compound_meaning(name_compound)
