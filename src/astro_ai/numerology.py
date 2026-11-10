@@ -1033,7 +1033,12 @@ _PROFILES: dict[int, LifePathProfile] = {
         best_partners=(1, 2, 7, 8, 9),
         worst_partners=(3, 5),  # 3=advice-givers not partners, 5=Moon-Mercury enmity
         peak_period="Slow blooming; steady influence across life. No sharp peak — more a long even glow.",
-        strong_months="Jul 20 – Aug 20 (Moon-in-Cancer's own house); full-moon periods generally",
+        # #583: strong_months for 2/4/7/8/9 are Cheiro's "Strong periods" column
+        # (knowledge/numerology.md §14.6), his "20/27" uncertainty kept as written.
+        # 1 is Johari §4-sourced; 3/5/6 agree with §14.6 to about a day, so they
+        # were left as they were. weak_months for 2-9 has NO held source (only 1's
+        # is Johari §4:200); the page labels it editorial instead (numerology.html).
+        strong_months="Jun 20 – Jul 27 (Cheiro's strong period for this number)",
         weak_months="New-moon periods and Krishna Paksha late-week may feel draining",
         good_dates=(2, 11, 20, 29),
         exalted_dates=(29,),
@@ -1077,7 +1082,7 @@ _PROFILES: dict[int, LifePathProfile] = {
         best_partners=(1, 6, 4),
         worst_partners=(3, 5, 9),  # 9 Mars-enemy
         peak_period="Later life — Rahu's rewards come after age 40, often after significant early struggle",
-        strong_months="Late January – early February (Rahu's own transit windows vary; ephemeris-dependent)",
+        strong_months="Jun 21 – Jul 20/27; Jul 22 – end of Aug (Cheiro's strong period for this number)",
         weak_months="Periods immediately following an eclipse are personally destabilising for Rahu-natives",
         good_dates=(4, 13, 22, 31),
         exalted_dates=(31,),
@@ -1150,7 +1155,7 @@ _PROFILES: dict[int, LifePathProfile] = {
         best_partners=(1, 2, 3, 9),
         worst_partners=(4, 7),  # 4=mutual attraction with instability; 7=troublesome with self
         peak_period="Later life — 40s and beyond when spiritual maturity is respected rather than dismissed",
-        strong_months="Sun in Ketu-friendly windows varies year-to-year (ephemeris-dependent)",
+        strong_months="Jun 21 – Jul 20/27, less strongly to end of Aug (Cheiro's strong period for this number)",
         weak_months="Sun-in-Cancer / Leo periods when material demands feel heaviest",
         good_dates=(7, 16, 25),
         exalted_dates=(25, 34),
@@ -1174,7 +1179,7 @@ _PROFILES: dict[int, LifePathProfile] = {
         best_partners=(1, 3, 5, 6),
         worst_partners=(4, 8, 9),  # avoid for marriage per Johari
         peak_period="After age 40 — fame and wealth typically arrive late. Anything before 35 is preparation, not payoff.",
-        strong_months="Jan 21 – Feb 19 (Sun-in-Capricorn/Aquarius — Saturn's own signs)",
+        strong_months="Dec 21 – Jan 20/27, then to Feb 19/26 (Cheiro's strong period for this number)",
         weak_months="Apr 20 – May 20 (Sun-in-Taurus where Saturn's influence weakens for 8-natives)",
         good_dates=(8, 17, 26),
         exalted_dates=(26, 35),
@@ -1198,7 +1203,7 @@ _PROFILES: dict[int, LifePathProfile] = {
         best_partners=(1, 3, 6),  # 6 women ideal for 9 men per Johari
         worst_partners=(5, 7, 9),
         peak_period="Late 20s to late 40s — Mars energy peaks and channels into achievement. Rise after 40 especially strong for 18-borns.",
-        strong_months="Mar 21 – Apr 28 (Sun-in-Aries — Mars's own sign); Oct 23 – Nov 22 (Sun-in-Scorpio)",
+        strong_months="Mar 21 – Apr 19/26; Oct 21 – Nov 20/27 (Cheiro's strong period for this number)",
         weak_months="Jun 21 – Jul 22 (Sun-in-Cancer where Mars debilitates)",
         good_dates=(9, 18, 27),
         exalted_dates=(27, 36),

@@ -510,7 +510,7 @@
         <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Peak career period</span><div class="text-bhagya-ink">{{ prof.peak_period }}</div></div>
         <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Best day of week</span><div class="text-bhagya-ink font-medium">{{ prof.best_day }}</div></div>
         <div class="p-3 bg-emerald-50 rounded border border-emerald-100"><span class="text-xs uppercase text-emerald-800">Strong months</span><div class="text-bhagya-ink">{{ prof.strong_months }}</div></div>
-        <div class="p-3 bg-amber-50 rounded border border-amber-100"><span class="text-xs uppercase text-amber-800">Cautious months</span><div class="text-bhagya-ink">{{ prof.weak_months }}</div></div>
+        <div class="p-3 bg-amber-50 rounded border border-amber-100"><span class="text-xs uppercase text-amber-800">Cautious months</span><div class="text-bhagya-ink">{{ prof.weak_months }}</div>{# #583: only Life Path 1's cautious months have a held source (Johari §4:200); 2-9 are editorial and the page says so. #}{% if prof.number != 1 %}<div class="text-xs text-bhagya-muted mt-1 italic">Editorial guidance, not a dated rule from the classical text we follow.</div>{% endif %}</div>
         <div class="p-3 bg-bhagya-cream-2 rounded sm:col-span-2">
           <span class="text-xs uppercase text-bhagya-muted">Auspicious dates for launches (any month)</span>
           <div class="flex gap-1 flex-wrap mt-1">
