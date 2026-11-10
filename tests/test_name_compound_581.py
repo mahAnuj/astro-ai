@@ -40,8 +40,13 @@ def test_name_compound_is_the_all_letter_total(name, compound):
 
 
 def test_bhagya_score_for_fixed_names_is_unchanged():
-    """The caption fix must not move a headline score (chief ruling, item 4)."""
-    expected = {"Lloyd George": 53, "John Smith": 58, "Baldwin": 58}
+    """The caption fix must not move a headline score (chief ruling, item 4).
+
+    Lloyd George moved 53 -> 55 on 2026-11-10 under #584, which removed the
+    -2 for compound 43 (it sat in the old challenged tier); the other two
+    carry no compound term either way.
+    """
+    expected = {"Lloyd George": 55, "John Smith": 58, "Baldwin": 58}
     for name, value in expected.items():
         r = n.compute(name, "1990-01-01", target_year=2026)
         assert n.compute_numerology_bhagya_score(r).value == value

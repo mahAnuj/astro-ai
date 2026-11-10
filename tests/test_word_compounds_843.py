@@ -51,7 +51,8 @@ def test_word_count_is_bounded():
 def test_whole_name_compound_and_scores_are_untouched():
     r = n.compute("Lloyd George", "1990-01-01", target_year=2026)
     assert r.name_compound == 43
-    assert n.compute_numerology_bhagya_score(r).value == 53
+    # 53 -> 55 under #584: compound 43 no longer carries the old -2 tier.
+    assert n.compute_numerology_bhagya_score(r).value == 55
 
 
 def test_template_renders_the_panel_only_with_words():

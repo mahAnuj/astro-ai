@@ -474,6 +474,8 @@ _EN: Final[dict[str, str]] = {
     # Numerology-only Bhagya Score sits on /numerology
     "num_bhagya_heading":      "Your Numerology Bhagya Score",
     "num_bhagya_lede":         "Character-level snapshot from your numbers. Shifts slowly (only the Personal Year updates annually). For daily transit weather, generate your <a href=\"/kundli\" class=\"text-bhagya-sindoor hover:underline font-semibold\">Janma Kundli Bhagya Score</a>.",
+    # #584: the 0-100 is not a classical computation; knowledge/numerology.md §13.2 records no numeric scoring formula in either held book.
+    "num_score_disclosure":    "This 0–100 score is Bhagya's own editorial weighting, not a classical computation — the classical numerology texts we follow give no formula for a numeric score.",
 
     # ─── Ask CTA (_ask_cta.html) ────────────────────────────────────
     "ask_cta_free":            "Free · No signup",
@@ -551,8 +553,6 @@ _EN: Final[dict[str, str]] = {
     "nbs_py_dynamic":          "Personal Year {py} — a dynamic, initiative-favouring year",
     "nbs_py_grind":            "Personal Year {py} — a slower, structural-work year",
     "nbs_py_harmony":          "Personal Year 6 — a harmony / family / responsibility year",
-    "nbs_compound_good":       "Compound {n} — one of the most-fortunate name compounds in this tradition",
-    "nbs_compound_challenge":  "Compound {n} — a challenging compound (rise-then-fall pattern in this tradition)",
 
     # Numerology Bhagya Score bucket labels
     "nbs_label_strong":        "Strong numerological chapter",
@@ -1016,6 +1016,7 @@ _HI: Final[dict[str, str]] = {
     "bhagya_show_all":         "सभी {n} संकेत दिखाएँ →",
     "num_bhagya_heading":      "आपका अंकशास्त्र भाग्य स्कोर",
     "num_bhagya_lede":         "आपकी संख्याओं से चरित्र-स्तरीय झलक। धीरे बदलती है (केवल व्यक्तिगत वर्ष सालाना बदलता है)। दैनिक गोचर के मौसम के लिए, अपनी <a href=\"/kundli\" class=\"text-bhagya-sindoor hover:underline font-semibold\">जन्म कुंडली भाग्य स्कोर</a> बनाएँ।",
+    "num_score_disclosure":    "यह 0–100 स्कोर भाग्य का अपना संपादकीय भारांकन है, कोई शास्त्रीय गणना नहीं — जिन शास्त्रीय अंकशास्त्र ग्रंथों का हम अनुसरण करते हैं, उनमें अंकों से स्कोर निकालने का कोई सूत्र नहीं मिलता।",
 
     # ─── Ask CTA ─────────────────────────────────────────────────────
     "ask_cta_free":            "मुफ्त · कोई साइनअप नहीं",
@@ -1072,8 +1073,6 @@ _HI: Final[dict[str, str]] = {
     "nbs_py_dynamic":          "पर्सनल ईयर {py} — गतिशील, पहल-अनुकूल वर्ष",
     "nbs_py_grind":            "पर्सनल ईयर {py} — धीमा, संरचनात्मक-कार्य वर्ष",
     "nbs_py_harmony":          "पर्सनल ईयर 6 — सामंजस्य / परिवार / उत्तरदायित्व वर्ष",
-    "nbs_compound_good":       "कम्पाउंड {n} — इस परम्परा में सबसे शुभ नाम-संयुक्तांकों में से एक",
-    "nbs_compound_challenge":  "कम्पाउंड {n} — चुनौतीपूर्ण संयुक्तांक (इस परम्परा में उठान-फिर-पतन पैटर्न)",
 
     "nbs_label_strong":        "मजबूत अंकशास्त्रीय अध्याय",
     "nbs_label_steady":        "स्थिर अंकशास्त्रीय आधार",

@@ -639,24 +639,11 @@ def compute_numerology_bhagya_score(reading: NumerologyReading, lang: str = "en"
     elif py == 6:
         _add(+2, "nbs_py_harmony")
 
-    # Compound Name number tiers. UNVERIFIED ATTRIBUTION — this comment
-    # used to credit "Johari's most-fortunate compounds ... the exalted
-    # 1s per §5", which cannot be right: 37, 43, 46 and 49 are outside
-    # Johari's 10-31 birthdate range entirely. Nor is the list Cheiro's,
-    # though the meanings table now is (#160): Cheiro calls 28 "not a
-    # fortunate number" (-layout 3668-3669) and 31 — which 49 aliases to
-    # — "not a fortunate number from a worldly or material standpoint"
-    # (3695-3696), yet both sit in the favourable tier; and he calls 13
-    # "not unfortunate as is generally supposed" (3501-3502) and 14
-    # "fortunate for dealings with money" (3516-3518), yet both sit in
-    # the challenged tier.
-    # Values deliberately LEFT AS-IS: retiering moves every user's
-    # headline 0-100 score, which is a product decision, not an
-    # attribution fix. Filed as a follow-up rather than changed here.
-    if reading.name_compound in (10, 19, 23, 27, 28, 37, 46, 49):
-        _add(+2, "nbs_compound_good", n=reading.name_compound)
-    elif reading.name_compound in (13, 14, 16, 26, 43):
-        _add(-2, "nbs_compound_challenge", n=reading.name_compound)
+    # No compound-number term (#584). The +2/-2 name-compound tiers that stood
+    # here had no held source: Johari's compounds are birth-day 10-31 only
+    # (knowledge/numerology.md §13), and the lists contradicted Cheiro on 28,
+    # 31/49, 13 and 14. The Cheiro compound MEANING still renders on the page;
+    # it just carries no score weight.
 
     # Clamp + bucket label
     score = max(0, min(100, score))
