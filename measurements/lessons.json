@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-10T19:08:43Z",
+ "generated_at": "2026-11-10T21:29:21Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -667,6 +667,15 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/853#issuecomment-6775144063",
     "summary": "QA: FAIL \u2014 verified at `678c304bd020ce7daedf20247b8efac067210e12` Two defects, both small; the core change passed. (1) Mutation row 7 ('unread run record reads as no run recorded again', initial=None -> initial={} in ops_data._rashifal_runs) cannot go red: its named test test_an_unread_record_is_loa",
     "themes": []
+   },
+   {
+    "number": 859,
+    "at": "2026-11-10T19:27:00Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/859#issuecomment-6777087157",
+    "summary": "QA: FAIL \u2014 verified at `73b36252b42230952236a40999833654fb9dac9c` One defect: src/astro_ai/routes/rashifal.py:235 (_chandra_bala_today docstring) still says 'BPHS: 1,3,6,7,10,11 strong / 4,8,12 weak' \u2014 the weak set is now {2,4,5,8,9,12} and BPHS was withdrawn as the source. Everything else held: \u00a72A",
+    "themes": [
+     "grounding"
+    ]
    }
   ],
   "reverts": [],
@@ -696,8 +705,8 @@
    {
     "kind": "loop-idle",
     "level": "amber",
-    "title": "Build lane idle 83% of the last 7d",
-    "detail": "140.0h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "title": "Build lane idle 82% of the last 7d",
+    "detail": "137.9h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
@@ -705,8 +714,8 @@
  "error_themes": {
   "regression": 18,
   "copy": 17,
+  "grounding": 17,
   "tests": 16,
-  "grounding": 16,
   "tokens": 16,
   "security": 10,
   "performance": 8,
