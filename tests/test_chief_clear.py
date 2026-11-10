@@ -35,8 +35,14 @@ class FakeGh:
             (cc.RULER, f"**chief ruling**\n\nchief-cleared at {SHA}")]
         self.fail = fail or set()
         self.writes: list[list[str]] = []
+        self.dispatches: list[list[str]] = []
 
     def __call__(self, args):
+        if args[0] == "workflow":
+            if "workflow" in self.fail:
+                raise RuntimeError("boom")
+            self.dispatches.append(args)
+            return ""
         url = args[1] if args[1] != "-X" else args[3]
         for f in self.fail:
             if f in url:
@@ -177,3 +183,38 @@ def test_a_PASS_verdict_by_anyone_but_claude_bot_does_not_count(tmp_path, monkey
     gh = FakeGh(comments=[("someone", f"QA: PASS — verified at {SHA}"),
                           (cc.RULER, f"chief-cleared at {SHA}")])
     assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
+
+
+def test_a_clearance_dispatches_one_agent_merge_sweep(tmp_path, monkeypatch):
+    """#759: a label applied with github.token starts no run, so #749, #750,
+    #758, #767 and #810 each waited for an unrelated edge or the throttled cron."""
+    gh = FakeGh()
+    assert run(tmp_path, monkeypatch, gh) == 0
+    assert gh.dispatches == [["workflow", "run", "agent-merge.yml", "--repo", REPO, "--ref", "main"]]
+
+
+def test_two_clearances_dispatch_only_one_sweep(tmp_path, monkeypatch):
+    gh = FakeGh()
+    text = f"pr=706 sha={SHA}\npr=707 sha={SHA}\n"
+    assert run(tmp_path, monkeypatch, gh, text) == 0
+    assert len(gh.dispatches) == 1 and len(gh.writes) == 4
+
+
+def test_a_refused_clearance_dispatches_nothing(tmp_path, monkeypatch):
+    for kw in ({"head": OTHER}, {"gates": "failure"}, {"labels": "qa-pass,qa:independent"}):
+        gh = FakeGh(**kw)
+        assert run(tmp_path, monkeypatch, gh) == 1 and gh.dispatches == [], kw
+
+
+def test_a_failed_dispatch_keeps_the_clearance_and_only_warns(tmp_path, monkeypatch, capsys):
+    gh = FakeGh(fail={"workflow"})
+    assert run(tmp_path, monkeypatch, gh) == 0 and len(gh.writes) == 2
+    assert "could not dispatch agent-merge" in capsys.readouterr().out
+
+
+def test_the_carrier_job_holds_actions_write_and_the_script_labels_nothing_new():
+    wf = yaml.safe_load((ROOT / ".github/workflows/agent-steward.yml").read_text())
+    assert wf["jobs"]["steward"]["permissions"]["actions"] == "write"
+    src = (ROOT / "scripts" / "chief_clear.py").read_text()
+    assert "qa-pass" not in src.split("def apply")[1].split("def dispatch_sweep")[0], \
+        "the carrier must never write a QA label"
