@@ -82,7 +82,9 @@ def test_main_fails_when_muhurat_names_an_unheld_book(tmp_path, monkeypatch, cap
     bad.write_text(_with("# Per Phaladeepika."), encoding="utf-8")
     monkeypatch.setattr(vrc, "MUHURAT", bad)
     assert vrc.main([]) == 1
-    assert "muhurat.py:" in capsys.readouterr().out
+    # The FAIL line itself, not just any mention of the file: main() also prints
+    # "muhurat.py: N lines scanned", and the self-test fails on a bad file too.
+    assert "FAIL \u2014 muhurat.py:" in capsys.readouterr().out
 
 
 def test_main_fails_closed_when_muhurat_cannot_be_read(tmp_path, monkeypatch, capsys):
