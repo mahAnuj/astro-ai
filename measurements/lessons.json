@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-10T17:08:56Z",
+ "generated_at": "2026-11-10T19:08:43Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -660,10 +660,22 @@
      "tests",
      "security"
     ]
+   },
+   {
+    "number": 853,
+    "at": "2026-11-10T18:03:19Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/853#issuecomment-6775144063",
+    "summary": "QA: FAIL \u2014 verified at `678c304bd020ce7daedf20247b8efac067210e12` Two defects, both small; the core change passed. (1) Mutation row 7 ('unread run record reads as no run recorded again', initial=None -> initial={} in ops_data._rashifal_runs) cannot go red: its named test test_an_unread_record_is_loa",
+    "themes": []
    }
   ],
   "reverts": [],
   "verify_production_failed": [
+   {
+    "run": 42868967144,
+    "at": "2026-11-10T17:50:03Z",
+    "sha": "b500fd9"
+   },
    {
     "run": 38333011428,
     "at": "2026-10-13T01:37:27Z",
