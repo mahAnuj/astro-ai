@@ -1422,6 +1422,28 @@ def _ratelimit_rows(usage: dict, chain: list[str]) -> list[dict]:
     return rows
 
 
+def window_range(days: int, today=None) -> dict:
+    """The calendar days a Token budget / App health window covers, as dates.
+
+    The owner, 2026-11-10: the tables "not showing for which duration is this
+    aggregated data for". The header said "last 7 d" and nothing under it said
+    anything, and "last 7 d" is not even what it is: `llm_stats` and `events`
+    both build `[today - timedelta(days=i) for i in range(days)]` from the
+    server's `date.today()` (UTC on Cloud Run), so the window is N CALENDAR
+    days with today still filling. Saying the dates is the honest form.
+    """
+    from datetime import date as _date
+    end = today or _date.today()
+    start = end - timedelta(days=days - 1)
+    if days == 1:
+        label = f"{end.isoformat()} UTC, so far"
+    else:
+        label = f"{start.isoformat()} → {end.isoformat()} UTC, today still filling"
+    return {"start": start.isoformat(), "end": end.isoformat(), "days": days,
+            "short": f"{start:%m-%d} → {end:%m-%d}" if days > 1 else f"{end:%m-%d}",
+            "label": label}
+
+
 def _app_view(days: int = 7) -> dict:
     """App health, read from the app's OWN stores, in-process.
 
@@ -1461,6 +1483,7 @@ def _app_view(days: int = 7) -> dict:
                     if store.startswith("local:")
                     else f"{store} -- configured, not verified reachable")
     out: dict[str, Any] = {"ok": False, "measured": False, "days": days,
+                           "range": window_range(days),
                            "trend": {"ok": False, "days": days},
                            "store": store, "store_is_local": store.startswith("local:"),
                            "store_detail": store_detail}
@@ -2048,6 +2071,8 @@ def snapshot(now: datetime | None = None,
     traffic = _traffic_view()
     agents = _agents_view()
     app = _app_view(app_days)
+    # Every return path of _app_view, cached or not, carries the dates it covers.
+    app = {**app, "range": app.get("range") or window_range(app_days)}
     rashifal = _rashifal_view(today_ist)
     ages = {
         "Delivery": _age((loop_doc or {}).get("generated_at"), now),
