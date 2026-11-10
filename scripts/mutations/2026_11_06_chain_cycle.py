@@ -28,8 +28,10 @@ MUTATIONS = [
      "test_the_daily_cap_counts_build_runs_only"),
     ("chain: a cycle that moved no PR still chains",
      "scripts/chain_cycle.py",
-     "               and _ts(p[\"updated_at\"]) >= since for p in json.loads(out))\n",
-     "               for p in json.loads(out))\n",
+     # Re-pointed 2026-11-10 (#841): produced_something became a loop; the
+     # window check is now this line. Same defect re-broken.
+     "        if _ts(p[\"updated_at\"]) < since:\n",
+     "        if False:\n",
      "test_a_cycle_that_moved_no_pr_does_not_chain"),
     ("chain: the owner's own PR counts as cycle output",
      "scripts/chain_cycle.py",
