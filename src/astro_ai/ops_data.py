@@ -982,7 +982,7 @@ DEFAULT_APP_DAYS = 7
 #: hard-coded and becomes a bug the moment it is not: the first render would
 #: populate it and every other window would be served that answer for 60s,
 #: under its own heading. Found while adding the filter, not in production.
-_app_cache: dict[int, tuple[float, dict]] = {}
+_app_cache: dict[tuple, tuple[float, dict]] = {}
 
 
 #: How many features the trend chart names before the rest become "other".
@@ -1422,6 +1422,28 @@ def _ratelimit_rows(usage: dict, chain: list[str]) -> list[dict]:
     return rows
 
 
+#: How far back the day picker reaches: both stores keep 30 days of blobs
+#: (events.EVENT_RETENTION_DAYS, llm_stats.STATS_RETENTION_DAYS).
+PICK_DAYS = 30
+
+
+def pick_day(value: str, today=None):
+    """A valid picked day as a date, else None. Never raises."""
+    from datetime import date as _date
+    import re as _re
+    v = (value or "").strip()
+    if not _re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+        return None
+    try:
+        d = _date.fromisoformat(v)
+    except ValueError:
+        return None
+    t = today or _date.today()
+    if not (t - timedelta(days=PICK_DAYS - 1) <= d <= t):
+        return None
+    return d
+
+
 def window_range(days: int, today=None) -> dict:
     """The calendar days a Token budget / App health window covers, as dates.
 
@@ -1433,18 +1455,21 @@ def window_range(days: int, today=None) -> dict:
     days with today still filling. Saying the dates is the honest form.
     """
     from datetime import date as _date
-    end = today or _date.today()
+    real_today = _date.today()
+    end = today or real_today
     start = end - timedelta(days=days - 1)
+    filling = end >= real_today
     if days == 1:
-        label = f"{end.isoformat()} UTC, so far"
+        label = f"{end.isoformat()} UTC" + (", so far" if filling else ", the whole day")
     else:
-        label = f"{start.isoformat()} → {end.isoformat()} UTC, today still filling"
+        label = (f"{start.isoformat()} → {end.isoformat()} UTC"
+                 + (", today still filling" if filling else ""))
     return {"start": start.isoformat(), "end": end.isoformat(), "days": days,
             "short": f"{start:%m-%d} → {end:%m-%d}" if days > 1 else f"{end:%m-%d}",
             "label": label}
 
 
-def _app_view(days: int = 7) -> dict:
+def _app_view(days: int = 7, end=None) -> dict:
     """App health, read from the app's OWN stores, in-process.
 
     THE ONE LIVE PANEL, AND WHY IT CAN BE
@@ -1468,7 +1493,8 @@ def _app_view(days: int = 7) -> dict:
     all. `measured` is False in that case and the panel says so instead.
     """
     now = time.time()
-    hit = _app_cache.get(days)
+    key = (days, end)          # a picked day is its own cache entry
+    hit = _app_cache.get(key)
     if hit and now - hit[0] < APP_CACHE_TTL:
         return hit[1]
 
@@ -1483,15 +1509,19 @@ def _app_view(days: int = 7) -> dict:
                     if store.startswith("local:")
                     else f"{store} -- configured, not verified reachable")
     out: dict[str, Any] = {"ok": False, "measured": False, "days": days,
-                           "range": window_range(days),
+                           "range": window_range(days, today=end),
+                           "day": end.isoformat() if end else "",
                            "trend": {"ok": False, "days": days},
                            "store": store, "store_is_local": store.startswith("local:"),
                            "store_detail": store_detail}
     try:
         from astro_ai import events, llm_stats
 
-        usage = llm_stats.usage_summary(days) or {}
-        rng = llm_stats.range_summary(days) or {}
+        # `end` only when a day was picked: the default call is exactly the one
+        # every existing caller and stub already knows.
+        at = {"end": end} if end else {}
+        usage = llm_stats.usage_summary(days, **at) or {}
+        rng = llm_stats.range_summary(days, **at) or {}
         agg = rng.get("aggregate") or {}
         # ONE UNCAPPED PASS. Every figure below -- the total, the rate, the
         # per-type counts, the per-source counts, `exhausted`, `too_large` and
@@ -1504,7 +1534,7 @@ def _app_view(days: int = 7) -> dict:
         # ZERO, so a window whose newest 500 errors were all 429s printed
         # `0 every provider failed` against a true 300 and the alert strip said
         # nothing.
-        brk = events.error_breakdown(days=days) or {}
+        brk = events.error_breakdown(days=days, **at) or {}
         errors_total = int(brk.get("total") or 0)
 
         calls = int(usage.get("total_calls") or 0)
@@ -1550,6 +1580,8 @@ def _app_view(days: int = 7) -> dict:
 
         out = {
             "ok": True,
+            "range": window_range(days, today=end),
+            "day": end.isoformat() if end else "",
             # The denominator, not a judgement: 0 calls means nothing was
             # recorded, which must never render as "no errors".
             "measured": calls > 0,
@@ -1641,7 +1673,7 @@ def _app_view(days: int = 7) -> dict:
     except Exception:                       # noqa: BLE001 — the page never fails
         log.debug("ops app view failed", exc_info=True)
 
-    _app_cache[days] = (now, out)
+    _app_cache[key] = (now, out)
     return out
 
 
@@ -2033,7 +2065,7 @@ def _waste_view(loop_doc: dict | None) -> dict | None:
 
 
 def snapshot(now: datetime | None = None,
-             app_days: int = DEFAULT_APP_DAYS) -> dict:
+             app_days: int = DEFAULT_APP_DAYS, app_day: str = "") -> dict:
     """Everything /admin/ops renders, in one dict. Never raises.
 
     `app_days` is the Token budget / App health window. It drives the alert
@@ -2043,6 +2075,14 @@ def snapshot(now: datetime | None = None,
     """
     if app_days not in APP_WINDOWS:
         app_days = DEFAULT_APP_DAYS
+    # THE DAY PICKER (owner, 2026-11-10). One past UTC day, read from the
+    # per-day blobs that already exist -- no new storage, no write. Refused,
+    # not clamped, when it is not a date or falls outside what is still stored:
+    # an out-of-range day would read blobs retention has deleted and render
+    # zeros under that date.
+    end_day = pick_day(app_day)
+    if end_day is not None:
+        app_days = 1
     now = now or datetime.now(timezone.utc)
     now_ist = now.astimezone(IST)
     today_ist = now_ist.strftime("%Y-%m-%d")
@@ -2070,9 +2110,10 @@ def snapshot(now: datetime | None = None,
     cost = _cost_view(_fetch("cost.json"), shipped_30d)
     traffic = _traffic_view()
     agents = _agents_view()
-    app = _app_view(app_days)
+    app = _app_view(app_days, end_day)
     # Every return path of _app_view, cached or not, carries the dates it covers.
-    app = {**app, "range": app.get("range") or window_range(app_days)}
+    app = {**app, "range": app.get("range") or window_range(app_days, today=end_day),
+           "day": end_day.isoformat() if end_day else ""}
     rashifal = _rashifal_view(today_ist)
     ages = {
         "Delivery": _age((loop_doc or {}).get("generated_at"), now),
@@ -2101,6 +2142,8 @@ def snapshot(now: datetime | None = None,
         # The window in force, and the ones on offer. Both travel with the
         # data so the template holds no list of its own to drift from this one.
         "app_days": app_days,
+        "pick_min": (now.date() - timedelta(days=PICK_DAYS - 1)).isoformat(),
+        "pick_max": now.date().isoformat(),
         "app_windows": APP_WINDOWS,
         "next_cycle_ist": next_cycle_ist(now),
         "loop": loop,

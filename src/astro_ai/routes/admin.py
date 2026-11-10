@@ -152,7 +152,7 @@ async def admin_insights(request: Request, days: int = 30,
 
 @router.get("/admin/ops", response_class=HTMLResponse,
             dependencies=[Depends(require_admin)])
-async def admin_ops(request: Request, window: str = "") -> HTMLResponse:
+async def admin_ops(request: Request, window: str = "", day: str = "") -> HTMLResponse:
     """The agent team's control room — what the loop did, costs, and the backlog.
 
     Mostly the committed `measurements/*.json` files via `ops_data`, which
@@ -191,7 +191,9 @@ async def admin_ops(request: Request, window: str = "") -> HTMLResponse:
     # a coroutine that is 12s of a single-process app serving nobody, not 12s of
     # this request. #353 introduced the pattern with one call; this page has
     # three, so it is moved rather than documented.
-    ops = await asyncio.to_thread(ops_data.snapshot, app_days=days)
+    # `day` is a string for the same reason: ops_data.pick_day refuses a bad
+    # value and the page shows the window instead of a 422.
+    ops = await asyncio.to_thread(ops_data.snapshot, app_days=days, app_day=day)
     L, I = ops["loop"], ops["issues"]
     client = {
         "repo": "mahAnuj/astro-ai",
