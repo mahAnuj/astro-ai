@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-10T05:03:22Z",
+ "generated_at": "2026-11-10T11:14:04Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -617,6 +617,15 @@
      "grounding",
      "tests"
     ]
+   },
+   {
+    "number": 841,
+    "at": "2026-11-10T10:57:27Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/841#issuecomment-6765547146",
+    "summary": "QA: FAIL \u2014 verified at `397efde5f4c92d19559aeee81c942094c675ad69` FAIL: the starvation trigger does not fire on the data that motivated it. Nothing was found wrong with safety or permissions; the defects are in whether the headline mechanism works. (1) chain_cycle.py never runs after a chain-dispatc",
+    "themes": [
+     "regression"
+    ]
    }
   ],
   "reverts": [],
@@ -642,14 +651,14 @@
     "kind": "loop-idle",
     "level": "amber",
     "title": "Build lane idle 84% of the last 7d",
-    "detail": "141.5h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "detail": "141.4h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
  },
  "error_themes": {
+  "regression": 17,
   "copy": 16,
-  "regression": 16,
   "tests": 14,
   "grounding": 14,
   "tokens": 14,

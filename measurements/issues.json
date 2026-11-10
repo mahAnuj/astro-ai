@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-11-10T05:02:10Z",
+  "generated_at": "2026-11-10T11:12:43Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 113,
+  "open": 110,
   "with_ask": 39,
   "by_area": {
-    "UNCLASSIFIED": 40,
-    "INFRA": 13,
+    "UNCLASSIFIED": 38,
+    "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
     "FEATURE": 7,
-    "NUMEROLOGY": 5,
+    "NUMEROLOGY": 6,
     "SEO": 3,
     "RETRIEVAL": 3,
     "MEASURE": 3,
     "CHORE": 3,
-    "MUHURAT": 3,
     "OPS": 2,
     "MATCHING": 2,
+    "MUHURAT": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
@@ -28,21 +28,36 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 37,
+    "untyped": 33,
     "enhancement": 23,
-    "bug": 21,
-    "correctness": 12,
-    "chore": 10,
+    "bug": 19,
+    "correctness": 13,
+    "chore": 12,
     "design": 6,
     "ui": 4
   },
   "by_priority": {
-    "unset": 88,
+    "unset": 85,
     "medium": 16,
     "high": 9
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 843,
+      "title": "numerology: show per-word compounds on /numerology (follow-up to #581)",
+      "ask": "",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-10T11:11:53Z",
+      "updated": "2026-11-10T11:11:53Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 838,
       "title": "Manglik copy: six-house rule, combust-Mars cancellation and 'classical' list claims outrun the held sources (slice of #777)",
@@ -58,7 +73,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-10T04:36:46Z",
-      "updated": "2026-11-10T05:01:35Z",
+      "updated": "2026-11-10T05:08:12Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -73,7 +88,7 @@
         "seo"
       ],
       "created": "2026-11-10T02:33:29Z",
-      "updated": "2026-11-10T02:33:29Z",
+      "updated": "2026-11-10T05:08:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -85,12 +100,12 @@
       "type": "untyped",
       "priority": "unset",
       "labels": [
-        "needs-evidence"
+        "category:technical"
       ],
       "created": "2026-11-09T10:20:41Z",
-      "updated": "2026-11-09T10:20:41Z",
+      "updated": "2026-11-10T08:54:47Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 821,
@@ -101,7 +116,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-09T03:39:09Z",
-      "updated": "2026-11-09T03:39:09Z",
+      "updated": "2026-11-10T08:54:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -116,7 +131,7 @@
         "chore"
       ],
       "created": "2026-11-09T03:30:35Z",
-      "updated": "2026-11-09T03:30:35Z",
+      "updated": "2026-11-10T08:54:43Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -147,7 +162,7 @@
         "astrology-correctness"
       ],
       "created": "2026-11-07T20:12:37Z",
-      "updated": "2026-11-10T04:36:56Z",
+      "updated": "2026-11-10T08:54:42Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -160,7 +175,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-07T16:59:47Z",
-      "updated": "2026-11-07T17:05:47Z",
+      "updated": "2026-11-10T08:54:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -169,11 +184,13 @@
       "title": "A test-count-drop ruling comment cannot turn gates green: nothing re-runs the gates job after it",
       "ask": "",
       "area": "UNCLASSIFIED",
-      "type": "untyped",
+      "type": "chore",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "chore"
+      ],
       "created": "2026-11-07T14:12:55Z",
-      "updated": "2026-11-07T14:12:55Z",
+      "updated": "2026-11-10T08:54:39Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -185,13 +202,13 @@
       "type": "untyped",
       "priority": "unset",
       "labels": [
-        "provenance:trusted",
-        "needs-evidence"
+        "category:technical",
+        "provenance:trusted"
       ],
       "created": "2026-11-07T00:24:23Z",
-      "updated": "2026-11-08T21:00:57Z",
+      "updated": "2026-11-10T08:54:37Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 751,
@@ -204,7 +221,7 @@
         "astrology-correctness"
       ],
       "created": "2026-11-06T11:07:25Z",
-      "updated": "2026-11-06T11:07:25Z",
+      "updated": "2026-11-10T08:54:34Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -269,7 +286,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-06T01:24:18Z",
-      "updated": "2026-11-06T01:24:18Z",
+      "updated": "2026-11-10T08:54:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -297,13 +314,12 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness",
-        "needs-evidence"
+        "astrology-correctness"
       ],
       "created": "2026-11-05T00:20:37Z",
-      "updated": "2026-11-10T02:11:52Z",
+      "updated": "2026-11-10T08:54:32Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 715,
@@ -313,13 +329,12 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness",
-        "needs-evidence"
+        "astrology-correctness"
       ],
       "created": "2026-11-05T00:20:36Z",
-      "updated": "2026-11-10T02:11:50Z",
+      "updated": "2026-11-10T08:54:30Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 714,
@@ -329,30 +344,10 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness",
-        "needs-evidence"
+        "astrology-correctness"
       ],
       "created": "2026-11-05T00:20:35Z",
-      "updated": "2026-11-10T02:11:47Z",
-      "blocked": false,
-      "needs_evidence": true
-    },
-    {
-      "number": 713,
-      "title": "muhurat: Panchak flags all of Dhanishta; Raman's Nakshatra Panchaka starts at its third quarter (WRONG, extent)",
-      "ask": "",
-      "area": "MUHURAT",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-05T00:20:33Z",
-      "updated": "2026-11-10T02:06:20Z",
+      "updated": "2026-11-10T08:54:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -367,7 +362,7 @@
         "chore"
       ],
       "created": "2026-11-04T00:07:00Z",
-      "updated": "2026-11-04T00:07:00Z",
+      "updated": "2026-11-10T08:54:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -378,9 +373,11 @@
       "area": "INFRA",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "category:technical"
+      ],
       "created": "2026-11-04T00:00:15Z",
-      "updated": "2026-11-04T00:00:15Z",
+      "updated": "2026-11-10T08:54:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -409,7 +406,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-02T00:15:45Z",
-      "updated": "2026-11-02T00:15:45Z",
+      "updated": "2026-11-10T08:54:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -420,9 +417,11 @@
       "area": "INFRA",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "category:technical"
+      ],
       "created": "2026-11-01T22:55:31Z",
-      "updated": "2026-11-01T22:55:31Z",
+      "updated": "2026-11-10T08:54:22Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -435,7 +434,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-01T16:31:28Z",
-      "updated": "2026-11-01T16:31:28Z",
+      "updated": "2026-11-10T08:54:20Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -446,9 +445,11 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "category:technical"
+      ],
       "created": "2026-11-01T06:22:14Z",
-      "updated": "2026-11-01T06:22:14Z",
+      "updated": "2026-11-10T08:54:18Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -459,9 +460,11 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "category:technical"
+      ],
       "created": "2026-11-01T03:07:58Z",
-      "updated": "2026-11-01T03:07:58Z",
+      "updated": "2026-11-10T08:54:16Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -476,7 +479,7 @@
         "chore"
       ],
       "created": "2026-11-01T00:11:05Z",
-      "updated": "2026-11-01T00:11:05Z",
+      "updated": "2026-11-10T08:54:14Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -491,7 +494,7 @@
         "bug"
       ],
       "created": "2026-11-01T00:10:33Z",
-      "updated": "2026-11-01T21:02:17Z",
+      "updated": "2026-11-10T08:54:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -500,15 +503,15 @@
       "title": "test_rashifal_day_detail.py module-scoped fixture bypasses _offline_geocode and hits Nominatim, so gates goes red on a 429",
       "ask": "",
       "area": "UNCLASSIFIED",
-      "type": "untyped",
+      "type": "bug",
       "priority": "unset",
       "labels": [
-        "needs-evidence"
+        "bug"
       ],
       "created": "2026-10-30T15:39:52Z",
-      "updated": "2026-11-02T23:00:45Z",
+      "updated": "2026-11-10T08:54:12Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 596,
@@ -520,13 +523,12 @@
       "labels": [
         "ui",
         "skill:ui-fixer",
-        "provenance:trusted",
-        "needs-evidence"
+        "provenance:trusted"
       ],
       "created": "2026-10-29T23:50:33Z",
-      "updated": "2026-11-03T18:19:04Z",
+      "updated": "2026-11-10T08:54:08Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 595,
@@ -540,7 +542,7 @@
         "skill:ui-fixer"
       ],
       "created": "2026-10-29T23:50:32Z",
-      "updated": "2026-10-29T23:50:32Z",
+      "updated": "2026-11-10T08:54:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -555,7 +557,7 @@
         "astrology-correctness"
       ],
       "created": "2026-10-28T23:12:41Z",
-      "updated": "2026-10-28T23:12:41Z",
+      "updated": "2026-11-10T08:54:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -568,13 +570,12 @@
       "priority": "unset",
       "labels": [
         "astrology-correctness",
-        "provenance:trusted",
-        "needs-evidence"
+        "provenance:trusted"
       ],
       "created": "2026-10-28T23:12:01Z",
-      "updated": "2026-11-05T18:36:46Z",
+      "updated": "2026-11-10T08:54:05Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 582,
@@ -587,7 +588,7 @@
         "astrology-correctness"
       ],
       "created": "2026-10-28T23:11:39Z",
-      "updated": "2026-10-28T23:11:39Z",
+      "updated": "2026-11-10T08:54:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -600,26 +601,12 @@
       "priority": "unset",
       "labels": [
         "astrology-correctness",
-        "needs-evidence"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-28T23:11:01Z",
-      "updated": "2026-11-08T21:00:56Z",
-      "blocked": false,
-      "needs_evidence": true
-    },
-    {
-      "number": 580,
-      "title": "[INFRA] detect_stalls counts stalls no cycle can act on as OBLIGED, so the steward is accused of inaction it correctly took",
-      "ask": "",
-      "area": "INFRA",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "category:technical"
-      ],
-      "created": "2026-10-28T17:55:23Z",
-      "updated": "2026-10-29T18:33:49Z",
+      "updated": "2026-11-10T11:12:00Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -634,7 +621,7 @@
         "bug"
       ],
       "created": "2026-10-28T11:11:25Z",
-      "updated": "2026-10-30T11:26:24Z",
+      "updated": "2026-11-10T08:54:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -645,9 +632,11 @@
       "area": "INFRA",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "category:technical"
+      ],
       "created": "2026-10-27T23:00:50Z",
-      "updated": "2026-10-27T23:00:50Z",
+      "updated": "2026-11-10T08:53:59Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -660,36 +649,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-27T23:00:16Z",
-      "updated": "2026-10-27T23:00:16Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 560,
-      "title": "qa-on-green writes its 'dispatched at <sha>' marker before the dispatch, so a dispatch deferred for a cycle in flight is never retried (#551, #549 stranded)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "needs-human-review"
-      ],
-      "created": "2026-10-27T15:12:04Z",
-      "updated": "2026-11-01T16:24:16Z",
-      "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 503,
-      "title": "stall routing: no independent-QA path for human-authored partial/ PRs, guard 2 misreads a working dispatch, chief-dispatched qa cannot record its label",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-10-23T19:06:27Z",
-      "updated": "2026-11-01T15:17:39Z",
+      "updated": "2026-11-10T08:53:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -702,7 +662,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-23T19:06:26Z",
-      "updated": "2026-10-31T02:25:41Z",
+      "updated": "2026-11-10T08:53:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -715,7 +675,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-22T23:55:18Z",
-      "updated": "2026-10-23T21:14:51Z",
+      "updated": "2026-11-10T08:53:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -727,13 +687,12 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug",
-        "needs-evidence"
+        "bug"
       ],
       "created": "2026-10-21T05:17:49Z",
-      "updated": "2026-10-24T14:22:17Z",
+      "updated": "2026-11-10T08:53:55Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 464,
@@ -746,7 +705,7 @@
         "bug"
       ],
       "created": "2026-10-21T04:48:02Z",
-      "updated": "2026-10-21T04:48:02Z",
+      "updated": "2026-11-10T08:53:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -761,7 +720,7 @@
         "bug"
       ],
       "created": "2026-10-21T04:45:01Z",
-      "updated": "2026-10-21T04:45:01Z",
+      "updated": "2026-11-10T08:53:52Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -772,9 +731,11 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "category:technical"
+      ],
       "created": "2026-10-20T17:09:43Z",
-      "updated": "2026-10-20T17:09:43Z",
+      "updated": "2026-11-10T08:53:51Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -783,11 +744,13 @@
       "title": "Squash merge leaves a branch looking unmerged: phantom PRs for shipped work, and stacked PRs conflicting with their own parent",
       "ask": "",
       "area": "UNCLASSIFIED",
-      "type": "untyped",
+      "type": "chore",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "chore"
+      ],
       "created": "2026-10-20T17:09:17Z",
-      "updated": "2026-10-21T18:13:34Z",
+      "updated": "2026-11-10T08:53:48Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -798,9 +761,11 @@
       "area": "DETECT_STALLS",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "category:technical"
+      ],
       "created": "2026-10-20T16:38:34Z",
-      "updated": "2026-10-20T16:38:34Z",
+      "updated": "2026-11-10T08:53:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -813,7 +778,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-20T16:10:42Z",
-      "updated": "2026-10-20T16:10:42Z",
+      "updated": "2026-11-10T08:53:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -824,10 +789,13 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "category:technical",
+        "needs-human-review"
+      ],
       "created": "2026-10-20T16:03:10Z",
-      "updated": "2026-11-01T21:02:27Z",
-      "blocked": false,
+      "updated": "2026-11-10T08:53:43Z",
+      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -855,7 +823,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-20T08:48:15Z",
-      "updated": "2026-11-03T11:14:13Z",
+      "updated": "2026-11-10T08:53:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -868,13 +836,12 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "provenance:trusted",
-        "needs-evidence"
+        "provenance:trusted"
       ],
       "created": "2026-10-20T03:39:56Z",
-      "updated": "2026-10-21T15:57:09Z",
+      "updated": "2026-11-10T08:53:39Z",
       "blocked": false,
-      "needs_evidence": true
+      "needs_evidence": false
     },
     {
       "number": 423,
@@ -952,7 +919,7 @@
         "bug"
       ],
       "created": "2026-10-16T08:46:48Z",
-      "updated": "2026-10-16T08:46:48Z",
+      "updated": "2026-11-10T08:53:37Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -967,7 +934,7 @@
         "bug"
       ],
       "created": "2026-10-16T08:46:46Z",
-      "updated": "2026-10-16T08:46:46Z",
+      "updated": "2026-11-10T08:53:36Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -983,7 +950,7 @@
         "provenance:trusted"
       ],
       "created": "2026-10-16T05:59:26Z",
-      "updated": "2026-10-30T17:00:19Z",
+      "updated": "2026-11-10T08:53:35Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -998,7 +965,7 @@
         "bug"
       ],
       "created": "2026-10-16T05:59:24Z",
-      "updated": "2026-10-16T05:59:24Z",
+      "updated": "2026-11-10T08:53:34Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1014,7 +981,7 @@
         "skill:ui-fixer"
       ],
       "created": "2026-10-15T22:59:03Z",
-      "updated": "2026-10-29T23:50:58Z",
+      "updated": "2026-11-10T08:53:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1031,7 +998,7 @@
         "page:kundli"
       ],
       "created": "2026-10-15T22:59:01Z",
-      "updated": "2026-10-29T23:50:56Z",
+      "updated": "2026-11-10T08:53:32Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1044,7 +1011,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-15T16:26:29Z",
-      "updated": "2026-10-15T22:59:27Z",
+      "updated": "2026-11-10T08:53:31Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1076,7 +1043,7 @@
         "chore"
       ],
       "created": "2026-10-14T19:03:55Z",
-      "updated": "2026-10-14T19:03:55Z",
+      "updated": "2026-11-10T08:53:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1091,7 +1058,7 @@
         "chore"
       ],
       "created": "2026-10-13T23:19:30Z",
-      "updated": "2026-10-13T23:19:30Z",
+      "updated": "2026-11-10T08:53:29Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1106,7 +1073,7 @@
         "chore"
       ],
       "created": "2026-10-13T23:19:23Z",
-      "updated": "2026-11-04T00:00:24Z",
+      "updated": "2026-11-10T08:53:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1138,7 +1105,7 @@
         "priority:medium"
       ],
       "created": "2026-10-11T18:12:08Z",
-      "updated": "2026-10-11T18:12:08Z",
+      "updated": "2026-11-10T08:53:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1153,7 +1120,7 @@
         "bug"
       ],
       "created": "2026-10-09T16:33:15Z",
-      "updated": "2026-10-09T16:33:15Z",
+      "updated": "2026-11-10T08:53:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1169,7 +1136,7 @@
         "design-proposal"
       ],
       "created": "2026-10-09T00:18:11Z",
-      "updated": "2026-11-07T10:00:11Z",
+      "updated": "2026-11-10T08:53:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1185,7 +1152,7 @@
         "design-proposal"
       ],
       "created": "2026-10-09T00:18:09Z",
-      "updated": "2026-10-15T22:59:16Z",
+      "updated": "2026-11-10T08:53:24Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1201,7 +1168,7 @@
         "design-proposal"
       ],
       "created": "2026-10-09T00:18:08Z",
-      "updated": "2026-10-15T22:59:19Z",
+      "updated": "2026-11-10T08:53:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1214,7 +1181,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-08T07:14:27Z",
-      "updated": "2026-10-08T07:14:27Z",
+      "updated": "2026-11-10T08:53:22Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1229,7 +1196,7 @@
         "chore"
       ],
       "created": "2026-10-08T06:16:12Z",
-      "updated": "2026-10-27T23:00:31Z",
+      "updated": "2026-11-10T08:53:21Z",
       "blocked": false,
       "needs_evidence": false
     },
