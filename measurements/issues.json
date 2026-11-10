@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-10T17:07:09Z",
+  "generated_at": "2026-11-10T19:07:15Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 109,
   "with_ask": 39,
   "by_area": {
-    "UNCLASSIFIED": 37,
+    "UNCLASSIFIED": 38,
     "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
     "FEATURE": 7,
-    "NUMEROLOGY": 5,
+    "NUMEROLOGY": 4,
     "OPS": 3,
     "SEO": 3,
     "RETRIEVAL": 3,
@@ -28,21 +28,57 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 33,
+    "untyped": 32,
     "enhancement": 23,
-    "bug": 19,
+    "bug": 21,
     "chore": 13,
-    "correctness": 11,
+    "correctness": 10,
     "design": 6,
     "ui": 4
   },
   "by_priority": {
-    "unset": 83,
+    "unset": 82,
     "medium": 17,
-    "high": 9
+    "high": 10
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 856,
+      "title": "Manglik copy: remaining flat six-house claims and the 'many texts … after age 28' claim outrun the held sources (residue of #838)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-10T18:33:28Z",
+      "updated": "2026-11-10T19:06:24Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 852,
+      "title": "Rashifal: the nightly Claude job publishes after Groq has already generated the day (177 Groq calls / 7 days)",
+      "ask": "Generate tomorrow, not today.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-11-10T17:25:11Z",
+      "updated": "2026-11-10T17:25:11Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 847,
       "title": "[OPS] 2 of the last 4 build cycles built nothing",
@@ -74,7 +110,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-10T04:36:46Z",
-      "updated": "2026-11-10T05:08:12Z",
+      "updated": "2026-11-10T18:33:37Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -90,21 +126,6 @@
       ],
       "created": "2026-11-10T02:33:29Z",
       "updated": "2026-11-10T05:08:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 826,
-      "title": "agent-queue never drains after a qa-on-green or queue-started run: queued rulings for #804 and #810 sat 3h+",
-      "ask": "Options for chief / a session with workflows permission, cheapest first: (a) add a cron to agent-queue.yml",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "category:technical"
-      ],
-      "created": "2026-11-09T10:20:41Z",
-      "updated": "2026-11-10T08:54:47Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -545,24 +566,6 @@
       ],
       "created": "2026-10-28T23:12:41Z",
       "updated": "2026-11-10T08:54:06Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 583,
-      "title": "numerology: Life Path 'Strong/Cautious months' for 2-9 trace to nothing in the corpus; four disagree with Cheiro",
-      "ask": "",
-      "area": "NUMEROLOGY",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-28T23:12:01Z",
-      "updated": "2026-11-10T16:16:20Z",
       "blocked": false,
       "needs_evidence": false
     },

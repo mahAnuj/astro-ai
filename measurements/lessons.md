@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-10T17:08:56Z)
+# Lessons — last 30 days (generated 2026-11-10T19:08:43Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -21,9 +21,9 @@ deterministic, no LLM.
 
 ## Our errors
 
-- QA FAIL verdicts: 71
+- QA FAIL verdicts: 72
 - reverted commits on main: 0
-- failed verify-production runs: 3
+- failed verify-production runs: 4
 - ops findings now: 1
   - [amber] loop-idle: Build lane idle 83% of the last 7d
 
