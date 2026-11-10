@@ -37,12 +37,29 @@ from astro_ai.chart import (
 )
 
 
-# ─── Panchak nakshatras (avoided for most ceremonies) ────────────────
-# Classical: Moon transiting Dhanishta (latter half), Shatabhisha, Purva
-# Bhadrapada, Uttara Bhadrapada, Revati is "Panchak" — the 5 nakshatra
-# window traditionally avoided for weddings, house entry, funeral rites.
-_PANCHAK_NAKSHATRAS = {"Dhanishta", "Shatabhisha", "Purva Bhadrapada",
-                         "Uttara Bhadrapada", "Revati"}
+# ─── Panchak (Nakshatra Panchaka — avoided for most ceremonies) ──────
+# Moon from the THIRD QUARTER (pada 3) of Dhanishta to the end of Revati: the
+# last half of Dhanishta, then Shatabhisha, Purva Bhadrapada, Uttara Bhadrapada
+# and Revati whole. Source: Raman, Muhurtha (1948) ch. IV "Influence of
+# Constellations", p. 26, "Nakshatra Panchaka" (data/ L1227-1235; index L8459).
+# Re-read against the book on 2026-11-10 after being filed in #713 as a
+# transcription. The old constant flagged ALL of Dhanishta while
+# its own comment said "latter half", so a Moon in pada 1-2 was marked Panchak
+# too (2026-11-17 noon, pada 2, for one). Whole-nakshatra membership
+# cannot say "pada 3 onward"; the rule lives in _is_panchak so it is one
+# testable function rather than a set and a comment that can disagree.
+_PANCHAK_WHOLE_NAKSHATRAS = {"Shatabhisha", "Purva Bhadrapada",
+                             "Uttara Bhadrapada", "Revati"}
+_PANCHAK_FIRST_DHANISHTA_PADA = 3
+
+
+def _is_panchak(nakshatra: str, pada: int) -> bool:
+    """True when the Moon is in Nakshatra Panchaka: Dhanishta pada 3 onward,
+    or any pada of Shatabhisha .. Revati. An unknown nakshatra is not Panchak
+    (the Moon missing from a snapshot must not mark a day avoid)."""
+    if nakshatra == "Dhanishta":
+        return pada >= _PANCHAK_FIRST_DHANISHTA_PADA
+    return nakshatra in _PANCHAK_WHOLE_NAKSHATRAS
 
 # Combustion orbs live in chart.COMBUSTION_ORBS, sourced to
 # knowledge/grahas.md §12. This module used to carry its own three constants
@@ -983,11 +1000,13 @@ def _dagdha_flag(weekday: str, tithi: str) -> tuple[bool, str]:
     return False, ""
 
 
-def _moon_nakshatra_for(chart: Chart, when: datetime) -> str:
-    """Return Moon's nakshatra at the given moment."""
+def _moon_nakshatra_for(chart: Chart, when: datetime) -> tuple[str, int]:
+    """Return (nakshatra, pada 1-4) of the Moon at the given moment, or
+    ("", 0) if the snapshot has no Moon. Pada is read from the field, not
+    recomputed — see the note on matching._moon_pada."""
     snap = compute_transit_snapshot(chart, when)
     moon = next((p for p in snap.planets if p.name == "Moon"), None)
-    return moon.nakshatra if moon else ""
+    return (moon.nakshatra, moon.pada) if moon else ("", 0)
 
 
 def _transit_moon(chart: Chart, when: datetime):
@@ -1382,8 +1401,8 @@ def find_candidates(event_type: str, city: str, start: date,
         try:
             when = datetime.combine(d, datetime.min.time().replace(hour=12), tzinfo=tz)
             p = compute_panchang(base_chart, when)
-            nakshatra = _moon_nakshatra_for(base_chart, when)
-            is_panchak = nakshatra in _PANCHAK_NAKSHATRAS
+            nakshatra, moon_pada = _moon_nakshatra_for(base_chart, when)
+            is_panchak = _is_panchak(nakshatra, moon_pada)
             is_chaturmas = _in_chaturmas(d)
             _kharmas_is, kharmas_reason = _kharmas_flag(base_chart, when)
             _eclipse_is, eclipse_reason = _eclipse_flag(d)

@@ -1828,8 +1828,9 @@ and four of the five are now doubly sourced. §29 does **not** source the
 **significance layer** the same pages render on top of them — most of
 `_TITHI_SIGNIFICANCE`, seven of eleven `_KARANA_SIGNIFICANCE` notes, most of
 `_NITYA_YOGA_SIGNIFICANCE`, `_DAGDHA_TITHI_BY_DAY`, Choghadiya,
-`_PANCHAK_NAKSHATRAS`, `_SARVARTHA_SIDDHI_YOGA` and `_RAVI_YOGA_NAKSHATRAS`
-remain unsourced or contested. §29.10 enumerates exactly what is still open.
+the Panchak rule (now `muhurat._is_panchak`; its extent rests on Raman,
+*Muhurtha* ch. IV p. 26, re-read 2026-11-10 — §29.9, #713), `_SARVARTHA_SIDDHI_YOGA` and
+`_RAVI_YOGA_NAKSHATRAS` remain unsourced or contested. §29.10 enumerates exactly what is still open.
 **Do not read §29 as covering more than the angas.**
 
 **Read §29.9 before using the Raman file for anything.** It is OCR of a 1948
@@ -2456,8 +2457,10 @@ With those caveats, it independently confirms and materially extends §29.
   Rao line 9991, about cremation — unrelated.) Its comment credits
   "Muhurtha Chintamani", which is not a book we hold.
 - **`choghadiya` — still 0 across four books.**
-- **`_PANCHAK_NAKSHATRAS` — a false positive waiting to happen, and the exact
-  measurement matters.** Two commands, two opposite-looking answers:
+- **Panchak (`muhurat._is_panchak`, formerly `_PANCHAK_NAKSHATRAS`) — a false
+  positive waiting to happen, and the exact measurement matters. Read the
+  2026-11-09 update below: the "31 irrelevant" conclusion was wrong for one
+  hit.** Two commands, two opposite-looking answers:
 
   ```
   $ scripts/corpus_search.py panchak --absent
@@ -2471,9 +2474,30 @@ With those caveats, it independently confirms and materially extends §29.
   **a different concept**. Lines 961–991 define Panchaka as a *number*: add
   the lunar-day, weekday, constellation and lagna indices, divide by 9, read
   the remainder (1 mrityu, 2 agni, 4 raja, 6 chora, 8 roga). It has nothing to
-  do with `muhurat.py`'s five nakshatras Dhanishta→Revati. **So the rule stays
-  UNSOURCED, and a hit count is not what makes it sourced or not** — 0 under
-  one spelling and 31 under another, with the 31 irrelevant.
+  do with `muhurat.py`'s five nakshatras Dhanishta→Revati. **At the time of this
+  measurement the rule was therefore recorded UNSOURCED, and a hit count is not
+  what makes it sourced or not** — 0 under one spelling and 31 under another;
+  the 31 were all read as the numeric Panchaka. **That reading was wrong for
+  one of them — see the update below.**
+
+  **Update 2026-11-09 (#713), re-read 2026-11-10 — the "31 irrelevant" above is
+  wrong for one of the 31: the rule has a source line.** Raman's Ch. IV
+  ("Influence of Constellations", p. 26) uses *Nakshatra Panchaka* (index
+  "Nakshatra Panchaka 26", L8459) for the Moon window the app calls Panchak:
+  L1227-1235 read "Beginning from the third quarter of
+  Dhanishta and ending with the last part of Revati, the time is held to be
+  highly unsuitable for any kind of auspicious work. This period goes under the
+  special name of Nakshatra Panchaka". So the span is Dhanishta **pada 3**
+  through the end of Revati, not the whole of Dhanishta; `muhurat._is_panchak`
+  now follows it. **Re-read on 2026-11-10** against
+  the Digital Library of India scan in `data/matching/` (the only one of the ten
+  registered books present on that runner; the "31 hits across the corpus"
+  figure was not re-measured, and a hand count in this one book gave 30
+  whole-word hits). Quotation and line numbers match; only OCR hyphenation
+  ("Dhani-shta") differs. The sentence's own list of what it forbids
+  (a journey south, house repair, fuel, cots and beds) beside "any kind of
+  auspicious work" is a source ambiguity, not something the code resolves. The
+  numeric Panchaka of lines 961-991 remains a different rule.
 - **`kharmas` and `chaturmas`** — re-measured across all four books,
   **0 hits** (3 and 5 spellings, 38,197 `-layout` lines).
 
@@ -2556,14 +2580,17 @@ generates**:
 
 **`panchak` is still 0** — it is in the table above precisely because it stays
 absent under the spelling the code uses. The *concept-shaped* hit is under
-`panchaka` (31, all Raman) and is a different rule entirely — §29.9. One term
+`panchaka` (31, all Raman): mostly the numeric Panchaka, a different rule, but
+one hit (L1227-1235, Raman ch. IV p. 26; first a #713 transcription, re-read
+against the book 2026-11-10) is the Dhanishta-pada-3-to-Revati window — §29.9. One term
 that was 0 against three books genuinely is **no longer absent**:
 `bhadra karana`, 1 hit, Raman's index line 7598.
 
 **A zero proves the TERM is absent, not the CONCEPT, and a non-zero proves
 neither.** Both failure directions are now demonstrated inside this one
 section: Siddha Yoga (concept present under another name, terms score 0) and
-Panchaka (a near-name scoring 31 for an unrelated rule). The `SOURCES.md`
+Panchaka (a near-name scoring 31, mostly for an unrelated rule; one hit is the
+pada-3 window, #713). The `SOURCES.md`
 warning should carry the second example as well as the first.
 
 What the four books *do* hold on this ground is Rao's Table 79 (§29.7),
@@ -2632,9 +2659,11 @@ a clean scan of Raman with page images, since the copy we now hold is OCR only.
   not turn §29.8's Rikta observation into a shipped blocker without a source
   that states it as a rule.
 - **Do not source §27's nakshatra deities to Rao's Table 2** — §29.3.
-- **"Panchaka" in Raman is not our Panchak.** 31 hits under the spelling
-  `panchaka` (0 under `panchak`), a different rule entirely — §29.9. A grep
-  that finds the word is not a source.
+- **Most "Panchaka" hits in Raman are not our Panchak.** 31 hits under the
+  spelling `panchaka` (0 under `panchak`); lines 961–991 are the numeric
+  Panchaka, a different rule. One hit, L1227-1235 (Raman ch. IV p. 26, re-read
+  2026-11-10), *is* the Nakshatra Panchaka window the app now follows — §29.9.
+  A grep that finds the word is not a source: read the line.
 - **"Bhadra" now means THREE things across the corpus.** Tithi group 2
   (Rao line 12251, Raman line 7404); Rao's gloss "auspicious or well"
   (line 12236); and Raman's condemned karana (line 1351, index line 7598).
