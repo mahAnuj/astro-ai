@@ -44,6 +44,15 @@ WHAT IT CHECKS
    yogas" (23 are implemented) and moolatrikona dignity (a comment, nothing
    computed). Prose that describes the computation is a claim about the code
    and gets a gate like one.
+7. `muhurat.py`, WHOLE FILE, comments and docstrings included, must not name a
+   book this repo does not hold (`_muhurat_problems`; #716). Checks 1-6 read
+   `chart.py` only, and `muhurat.py` carried ten attributions to BPHS,
+   Muhurta Chintamani and Phaladeepika (plus Ashvalayana) in comments, none of
+   which opens in any book here, while this gate printed PASS. Those are comments, not
+   `source=` labels, so the scan is textual and tolerant of spelling and of a
+   name wrapped across two comment lines. The gate fails closed if the file
+   cannot be read or the anchor it scans around has moved. A rule that has no
+   held source is to say so in plain words, not to name a text.
 
 RULES FOR ANYONE EDITING THIS FILE
 ----------------------------------
@@ -54,13 +63,14 @@ RULES FOR ANYONE EDITING THIS FILE
   not silently count as verified. Say which books were present whenever you
   report on this gate (CLAUDE.md).
 - The self-test runs on every invocation: it re-breaks #216 and #218 nine ways
-  — including on the page's own provenance line — and #209 nineteen more
+  — including on the page's own provenance line — #209 nineteen more
   (count, yoga removed, seven moolatrikona spellings plus the plain claim,
-  seven banned phrases, the missing section, a positional-slug yoga), and
-  asserts this gate goes red on each. A gate that has never failed is not
+  seven banned phrases, the missing section, a positional-slug yoga), and #716
+  nine more (`_MUHURAT_MUTATIONS`: each unheld name in `muhurat.py`, one wrapped
+  across a comment line), and asserts this gate goes red on each. A gate that has never failed is not
   evidence (ARCHITECTURE.md). The count in this sentence is the length of
-  `_MUTATIONS` plus the HTML one plus the #209 cases; keep it honest if you
-  add another.
+  `_MUTATIONS` plus the HTML one plus the #209 cases plus `_MUHURAT_MUTATIONS`;
+  keep it honest if you add another.
 """
 from __future__ import annotations
 
@@ -73,6 +83,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CHART = ROOT / "src" / "astro_ai" / "chart.py"
 RESULT_HTML = ROOT / "src" / "astro_ai" / "templates" / "result.html"
 ABOUT_HTML = ROOT / "src" / "astro_ai" / "templates" / "about.html"
+MUHURAT = ROOT / "src" / "astro_ai" / "muhurat.py"
 
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -566,6 +577,58 @@ def _math_section(about: str) -> str | None:
     return _normalise(about[start:end])
 
 
+# Names `muhurat.py` may not carry, in a comment or a docstring (#716). The
+# `_FORBIDDEN` names come first so the two lists cannot drift; the rest are the
+# texts `muhurat.py` actually credited, which are in no ledger here and are held
+# nowhere in `data/`. Each regex allows whitespace, `#` (a name wrapped across a
+# comment line), `_` and `-` between words, and the common transliterations.
+_SEP = r"[\s#_-]+"
+_MUHURAT_UNHELD: tuple[tuple[str, str], ...] = tuple(
+    (name, _SEP.join(re.escape(w) for w in name.split())) for name in _FORBIDDEN
+) + (
+    ("BPHS", r"\bbphs\b"),
+    ("Brihat Parashara", rf"b[a-z]*hat{_SEP}para[sh]+ara"),
+    ("Muhurta Chintamani", rf"muhurt?h?a{_SEP}chintamani"),
+    ("Chintamani", r"chintamani"),
+    ("Phaladeepika", rf"phala(?:{_SEP})?d[ei]+pika"),
+    ("Jataka Parijata / Chandrika", rf"jataka{_SEP}(?:parijata?|chandrika)"),
+    # Not "Grihya Sutra" on its own: muhurat.py's user-facing namkaran copy says
+    # "per Grihya Sutras" (a genre, in rendered strings, not a comment). That is a
+    # separate user-visible claim and a behaviour change, left for its own issue.
+    ("Ashvalayana", r"ash?[vw]alayana"),
+)
+
+
+def _muhurat_problems(text: str) -> list[str]:
+    """#716: every unheld book name in `muhurat.py`, with its line number.
+
+    A textual scan of the WHOLE file, comments and docstrings included. That is
+    the point: `chart.py` puts its attributions in `source=` labels, which the AST
+    checks above read, but `muhurat.py` put them in `#` comments and docstrings,
+    where no AST check looks - ten of them, naming texts that are not in
+    `data/` and that `knowledge/SOURCES.md` records as withdrawn or never held,
+    while this gate printed PASS on `chart.py` alone.
+
+    No ledger escape, same as `_FORBIDDEN`: a rule with no held source says so in
+    plain words ("Source not held") instead of naming one.
+    """
+    if "_TARA_BALA_NAMES" not in text or "def score_event" not in text:
+        return ["muhurat.py no longer has the anchors this scan reads "
+                "(`_TARA_BALA_NAMES`, `score_event`) - it has moved or is not the "
+                "file, and a gate that cannot find its subject passes vacuously (#193)"]
+    fails: list[str] = []
+    for label, pattern in _MUHURAT_UNHELD:
+        for m in re.finditer(pattern, text, re.I):
+            line = text.count("\n", 0, m.start()) + 1
+            fails.append(
+                f"muhurat.py:{line}: names {label!r} ({m.group(0)!r}). That text is "
+                f"not in data/ and not in fetch_corpus.py's registry, so the "
+                f"attribution cannot be checked by anyone (#716). Cite a book the "
+                f"repo holds and a section from knowledge/*.md, or say 'Source "
+                f"not held' without naming one.")
+    return fails
+
+
 def _about_problems(text: str, about: str) -> list[str]:
     """#209: what /about says the code does, against what the code does."""
     flat = _normalise(about)
@@ -638,6 +701,42 @@ _MUTATIONS: tuple[tuple[str, str, str, str], ...] = (
      'source=f"{_RAO} §11.2.3",',
      'source=f"{_RAO} §11.2.9",', "Vedic Astrology: An Integrated Approach"),
 )
+
+
+# #716: an unheld name re-inserted into muhurat.py, as a comment line placed
+# above `_TARA_BALA_NAMES`. Each must turn `_muhurat_problems` red. The wrapped
+# case is the shape a one-line grep misses: a name split across two comment lines.
+_MUHURAT_MUTATIONS: tuple[tuple[str, str], ...] = (
+    ("#716: BPHS is credited again", "# BPHS assigns each position a name."),
+    ("#716: the full title is spelled out",
+     "# Per Brihat Parashara Hora Shastra."),
+    ("#716: Muhurta Chintamani is credited again", "# Per Muhurta Chintamani."),
+    ("#716: the Muhurtha spelling", "# Classical rule from Muhurtha Chintamani."),
+    ("#716: Muhurta Chintamani wrapped across a comment line",
+     "# Per Muhurta\n# Chintamani."),
+    ("#716: Phaladeepika is credited again", "# Sources: Phaladeepika."),
+    ("#716: Jataka Parijata is credited", "# See Jataka Parijata."),
+    ("#716: Ashvalayana Grihya Sutra is credited",
+     "# Sources: Ashvalayana Grihya Sutra."),
+    ("#716: lowercase bphs", "# bphs marks certain houses as good."),
+)
+
+
+def _muhurat_self_test(mtext: str) -> list[str]:
+    """`_MUHURAT_MUTATIONS` against the real file. Returns the ones that did not
+    turn the check red. The clean file must pass first, or red means nothing."""
+    if _muhurat_problems(mtext):
+        return ["muhurat check is already red before any mutation"]
+    anchor = "_TARA_BALA_NAMES = {"
+    if anchor not in mtext:
+        return [f"anchor {anchor!r} no longer in muhurat.py; re-point it"]
+    survived: list[str] = []
+    for name, line in _MUHURAT_MUTATIONS:
+        if not _muhurat_problems(mtext.replace(anchor, f"{line}\n{anchor}", 1)):
+            survived.append(name)
+        else:
+            print(f"    red on: {name}")
+    return survived
 
 
 def _self_test(text: str, html: str) -> list[str]:
@@ -722,6 +821,16 @@ def main(argv: list[str]) -> int:
 
     fails, notes = _problems(text, html)
     fails += _about_problems(text, ABOUT_HTML.read_text(encoding="utf-8"))
+    # Fail closed: an unreadable muhurat.py is an unchecked one (#716).
+    try:
+        mtext = MUHURAT.read_text(encoding="utf-8")
+    except OSError as exc:
+        mtext = ""
+        fails.append(f"cannot read {MUHURAT}: {exc}. The #716 scan has nothing to "
+                     f"read, and a gate that cannot find its subject passes "
+                     f"vacuously (#193).")
+    else:
+        fails += _muhurat_problems(mtext)
     for n in notes:
         print(f"NOT VERIFIED — {n}")
     for f in fails:
@@ -737,11 +846,13 @@ def main(argv: list[str]) -> int:
     if notes:
         print(f"{len(notes)} citation(s) named a book not on this machine and "
               f"were checked by NAME only. That is not a source verification.")
+    print(f"muhurat.py: {len(mtext.splitlines())} lines scanned (comments and "
+          f"docstrings included), no attribution to an unheld book (#716).")
     print(f"disclosed gaps still open (#216): "
           f"{len(_UNHELD_ATTRIBUTIONS)} unheld book names, "
           f"{len(_VAGUE_ATTRIBUTIONS)} non-citations.")
     print("Self-test (each known defect must turn this gate red):")
-    survived = _self_test(text, html)
+    survived = _self_test(text, html) + _muhurat_self_test(mtext)
     for s in survived:
         print(f"FAIL — mutation did not turn the gate red: {s}")
     if survived:
