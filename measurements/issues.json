@@ -1,21 +1,21 @@
 {
-  "generated_at": "2026-11-10T19:07:15Z",
+  "generated_at": "2026-11-10T21:27:53Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 109,
-  "with_ask": 39,
+  "open": 108,
+  "with_ask": 38,
   "by_area": {
     "UNCLASSIFIED": 38,
     "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
     "FEATURE": 7,
-    "NUMEROLOGY": 4,
     "OPS": 3,
     "SEO": 3,
     "RETRIEVAL": 3,
     "MEASURE": 3,
     "CHORE": 3,
+    "NUMEROLOGY": 3,
     "MATCHING": 2,
     "MUHURAT": 2,
     "RASHIFAL": 2,
@@ -32,12 +32,12 @@
     "enhancement": 23,
     "bug": 21,
     "chore": 13,
-    "correctness": 10,
+    "correctness": 9,
     "design": 6,
     "ui": 4
   },
   "by_priority": {
-    "unset": 82,
+    "unset": 81,
     "medium": 17,
     "high": 10
   },
@@ -58,7 +58,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-10T18:33:28Z",
-      "updated": "2026-11-10T19:06:24Z",
+      "updated": "2026-11-10T19:13:35Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -225,10 +225,12 @@
       "priority": "unset",
       "labels": [
         "category:technical",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-07T00:24:23Z",
-      "updated": "2026-11-10T08:54:37Z",
+      "updated": "2026-11-10T21:27:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -337,10 +339,12 @@
       "priority": "unset",
       "labels": [
         "astrology-correctness",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-05T00:20:36Z",
-      "updated": "2026-11-10T11:15:08Z",
+      "updated": "2026-11-10T19:40:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -352,10 +356,11 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness"
+        "astrology-correctness",
+        "provenance:trusted"
       ],
       "created": "2026-11-05T00:20:35Z",
-      "updated": "2026-11-10T08:54:28Z",
+      "updated": "2026-11-10T19:10:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -514,10 +519,13 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-30T15:39:52Z",
-      "updated": "2026-11-10T08:54:12Z",
+      "updated": "2026-11-10T21:09:14Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -562,25 +570,13 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-28T23:12:41Z",
-      "updated": "2026-11-10T08:54:06Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 582,
-      "title": "numerology: master numbers and Karmic Debt contradict the page's own Cheiro compound row — Cheiro vs Kumar needs a ruling",
-      "ask": "Declare, don't change.",
-      "area": "NUMEROLOGY",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness"
-      ],
-      "created": "2026-10-28T23:11:39Z",
-      "updated": "2026-11-10T08:54:03Z",
+      "updated": "2026-11-10T20:30:52Z",
       "blocked": false,
       "needs_evidence": false
     },
