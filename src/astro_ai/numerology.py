@@ -225,6 +225,12 @@ class NumerologyReading:
     name_compound: int = 0
     name_compound_meaning: str = ""
 
+    # Each word of a multi-word name read on its own, as Cheiro does
+    # (knowledge/numerology.md §14.2): (word, compound, meaning) for every
+    # word whose Chaldean total is in his 10-52 series. Empty for a one-word
+    # name, where it would only repeat name_compound (#843).
+    word_compounds: tuple[tuple[str, int, str], ...] = ()
+
     # Lo Shu 3×3 birth-number matrix — user's DOB digits plotted on the
     # classical magic-square grid. Reveals present/absent number patterns
     # ('arrows') for a real-numerologist-style visual reading.
@@ -1522,6 +1528,30 @@ def _get_compound_meaning(n: int) -> str:
     return _COMPOUND_NUMBER_MEANING.get(n, "")
 
 
+_MAX_WORD_COMPOUNDS = 8  # page-size bound; a real name has 2-4 words
+
+
+def _word_compounds(name: str) -> tuple[tuple[str, int, str], ...]:
+    """Per-word compounds (#843): Cheiro reads each word of a name separately.
+
+    knowledge/numerology.md §14.2: Lloyd = 18, George = 25 (Lloyd George);
+    Ramsay = 12, MacDonald = 32. Words split on whitespace, as the whole-name
+    total strips them; a word whose total falls outside his 10-52 series has no
+    compound and is left out. A one-word name returns () because its only word
+    IS the whole-name compound already shown. This changes no existing number:
+    the whole-name total and the Bhagya score are untouched (chief, 2026-11-10).
+    """
+    words = [w for w in (name or "").split() if _clean_name(w)]
+    if len(words) < 2:
+        return ()
+    out: list[tuple[str, int, str]] = []
+    for w in words[:_MAX_WORD_COMPOUNDS]:
+        total = sum(_CHALDEAN.get(c, 0) for c in _clean_name(w))
+        if 10 <= total <= 52:
+            out.append((w, total, _get_compound_meaning(total)))
+    return tuple(out)
+
+
 # ─── Personal Year (Kumar Ch.1) ──────────────────────────────────────
 # Personal Year Number = birth-month + birth-day + Universal Year (all
 # digits of the current/target year, reduced). Reveals the theme of that
@@ -1909,6 +1939,7 @@ def compute(name: str, birth_date: str,
         karmic_debt_numbers=karmic,
         name_compound=name_compound,
         name_compound_meaning=name_compound_meaning,
+        word_compounds=_word_compounds(name),
         lo_shu=compute_lo_shu_grid(birth_date),
         # Cheiro allows "the same number, OR ANY DEGREE of the same number".
         # Plain equality is not enough: this page keeps 11/22/33 unreduced on
