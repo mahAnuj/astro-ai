@@ -35,29 +35,24 @@ name: Rashifal generate
 
 on:
   schedule:
-    # 22:00 UTC = 03:30 IST. Early enough that an early riser reads Claude's
-    # text rather than triggering a Groq generation themselves: the job has 45
-    # minutes of budget, so the blob lands by ~04:15 IST, ahead of the first
-    # real traffic. Ahead of the two existing jobs too, which is what makes the
-    # fallback automatic:
-    #   22:00 UTC (03:30 IST)  this job        writes the blob      <- new
-    #   01:00 UTC (06:30 IST)  warm-rashifal   GCS hit -> no LLM call
-    #   01:30 UTC (07:00 IST)  send-daily      reads the cache
+    # TOMORROW'S READINGS, WRITTEN THE DAY BEFORE (#852, 2026-11-10). This was
+    # `0 22 * * *` writing TODAY, and GitHub started it 2h50m-6h late (last 12
+    # runs began 00:50-03:59 UTC) -- after the 01:00 UTC warm, which found no
+    # blob and generated the day on Groq: 177 Groq calls and 778,261 input
+    # tokens in the week to 11-10, with Claude's correct text arriving after
+    # everything was cached. Now a scheduled run writes the NEXT IST day
+    # (scripts/rashifal_target_date.py) from 06:17 UTC (11:47 IST), so even the
+    # worst measured delay lands ~6h before IST midnight:
+    #   06:17 UTC  D-1   this job        writes day D's blob
+    #   18:30 UTC  D-1   IST midnight    every page read is a GCS hit
+    #   01:00 UTC  D     warm-rashifal   GCS hit -> no LLM call
+    #   01:30 UTC  D     send-daily      reads the cache
+    # The day is passed explicitly with --date to both scripts; neither guesses
+    # it from the runner's clock (the original reason they compute it in IST).
     #
-    # THE DATE IS NOT THE RUNNER'S. At 22:00 UTC the runner's own
-    # `date.today()` is still YESTERDAY, while `compute_panchang(natal, None)`
-    # resolves through `datetime.now(Asia/Kolkata)` and returns tomorrow's day.
-    # Taking the runner's date would file tomorrow's panchang under yesterday's
-    # key -- a cache hit on the wrong day, the exact failure this job exists to
-    # prevent. Both scripts default to an IST-computed day for that reason; do
-    # not "simplify" them back to date.today().
-    #
-    # QUOTA. This sits between agent-measure (21:00 UTC) and agent-work (23:00
-    # UTC), so it contends with them and with the owner's own interactive use
-    # for the same Claude 5 h rolling cap -- the cap that already forced a
-    # VivaTrades job from 02:00 to 04:30. Size it on a real run before trusting
-    # it nightly; if it starves, this is the job to move, not the cycle.
-    - cron: "0 22 * * *"
+    # QUOTA: this now runs in the Indian afternoon, not beside agent-measure
+    # and agent-work's night slots; it still shares the one Claude Max window.
+    - cron: "17 6 * * *"
   workflow_dispatch:
     inputs:
       lang:
@@ -75,6 +70,10 @@ on:
         description: "Validate and report, publish nothing"
         type: boolean
         default: true
+      date:
+        description: "IST day to write, YYYY-MM-DD (blank: today for a manual run; a scheduled run writes tomorrow)"
+        type: string
+        default: ""
 
 concurrency:
   group: rashifal-generate
@@ -94,10 +93,19 @@ jobs:
     outputs:
       langs: ${{ steps.pick.outputs.langs }}
       rashi: ${{ steps.pick.outputs.rashi }}
+      date: ${{ steps.pick.outputs.date }}
     steps:
+      - uses: actions/checkout@v4
       - id: pick
+        env:
+          EVENT: ${{ github.event_name }}
+          DATE_IN: ${{ inputs.date }}
         run: |
           set -euo pipefail
+          # ONE day for both languages, computed once (#852).
+          DAY=$(python3 scripts/rashifal_target_date.py --event "$EVENT" --date "$DATE_IN")
+          echo "date=$DAY" >> "$GITHUB_OUTPUT"
+          echo "writes IST day: $DAY ($EVENT)" >> "$GITHUB_STEP_SUMMARY"
           LANG_IN="${{ inputs.lang || 'all' }}"
           RASHI_IN="${{ inputs.rashi || 'all' }}"
           if [ "$LANG_IN" = "all" ]; then LANGS='["en","hi"]'; else LANGS="[\"$LANG_IN\"]"; fi
@@ -119,6 +127,7 @@ jobs:
         lang: ${{ fromJSON(needs.prepare.outputs.langs) }}
     env:
       RASHI: ${{ needs.prepare.outputs.rashi }}
+      RASHIFAL_DATE: ${{ needs.prepare.outputs.date }}
       # IN THE WORKSPACE, NOT /tmp. The first real run (40080708209) reported
       # `permission_denials_count: 2`, `num_turns: 3`, `is_error: false` -- the
       # agent was denied Read and Write on /tmp, did nothing, and exited
@@ -147,9 +156,9 @@ jobs:
         run: |
           set -euo pipefail
           uv run python scripts/rashifal_brief.py --lang ${{ matrix.lang }} \
-            --rashi "$RASHI" > $RUNDIR/brief-${{ matrix.lang }}.md
+            --date "$RASHIFAL_DATE" --rashi "$RASHI" > $RUNDIR/brief-${{ matrix.lang }}.md
           echo "brief: $(wc -l < $RUNDIR/brief-${{ matrix.lang }}.md) lines"
-          echo "key:   $(uv run python scripts/rashifal_brief.py --lang ${{ matrix.lang }} --key-only)"
+          echo "key:   $(uv run python scripts/rashifal_brief.py --lang ${{ matrix.lang }} --date "$RASHIFAL_DATE" --key-only)"
           # One rashi is spliced into the published day; the merged result is
           # what gets validated, so it still has to be twelve clean sections.
           if [ "$RASHI" = "all" ]; then echo "MERGE=" >> "$GITHUB_ENV";
@@ -164,7 +173,8 @@ jobs:
           # --dry-run check.
           claude_args: --max-turns 40 --allowedTools "Read,Write,Edit,Bash,Glob,Grep"
           prompt: |
-            You are writing today's Rashifal for shubhagya.com. This text is
+            You are writing the Rashifal for the day the brief names, for
+            shubhagya.com (usually tomorrow, IST). This text is
             published to readers unedited, so write it as the finished article.
 
             The brief may ask for all twelve readings or for ONE. Write exactly
@@ -204,6 +214,7 @@ jobs:
 
             Then check your own work, and fix anything it reports:
               uv run python scripts/publish_rashifal.py --lang ${{ matrix.lang }} \
+                --date ${{ needs.prepare.outputs.date }} \
                 --file .rashifal-run/rashifal-${{ matrix.lang }}.txt --dry-run
 
             If the brief asked for ONE rashi, that check will report "11 or 12
@@ -229,7 +240,7 @@ jobs:
           test -s $RUNDIR/rashifal-${{ matrix.lang }}.txt \
             || { echo "::warning::no document produced — Groq will generate at 01:00 UTC"; exit 1; }
           uv run python scripts/publish_rashifal.py --lang ${{ matrix.lang }} \
-            --file $RUNDIR/rashifal-${{ matrix.lang }}.txt $MERGE --dry-run
+            --date "$RASHIFAL_DATE" --file $RUNDIR/rashifal-${{ matrix.lang }}.txt $MERGE --dry-run
 
       - uses: google-github-actions/auth@v2
         if: ${{ success() && !inputs.dry_run }}
@@ -249,7 +260,7 @@ jobs:
         run: |
           set -euo pipefail
           uv run python scripts/publish_rashifal.py --lang ${{ matrix.lang }} \
-            --file $RUNDIR/rashifal-${{ matrix.lang }}.txt $MERGE
+            --date "$RASHIFAL_DATE" --file $RUNDIR/rashifal-${{ matrix.lang }}.txt $MERGE
 
       # A dry run that throws away what Claude wrote tells you pass/fail and
       # nothing else -- and the whole reason to trigger this by hand is to READ
