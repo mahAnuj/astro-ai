@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-10T11:14:04Z",
+ "generated_at": "2026-11-10T16:13:25Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -626,6 +626,40 @@
     "themes": [
      "regression"
     ]
+   },
+   {
+    "number": 841,
+    "at": "2026-11-10T11:48:43Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/841#issuecomment-6766519886",
+    "summary": "QA: FAIL \u2014 verified at `cce5129291ffe725d9f4a9dbefc4e932ee6646ef`  Independent round, no hand in the work. One defect, a stale claim in shipped text. Everything else I could execute held.  **FAIL reason (qa.md: \"a comment left asserting something the change disproved\")** The PR's own decision doc sa",
+    "themes": [
+     "grounding",
+     "tokens",
+     "tests",
+     "security",
+     "copy",
+     "regression"
+    ]
+   },
+   {
+    "number": 845,
+    "at": "2026-11-10T11:59:28Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/845#issuecomment-6766725382",
+    "summary": "QA: FAIL \u2014 verified at `6f8b059c92cdbc86a447311c782856d04ba04924` In-cycle QA round. Everything executable passed (AST of muhurat.py identical to merge-base d72ace9, gate + 9 self-test rows red, 20 tests, 4 mutation rows 8/8 caught twice, other gates, /muhurat and /panchang byte-identical). One defe",
+    "themes": [
+     "grounding"
+    ]
+   },
+   {
+    "number": 846,
+    "at": "2026-11-10T15:46:19Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/846#issuecomment-6771895123",
+    "summary": "QA: FAIL \u2014 verified at f819079d38a27d36e65619c270987724d88e175b  Independent round (cold read, by execution). One defect, in the injection path the round was asked to check. Everything else holds.  **FAIL: `scripts/wait_for_run.py` writes an unsanitised value to `$GITHUB_ENV`.** It strips only `\\n`:",
+    "themes": [
+     "tokens",
+     "tests",
+     "security"
+    ]
    }
   ],
   "reverts": [],
@@ -651,18 +685,18 @@
     "kind": "loop-idle",
     "level": "amber",
     "title": "Build lane idle 84% of the last 7d",
-    "detail": "141.4h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "detail": "140.3h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
  },
  "error_themes": {
-  "regression": 17,
-  "copy": 16,
-  "tests": 14,
-  "grounding": 14,
-  "tokens": 14,
-  "security": 8,
+  "regression": 18,
+  "copy": 17,
+  "tests": 16,
+  "grounding": 16,
+  "tokens": 16,
+  "security": 10,
   "performance": 8,
   "i18n": 7
  },

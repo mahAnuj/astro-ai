@@ -1,21 +1,21 @@
 {
-  "generated_at": "2026-11-10T11:12:43Z",
+  "generated_at": "2026-11-10T16:11:47Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 110,
   "with_ask": 39,
   "by_area": {
-    "UNCLASSIFIED": 38,
+    "UNCLASSIFIED": 37,
     "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
     "FEATURE": 7,
     "NUMEROLOGY": 6,
+    "OPS": 3,
     "SEO": 3,
     "RETRIEVAL": 3,
     "MEASURE": 3,
     "CHORE": 3,
-    "OPS": 2,
     "MATCHING": 2,
     "MUHURAT": 2,
     "RASHIFAL": 2,
@@ -31,18 +31,34 @@
     "untyped": 33,
     "enhancement": 23,
     "bug": 19,
-    "correctness": 13,
-    "chore": 12,
+    "chore": 13,
+    "correctness": 12,
     "design": 6,
     "ui": 4
   },
   "by_priority": {
-    "unset": 85,
-    "medium": 16,
+    "unset": 84,
+    "medium": 17,
     "high": 9
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 847,
+      "title": "[OPS] 2 of the last 4 build cycles built nothing",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "chore"
+      ],
+      "created": "2026-11-10T15:40:41Z",
+      "updated": "2026-11-10T15:40:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 843,
       "title": "numerology: show per-word compounds on /numerology (follow-up to #581)",
@@ -307,21 +323,6 @@
       "needs_evidence": false
     },
     {
-      "number": 716,
-      "title": "verify_rule_citations scans only chart.py — muhurat.py still cites BPHS, Muhurta Chintamani and Phaladeepika, none registered or held (UNSOURCED + gate gap)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness"
-      ],
-      "created": "2026-11-05T00:20:37Z",
-      "updated": "2026-11-10T08:54:32Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 715,
       "title": "muhurat: Chandra Bala matches neither Raman's muhurta rule nor Rao's gochara table, and is credited to BPHS (CONTESTED)",
       "ask": "",
@@ -329,10 +330,11 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness"
+        "astrology-correctness",
+        "provenance:trusted"
       ],
       "created": "2026-11-05T00:20:36Z",
-      "updated": "2026-11-10T08:54:30Z",
+      "updated": "2026-11-10T11:15:08Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -570,10 +572,12 @@
       "priority": "unset",
       "labels": [
         "astrology-correctness",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-28T23:12:01Z",
-      "updated": "2026-11-10T08:54:05Z",
+      "updated": "2026-11-10T16:11:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -606,7 +610,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-28T23:11:01Z",
-      "updated": "2026-11-10T11:12:00Z",
+      "updated": "2026-11-10T11:16:50Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -823,7 +827,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-20T08:48:15Z",
-      "updated": "2026-11-10T08:53:41Z",
+      "updated": "2026-11-10T11:33:31Z",
       "blocked": false,
       "needs_evidence": false
     },
