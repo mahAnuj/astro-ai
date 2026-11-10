@@ -586,12 +586,12 @@ _SEP = r"[\s#_-]+"
 _MUHURAT_UNHELD: tuple[tuple[str, str], ...] = tuple(
     (name, _SEP.join(re.escape(w) for w in name.split())) for name in _FORBIDDEN
 ) + (
-    ("BPHS", r"\bbphs\b"),
-    ("Brihat Parashara", rf"b[a-z]*hat{_SEP}para[sh]+ara"),
+    ("BPHS", r"\bbphs\b|\bb\.\s?p\.\s?h\.\s?s\b"),
+    ("Brihat Parashara", rf"b[a-z]*hat{_SEP}para[sh]+ara|para[sh]+ara{_SEP}hora"),
     ("Muhurta Chintamani", rf"muhurt?h?a{_SEP}chintamani"),
-    ("Chintamani", r"chintamani"),
+    ("Chintamani", r"chin[\s#_-]*tamani"),
     ("Phaladeepika", rf"phala(?:{_SEP})?d[ei]+pika"),
-    ("Jataka Parijata / Chandrika", rf"jataka{_SEP}(?:parijata?|chandrika)"),
+    ("Jataka Parijata / Chandrika", rf"jataka(?:{_SEP})?(?:parijata?|chandrika)"),
     # Not "Grihya Sutra" on its own: muhurat.py's user-facing namkaran copy says
     # "per Grihya Sutras" (a genre, in rendered strings, not a comment). That is a
     # separate user-visible claim and a behaviour change, left for its own issue.

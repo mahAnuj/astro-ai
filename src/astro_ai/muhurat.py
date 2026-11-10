@@ -401,8 +401,8 @@ def _sarvartha_siddhi_flag(weekday: str, nakshatra: str) -> str:
 
 
 # ─── Ravi Yoga — Sun-based booster ───────────────────────────────────
-# Source not held: UNSOURCED (vedic_reference.md 29.12 lists
-# _RAVI_YOGA_NAKSHATRAS as unsourced or contested). The table below is NOT the
+# Source not held: UNSOURCED (vedic_reference.md section 29 intro and 29.10 item 4
+# list _RAVI_YOGA_NAKSHATRAS as unsourced or contested). The table below is NOT the
 # Ravi Yogas of knowledge/yogas.md 3 (Rao 11.2: planets beside the Sun in a
 # chart). Before #716 it was credited to a text this repo does not hold, and
 # that wording described a Sun-Moon nakshatra combination the code does not

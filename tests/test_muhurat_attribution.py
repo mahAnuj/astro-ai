@@ -57,6 +57,10 @@ def test_muhurta_chintamani_in_a_comment_is_red():
     "# Sources: Aswalayana.",
     "# bphs marks certain houses as good.",
     '"""Per BPHS."""',                       # a docstring, not a comment
+    "# Per B.P.H.S. here.",                  # QA round 1: dotted initials
+    "# See Jatakaparijata.",                 # QA round 1: run together
+    "# Per Parasara Hora Sastra.",           # QA round 1: no 'Brihat'
+    "# Per Muhurta Chin-\n# tamani.",          # QA round 1: hyphen-wrapped
 ])
 def test_each_unheld_name_and_spelling_is_red(line):
     assert vrc._muhurat_problems(_with(line)), line
