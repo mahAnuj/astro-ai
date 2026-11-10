@@ -779,3 +779,22 @@ jobs:
             branch=none
           fi
           printf 'LOOP-RECEIPT issue=%s branch=%s pr=%s\n' "$issue" "$branch" "$pr"
+
+      # WAKE agent-queue ON THE WAY OUT (#826). A dispatched run's completion
+      # is the fourth `workflow_run` level (cron cycle -> agent-queue -> this
+      # dispatched cycle -> agent-queue), which GitHub drops: measured
+      # 2026-11-08..10, agent-queue ran after 0 of 26 dispatched cycles and 8 of
+      # 8 scheduled ones, so the lane chained once per cron firing and then sat.
+      # A scheduled run is still woken by workflow_run, so only a dispatched one
+      # does this. agent-queue waits for THIS run to complete before draining
+      # (scripts/wait_for_run.py), so the dispatch landing while this run is
+      # still in progress is safe. Best effort: the steward's completion
+      # remains the backstop.
+      - name: Wake agent-queue when this run completes
+        if: always() && github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: gh workflow run agent-queue.yml --repo "$GH_REPO" -f after_run="$RUN_ID"
