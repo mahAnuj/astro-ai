@@ -85,7 +85,7 @@ def _is_panchak(nakshatra: str, pada: int) -> bool:
 # 3, 5 and 7 have a held counterpart, and that is the Ashtakoota Tara rule
 # (knowledge/matching.md v.24, "3, 5, 7 are inauspicious"), a different use.
 _TARA_BALA_NAMES = {
-    1: ("Janma",     "ok"),        # own birth star — variable (traditionally cautious)
+    1: ("Janma",     "ok"),        # own birth star — "ok" is an unsourced simplification, same for every event and partner (#714)
     2: ("Sampat",    "good"),      # wealth
     3: ("Vipat",     "avoid"),     # calamity
     4: ("Kshema",    "good"),      # welfare
