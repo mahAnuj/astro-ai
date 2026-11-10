@@ -83,8 +83,9 @@
 {{ reading_body }}
     </div>
     {#- #514: the two facts the reading is no longer allowed to invent.
-       Chandra Bala is today's Moon counted from THIS rashi (BPHS houses
-       1,3,6,7,10,11 strong / 4,8,12 weak) -- the one field that differs both
+       Chandra Bala is today's Moon counted from THIS rashi (Raman's Gochara
+       table, vedic_reference.md 2A: houses 1,3,6,7,10,11 strong / 2,4,5,8,9,12
+       weak, no third grade) -- the one field that differs both
        day to day and across the twelve on one day. The day's colour is the
        weekday lord's, already computed on the strip above; the prose used to
        invent its own and contradict it (2026-10-24: "a small red stone"
@@ -96,7 +97,7 @@
       {%- set cb_tone = 'text-emerald-800' if chandra_bala[1] == 'strong' else ('text-bhagya-sindoor' if chandra_bala[1] == 'weak' else 'text-bhagya-muted') %}
       <div>
         <span class="uppercase text-xs tracking-wider text-bhagya-muted">{% if lang == 'hi' %}चंद्र बल{% else %}Chandra Bala{% endif %}</span>
-        <span class="{{ cb_tone }} font-medium ml-1.5">{% if lang == 'hi' %}{{ {'strong':'बलवान','neutral':'सामान्य','weak':'कमज़ोर'}[chandra_bala[1]] }}{% else %}{{ chandra_bala[1] }}{% endif %}</span>
+        <span class="{{ cb_tone }} font-medium ml-1.5">{% if lang == 'hi' %}{{ {'strong':'बलवान','weak':'कमज़ोर'}[chandra_bala[1]] }}{% else %}{{ chandra_bala[1] }}{% endif %}</span>
         <span class="text-bhagya-muted text-xs ml-1">{% if lang == 'hi' %}(चंद्रमा {{ chandra_bala[0] }}वें भाव में){% else %}(Moon in house {{ chandra_bala[0] }}){% endif %}</span>
       </div>
       {%- endif %}
