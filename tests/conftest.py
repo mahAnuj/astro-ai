@@ -153,6 +153,15 @@ def _dummy_api_key(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "test-key-not-a-real-credential")
 
 
+def _stub_geocode_place(place):
+    """The ONE offline stand-in for `chart.geocode_place`, shared by the function-
+    and module-scoped fixtures below so the two cannot drift apart (#605).
+
+    Mumbai — the reference location the shared rashifal is generated against.
+    """
+    return (19.0760, 72.8777, "Asia/Kolkata")
+
+
 @pytest.fixture(autouse=True)
 def _offline_geocode(monkeypatch):
     """Resolve every place locally, so NO test can reach Nominatim.
@@ -183,9 +192,36 @@ def _offline_geocode(monkeypatch):
     """
     from astro_ai import chart
 
-    # Mumbai — the reference location the shared rashifal is generated against.
-    monkeypatch.setattr(chart, "geocode_place",
-                        lambda place: (19.0760, 72.8777, "Asia/Kolkata"))
+    monkeypatch.setattr(chart, "geocode_place", _stub_geocode_place)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _offline_geocode_module():
+    """`_offline_geocode` for MODULE-scoped fixtures, which it cannot reach (#605).
+
+    MEASURED, 2026-11-10: `tests/test_rashifal_day_detail.py` builds `natal` once
+    per module with `compute_chart(..., RASHIFAL_REFERENCE_PLACE)`, which calls the
+    real `chart.geocode_place` and so Nominatim. With `chart._geocoder` replaced by
+    a recorder that raises, that file reported 22 passed, 22 errors and exactly one
+    real call per run. A 429 from Nominatim errors `natal`, every test that depends
+    on it errors with it, and `pr-gates` goes red on a diff that never touched the
+    file (#564 failed that way).
+
+    Function scope cannot cover this: a function-scoped fixture has not run yet
+    when a module-scoped one is built, so `_offline_geocode` was never in effect
+    for it. Autouse module-scoped fixtures are instantiated before non-autouse
+    module-scoped ones, which is what makes this one win over `natal`.
+
+    `pytest.MonkeyPatch.context()`, because the `monkeypatch` fixture is
+    function-scoped and a module-scoped fixture may not request it. The function-
+    scoped patch still runs per test and unwinds to THIS stub, not to the real
+    function, so the module-wide patch is never exposed between tests.
+    """
+    from astro_ai import chart
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(chart, "geocode_place", _stub_geocode_place)
+        yield
 
 
 @pytest.fixture(autouse=True)
