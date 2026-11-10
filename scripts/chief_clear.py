@@ -44,6 +44,12 @@ EXIT CODES
   0  every line was applied, or there was no file (no ruling this run)
   1  at least one line was refused or failed -- the reasons are printed
   2  bad arguments
+
+AFTER A CLEARANCE (#759)
+------------------------
+When at least one PR was cleared, the script dispatches `agent-merge.yml` once
+(`workflow_dispatch`, which `github.token` may do under the job's existing
+`actions: write`). It writes no label and adds no scope. Never on a refusal.
 """
 
 from __future__ import annotations
@@ -143,6 +149,27 @@ def apply(gh: Runner, repo: str, pr: int) -> None:
     gh(["api", "-X", "DELETE", f"repos/{repo}/issues/{pr}/labels/{HOLD}"])
 
 
+def dispatch_sweep(gh: Runner, repo: str) -> None:
+    """Start one `agent-merge` sweep after a clearance (#759).
+
+    A label applied with `github.token` starts no workflow run (GitHub's own
+    rule for events a workflow creates), so a cleared PR waited for an
+    unrelated edge or the throttled `*/30` cron: #749 and #750 sat cleared for
+    13-14 hours, #810 for 13 minutes. `workflow_dispatch` is the documented
+    exception, and the merge job already uses it to chain sweeps. The sweep
+    re-reads every merge condition from the API, so this cannot merge anything
+    the cron would have refused; it only removes the wait. Warning-only: a
+    failed dispatch leaves the clearance in place and the cron still reaches it.
+    """
+    try:
+        gh(["workflow", "run", "agent-merge.yml", "--repo", repo, "--ref", "main"])
+    except RuntimeError as exc:
+        print(f"::warning::cleared, but could not dispatch agent-merge ({exc}); "
+              f"the */30 sweep will reach it")
+    else:
+        print("dispatched one agent-merge sweep for the cleared PR(s)")
+
+
 def main(argv: list[str], gh: Runner = run_gh) -> int:
     if len(argv) != 2:
         print("usage: chief_clear.py <ruling-file>", file=sys.stderr)
@@ -159,6 +186,7 @@ def main(argv: list[str], gh: Runner = run_gh) -> int:
     failed = bool(problems)
     for p in problems:
         print(f"::warning::{p}")
+    cleared = 0
     for pr, sha in rulings:
         why = refusal(gh, repo, pr, sha)
         if why:
@@ -172,8 +200,11 @@ def main(argv: list[str], gh: Runner = run_gh) -> int:
                   f"agent-merge still refuses it while `{HOLD}` is present")
             failed = True
             continue
+        cleared += 1
         print(f"PR #{pr}: cleared at {sha[:7]} -- `{CLEARED}` added, `{HOLD}` removed; "
               f"agent-merge merges it on its own checks")
+    if cleared:
+        dispatch_sweep(gh, repo)       # once per run, however many PRs were cleared
     return 1 if failed else 0
 
 

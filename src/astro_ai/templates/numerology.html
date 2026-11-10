@@ -248,6 +248,19 @@
     <p class="text-sm text-bhagya-ink leading-relaxed">
       In the modern Western numerology tradition (popularised by 20th-century American authors like Dan Millman and Hans Decoz — not from any classical Vedic text), the numbers 13, 14, 16, and 19 appearing in your Core Number intermediate sums are interpreted as themes for reflection. The framework suggests: 13 = ethical vigilance / avoid selfishness; 14 = master balance and freedom; 16 = beware pride and sudden reversals; 19 = handle power without self-glorification. Not "unlucky" and not scripturally binding — treat as prompts for self-reflection.
     </p>
+    {# #582 — declare the tradition. Karmic Debt is Kumar's category, not the
+       compound-number tradition's (knowledge/numerology.md §12.5 and the
+       note at §5.1/L368); the compound row reads 13/14/16/19 on its own
+       terms (§14.3, "a different plane of meaning"). Declared, not
+       reconciled: no claim that either is right, no change to the score. #}
+    {# Only when the compound panel below actually renders (it needs a name
+       compound of 10-52 -- a very short or very long name has none), so the
+       sentence never points at a panel that is not on the page. #}
+    {% if reading.name_compound and reading.name_compound_meaning %}
+    <p class="text-xs text-bhagya-muted mt-2 italic leading-relaxed">
+      This is a different tradition from the compound-number reading further down this page, which reads the same numerals (13, 14, 16 and 19) on its own terms. The two can differ, and neither overrules the other.
+    </p>
+    {% endif %}
   </section>
   {% endif %}
 
@@ -699,6 +712,22 @@
     <h2 class="font-marcellus text-lg text-bhagya-ink mb-2">Compound {{ reading.name_compound }}</h2>
     <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ reading.name_compound_meaning }}</p>
     <p class="text-xs text-bhagya-muted mt-2 italic">{% if _compound_reduced == reading.name_number %}In the compound-number tradition, the total of the letters of a name (10&ndash;52) carries a secondary vibration alongside the reduced Name Number ({{ reading.name_number }}), which this compound reduces to. Here that total is taken over the whole name; the tradition also reads each word of a name on its own.{% else %}In the compound-number tradition, the total of the letters of a name (10&ndash;52) carries a secondary vibration of its own. That tradition defines its series over the Chaldean letter values, so this compound is read on those values, taken over the whole name, and stands alongside your Name Number ({{ reading.name_number }}). The tradition also reads each word of a name on its own.{% endif %} The two are read together, not one instead of the other: in this tradition the single numbers speak to the material side of life and the compounds to the inner side, so your compound colours the reading rather than overruling it &mdash; a difficult compound alongside a fortunate single is read very differently from the same compound alone. The rows read as images rather than adjectives because the symbolism was handed down in pictures. The series stops at 52, one for each week of the year.</p>
+    {# #582 — tradition notes, rendered only where the same numeral is also
+       read by another tradition on this page. Declares schools; asserts no
+       astrological claim and does not say either is right.
+       (a) §12.5: Karmic Debt is Kumar's category (13/14/16/19 as an
+           intermediate sum), not the compound row's; §14.3: the compound is
+           "a different plane of meaning" that "modifies, it does not overrule".
+       (b) §8 + "Decision on the §8 user choice": masters are kept on the
+           Life Path and name-derived numbers as a deliberate product call
+           (Johari reduces them) -- so the note says "a deliberate choice for
+           this site" and names no school; §14.3 for the compound row. #}
+    {% if reading.name_compound in reading.karmic_debt_numbers %}
+    <p class="text-xs text-bhagya-muted mt-2 italic leading-relaxed" data-tradition-note="karmic-debt">{{ reading.name_compound }} is also flagged as a Karmic Debt number higher up this page. These are two different traditions reading the same numeral: the Karmic Debt framework treats it as a theme for reflection, while the compound-number tradition reads it as the picture above. Each is shown on its own terms, and neither corrects the other.</p>
+    {% endif %}
+    {% if reading.name_compound in (11, 22, 33) %}
+    <p class="text-xs text-bhagya-muted mt-2 italic leading-relaxed" data-tradition-note="master-number">The master-number readings elsewhere on this page keep {{ reading.name_compound }} as a number of its own, a deliberate choice for this site rather than a reading of any one classical source. The compound-number tradition reads the same numeral as one of its pictorial rows. These are different traditions, and neither is a correction of the other.</p>
+    {% endif %}
   </section>
   {% endif %}
   {% if reading.word_compounds %}
