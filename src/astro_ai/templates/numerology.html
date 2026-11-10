@@ -156,7 +156,8 @@
   {# ─── NUMEROLOGY BHAGYA SCORE ───────────────────────────────────
      Gamified 0-100 headline number computed from numerology signals
      only (Life Path, Karmic Debt, Life-Path×Destiny harmony, Personal
-     Year, Compound). Separate from the chart-based Bhagya Score on
+     Year; the name compound is shown below but carries no score term,
+     #584). Separate from the chart-based Bhagya Score on
      /kundli — this one reflects the numerological character, that one
      reflects transit weather. #}
   {% if num_bhagya_score %}
@@ -186,6 +187,9 @@
         <p class="text-sm text-bhagya-ink-soft leading-relaxed">
           {{ t(lang, 'num_bhagya_lede') | safe }}
         </p>
+        {# #584: the 0-100 is Bhagya's own editorial weighting, not a classical
+           computation (knowledge/numerology.md §13.2). Text lives in i18n.py. #}
+        <p class="mt-2 text-xs text-bhagya-muted leading-relaxed">{{ t(lang, 'num_score_disclosure') }}</p>
       </div>
     </div>
     {% if num_bhagya_score.top_drivers %}
