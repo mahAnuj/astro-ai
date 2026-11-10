@@ -42,7 +42,10 @@ def test_strong_months_match_cheiro_14_6(number, windows):
     text = n._PROFILES[number].strong_months
     for w in windows:
         assert w in text, f"Life Path {number}: {w!r} missing from {text!r}"
-    assert "Cheiro's strong period for this number" in text
+    # The tradition, not the author, in user-facing copy (verify_numerology_copy,
+    # #200); the author stays in numerology.py's comments and numerology.md §14.6.
+    assert "the Chaldean tradition's strong period for this number" in text
+    assert "Cheiro" not in text
 
 
 def test_no_invented_reasoning_remains_in_the_rewritten_rows():
