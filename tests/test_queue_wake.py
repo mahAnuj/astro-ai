@@ -96,8 +96,10 @@ def _doc(name):
 
 def test_a_dispatched_cycle_wakes_agent_queue_with_its_own_run_id():
     steps = _doc("agent-work.yml")["jobs"]["cycle"]["steps"]
-    wake = steps[-1]
-    assert wake["name"] == "Wake agent-queue when this run completes", "it must be the last step"
+    wake = steps[-2]
+    assert wake["name"] == "Wake agent-queue when this run completes", (
+        "it must run after the push and PR steps; only the receipt follows it")
+    assert steps[-1]["name"] == "Record the loop receipt"
     assert wake["if"] == "always() && github.event_name == 'workflow_dispatch'", (
         "a scheduled run is already woken by workflow_run; waking it twice would chain twice")
     assert wake.get("continue-on-error") is True
