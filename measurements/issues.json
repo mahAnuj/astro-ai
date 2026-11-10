@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-11-09T23:44:48Z",
+  "generated_at": "2026-11-10T02:06:53Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 112,
+  "open": 111,
   "with_ask": 39,
   "by_area": {
     "UNCLASSIFIED": 39,
     "INFRA": 13,
     "REDESIGN": 10,
-    "UI": 9,
+    "UI": 8,
     "FEATURE": 7,
     "NUMEROLOGY": 5,
     "RETRIEVAL": 3,
@@ -30,14 +30,14 @@
   "by_type": {
     "untyped": 36,
     "enhancement": 23,
-    "bug": 19,
-    "correctness": 13,
+    "bug": 20,
+    "correctness": 12,
     "chore": 10,
     "design": 6,
-    "ui": 5
+    "ui": 4
   },
   "by_priority": {
-    "unset": 87,
+    "unset": 86,
     "medium": 16,
     "high": 9
   },
@@ -98,7 +98,7 @@
         "chore"
       ],
       "created": "2026-11-09T00:26:38Z",
-      "updated": "2026-11-09T00:55:04Z",
+      "updated": "2026-11-10T00:51:12Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -305,13 +305,17 @@
       "title": "muhurat: Panchak flags all of Dhanishta; Raman's Nakshatra Panchaka starts at its third quarter (WRONG, extent)",
       "ask": "",
       "area": "MUHURAT",
-      "type": "correctness",
+      "type": "bug",
       "priority": "unset",
       "labels": [
-        "astrology-correctness"
+        "bug",
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-05T00:20:33Z",
-      "updated": "2026-11-08T20:59:59Z",
+      "updated": "2026-11-10T02:06:20Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -502,26 +506,6 @@
       "updated": "2026-10-29T23:50:32Z",
       "blocked": false,
       "needs_evidence": false
-    },
-    {
-      "number": 594,
-      "title": "[UI] Top /learn landing article uses the raw path \"/dasha\" as link text",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer",
-        "qa-pass",
-        "provenance:trusted",
-        "needs-evidence",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-29T23:50:30Z",
-      "updated": "2026-11-09T23:44:21Z",
-      "blocked": false,
-      "needs_evidence": true
     },
     {
       "number": 584,
@@ -1533,10 +1517,11 @@
       "type": "enhancement",
       "priority": "unset",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "provenance:trusted"
       ],
       "created": "2026-08-08T18:59:03Z",
-      "updated": "2026-08-08T18:59:03Z",
+      "updated": "2026-11-09T23:50:24Z",
       "blocked": false,
       "needs_evidence": false
     },
