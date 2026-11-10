@@ -11,6 +11,7 @@ import importlib.util
 import json
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,8 +49,10 @@ def test_it_waits_for_the_waker_to_complete_then_describes_it():
 
 
 def test_a_qa_round_is_described_by_its_title_so_chain_cycle_skips_it():
-    code, facts = wfr.wait(Api({**DONE, "display_title": "QA round: PR #841"}), REPO, "42805592453", lambda s: None)
-    assert code == 0 and facts["WAKE_TITLE"].startswith("QA round")
+    # The API reports a run-name as `name` too (run 42812764198).
+    qa = {**DONE, "name": "QA round: PR #841", "display_title": "QA round: PR #841"}
+    code, facts = wfr.wait(Api(qa), REPO, "42805592453", lambda s: None)
+    assert code == 0 and facts["WAKE_TITLE"].startswith("QA round") and facts["WAKE_NAME"] != "Agent work"
 
 
 def test_a_run_of_any_other_workflow_is_refused():
@@ -86,6 +89,23 @@ def test_main_validates_its_input_and_writes_github_env(tmp_path, monkeypatch):
     assert wfr.main(["x"], gh=Api(DONE), sleep=lambda s: None) == 0
     assert "WAKE_NAME=Agent work\n" in env.read_text()
     assert "WAKE_STARTED=2026-11-10T11:12:00Z\n" in env.read_text()
+
+
+@pytest.mark.parametrize("field,value", [
+    ("display_title", "QA round: PR #1\rBASH_ENV=/tmp/evil\r\nPATH=/tmp/x"),   # QA on #846
+    ("display_title", "QA round: PR #1\nPATH=/tmp/x"),
+    ("display_title", "QA round: PR #1 "),
+    ("name", "Agent work\r"),
+    ("conclusion", "success\nX=1"),
+    ("run_started_at", "2026-11-10T11:12:00Z\rX=1"),
+])
+def test_a_value_outside_its_shape_is_refused_not_written(field, value, tmp_path, monkeypatch):
+    env = tmp_path / "env"
+    monkeypatch.setenv("GH_REPO", REPO)
+    monkeypatch.setenv("AFTER_RUN", "42805592453")
+    monkeypatch.setenv("GITHUB_ENV", str(env))
+    assert wfr.main(["x"], gh=Api({**DONE, field: value}), sleep=lambda s: None) == 1
+    assert not env.exists() or env.read_text() == ""
 
 
 # --- the wiring --------------------------------------------------------------

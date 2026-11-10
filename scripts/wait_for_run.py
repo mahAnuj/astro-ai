@@ -42,6 +42,21 @@ from typing import Callable
 Runner = Callable[[list[str]], str]
 
 WORKFLOW_PATH = ".github/workflows/agent-work.yml"
+
+#: The only shapes the four facts can take for an agent-work run. Each value is
+#: written to $GITHUB_ENV, which is line-oriented, and a QA round's title embeds
+#: `inputs.pr`, a free string the dispatcher typed (QA on #846: a title carrying
+#: `\r` became extra assignments such as BASH_ENV and PATH). Allow-listing the
+#: shape refuses every control character at once; escaping is the thing that is
+#: easy to get wrong.
+SHAPES = {
+    # A run with a run-name reports it as `name` too: measured on run
+    # 42812764198, name == display_title == "QA round: PR #841".
+    "WAKE_NAME": re.compile(r"Agent work|QA round: PR #\d{1,9}"),
+    "WAKE_TITLE": re.compile(r"Agent work|QA round: PR #\d{1,9}"),
+    "WAKE_CONCLUSION": re.compile(r"[a-z_]{1,20}"),
+    "WAKE_STARTED": re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z"),
+}
 POLL_SECONDS = 15
 MAX_WAIT_SECONDS = 10 * 60
 
@@ -66,10 +81,14 @@ def wait(gh: Runner, repo: str, run_id: str, sleep: Callable[[float], None] = ti
             if path != WORKFLOW_PATH:
                 return 1, f"run {run_id} is {path or 'an unknown workflow'}, not {WORKFLOW_PATH}"
             if run.get("status") == "completed":
-                return 0, {"WAKE_NAME": run.get("name") or "",
-                           "WAKE_TITLE": run.get("display_title") or "",
-                           "WAKE_CONCLUSION": run.get("conclusion") or "",
-                           "WAKE_STARTED": run.get("run_started_at") or run.get("created_at") or ""}
+                facts = {"WAKE_NAME": run.get("name") or "",
+                         "WAKE_TITLE": run.get("display_title") or "",
+                         "WAKE_CONCLUSION": run.get("conclusion") or "",
+                         "WAKE_STARTED": run.get("run_started_at") or run.get("created_at") or ""}
+                bad = [k for k, v in facts.items() if not SHAPES[k].fullmatch(v)]
+                if bad:
+                    return 1, f"run {run_id} has an unexpected {', '.join(bad)}; refusing to write it to GITHUB_ENV"
+                return 0, facts
         if waited >= max_wait:
             why = err if run is None else f"still {run.get('status')}"
             return 1, f"run {run_id} did not complete within {int(max_wait)}s ({why})"
@@ -95,7 +114,7 @@ def main(argv: list[str], gh: Runner = run_gh, sleep: Callable[[float], None] = 
     if out:
         with open(out, "a") as fh:
             for k, v in result.items():
-                fh.write(f"{k}={v.replace(chr(10), ' ')}\n")
+                fh.write(f"{k}={v}\n")      # each value matched SHAPES: no control characters
     return 0
 
 
