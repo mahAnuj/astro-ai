@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-10",
-    "2026-11-06"
+    "2026-10-11",
+    "2026-11-07"
   ],
   "dimensions": [
     "eventName"
@@ -14,51 +14,51 @@
   "rows": [
     {
       "event": "page_view",
-      "count": 1026
+      "count": 1049
     },
     {
       "event": "user_identified",
-      "count": 609
-    },
-    {
-      "event": "feature_view",
-      "count": 592
+      "count": 616
     },
     {
       "event": "session_start",
-      "count": 586
+      "count": 601
+    },
+    {
+      "event": "feature_view",
+      "count": 599
     },
     {
       "event": "first_visit",
-      "count": 462
+      "count": 478
     },
     {
       "event": "user_engagement",
-      "count": 265
+      "count": 271
     },
     {
       "event": "scroll",
-      "count": 149
+      "count": 150
     },
     {
       "event": "ask_answered",
-      "count": 137
+      "count": 134
     },
     {
       "event": "form_start",
-      "count": 130
+      "count": 131
     },
     {
       "event": "kundli_generated",
-      "count": 52
+      "count": 53
+    },
+    {
+      "event": "cta_click",
+      "count": 8
     },
     {
       "event": "view_search_results",
       "count": 5
-    },
-    {
-      "event": "cta_click",
-      "count": 4
     },
     {
       "event": "click",
@@ -77,10 +77,10 @@
       "count": 1
     }
   ],
-  "events_total": 4023,
-  "coverage_note": "cta_click: 4 events recorded in the window; the from/to split is NOT available: every row reports (not set) for from_path and to_path, so the parameters are not registered as custom dimensions (or were never collected); the TOTAL count above is still valid; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "events_total": 4101,
+  "coverage_note": "cta_click: 8 events recorded in the window; the from/to split is NOT available: every row reports (not set) for from_path and to_path, so the parameters are not registered as custom dimensions (or were never collected); the TOTAL count above is still valid; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
-    "count": 4,
+    "count": 8,
     "split_available": false,
     "rows": []
   }
