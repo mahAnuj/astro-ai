@@ -32,12 +32,16 @@ def _post(client, name, birth=BIRTH):
     return r.text
 
 
-# (name, karmic numbers, compound, bhagya score) -- measured before the template change
+# (name, karmic numbers, compound, bhagya score) -- measured before the template change.
+# #584 then removed the unsourced compound-tier +/-2 from the score (knowledge/numerology.md
+# 14.3 gives no basis for it), so the two probes whose compound sat in a tier moved by exactly
+# that step: Suman (19, favourable) 57 -> 55 and Ankit (13, challenged) 48 -> 50. Kiran (11) and
+# Mohan (22) sit in neither tier and are unchanged. The template note still moves nothing.
 PROBES = [
-    ("Suman", (19,), 19, 57),
+    ("Suman", (19,), 19, 55),
     ("Kiran", (), 11, 58),
     ("Mohan", (14,), 22, 50),
-    ("Ankit", (13,), 13, 48),
+    ("Ankit", (13,), 13, 50),
 ]
 
 
