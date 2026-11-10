@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-10T02:08:07Z",
+ "generated_at": "2026-11-10T03:13:34Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -642,7 +642,7 @@
     "kind": "loop-idle",
     "level": "amber",
     "title": "Build lane idle 84% of the last 7d",
-    "detail": "141.4h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "detail": "141.3h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
@@ -880,5 +880,15 @@
   "UNSCOREABLE": 10,
   "PARTIAL": 1
  },
- "competitor_patterns": []
+ "competitor_patterns": [
+  {
+   "number": 835,
+   "title": "SEO debilitated-sun-career: 480 impressions on 'which sign' questions, 0 clicks \u2014 answer-first FAQ +",
+   "state": "open",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/835",
+   "labels": [
+    "seo"
+   ]
+  }
+ ]
 }

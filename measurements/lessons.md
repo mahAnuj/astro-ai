@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-10T02:08:07Z)
+# Lessons — last 30 days (generated 2026-11-10T03:13:34Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -64,4 +64,4 @@ A MISS is the most useful line here: before proposing work of the same kind, say
 
 ## Competitor patterns
 
-- none recorded yet: discover writes one issue per pattern with `<!-- competitor-pattern -->`
+- #835 [open] SEO debilitated-sun-career: 480 impressions on 'which sign' questions, 0 clicks — answer-first FAQ +
