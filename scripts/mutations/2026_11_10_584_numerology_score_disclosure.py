@@ -5,17 +5,17 @@ Each row re-breaks one claim and names the test that must go red."""
 MUTATIONS = [
     ("#584: the +2 'good compound' tier is back in the Bhagya score",
      "src/astro_ai/numerology.py",
-     "    # Clamp + bucket label\n",
+     "    score = max(0, min(100, score))\n    if score >= 75:\n",
      "    if reading.name_compound in (10, 19, 23, 27, 28, 37, 46, 49):\n"
      "        _add(+2, \"nbs_py_harmony\")\n"
-     "    # Clamp + bucket label\n",
+     "    score = max(0, min(100, score))\n    if score >= 75:\n",
      "test_name_compound_does_not_move_the_score"),
     ("#584: the -2 'challenging compound' tier is back in the Bhagya score",
      "src/astro_ai/numerology.py",
-     "    # Clamp + bucket label\n",
+     "    score = max(0, min(100, score))\n    if score >= 75:\n",
      "    if reading.name_compound in (13, 14, 16, 26, 43):\n"
      "        _add(-2, \"nbs_py_grind\")\n"
-     "    # Clamp + bucket label\n",
+     "    score = max(0, min(100, score))\n    if score >= 75:\n",
      "test_name_compound_does_not_move_the_score"),
     ("#584: /numerology no longer renders the editorial-weighting disclosure",
      "src/astro_ai/templates/numerology.html",
