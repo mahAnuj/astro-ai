@@ -19,6 +19,16 @@
 # runs of its own. A `*/30` cron here would be ~1,400 Actions minutes a month
 # against a 2,000-minute allowance, for a case those two triggers already cover.
 #
+# A DISPATCHED CYCLE WAKES THIS ITSELF (#826, 2026-11-10). `workflow_run`
+# stops after three levels: a cron cycle wakes this (2), this dispatches the
+# next cycle (3), and that cycle's completion is level 4 -- dropped silently.
+# Measured 2026-11-08..10: this ran after 8 of 8 scheduled cycles and 0 of 26
+# dispatched ones, so the lane chained exactly once per cron firing. So a
+# dispatched agent-work run ends by dispatching this with `after_run=<its id>`;
+# `scripts/wait_for_run.py` waits for that run to COMPLETE (draining while it
+# runs would see it as a busy lane, the trap above) and hands the drain and
+# chain steps the same facts the workflow_run payload carries.
+#
 # ONE ENTRY PER FREE LANE. Since 2026-11-03 agent-work has two lanes (build,
 # and judge-only QA rounds), each one cycle at a time, so a drain starts at most
 # one entry in each; the next is started when THAT cycle completes and fires
@@ -31,6 +41,11 @@ on:
     workflows: ["Agent work", "Agent steward"]
     types: [completed]
   workflow_dispatch:
+    inputs:
+      after_run:
+        description: "An agent-work run id: wait for it to complete, then drain and chain off it (#826)"
+        required: false
+        default: ""
 
 # Every scope here is one an existing dispatcher already holds:
 #   actions: write        dispatch_cycle.sh runs `gh workflow run agent-work.yml`
@@ -48,9 +63,17 @@ concurrency:
 jobs:
   drain:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15    # 10 of them for wait_for_run.py at most
     steps:
       - uses: actions/checkout@v4
+
+      - name: Wait for the waking cycle to finish
+        if: github.event_name == 'workflow_dispatch' && inputs.after_run != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          AFTER_RUN: ${{ inputs.after_run }}
+        run: python3 scripts/wait_for_run.py
 
       - name: Start the oldest queued cycle
         env:
@@ -66,12 +89,13 @@ jobs:
       # and the finished cycle produced a PR, start one ranked cycle now. Every
       # guard and its measurement is in scripts/chain_cycle.py's header.
       - name: Chain the next ranked cycle
-        if: always() && github.event_name == 'workflow_run'
+        # A woken run (above) supplies WAKE_* instead of the event payload.
+        if: always() && (github.event_name == 'workflow_run' || env.WAKE_NAME != '')
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          WR_NAME: ${{ github.event.workflow_run.name }}
-          WR_TITLE: ${{ github.event.workflow_run.display_title }}
-          WR_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
-          WR_STARTED: ${{ github.event.workflow_run.run_started_at }}
+          WR_NAME: ${{ github.event.workflow_run.name || env.WAKE_NAME }}
+          WR_TITLE: ${{ github.event.workflow_run.display_title || env.WAKE_TITLE }}
+          WR_CONCLUSION: ${{ github.event.workflow_run.conclusion || env.WAKE_CONCLUSION }}
+          WR_STARTED: ${{ github.event.workflow_run.run_started_at || env.WAKE_STARTED }}
         run: python3 scripts/chain_cycle.py

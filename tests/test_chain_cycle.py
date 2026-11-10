@@ -127,4 +127,6 @@ def test_the_queue_runs_the_chain_after_the_drain_and_only_on_workflow_run():
     assert names.index("Chain the next ranked cycle") > names.index("Start the oldest queued cycle")
     step = steps[names.index("Chain the next ranked cycle")]
     assert "workflow_run" in step["if"] and step["run"] == "python3 scripts/chain_cycle.py"
-    assert step["env"]["WR_STARTED"] == "${{ github.event.workflow_run.run_started_at }}"
+    # Since #826 a woken run (agent-queue dispatched with after_run) supplies
+    # WAKE_STARTED instead; the workflow_run payload still comes first.
+    assert step["env"]["WR_STARTED"].startswith("${{ github.event.workflow_run.run_started_at ||")

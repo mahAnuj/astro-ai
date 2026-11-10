@@ -746,6 +746,26 @@ jobs:
       # `gh pr list --head` takes the newest PR on the branch; the branch is
       # unique to this run's issue in practice, and the receipt records the PR the
       # run ENDED with, which is what the ops page wants.
+      # WAKE agent-queue ON THE WAY OUT (#826). A dispatched run's completion
+      # is the fourth `workflow_run` level (cron cycle -> agent-queue -> this
+      # dispatched cycle -> agent-queue), which GitHub drops: measured
+      # 2026-11-08..10, agent-queue ran after 0 of 26 dispatched cycles and 8 of
+      # 8 scheduled ones, so the lane chained once per cron firing and then sat.
+      # A scheduled run is still woken by workflow_run, so only a dispatched one
+      # does this. agent-queue waits for THIS run to complete before draining
+      # (scripts/wait_for_run.py), so the dispatch landing while this run is
+      # still in progress is safe. Best effort: the steward's completion
+      # remains the backstop. It sits before the receipt, which must stay last
+      # (test_collect_loop_measurements); agent-queue waits for the whole run.
+      - name: Wake agent-queue when this run completes
+        if: always() && github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: gh workflow run agent-queue.yml --repo "$GH_REPO" -f after_run="$RUN_ID"
+
       - name: Record the loop receipt
         if: always()
         env:
