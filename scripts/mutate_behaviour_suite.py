@@ -1694,8 +1694,8 @@ MUTATIONS = [
 
     ("#ops-today: snapshot() is awaited inline (up to 12s of event loop, app-wide)",
      "src/astro_ai/routes/admin.py",
-     '    ops = await asyncio.to_thread(ops_data.snapshot, app_days=days)',
-     '    ops = ops_data.snapshot(app_days=days)',
+     '    ops = await asyncio.to_thread(ops_data.snapshot, app_days=days, app_day=day)',
+     '    ops = ops_data.snapshot(app_days=days, app_day=day)',
      "test_the_ops_page_does_not_block_the_event_loop"),
 
     ("#ops-today: today_live is hardcoded (the drill-down picks the wrong renderer)",
@@ -1712,7 +1712,7 @@ MUTATIONS = [
 
     ("#ops-window: the app cache goes back to one slot (window A answers under B's heading)",
      "src/astro_ai/ops_data.py",
-     "    hit = _app_cache.get(days)",
+     "    hit = _app_cache.get(key)",
      "    hit = next(iter(_app_cache.values()), None)",
      "test_two_windows_do_not_share_one_cache_slot"),
 
@@ -1730,8 +1730,8 @@ MUTATIONS = [
 
     ("#ops-window: ?window=abc 422s the whole control room",
      "src/astro_ai/routes/admin.py",
-     "async def admin_ops(request: Request, window: str = \"\") -> HTMLResponse:",
-     "async def admin_ops(request: Request, window: int = 0) -> HTMLResponse:",
+     "async def admin_ops(request: Request, window: str = \"\", day: str = \"\") -> HTMLResponse:",
+     "async def admin_ops(request: Request, window: int = 0, day: str = \"\") -> HTMLResponse:",
      "test_a_mistyped_window_renders_the_default_page_not_an_error"),
 
     ("#ops-trend: features are ranked per day, so a bar changes colour daily",
@@ -1793,8 +1793,8 @@ MUTATIONS = [
 
     ("#ops-errors: the error read ignores the window (GUARD-1: a 0.29% day rendered 30.85%)",
      "src/astro_ai/ops_data.py",
-     "        brk = events.error_breakdown(days=days) or {}",
-     "        brk = events.error_breakdown() or {}",
+     "        brk = events.error_breakdown(days=days, **at) or {}",
+     "        brk = events.error_breakdown(**at) or {}",
      "test_the_window_is_honoured_so_a_quiet_day_is_not_scored_on_a_bad_month"),
     # ---- QA round 2 on #419. Six of these mutants survived all 745 tests AND
     # ---- the 195-row sweep; the sweep's own rows only mutated what the
@@ -1892,8 +1892,8 @@ MUTATIONS = [
 
     ("#ops-errors: the retention clamp is dropped, so every window reads one day",
      "src/astro_ai/events.py",
-     "    days = max(1, min(days, EVENT_RETENTION_DAYS))\n    today = date.today()\n    wanted_days = [today - timedelta(days=i) for i in range(days)]\n\n    # Same fan-out",
-     "    days = 1\n    today = date.today()\n    wanted_days = [today - timedelta(days=i) for i in range(days)]\n\n    # Same fan-out",
+     "    days = max(1, min(days, EVENT_RETENTION_DAYS))\n    # `end` (2026-11-10, /admin/ops day picker)",
+     "    days = 1\n    # `end` (2026-11-10, /admin/ops day picker)",
      "test_the_window_is_clamped_to_the_retention_ceiling"),
 
     ("#ops-errors: a marginal counts pair KEYS instead of pair COUNTS",

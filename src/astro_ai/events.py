@@ -247,7 +247,7 @@ def counts_by_type(*, days: int = 7) -> dict[str, int]:
     return totals
 
 
-def error_breakdown(*, days: int = 7) -> dict[str, Any]:
+def error_breakdown(*, days: int = 7, end: date | None = None) -> dict[str, Any]:
     """UNCAPPED counts of error events, by `error_type` and by `source`.
 
     Returns `{"total": int, "by_error_type": {...}, "by_source": {...}}`.
@@ -287,7 +287,11 @@ def error_breakdown(*, days: int = 7) -> dict[str, Any]:
     which rendered "500 of 400 events").
     """
     days = max(1, min(days, EVENT_RETENTION_DAYS))
-    today = date.today()
+    # `end` (2026-11-10, /admin/ops day picker): the window's last day, default
+    # today. It changes which existing day blobs are read, nothing else: no new
+    # storage, no write. A day past retention reads blobs that are gone, and the
+    # caller refuses those before asking.
+    today = end or date.today()
     wanted_days = [today - timedelta(days=i) for i in range(days)]
 
     # Same fan-out as `counts_by_type`: I/O-bound on cross-region GCS, and the

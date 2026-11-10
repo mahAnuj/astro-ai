@@ -712,15 +712,19 @@ def _model_rows_from(acc: dict[str, dict[str, int]],
     return rows
 
 
-def usage_summary(days: int = 1) -> dict[str, Any]:
+def usage_summary(days: int = 1, *, end: date | None = None) -> dict[str, Any]:
     """Return the same shape cache.usage_summary used to, from GCS.
 
     Aggregates the last `days` days of per-day blobs. Survives Cloud Run
     cold starts and deploys, so the /admin/usage top panel no longer
     resets to zero after each push.
+
+    `end` (2026-11-10, /admin/ops day picker): the last day of the window,
+    default today. It only moves which existing per-day blobs are read --
+    no new storage, no new write.
     """
     days = max(1, min(days, STATS_RETENTION_DAYS))
-    today = date.today()
+    today = end or date.today()
     total = 0
     hits = 0
     miss_latency_sum = 0
@@ -897,7 +901,7 @@ def today_summary() -> dict[str, Any]:
     return _read_day(today) or _empty_day(today)
 
 
-def range_summary(days: int) -> dict[str, Any]:
+def range_summary(days: int, *, end: date | None = None) -> dict[str, Any]:
     """Aggregate the last `days` days into a single summary.
 
     Returns:
@@ -917,7 +921,7 @@ def range_summary(days: int) -> dict[str, Any]:
         }
     """
     days = max(1, min(days, STATS_RETENTION_DAYS))
-    today = date.today()
+    today = end or date.today()       # `end`: see usage_summary -- reads only
     by_model: dict[str, int] = defaultdict(int)
     by_route: dict[str, int] = defaultdict(int)
     by_provider: dict[str, int] = defaultdict(int)
