@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-10T05:03:02Z",
+ "generated_at": "2026-11-10T11:13:36Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 42756321801,
-  "at": "2026-11-10T04:30:44Z",
-  "five_hour": 0.04,
-  "seven_day": 0.39,
+  "run": 42802822085,
+  "at": "2026-11-10T10:52:41Z",
+  "five_hour": 0.2,
+  "seven_day": 0.42,
   "status": "allowed",
   "resets": {
-   "five_hour": 1794297600,
+   "five_hour": 1794315600,
    "seven_day": 1794549600
   }
  },
- "peak_seven_day": 0.39,
+ "peak_seven_day": 0.42,
  "rejected_runs": [],
  "readings": [
   {
@@ -30,42 +30,6 @@
   },
   {
    "workflow": "agent-work",
-   "run": 42729106683,
-   "at": "2026-11-10T00:32:41Z",
-   "five_hour": 0.25,
-   "seven_day": 0.38,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1794279000,
-    "seven_day": 1794549600
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 42738967436,
-   "at": "2026-11-10T01:53:45Z",
-   "five_hour": 0.28,
-   "seven_day": 0.38,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1794279000,
-    "seven_day": 1794549600
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 42740481767,
-   "at": "2026-11-10T02:06:57Z",
-   "five_hour": 0.29,
-   "seven_day": 0.38,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1794279000,
-    "seven_day": 1794549600
-   }
-  },
-  {
-   "workflow": "agent-work",
    "run": 42756321801,
    "at": "2026-11-10T04:30:44Z",
    "five_hour": 0.04,
@@ -73,6 +37,42 @@
    "status": "allowed",
    "resets": {
     "five_hour": 1794297600,
+    "seven_day": 1794549600
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 42759567954,
+   "at": "2026-11-10T05:02:17Z",
+   "five_hour": 0.06,
+   "seven_day": 0.39,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1794297600,
+    "seven_day": 1794549600
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 42802722837,
+   "at": "2026-11-10T10:51:58Z",
+   "five_hour": 0.19,
+   "seven_day": 0.42,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1794315600,
+    "seven_day": 1794549600
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 42802822085,
+   "at": "2026-11-10T10:52:41Z",
+   "five_hour": 0.2,
+   "seven_day": 0.42,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1794315600,
     "seven_day": 1794549600
    }
   }
