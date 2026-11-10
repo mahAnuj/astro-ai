@@ -16,7 +16,11 @@ for business) are gated by per-event boolean flags in the rule table.
 Abujha Muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya etc.) override
 normal scoring — these classical "self-perfected" days need no calculation.
 
-Sources: Brihat Parashara Hora Shastra, Muhurtha Chintamani, Phaladeepika.
+Sources: none of the tables below is traced to a book in this repo's corpus
+unless its own comment says so. Before #716 this line named three classical
+texts that are not held, and each rule carried a per-table attribution to one of
+them; those are withdrawn. Each table now says what knowledge/*.md records about
+it (vedic_reference.md 2A, 29.9, 29.10) or that its source is not held.
 """
 
 from __future__ import annotations
@@ -75,8 +79,11 @@ def _is_panchak(nakshatra: str, pada: int) -> bool:
 
 # ─── Personal-matching classical tables ──────────────────────────────
 # Tara Bala (star strength): count from user's birth nakshatra to the
-# transit day's nakshatra (mod 9 + 1). BPHS assigns each of the 9
-# positions a name + verdict.
+# transit day's nakshatra (mod 9 + 1). Source not held: the nine names and
+# their verdicts were attributed to a text this repo does not hold before #716,
+# and are unverified against any book in the corpus. Only the avoid positions
+# 3, 5 and 7 have a held counterpart, and that is the Ashtakoota Tara rule
+# (knowledge/matching.md v.24, "3, 5, 7 are inauspicious"), a different use.
 _TARA_BALA_NAMES = {
     1: ("Janma",     "ok"),        # own birth star — variable (traditionally cautious)
     2: ("Sampat",    "good"),      # wealth
@@ -90,7 +97,11 @@ _TARA_BALA_NAMES = {
 }
 
 # Chandra Bala (Moon strength): count from user's natal Moon rashi to
-# transit-day Moon rashi (1..12). BPHS marks certain houses as good/bad.
+# transit-day Moon rashi (1..12). The strong set equals the Moon's benefic
+# houses in knowledge/vedic_reference.md 2A (Gochara, Raman Ch. XII). The weak
+# set lists only 4, 8, 12 where that table has 2, 4, 5, 8, 9, 12; the gap is
+# tracked in #715. The attribution that stood here before #716 named a text
+# that is not held and is withdrawn.
 _CHANDRA_BALA_STRONG = {1, 3, 6, 7, 10, 11}
 _CHANDRA_BALA_WEAK   = {4, 8, 12}
 
@@ -339,8 +350,12 @@ def _adhik_maas_flag(d: date) -> tuple[bool, str]:
 # ─── Amrit Siddhi Yoga — universal-auspicious BOOSTERS ───────────────
 # Classical nakshatra+weekday pairings that make a day auto-excellent
 # regardless of other factors (comparable to Abujha muhurats but rule-based
-# rather than fixed-date). Per Muhurta Chintamani. When active, boosts
-# rating to "excellent" with a specific reason.
+# rather than fixed-date). Not traced to the text it was credited to before
+# #716, which is not held. knowledge/vedic_reference.md 29.9 finds the concept
+# in Raman Ch. VI under the name Siddha Yoga: six of seven weekdays below
+# match it; Monday does not (code: Mrigashira, Raman: Shravana). CONTESTED,
+# rule unchanged. When active, boosts rating to "excellent" with a specific
+# reason.
 _AMRIT_SIDDHI_YOGA: dict[str, str] = {
     "Sunday|Hasta":     "Amrit Siddhi (Sun + Hasta)",
     "Monday|Mrigashira":"Amrit Siddhi (Moon + Mrigashira)",
@@ -353,7 +368,10 @@ _AMRIT_SIDDHI_YOGA: dict[str, str] = {
 
 
 # ─── Sarvartha Siddhi Yoga — universal-auspicious BOOSTERS ───────────
-# Broader nakshatra+weekday set. Per Muhurta Chintamani. Slightly less
+# Broader nakshatra+weekday set. Source not held: UNSOURCED. vedic_reference.md
+# 29.9 measures Raman's Siddha Yoga lists as a near-neighbour, not this table
+# (2 to 6 entries shared per weekday), and Raman adds a tithi condition this
+# code does not implement. Slightly less
 # potent than Amrit Siddhi but still classifies the day as universally
 # auspicious for shubh karya. Overrides Dagdha and other soft rules but
 # NOT Panchak, Chaturmas, Kharmas, Adhik Maas, or Eclipse (those are
@@ -383,8 +401,12 @@ def _sarvartha_siddhi_flag(weekday: str, nakshatra: str) -> str:
 
 
 # ─── Ravi Yoga — Sun-based booster ───────────────────────────────────
-# When Sun's nakshatra + Moon's nakshatra combine in specific ways per
-# Muhurta Chintamani, Ravi Yoga is formed. Simplified rule: Sunday +
+# Source not held: UNSOURCED (vedic_reference.md section 29 intro and 29.10 item 4
+# list _RAVI_YOGA_NAKSHATRAS as unsourced or contested). The table below is NOT the
+# Ravi Yogas of knowledge/yogas.md 3 (Rao 11.2: planets beside the Sun in a
+# chart). Before #716 it was credited to a text this repo does not hold, and
+# that wording described a Sun-Moon nakshatra combination the code does not
+# compute. Simplified rule: Sunday +
 # nakshatras with Sun-lordship (Krittika, Uttara Phalguni, Uttara Ashadha)
 # or Sun-friendly nakshatras. Boost only, doesn't override hard exclusions.
 _RAVI_YOGA_NAKSHATRAS = {"Krittika", "Uttara Phalguni", "Uttara Ashadha",
@@ -814,7 +836,9 @@ def _eclipse_flag(d: date) -> tuple[bool, str]:
 
 
 # ─── Dagdha ("burnt") tithi-weekday combinations ─────────────────────
-# Classical rule from Muhurtha Chintamani: certain tithi+weekday pairings
+# Source not held: UNSOURCED (vedic_reference.md 29.10: `dagdha` has 0 hits
+# across the four books searched; the text it was credited to before #716 is
+# not held). Rule as implemented: certain tithi+weekday pairings
 # form Dagdha yoga — the day is "burnt" and unfit for shubh karya. Rule
 # applies to Vivah, Griha Pravesh, Vidyarambh, Business. Not applied to
 # Namkaran (child-driven timing overrides).
@@ -886,8 +910,10 @@ def _bhadra_window_for_day(chart: Chart, day_start: datetime) -> str:
     return f"Bhadra active ~{start_h:02d}:00-{end_h:02d}:00 ({period}) — avoid ceremonies in that window"
 
 
-# ─── Choghadiya — 8 sub-day windows per weekday (Muhurta Chintamani) ─
-# Classical day-Choghadiya sequence (sunrise-to-sunset ÷ 8) starts from
+# ─── Choghadiya — 8 sub-day windows per weekday ──────────────────────
+# Source not held: UNSOURCED (vedic_reference.md 29.10: `choghadiya` has 0 hits
+# across the four books searched; the text it was credited to before #716 is
+# not held). Day-Choghadiya sequence (sunrise-to-sunset ÷ 8) starts from
 # a different divison per weekday. Real astrologers pick the auspicious
 # Choghadiya window within a good day for the actual ceremony start.
 _CHOGHADIYA_SEQUENCE: dict[str, tuple[str, ...]] = {
@@ -935,8 +961,9 @@ def _choghadiya_windows(weekday: str, sunrise: datetime, sunset: datetime) -> li
 # Classical 108-syllable naming table (27 nakshatras × 4 padas). The
 # baby's Moon nakshatra pada at BIRTH determines auspicious first
 # letters for the name. Real Namkaran astrologers consult this table.
-# Sources: Muhurta Chintamani + Ashvalayana Grihya Sutra; consolidated
-# per Drik Panchang / traditional Namkaran manuals.
+# Source not held: no book in the corpus carries this table, and the two texts
+# it was credited to before #716 are not held. The note that it was
+# consolidated per Drik Panchang / Namkaran manuals is unverified.
 _NAMKARAN_LETTERS: dict[str, tuple[str, str, str, str]] = {
     "Ashwini":         ("Chu", "Che", "Cho", "La"),
     "Bharani":         ("Li",  "Lu",  "Le",  "Lo"),
@@ -1046,7 +1073,9 @@ def chandra_bala_by_rashi(transit_moon_rashi: str) -> dict[str, tuple[int, str]]
     inside 100% identical scaffolding, so the email read as unchanged (#513).
     Chandra Bala varies on BOTH axes the prose failed on -- day to day, and
     across the twelve on one day -- and unlike a star rating it is computed from
-    BPHS's house list rather than invented (#514).
+    a fixed house list rather than invented (#514); that list matches
+    knowledge/vedic_reference.md 2A for the strong houses and not for the
+    weak ones (#715).
 
     Returns "" as the verdict for a rashi it cannot place, same as
     `_chandra_bala`; the caller renders nothing rather than guessing.
