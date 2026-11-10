@@ -232,7 +232,8 @@ def _chandra_bala_today(slug: str):
 
     The per-rashi field that changes day to day -- the email got it in #514 and
     the page is the other half. Computed from today's transit Moon counted from
-    this rashi (BPHS: 1,3,6,7,10,11 strong / 4,8,12 weak), which the Rashifal
+    this rashi (strong 1,3,6,7,10,11 / weak 2,4,5,8,9,12 -- Raman's Gochara
+    table, knowledge/vedic_reference.md 2A; no BPHS), which the Rashifal
     can do for free because it is keyed on janma rashi, i.e. the natal Moon
     rashi `_chandra_bala` counts from.
 

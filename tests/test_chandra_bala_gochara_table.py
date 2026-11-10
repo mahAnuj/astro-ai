@@ -31,8 +31,13 @@ def _transit_in_house(house: int, natal: str = RASHIS[0]) -> str:
 
 
 def test_the_two_sets_cover_all_twelve_houses_exactly_once():
-    assert BENEFIC | MALEFIC == set(range(1, 13))
-    assert BENEFIC & MALEFIC == set()
+    # The REAL constants, not the table typed above: muhurat.py's import-time assert
+    # only catches a set that stops partitioning 1..12, not a partition that is wrong.
+    strong, weak = muhurat._CHANDRA_BALA_STRONG, muhurat._CHANDRA_BALA_WEAK
+    assert strong | weak == set(range(1, 13))
+    assert strong & weak == set()
+    assert strong == BENEFIC
+    assert weak == MALEFIC
 
 
 @pytest.mark.parametrize("house", range(1, 13))

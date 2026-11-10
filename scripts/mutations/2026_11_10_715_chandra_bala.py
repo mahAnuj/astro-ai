@@ -10,10 +10,14 @@ MUTATIONS = [
      '    verdict = ("strong" if house in _CHANDRA_BALA_STRONG else\n'
      '               "weak" if house in {4, 8, 12} else "neutral")\n',
      "test_each_house_takes_its_verdict_from_the_gochara_table"),
-    ("#715: the weak set shrinks back to {4, 8, 12} (import-time partition check goes red)",
+    # A partition-valid but wrong table: {4, 8, 12} alone would trip muhurat.py's import-time
+    # assert and fail every test by ImportError, which proves nothing about this one.
+    ("#715: houses 2 and 3 swap sets, so the table stays a partition but disagrees with 2A",
      "src/astro_ai/muhurat.py",
+     "_CHANDRA_BALA_STRONG = {1, 3, 6, 7, 10, 11}\n"
      "_CHANDRA_BALA_WEAK   = {2, 4, 5, 8, 9, 12}\n",
-     "_CHANDRA_BALA_WEAK   = {4, 8, 12}\n",
+     "_CHANDRA_BALA_STRONG = {1, 2, 6, 7, 10, 11}\n"
+     "_CHANDRA_BALA_WEAK   = {3, 4, 5, 8, 9, 12}\n",
      "test_the_two_sets_cover_all_twelve_houses_exactly_once"),
     ("#715: a strong house is moved into the weak table, as in a table typo",
      "src/astro_ai/muhurat.py",
