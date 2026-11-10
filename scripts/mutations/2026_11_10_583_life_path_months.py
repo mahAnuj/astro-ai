@@ -1,0 +1,36 @@
+"""#583: Life Path strong months follow Cheiro's table; cautious months are labelled editorial.
+
+Each row re-breaks one claim and names the test that must go red."""
+
+MUTATIONS = [
+    ("#583: Life Path 2 strong months back to the invented 'Moon-in-Cancer' window",
+     "src/astro_ai/numerology.py",
+     "strong_months=\"Jun 20 – Jul 27 (the Chaldean tradition's strong period for this number)\",",
+     "strong_months=\"Jul 20 – Aug 20 (Moon-in-Cancer's own house); full-moon periods generally\",",
+     "test_strong_months_match_cheiro_14_6"),
+    ("#583: Life Path 4 strong months back to the undated 'ephemeris-dependent' placeholder",
+     "src/astro_ai/numerology.py",
+     "strong_months=\"Jun 21 – Jul 20/27; Jul 22 – end of Aug (the Chaldean tradition's strong period for this number)\",",
+     "strong_months=\"Late January – early February (Rahu's own transit windows vary; ephemeris-dependent)\",",
+     "test_no_profile_carries_an_ephemeris_placeholder"),
+    ("#583: Life Path 8 strong months back to the month-late Jan 21 – Feb 19",
+     "src/astro_ai/numerology.py",
+     "strong_months=\"Dec 21 – Jan 20/27, then to Feb 19/26 (the Chaldean tradition's strong period for this number)\",",
+     "strong_months=\"Jan 21 – Feb 19 (Sun-in-Capricorn/Aquarius — Saturn's own signs)\",",
+     "test_strong_months_match_cheiro_14_6"),
+    ("#583: Life Path 9 strong months back to the Apr 28 / Oct 23 – Nov 22 window",
+     "src/astro_ai/numerology.py",
+     "strong_months=\"Mar 21 – Apr 19/26; Oct 21 – Nov 20/27 (the Chaldean tradition's strong period for this number)\",",
+     "strong_months=\"Mar 21 – Apr 28 (Sun-in-Aries — Mars's own sign); Oct 23 – Nov 22 (Sun-in-Scorpio)\",",
+     "test_strong_months_match_cheiro_14_6"),
+    ("#583: the editorial caption on 'Cautious months' is removed",
+     "src/astro_ai/templates/numerology.html",
+     "{% if prof.number != 1 %}<div class=\"text-xs text-bhagya-muted mt-1 italic\">Editorial guidance, not a dated rule from the classical text we follow.</div>{% endif %}",
+     "",
+     "test_page_renders_cheiro_window_and_editorial_caption"),
+    ("#583: the editorial caption is shown for Life Path 1 too (its months ARE sourced)",
+     "src/astro_ai/templates/numerology.html",
+     "{% if prof.number != 1 %}<div class=\"text-xs text-bhagya-muted mt-1 italic\">Editorial",
+     "{% if prof.number != 0 %}<div class=\"text-xs text-bhagya-muted mt-1 italic\">Editorial",
+     "test_life_path_1_has_no_editorial_caption"),
+]
