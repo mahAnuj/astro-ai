@@ -5,7 +5,7 @@ Each row restores one piece of the old text and names the test that must go red.
 MUTATIONS = [
     ("#429: manglik-dosh says 'Some traditions exclude the 2nd' again",
      "src/astro_ai/templates/learn/manglik-dosh.html",
-     "Both of the classical house lists we work from include the 2nd.",
+     "Both of the house lists we work from include the 2nd.",
      "Some traditions exclude the 2nd; classical compilations include it.",
      "test_no_page_says_some_traditions_exclude_the_second_house"),
     ("#429: manglik-dosh drops the note that the 1st house is optional in the sources",

@@ -42,7 +42,7 @@ def test_no_page_says_some_traditions_exclude_the_second_house(client):
 
 def test_manglik_dosh_says_both_held_lists_include_the_2nd_and_the_1st_is_optional(client):
     t = _text(client, "manglik-dosh")
-    assert "Both of the classical house lists we work from include the 2nd" in t
+    assert "Both of the house lists we work from include the 2nd" in t
     assert "some include the 1st" in t
     assert "optional addition" in t
 
