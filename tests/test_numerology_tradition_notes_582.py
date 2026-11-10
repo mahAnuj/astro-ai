@@ -26,8 +26,8 @@ KARMIC_NOTE = 'data-tradition-note="karmic-debt"'
 MASTER_NOTE = 'data-tradition-note="master-number"'
 
 
-def _post(client, name):
-    r = client.post("/numerology", data={"name": name, "birth_date": BIRTH})
+def _post(client, name, birth=BIRTH):
+    r = client.post("/numerology", data={"name": name, "birth_date": birth})
     assert r.status_code == 200
     return r.text
 
@@ -93,3 +93,29 @@ def test_no_debt_means_no_banner_note(client):
     r = n.compute("Amit Sharma", BIRTH)
     if not r.karmic_debt_numbers:
         assert BANNER not in _post(client, "Amit Sharma")
+
+
+def test_banner_sentence_never_points_at_a_missing_compound_panel(client):
+    """QA round 1 on #582 (D1): a name whose letters total outside 10-52 has no compound
+    panel, so a banner saying "the compound-number reading further down" dangled.
+    "Al" on 1990-05-19: compound 0, Karmic Debt 19 from the date."""
+    r = n.compute("Al", "1990-05-19")
+    assert r.name_compound == 0 and 19 in r.karmic_debt_numbers
+    html = _post(client, "Al", "1990-05-19")
+    assert "Karmic Debt Numbers detected" in html
+    assert BANNER not in html
+    assert "Name Compound Number" not in html
+
+
+def test_master_note_covers_33_and_names_no_school(client):
+    """Pins the 33 branch (a mutation narrowing (11, 22, 33) to (11, 22) survived round 1)
+    and D2: the note says 'a deliberate choice for this site' (knowledge §8) and does not
+    attribute the master-number convention to the Chaldean school, which no source says.
+    'Mooop' is a letter-value fixture: Chaldean total 33, no Karmic Debt."""
+    r = n.compute("Mooop", BIRTH)
+    assert r.name_compound == 33
+    html = _post(client, "Mooop")
+    assert MASTER_NOTE in html
+    note = html.split(MASTER_NOTE, 1)[1].split("</p>", 1)[0]
+    assert "a deliberate choice for this site" in note
+    assert "Chaldean" not in note and "Western" not in note

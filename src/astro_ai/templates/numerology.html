@@ -249,9 +249,14 @@
        note at §5.1/L368); the compound row reads 13/14/16/19 on its own
        terms (§14.3, "a different plane of meaning"). Declared, not
        reconciled: no claim that either is right, no change to the score. #}
+    {# Only when the compound panel below actually renders (it needs a name
+       compound of 10-52 -- a very short or very long name has none), so the
+       sentence never points at a panel that is not on the page. #}
+    {% if reading.name_compound and reading.name_compound_meaning %}
     <p class="text-xs text-bhagya-muted mt-2 italic leading-relaxed">
       This is a different tradition from the compound-number reading further down this page, which reads the same numerals (13, 14, 16 and 19) on its own terms. The two can differ, and neither overrules the other.
     </p>
+    {% endif %}
   </section>
   {% endif %}
 
@@ -711,12 +716,13 @@
            "a different plane of meaning" that "modifies, it does not overrule".
        (b) §8 + "Decision on the §8 user choice": masters are kept on the
            Life Path and name-derived numbers as a deliberate product call
-           (Johari reduces them); §14.3 for the compound row. #}
+           (Johari reduces them) -- so the note says "a deliberate choice for
+           this site" and names no school; §14.3 for the compound row. #}
     {% if reading.name_compound in reading.karmic_debt_numbers %}
     <p class="text-xs text-bhagya-muted mt-2 italic leading-relaxed" data-tradition-note="karmic-debt">{{ reading.name_compound }} is also flagged as a Karmic Debt number higher up this page. These are two different traditions reading the same numeral: the Karmic Debt framework treats it as a theme for reflection, while the compound-number tradition reads it as the picture above. Each is shown on its own terms, and neither corrects the other.</p>
     {% endif %}
     {% if reading.name_compound in (11, 22, 33) %}
-    <p class="text-xs text-bhagya-muted mt-2 italic leading-relaxed" data-tradition-note="master-number">The master-number readings elsewhere on this page follow the Chaldean and Western convention of keeping {{ reading.name_compound }} as a number of its own, a deliberate choice for this site. The compound-number tradition reads the same numeral as one of its pictorial rows. These are different traditions, and neither is a correction of the other.</p>
+    <p class="text-xs text-bhagya-muted mt-2 italic leading-relaxed" data-tradition-note="master-number">The master-number readings elsewhere on this page keep {{ reading.name_compound }} as a number of its own, a deliberate choice for this site rather than a reading of any one classical source. The compound-number tradition reads the same numeral as one of its pictorial rows. These are different traditions, and neither is a correction of the other.</p>
     {% endif %}
   </section>
   {% endif %}
