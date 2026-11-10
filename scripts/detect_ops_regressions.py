@@ -125,6 +125,10 @@ WASTE_SHARE_ALERT = 0.40
 WASTE_MIN_CYCLES = 5
 #: The build lane idle this share of the window, with work open, is a finding.
 IDLE_SHARE_ALERT = 0.75
+#: Consecutive build cycles ending "nothing" that mean the lane is starved
+#: rather than unlucky (2026-11-10: the two that day both stood down because
+#: every ranked issue failed the Evidence Block gate).
+STARVED_RUNS = 2
 #: The app's own Groq budget and cache (owner, 2026-11-06: "monitor the cache usage
 #: and see if it can increase the caching to reduce the token usage"). From
 #: measurements/llm-usage.json, written by scripts/collect_llm_usage.py in
@@ -352,6 +356,25 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
             f"that is unused capacity: the schedule, not the work, is the limit. Check the "
             f"Claude weekly quota first -- if it has headroom, more cron slots in "
             f"agent-work.yml are the lever; if not, idle is the right answer.", "/admin/ops")
+
+    # --- the build lane is starved (2026-11-10) ------------------------------
+    # Two build cycles in a row that built nothing are not idle capacity (that
+    # is loop-idle) but an empty workable queue. Measured that day: 63 of 112
+    # open issues failed the Evidence Block gate, so the ranker had nothing it
+    # was allowed to hand over. chain_cycle.py dispatches the retrofit itself;
+    # this makes the state visible on /admin/ops and in the ops issue.
+    builds = sorted((r for r in loop.get("rows") or []
+                     if r.get("kind") != "qa-round" and r.get("started")),
+                    key=lambda r: r["started"])[-STARVED_RUNS:]
+    if len(builds) == STARVED_RUNS and all(r.get("outcome") == "nothing" for r in builds):
+        add("loop-starved", "amber",
+            f"The last {STARVED_RUNS} build cycles built nothing",
+            f"Cycles started {', '.join(r['started'][:16] for r in builds)} both stood down. "
+            f"Usually every ranked issue fails scripts/verify_issue_evidence.py, which the "
+            f"cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence "
+            f"(chain_cycle.py dispatches it on the second empty cycle, at most once per "
+            f"6h); check its last run, then scripts/evidence_backlog.py for what is left.",
+            "/admin/ops")
 
     # --- one test red on several PRs = `main` is red (2026-11-09) -----------
     # `collect_gate_failures.py` tallies the pytest failures on every open PR's

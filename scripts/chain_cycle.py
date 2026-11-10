@@ -29,6 +29,22 @@ WHAT STOPS IT, each one a measured failure mode rather than caution
 - **Only a successful BUILD run chains.** A QA round, a failed run, or the
   steward completing (agent-queue's backstop trigger) never does.
 
+WHEN THE LANE STARVES, IT ASSIGNS THE EVIDENCE RETROFIT (2026-11-10)
+-------------------------------------------------------------------
+Measured 2026-11-10: 112 issues open, 63 failing `verify_issue_evidence.py`,
+and the two build cycles that day ended "nothing" -- every ranked item was
+refused at Step 1, the cycle may not write its own eligibility, and nobody
+else owned writing the missing Evidence Blocks. Not chaining was correct; it
+was also the end of the line, because nothing then fixed the reason.
+
+So when the finished cycle produced nothing AND the build run before it did
+too (no loop PR moved since that earlier run started), this dispatches
+`agent-prioritise.yml` with `mode=evidence`: project-manager, which already
+holds `issues: write` and the four-kind close grant there, measures each
+failing issue and either closes it with evidence or posts the block. One
+retrofit per `RETROFIT_COOLDOWN`, none while one is running, and never on an
+unread or exhausted quota. Same scope as the chain: `actions: write`.
+
 It writes no label and no comment, and needs no scope `agent-queue.yml` lacks:
 dispatching `agent-work` is what `dispatch_cycle.sh` already does there.
 
@@ -52,6 +68,12 @@ Runner = Callable[[list[str]], str]
 QUOTA_CEILING = 0.70
 QUOTA_MAX_AGE = timedelta(hours=36)
 MAX_BUILD_RUNS_PER_DAY = 16
+RETROFIT_COOLDOWN = timedelta(hours=6)
+#: agent-prioritise.yml's run-name in mode=evidence. `gh run list` cannot show
+#: inputs, so the title is how a retrofit run is recognised -- the same reason
+#: the QA lane is told apart by QA_TITLE. tests/test_evidence_retrofit.py pins both copies.
+RETROFIT_TITLE = "Evidence retrofit"
+NOTHING = "the finished cycle opened or moved no PR -- nothing workable to chain on"
 #: Who opens and pushes loop PRs -- agent-merge.yml's AGENT_AUTHORS, minus the
 #: repo owner, whose own pushes say nothing about what a cycle did.
 LOOP_AUTHORS = {"claude[bot]", "github-actions[bot]", "shubhagya-publisher[bot]"}
@@ -111,7 +133,39 @@ def decide(gh: Runner, repo: str, run: dict, usage: dict | None, now: datetime) 
     if n >= MAX_BUILD_RUNS_PER_DAY:
         return f"{n} build runs today, cap {MAX_BUILD_RUNS_PER_DAY}"
     if not produced_something(gh, repo, _ts(run["started"])):
-        return "the finished cycle opened or moved no PR -- nothing workable to chain on"
+        return NOTHING
+    return None
+
+
+def previous_build_start(gh: Runner, repo: str, started: datetime) -> datetime | None:
+    """When the successful build run before the finished one started."""
+    out = gh(["api", f"repos/{repo}/actions/workflows/agent-work.yml/runs"
+              f"?status=completed&per_page=30"])
+    for r in json.loads(out).get("workflow_runs") or []:
+        if (r.get("display_title") or "").startswith(QA_TITLE) or r.get("conclusion") != "success":
+            continue
+        st = _ts(r.get("run_started_at") or r["created_at"])
+        if st < started - timedelta(minutes=1):
+            return st
+    return None
+
+
+def retrofit_reason(gh: Runner, repo: str, run: dict, now: datetime) -> str | None:
+    """None to dispatch the evidence retrofit, else why not. Called only after NOTHING."""
+    prev = previous_build_start(gh, repo, _ts(run["started"]))
+    if prev is None:
+        return "no earlier build run to compare with"
+    if produced_something(gh, repo, prev):
+        return "the build run before this one moved a PR -- one empty cycle is not starvation"
+    out = gh(["api", f"repos/{repo}/actions/workflows/agent-prioritise.yml/runs?per_page=20"])
+    for r in json.loads(out).get("workflow_runs") or []:
+        if not (r.get("display_title") or "").startswith(RETROFIT_TITLE):
+            continue
+        if r.get("status") != "completed":
+            return "an evidence retrofit is already running"
+        age = now - _ts(r["created_at"])
+        if age < RETROFIT_COOLDOWN:
+            return f"an evidence retrofit ran {age.total_seconds() / 3600:.1f}h ago"
     return None
 
 
@@ -134,6 +188,17 @@ def main(argv: list[str], gh: Runner = run_gh, now: datetime | None = None,
         reason = f"could not decide ({exc.__class__.__name__}: {str(exc)[:120]})"
     if reason:
         print(f"no chain: {reason}.")
+        if reason == NOTHING:
+            try:
+                why = retrofit_reason(gh, repo, run, now)
+            except (RuntimeError, ValueError, KeyError) as exc:
+                why = f"could not decide ({exc.__class__.__name__}: {str(exc)[:120]})"
+            if why:
+                print(f"no evidence retrofit: {why}.")
+            else:
+                gh(["workflow", "run", "agent-prioritise.yml", "--repo", repo, "-f", "mode=evidence"])
+                print("starved: two build cycles in a row produced nothing -- dispatched "
+                      "agent-prioritise mode=evidence to retrofit or close the refused issues.")
         return 0
     gh(["workflow", "run", "agent-work.yml", "--repo", repo])
     print("chained: dispatched one ranked agent-work cycle (project-manager picks).")

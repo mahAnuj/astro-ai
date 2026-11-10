@@ -10,11 +10,26 @@
 # So: rank weekly, persist it, and let the nightly cycle rank against a
 # maintained list rather than rediscovering the backlog every night.
 name: Agent prioritise
+# The title is how chain_cycle.py recognises a retrofit run (it cannot read
+# inputs from the runs API); tests/test_evidence_retrofit.py pins both copies.
+run-name: ${{ inputs.mode == 'evidence' && 'Evidence retrofit' || 'Agent prioritise' }}
 
 on:
   schedule:
     - cron: "0 17 * * 0"   # Sundays, 22:30 IST — ahead of the week's loops
   workflow_dispatch:
+    inputs:
+      # EVIDENCE MODE (2026-11-10). Measured that day: 63 of 112 open issues
+      # failed verify_issue_evidence.py, so the build loop refused them at
+      # Step 1 and two cycles in a row built nothing. The cycle may not write
+      # its own eligibility; this loop's project-manager is a different agent
+      # that already holds issues: write and the four-kind close grant below.
+      # chain_cycle.py dispatches this mode when the build lane starves.
+      mode:
+        description: "rank (the weekly queue) or evidence (retrofit or close issues failing the Evidence Block gate)"
+        type: choice
+        options: [rank, evidence]
+        default: rank
 
 concurrency:
   group: agent-prioritise
@@ -69,7 +84,82 @@ jobs:
             echo "no prior measurement — ranking on harm alone"
           fi
 
-      - uses: anthropics/claude-code-action@v1
+      - name: List the issues the build loop refuses
+        if: inputs.mode == 'evidence'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          uv run python scripts/evidence_backlog.py --out /tmp/evidence_backlog.md > /dev/null
+          head -1 /tmp/evidence_backlog.md | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Retrofit or close
+        if: inputs.mode == 'evidence'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          show_full_output: "true"
+          prompt: |
+            You are project-manager, in EVIDENCE MODE. Follow the project-manager
+            agent definition. Do not rank, and do not rewrite BACKLOG.md.
+
+            /tmp/evidence_backlog.md lists, in harm order, every open issue the
+            build loop refuses because `scripts/verify_issue_evidence.py` fails
+            it. The build cycle may not write those blocks itself -- that would
+            be grading its own eligibility -- so until you do, those issues are
+            unbuildable however real they are. Measured 2026-11-10: 63 of 112.
+
+            Take them from the top. Stop after 15, or sooner if you are running
+            out of turns: the next retrofit run continues from the new list.
+            For EACH issue, read the body and every comment, then MEASURE on this
+            checkout (and the live site with curl where useful). Never copy a
+            number, a line range or a rule from the issue's own text.
+
+            1. If it is one of the four kinds below, close it, exactly as the
+               close grant further down requires: already fixed (quote the commit
+               and what you checked), does not reproduce (the command and its
+               output), overtaken by events (the grep returning nothing), or
+               duplicate (name the survivor). Never close for age or low value.
+            2. Otherwise, if the premise holds, post ONE comment headed
+               `**Evidence Block (retrofit, measured at <short sha>)**` with plain
+               `key: value` lines -- `repro:` (a command and its expected result
+               after `->`, with today's output), `corpus:` (a
+               `src/astro_ai/knowledge/<file>.md:<a>-<b>` range you opened that
+               supports the rule, `[UNSOURCED]`, or `n/a -- <reason>`), `tokens:`
+               (a measured number; `0` with how you know for a path with no LLM
+               call), `thesis:`, `metric:` (a falsifiable number), and `gsc:` or
+               `ga4:` with a YYYY-MM-DD window when the labels carry none of bug,
+               chore or category:technical -- read them from measurements/, never
+               invent one. Then re-run
+               `uv run python scripts/verify_issue_evidence.py <n>` and confirm it
+               exits 0. If it does not, fix your comment by posting a corrected
+               one (the checker reads the LAST occurrence of each field).
+            3. If you cannot establish the premise either way, add the label
+               `needs-evidence` and comment exactly what is missing.
+
+            An astrological rule with no knowledge/*.md line range is
+            `[UNSOURCED]`, never a citation you did not open. data/ may be absent
+            on this runner; say so where it matters. No anecdotes, no invented
+            numbers: on this site a fabricated measurement is the worst defect.
+
+            Close only these four kinds, each with a closing comment that lets
+            someone else check you (command, output, SHA). Do NOT close anything
+            whose fix shipped but is unverified in production -- that is
+            close-on-evidence.yml's job. You never push, and you never touch a
+            QA label.
+
+            Write /tmp/report.md: one line per issue you handled
+            (`#n | closed <kind> | block posted, checker exit 0 | needs-evidence`)
+            and the count left on the list.
+          claude_args: |
+            --max-turns 80
+            --effort high
+            --allowedTools "Agent,Read,Write,Glob,Grep,TodoWrite,Bash,WebFetch"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*),Bash(gh pr:*)"
+
+      - name: Rank
+        if: inputs.mode != 'evidence'
+        uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # WITHOUT THIS, A LOOP CANNOT DIAGNOSE ITS OWN FAILURE.
@@ -222,7 +312,8 @@ jobs:
   # shell step does the writing.
   persist:
     needs: prioritise
-    if: always()
+    # The retrofit writes issue comments, not a queue: nothing to commit.
+    if: always() && inputs.mode != 'evidence'
     runs-on: ubuntu-latest
     permissions:
       # contents       the branch push

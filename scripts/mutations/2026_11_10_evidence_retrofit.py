@@ -1,0 +1,42 @@
+"""2026-11-10: a starved build lane assigns the Evidence Block retrofit.
+
+Measured that day: 63 of 112 open issues failed verify_issue_evidence.py and the
+last two build cycles built nothing. Each row re-breaks one piece of the fix."""
+
+MUTATIONS = [
+    ("starvation: chain_cycle never dispatches the retrofit after two empty cycles",
+     "scripts/chain_cycle.py",
+     "        if reason == NOTHING:\n",
+     "        if reason == NOTHING and False:\n",
+     "test_two_empty_build_cycles_in_a_row_dispatch_the_retrofit"),
+    ("starvation: one empty cycle after a productive one already counts as starved",
+     "scripts/chain_cycle.py",
+     "    if produced_something(gh, repo, prev):\n",
+     "    if False:\n",
+     "test_one_empty_cycle_after_a_productive_one_is_not_starvation"),
+    ("starvation: the cooldown is ignored, so every empty cycle dispatches another retrofit",
+     "scripts/chain_cycle.py",
+     "        if age < RETROFIT_COOLDOWN:\n",
+     "        if False:\n",
+     "test_a_recent_or_running_retrofit_blocks_another"),
+    ("starvation: the run-name drifts from RETROFIT_TITLE, so the cooldown can never see a run",
+     ".github/workflows/agent-prioritise.yml",
+     "'Evidence retrofit' || 'Agent prioritise'",
+     "'Evidence backfill' || 'Agent prioritise'",
+     "test_the_title_chain_cycle_matches_on_is_the_one_the_workflow_writes"),
+    ("starvation: the retrofit run also commits a queue over the weekly ranking",
+     ".github/workflows/agent-prioritise.yml",
+     "    if: always() && inputs.mode != 'evidence'\n",
+     "    if: always()\n",
+     "test_each_mode_runs_only_its_own_agent_and_the_retrofit_commits_nothing"),
+    ("starvation: the backlog list ignores comments, so a retrofitted issue is listed forever",
+     "scripts/evidence_backlog.py",
+     '        text = "\\n".join([i.get("body") or ""] + [c.get("body") or "" for c in comments])\n',
+     '        text = i.get("body") or ""\n',
+     "test_the_list_holds_only_failures_in_harm_order_and_reads_comments"),
+    ("starvation: the dashboard never raises loop-starved",
+     "scripts/detect_ops_regressions.py",
+     'all(r.get("outcome") == "nothing" for r in builds)',
+     'all(r.get("outcome") == "never" for r in builds)',
+     "test_two_empty_build_cycles_raise_loop_starved"),
+]
