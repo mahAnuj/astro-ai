@@ -60,8 +60,15 @@ def test_a_run_of_any_other_workflow_is_refused():
 
 def test_a_run_that_never_completes_times_out_rather_than_chaining():
     running = {**DONE, "status": "in_progress"}
-    code, why = wfr.wait(Api(running), REPO, "42805592453", lambda s: None, max_wait=60)
+    naps = []
+
+    def nap(s):
+        naps.append(s)
+        if len(naps) > 50:               # a wait with no bound must fail here, not hang the suite
+            raise AssertionError("wait_for_run never gave up")
+    code, why = wfr.wait(Api(running), REPO, "42805592453", nap, max_wait=60)
     assert code == 1 and "did not complete" in why
+    assert len(naps) == 60 // wfr.POLL_SECONDS
 
 
 def test_a_transient_api_error_is_retried():
