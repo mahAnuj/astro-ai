@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-11T00:41:16Z",
+ "generated_at": "2026-11-11T01:04:54Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -698,6 +698,13 @@
   ],
   "ops_findings": [
    {
+    "kind": "loop-last-run-failed",
+    "level": "amber",
+    "title": "agent-prioritise.yml: last run failed",
+    "detail": "The schedule verdict is fine, so `agents.json` raised no alert, but the most recent run of each loop named here was red. A weekly loop is not re-run before its next slot, so nothing else will notice. Check whether a fix has landed since; if one has, dispatch the workflow.",
+    "where": "/admin/ops"
+   },
+   {
     "kind": "loop-idle",
     "level": "amber",
     "title": "Build lane idle 81% of the last 7d",
@@ -889,6 +896,13 @@
    "url": "https://github.com/mahAnuj/astro-ai/issues/523#issuecomment-6729378284"
   },
   {
+   "number": 528,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-10",
+   "at": "2026-11-11T01:00:56Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/528#issuecomment-6783779120"
+  },
+  {
    "number": 553,
    "verdict": "PENDING",
    "headline": "pending \u2014 scoreable from 2026-12-01",
@@ -918,7 +932,7 @@
   }
  ],
  "outcome_counts": {
-  "PENDING": 9,
+  "PENDING": 10,
   "PASS": 5,
   "HIT": 2,
   "UNSCOREABLE": 10,

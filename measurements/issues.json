@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-11-11T00:39:49Z",
+  "generated_at": "2026-11-11T01:03:20Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 108,
+  "open": 107,
   "with_ask": 37,
   "by_area": {
     "UNCLASSIFIED": 37,
     "INFRA": 13,
     "REDESIGN": 10,
-    "UI": 8,
+    "UI": 7,
     "FEATURE": 7,
     "OPS": 3,
     "SEO": 3,
@@ -35,10 +35,10 @@
     "chore": 13,
     "correctness": 8,
     "design": 6,
-    "ui": 4
+    "ui": 3
   },
   "by_priority": {
-    "unset": 81,
+    "unset": 80,
     "medium": 17,
     "high": 10
   },
@@ -85,7 +85,7 @@
         "bug"
       ],
       "created": "2026-11-10T21:34:46Z",
-      "updated": "2026-11-10T21:34:46Z",
+      "updated": "2026-11-11T00:55:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -969,26 +969,6 @@
       "needs_evidence": false
     },
     {
-      "number": 380,
-      "title": "[UI] Birth-chart labels render at 6.5–8.3px on mobile (/kundli, /matching) — the planet and degree text is the content",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer",
-        "page:kundli",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-15T22:59:01Z",
-      "updated": "2026-11-11T00:38:33Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 366,
       "title": "[UI] Sub-12px text remains on / (24 nodes), /panchang (9) and 16 other templates — remainder of #307",
       "ask": "",
@@ -1415,9 +1395,11 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "provenance:trusted"
+      ],
       "created": "2026-08-23T09:00:34Z",
-      "updated": "2026-08-23T09:00:34Z",
+      "updated": "2026-11-11T00:44:36Z",
       "blocked": false,
       "needs_evidence": false
     },
