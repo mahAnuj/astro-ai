@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-11T11:12:45Z",
+ "generated_at": "2026-11-11T15:13:49Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -732,7 +732,7 @@
     "kind": "loop-idle",
     "level": "amber",
     "title": "Build lane idle 78% of the last 7d",
-    "detail": "131.1h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "detail": "130.2h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
