@@ -258,4 +258,9 @@ def test_privacy_page_says_a_signed_in_question_is_kept_in_the_account(client):
 def test_privacy_page_says_email_can_reach_the_operational_logs(client):
     text = _text(client.get("/privacy").text)
     ops = text[text.index("Operational logs:"):]
-    assert "can include your email address" in ops[:400]
+    assert "can include your email address" in ops[:500]
+    # a failed place lookup logs the place (routes/deps.py panchang strip), so
+    # the page must not claim birth details stay out of the logs (QA, PR #909)
+    assert "can include the place name you typed" in ops[:500]
+    assert "does not write your birth details" not in text
+    assert "unsubscribe link" in ops[:500]

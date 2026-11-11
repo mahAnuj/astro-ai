@@ -124,10 +124,11 @@ POLICY: dict[str, Rule] = {
         "plus the birth CITY and an age band; not name, date, time or full place"),
     "log": _rule(
         "email",
-        'privacy.html "Operational logs" says the log line can include an email '
-        "address when an email send or a sign-in step fails (#819). This pins TODAY's "
-        "behaviour (email_sender.send logs the address, subscribe.py and account.py "
-        "log it) so that a NEW flow is caught; tightening it is a separate decision"),
+        'privacy.html "Operational logs" says a log line can include an email '
+        "address (failed send, failed sign-in step, an unsubscribe link) and the "
+        "place name when a lookup fails (#819). This pins TODAY's behaviour "
+        "(email_sender.send logs the address, subscribe.py and account.py log it) "
+        "so that a NEW flow is caught; tightening it is a separate decision"),
     "geocode": _rule(
         "city region",
         'privacy.html "Place lookup" names Nominatim: the geocoder is only ever '
