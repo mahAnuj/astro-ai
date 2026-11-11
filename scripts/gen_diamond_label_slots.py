@@ -34,7 +34,7 @@ import sys
 
 FS = 16.0            # planet label size, viewBox units
 NUM_FS = 15.0        # house-number size
-R_FS = 13.0          # the retrograde "R" tspan
+R_FS = 16.0          # the retrograde "R" tspan
 PITCH = 17.6         # stack pitch (1.1 x FS); was 13 at size 11
 MARGIN = 3.0         # clearance from a cell line (stroke is 2 wide => 1 + 2)
 GAP = 7.0            # horizontal gap between two labels in one row

@@ -1216,8 +1216,14 @@ def _couple_verdict(bride: PartnerFactors, groom: PartnerFactors) -> str:
     "nuptials ... favourable without exception" sentence in the same passage is not
     used: the book contradicts itself on that word. `groom.tara_bala` itself stays
     "ok" (the single-user match and the per-partner chips are unchanged); only this
-    verdict reads it as avoid. The "avoid only when BOTH avoid" rule below is
-    unsourced and is not touched here.
+    verdict reads it as avoid.
+
+    The "avoid only when BOTH avoid" rule below is unsourced, and that is a ruling, not
+    an oversight (#885, chief, 2026-11-11, Option A): Raman's avoid-list names no person
+    and his marriage chapter gives no combining rule, so neither "both" nor "either" is
+    sourced. "Either" would move 39 of 81 position pairs from mixed to avoid on a reading no
+    book states, so the grades stay and the finder discloses the convention. Overturned
+    only by a passage in knowledge/*.md stating how the two partners' Taras combine.
     """
     g_tara = "avoid" if groom.tara_bala_name == _JANMA_TARA_NAME else groom.tara_bala
     b_tara_ok = bride.tara_bala in ("excellent", "good", "ok")
