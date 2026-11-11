@@ -522,6 +522,119 @@ claim about what any other text says.
 passage at line 927). Books present when checked: one of seven, the Raman
 *Muhurtha* djvu text; nothing here asserts an absence from any other book.*
 
+#### 2A-ter. The day ruled by one's own birth star (Janma Tara) for an ELECTION — Raman, *Muhurtha or Electional Astrology* (1948) (#714)
+
+Raman's chapter on the Birth Star and Birth Moon counts from the birth
+constellation to the day's constellation and divides by 9; "if the remainder
+is 1 (Janma) it indicates danger to body" (lines 892-897 of the 9,158-line djvu
+text, `data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt`). The
+nine names he gives are Janma, Sampat, Vipat, Kshema, Pratyak, Sadhana,
+Naidhana, Mitra, Parama Mitra (lines 897-914). Two passages then speak to the
+Janma day for a chosen event.
+
+**The general rule (lines 1063-1066, 1081-1082).**
+
+> "As regards Tarabala referred to above, it is no doubt advisable to avoid a
+> day that is ruled by the 1st, 3rd, 5th and 7th constellations."
+
+> "A day ruled by one's Janma Nakshatra is ordinarily held to be unfavourable
+> for an election."
+
+The scan prints `5tli` for `5th` and a stray quote after `by` at line 1081;
+neither changes the sense. Raman puts the 1st (Janma) in the same "avoid" list
+as the 3rd, 5th and 7th.
+
+**The event-by-event list (lines 1083-1088, 1098-1099).**
+
+> "But in regard to nuptials, sacrifices, first feeding, agriculture,
+> upanayanam, coronation, buying lands, learning the alphabet, Janma Nakshatra
+> is favourable without exception. But it is inauspicious for war, sexual
+> union, shaving, taking medical treatment, travel and marriage."
+
+> "For a woman, Janma Nakshatra would be quite favourable for marriage."
+
+(The last sentence is separated from the rest by a page break; the printed
+page number `23` falls between lines 1095 and 1098. The book's own index lists
+"Woman's janma Nakshatra ... 23", line 9123, which confirms the sentence and
+its page.)
+
+**The tension, stated.** Raman lists "nuptials" among the events for which the
+Janma day is favourable *without exception*, and "marriage" among the events
+for which it is inauspicious, in the same two sentences. He also uses
+"nuptials" for a different event. In his chapter on pre-natal ceremonies he
+writes "They are nuptials (Nisheka), consummation (Garhhadana) and Pumsavana"
+and "Nishekam is used to denote the first sexual contact" (lines 1781-1786),
+and in line 967 he lists "marriage, nuptials, entry into new houses" as three
+separate items. Read that way, "nuptials" at line 1083 is the first-union
+ceremony, and that reading collides with two other lines: line 1087 lists
+"sexual union" as inauspicious on the Janma day, and the nuptials constellation
+list at lines 1845-1862 says "The birth star (Janma Nakshatra), the 10th star
+(Anu_ Janma) and the 19th star (Thrijanma) should be avoided" (the scan prints
+`lOtli` for `10th` and `Anu_ Janma` for Anujanma; the index at lines 7521 and
+8946 gives Anujanma and Thrijanma, page 42). So the book contradicts itself on
+"nuptials", and **line 1083 cannot be cited for the Vivah (wedding) day**.
+Nothing in the text defines "nuptials" as marriage.
+
+**What the text supports for a wedding, and no more.**
+
+- The general advice is to avoid the Janma day (lines 1063-1066, 1081-1082),
+  and "marriage" is named in the inauspicious list (line 1088). Nothing in the
+  text names the bridegroom separately; the contrast is carried by the
+  sentence for a woman.
+- For a woman the Janma day is "quite favourable for marriage" (lines
+  1098-1099). This is one sentence with no reasoning attached, and no
+  qualification is given.
+- Raman's own marriage chapter (lines 3690-3800) does not mention the Janma
+  star. It says only "the usual Tarabala, Panchaka, etc., should be looked
+  into" (lines 3789-3790).
+
+**The exception, and what it is.** Lines 1066-1079: "when the day is otherwise
+favourable, only the negative parts of these unfavourable constellations may be
+avoided. Thus in the Janma, Vipat, Pratyak and Naidhana constellations, the
+first, 7, 3 and 8 ghaties respectively may be considered evil and avoided."
+The worked example (a Pushyami-born man on a Makha day, Vipat, avoiding "the
+first seven ghaties") fixes the Vipat figure at 7; the Janma figure reads as
+the first ghati, and the scan's "first" is not independently confirmed as the
+number 1. He then limits it: "Generally these exceptions are resorted to only
+under special circumstances when an election is to be urgently made and when
+the undertaking admits of no delay." The exception is therefore a concession
+for urgent cases, not a standing rule that the day is fine after the first
+ghati.
+
+**Other uses of the Janma star in the same book (not applied to weddings).**
+Line 5012-5014: "Griha Pravesam done in one's own Janma Rasi, Janma Nakshatra
+or Janma Lagna, will produce highly beneficial results." Lines 5859-5861: an
+illness beginning under the Janma Nakshatra "will cause much distress". Both
+are different events with different verdicts, and neither is a reason to grade
+the Janma day alike for every event.
+
+**What the code does with this.** `muhurat.py` still grades Tara position 1
+"Janma" as `ok`, and that is what the single-user personal match and each
+partner's chip show (an unsourced simplification, unchanged and not varied by
+event). Only the Vivah **couple verdict** reads it further: following the
+passage at the narrowest, `_couple_verdict` treats a **groom** on his Janma
+day as `avoid` for its Tara test (the same grade as positions 3, 5 and 7, which
+Raman groups with it at lines 1063-1065), so that day is never `good-for-both`
+or `excellent-for-both`, and is `avoid` only when the bride's day is also
+`avoid` (that "both must avoid" rule is the code's own and is unsourced). The
+**bride** on her Janma day is still a pass (lines 1098-1099). Position 1 also covers the 10th and 19th stars from the
+birth star, because the count runs modulo 9; Raman's nuptials list names all
+three together (lines 1860-1862). The per-day finder works at whole-day
+nakshatra granularity, so it does not apply the ghati exception; the page says
+so. Griha Pravesh and the other events keep their existing grade. The text
+gives no basis for varying "marriage" by region or school, and none is claimed.
+
+*Checked 2026-11-11 against the Raman Muhurtha djvu text by reading lines
+880-1100, 1770-1890, 3385-3410, 3550-3575, 3690-3800, 5005-5020, 5850-5862,
+6495-6515 and 6700-6730, and by a case-insensitive search of that file for
+`janma` (47 lines), `nuptial` (7 lines) and `tara ?bala`. Books present on that run:
+the Raman Muhurtha djvu text read directly; `vedic_astro_textbook.pdf`,
+`book1-for-CD.pdf` and `Astrology-e-book-compressed.pdf` were present on disk
+but could not be searched (no PDF text extractor installed), so nothing here
+asserts an absence from them. Narasimha Rao's muhurta checklist is quoted at
+§29.7 (line 2304) only for "a good tara with respect to janma nakshatra"; it was not
+re-read for a Janma-day rule.*
+
 ---
 
 ## 3. Kaal Sarp Dosh
