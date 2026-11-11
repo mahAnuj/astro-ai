@@ -1598,9 +1598,11 @@ a{color:#7fb6f5} a:hover{color:#a8cdf8}
     {# ── Nightly rashifal generation (#515). 12 rashis x 2 languages = 24. ── #}
     <section class="panel">
       <h2>Rashifal generation
-        <span class="lbl">nightly · 03:30 IST</span>
+        <span class="lbl">day before · 11:47 IST</span>
         {% set R = ops.rashifal %}
-        {% if R.never_ran %}<span class="age stale" style="margin-left:7px"
+        {% if R.loading %}<span class="age" style="margin-left:7px"
+              title="This instance has not read rashifal_runs.json yet. Refresh in a few seconds.">record not loaded yet</span>
+        {% elif R.never_ran %}<span class="age stale" style="margin-left:7px"
               title="No run recorded. Groq is generating the route, which works.">no run recorded</span>
         {% elif R.today_complete %}<span class="age live" style="margin-left:7px"
               title="All 24 readings were published by the nightly job.">{{ R.today_label }} today</span>
@@ -1609,7 +1611,10 @@ a{color:#7fb6f5} a:hover{color:#a8cdf8}
         {% endif %}
       </h2>
       <div class="body">
-        {% if R.never_ran %}
+        {% if R.loading %}
+        <div class="empty">The run record has not been read on this instance yet — it is
+          fetched in the background so the page never waits on the bucket. Refresh in a few seconds.</div>
+        {% elif R.never_ran %}
         <div class="empty">Nothing published yet. Groq is generating every reading, which is
           the designed fallback — not an outage.</div>
         {% else %}
