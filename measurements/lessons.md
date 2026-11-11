@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-11T00:41:16Z)
+# Lessons — last 30 days (generated 2026-11-11T01:04:54Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -24,12 +24,13 @@ deterministic, no LLM.
 - QA FAIL verdicts: 73
 - reverted commits on main: 0
 - failed verify-production runs: 3
-- ops findings now: 1
+- ops findings now: 2
+  - [amber] loop-last-run-failed: agent-prioritise.yml: last run failed
   - [amber] loop-idle: Build lane idle 81% of the last 7d
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 2, PARTIAL 1, PASS 5, PENDING 9, UNSCOREABLE 10
+counts: HIT 2, PARTIAL 1, PASS 5, PENDING 10, UNSCOREABLE 10
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: PENDING — pending — scoreable from 2026-11-14
 - #311: PENDING — pending — scoreable from 2026-11-13
@@ -53,6 +54,7 @@ counts: HIT 2, PARTIAL 1, PASS 5, PENDING 9, UNSCOREABLE 10
 - #515: UNSCOREABLE — unscoreable at this traffic
 - #518: PENDING — pending — scoreable from 2026-12-07
 - #523: UNSCOREABLE — unscoreable at this traffic
+- #528: PENDING — pending — scoreable from 2026-12-10
 - #553: PENDING — pending — scoreable from 2026-12-01
 - #570: PENDING — pending — not scoreable until the export exists (#782); earliest clean window 2026-12-04
 - #607: PASS — PASS

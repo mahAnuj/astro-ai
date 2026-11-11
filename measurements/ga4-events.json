@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-11",
-    "2026-11-07"
+    "2026-10-12",
+    "2026-11-08"
   ],
   "dimensions": [
     "eventName"
@@ -14,39 +14,39 @@
   "rows": [
     {
       "event": "page_view",
-      "count": 1049
+      "count": 1093
     },
     {
       "event": "user_identified",
-      "count": 616
-    },
-    {
-      "event": "session_start",
-      "count": 601
+      "count": 646
     },
     {
       "event": "feature_view",
-      "count": 599
+      "count": 629
+    },
+    {
+      "event": "session_start",
+      "count": 622
     },
     {
       "event": "first_visit",
-      "count": 478
+      "count": 492
     },
     {
       "event": "user_engagement",
-      "count": 271
+      "count": 272
     },
     {
       "event": "scroll",
-      "count": 150
+      "count": 159
+    },
+    {
+      "event": "form_start",
+      "count": 135
     },
     {
       "event": "ask_answered",
       "count": 134
-    },
-    {
-      "event": "form_start",
-      "count": 131
     },
     {
       "event": "kundli_generated",
@@ -58,7 +58,7 @@
     },
     {
       "event": "view_search_results",
-      "count": 5
+      "count": 6
     },
     {
       "event": "click",
@@ -77,7 +77,7 @@
       "count": 1
     }
   ],
-  "events_total": 4101,
+  "events_total": 4255,
   "coverage_note": "cta_click: 8 events recorded in the window; the from/to split is NOT available: every row reports (not set) for from_path and to_path, so the parameters are not registered as custom dimensions (or were never collected); the TOTAL count above is still valid; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
     "count": 8,
