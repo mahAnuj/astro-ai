@@ -117,10 +117,18 @@
    blob; the wrapper script reads it and bootstraps providers. Both fields
    optional — set zero, one, or both. Unconfigured → Analytics methods
    become harmless no-ops (so call sites stay clean either way). #}
+{# /admin/* is the owner's own tooling (#735). An unauthenticated hit gets a
+   branded 401/404 built from THIS template, which used to boot GA4 and put an
+   admin landing row in the session report (19 of 603 sessions in 28 days).
+   Both ids go empty there, so analytics.js loads neither provider. Keyed on the
+   request path, not the template, so every error page under /admin is covered. #}
+{% set _no_track = request.url.path == '/admin' or request.url.path.startswith('/admin/') %}
+{% set _ga4_id = '' if _no_track else ga4_measurement_id %}
+{% set _clarity_id = '' if _no_track else clarity_project_id %}
 <script>
   window.BHAGYA_ANALYTICS_CONFIG = {
-    ga4:     "{{ ga4_measurement_id }}",
-    clarity: "{{ clarity_project_id }}"
+    ga4:     "{{ _ga4_id }}",
+    clarity: "{{ _clarity_id }}"
   };
   // Server-derived signals that every page can use for identification.
   // Age bucket comes from the saved chart birthdate (never the raw date);
