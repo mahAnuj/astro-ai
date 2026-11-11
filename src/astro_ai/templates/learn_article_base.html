@@ -511,6 +511,15 @@
     body.learn-sticky-cta-visible #feedback-fab {
       bottom: var(--learn-fab-bottom, 9.5rem) !important;
     }
+    /* #310 — the PWA install banner (base.html, fixed bottom-24) sits at the
+       same height as the sticky CTA and covered its link and X. Stack it above
+       the CTA with the same measured offset the FAB uses. The FAB is
+       right-aligned and the banner is inset-x-3 below sm, so on a narrow phone
+       they share a corner; the banner is the wider, later-dismissible one and
+       is only shown after a scroll, so it paints over the FAB, not the CTA. */
+    body.learn-sticky-cta-visible #pwa-install-banner {
+      bottom: var(--learn-fab-bottom, 9.5rem) !important;
+    }
   }
 </style>
 {% endblock %}
