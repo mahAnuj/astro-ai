@@ -33,4 +33,9 @@ MUTATIONS = [
      "not a rule from a book:",
      "not a rule from a book, though the classical texts say both:",
      "test_the_note_claims_no_source_for_the_both_rule"),
+    ("#885: the finder points the reader at a 'chip' the page does not have (QA round 1)",
+     "src/astro_ai/templates/muhurat_finder.html",
+     "the Tara name shown under each partner is that partner's own day",
+     "check each partner's own Tara chip",
+     "test_the_finder_says_the_both_rule_is_its_own_convention"),
 ]

@@ -65,7 +65,10 @@ def test_the_finder_says_the_both_rule_is_its_own_convention(monkeypatch):
     assert 'the day shows "mixed"' in note
     assert "is this finder's own convention, not a rule from a book" in note
     assert "without saying how a bride's and a groom's days combine" in note
-    assert "check each partner's own Tara chip" in note
+    assert "still be an avoid day for one partner" in note
+    assert "the 3rd, 5th or 7th Tara counted from the birth star, and the 1st for a groom" in note
+    # The page shows each partner's Tara NAME, not a chip and not a grade (QA, round 1).
+    assert "chip" not in note
 
 
 def test_the_note_claims_no_source_for_the_both_rule(monkeypatch):

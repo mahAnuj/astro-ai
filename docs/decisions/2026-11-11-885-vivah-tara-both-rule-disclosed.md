@@ -29,7 +29,7 @@ organic session a month of evidence; **C** (close with no change) would leave th
 
 The finder now says the "both" rule is its own convention, that Raman gives no combining rule, and
 that a `mixed` day can still carry one partner's avoid. Pinned in
-`tests/test_vivah_both_tara_disclosure.py`, with five rows in
+`tests/test_vivah_both_tara_disclosure.py`, with six rows in
 `scripts/mutations/2026_11_11_885_both_tara.py`.
 
 **What would overturn it:** a passage in `knowledge/*.md` (or a book in `data/`) stating how the two
