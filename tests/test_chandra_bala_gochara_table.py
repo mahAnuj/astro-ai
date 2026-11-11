@@ -10,8 +10,9 @@ natal Moon could read "good for both".
 The expected sets below are typed from that table, not imported from `muhurat.py`: a test
 that read `_CHANDRA_BALA_WEAK` back would pass for any value of it.
 
-NOT pinned, deliberately: the muhurta-surface claim in #715 that the 6th house should be
-unfavourable. It rests on a Raman Muhurtha passage that is not held, so the 6th stays strong.
+The 6th house is graded differently on the muhurta surface (Raman, *Muhurtha*); that split
+and its sources are pinned in `tests/test_chandra_bala_surfaces.py`. This file pins the
+Gochara surface and the two-grade, no-neutral shape on both.
 """
 from __future__ import annotations
 
@@ -21,9 +22,11 @@ from astro_ai import muhurat
 from astro_ai.chart import RASHIS
 from astro_ai.muhurat import PartnerFactors, _chandra_bala, _couple_verdict
 
-# vedic_reference.md 2A, Moon row.
+# vedic_reference.md 2A, Moon row (the Gochara surface).
 BENEFIC = {1, 3, 6, 7, 10, 11}
 MALEFIC = {2, 4, 5, 8, 9, 12}
+# The muhurta surface: 2A's weak houses plus the 6th (Raman, Muhurtha: 6th, 8th, 12th).
+MUHURTA_STRONG = {1, 3, 7, 10, 11}
 
 
 def _transit_in_house(house: int, natal: str = RASHIS[0]) -> str:
@@ -31,9 +34,11 @@ def _transit_in_house(house: int, natal: str = RASHIS[0]) -> str:
 
 
 def test_the_two_sets_cover_all_twelve_houses_exactly_once():
+    # Name kept from before #715 split the table (the test-floor gate reads a rename as a deletion);
+    # it pins the GOCHARA pair. The muhurta pair is pinned in test_chandra_bala_surfaces.py.
     # The REAL constants, not the table typed above: muhurat.py's import-time assert
     # only catches a set that stops partitioning 1..12, not a partition that is wrong.
-    strong, weak = muhurat._CHANDRA_BALA_STRONG, muhurat._CHANDRA_BALA_WEAK
+    strong, weak = muhurat._CB_GOCHARA_STRONG, muhurat._CB_GOCHARA_WEAK
     assert strong | weak == set(range(1, 13))
     assert strong & weak == set()
     assert strong == BENEFIC
@@ -42,14 +47,16 @@ def test_the_two_sets_cover_all_twelve_houses_exactly_once():
 
 @pytest.mark.parametrize("house", range(1, 13))
 def test_each_house_takes_its_verdict_from_the_gochara_table(house):
-    got_house, verdict = _chandra_bala(RASHIS[0], _transit_in_house(house))
+    got_house, verdict = _chandra_bala(RASHIS[0], _transit_in_house(house),
+                                       surface="gochara")
     assert got_house == house
     assert verdict == ("strong" if house in BENEFIC else "weak")
 
 
+@pytest.mark.parametrize("surface", ["gochara", "muhurta"])
 @pytest.mark.parametrize("natal", RASHIS)
-def test_no_neutral_grade_for_any_natal_and_transit_rashi(natal):
-    grades = {_chandra_bala(natal, t)[1] for t in RASHIS}
+def test_no_neutral_grade_for_any_natal_and_transit_rashi(natal, surface):
+    grades = {_chandra_bala(natal, t, surface=surface)[1] for t in RASHIS}
     assert grades == {"strong", "weak"}
 
 
@@ -62,7 +69,8 @@ def test_the_rashifal_table_for_all_twelve_has_no_neutral():
 
 
 def test_an_unplaceable_rashi_still_returns_the_empty_verdict():
-    assert _chandra_bala("not a rashi", RASHIS[0]) == (0, "")
+    for surface in ("gochara", "muhurta"):
+        assert _chandra_bala("not a rashi", RASHIS[0], surface=surface) == (0, "")
 
 
 def _partner(chandra: str) -> PartnerFactors:
@@ -70,7 +78,7 @@ def _partner(chandra: str) -> PartnerFactors:
 
 
 def test_a_partner_with_the_moon_in_house_2_no_longer_passes_the_couple_verdict():
-    _, verdict = _chandra_bala(RASHIS[0], _transit_in_house(2))
+    _, verdict = _chandra_bala(RASHIS[0], _transit_in_house(2), surface="muhurta")
     assert verdict == "weak"
     assert _couple_verdict(_partner("strong"), _partner(verdict)) == "mixed"
     assert _couple_verdict(_partner(verdict), _partner("strong")) == "mixed"
@@ -78,9 +86,9 @@ def test_a_partner_with_the_moon_in_house_2_no_longer_passes_the_couple_verdict(
 
 @pytest.mark.parametrize("house", range(1, 13))
 def test_the_couple_verdict_passes_only_when_both_houses_are_benefic(house):
-    _, verdict = _chandra_bala(RASHIS[0], _transit_in_house(house))
+    _, verdict = _chandra_bala(RASHIS[0], _transit_in_house(house), surface="muhurta")
     got = _couple_verdict(_partner("strong"), _partner(verdict))
-    assert got == ("excellent-for-both" if house in BENEFIC else "mixed")
+    assert got == ("excellent-for-both" if house in MUHURTA_STRONG else "mixed")
 
 
 def test_the_couple_verdict_does_not_read_a_neutral_grade_as_a_pass():
@@ -119,16 +127,31 @@ def _render_finder(monkeypatch, **flags):
 ])
 def test_the_finder_states_the_source_of_the_chandra_grade(monkeypatch, flags):
     html = _render_finder(monkeypatch, **flags)
-    assert "Raman's Gochara table" in html
-    assert "houses 2, 4, 5, 8, 9 and 12 as unfavourable" in html
+    note = html[html.index("<strong>Chandra Bala:</strong>"):].split("</p>", 1)[0]
+    assert "Muhurtha or Electional Astrology" in note
+    assert "Astrology for Beginners" in note
+    assert "6th, 8th or 12th from the Janma Rasi" in note
+    assert "houses 2, 4, 5, 8, 9 and 12" in note
+    assert "Houses 1, 3, 7, 10 and 11 are therefore shown as strong" in note
     assert "1/3/6/7/10/11" not in html and "4/8/12" not in html
 
 
 def test_the_finder_claims_nothing_about_muhurta_traditions_in_the_chandra_note(monkeypatch):
     html = _render_finder(monkeypatch, personal_active=True, couple_active=False)
     note = html[html.index("<strong>Chandra Bala:</strong>"):].split("</p>", 1)[0]
-    for phrase in ("muhurta", "muhurtha", "tradition", "differ", "BPHS", "Parashara"):
+    for phrase in ("tradition", "differ", "BPHS", "Parashara", "Chintamani", "Phaladeepika"):
         assert phrase.lower() not in note.lower(), phrase
+
+
+def test_the_finder_footer_names_only_held_sources(monkeypatch):
+    # #715: the footer used to read "Brihat Parashara Hora Shastra, Muhurtha Chintamani,
+    # Phaladeepika", none of which this repo holds.
+    html = _render_finder(monkeypatch, personal_active=True, couple_active=False)
+    footer = html[html.index("<strong>Sources:</strong>"):].split("</p>", 1)[0]
+    for phrase in ("Brihat Parashara", "Chintamani", "Phaladeepika"):
+        assert phrase not in footer, phrase
+    assert "Muhurtha or Electional Astrology" in footer
+    assert "Swiss Ephemeris" in footer
 
 
 def test_the_note_is_absent_when_no_chandra_grade_is_shown(monkeypatch):

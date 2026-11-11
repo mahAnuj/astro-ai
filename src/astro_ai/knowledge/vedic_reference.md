@@ -487,6 +487,41 @@ second 10°, while Rahu acts throughout. A bare house verdict is therefore the
 first approximation, not the finished judgement — say so rather than
 overstating certainty.
 
+#### 2A-bis. The Moon for an ELECTION — Raman, *Muhurtha or Electional Astrology* (1948) (#715)
+
+A second held source speaks to the Moon's house from the Janma Rasi, in the
+context of choosing a day. Raman, *Muhurtha or Electional Astrology* (1948), in
+the section headed **Chandrabala**
+(`data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt`, lines
+927-933 of the 9,158-line djvu text; worked example at lines 935-951):
+
+> "Chandrabala:— As we have already said above, the consideration of the Moon
+> and his position are of much importance in Muhurtha. To be at its best, the
+> Moon should not occupy in the election chart, a position that happens to
+> represent the 6th, 8th or 12th from the person's Janma Rasi."
+
+The OCR in the file reads `Gth` and `Basi`; `Gth` is this scan's recurring
+rendering of `6th` (the same text prints "no malefic in the Gth house" at line
+6305 and "4th, Gth, 8 th" at line 5916), and `Basi` is `Rasi`. The example that
+follows (lines 935-951) takes a person with Janma Rasi Taurus and a marriage on
+a Bharani day with the Moon in Mesha, and finds no Chandrabala because Mesha is
+"the 12th from the subject's Janma Rasi" — consistent with the list above.
+
+**What this passage says, and no more.** For an election chart it names the 6th,
+8th and 12th from the Janma Rasi as the houses the Moon should not occupy. It
+does **not** say the 2nd, 4th, 5th or 9th are fine, and it does not say the
+Gochara row in 2A above is wrong: it is a different question (a day chosen for
+an event, not a transit read for oneself) and the book gives no table of good
+houses. The site's Muhurat Finder therefore marks a house weak when EITHER this
+passage or the 2A Moon row names it (weak 2, 4, 5, 6, 8, 9, 12; strong 1, 3, 7,
+10, 11), and the daily Rashifal keeps the 2A row alone (house 6 strong there).
+That split is a statement about which held source speaks to which surface, not a
+claim about what any other text says.
+
+*Checked 2026-11-11 with `scripts/corpus_search.py "Chandrabala"` (8 hits, the
+passage at line 927). Books present when checked: one of seven, the Raman
+*Muhurtha* djvu text; nothing here asserts an absence from any other book.*
+
 ---
 
 ## 3. Kaal Sarp Dosh
