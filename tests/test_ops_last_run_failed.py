@@ -13,6 +13,7 @@ several times a day, so asserting against it would be a time bomb.
 from __future__ import annotations
 
 import os
+import re
 
 import pytest
 
@@ -110,7 +111,12 @@ def test_the_team_header_no_longer_claims_every_loop_ran_when_one_failed(monkeyp
 def test_the_team_header_is_unchanged_when_nothing_failed(monkeypatch):
     body = _page(monkeypatch, [_loop(health="green", conclusion="success")])
     assert "every scheduled loop ran when due" in body
-    assert "last run failed" not in body
+    # The header's own marker, not the bare phrase. The page also renders the
+    # committed backlog, and on 2026-11-11 it held a real issue titled
+    # "[OPS] agent-prioritise.yml: last run failed" (file_ops_findings.py), so
+    # `"last run failed" not in body` went red on main and on every open PR --
+    # the time bomb this file's header says it avoids.
+    assert not re.search(r"\d+ loops? last run failed", body)
 
 
 @pytest.mark.parametrize("verdict,says_not_due", [("not-due-yet", True), ("ok", False)])
