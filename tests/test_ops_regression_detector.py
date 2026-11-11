@@ -523,6 +523,28 @@ def test_one_cold_route_is_named_even_when_the_overall_rate_is_fine(tmp_path, mo
     assert "ask 10% of 120 calls" in f["detail"]
 
 
+def test_token_ceiling_reads_the_measured_peak_not_the_output_only_one(tmp_path, monkeypatch):
+    """#868: `peak_day_tokens` has a 0 input side since #473 (14k here), so it can
+    never reach 80% of 200k; the measured peak (input + output) can."""
+    doc = _llm(peak=14_050)
+    doc.update(peak_day_measured_tokens=170_000, peak_day_measured="2026-11-07")
+    findings, _ = _with_llm(tmp_path, monkeypatch, doc)
+    f = next(f for f in findings if f["kind"] == "token-ceiling")
+    assert "170000 tokens on 2026-11-07" in f["detail"]
+
+
+def test_token_ceiling_falls_back_to_the_old_peak_for_a_file_without_the_measured_one(tmp_path, monkeypatch):
+    findings, _ = _with_llm(tmp_path, monkeypatch, _llm(peak=190_000))
+    assert "token-ceiling" in _kinds(findings)
+
+
+def test_a_cold_route_with_unmeasured_tokens_says_unknown_not_zero(tmp_path, monkeypatch):
+    cold = {"route": "ask", "calls": 120, "hit_rate_pct": 10, "tokens_per_call": None}
+    findings, _ = _with_llm(tmp_path, monkeypatch, _llm(rate=85, routes=[cold]))
+    f = next(f for f in findings if f["kind"] == "cache-low")
+    assert "input tokens unknown" in f["detail"] and "tok/miss" not in f["detail"]
+
+
 def test_a_healthy_cache_and_a_quiet_route_raise_nothing(tmp_path, monkeypatch):
     quiet = {"route": "rare", "calls": 5, "hit_rate_pct": 0}
     findings, _ = _with_llm(tmp_path, monkeypatch, _llm(rate=85, routes=[quiet]))

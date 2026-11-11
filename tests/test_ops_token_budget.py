@@ -236,3 +236,32 @@ def test_the_daily_cap_alert_is_red_over_the_whole_bucket_and_amber_below():
     assert any(a["level"] == "red" for a in alerts_for(ops_data.PEAK_DAY_RED))
     assert any(a["level"] == "amber" for a in alerts_for(ops_data.PEAK_DAY_AMBER))
     assert not alerts_for(ops_data.PEAK_DAY_AMBER - 1)
+
+
+def test_measured_peak_day_counts_provider_reported_input_and_is_none_when_absent():
+    """#868: `calls.input_tokens` is 0 since #473, so `peak_day_tokens` is output-only.
+    The measured peak sums the provider's own input + output per day."""
+    from datetime import date, timedelta
+    from astro_ai import llm_stats
+    today = date.today()
+    peak_on = (today - timedelta(days=1)).isoformat()
+    spike = {"calls": {"total": 1, "hits": 0, "misses": 1, "input_tokens": 0, "output_tokens": 900},
+             "measured_by_route": {"rashifal_single": {"calls": 3, "measured": 3, "input_tokens": 150000,
+                                                       "output_tokens": 20000},
+                                   "ask": {"calls": 1, "measured": 1, "input_tokens": 4000,
+                                           "output_tokens": 600}}}
+    quiet = {"calls": {"total": 1, "hits": 0, "misses": 1, "input_tokens": 0, "output_tokens": 50},
+             "measured_by_route": {"ask": {"calls": 1, "measured": 1, "input_tokens": 3000, "output_tokens": 100}}}
+    legacy = {"calls": {"total": 1, "hits": 0, "misses": 1, "input_tokens": 0, "output_tokens": 50}}
+    orig = llm_stats._read_day
+    try:
+        llm_stats._read_day = lambda d: spike if d.isoformat() == peak_on else quiet
+        out = llm_stats.usage_summary(5)
+        assert out["peak_day_measured_tokens"] == 150000 + 20000 + 4000 + 600
+        assert out["peak_day_measured"] == peak_on
+        assert out["peak_day_tokens"] < 1000          # the output-only figure this replaces
+        llm_stats._read_day = lambda d: legacy
+        out = llm_stats.usage_summary(5)
+        assert out["peak_day_measured_tokens"] is None and out["peak_day_measured"] is None
+    finally:
+        llm_stats._read_day = orig

@@ -311,8 +311,13 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
                 if int(r.get("calls") or 0) >= ROUTE_MIN_CALLS
                 and int(r.get("hit_rate_pct") or 0) < ROUTE_HIT_ALERT_PCT]
         if (calls >= CACHE_MIN_CALLS and rate < CACHE_HIT_ALERT_PCT) or cold:
+            # #868: tokens are provider-measured per call, or UNKNOWN. A file
+            # written before that carries tokens_per_miss, which was 0 for every route.
+            def _tok(r: dict) -> str:
+                t = r.get("tokens_per_call")
+                return f"~{t} input tok/call" if isinstance(t, (int, float)) else "input tokens unknown"
             worst = ", ".join(f"{r['route']} {r['hit_rate_pct']}% of {r['calls']} calls "
-                              f"(~{r.get('tokens_per_miss', 0)} tok/miss)" for r in cold[:4])
+                              f"({_tok(r)})" for r in cold[:4])
             add("cache-low", "amber",
                 f"LLM cache hit rate {rate}% over {llm.get('days')}d"
                 + (f"; cold routes: {len(cold)}" if cold else ""),
@@ -324,11 +329,16 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
                 f"#515 nightly-rashifal pattern) and serve it from cache; keep the shared "
                 f"prompt prefix ahead of the per-request part. Measure tokens before and "
                 f"after with scripts/verify_token_budget.py.", "/admin/ops")
-        peak = llm.get("peak_day_tokens")
+        # #868: the measured peak (input + output as the provider reported them)
+        # first. `peak_day_tokens` is the cache layer's, whose input side is 0 on
+        # every day since #473 -- an output-only figure that cannot reach the ceiling.
+        peak, peak_day = llm.get("peak_day_measured_tokens"), llm.get("peak_day_measured")
+        if not isinstance(peak, (int, float)):
+            peak, peak_day = llm.get("peak_day_tokens"), llm.get("peak_day")
         if isinstance(peak, (int, float)) and peak >= GROQ_TPD * TOKEN_DAY_ALERT:
             add("token-ceiling", "red" if peak >= GROQ_TPD else "amber",
                 f"Peak day used {round(peak / GROQ_TPD * 100)}% of the Groq daily budget",
-                f"{int(peak)} tokens on {llm.get('peak_day')} against ~{GROQ_TPD} TPD per "
+                f"{int(peak)} tokens on {peak_day} against ~{GROQ_TPD} TPD per "
                 f"model (CLAUDE.md, \"Token budget\"). Overshooting it is an outage, not "
                 f"slowness. Raise the cache hit rate first (see cache-low); move bulk generation "
                 f"to a scheduled Claude Code job; never widen a prompt to fill the gap. Adding "
