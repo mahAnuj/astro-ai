@@ -79,21 +79,29 @@ def _is_panchak(nakshatra: str, pada: int) -> bool:
 
 # ─── Personal-matching classical tables ──────────────────────────────
 # Tara Bala (star strength): count from user's birth nakshatra to the
-# transit day's nakshatra (mod 9 + 1). Source not held: the nine names and
-# their verdicts were attributed to a text this repo does not hold before #716,
-# and are unverified against any book in the corpus. Only the avoid positions
-# 3, 5 and 7 have a held counterpart, and that is the Ashtakoota Tara rule
-# (knowledge/matching.md v.24, "3, 5, 7 are inauspicious"), a different use.
+# transit day's nakshatra (mod 9 + 1). The nine NAMES are B.V. Raman's, from
+# *Muhurtha or Electional Astrology* (1948): Janma, Sampat, Vipat, Kshema,
+# Pratyak, Sadhana, Naidhana, Mitra, Parama Mitra (knowledge/vedic_reference.md
+# 2A-ter, lines 897-914 of the djvu text; #879). Until #879 positions 5, 6, 7 and
+# 9 carried a different spelling (Pratyari, Sadhaka, Vadha, Ati-Mitra) that
+# knowledge/ does not trace to any held text. matching.py's Ashtakoota Tara is a
+# different use and keeps its own spelling; it is untouched here.
+# What is sourced: the names, and that the 1st, 3rd, 5th and 7th are the days to
+# avoid (Raman L1063-1066). The split of the other five into "good" and
+# "excellent" is this site's own grading, not drawn from a held text, and the
+# finder says so. The English glosses that sat beside each name here (obstacle,
+# achievement, destruction ...) are not carried: they were not checked against
+# the book either.
 _TARA_BALA_NAMES = {
     1: ("Janma",     "ok"),        # own birth star — "ok" stays for the single-user match and the bride; a Vivah groom is graded "avoid" in _couple_verdict (#714)
-    2: ("Sampat",    "good"),      # wealth
-    3: ("Vipat",     "avoid"),     # calamity
-    4: ("Kshema",    "good"),      # welfare
-    5: ("Pratyari",  "avoid"),     # obstacle
-    6: ("Sadhaka",   "good"),      # achievement
-    7: ("Vadha",     "avoid"),     # destruction
-    8: ("Mitra",     "good"),      # friend
-    9: ("Ati-Mitra", "excellent"), # best friend
+    2: ("Sampat",    "good"),
+    3: ("Vipat",     "avoid"),
+    4: ("Kshema",    "good"),
+    5: ("Pratyak",   "avoid"),
+    6: ("Sadhana",   "good"),
+    7: ("Naidhana",  "avoid"),
+    8: ("Mitra",     "good"),
+    9: ("Parama Mitra", "excellent"),
 }
 # Janma, by name, so the Vivah groom rule below follows the table's own row rather
 # than a second spelling that could drift from it (#714).

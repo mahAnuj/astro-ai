@@ -12,7 +12,7 @@ MUTATIONS = [
      "test_the_finder_discloses_how_janma_is_graded"),
     ("#714: the disclosure is reworded to claim what 'classical tradition' says about Janma",
      "src/astro_ai/templates/muhurat_finder.html",
-     "are not sourced to a text this site holds.</p>",
+     "not sourced to a text this site holds.</p>",
      "follow classical tradition.</p>",
      "test_the_janma_note_names_one_book_and_does_not_lean_on_the_nuptials_sentence"),
     ("#714: Janma is quietly flipped to 'avoid' while the page still says 'ok'",

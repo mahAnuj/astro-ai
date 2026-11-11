@@ -28,11 +28,11 @@ KNOWLEDGE = ROOT / "src" / "astro_ai" / "knowledge" / "vedic_reference.md"
 TEMPLATE = ROOT / "src" / "astro_ai" / "templates" / "muhurat_finder.html"
 CORPUS = ROOT / "data" / "matching" / "raman-muhurtha-1948-electional-astrology_djvu.txt"
 
-# The nine Tara grades as the code held them before #714 and still holds them. Typed in.
+# The nine Tara grades as the code held them before #714; the NAMES of 5, 6, 7, 9 are Raman's since #879. Typed in.
 TARA_TABLE = {
     1: ("Janma", "ok"), 2: ("Sampat", "good"), 3: ("Vipat", "avoid"), 4: ("Kshema", "good"),
-    5: ("Pratyari", "avoid"), 6: ("Sadhaka", "good"), 7: ("Vadha", "avoid"),
-    8: ("Mitra", "good"), 9: ("Ati-Mitra", "excellent"),
+    5: ("Pratyak", "avoid"), 6: ("Sadhana", "good"), 7: ("Naidhana", "avoid"),
+    8: ("Mitra", "good"), 9: ("Parama Mitra", "excellent"),
 }
 
 
