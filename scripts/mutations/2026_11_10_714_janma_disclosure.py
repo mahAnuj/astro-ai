@@ -26,7 +26,7 @@ MUTATIONS = [
      "test_a_groom_on_his_own_janma_still_passes_the_couple_verdict"),
     ("#714: the disclosure shows when no Tara grade is displayed",
      "src/astro_ai/templates/muhurat_finder.html",
-     "(weak).</p>\n      {#- #714",
-     "(weak).</p>\n      {% endif %}{% if true %}\n      {#- #714",
+     "shown as strong.</p>\n      {#- #714",
+     "shown as strong.</p>\n      {% endif %}{% if true %}\n      {#- #714",
      "test_the_janma_note_is_absent_when_no_tara_grade_is_shown"),
 ]

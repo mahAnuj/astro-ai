@@ -390,15 +390,16 @@
       <p><strong>Personal matching:</strong> Tara Bala counts transit-day nakshatra from your natal Moon nakshatra (mod 9); positions Sampat, Kshema, Sadhaka, Mitra, Ati-Mitra are auspicious; Vipat, Pratyari, Vadha are avoided. Chandra Bala checks the transit Moon's house from your natal Moon (see below). Sade Sati and Rahu/Ketu Mahadasha surface as chart-level cautions above.</p>
       {% endif %}
       {% if personal_active or couple_active %}
-      {#- #715: states only what knowledge/vedic_reference.md 2A holds. No claim about
-         what muhurta texts say: that is not held. -#}
-      <p><strong>Chandra Bala:</strong> counted from the natal Moon using Raman's Gochara table (<em>Astrology for Beginners</em>); houses 1, 3, 6, 7, 10 and 11 are counted as favourable (strong) and houses 2, 4, 5, 8, 9 and 12 as unfavourable (weak).</p>
+      {#- #715: states only what knowledge/vedic_reference.md 2A and 2A-bis hold: Raman's
+         Gochara Moon row and Raman's Muhurtha (election chart). No claim about what any
+         other text says: that is not held. -#}
+      <p><strong>Chandra Bala:</strong> counted from the natal Moon. A house is shown as weak when either of two works by Raman names it: <em>Muhurtha or Electional Astrology</em> (for an election chart, the Moon in the 6th, 8th or 12th from the Janma Rasi) or his Gochara table for the Moon in <em>Astrology for Beginners</em> (houses 2, 4, 5, 8, 9 and 12). Houses 1, 3, 7, 10 and 11 are therefore shown as strong.</p>
       {#- #714: states only what muhurat.py does and what is held. No Raman citation and no
          claim about what any text says on Janma: the passage is not in knowledge/. -#}
       <p><strong>Tara Bala, Janma:</strong> on a day when the Moon is in the birth star of the person being matched (Tara position 1, Janma), this finder grades it "ok" and counts it as passing for either partner. That grade is the same for every event and for both partners; it is not varied by either. The Tara names shown (Pratyari, Sadhaka, Vadha, Ati-Mitra and the rest) are not sourced to a text this site holds.</p>
       {% endif %}
       <p><strong>Not yet included:</strong> South Indian regional variants. Cross-check final date with your family priest.</p>
-      <p><strong>Sources:</strong> Brihat Parashara Hora Shastra, Muhurtha Chintamani, Phaladeepika. Astronomical positions via Swiss Ephemeris (pyswisseph) in sidereal Lahiri ayanamsa. Eclipse dates from NASA / Drik Panchang.</p>
+      <p><strong>Sources:</strong> B.V. Raman, <em>Muhurtha or Electional Astrology</em> and <em>Astrology for Beginners</em> (for the Chandra Bala grades above). Astronomical positions via Swiss Ephemeris (pyswisseph) in sidereal Lahiri ayanamsa. Eclipse dates from NASA / Drik Panchang.</p>
     </div>
   </section>
   {% endif %}

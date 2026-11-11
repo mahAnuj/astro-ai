@@ -96,23 +96,39 @@ _TARA_BALA_NAMES = {
     9: ("Ati-Mitra", "excellent"), # best friend
 }
 
-# Chandra Bala (Moon strength): count from user's natal Moon rashi to
-# transit-day Moon rashi (1..12). Both sets are the Moon row of
-# knowledge/vedic_reference.md 2A (Gochara, Raman Ch. XII): benefic 1, 3, 6, 7,
-# 10, 11 / malefic 2, 4, 5, 8, 9, 12. Every house is classified there and the
-# section says "no neutral third category", so there is no third grade (#715;
-# until then 2, 5 and 9 fell through to an invented "neutral" that
-# _couple_verdict let pass). The attribution that stood here before #716 named
-# a text that is not held and is withdrawn.
-# NOT sourced and NOT changed here: #715 also claims the muhurta surface should
-# treat the 6th house as unfavourable. That rests on a Raman Muhurtha passage
-# that is not in knowledge/*.md, so the 6th stays "strong" on every surface.
-_CHANDRA_BALA_STRONG = {1, 3, 6, 7, 10, 11}
-_CHANDRA_BALA_WEAK   = {2, 4, 5, 8, 9, 12}
-# Fail at import rather than grade a house by fall-through: every house is one or
-# the other, as in the source table.
-assert (_CHANDRA_BALA_STRONG | _CHANDRA_BALA_WEAK == set(range(1, 13))
-        and not _CHANDRA_BALA_STRONG & _CHANDRA_BALA_WEAK)
+# Chandra Bala (Moon strength): count from the user's natal Moon rashi to the
+# transit-day Moon rashi (1..12). Two surfaces ask two different questions, so
+# there are two grade tables (#715):
+#
+#   "gochara"  -- "how is today's Moon for me?" (daily Rashifal card and email,
+#     via chandra_bala_by_rashi). The Moon row of knowledge/vedic_reference.md 2A
+#     (Raman, Astrology for Beginners Ch. XII): benefic 1, 3, 6, 7, 10, 11 /
+#     malefic 2, 4, 5, 8, 9, 12. House 6 is benefic here.
+#   "muhurta"  -- "may I pick this day for an event?" (Muhurat Finder personal
+#     match and the Vivah couple verdict). A house is weak when EITHER held source
+#     names it: the 2A row above, or Raman, Muhurtha or Electional Astrology
+#     (1948), chapter on Chandrabala, which says the Moon should not stand in the
+#     6th, 8th or 12th from the person's Janma Rasi in the election chart
+#     (knowledge/vedic_reference.md 2A-bis quotes it with its line range).
+#     That makes 6 weak here: 2, 4, 5, 6, 8, 9, 12 weak; 1, 3, 7, 10, 11 strong.
+#
+# Neither source has a third grade, so there is none (until #715, 2, 5 and 9
+# fell through to an invented "neutral" that _couple_verdict let pass). The
+# attribution that stood here before #716 named a text that is not held and is
+# withdrawn.
+_CB_GOCHARA_STRONG = {1, 3, 6, 7, 10, 11}
+_CB_GOCHARA_WEAK   = {2, 4, 5, 8, 9, 12}
+_CB_MUHURTA_STRONG = {1, 3, 7, 10, 11}
+_CB_MUHURTA_WEAK   = {2, 4, 5, 6, 8, 9, 12}
+_CHANDRA_BALA_SETS = {
+    "gochara": (_CB_GOCHARA_STRONG, _CB_GOCHARA_WEAK),
+    "muhurta": (_CB_MUHURTA_STRONG, _CB_MUHURTA_WEAK),
+}
+# Fail at import rather than grade a house by fall-through: on each surface every
+# house is one or the other, as in the source tables.
+for _strong, _weak in _CHANDRA_BALA_SETS.values():
+    assert _strong | _weak == set(range(1, 13)) and not _strong & _weak
+del _strong, _weak
 
 
 @dataclass(frozen=True)
@@ -1084,25 +1100,35 @@ def chandra_bala_by_rashi(transit_moon_rashi: str) -> dict[str, tuple[int, str]]
     across the twelve on one day -- and unlike a star rating it is computed from
     a fixed house list rather than invented (#514); that list matches
     knowledge/vedic_reference.md 2A, the Moon row, for both the strong and
-    the weak houses (#715 closed the gap where 2, 5, 9 were "neutral").
+    the weak houses (#715 closed the gap where 2, 5, 9 were "neutral"). House
+    6 is strong HERE and weak on the muhurta surface (see `_CHANDRA_BALA_SETS`):
+    this is a transit reading, not an election.
 
     Returns "" as the verdict for a rashi it cannot place, same as
     `_chandra_bala`; the caller renders nothing rather than guessing.
     """
-    return {r.split(" (")[0].lower(): _chandra_bala(r, transit_moon_rashi)
+    return {r.split(" (")[0].lower():
+            _chandra_bala(r, transit_moon_rashi, surface="gochara")
             for r in RASHIS}
 
 
-def _chandra_bala(user_moon_rashi: str, transit_moon_rashi: str) -> tuple[int, str]:
-    """Return (house 1..12, verdict) for the user's Chandra Bala on this day."""
+def _chandra_bala(user_moon_rashi: str, transit_moon_rashi: str, *,
+                  surface: str) -> tuple[int, str]:
+    """Return (house 1..12, verdict) for the user's Chandra Bala on this day.
+
+    `surface` is "gochara" or "muhurta" and has no default: the two grade house
+    6 differently, so a caller that forgets to say which question it is asking
+    must fail (TypeError, or KeyError for an unknown name), not get one silently.
+    """
+    strong, _ = _CHANDRA_BALA_SETS[surface]
     try:
         u_idx = RASHIS.index(user_moon_rashi)
         t_idx = RASHIS.index(transit_moon_rashi)
     except ValueError:
         return 0, ""
     house = ((t_idx - u_idx) % 12) + 1
-    # Two grades only: the sets above partition 1..12 (asserted at import).
-    verdict = "strong" if house in _CHANDRA_BALA_STRONG else "weak"
+    # Two grades only: each surface's sets partition 1..12 (asserted at import).
+    verdict = "strong" if house in strong else "weak"
     return house, verdict
 
 
@@ -1121,7 +1147,7 @@ def _personal_match_for(user_chart: Chart, when: datetime,
     if transit_moon is None:
         return None
     t_pos, t_name, t_verdict = _tara_bala(user_moon.nakshatra, transit_nakshatra)
-    c_house, c_verdict = _chandra_bala(user_moon.rashi, transit_moon.rashi)
+    c_house, c_verdict = _chandra_bala(user_moon.rashi, transit_moon.rashi, surface="muhurta")
     return PersonalMatch(
         tara_bala=t_verdict, tara_bala_name=t_name, tara_position=t_pos,
         chandra_bala=c_verdict, chandra_house=c_house,
@@ -1143,7 +1169,7 @@ def _partner_factors_for(chart: Chart, when: datetime,
     if p_moon is None or transit_moon is None:
         return PartnerFactors("", "", "", manglik_status, "", "")
     _, t_name, t_verdict = _tara_bala(p_moon.nakshatra, transit_nakshatra)
-    _, c_verdict = _chandra_bala(p_moon.rashi, transit_moon.rashi)
+    _, c_verdict = _chandra_bala(p_moon.rashi, transit_moon.rashi, surface="muhurta")
     # Extract Sade Sati and Dasha flags from static_notes (short labels).
     sade_sati_flag = ""
     dasha_flag = ""
