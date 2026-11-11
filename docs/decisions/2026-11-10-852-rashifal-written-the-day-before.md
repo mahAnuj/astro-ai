@@ -37,5 +37,11 @@ record". It now returns None until the read lands, and the panel says "record no
 - **Several cron slots with a skip check.** More runs and more Claude quota to buy what one
   afternoon slot with 12h of slack already gives.
 
+**The switch-over leaves a gap, by construction** (QA on #853). The old 22:00 UTC cron no longer
+writes TODAY, and the new 06:17 UTC cron writes TOMORROW. So the day the change merges, and the
+next day if it merges after 06:17 UTC, have no early Claude write. The 01:00 UTC warm generates
+those days on Groq, as before: about 24 calls and about 110k input tokens each. To close the gap
+by hand, dispatch `rashifal-generate` once with `date=<that day>` (the input this PR adds).
+
 **Residual risk.** A prompt-file change deployed between generation and the day itself changes
 the storage key's fingerprint. The day then falls back to Groq, the same as a missed run.

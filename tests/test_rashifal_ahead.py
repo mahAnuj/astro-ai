@@ -114,3 +114,20 @@ def test_the_panel_template_has_a_loading_state_and_the_new_schedule():
     html = (ROOT / "src/astro_ai/templates/admin_ops.html").read_text()
     assert "{% if R.loading %}" in html and "record not loaded yet" in html
     assert "nightly · 03:30 IST" not in html
+
+
+def test_a_cold_instance_reports_loading_through_the_real_hot_cache(monkeypatch):
+    # QA on #853: the test above stubs _rashifal_runs, so it never reaches the
+    # `initial=` argument and a mutation back to `initial={}` stayed green. This
+    # one calls the real function on a cold cache, while the bucket read hangs.
+    import threading
+    from astro_ai import hot_cache, storage
+    hot_cache.clear()
+    gate = threading.Event()
+    monkeypatch.setattr(storage, "get_json", lambda *a, **k: (gate.wait(5) or {"2026-11-11": {}}))
+    try:
+        assert ops_data._rashifal_runs() is None            # first render: not read yet
+        assert ops_data._rashifal_view("2026-11-10")["loading"] is True
+    finally:
+        gate.set()
+        hot_cache.clear()

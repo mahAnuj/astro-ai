@@ -39,5 +39,5 @@ MUTATIONS = [
      "src/astro_ai/ops_data.py",
      "                                        fetch, initial=None)",
      "                                        fetch, initial={})",
-     "test_an_unread_record_is_loading_not_never_ran"),
+     "test_a_cold_instance_reports_loading_through_the_real_hot_cache"),
 ]
