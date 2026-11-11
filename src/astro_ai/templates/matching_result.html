@@ -233,6 +233,10 @@
         {{ diamond_labels(ch, '#a16207', '#1c1917', '#b45309') }}
       </svg>
     </div>
+    {# #889: the diamond drops a degree / R in a crowded cell and /matching has no
+       positions table to recover it from, so every planet is listed here in full. #}
+    {% from "_chart_positions.html" import chart_positions %}
+    {{ chart_positions(ch, t(lang, 'matching_positions_label')) }}
   {%- endmacro %}
   <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     {# The old form here was `t(...) if t(...) else 'Both charts'`, which could

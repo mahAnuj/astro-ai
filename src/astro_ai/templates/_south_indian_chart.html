@@ -14,7 +14,9 @@
    Do not "tidy" them ahead of it; do not miss them when it lands.
    This partial and the diamond in result.html are a toggle PAIR — whatever
    moves one must move the other in the same commit, or the two chart styles
-   disagree inside one page.
+   disagree inside one page. (#889 changed only this partial's planet stack and
+   LAGNA caption; the diamond's slots were already solved for 1..8, so the pair
+   still agrees on what is printed, if not on how it is laid out.)
 #}
 <svg viewBox="0 0 400 400" class="w-full max-w-lg mx-auto block"
      xmlns="http://www.w3.org/2000/svg" aria-label="{{ aria }}">
@@ -61,13 +63,34 @@
       {# Rashi 3-letter abbrev top-right #}
       <text x="{{ cx + 92 }}" y="{{ cy + 16 }}" text-anchor="end"
             font-size="10" font-weight="600" fill="#6F675E" style="font-family: Manrope, sans-serif">{{ c.rashi_short }}</text>
-      {# Planet stack — centered in cell #}
+      {# Planet stack (#889). A cell is 100 units tall and the header row (house
+         number, rashi) owns y < cy+19, so the stack lives in cy+19 .. cy+97.
+         The old stack started at cy+42 with a pitch of 13 and put LAGNA at
+         cy+92: from the 5th planet in the lagna cell the caption collided with a
+         label, and from the 6th the stack left the cell. Now:
+           1..6 planets  one centred column, "Su 29° R", pitch 13; the start
+                         rises (cy+42 -> cy+29) so six still end inside the cell
+           7..8 planets  two columns of "Su R" (the degree is dropped, as the
+                         diamond does in a crowded cell; /kundli's positions
+                         table below carries it) -- "Su 29° R" is ~50 wide and
+                         a cell has 94
+         8 is the ceiling in one sign (Rahu and Ketu are opposite).
+         tests/test_south_indian_geometry.py re-checks every count. #}
+      {% set n = c.planets|length %}
+      {% set y0 = [42, 94 - 13 * (n - 1)]|min if n <= 6 else 42 %}
       {% for p in c.planets %}
-      <text x="{{ cx + 50 }}" y="{{ cy + 42 + loop.index0 * 13 }}" text-anchor="middle"
+      {% if n <= 6 %}
+      <text x="{{ cx + 50 }}" y="{{ cy + y0 + loop.index0 * 13 }}" text-anchor="middle"
             font-size="11" font-weight="600" fill="#17131A" style="font-family: Manrope, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#92400e">&nbsp;R</tspan>{% endif %}</text>
+      {% else %}
+      <text x="{{ cx + (27 if loop.index0 % 2 == 0 else 73) }}" y="{{ cy + y0 + (loop.index0 // 2) * 13 }}" text-anchor="middle"
+            font-size="11" font-weight="600" fill="#17131A" style="font-family: Manrope, sans-serif">{{ p[0] }}{% if p[2] %}<tspan font-size="9" fill="#92400e">&nbsp;R</tspan>{% endif %}</text>
+      {% endif %}
       {% endfor %}
+      {# LAGNA sits in the header row, between the house number (ends ~cx+23) and
+         the rashi abbreviation (starts ~cx+70): ~34 wide, centred at cx+46. #}
       {% if c.is_lagna %}
-      <text x="{{ cx + 50 }}" y="{{ cy + 92 }}" text-anchor="middle"
+      <text x="{{ cx + 46 }}" y="{{ cy + 16 }}" text-anchor="middle"
             font-size="9" font-weight="700" fill="#9E2B25" style="font-family: Manrope, sans-serif">LAGNA</text>
       {% endif %}
     {% endfor %}

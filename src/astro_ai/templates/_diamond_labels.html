@@ -16,9 +16,12 @@
    font size. Change FS, the pitch or a coordinate by hand and that test goes red.
 
    Slot modes: 0 = "Su 29° R", 1 = "Su R" (the cell is too small for the degree),
-   2 = "Su" (a triangle holding 7+ grahas; retrograde is dropped too). The degree
-   and retrograde flag of every planet remain in the positions table under the
-   chart. A chart has at most 8 labels in one sign (Rahu and Ketu are opposite).
+   2 = "Su" (a triangle holding 7+ grahas; retrograde is dropped too). Nothing
+   dropped here is lost from the page, but WHERE it survives differs: /kundli has
+   a planetary-positions table under the chart, and /matching (no such table)
+   prints a compact positions line under each mini chart (`_chart_positions.html`,
+   #889). Any new page that calls this macro must carry one or the other.
+   A chart has at most 8 labels in one sign (Rahu and Ketu are opposite).
 
    `abbr_only` (the D-9/D-10 charts) prints just the 2-letter code; every mode's
    slot is wide enough for that.
