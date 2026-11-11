@@ -70,3 +70,13 @@ def test_the_names_are_in_the_djvu_text():
     text = "\n".join(CORPUS.read_text(encoding="utf-8", errors="replace").splitlines()[890:920])
     for name in ("Pratyak", "Sadhana", "Naidhana"):
         assert name in text, name
+
+
+def test_the_finder_does_not_say_the_first_star_is_marked_avoid():
+    # QA round 1 on #884: the 1st (Janma) is graded "ok" for the personal match and the bride, and
+    # "avoid" only for a Vivah groom, so "the 1st ... are the ones marked avoid" was false.
+    assert muhurat._TARA_BALA_NAMES[1][1] == "ok"
+    assert {muhurat._TARA_BALA_NAMES[i][1] for i in (3, 5, 7)} == {"avoid"}
+    assert "are the ones marked avoid" not in TEMPLATE
+    assert "he lists the days ruled by the 1st, 3rd, 5th and 7th stars as ones to avoid" in TEMPLATE
+    assert "The finder marks the 3rd, 5th and 7th (Vipat, Pratyak, Naidhana) avoid, and treats the 1st (Janma)" in TEMPLATE
