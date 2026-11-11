@@ -1,14 +1,14 @@
-"""#714: the finder says what it does with Janma (Tara position 1), and nothing more.
+"""#714: the finder says what it does with Janma (Tara position 1), and what it follows.
 
-`_TARA_BALA_NAMES[1]` grades the traveller's own birth star "ok", and `_couple_verdict`
-counts "ok" as passing for either partner, for every event. No held text grades Janma per
-event (knowledge/vedic_reference.md holds only Rao's "good tara from janma nakshatra"), and
-the Raman Muhurtha passage #714 quotes is not in knowledge/. So chief ruled (Option A):
-disclose, change no grade. The disclosure may state the code's behaviour and the lack of a
-source; it may not cite Raman or say what any text holds.
+`_TARA_BALA_NAMES[1]` still grades the person's own birth star "ok" and the single-user
+personal match shows it unchanged. The Vivah couple verdict reads it further: a groom on his own
+Janma day counts as avoid for the Tara test, a bride's still passes, following Raman, Muhurtha
+(1948), knowledge/vedic_reference.md 2A-ter. This file pins what the page SAYS about that; the
+verdicts themselves are pinned in tests/test_janma_vivah_groom.py. It began as a disclosure-only
+file (chief's Option A: change no grade); the groom pin below was flipped deliberately when the
+ruling on #714's remainder landed, so it is an edit to a marker, not a patch around one.
 
-The grades below are typed in, not read back from muhurat.py: a later change to either is a
-deliberate act that has to edit this file, and #714 stays open for exactly that ruling.
+The grades below are typed in, not read back from muhurat.py.
 """
 from __future__ import annotations
 
@@ -54,9 +54,11 @@ def _note(html: str) -> str:
 ])
 def test_the_finder_discloses_how_janma_is_graded(monkeypatch, flags):
     note = _note(_render_finder(monkeypatch, **flags))
-    assert 'grades it "ok" and counts it as passing for either partner' in note
-    assert "not varied by either" in note
-    assert "same for every event" in note
+    assert 'the personal match still shows "ok"' in note
+    assert "not varied by event" in note
+    assert "a groom on the day ruled by his own birth star is no longer counted as a pass" in note
+    assert "a bride on her own birth-star day still passes" in note
+    assert "does not apply the exception Raman allows only in urgent cases" in note
     assert "not sourced to a text this site holds" in note
 
 
@@ -65,10 +67,14 @@ def test_the_janma_note_is_absent_when_no_tara_grade_is_shown(monkeypatch):
     assert MARKER not in html
 
 
-def test_the_janma_note_claims_nothing_about_what_any_text_says(monkeypatch):
+def test_the_janma_note_names_one_book_and_does_not_lean_on_the_nuptials_sentence(monkeypatch):
     note = _note(_render_finder(monkeypatch, personal_active=True, couple_active=False))
-    for phrase in ("raman", "classical", "tradition", "muhurtha", "muhurta", "texts say",
-                   "according to", "BPHS", "Parashara"):
+    assert "Muhurtha or Electional Astrology" in note
+    # Raman contradicts himself on "nuptials" in the same passage; the page says so and no more.
+    assert 'unclear on "nuptials", so that sentence is not used' in note
+    assert "without exception" not in note
+    for phrase in ("classical", "tradition", "texts say", "according to", "BPHS", "Parashara",
+                   "Muhurta Chintamani", "Phaladeepika"):
         assert phrase.lower() not in note.lower(), phrase
 
 
@@ -81,7 +87,12 @@ def _partner(tara: str, name: str) -> PartnerFactors:
     return PartnerFactors(tara, name, "strong", "none", "", "")
 
 
-def test_a_groom_on_his_own_janma_still_passes_the_couple_verdict():
-    # Measured at 018fce1: good-for-both. The disclosure above is true only while this holds.
-    assert _couple_verdict(_partner("good", "Sampat"), _partner("ok", "Janma")) == "good-for-both"
-    assert _couple_verdict(_partner("ok", "Janma"), _partner("ok", "Janma")) == "good-for-both"
+def test_a_groom_on_his_own_janma_no_longer_passes_the_couple_verdict():
+    # FLIPPED DELIBERATELY (#714). Measured at 018fce1: good-for-both. The page above says a
+    # groom on his Janma day is "no longer counted as a pass"; that is true only while this holds.
+    assert _couple_verdict(_partner("good", "Sampat"), _partner("ok", "Janma")) == "mixed"
+    assert _couple_verdict(_partner("ok", "Janma"), _partner("ok", "Janma")) == "mixed"
+
+
+def test_a_bride_on_her_own_janma_still_passes_the_couple_verdict():
+    assert _couple_verdict(_partner("ok", "Janma"), _partner("good", "Sampat")) == "good-for-both"

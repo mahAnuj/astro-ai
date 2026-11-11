@@ -85,7 +85,7 @@ def _is_panchak(nakshatra: str, pada: int) -> bool:
 # 3, 5 and 7 have a held counterpart, and that is the Ashtakoota Tara rule
 # (knowledge/matching.md v.24, "3, 5, 7 are inauspicious"), a different use.
 _TARA_BALA_NAMES = {
-    1: ("Janma",     "ok"),        # own birth star — "ok" is an unsourced simplification, same for every event and partner (#714)
+    1: ("Janma",     "ok"),        # own birth star — "ok" stays for the single-user match and the bride; a Vivah groom is graded "avoid" in _couple_verdict (#714)
     2: ("Sampat",    "good"),      # wealth
     3: ("Vipat",     "avoid"),     # calamity
     4: ("Kshema",    "good"),      # welfare
@@ -95,6 +95,9 @@ _TARA_BALA_NAMES = {
     8: ("Mitra",     "good"),      # friend
     9: ("Ati-Mitra", "excellent"), # best friend
 }
+# Janma, by name, so the Vivah groom rule below follows the table's own row rather
+# than a second spelling that could drift from it (#714).
+_JANMA_TARA_NAME = _TARA_BALA_NAMES[1][0]
 
 # Chandra Bala (Moon strength): count from the user's natal Moon rashi to the
 # transit-day Moon rashi (1..12). Two surfaces ask two different questions, so
@@ -1195,16 +1198,29 @@ def _partner_factors_for(chart: Chart, when: datetime,
 
 
 def _couple_verdict(bride: PartnerFactors, groom: PartnerFactors) -> str:
-    """Reduce both partners' factors to a single wedding-day verdict."""
+    """Reduce both partners' factors to a single wedding-day verdict.
+
+    A groom on his own Janma day is graded "avoid" for the Tara test; the bride on
+    hers is not. Raman, Muhurtha (1948) puts the day ruled by the 1st star in the
+    avoid list with the 3rd, 5th and 7th, names marriage among the events it is
+    inauspicious for, and says "For a woman, Janma Nakshatra would be quite
+    favourable for marriage" (knowledge/vedic_reference.md 2A-ter, #714). The
+    "nuptials ... favourable without exception" sentence in the same passage is not
+    used: the book contradicts itself on that word. `groom.tara_bala` itself stays
+    "ok" (the single-user match and the per-partner chips are unchanged); only this
+    verdict reads it as avoid. The "avoid only when BOTH avoid" rule below is
+    unsourced and is not touched here.
+    """
+    g_tara = "avoid" if groom.tara_bala_name == _JANMA_TARA_NAME else groom.tara_bala
     b_tara_ok = bride.tara_bala in ("excellent", "good", "ok")
-    g_tara_ok = groom.tara_bala in ("excellent", "good", "ok")
+    g_tara_ok = g_tara in ("excellent", "good", "ok")
     b_chandra_ok = bride.chandra_bala == "strong"
     g_chandra_ok = groom.chandra_bala == "strong"
 
-    both_tara_avoid = (bride.tara_bala == "avoid" and groom.tara_bala == "avoid")
+    both_tara_avoid = (bride.tara_bala == "avoid" and g_tara == "avoid")
     if both_tara_avoid:
         return "avoid"
-    if (bride.tara_bala == "excellent" and groom.tara_bala == "excellent"
+    if (bride.tara_bala == "excellent" and g_tara == "excellent"
             and b_chandra_ok and g_chandra_ok):
         return "excellent-for-both"
     if b_tara_ok and g_tara_ok and b_chandra_ok and g_chandra_ok:
