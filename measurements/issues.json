@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-11T15:11:59Z",
+  "generated_at": "2026-11-11T17:14:42Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 101,
+  "open": 102,
   "with_ask": 36,
   "by_area": {
-    "UNCLASSIFIED": 36,
+    "UNCLASSIFIED": 37,
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -28,7 +28,7 @@
   },
   "by_type": {
     "untyped": 30,
-    "enhancement": 23,
+    "enhancement": 24,
     "bug": 20,
     "chore": 14,
     "correctness": 7,
@@ -36,12 +36,28 @@
     "ui": 2
   },
   "by_priority": {
-    "unset": 74,
+    "unset": 75,
     "medium": 18,
     "high": 9
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 903,
+      "title": "Loop pause/resume: one switch that stops every Claude-spending loop job",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "category:technical"
+      ],
+      "created": "2026-11-11T16:47:25Z",
+      "updated": "2026-11-11T16:47:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 889,
       "title": "Diamond chart: header comment says degrees stay in a table under /matching charts (false), and the South-Indian LAGNA caption overlaps a crowded house 1 (follow-up to #871)",
@@ -253,7 +269,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-07T16:59:47Z",
-      "updated": "2026-11-11T15:11:13Z",
+      "updated": "2026-11-11T15:21:48Z",
       "blocked": false,
       "needs_evidence": false
     },
