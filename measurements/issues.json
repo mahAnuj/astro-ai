@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-11T01:03:20Z",
+  "generated_at": "2026-11-11T03:43:59Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 107,
+  "open": 105,
   "with_ask": 37,
   "by_area": {
     "UNCLASSIFIED": 37,
@@ -10,18 +10,17 @@
     "REDESIGN": 10,
     "UI": 7,
     "FEATURE": 7,
-    "OPS": 3,
+    "OPS": 4,
     "SEO": 3,
     "RETRIEVAL": 3,
-    "MEASURE": 3,
     "CHORE": 3,
     "MATCHING": 2,
-    "MUHURAT": 2,
+    "MEASURE": 2,
     "NUMEROLOGY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "MAIN-RED": 1,
+    "MUHURAT": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
@@ -29,21 +28,52 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 32,
+    "untyped": 30,
     "enhancement": 23,
-    "bug": 22,
-    "chore": 13,
+    "bug": 21,
+    "chore": 14,
     "correctness": 8,
     "design": 6,
     "ui": 3
   },
   "by_priority": {
-    "unset": 80,
-    "medium": 17,
+    "unset": 77,
+    "medium": 18,
     "high": 10
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 879,
+      "title": "Muhurat: Tara names differ from Raman's, and 'avoid only when both avoid' is unsourced (follow-up to #714)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-11T03:27:41Z",
+      "updated": "2026-11-11T03:27:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 876,
+      "title": "[OPS] agent-prioritise.yml: last run failed",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "chore"
+      ],
+      "created": "2026-11-11T02:08:27Z",
+      "updated": "2026-11-11T02:38:47Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 871,
       "title": "/matching charts render labels at 8.76px at 640px (two-up) and the R mark at 8.4px at 375px (follow-up to #380)",
@@ -68,24 +98,13 @@
       "area": "INFRA",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
-      "created": "2026-11-11T00:01:08Z",
-      "updated": "2026-11-11T00:01:08Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 865,
-      "title": "[main-red] pr-gates did not pass on main at bb3cc23",
-      "ask": "",
-      "area": "MAIN-RED",
-      "type": "bug",
-      "priority": "unset",
       "labels": [
-        "bug"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
-      "created": "2026-11-10T21:34:46Z",
-      "updated": "2026-11-11T00:55:28Z",
+      "created": "2026-11-11T00:01:08Z",
+      "updated": "2026-11-11T03:43:12Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -122,7 +141,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-10T17:25:11Z",
-      "updated": "2026-11-11T00:01:07Z",
+      "updated": "2026-11-11T01:16:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -169,10 +188,11 @@
       "type": "untyped",
       "priority": "unset",
       "labels": [
-        "seo"
+        "seo",
+        "provenance:trusted"
       ],
       "created": "2026-11-10T02:33:29Z",
-      "updated": "2026-11-10T05:08:49Z",
+      "updated": "2026-11-11T02:38:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -331,19 +351,6 @@
       "needs_evidence": true
     },
     {
-      "number": 735,
-      "title": "[MEASURE] 14 GA4 sessions landed on /admin/* (13 on /admin/ops, a page documented to carry no analytics) and 15 on (not set)",
-      "ask": "",
-      "area": "MEASURE",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-11-06T01:24:18Z",
-      "updated": "2026-11-10T08:54:33Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 733,
       "title": "[CHORE] agent-design.yml never asks for an Evidence Block, so every design-filed issue fails verify_issue_evidence and the cycle skips it",
       "ask": "",
@@ -360,24 +367,6 @@
       "needs_evidence": false
     },
     {
-      "number": 715,
-      "title": "muhurat: Chandra Bala matches neither Raman's muhurta rule nor Rao's gochara table, and is credited to BPHS (CONTESTED)",
-      "ask": "",
-      "area": "MUHURAT",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-05T00:20:36Z",
-      "updated": "2026-11-10T19:40:02Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 714,
       "title": "muhurat: Janma Tara is scored a flat 'ok' — Raman makes it event- and sex-dependent; a groom's Janma Tara passes the Vivah verdict (CONTESTED)",
       "ask": "",
@@ -391,7 +380,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-05T00:20:35Z",
-      "updated": "2026-11-10T22:01:32Z",
+      "updated": "2026-11-11T03:27:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1386,21 +1375,6 @@
       "created": "2026-09-02T10:03:54Z",
       "updated": "2026-09-04T14:53:44Z",
       "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 219,
-      "title": "muhurat combustion: degree-orb model vs the days-from-heliacal model, and two blocking states we don't model",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "provenance:trusted"
-      ],
-      "created": "2026-08-23T09:00:34Z",
-      "updated": "2026-11-11T00:44:36Z",
-      "blocked": false,
       "needs_evidence": false
     },
     {

@@ -1,18 +1,8 @@
 {
- "generated_at": "2026-11-11T01:04:54Z",
+ "generated_at": "2026-11-11T03:45:22Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
-   {
-    "number": 328,
-    "at": "2026-10-12T03:00:53Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/328#issuecomment-6116961722",
-    "summary": "QA: FAIL (round 1, tip 312e3ed) \u2014 code half passes, copy half does not.  **Passes (executed):** real-route TestClient runs with `httpx.AsyncClient.post` captured. On main, Telegram alerts and `form_*` events carried name/DOB/time/place; on the branch they carry only rashi triple, lang, model, tokens",
-    "themes": [
-     "security",
-     "copy"
-    ]
-   },
    {
     "number": 448,
     "at": "2026-10-20T14:25:46Z",
@@ -676,6 +666,16 @@
     "themes": [
      "grounding"
     ]
+   },
+   {
+    "number": 875,
+    "at": "2026-11-11T01:52:28Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/875#issuecomment-6784652741",
+    "summary": "QA: FAIL \u2014 verified at `84993ade2bd8290e8753e272faf9328cb94e043b` One red gate: scripts/verify_architecture_counts.py exits 1 (BAD knowledge files doc=11 files, 9513 lines actual=[11, 9548]); the new 35-line vedic_reference.md subsection moved the count and the ARCHITECTURE.md:38 row says 9513. Ever",
+    "themes": [
+     "grounding",
+     "i18n"
+    ]
    }
   ],
   "reverts": [],
@@ -707,21 +707,21 @@
    {
     "kind": "loop-idle",
     "level": "amber",
-    "title": "Build lane idle 81% of the last 7d",
-    "detail": "136.8h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "title": "Build lane idle 80% of the last 7d",
+    "detail": "134.0h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
  },
  "error_themes": {
+  "grounding": 18,
   "regression": 18,
-  "copy": 17,
-  "grounding": 17,
   "tests": 16,
   "tokens": 16,
-  "security": 10,
-  "performance": 8,
-  "i18n": 7
+  "copy": 16,
+  "security": 9,
+  "i18n": 8,
+  "performance": 8
  },
  "repeated_themes": [
   "copy",
@@ -945,7 +945,8 @@
    "state": "open",
    "url": "https://github.com/mahAnuj/astro-ai/issues/835",
    "labels": [
-    "seo"
+    "seo",
+    "provenance:trusted"
    ]
   }
  ]
