@@ -272,6 +272,18 @@ def _degree_label(longitude: float) -> int:
     return min(29, max(0, int(longitude)))
 
 
+def degree_text(longitude: float) -> str:
+    """One-decimal degree within a sign, truncated: "0.0".."29.9" (#896).
+
+    The table and lagna tile used `"%.1f"`, which rounds, so 29.95..29.999
+    printed "30.0" -- a degree a sign does not have -- and then disagreed with
+    the chart label, which `_degree_label` truncates. The 1e-9 absorbs float
+    noise (14.299999999999999 is 14.3, not 14.2).
+    """
+    tenths = min(299, max(0, int(longitude * 10 + 1e-9)))
+    return f"{tenths // 10}.{tenths % 10}"
+
+
 @dataclass(frozen=True)
 class HouseSlot:
     """One of the 12 houses in the Lagna chart, grouped for diamond-chart rendering."""
@@ -4552,7 +4564,7 @@ def format_transit_for_prompt(snapshot: TransitSnapshot) -> str:
     for p in snapshot.planets:
         retro = " (retrograde)" if p.retrograde else ""
         lines.append(
-            f"{p.name}{retro}: now in {p.rashi} at {p.longitude:.1f}deg, "
+            f"{p.name}{retro}: now in {p.rashi} at {degree_text(p.longitude)}deg, "
             f"transiting your natal house {p.house} — Nakshatra: {p.nakshatra}"
         )
     return "\n".join(lines)
@@ -4568,12 +4580,12 @@ def format_for_prompt(chart: Chart) -> str:
     lines = [
         "Birth chart (Vedic, sidereal zodiac, Lahiri ayanamsa, Whole Sign houses):",
         "",
-        f"Lagna (Ascendant): {chart.lagna_rashi} at {chart.lagna_longitude:.1f}deg",
+        f"Lagna (Ascendant): {chart.lagna_rashi} at {degree_text(chart.lagna_longitude)}deg",
     ]
     for p in chart.planets:
         retro = " (retrograde)" if p.retrograde else ""
         lines.append(
-            f"{p.name}{retro}: {p.rashi} at {p.longitude:.1f}deg "
+            f"{p.name}{retro}: {p.rashi} at {degree_text(p.longitude)}deg "
             f"(house {p.house}) — Nakshatra: {p.nakshatra}"
         )
     lines.append("")
