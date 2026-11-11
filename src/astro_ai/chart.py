@@ -260,6 +260,18 @@ class PlanetPosition:
     pada: int = 0
 
 
+def _degree_label(longitude: float) -> int:
+    """Whole-degree label for a planet's position within its sign: 0..29 (#893).
+
+    Truncated, not rounded. A degree within a sign runs 0-29 (29 deg 59' is
+    still in the 30th degree, the sign ends at 30 deg 0'), so rounding
+    29.5..29.99 up printed a "30" that does not exist inside a sign and
+    disagreed with the positions table. The clamp covers a longitude that
+    float arithmetic leaves at exactly 30.0.
+    """
+    return min(29, max(0, int(longitude)))
+
+
 @dataclass(frozen=True)
 class HouseSlot:
     """One of the 12 houses in the Lagna chart, grouped for diamond-chart rendering."""
@@ -339,7 +351,7 @@ class Chart:
         per_rashi: dict[int, list[tuple[str, int, bool]]] = {n: [] for n in range(1, 13)}
         for p in self.planets:
             per_rashi[_rashi_index(p.rashi) + 1].append(
-                (PLANET_SHORT[p.name], int(round(p.longitude)), p.retrograde)
+                (PLANET_SHORT[p.name], _degree_label(p.longitude), p.retrograde)
             )
         # House number of a given cell: 1 for the Lagna cell, then count
         # clockwise around the border.  Precompute a mapping rashi -> house.
@@ -382,7 +394,7 @@ class Chart:
         per_house: dict[int, list[tuple[str, int, bool]]] = {h: [] for h in range(1, 13)}
         for p in self.planets:
             per_house[p.house].append(
-                (PLANET_SHORT[p.name], int(round(p.longitude)), p.retrograde)
+                (PLANET_SHORT[p.name], _degree_label(p.longitude), p.retrograde)
             )
         return [
             HouseSlot(
