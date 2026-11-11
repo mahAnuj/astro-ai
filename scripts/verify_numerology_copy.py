@@ -66,8 +66,19 @@ _NAMES = re.compile(r"Johari|Harish|Kumar|Jayant|Cheiro|Warner|Hamon|Balliett|"
 # The lineage the on-page caveat may not state: knowledge/*.md has no Balliett,
 # Seton, Juno Jordan or 1908 (0 hits, 2026-11-07), so naming them in a sentence
 # readers see is an unsourced claim. English and Hindi (बैलियेट, सीटन, जूनो).
-_CAVEAT_BANNED = re.compile(r"Balliett|Seton|Juno Jordan|बैलियेट|सीटन|जूनो",
+#
+# #773 item 2 (2026-11-11) adds the two named people the caveat used to cite for
+# a view: K.N. Rao and "scholar Shyamasundara Dasa". Neither is in knowledge/*.md
+# (0 hits), so the sentence put words in two real people's mouths with nothing
+# to quote. English and Hindi (के.एन. राव, श्यामसुन्दर).
+_CAVEAT_BANNED = re.compile(r"Balliett|Seton|Juno Jordan|बैलियेट|सीटन|जूनो|"
+                            r"Shyamasundara|K\.N\. Rao|श्यामसुन्दर|के\.एन\. राव",
                             re.IGNORECASE)
+
+# #773 item 3: the "~1908-1940s" dating of the Life Path lineage is not in
+# knowledge/*.md either. Rendered template copy may say "20th-century Western",
+# the wording num_caveat_body_1 and _3 use, and no more specific than that.
+_UNSOURCED_DATING = re.compile(r"1908|1940s")
 
 # (file, fragment containing the mention, reason). Each carries exactly one
 # mention. EMPTY since 2026-11-07: it held one entry, the `tool_desc` that
@@ -89,10 +100,10 @@ _ANCHORS: tuple[tuple[str, str, str], ...] = (
      "through a modern Western (Chaldean) or ancient Chinese (Lo Shu) framework",
      "through a modern Western (Cheiro) or ancient Chinese (Lo Shu) framework"),
     ("numerology.html",
-     "Origin: early-20th-century American numerology, ~1908-1940s.",
+     "Origin: 20th-century Western numerology.",
      "Origin: L. Dow Balliett / Juno Jordan, USA, ~1908-1940s."),
     ("numerology.html",
-     "Origin: same early-20th-century American lineage.",
+     "Origin: same 20th-century Western lineage.",
      "Origin: same Balliett/Jordan lineage."),
     ("numerology.html",
      "Origin of the Chaldean table: early-20th-century Western Chaldean numerology; "
@@ -176,6 +187,35 @@ _CAVEAT_ANCHORS: tuple[tuple[str, str, str], ...] = (
      "HI"),
 )
 
+# i18n.py num_caveat_body_2, the sentence that replaced the named-people one
+# (#773 item 2). (surviving wording, the removed K.N. Rao / Shyamasundara Dasa
+# clause put back in its place, language). The self-test restores the clause.
+_PERSON_ANCHORS: tuple[tuple[str, str, str], ...] = (
+    ("(William John Warner, 1866\u20131936). The method is also calendar- and "
+     "alphabet-dependent rather than universal:",
+     "(William John Warner, 1866\u20131936). Respected Jyotish teachers such as "
+     "K.N. Rao practice without numerology; scholar Shyamasundara Dasa argues the "
+     "method is calendar- and alphabet-dependent rather than universal:",
+     "EN"),
+    ("1866-1936) \u0938\u0947 \u0906\u0924\u0940 \u0939\u0948\u0902\u0964 "
+     "\u092f\u0939 \u0935\u093f\u0927\u093f \u0938\u0930\u094d\u0935\u0935"
+     "\u094d\u092f\u093e\u092a\u0940 \u0928 \u0939\u094b\u0915\u0930",
+     "1866-1936) \u0938\u0947 \u0906\u0924\u0940 \u0939\u0948\u0902\u0964 "
+     "\u0915\u0947.\u090f\u0928. \u0930\u093e\u0935 \u091c\u0948\u0938\u0947 "
+     "\u0938\u092e\u094d\u092e\u093e\u0928\u093f\u0924 \u091c\u094d\u092f"
+     "\u094b\u0924\u093f\u0937 \u0906\u091a\u093e\u0930\u094d\u092f "
+     "\u0905\u0902\u0915\u0936\u093e\u0938\u094d\u0924\u094d\u0930 "
+     "\u0915\u0947 \u092c\u093f\u0928\u093e \u0905\u092d\u094d\u092f\u093e"
+     "\u0938 \u0915\u0930\u0924\u0947 \u0939\u0948\u0902; "
+     "\u0935\u093f\u0926\u094d\u0935\u093e\u0928 "
+     "\u0936\u094d\u092f\u093e\u092e\u0938\u0941\u0928\u094d\u0926\u0930 "
+     "\u0926\u093e\u0938 \u0924\u0930\u094d\u0915 \u0926\u0947\u0924\u0947 "
+     "\u0939\u0948\u0902 \u0915\u093f \u092f\u0939 \u0935\u093f\u0927\u093f "
+     "\u0938\u0930\u094d\u0935\u0935\u094d\u092f\u093e\u092a\u0940 \u0928 "
+     "\u0939\u094b\u0915\u0930",
+     "HI"),
+)
+
 _COMMENT = re.compile(r"\{#.*?#\}", re.DOTALL)
 
 
@@ -224,6 +264,11 @@ def _problems(texts: dict[str, str]) -> list[str]:
         for m in _CAVEAT_BANNED.finditer(value):
             problems.append(f"{I18NFILE}:{line}: {key} names an unsourced lineage — "
                             f"{m.group(0)!r} (not in knowledge/*.md, #200)")
+    for new, _old, lang in _PERSON_ANCHORS:
+        if new not in texts[I18NFILE]:
+            problems.append(f"{I18NFILE}: {lang} num_caveat_body_2 person-sentence "
+                            f"anchor not found — {new!r}. Re-point it if the string "
+                            "was reworded; do not delete it.")
     for new, _old, lang in _CAVEAT_ANCHORS:
         if new not in texts[I18NFILE]:
             problems.append(f"{I18NFILE}: {lang} num_caveat_body_2 anchor not found — "
@@ -256,6 +301,13 @@ def _problems(texts: dict[str, str]) -> list[str]:
         if new not in stripped[fname]:
             problems.append(f"{fname}: anchor not found in rendered copy — {new!r}. "
                             "Re-point it if the site was reworded; do not delete it.")
+
+    for fname, body in stripped.items():
+        for m in _UNSOURCED_DATING.finditer(body):
+            line = body[max(0, m.start() - 60):m.end() + 30].replace("\n", " ")
+            problems.append(f"{fname}: unsourced dating in rendered copy — "
+                            f"{m.group(0)!r} in …{line.strip()}… (not in "
+                            "knowledge/*.md, #773)")
 
     permitted = 0
     for fname, body in stripped.items():
@@ -293,6 +345,11 @@ def _self_test(texts: dict[str, str]) -> int:
                   for new, old in _ROUTE_ANCHORS]
     mutations += [(f"{I18NFILE}: {lang} Balliett/Seton/Jordan sentence restored",
                    I18NFILE, new, old) for new, old, lang in _CAVEAT_ANCHORS]
+    mutations += [(f"{I18NFILE}: {lang} K.N. Rao / Shyamasundara Dasa sentence restored",
+                   I18NFILE, new, old) for new, old, lang in _PERSON_ANCHORS]
+    mutations.append(("a ~1908 dating in rendered copy", "numerology.html",
+                      "Origin: 20th-century Western numerology.",
+                      "Origin: 20th-century Western numerology, ~1908."))
     mutations.append(("a bare new mention", "numerology_compat.html",
                       "Numerology Compatibility Check",
                       "Numerology Compatibility Check (after Kumar)"))
