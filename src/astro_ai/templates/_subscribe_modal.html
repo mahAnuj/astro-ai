@@ -44,6 +44,7 @@
 
       <form id="subscribe-modal-form" class="flex flex-col gap-3">
         <input type="email" name="email" required autocomplete="email"
+               aria-label="{% if lang == 'hi' %}आपका ईमेल{% else %}Your email address{% endif %}"
                placeholder="{% if lang == 'hi' %}आपका ईमेल{% else %}your@email.com{% endif %}"
                class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm
                       focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
@@ -61,6 +62,7 @@
            Skipped entirely if blank — no incorrect Delhi-default times. #}
         <div>
           <input type="text" name="city" autocomplete="address-level2"
+                 aria-label="{% if lang == 'hi' %}आपका शहर (वैकल्पिक){% else %}Your city (optional){% endif %}"
                  placeholder="{% if lang == 'hi' %}आपका शहर (वैकल्पिक){% else %}Your city (optional){% endif %}"
                  class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm
                         focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
@@ -74,6 +76,7 @@
            12-card reading. Defaults to "all". #}
         <div>
           <select name="rashi"
+                  aria-label="{% if lang == 'hi' %}अपनी जन्म राशि चुनें (वैकल्पिक){% else %}Janma Rashi (optional){% endif %}"
                   class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm bg-white
                          focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <option value="all">{% if lang == 'hi' %}सभी 12 राशियाँ भेजें (डिफ़ॉल्ट){% else %}Send all 12 rashis (default){% endif %}</option>
