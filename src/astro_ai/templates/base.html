@@ -1431,9 +1431,10 @@
      elementFromPoint at that button's centre returned the banner, on the first
      load, for every iOS Safari visitor (and on `beforeinstallprompt` for
      Chrome). The script below keeps every eligibility check and both reveal
-     paths, but they only mark the banner WANTED; it is un-hidden once
-     scrollY passes 40% of the viewport height, by which point the first-fold
-     CTA has scrolled away. Deferred, not removed, so the install path is not
+     paths, but they only mark the banner WANTED; it is then shown while
+     scrollY is past 40% of the viewport height and hidden again when the
+     visitor scrolls back above it (a live condition, so scrolling back up to
+     the form never leaves it on the first-fold CTA), until dismissed. Deferred, not removed, so the install path is not
      paid for. A page that never scrolls never shows the banner; that is
      accepted. On /learn articles the sticky CTA sits at the same height, so
      learn_article_base.html stacks the banner above it. #}
