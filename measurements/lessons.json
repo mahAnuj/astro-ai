@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-10T21:29:21Z",
+ "generated_at": "2026-11-11T00:41:16Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -694,19 +694,14 @@
     "run": 38270665641,
     "at": "2026-10-12T15:29:53Z",
     "sha": "be4046b"
-   },
-   {
-    "run": 38160697735,
-    "at": "2026-10-11T17:41:26Z",
-    "sha": "39dedb4"
    }
   ],
   "ops_findings": [
    {
     "kind": "loop-idle",
     "level": "amber",
-    "title": "Build lane idle 82% of the last 7d",
-    "detail": "137.9h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "title": "Build lane idle 81% of the last 7d",
+    "detail": "136.8h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
@@ -752,20 +747,6 @@
    "headline": "pending \u2014 scoreable from 2026-11-13",
    "at": "2026-11-08T00:12:27Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/311#issuecomment-6714890987"
-  },
-  {
-   "number": 313,
-   "verdict": "OTHER",
-   "headline": "#313 (closed 2026-10-11)",
-   "at": "2026-10-12T00:11:27Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/313#issuecomment-6115455782"
-  },
-  {
-   "number": 316,
-   "verdict": "OTHER",
-   "headline": "#316 (closed 2026-10-11)",
-   "at": "2026-10-12T00:11:26Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/316#issuecomment-6115455653"
   },
   {
    "number": 320,
@@ -937,7 +918,6 @@
   }
  ],
  "outcome_counts": {
-  "OTHER": 2,
   "PENDING": 9,
   "PASS": 5,
   "HIT": 2,
