@@ -62,6 +62,10 @@ concurrency:
 
 jobs:
   drain:
+    # LOOP PAUSE (#903): while the repository variable LOOP_PAUSED is "true" the
+    # queue is neither drained nor chained, so rulings wait instead of starting
+    # skipped runs. The first agent-work completion after resume drains them.
+    if: vars.LOOP_PAUSED != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15    # 10 of them for wait_for_run.py at most
     steps:

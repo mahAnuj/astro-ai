@@ -68,7 +68,9 @@ jobs:
     # `github.event.schedule == ''`, which a `workflow_run` event also matches
     # -- so adding the cycle-completion trigger without this change would have
     # run the analyst after EVERY cycle, up to ~20 times a day.
-    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *'
+    # LOOP PAUSE (#903): set the repository variable LOOP_PAUSED=true to skip
+    # every Claude-spending loop job; delete it (or set anything else) to resume.
+    if: vars.LOOP_PAUSED != 'true' && (github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
