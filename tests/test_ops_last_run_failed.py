@@ -90,8 +90,16 @@ def _page(monkeypatch, loops):
     # The committed file supplies `delivery` and `agents`, which the template
     # reads whatever the loops say; only the loops are replaced.
     doc = {**(real("agents.json") or {}), "alerts": [], "loops": loops}
+    # #883: the page also renders every open `[OPS] ...: last run failed` issue
+    # from the committed issues.json, so asserting "last run failed" is absent
+    # from the whole body went red on main the moment such an issue was open.
+    # Keep the snapshot's shape (the page reads `objective`) and drop only rows.
+    issues = {**(real("issues.json") or {}), "rows": [], "open": 0,
+              "with_ask": 0, "blocked": 0, "by_area": {}, "by_type": {},
+              "by_priority": {}}
+    docs = {"agents.json": doc, "issues.json": issues}
     monkeypatch.setattr(ops_data, "_fetch",
-                        lambda n: doc if n == "agents.json" else real(n))
+                        lambda n: docs[n] if n in docs else real(n))
     monkeypatch.setattr(ops_data, "LIVE_TODAY", False)
     monkeypatch.setattr(ops_data, "LIVE_ISSUES", False)
     ops_data._cache.clear()
