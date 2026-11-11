@@ -1,4 +1,4 @@
-# The subscribe modal never auto-opens on a calculator page, empty or not
+# The subscribe modal never auto-opens on a calculator or /ask page, empty or not
 
 - **Date:** 2026-11-11
 - **PR / issue:** #309 (follows #382)
@@ -13,7 +13,7 @@ the form before the visitor had typed anything. Measured on production 2026-11-1
 script and 0 defer markers.
 
 Chosen: a `TOOL_FORM_PATHS` list in the gate (`/kundli`, `/matching`, `/numerology`,
-`/muhurat`, `/panchang`), checked before the visit is counted, so the prompt reaches the
+`/muhurat`, `/panchang`, `/ask`), checked before the visit is counted, so the prompt reaches the
 first load outside the tools instead of burning visit 2 on a calculator. The issue's own
 metric allows "an equivalent exclusion in the show gate".
 
@@ -25,4 +25,5 @@ cannot see it, and a result is already deferred by #382).
 The baseline is `subscribe_completed` = 1 event in the 28 days to 2026-11-07 across 101
 tool-landing sessions, so there is little auto-conversion to lose. Manual CTAs
 (`[data-subscribe-trigger]`, the footer link) are untouched. Not covered: `/reading` (the
-kundli result) and `/rashifal`, `/ask`; the issue measured the four calculators only.
+kundli result) and `/rashifal`: the issue's own suggested direction is to prompt on `/rashifal/*`, where a
+daily-reading offer is on topic.

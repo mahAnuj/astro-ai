@@ -21,6 +21,11 @@ _BETWEEN = """      // #382: a load that IS a tool result (matching, numerology)
       // one that reaches the show threshold instead of the prompt being lost.
 """
 _LIST_END = """      /^\\/panchang(\\/|$)/,
+      /^\\/ask(\\/|$)/,
+    ];
+    try {
+"""
+_ASK_END = """      /^\\/ask(\\/|$)/,
     ];
     try {
 """
@@ -29,6 +34,11 @@ MUTATIONS = [
     ("#309: /panchang drops out of the tool-path list (modal covers the panchang page on visit 2)",
      _M,
      _LIST_END,
+     "      /^\\/ask(\\/|$)/,\n    ];\n    try {\n",
+     "test_empty_calculator_forms_never_open_the_modal"),
+    ("#309: /ask drops out of the tool-path list (modal covers the question form on visit 2)",
+     _M,
+     _ASK_END,
      "    ];\n    try {\n",
      "test_empty_calculator_forms_never_open_the_modal"),
     ("#309: the tool-path check is deleted (modal opens over every empty calculator again)",
@@ -43,7 +53,7 @@ MUTATIONS = [
      "test_empty_calculator_forms_never_open_the_modal"),
     ("#309: the exclusion grows to /rashifal, where the prompt is on topic (the control sees the modal vanish)",
      _M,
-     _LIST_END,
-     "      /^\\/panchang(\\/|$)/,\n      /^\\/rashifal(\\/|$)/,\n    ];\n    try {\n",
+     _ASK_END,
+     "      /^\\/ask(\\/|$)/,\n      /^\\/rashifal(\\/|$)/,\n    ];\n    try {\n",
      "test_the_modal_still_opens_on_the_next_load_outside_the_tools"),
 ]

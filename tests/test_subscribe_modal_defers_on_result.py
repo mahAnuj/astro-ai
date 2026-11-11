@@ -84,7 +84,7 @@ def test_the_gate_checks_the_marker_before_it_counts_the_visit():
 #
 # #382 covered the result loads, which can carry a marker. An empty form renders
 # no marker, so on a repeat visit (`bhagya_visit_count` 1 -> 2) the modal opened
-# over /numerology, /matching, /muhurat, /panchang and /kundli before the visitor
+# over /numerology, /matching, /muhurat, /panchang, /kundli and /ask before the visitor
 # had typed a thing. The gate now also returns on the tool PATHS, before counting.
 #
 # These run the page's REAL gate script under Node with a stubbed window,
@@ -159,7 +159,7 @@ def _run_gate(client, cases):
 # visit 2, which is in SHOW_AT_VISITS, so any page that counts it must open the modal.
 _RETURNING = {"bhagya_rashifal_intent": "1", "bhagya_visit_count": "1"}
 _TOOL_PATHS = ["/numerology", "/kundli", "/muhurat", "/panchang", "/matching",
-               "/numerology/compatibility", "/muhurat/wedding", "/panchang/2026-11-11"]
+               "/numerology/compatibility", "/muhurat/wedding", "/panchang/2026-11-11", "/ask"]
 
 
 @pytest.mark.skipif(_NODE is None, reason="node not installed; the gate script cannot be run")
@@ -177,7 +177,7 @@ def test_the_modal_still_opens_on_the_next_load_outside_the_tools(client):
     # The control: with the same storage, a page that is not a tool counts visit 2 and
     # schedules the modal. Without it a gate that never shows anything would pass above.
     cases = [{"name": p, "path": p, "storage": _RETURNING}
-             for p in ["/learn/sade-sati/", "/", "/rashifal/aries", "/ask"]]
+             for p in ["/learn/sade-sati/", "/", "/rashifal/aries", "/learn/kundli-basics"]]
     out = _run_gate(client, cases)
     for c in cases:
         assert out[c["name"]]["shown"] is True, f"{c['name']} no longer reaches the show threshold"

@@ -181,15 +181,17 @@
       /^\/muhurat(\/|$)/,
       /^\/panchang(\/|$)/,
     ];
-    // #309: calculator pages the auto-show never opens over (see the gate below).
-    // /rashifal and /ask are deliberately NOT here: the issue measured the four
-    // calculators, and the daily-reading pages are where the prompt is on topic.
+    // #309: pages the auto-show never opens over (see the gate below): the
+    // calculators and /ask, whose forms are the thing the visitor came for.
+    // /rashifal is deliberately NOT here: the issue's own direction is to prompt
+    // there, where a daily-reading offer is on topic.
     var TOOL_FORM_PATHS = [
       /^\/kundli(\/|$)/,
       /^\/matching(\/|$)/,
       /^\/numerology(\/|$)/,
       /^\/muhurat(\/|$)/,
       /^\/panchang(\/|$)/,
+      /^\/ask(\/|$)/,
     ];
     try {
       var path = window.location.pathname || '';
