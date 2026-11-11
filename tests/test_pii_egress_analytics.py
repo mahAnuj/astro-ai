@@ -124,8 +124,10 @@ ALLOWED_CALL_EXPRESSIONS = frozenset({
 })
 
 #: The same for the two inline blocks base.html builds for analytics.js.
+#: `_ga4_id` / `_clarity_id` are the site's provider ids, or '' on /admin/* (#735);
+#: both come from env config, never from a request.
 ALLOWED_BLOCK_EXPRESSIONS = frozenset({
-    "ga4_measurement_id", "clarity_project_id", "user_age_bucket(request)",
+    "_ga4_id", "_clarity_id", "user_age_bucket(request)",
     "lang or 'en'", "'yes' if user_age_bucket(request) else 'no'",
 })
 

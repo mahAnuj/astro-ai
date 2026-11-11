@@ -141,6 +141,27 @@ def test_rendered_size_clears_ten_px_at_375():
         assert smallest >= 10.0, f"{name}: smallest planet label renders at {smallest:.2f}px"
 
 
+MATCHING_BOX_AT_MD_PX = 283.0  # measured at the 768px `md` breakpoint, two-up (#871)
+
+
+def test_retrograde_mark_clears_ten_px_at_375_on_matching():
+    """#871: the R tspan was 13 units, so it rendered at 8.4px in a 259px /matching box
+    while the label beside it was 10.4px. It is read from the emitted tspan itself."""
+    out = _render({1: 2})
+    sizes = [float(x) for x in re.findall(r'<tspan font-size="(\d+)"[^>]*>&nbsp;R</tspan>', out)]
+    assert sizes, "no retrograde mark rendered"
+    assert min(sizes) * MATCHING_BOX_PX / 400 >= 10.0, f"R renders at {min(sizes) * MATCHING_BOX_PX / 400:.2f}px"
+
+
+def test_matching_charts_stack_until_md_so_each_box_stays_above_the_two_up_floor():
+    """#871: at `sm` (640px) the two charts sat side by side in a 219px box, which put
+    16-unit labels at 8.76px. Two-up now starts at `md`, where the box is 283px."""
+    src = (ROOT / "src" / "astro_ai" / "templates" / "matching_result.html").read_text()
+    assert 'grid md:grid-cols-2' in src and "sm:grid-cols-2" not in src
+    assert 16 * MATCHING_BOX_AT_MD_PX / 400 >= 10.0
+    assert 16 * MATCHING_BOX_AT_MD_PX / 400 >= 11.0, "R and labels at md should keep a margin over 10px"
+
+
 def test_the_full_label_is_kept_where_it_fits():
     """The degree is only dropped for a cell too small for it."""
     assert "&deg;" in _render({1: 1}), "a lone planet in the largest cell lost its degree"

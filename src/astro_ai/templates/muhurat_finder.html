@@ -397,12 +397,22 @@
          Gochara Moon row and Raman's Muhurtha (election chart). No claim about what any
          other text says: that is not held. -#}
       <p><strong>Chandra Bala:</strong> counted from the natal Moon. A house is shown as weak when either of two works by Raman names it: <em>Muhurtha or Electional Astrology</em> (for an election chart, the Moon in the 6th, 8th or 12th from the Janma Rasi) or his Gochara table for the Moon in <em>Astrology for Beginners</em> (houses 2, 4, 5, 8, 9 and 12). Houses 1, 3, 7, 10 and 11 are therefore shown as strong.</p>
-      {#- #714: states only what muhurat.py does and what is held. No Raman citation and no
-         claim about what any text says on Janma: the passage is not in knowledge/. -#}
-      <p><strong>Tara Bala, Janma:</strong> on a day when the Moon is in the birth star of the person being matched (Tara position 1, Janma), this finder grades it "ok" and counts it as passing for either partner. That grade is the same for every event and for both partners; it is not varied by either. The Tara names shown (Pratyari, Sadhaka, Vadha, Ati-Mitra and the rest) are not sourced to a text this site holds.</p>
+      {#- #714: states what muhurat.py does and the one held source it follows
+         (knowledge/vedic_reference.md 2A-ter: Raman, Muhurtha). The "nuptials ... favourable
+         without exception" sentence in that passage contradicts itself and is NOT used. The
+         Tara names stay disclosed as unsourced: Raman's own are Pratyak, Sadhana, Naidhana,
+         Parama Mitra, which are not the names shown. -#}
+      <p><strong>Tara Bala, Janma:</strong> on a day when the Moon is in the birth star of the person being matched (Tara position 1, Janma), the personal match still shows "ok", the same for every event; it is not varied by event. The Vivah couple verdict treats the two partners differently, following B.V. Raman's <em>Muhurtha or Electional Astrology</em>: a groom on the day ruled by his own birth star is no longer counted as a pass, because Raman advises avoiding the day ruled by the 1st star and lists marriage among the events it is inauspicious for; a bride on her own birth-star day still passes, because he says that day is quite favourable for a woman's marriage. The count is mod 9, so the 10th and 19th stars from the birth star fall here too. This finder reads the whole-day nakshatra, so it does not apply the exception Raman allows only in urgent cases, where just the opening ghatis of that star are avoided. The same passage is unclear on "nuptials", so that sentence is not used. The Tara names shown (Pratyari, Sadhaka, Vadha, Ati-Mitra and the rest) are not sourced to a text this site holds.</p>
       {% endif %}
       <p><strong>Not yet included:</strong> South Indian regional variants. Cross-check final date with your family priest.</p>
-      <p><strong>Sources:</strong> B.V. Raman, <em>Muhurtha or Electional Astrology</em> and <em>Astrology for Beginners</em> (for the Chandra Bala grades above). Astronomical positions via Swiss Ephemeris (pyswisseph) in sidereal Lahiri ayanamsa. Eclipse dates from NASA / Drik Panchang.</p>
+      {% if couple_active %}
+      {#- #885: chief ruled Option A (2026-11-11): keep "avoid only when BOTH partners are on an
+         avoid Tara" and say it is the finder's own convention. Raman's general rule names no
+         person and his marriage chapter gives no combining rule (knowledge/vedic_reference.md
+         2A-ter), so the page must not claim a source for "both". -#}
+      <p><strong>Tara Bala, two partners:</strong> the Vivah couple verdict marks a day "avoid" on the Tara test only when both partners are on an avoid Tara; if only one is, the day shows "mixed". That "both" rule is this finder's own convention, not a rule from a book: Raman's <em>Muhurtha or Electional Astrology</em> advises avoiding a day ruled by the 1st, 3rd, 5th and 7th stars without saying how a bride's and a groom's days combine, and his marriage chapter only says the usual Tarabala should be looked into. A "mixed" day can therefore still be an avoid day for one partner (the 3rd, 5th or 7th Tara counted from the birth star, and the 1st for a groom); the Tara name shown under each partner is that partner's own day.</p>
+      {% endif %}
+      <p><strong>Sources:</strong> B.V. Raman, <em>Muhurtha or Electional Astrology</em> and <em>Astrology for Beginners</em> (for the Chandra Bala and Janma grades above). Astronomical positions via Swiss Ephemeris (pyswisseph) in sidereal Lahiri ayanamsa. Eclipse dates from NASA / Drik Panchang.</p>
     </div>
   </section>
   {% endif %}
