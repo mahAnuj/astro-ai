@@ -200,7 +200,7 @@
                   <span class="text-bhagya-muted-2">&middot;</span>
                   {{ t(lang, 'transiting_house', n=p.house) }}
                   <span class="text-bhagya-muted-2">&middot;</span>
-                  {{ "%.1f"|format(p.longitude) }}&deg;
+                  {{ p.longitude|degree_text }}&deg;
                 </div>
                 <div class="text-sm text-bhagya-muted">{{ p.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
               </td>

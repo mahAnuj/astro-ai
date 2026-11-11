@@ -186,7 +186,7 @@
         </div>{% endif %}
       </div>
       {% endmacro %}
-      {{ snapshot_tile(t(lang, 'lagna'), chart.lagna_rashi, "%.1f"|format(chart.lagna_longitude) ~ "°", lagna_glyph) }}
+      {{ snapshot_tile(t(lang, 'lagna'), chart.lagna_rashi, chart.lagna_longitude|degree_text ~ "°", lagna_glyph) }}
       {{ snapshot_tile(t(lang, 'moon_rashi'), moon.rashi, moon.nakshatra ~ " " ~ t(lang, 'nakshatra_suffix'), moon_glyph) }}
       {{ snapshot_tile(t(lang, 'sun_rashi'), sun.rashi, sun.nakshatra ~ " " ~ t(lang, 'nakshatra_suffix'), sun_glyph) }}
       {{ snapshot_tile(t(lang, 'dasha_active_maha'), dasha.mahadasha.lord, dasha.mahadasha.start.isoformat() ~ " → " ~ dasha.mahadasha.end.isoformat()) }}
@@ -370,7 +370,7 @@
         <tbody>
           <tr class="border-b border-bhagya-line-2">
             <td class="py-2 font-semibold text-bhagya-sindoor w-24">{{ t(lang, 'lagna') }}</td>
-            <td class="py-2 text-bhagya-ink">{{ chart.lagna_rashi }} <span class="text-bhagya-muted">({{ "%.1f"|format(chart.lagna_longitude) }}&deg;)</span></td>
+            <td class="py-2 text-bhagya-ink">{{ chart.lagna_rashi }} <span class="text-bhagya-muted">({{ chart.lagna_longitude|degree_text }}&deg;)</span></td>
           </tr>
           {% for p in chart.planets %}
           <tr class="border-b border-bhagya-line-2 last:border-0">
@@ -378,7 +378,7 @@
               {{ p.name }}{% if p.retrograde %}<span class="text-xs font-semibold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded ml-1 align-middle">R</span>{% endif %}
             </td>
             <td class="py-2 text-bhagya-ink leading-relaxed">
-              <div>{{ p.rashi }} <span class="text-bhagya-muted-2">&middot;</span> House {{ p.house }} <span class="text-bhagya-muted-2">&middot;</span> {{ "%.1f"|format(p.longitude) }}&deg;</div>
+              <div>{{ p.rashi }} <span class="text-bhagya-muted-2">&middot;</span> House {{ p.house }} <span class="text-bhagya-muted-2">&middot;</span> {{ p.longitude|degree_text }}&deg;</div>
               <div class="text-sm text-bhagya-muted">{{ p.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}{% if p.pada %} <span class="text-bhagya-muted-2">&middot;</span> <span data-pada>{{ t(lang, 'pada_label', n=p.pada) }}</span>{% endif %}</div>
             </td>
           </tr>
