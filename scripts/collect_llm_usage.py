@@ -39,18 +39,42 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 DAYS = 7
 
 
+def _measured_by_feature(usage: dict) -> dict[str, dict[str, int]]:
+    """Provider-reported sums (`measured_by_route`) folded onto the feature each
+    serves, the way /admin/ops does (ops_data._token_rows). `by_route[*].input_tokens`
+    is 0 on every day recorded since #473 -- input is not knowable at the cache
+    layer -- so reading it alone reported a flawless zero input spend (#868)."""
+    from astro_ai.ops_data import PROVIDER_ROUTE_FEATURE  # noqa: PLC0415 -- needs src/ on the path
+    out: dict[str, dict[str, int]] = {}
+    for m in usage.get("measured_by_route") or []:
+        key = PROVIDER_ROUTE_FEATURE.get(m.get("route") or "", m.get("route") or "")
+        acc = out.setdefault(key, {"measured": 0, "input_tokens": 0, "output_tokens": 0})
+        for k in acc:
+            acc[k] += int(m.get(k) or 0)
+    return out
+
+
 def slim(usage: dict, now: datetime) -> dict:
-    """Only what a budget reader needs. Tokens-per-miss, because a cache hit spends
-    no input tokens (ops_data's own note): dividing by calls would understate
-    every prompt as the cache warms."""
+    """Only what a budget reader needs.
+
+    Input tokens are MEASURED (provider-reported) or UNKNOWN (None), never a
+    silent 0: a zero would read as "spent nothing" to a ceiling detector. Per
+    provider CALL, not per miss -- one rashifal miss is twelve provider calls."""
+    measured = _measured_by_feature(usage)
     routes = []
     for r in usage.get("by_route") or []:
         calls, hits = int(r.get("calls") or 0), int(r.get("hits") or 0)
-        misses = max(calls - hits, 0)
-        routes.append({"route": r.get("route"), "calls": calls, "hits": hits,
-                       "hit_rate_pct": int(r.get("hit_rate_pct") or 0),
-                       "input_tokens": int(r.get("input_tokens") or 0),
-                       "tokens_per_miss": int((r.get("input_tokens") or 0) / misses) if misses else 0})
+        m = measured.get(r.get("route") or "") or {}
+        n = int(m.get("measured") or 0)
+        row = {"route": r.get("route"), "calls": calls, "hits": hits,
+               "hit_rate_pct": int(r.get("hit_rate_pct") or 0),
+               "input_tokens": int(m["input_tokens"]) if n else None,
+               "output_tokens": int(m["output_tokens"]) if n else None,
+               "measured_calls": n,
+               "tokens_per_call": int(m["input_tokens"] / n) if n else None}
+        routes.append(row)
+    any_measured = any(r["measured_calls"] for r in routes)
+    peak_meas = usage.get("peak_day_measured_tokens")
     return {
         "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "days": int(usage.get("days") or DAYS),
@@ -58,10 +82,14 @@ def slim(usage: dict, now: datetime) -> dict:
         "cache_hits": int(usage.get("cache_hits") or 0),
         "cache_misses": int(usage.get("cache_misses") or 0),
         "hit_rate_pct": int(usage.get("hit_rate_pct") or 0),
-        "total_input_tokens": int(usage.get("total_input_tokens") or 0),
+        "total_input_tokens": sum(r["input_tokens"] or 0 for r in routes) if any_measured else None,
         "total_output_tokens": int(usage.get("total_output_tokens") or 0),
+        # The cache layer's OUTPUT-only peak (its input side is 0 by design);
+        # kept for the files already on disk. The detector prefers the measured one.
         "peak_day_tokens": usage.get("peak_day_tokens"),
         "peak_day": usage.get("peak_day"),
+        "peak_day_measured_tokens": peak_meas,
+        "peak_day_measured": usage.get("peak_day_measured") if peak_meas else None,
         "by_route": sorted(routes, key=lambda r: -r["calls"]),
     }
 
@@ -92,8 +120,10 @@ def main(argv: list[str], summary: Callable[[int], dict] = _summary,
         return 1
     doc = slim(usage, now or datetime.now(timezone.utc))
     Path(a.out).write_text(json.dumps(doc, indent=1) + "\n")
+    peak = doc["peak_day_measured_tokens"] or doc["peak_day_tokens"]
     print(f"llm usage: {doc['total_calls']} calls, hit rate {doc['hit_rate_pct']}%, "
-          f"peak day {doc['peak_day_tokens']} tokens ({doc['peak_day']})")
+          f"input tokens {doc['total_input_tokens'] if doc['total_input_tokens'] is not None else 'unknown'}, "
+          f"peak day {peak} tokens ({doc['peak_day_measured'] or doc['peak_day']})")
     return 0
 
 

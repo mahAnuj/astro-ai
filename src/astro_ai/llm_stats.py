@@ -733,6 +733,8 @@ def usage_summary(days: int = 1, *, end: date | None = None) -> dict[str, Any]:
     out_tok = 0
     peak_tok = 0
     peak_date: str | None = None
+    peak_meas = 0                  # #868: the worst day by PROVIDER-reported tokens
+    peak_meas_date: str | None = None
     by_route_acc: dict[str, dict[str, int]] = {}
     measured_acc: dict[str, dict[str, int]] = {}
     model_acc: dict[str, dict[str, int]] = {}
@@ -770,11 +772,19 @@ def usage_summary(days: int = 1, *, end: date | None = None) -> dict[str, Any]:
         # `estimate_tokens(text) * 2` numbers, this one counts PROVIDER CALLS
         # and carries what the provider said. ops_data joins them and says which
         # it used.
+        day_meas = 0
         for route, r in (blob.get("measured_by_route") or {}).items():
+            day_meas += _as_int(r.get("input_tokens")) + _as_int(r.get("output_tokens"))
             acc = measured_acc.setdefault(route, {"calls": 0, "measured": 0,
                                                   "input_tokens": 0, "output_tokens": 0})
             for k in acc:
                 acc[k] += int(r.get(k) or 0)
+        # #868. `calls.input_tokens` above is 0 on every day recorded since #473
+        # (input is not knowable at the cache layer), so `peak_day_tokens` is
+        # an OUTPUT-only figure and under-reads the 200k TPD ceiling by the whole
+        # input side. This is the same peak over what the provider reported.
+        if day_meas > peak_meas:
+            peak_meas, peak_meas_date = day_meas, d.isoformat()
         # #475. Per-key .get only, and no `keys() <=` shape gate: a day recorded
         # before this key existed must contribute NOTHING (not a zero) and a
         # malformed row must not take the window down with it. `model_days`
@@ -865,6 +875,9 @@ def usage_summary(days: int = 1, *, end: date | None = None) -> dict[str, Any]:
         # "a quiet day", which is the opposite of "we have no idea".
         "peak_day_tokens": peak_tok or None,
         "peak_day": peak_date,
+        # #868. None, not 0, when no day carried a measured figure: unknown.
+        "peak_day_measured_tokens": peak_meas or None,
+        "peak_day_measured": peak_meas_date,
         "avg_miss_latency_ms": int(miss_latency_sum / misses) if misses else 0,
         "by_route": by_route,
         # #473. PROVIDER-route keyed and deliberately NOT folded into by_route:
