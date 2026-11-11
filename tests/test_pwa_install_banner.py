@@ -2,8 +2,8 @@
 
 SCOPE, STATED PLAINLY: a request-path test sees markup and script text, not
 layout. These tests pin the facts the fix is made of -- the banner ships
-`hidden`, both reveal paths go through one scroll gate, the gate is released on
-dismiss, and the /learn stacking rule exists. They do NOT prove that the banner
+`hidden`, both reveal paths go through one live scroll condition, the listener is
+removed on dismiss, and the /learn stacking rule exists. They do NOT prove that the banner
 stays off the button at 375x667; that was measured in headless Chrome (see the
 issue) and no gate in this repo can see it. A rendered-layout change that keeps
 every string below would pass.
@@ -35,30 +35,33 @@ def test_banner_ships_hidden(client):
 
 def test_neither_reveal_path_unhides_the_banner_directly(client):
     # Both the beforeinstallprompt handler and the iOS branch used to call
-    # banner.classList.remove('hidden') themselves. Now exactly one place may.
+    # banner.classList.remove('hidden') themselves. Now no code path may: the
+    # only visibility write is sync()'s scroll-conditioned toggle.
     js = _script(_home(client))
-    assert js.count("banner.classList.remove('hidden')") == 1
+    assert "banner.classList.remove('hidden')" not in js
     assert js.count("want();") == 2, "both reveal paths must go through want()"
 
 
-def test_the_one_reveal_is_gated_on_scroll_depth(client):
+def test_visibility_is_a_live_scroll_condition(client):
     js = _script(_home(client))
-    m = re.search(r"function maybeShow\(\) \{(.*?)\n      \}", js, re.S)
-    assert m, "maybeShow() missing"
+    m = re.search(r"function sync\(\) \{(.*?)\n      \}", js, re.S)
+    assert m, "sync() missing"
     body = m.group(1)
-    assert "window.scrollY > window.innerHeight * 0.4" in body
-    assert body.index("window.scrollY") < body.index("banner.classList.remove('hidden')")
+    assert "banner.classList.toggle('hidden', !(window.scrollY > window.innerHeight * 0.4))" in body
+    # QA on PR #891: a one-way latch left the banner on the CTA after the
+    # visitor scrolled down and back up. sync() must therefore never stop
+    # watching or latch a flag when it shows the banner.
+    assert "stopWatching" not in body
+    assert not re.search(r"\bshown\s*[=,;]", js), "a `shown` latch is back"
 
 
-def test_the_scroll_listener_is_removed_when_shown_or_dismissed(client):
+def test_the_scroll_listener_exists_and_dismiss_removes_it(client):
     js = _script(_home(client))
-    assert "window.addEventListener('scroll', maybeShow, { passive: true })" in js
-    assert "window.removeEventListener('scroll', maybeShow)" in js
+    assert "window.addEventListener('scroll', sync, { passive: true })" in js
     stop = re.search(r"function stopWatching\(\) \{(.*?)\n      \}", js, re.S).group(1)
-    assert "removeEventListener('scroll', maybeShow)" in stop
-    for fn in ("maybeShow", "dismiss"):
-        body = re.search(r"function %s\(\) \{(.*?)\n      \}" % fn, js, re.S).group(1)
-        assert "stopWatching();" in body, fn
+    assert "removeEventListener('scroll', sync)" in stop
+    body = re.search(r"function dismiss\(\) \{(.*?)\n      \}", js, re.S).group(1)
+    assert "stopWatching();" in body
 
 
 def test_dismiss_persists_and_closes_the_gate(client):
@@ -66,14 +69,14 @@ def test_dismiss_persists_and_closes_the_gate(client):
     body = re.search(r"function dismiss\(\) \{(.*?)\n      \}", js, re.S).group(1)
     assert "gone = true" in body
     assert "localStorage.setItem(DISMISS_KEY, '1')" in body
-    # maybeShow() must honour it, or a dismissed banner could come back on scroll.
-    assert "if (gone || shown || !wanted) return;" in js
+    # sync() must honour it, or a dismissed banner could come back on scroll.
+    assert "if (gone || !wanted) return;" in js
 
 
 def test_eligibility_checks_still_precede_any_reveal(client):
     js = _script(_home(client))
     i = js.index("localStorage.getItem(DISMISS_KEY) === '1'")
-    assert i < js.index("display-mode: standalone") < js.index("function maybeShow")
+    assert i < js.index("display-mode: standalone") < js.index("function sync")
 
 
 def test_learn_article_stacks_the_banner_above_the_sticky_cta(client):

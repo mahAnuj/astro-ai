@@ -1488,27 +1488,29 @@
       var close  = document.getElementById('pwa-install-close');
       if (!banner) return;
 
-      // #310 — both reveal paths below set `wanted`; only maybeShow() un-hides
-      // the banner, and only once the visitor has scrolled. 0.4 of a viewport
-      // is an engagement signal and is past the first-fold CTA at 375x667.
-      var wanted = false, shown = false, gone = false;
+      // #310 — both reveal paths below set `wanted`; only sync() shows or hides
+      // the banner, from the scroll position. 0.4 of a viewport is an
+      // engagement signal and is past the first-fold CTA at 375x667. It is a
+      // LIVE condition, not a one-way latch: a visitor who scrolls down and
+      // back up to fill the form must not find the banner back on the CTA
+      // (QA, PR #891: it was, because `shown` never reset).
+      var wanted = false, gone = false, watching = false;
       function stopWatching() {
-        window.removeEventListener('scroll', maybeShow);
-        window.removeEventListener('pageshow', maybeShow);
+        window.removeEventListener('scroll', sync);
+        window.removeEventListener('pageshow', sync);
+        watching = false;
       }
-      function maybeShow() {
-        if (gone || shown || !wanted) return;
-        if (!(window.scrollY > window.innerHeight * 0.4)) return;
-        shown = true;
-        banner.classList.remove('hidden');
-        stopWatching();
+      function sync() {
+        if (gone || !wanted) return;
+        banner.classList.toggle('hidden', !(window.scrollY > window.innerHeight * 0.4));
       }
       function want() {
         wanted = true;
-        maybeShow();  // scroll restoration / bfcache can land past the gate already
-        if (!shown) {
-          window.addEventListener('scroll', maybeShow, { passive: true });
-          window.addEventListener('pageshow', maybeShow);
+        sync();  // scroll restoration / bfcache can land past the gate already
+        if (!watching) {
+          watching = true;
+          window.addEventListener('scroll', sync, { passive: true });
+          window.addEventListener('pageshow', sync);
         }
       }
       function dismiss() {
