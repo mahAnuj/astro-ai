@@ -18,9 +18,10 @@ every weekday; Raman's only Mercury-combustion line (Upanayana, p. 64) rejects W
 **Changed.** One English paragraph in `muhurat_finder.html`, always shown (it does not depend on a
 personal or couple search): the degree test and the orbs, the per-event list, "does not count days
 around a planet's rising or setting", "knows only combust or not combust", and that the Business Budh
-veto is the finder's own extension. Two code comments in `muhurat.py`: Namkaran's waiver now cites
-Raman (Seemantha p. 58, Annaprasana p. 60, both in `knowledge/grahas.md` 12.5), and the Business Mercury
-flag says it is not sourced. No flag, orb, grade or verdict changed. Tokens: 0; `src/astro_ai/prompts`
+veto is the finder's own extension. Two code comments in `muhurat.py`: Namkaran's waiver is labelled
+unsourced for Namkaran, by analogy with Raman's Seemantha (p. 58) and Annaprasana (p. 60) waivers
+(`knowledge/grahas.md` 12.5, no Namkaran line; QA round 1 caught the first wording, "Sourced"), and the
+Business Mercury flag says it is not sourced. No flag, orb, grade or verdict changed. Tokens: 0; `src/astro_ai/prompts`
 untouched.
 
 **Not claimed.** Nothing about what *Muhurta Chintamani* or any other text's method is: `knowledge/` does

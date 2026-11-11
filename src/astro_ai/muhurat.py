@@ -683,9 +683,10 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "check_chaturmas": False,   # Namkaran timing is child-driven, not liturgical
         "check_kharmas":   False,   # ditto — must happen ~11th day post-birth regardless
         "check_dagdha":    False,   # child-driven timing overrides Dagdha
-        # Combustion waived. Sourced: Raman, Muhurtha, Seemantha and Annaprasana
-        # (printed pp. 58, 60): "even if Jupiter and Venus are combust, such a
-        # circumstance may be ignored" (knowledge/grahas.md 12.5). Keep it off. (#219)
+        # Combustion waived. UNSOURCED for Namkaran: knowledge/grahas.md 12.5 holds no
+        # Namkaran line. It follows by analogy from Raman's Seemantha (p. 58) and
+        # Annaprasana (p. 60) waivers ("such a circumstance may be ignored" / "one should
+        # not mind"), the other child-timed samskaras he waives it for. (#219)
         "check_jupiter_combust": False,
         "check_venus_combust":   False,
         "check_mercury_combust": False,
