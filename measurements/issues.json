@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-11-11T11:11:12Z",
+  "generated_at": "2026-11-11T15:11:59Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 103,
+  "open": 101,
   "with_ask": 36,
   "by_area": {
-    "UNCLASSIFIED": 37,
+    "UNCLASSIFIED": 36,
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "UI": 6,
+    "UI": 5,
     "OPS": 4,
     "SEO": 3,
     "RETRIEVAL": 3,
@@ -29,34 +29,19 @@
   "by_type": {
     "untyped": 30,
     "enhancement": 23,
-    "bug": 21,
+    "bug": 20,
     "chore": 14,
     "correctness": 7,
-    "design": 6,
+    "design": 5,
     "ui": 2
   },
   "by_priority": {
-    "unset": 76,
+    "unset": 74,
     "medium": 18,
     "high": 9
   },
   "blocked": 6,
   "rows": [
-    {
-      "number": 893,
-      "title": "Charts print a planet at 29.5°–29.99° as '30°', which does not exist within a sign",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-11-11T11:09:54Z",
-      "updated": "2026-11-11T11:10:05Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
     {
       "number": 889,
       "title": "Diamond chart: header comment says degrees stay in a table under /matching charts (false), and the South-Indian LAGNA caption overlaps a crowded house 1 (follow-up to #871)",
@@ -71,7 +56,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-11T05:23:36Z",
-      "updated": "2026-11-11T11:09:52Z",
+      "updated": "2026-11-11T11:14:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -262,9 +247,13 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-11-07T16:59:47Z",
-      "updated": "2026-11-11T11:10:14Z",
+      "updated": "2026-11-11T15:11:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1060,22 +1049,6 @@
       ],
       "created": "2026-10-09T00:18:11Z",
       "updated": "2026-11-11T07:09:30Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 309,
-      "title": "[UI] Subscribe modal fires over the empty form on the second tool page a visitor opens",
-      "ask": "",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal"
-      ],
-      "created": "2026-10-09T00:18:09Z",
-      "updated": "2026-11-11T11:10:12Z",
       "blocked": false,
       "needs_evidence": false
     },
