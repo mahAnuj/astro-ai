@@ -683,6 +683,9 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "check_chaturmas": False,   # Namkaran timing is child-driven, not liturgical
         "check_kharmas":   False,   # ditto — must happen ~11th day post-birth regardless
         "check_dagdha":    False,   # child-driven timing overrides Dagdha
+        # Combustion waived. Sourced: Raman, Muhurtha, Seemantha and Annaprasana
+        # (printed pp. 58, 60): "even if Jupiter and Venus are combust, such a
+        # circumstance may be ignored" (knowledge/grahas.md 12.5). Keep it off. (#219)
         "check_jupiter_combust": False,
         "check_venus_combust":   False,
         "check_mercury_combust": False,
@@ -732,6 +735,9 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "check_dagdha":    True,
         "check_jupiter_combust": False,
         "check_venus_combust":   False,
+        # OUR extension, not a sourced rule: this vetoes every weekday. Raman's only
+        # Mercury-combustion line (Upanayana, p. 64) rejects Wednesday alone
+        # (knowledge/grahas.md 12.5). The finder page says so. (#219)
         "check_mercury_combust": True,   # karaka must be visible
     },
 }
