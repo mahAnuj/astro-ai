@@ -8,9 +8,43 @@
 
    Submits via POST /feedback (no full reload). Vanilla JS, no framework.
    Same visual style as the subscribe modal so the two feel like a set.
+
+   #308 — BELOW md THE FAB YIELDS TO THE PAGE. At 375x667 it is `bottom-24`,
+   which put it at x 309-359, y 527-571: over 11px of the home page's primary
+   "Get my free Kundli instantly" button (y 490-538), the /kundli Mahadasha end
+   date, and verdict pills and reading text on result and form pages. It now
+   ships `fab-away` (opacity 0, visibility hidden, pointer-events none) and
+   sync() in the script below lifts that class only while BOTH hold: scrollY is
+   past 0.4 of the viewport height (past the first fold, the same gate #310 uses
+   for the PWA banner) AND the visitor's latest scroll direction was UP. So it
+   is hidden while reading downward and comes back on the reverse gesture. It
+   is a live condition, not a latch. EXCEPTION: a document that barely scrolls
+   (scrollHeight - innerHeight < 40) keeps the FAB visible, because such a page
+   has no scroll gesture to bring it back and would lose its feedback path.
+   The CSS is scoped to max-width: 767px, so from md up the FAB is exactly as
+   before (`md:bottom-4`, always visible). Without JS the modal cannot open
+   anyway, so shipping it away costs nothing. On /learn the sticky-CTA lift
+   (learn_article_base.html) still positions it when it is shown.
 -#}
+<style>
+  @media (max-width: 767px) {
+    #feedback-fab {
+      transition: opacity .2s ease, visibility 0s linear 0s, transform .15s ease;
+    }
+    #feedback-fab.fab-away {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .2s ease, visibility 0s linear .2s;
+    }
+  }
+  @media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+    #feedback-fab,
+    #feedback-fab.fab-away { transition: none; }
+  }
+</style>
 <button id="feedback-fab" type="button"
-        class="fixed bottom-24 md:bottom-4 right-4 z-30 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night
+        class="fab-away fixed bottom-24 md:bottom-4 right-4 z-30 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night
                border border-bhagya-gold/40 px-4 py-2.5 rounded-full flex items-center gap-2 text-sm font-medium
                transition-transform hover:scale-105 no-print"
         aria-label="{% if lang == 'hi' %}सुझाव दें{% else %}Send feedback{% endif %}">
@@ -121,7 +155,34 @@
     var form     = document.getElementById('feedback-form');
     var closeBtn = document.getElementById('feedback-close');
     var errBox   = document.getElementById('feedback-error');
+
+    // #308 — show the FAB below md only after the first fold AND on a scroll-up.
+    // The previous run's listeners are removed first: this IIFE re-runs on
+    // every htmx-boosted navigation and would otherwise stack one per visit.
+    if (window.__fbFabSync) {
+      window.removeEventListener('scroll', window.__fbFabSync);
+      window.removeEventListener('resize', window.__fbFabSync);
+      window.removeEventListener('pageshow', window.__fbFabSync);
+      window.__fbFabSync = null;
+    }
     if (!fab || !backdrop) return;
+
+    var lastY = window.scrollY, goingUp = false;
+    function sync() {
+      var y = window.scrollY;
+      // ~4px hysteresis so touch jitter does not flip the direction.
+      if (y > lastY + 4)      { goingUp = false; lastY = y; }
+      else if (y < lastY - 4) { goingUp = true;  lastY = y; }
+      // A page that barely scrolls has no gesture to bring the FAB back.
+      var barelyScrolls = document.documentElement.scrollHeight - window.innerHeight < 40;
+      var show = barelyScrolls || (y > window.innerHeight * 0.4 && goingUp);
+      fab.classList.toggle('fab-away', !show);
+    }
+    window.__fbFabSync = sync;
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    window.addEventListener('pageshow', sync);
+    sync();
 
     function show() { backdrop.classList.remove('hidden'); backdrop.classList.add('flex'); }
     function hide() { backdrop.classList.add('hidden');    backdrop.classList.remove('flex'); }
