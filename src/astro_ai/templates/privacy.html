@@ -10,7 +10,7 @@
 
   <header>
     <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-2">Privacy Policy</h1>
-    <p class="text-sm text-bhagya-muted">Last updated: 2026-10-11</p>
+    <p class="text-sm text-bhagya-muted">Last updated: 2026-11-11</p>
   </header>
 
   {# The short version — bold summary, sets expectations before the detail. #}
@@ -34,6 +34,13 @@
       </div>
 
       <div class="bg-white border border-bhagya-line p-4 sm:p-5">
+        <div class="font-semibold text-bhagya-ink mb-1">Place lookup</div>
+        <p class="text-sm text-bhagya-ink leading-relaxed">
+          To turn a place name into coordinates and a time zone, our server sends the place text you typed (your birth place, or the city you give when you subscribe or search for a muhurat) to Nominatim, the free place-search service of OpenStreetMap. Only that text is sent, never your name, birth date, birth time, email or question. The request comes from our server, not from your browser.
+        </p>
+      </div>
+
+      <div class="bg-white border border-bhagya-line p-4 sm:p-5">
         <div class="font-semibold text-bhagya-ink mb-1">Email + name (only if you sign in)</div>
         <p class="text-sm text-bhagya-ink leading-relaxed">
           Used only to save your charts + reading history across devices. Google handles authentication; we never see your password. We request only your basic profile — no access to Gmail, Calendar, Drive, or Contacts.
@@ -43,7 +50,7 @@
       <div class="bg-white border border-bhagya-line p-4 sm:p-5">
         <div class="font-semibold text-bhagya-ink mb-1">Questions you ask</div>
         <p class="text-sm text-bhagya-ink leading-relaxed">
-          When you use the Ask feature, your question is sent (with your chart data) to an AI language-model provider to generate an answer. The question and answer are also written to our 30-day activity log (below), and the answer is cached in temporary server storage so re-asking the same question is instant. Never used to train any AI model.
+          When you use the Ask feature, your question is sent (with your chart data) to an AI language-model provider to generate an answer. The question and answer are also written to our 30-day activity log (below), and the answer is cached in temporary server storage so re-asking the same question is instant. <strong>If you are signed in, the question and its answer are also saved in your account's reading history</strong>, so you can read them again from any device. That history keeps your 50 most recent readings and stays until you ask us to delete your data (see "Your rights"). Never used to train any AI model.
         </p>
       </div>
 
@@ -83,7 +90,7 @@
     <h2 class="font-marcellus text-2xl text-bhagya-ink mb-4">Who we share data with</h2>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
-        To operate the site we rely on a small number of standard third-party services: <strong>cloud infrastructure</strong> (hosting + logs), <strong>AI language-model providers</strong> (chart-reading + Ask generation), <strong>Google Sign-In</strong> (if you sign in), <strong>email delivery</strong> (Brevo, used only to send you something you subscribed to or asked us to email, and to forward feedback to us), and <strong>analytics</strong> (anonymous usage patterns). Each receives only what it needs; none are permitted to use your data to train models or serve you ads.
+        To operate the site we rely on a small number of standard third-party services: <strong>cloud infrastructure</strong> (hosting + logs), <strong>AI language-model providers</strong> (chart-reading + Ask generation), <strong>Google Sign-In</strong> (if you sign in), <strong>email delivery</strong> (Brevo, used only to send you something you subscribed to or asked us to email, and to forward feedback to us), <strong>place lookup</strong> (OpenStreetMap's Nominatim, which receives only a place name), and <strong>analytics</strong> (anonymous usage patterns). Each receives only what it needs; none are permitted to use your data to train models or serve you ads.
       </p>
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         We <strong>do not sell or rent your personal information</strong> to anyone. We <strong>do not run advertising</strong>. We <strong>do not share your personal details</strong> with astrologers, matrimonial services, or any other third party outside the operational vendors above.
@@ -104,7 +111,7 @@
         <li>&bull; <strong>Cached Kundli readings:</strong> kept indefinitely in cloud storage, keyed to a one-way fingerprint of the birth date, time and place. The reading's text can include the name you entered. Other cached answers (Ask, matching) live in temporary server storage that is cleared when the server restarts.</li>
         <li>&bull; <strong>Activity log:</strong> we only read entries from the last 30 days. Older entries are not automatically deleted from storage; ask us to delete them if you want them gone.</li>
         <li>&bull; <strong>Shared reading links:</strong> a link created with "Share on WhatsApp" stops working after 30 days. The copy in storage is not removed by our code at that point, so email us if you want it deleted sooner.</li>
-        <li>&bull; <strong>Operational logs:</strong> a few weeks for debugging, then discarded.</li>
+        <li>&bull; <strong>Operational logs:</strong> a few weeks for debugging, then discarded. If an email to you fails to send, or a step of signing in fails, the log line can include your email address. Our code does not write your birth details to them.</li>
         <li>&bull; <strong>Analytics data:</strong> the provider's default retention window.</li>
       </ul>
     </div>
