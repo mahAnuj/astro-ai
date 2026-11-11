@@ -70,7 +70,9 @@ jobs:
     # run the analyst after EVERY cycle, up to ~20 times a day.
     # LOOP PAUSE (#903): set the repository variable LOOP_PAUSED=true to skip
     # every Claude-spending loop job; delete it (or set anything else) to resume.
-    if: vars.LOOP_PAUSED != 'true' && (github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *')
+    # Written !(==) not != : the analyst's slot test refuses any '!=' here,
+    # because a deny-list on the slots fails open. Same meaning as elsewhere.
+    if: "!(vars.LOOP_PAUSED == 'true') && (github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *')"
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:

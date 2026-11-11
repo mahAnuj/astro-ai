@@ -717,7 +717,7 @@ MUTATIONS = [
     ("#345: dropping measure.if runs the ANALYST on every collector run against the cap",
      ".github/workflows/agent-measure.yml",
      # Re-pointed 2026-11-11 (#903): the guard now leads with the loop pause.
-     "    if: vars.LOOP_PAUSED != 'true' && (github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *')\n",
+     "    if: \"!(vars.LOOP_PAUSED == 'true') && (github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *')\"\n",
      "",
      "test_the_second_slot_runs_the_collectors_without_the_analyst"),
 

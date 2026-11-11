@@ -42,7 +42,10 @@ def test_every_claude_spending_loop_job_honours_the_pause():
         if name in NOT_LOOP:
             continue
         seen.append(f"{name}:{job}")
-        assert str(spec.get("if", "")).startswith(PAUSE), f"{name}:{job} runs Claude while paused"
+        cond = str(spec.get("if", ""))
+        # agent-measure spells it !(==) because its slot test refuses '!='.
+        assert cond.startswith(PAUSE) or cond.startswith("!(vars.LOOP_PAUSED == 'true')"), (
+            f"{name}:{job} runs Claude while paused")
     assert len(seen) >= 9, seen
 
 
