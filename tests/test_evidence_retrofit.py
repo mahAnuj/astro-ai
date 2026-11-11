@@ -291,3 +291,11 @@ def test_one_empty_cycle_in_four_is_not_starved(tmp_path, monkeypatch):
     f = _find(tmp_path, monkeypatch, [("ranked", "nothing"), ("ranked", "pr open"),
                                       ("ranked", "shipped"), ("issue", "pr open")])
     assert "loop-starved" not in f
+
+
+def test_the_retrofit_step_accepts_the_bot_that_dispatches_it():
+    # chain_cycle.py dispatches mode=evidence as github-actions. Without this,
+    # claude-code-action refuses the run before the agent starts: run
+    # 42933391630 (2026-11-11) failed exactly so, and #876 was filed.
+    step = {s.get("name"): s for s in _wf()["jobs"]["prioritise"]["steps"]}["Retrofit or close"]
+    assert step["with"].get("allowed_bots") == "github-actions", "and never '*'"

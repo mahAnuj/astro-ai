@@ -100,6 +100,14 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: "true"
+          # chain_cycle.py dispatches this step as github-actions, and the action
+          # refuses a bot-initiated run unless named here: run 42933391630
+          # (2026-11-11 00:41Z) died with "Workflow initiated by non-human
+          # actor: github-actions (type: Bot)" before the agent started, so the
+          # retrofit never ran and the ops alert "agent-prioritise.yml's last
+          # run failed" (#876) went up. Exactly the grant agent-work.yml and
+          # agent-steward.yml already carry, and no wider: not "*".
+          allowed_bots: "github-actions"
           prompt: |
             You are project-manager, in EVIDENCE MODE. Follow the project-manager
             agent definition. Do not rank, and do not rewrite BACKLOG.md.
