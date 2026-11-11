@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-10T21:27:53Z",
+  "generated_at": "2026-11-11T00:39:49Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 108,
-  "with_ask": 38,
+  "with_ask": 37,
   "by_area": {
-    "UNCLASSIFIED": 38,
-    "INFRA": 12,
+    "UNCLASSIFIED": 37,
+    "INFRA": 13,
     "REDESIGN": 10,
     "UI": 8,
     "FEATURE": 7,
@@ -15,12 +15,13 @@
     "RETRIEVAL": 3,
     "MEASURE": 3,
     "CHORE": 3,
-    "NUMEROLOGY": 3,
     "MATCHING": 2,
     "MUHURAT": 2,
+    "NUMEROLOGY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "MAIN-RED": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
@@ -30,9 +31,9 @@
   "by_type": {
     "untyped": 32,
     "enhancement": 23,
-    "bug": 21,
+    "bug": 22,
     "chore": 13,
-    "correctness": 9,
+    "correctness": 8,
     "design": 6,
     "ui": 4
   },
@@ -43,6 +44,51 @@
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 871,
+      "title": "/matching charts render labels at 8.76px at 640px (two-up) and the R mark at 8.4px at 375px (follow-up to #380)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "ui",
+        "page:matching"
+      ],
+      "created": "2026-11-11T00:30:55Z",
+      "updated": "2026-11-11T00:31:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 868,
+      "title": "[INFRA] collect_llm_usage.py reads the always-zero input_tokens field, so token-ceiling and cache-low read blind",
+      "ask": "",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-11T00:01:08Z",
+      "updated": "2026-11-11T00:01:08Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 865,
+      "title": "[main-red] pr-gates did not pass on main at bb3cc23",
+      "ask": "",
+      "area": "MAIN-RED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-10T21:34:46Z",
+      "updated": "2026-11-10T21:34:46Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 856,
       "title": "Manglik copy: remaining flat six-house claims and the 'many texts … after age 28' claim outrun the held sources (residue of #838)",
@@ -72,10 +118,11 @@
       "labels": [
         "bug",
         "category:technical",
-        "priority:high"
+        "priority:high",
+        "provenance:trusted"
       ],
       "created": "2026-11-10T17:25:11Z",
-      "updated": "2026-11-10T17:25:11Z",
+      "updated": "2026-11-11T00:01:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -217,24 +264,6 @@
       "needs_evidence": false
     },
     {
-      "number": 759,
-      "title": "chief-cleared is applied with github.token, so agent-merge's label edge never fires and cleared PRs wait for a throttled sweep (#749, #750: 13-14h)",
-      "ask": "After apply() succeeds in chief_clear.py, dispatch agent-merge.yml with gh workflow run agent-merge.yml",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "category:technical",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-07T00:24:23Z",
-      "updated": "2026-11-10T21:27:06Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 751,
       "title": "matching: five rules blocked on a source the corpus lacks (split from #177)",
       "ask": "",
@@ -357,10 +386,12 @@
       "priority": "unset",
       "labels": [
         "astrology-correctness",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-05T00:20:35Z",
-      "updated": "2026-11-10T19:10:21Z",
+      "updated": "2026-11-10T22:01:32Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -512,24 +543,6 @@
       "needs_evidence": false
     },
     {
-      "number": 605,
-      "title": "test_rashifal_day_detail.py module-scoped fixture bypasses _offline_geocode and hits Nominatim, so gates goes red on a 429",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-30T15:39:52Z",
-      "updated": "2026-11-10T21:09:14Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 596,
       "title": "[UI] Six form controls (subscribe modal, feedback widget, /learn search) have a placeholder and no accessible name",
       "ask": "",
@@ -559,24 +572,6 @@
       ],
       "created": "2026-10-29T23:50:32Z",
       "updated": "2026-11-10T08:54:07Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 584,
-      "title": "numerology: 0-100 compatibility and Bhagya scores rest on invented weights, and the compound tiers contradict Cheiro on 28, 49 and 13",
-      "ask": "",
-      "area": "NUMEROLOGY",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-28T23:12:41Z",
-      "updated": "2026-11-10T20:30:52Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -983,10 +978,13 @@
       "labels": [
         "ui",
         "skill:ui-fixer",
-        "page:kundli"
+        "page:kundli",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-15T22:59:01Z",
-      "updated": "2026-11-10T08:53:32Z",
+      "updated": "2026-11-11T00:38:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1046,7 +1044,7 @@
         "chore"
       ],
       "created": "2026-10-13T23:19:30Z",
-      "updated": "2026-11-10T08:53:29Z",
+      "updated": "2026-11-11T00:01:06Z",
       "blocked": false,
       "needs_evidence": false
     },
