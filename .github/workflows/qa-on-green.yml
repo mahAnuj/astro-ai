@@ -485,6 +485,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           ISSUE: ${{ steps.decide.outputs.issue }}
           QUEUE_ON: ${{ steps.decide.outputs.pr }}
+          LOOP_PAUSED: ${{ vars.LOOP_PAUSED }}   # #903: a red-gates fix is queued too while paused
         run: |
           printf 'issue=%s\n' "$ISSUE" > /tmp/red-gates-dispatch.txt
           bash scripts/dispatch_cycle.sh /tmp/red-gates-dispatch.txt qa-on-green
