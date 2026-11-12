@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-12T19:00:26Z)
+# Lessons — last 30 days (generated 2026-11-12T21:46:32Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -25,9 +25,9 @@ deterministic, no LLM.
 - reverted commits on main: 0
 - failed verify-production runs: 4
 - ops findings now: 3
-  - [amber] loop-last-run-failed: agent-prioritise.yml, verify-production.yml: last run failed
+  - [amber] loop-last-run-failed: agent-prioritise.yml: last run failed
   - [amber] token-ceiling: Peak day used 83% of the Groq daily budget
-  - [amber] loop-idle: Build lane idle 77% of the last 7d
+  - [amber] loop-idle: Build lane idle 78% of the last 7d
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
