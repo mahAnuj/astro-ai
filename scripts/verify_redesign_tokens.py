@@ -337,6 +337,9 @@ TEXT_FLOOR_CLEAN = (
     "src/astro_ai/templates/_tab_bar.html",
     "src/astro_ai/templates/_panchang_strip.html",
     "src/astro_ai/templates/learn_index.html",
+    # #366: `/` measured 24 and `/panchang` 10 nodes under 12px at 375px.
+    "src/astro_ai/templates/index.html",
+    "src/astro_ai/templates/panchang.html",
 )
 _SUB_FLOOR = re.compile(r"text-\[(\d+(?:\.\d+)?)px\]")
 
