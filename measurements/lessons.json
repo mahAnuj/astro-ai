@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-12T02:04:12Z",
+ "generated_at": "2026-11-12T02:11:55Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -964,10 +964,17 @@
    "headline": "pending \u2014 scoreable from 2026-12-04",
    "at": "2026-11-08T00:12:30Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/685#issuecomment-6714891475"
+  },
+  {
+   "number": 735,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-12",
+   "at": "2026-11-12T02:08:37Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/735#issuecomment-6812290654"
   }
  ],
  "outcome_counts": {
-  "PENDING": 10,
+  "PENDING": 11,
   "PASS": 5,
   "HIT": 2,
   "UNSCOREABLE": 10,
