@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T16:09:12Z",
+  "generated_at": "2026-11-12T17:38:46Z",
   "repo": "mahAnuj/astro-ai",
   "window_days": 30,
   "loops": [
@@ -10,7 +10,7 @@
         "00 20 * * 4"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 4,
       "runs_total": 4,
@@ -26,7 +26,7 @@
         "00 20 * * 1"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 4,
       "runs_total": 4,
@@ -42,7 +42,7 @@
         "00 19 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 4,
       "runs_total": 4,
@@ -59,11 +59,11 @@
         "23 09 * * *"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 81,
       "runs_total": 100,
-      "last_run": "2026-11-12T16:08:47Z",
+      "last_run": "2026-11-12T17:38:28Z",
       "last_conclusion": "in_progress",
       "last_run_health": "running",
       "verdict": "not-due-yet"
@@ -77,7 +77,7 @@
       "slots_due": null,
       "runs_scheduled": 2,
       "runs_total": 100,
-      "last_run": "2026-11-12T16:08:17Z",
+      "last_run": "2026-11-12T17:37:38Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -89,7 +89,7 @@
         "00 17 * * 0"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 4,
       "runs_total": 9,
@@ -107,7 +107,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-11-12T16:08:47Z",
+      "last_run": "2026-11-12T17:25:26Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -119,7 +119,7 @@
         "00 19 * * 3"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 5,
       "runs_total": 5,
@@ -135,11 +135,11 @@
       "cadence_error": "only a fixed minute and hour are supported: '0 9,15 * * *'",
       "schedule_since": null,
       "slots_due": null,
-      "runs_scheduled": 10,
+      "runs_scheduled": 11,
       "runs_total": 100,
-      "last_run": "2026-11-12T16:08:47Z",
-      "last_conclusion": "in_progress",
-      "last_run_health": "running",
+      "last_run": "2026-11-12T17:23:37Z",
+      "last_conclusion": "success",
+      "last_run_health": "green",
       "verdict": "on-demand"
     },
     {
@@ -150,7 +150,7 @@
         "41 17 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 5,
       "runs_total": 5,
@@ -171,14 +171,14 @@
         "00 19 * * *"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
-      "slots_due": 1,
-      "runs_scheduled": 24,
+      "schedule_since": "2026-11-12T22:58:52+05:30",
+      "slots_due": 0,
+      "runs_scheduled": 23,
       "runs_total": 100,
-      "last_run": "2026-11-12T15:45:03Z",
-      "last_conclusion": "success",
-      "last_run_health": "green",
-      "verdict": "ok"
+      "last_run": "2026-11-12T17:37:51Z",
+      "last_conclusion": "in_progress",
+      "last_run_health": "running",
+      "verdict": "not-due-yet"
     },
     {
       "workflow": "close-on-evidence.yml",
@@ -189,7 +189,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-11-12T11:24:21Z",
+      "last_run": "2026-11-12T17:34:17Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -201,7 +201,7 @@
         "30 03 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 4,
       "runs_total": 4,
@@ -219,7 +219,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-11-12T16:07:56Z",
+      "last_run": "2026-11-12T17:37:38Z",
       "last_conclusion": "skipped",
       "last_run_health": "amber",
       "verdict": "on-demand"
@@ -231,11 +231,11 @@
         "47 20 * * *"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 1,
       "runs_total": 100,
-      "last_run": "2026-11-12T16:08:21Z",
+      "last_run": "2026-11-12T17:32:34Z",
       "last_conclusion": "in_progress",
       "last_run_health": "running",
       "verdict": "not-due-yet"
@@ -249,9 +249,9 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-11-12T16:07:56Z",
-      "last_conclusion": "success",
-      "last_run_health": "green",
+      "last_run": "2026-11-12T17:37:38Z",
+      "last_conclusion": "in_progress",
+      "last_run_health": "running",
       "verdict": "on-demand"
     },
     {
@@ -261,7 +261,7 @@
         "17 06 * * *"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 20,
       "runs_total": 23,
@@ -279,9 +279,9 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-11-12T16:08:21Z",
-      "last_conclusion": "in_progress",
-      "last_run_health": "running",
+      "last_run": "2026-11-12T17:32:34Z",
+      "last_conclusion": "success",
+      "last_run_health": "green",
       "verdict": "on-demand"
     },
     {
@@ -291,11 +291,11 @@
         "17 06 * * 1"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-11-12T11:18:30Z",
+      "schedule_since": "2026-11-12T22:58:52+05:30",
       "slots_due": 0,
       "runs_scheduled": 1,
       "runs_total": 100,
-      "last_run": "2026-11-12T11:18:38Z",
+      "last_run": "2026-11-12T17:28:56Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "not-due-yet"
@@ -417,25 +417,24 @@
     "ok": true,
     "cycles": 330,
     "outcomes": {
-      "shipped": 161,
+      "shipped": 162,
       "judged": 95,
       "nothing": 50,
       "failed": 19,
-      "unknown": 4,
-      "pr open": 1
+      "unknown": 4
     },
     "yield_pct": 49,
     "median_minutes": 17.8,
     "minutes_total": 8024.6,
-    "minutes_per_shipped": 49.8
+    "minutes_per_shipped": 49.5
   },
   "agents": {
     "window_days": 30,
-    "comments_total": 2194,
-    "comments_by_agents": 1225,
-    "comments_by_automation": 684,
+    "comments_total": 2192,
+    "comments_by_agents": 1222,
+    "comments_by_automation": 686,
     "by_agent": {
-      "qa": 402,
+      "qa": 401,
       "agent-cycle": 226,
       "steward": 160,
       "analyst": 116,
@@ -446,19 +445,9 @@
       "engineer": 3,
       "product-manager": 2
     },
-    "unmatched_count": 223,
+    "unmatched_count": 221,
     "unmatched_pct": 18,
     "unmatched_sample": [
-      {
-        "issue": "311",
-        "at": "2026-10-13T17:04:49Z",
-        "head": "**/agent-cycle step 0/1 (2026-10-13).** `validate_issue.py 311 --samples 5` → NO-REPRO (ex"
-      },
-      {
-        "issue": "311",
-        "at": "2026-10-13T17:18:20Z",
-        "head": "**Built and QA'd (not yet deployed).** PR #334, commit 74f3e70, branch `issue/311-title-me"
-      },
       {
         "issue": "338",
         "at": "2026-10-13T18:31:56Z",
@@ -488,11 +477,21 @@
         "issue": "329",
         "at": "2026-10-14T23:40:29Z",
         "head": "## Analyst baseline — #329 (closed 2026-10-14): **NOT SCOREABLE YET** **Window for every"
+      },
+      {
+        "issue": "209",
+        "at": "2026-10-15T02:05:31Z",
+        "head": "## /agent-cycle 2026-10-15 — PR #352 (branch `issue/209-about-overclaim`, HEAD c8eafe2), Q"
+      },
+      {
+        "issue": "354",
+        "at": "2026-10-15T05:05:48Z",
+        "head": "## Item 1 implemented — but the loop cannot push it. Patch attached; needs a human to appl"
       }
     ],
     "qa": {
-      "issues_with_a_verdict": 207,
-      "issues_reaching_pass": 195,
+      "issues_with_a_verdict": 206,
+      "issues_reaching_pass": 194,
       "first_submission_failed": 62,
       "first_submission_fail_pct": 30,
       "rounds_per_issue": {
@@ -925,9 +924,6 @@
         ],
         "930": [
           "PASS",
-          "PASS"
-        ],
-        "334": [
           "PASS"
         ],
         "342": [
