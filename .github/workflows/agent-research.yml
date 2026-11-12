@@ -27,6 +27,9 @@ concurrency:
 
 jobs:
   research:
+    # LOOP PAUSE (#903): set the repository variable LOOP_PAUSED=true to skip
+    # every Claude-spending loop job; delete it (or set anything else) to resume.
+    if: vars.LOOP_PAUSED != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 75
     permissions:
@@ -170,7 +173,7 @@ jobs:
   # A direct push would skip it.
   propose:
     needs: research
-    if: always()
+    if: always() && needs.research.result != 'skipped'   # #903: nothing to keep when the loop is paused
     runs-on: ubuntu-latest
     permissions:
       contents: write

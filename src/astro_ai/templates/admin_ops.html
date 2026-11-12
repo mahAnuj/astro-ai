@@ -708,6 +708,11 @@ a{color:#7fb6f5} a:hover{color:#a8cdf8}
       {% if Q.five_used_pct is not none %}Five-hour window {{ Q.five_used_pct }}% used{% if Q.five_resets_in %} (resets in {{ Q.five_resets_in }}){% endif %}.{% endif %}
       {% if Q.rejected_runs %}<b class="c-failed">{{ Q.rejected_runs }} run(s) hit a limit.</b>{% endif %}
       Read {{ Q.age.text }} from the agents' own rate-limit logs.
+      {#- LOOP PAUSE (#903). The switch is the repository variable LOOP_PAUSED,
+          not a button here: a button would need the public app to hold a GitHub
+          token that can write repository settings. -#}
+      <a href="https://github.com/mahAnuj/astro-ai/settings/variables/actions"
+         title="Set the repository variable LOOP_PAUSED to true to skip every Claude-spending loop job; delete it to resume (#903)">Pause / resume the loop →</a>
     </span>
   </section>
   {% else %}
