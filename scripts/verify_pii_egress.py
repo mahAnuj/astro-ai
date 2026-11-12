@@ -124,13 +124,16 @@ POLICY: dict[str, Rule] = {
         "plus the birth CITY and an age band; not name, date, time or full place"),
     "log": _rule(
         "email",
-        'privacy.html "Operational logs" is silent on email. This pins TODAY\'s '
-        "behaviour (email_sender.send logs the address, subscribe.py and account.py "
-        "log it) so that a NEW flow is caught; tightening it is a separate decision"),
+        'privacy.html "Operational logs" says a log line can include an email '
+        "address (failed send, failed sign-in step, an unsubscribe link) and the "
+        "place name when a lookup fails (#819). This pins TODAY's behaviour "
+        "(email_sender.send logs the address, subscribe.py and account.py log it) "
+        "so that a NEW flow is caught; tightening it is a separate decision"),
     "geocode": _rule(
         "city region",
-        "the geocoder is only ever handed a place string (birth place or a "
-        "subscriber's city), never a name, date, time, email or question"),
+        'privacy.html "Place lookup" names Nominatim: the geocoder is only ever '
+        "handed a place string (birth place or a subscriber's city), never a "
+        "name, date, time, email or question"),
 }
 
 #: Storage blobs by key prefix, longest match wins; anything unlisted is NOTHING.

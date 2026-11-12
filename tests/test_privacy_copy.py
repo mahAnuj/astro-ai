@@ -100,7 +100,7 @@ def test_privacy_page_discloses_what_still_reaches_the_operator(client):
 def test_privacy_page_date_is_a_literal_not_the_current_year(client):
     # `{{ current_year() }}-08-06` made the page claim an update this year,
     # every year, with a fixed month and day nobody had edited it on.
-    assert "Last updated: 2026-10-11" in _text(client.get("/privacy").text)
+    assert "Last updated: 2026-11-11" in _text(client.get("/privacy").text)
 
 
 # ─── retired claims, everywhere they were found ────────────────────────────
@@ -233,3 +233,34 @@ def test_admin_dashboard_renders_both_event_shapes(admin, monkeypatch):
     assert "Arjun × Meera" in text
     assert "(anon)" not in text
     assert "· None" not in text and "None ·" not in text
+
+
+# ─── disclosures the PII sweep allows (#819) ───────────────────────────────
+# scripts/verify_pii_egress.py POLICY lets a PII class reach a sink; a visitor
+# can only be told about it if /privacy says so. Each assertion below pins one
+# allowance to the sentence that discloses it, on the RENDERED page.
+
+
+def test_privacy_page_names_the_geocoder_and_what_it_receives(client):
+    text = _text(client.get("/privacy").text)
+    assert text.count("Nominatim") >= 2, "the geocoder is named in the card and the vendor list"
+    assert "Only that text is sent, never your name, birth date, birth time, email or question" in text
+
+
+def test_privacy_page_says_a_signed_in_question_is_kept_in_the_account(client):
+    text = _text(client.get("/privacy").text)
+    assert "saved in your account's reading history" in text
+    # the number in the copy must be the number the code enforces
+    from astro_ai import users
+    assert f"keeps your {users.MAX_READINGS_PER_USER} most recent readings" in text
+
+
+def test_privacy_page_says_email_can_reach_the_operational_logs(client):
+    text = _text(client.get("/privacy").text)
+    ops = text[text.index("Operational logs:"):]
+    assert "can include your email address" in ops[:500]
+    # a failed place lookup logs the place (routes/deps.py panchang strip), so
+    # the page must not claim birth details stay out of the logs (QA, PR #909)
+    assert "can include the place name you typed" in ops[:500]
+    assert "does not write your birth details" not in text
+    assert "unsubscribe link" in ops[:500]
