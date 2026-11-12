@@ -131,21 +131,31 @@ def _wf():
     return yaml.safe_load((ROOT / ".github/workflows/qa-on-green.yml").read_text())
 
 
+def _steps():
+    return {s.get("name"): s for s in _wf()["jobs"]["consider"]["steps"]}
+
+
 def test_red_runs_from_both_gate_workflows_and_green_stays_on_pr_gates():
     doc = _wf()
     on = doc[next(k for k in doc if str(k) in ("on", "True"))]
     assert on["workflow_run"]["workflows"] == ["PR gates", "verify-build"]
-    assert doc["jobs"]["consider"]["if"] == "github.event.workflow_run.name == 'PR gates'"
-    assert "conclusion == 'failure'" in doc["jobs"]["red"]["if"]
+    # One job, not two: a new job inherits every workflow permission, which
+    # verify_workflow_permissions reads as a widening. The green path exits
+    # early on anything but PR gates; the red steps run only on a failed PR run.
+    assert list(doc["jobs"]) == ["consider"]
+    pick = _steps()["Is this a PR a cycle should finish?"]
+    assert 'if [ "$GATES_WORKFLOW" != "PR gates" ]; then' in pick["run"]
+    assert pick["env"]["GATES_WORKFLOW"] == "${{ github.event.workflow_run.name }}"
+    assert "conclusion == 'failure'" in _steps()["What should happen to this red PR?"]["if"]
 
 
 def test_the_marker_is_written_before_the_fix_is_dispatched():
-    names = [s.get("name") for s in _wf()["jobs"]["red"]["steps"]]
+    names = [s.get("name") for s in _wf()["jobs"]["consider"]["steps"]]
     assert names.index("Record the fix dispatch on the PR") < names.index("Dispatch the fix cycle")
 
 
 def test_the_red_job_cannot_label_or_merge():
-    for s in _wf()["jobs"]["red"]["steps"]:
+    for s in _wf()["jobs"]["consider"]["steps"]:
         run = s.get("run") or ""
         for banned in ("--add-label", "--remove-label", "gh pr edit", "gh pr merge"):
             assert banned not in run, banned

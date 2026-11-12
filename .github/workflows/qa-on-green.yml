@@ -72,7 +72,6 @@ permissions:
 
 jobs:
   consider:
-    if: github.event.workflow_run.name == 'PR gates'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -91,6 +90,7 @@ jobs:
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           GATES_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          GATES_WORKFLOW: ${{ github.event.workflow_run.name }}
           # Same list, same meaning as agent-merge.yml and the steward: who
           # WROTE the PR decides whether it is ours, never what the branch is
           # called. #531 and #534 removed six copies of the branch-name rule;
@@ -114,6 +114,13 @@ jobs:
               say "\`$HEAD_BRANCH\` is a measurement PR — it self-merges, no QA round."
               exit 0 ;;
           esac
+
+          # The green path answers to PR gates alone; verify-build joined the trigger
+          # for the red-gates steps below (#912).
+          if [ "$GATES_WORKFLOW" != "PR gates" ]; then
+            say "\`$GATES_WORKFLOW\` completed — the green path answers to PR gates only."
+            exit 0
+          fi
 
           if [ "$GATES_CONCLUSION" != "success" ]; then
             say "\`PR gates\` concluded \`$GATES_CONCLUSION\` on \`$HEAD_BRANCH\` — a red gate is information, not a stall."
@@ -423,23 +430,18 @@ jobs:
           printf '%s\n' "$TARGET" > /tmp/qa-on-green-dispatch.txt
           bash scripts/dispatch_cycle.sh /tmp/qa-on-green-dispatch.txt qa-on-green
 
-  # RED GATES (#912). Measured 2026-11-12: five PRs sat 9-20h red and nothing
-  # acted -- three on a runner DNS blip (apt could not resolve
-  # security.ubuntu.com, so no test ever ran), two on real failures a cycle
-  # could fix. `consider` exits on red by design; detect_stalls.py has no
-  # red-gates kind; an empty commit to re-trigger CI is forbidden. So:
-  # scripts/red_gates.py decides rerun (flake, first attempt only) / fix (one
-  # build cycle per head, on a branch naming its issue, never a workflows diff)
-  # / notify (one comment per head) / none. Deterministic: no Claude here.
-  red:
-    if: github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.event == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
+      # RED GATES (#912). Measured 2026-11-12: five PRs sat 9-20h red and nothing
+      # acted -- three on a runner DNS blip (apt could not resolve
+      # security.ubuntu.com, so no test ever ran), two on real failures a cycle
+      # could fix. `consider` exits on red by design; detect_stalls.py has no
+      # red-gates kind; an empty commit to re-trigger CI is forbidden. So:
+      # scripts/red_gates.py decides rerun (flake, first attempt only) / fix (one
+      # build cycle per head, on a branch naming its issue, never a workflows diff)
+      # / notify (one comment per head) / none. Deterministic: no Claude here.
 
       - id: decide
         name: What should happen to this red PR?
+        if: github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.event == 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}

@@ -24,7 +24,7 @@ MUTATIONS = [
      "test_a_workflows_diff_is_noted_not_dispatched"),
     ("#912: the green path starts answering to verify-build too",
      ".github/workflows/qa-on-green.yml",
-     "    if: github.event.workflow_run.name == 'PR gates'\n",
-     "    if: always()\n",
+     'if [ "$GATES_WORKFLOW" != "PR gates" ]; then',
+     'if false; then',
      "test_red_runs_from_both_gate_workflows_and_green_stays_on_pr_gates"),
 ]
