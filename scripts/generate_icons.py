@@ -12,7 +12,7 @@ Outputs to src/astro_ai/static/icons/:
 
 Design: North-Indian Kundli (outer diamond + diagonals + inner diamond from
 edge midpoints, creating the classic 12-house layout) with a gold center
-dot ("bindu") on astro-700 purple. Reads as Vedic astrology to Indian
+dot ("bindu") on bhagya-night. Reads as Vedic astrology to Indian
 viewers at any size from 16px to 512px.
 
 Re-run any time the brand palette or shape changes.
@@ -25,10 +25,12 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 OUT = REPO_ROOT / "src" / "astro_ai" / "static" / "icons"
 OUT.mkdir(parents=True, exist_ok=True)
 
-# Palette — keep in sync with tailwind config in templates/base.html.
-BG = (107, 33, 168)       # astro-700 purple
-FG = (255, 255, 255)      # white
-ACCENT = (255, 215, 100)  # warm gold (saffron-ish) for the bindu
+# Palette — the redesign `bhagya` tokens (tailwind.config.js, #233), the same
+# three generate_og_card.py uses. BG matches manifest.webmanifest theme_color.
+# Gold is allowed here: it sits on night, never on cream.
+BG = (20, 15, 28)         # #140F1C bhagya-night
+FG = (250, 246, 239)      # #FAF6EF bhagya-cream
+ACCENT = (200, 164, 77)   # #C8A44D bhagya-gold, the bindu
 
 
 def draw_kundli(size: int, *, r_ratio: float = 0.42, stroke_ratio: float = 0.022,
@@ -43,7 +45,7 @@ def draw_kundli(size: int, *, r_ratio: float = 0.42, stroke_ratio: float = 0.022
     stroke_ratio: line width as a fraction of canvas size.
     dot_ratio:    center bindu radius as a fraction of canvas size.
     bg/fg/accent: optional RGB overrides, default to the module constants so
-                  the install icons are unaffected (#381 owns their colours).
+                  the install icons take the bhagya night/cream/gold (#381).
                   generate_og_card.py passes the bhagya palette (#265).
     """
     bg = BG if bg is None else bg
