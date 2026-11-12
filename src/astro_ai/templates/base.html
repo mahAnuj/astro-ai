@@ -125,6 +125,22 @@
 {% set _no_track = request.url.path == '/admin' or request.url.path.startswith('/admin/') %}
 {% set _ga4_id = '' if _no_track else ga4_measurement_id %}
 {% set _clarity_id = '' if _no_track else clarity_project_id %}
+{# Clarity session replay records on-screen text, and /kundli, /ask, /matching,
+   /numerology and /account render the visitor's birth details and their
+   question (#908). So masking is the DEFAULT and the exceptions are the few
+   public-content paths where nothing personal renders: a new route is masked
+   until someone adds it here. Matched as a path SEGMENT (`/learnx` is masked).
+   `/hi/...` reaches this template with the prefix intact (routes/hindi.py
+   awaits the English handler and leaves request.url.path alone), and the only
+   `/hi/` pages that serve are rashifal, which stay masked; the rest 301 to the
+   English URL, which is allow-listed on its own. The signed-in chip in
+   _nav.html renders the visitor's first name on every page, so it carries its
+   own mask. Masking blanks text only; clicks, scroll and layout still record. #}
+{% set _public_paths = ['/learn', '/about', '/privacy', '/terms', '/festivals'] %}
+{% set _clarity_mask = namespace(on=true) %}
+{% for _p in _public_paths %}
+  {% if request.url.path == _p or request.url.path.startswith(_p ~ '/') %}{% set _clarity_mask.on = false %}{% endif %}
+{% endfor %}
 <script>
   window.BHAGYA_ANALYTICS_CONFIG = {
     ga4:     "{{ _ga4_id }}",
@@ -1103,7 +1119,7 @@
    U+FE0E variation selector at every glyph site — the selector is the reliable
    half, this is the half that covers a glyph someone adds later and forgets to
    mark. Unsupported browsers ignore the declaration; nothing regresses. #}
-<body hx-boost="true" class="bg-bhagya-cream text-bhagya-ink font-sans min-h-full antialiased [font-variant-emoji:text]">
+<body hx-boost="true"{% if _clarity_mask.on %} data-clarity-mask="True"{% endif %} class="bg-bhagya-cream text-bhagya-ink font-sans min-h-full antialiased [font-variant-emoji:text]">
   {# Skip link (#731, WCAG 2.4.1). The FIRST focusable element on every page, so
      a keyboard user's first Tab offers to jump past the nav to the page's
      <main id="main-content"> — every page-level <main> carries that id (a test

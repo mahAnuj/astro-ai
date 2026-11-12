@@ -126,7 +126,8 @@ POLICY: dict[str, Rule] = {
         "email",
         'privacy.html "Operational logs" says a log line can include an email '
         "address (failed send, failed sign-in step, an unsubscribe link) and the "
-        "place name when a lookup fails (#819). This pins TODAY's behaviour "
+        "nothing else: the place name a failed lookup used to log (#819) is gone "
+        "(#908, scenario `strip-place-unresolved`). This pins TODAY's behaviour "
         "(email_sender.send logs the address, subscribe.py and account.py log it) "
         "so that a NEW flow is caught; tightening it is a separate decision"),
     "geocode": _rule(
@@ -652,6 +653,42 @@ def _chart_error(c, e):
     assert c.post("/manglik-check", data=BIRTH_FORM).status_code == 400
     r = c.post("/reading", data=BIRTH_FORM, follow_redirects=False)
     assert r.status_code in (303, 400, 422), r.status_code
+
+
+@scenario("strip-place-unresolved", chart=True,
+          expects={"geocode": (2, None), "responses": (2, None)})
+def _strip_place_unresolved(c, e):
+    """The homepage panchang strip geocodes the SAVED BIRTH PLACE, and when that
+    fails it logs and falls back to Mumbai (routes/deps.py, #213). It used to log
+    the place itself (#908), a leak no other scenario reached: `place-rejected`
+    fails the place on the form routes, which never touch the strip.
+
+    Two failures, because the log has two lines. First only the visitor's place
+    fails (the warning). Then everything fails, so the default city fails too and
+    `log.exception` prints a traceback whose `__context__` is the FIRST failure,
+    i.e. a ChartError that embeds the place.
+    """
+    from astro_ai import chart
+    from astro_ai.chart import ChartError
+    from astro_ai.routes import deps
+
+    everything_down = False
+
+    def _geocode(place):
+        e.geocode.append(place)
+        if everything_down or place == PLACE:
+            raise ChartError(f"Geocoding failed for {place!r}: no match")
+        return (19.0760, 72.8777, "Asia/Kolkata")
+
+    # Process-global strip caches would otherwise serve an earlier test's Mumbai
+    # entry and the geocoder would never be asked.
+    e.mp.setattr(deps, "_PANCHANG_STRIP_CACHE", {})
+    e.mp.setattr(deps, "_fallback_cache", {})
+    e.mp.setattr(chart, "geocode_place", _geocode)
+    assert c.get("/").status_code == 200
+    everything_down = True
+    deps._fallback_cache.clear()
+    assert c.get("/").status_code == 200
 
 
 def run_scenario(name: str, monkeypatch, caplog, tmp_path) -> Egress:
