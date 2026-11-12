@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-11T21:57:48Z",
+  "generated_at": "2026-11-12T02:02:41Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 102,
-  "with_ask": 36,
+  "open": 104,
+  "with_ask": 37,
   "by_area": {
-    "UNCLASSIFIED": 38,
+    "UNCLASSIFIED": 39,
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -20,6 +20,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "CORPUS": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
@@ -27,21 +28,67 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 30,
+    "untyped": 31,
     "enhancement": 24,
-    "bug": 20,
-    "chore": 15,
-    "correctness": 7,
+    "bug": 21,
+    "chore": 14,
+    "correctness": 8,
     "design": 4,
     "ui": 2
   },
   "by_priority": {
-    "unset": 75,
+    "unset": 76,
     "medium": 18,
-    "high": 9
+    "high": 10
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 914,
+      "title": "corpus: Muhurta Chintamani, the sole source of the 36-point matching weights, is in no registry and matching.py is outside the citation gate",
+      "ask": "",
+      "area": "CORPUS",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness",
+        "chore"
+      ],
+      "created": "2026-11-12T01:26:53Z",
+      "updated": "2026-11-12T01:26:53Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 912,
+      "title": "Red gates strand PRs: nothing re-runs a runner flake or dispatches a fix (5 PRs, 9–20h)",
+      "ask": "Infra flake (DNS, apt fetch, runner shutdown) with no test or gate result in the log: re-run the failed jobs once, only on run_attempt == 1.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-11-12T00:25:22Z",
+      "updated": "2026-11-12T00:25:22Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 911,
+      "title": "agent-merge sweep picks the lowest-numbered MERGEABLE PR even when its checks are red, starving #904",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-11T21:59:55Z",
+      "updated": "2026-11-11T21:59:55Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 908,
       "title": "Clarity masking unverified and /ask?q= in request logs: privacy disclosure gaps left from #819",
@@ -50,10 +97,13 @@
       "type": "chore",
       "priority": "unset",
       "labels": [
-        "chore"
+        "chore",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-11T21:48:17Z",
-      "updated": "2026-11-11T21:53:37Z",
+      "updated": "2026-11-12T02:02:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -224,24 +274,6 @@
       "labels": [],
       "created": "2026-11-09T03:39:09Z",
       "updated": "2026-11-10T08:54:44Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 819,
-      "title": "PII egress policy allows classes privacy.html does not disclose: geocoder, stored questions, email in logs (found by #744)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "chore",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-09T03:30:35Z",
-      "updated": "2026-11-11T21:57:08Z",
       "blocked": false,
       "needs_evidence": false
     },

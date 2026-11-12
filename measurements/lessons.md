@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-11T21:59:16Z)
+# Lessons — last 30 days (generated 2026-11-12T02:04:12Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -16,14 +16,14 @@ deterministic, no LLM.
 - **performance** — 8 QA FAIL(s): #524, #536, #565, #675, #747, #815
 - **regression** — 19 QA FAIL(s): #536, #544, #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747, #815, #841, #884
 - **security** — 9 QA FAIL(s): #544, #564, #636, #712, #747, #841, #846
-- **tests** — 16 QA FAIL(s): #448, #536, #544, #550, #701, #713, #747, #754, #801, #804, #833, #841, #846
+- **tests** — 17 QA FAIL(s): #448, #536, #544, #550, #701, #713, #747, #754, #801, #804, #833, #841, #846, #913
 - **tokens** — 16 QA FAIL(s): #536, #564, #649, #654, #660, #675, #747, #815, #841, #846
 
 ## Our errors
 
-- QA FAIL verdicts: 76
+- QA FAIL verdicts: 78
 - reverted commits on main: 0
-- failed verify-production runs: 3
+- failed verify-production runs: 2
 - ops findings now: 2
   - [amber] loop-last-run-failed: agent-prioritise.yml: last run failed
   - [amber] loop-idle: Build lane idle 78% of the last 7d
