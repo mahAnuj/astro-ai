@@ -992,23 +992,28 @@ Dated, with the evidence. **Check here before proposing a change.**
   still names the visitor. `KNOWN_GAPS` is now empty and a reappearing leak fails the gate.
   **Not measured:** what GA4 stored before the fix (`scripts/fetch_ga4.py` does not export titles)
   and whether production sets `GA4_MEASUREMENT_ID`. Tab and bookmark titles no longer carry the name.
-- **Clarity is masked by default since #908; what it records is still not observable here.**
-  `base.html` puts `data-clarity-mask="True"` on `<body>` for every path except the public-content
-  allowlist (`/learn`, `/about`, `/privacy`, `/terms`, `/festivals`, matched as a path SEGMENT), so a
-  new route is masked until someone lists it, and the signed-in name chip in `_nav.html` carries its own
-  mask because it renders on the allowlisted pages too. `/hi/...` reaches the template with its prefix
-  intact (`routes/hindi.py`), so Hindi rashifal is masked and every other `/hi/` path 301s to an
-  allowlisted English one. `privacy.html` says so, and only when `CLARITY_PROJECT_ID` is set.
-  **Still unknown:** whether production sets that id, and whether Clarity honours the attribute on every
-  element (browser-side; a replay has to be watched). **Not covered by the mask:** attributes. The chip's
-  `title` carries the signed-in email, and a Clarity replay of attribute values is unverified. Masking
-  blanks text only, so heatmaps and click maps still work.
-- **The access logs record `GET /ask?q=<the question>`.** The uvicorn access log and Cloud Run's
-  request log both do, and not only for a hand-typed address: `POST /ask` answers with a 303 to
-  `/ask?q=<question>&c=...`, so every question is in the URL of its answer page. #528 only keeps it out
-  of GA4's `page_location`. The test client never goes through either, and the sweep scans only
-  `astro_ai*` loggers (httpx's own client log names the URL too). `privacy.html` says since #908 that the
-  request log records the page address and so the question.
+- **Clarity is masked on every page since #908; what it records is still not observable here.**
+  `base.html` puts `data-clarity-mask="True"` on `<body>` unconditionally. It cannot depend on the
+  path: `hx-boost` swaps the body's children and discards the response's `<body>` attributes, so a
+  path-conditional attribute went stale across a boosted click (`/learn/` then `/kundli` left the live
+  body unmasked; QA round 1). A constant is set by every full page load, so it cannot. **Cost:** a
+  replay of public `/learn` pages shows layout, clicks and scroll but no text; heatmaps and click
+  data are unaffected. Re-introducing an allowlist needs a browser-level test of the boost path, as
+  `scripts/verify_lang_switch_browser.py` does for `<html lang>` (the 2026-10-05 row above).
+  `privacy.html` says so, and only when `CLARITY_PROJECT_ID` is set. **Still unknown:** whether
+  production sets that id, and whether Clarity honours the attribute on every element (browser-side; a
+  replay has to be watched). **Not covered by the mask:** attributes. The signed-in nav chip's `title`
+  carries the email, and a Clarity replay of attribute values is unverified. Masking blanks text only.
+- **The access logs record `GET /ask?q=<the question>` and `GET /panchang?city=<city>`.** The uvicorn
+  access log and Cloud Run's request log both do. For `/ask` it is not only a hand-typed address:
+  `POST /ask` answers with a 303 to `/ask?q=<question>&c=...`, so every question is in the URL of its
+  answer page. #528 only keeps it out of GA4's `page_location`. For `/panchang` (and
+  `/panchang/<date>`) the place box is a `method="get"` form pre-filled with the saved birth place
+  (`routes/panchang.py`), so submitting it puts that place in the URL. Enumerated: those are the only
+  `method="get"` forms that carry personal data (the other is an admin day picker); every other place
+  field is a POST form. The test client goes through neither log, and the sweep scans only `astro_ai*`
+  loggers (httpx's own client log names the URL too). `privacy.html` says since #908 that the request
+  log records the page address, naming the question and the Panchang city.
 - **The panchang strip no longer logs the saved birth place (#908).** When the geocoder failed for it,
   `panchang_strip_for_city` logged `%r` of the place, and when the fallback city failed too
   `log.exception` printed the first failure through `__context__`. It logs the length now and the context

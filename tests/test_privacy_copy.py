@@ -263,8 +263,9 @@ def test_privacy_page_says_email_can_reach_the_operational_logs(client):
     # strip logs its length), so the page must not claim it does -- that clause was
     # true under PR #909 and is false now. What the web server's request log DOES
     # hold is the page address, and the question rides in /ask?q=.
-    assert "place name" not in ops[:900]
-    assert "request log records the page address" in ops[:900]
-    assert "/ask?q=" in ops[:900]
+    assert "place name" not in ops[:1400]
+    assert "request log records the page address" in ops[:1400]
+    assert "/ask?q=" in ops[:1400]
+    assert "/panchang?city=" in ops[:1400]
     assert "does not write your birth details" not in text
     assert "unsubscribe link" in ops[:500]
