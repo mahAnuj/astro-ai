@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-11-12T11:11:46Z",
+  "generated_at": "2026-11-12T16:09:12Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 104,
-  "with_ask": 37,
+  "open": 105,
+  "with_ask": 38,
   "by_area": {
-    "UNCLASSIFIED": 38,
+    "UNCLASSIFIED": 40,
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
     "OPS": 5,
-    "UI": 4,
     "SEO": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "UI": 3,
     "MATCHING": 2,
     "MEASURE": 2,
     "NUMEROLOGY": 2,
@@ -28,7 +28,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 32,
+    "untyped": 33,
     "enhancement": 23,
     "bug": 21,
     "chore": 15,
@@ -37,12 +37,38 @@
     "ui": 2
   },
   "by_priority": {
-    "unset": 75,
+    "unset": 76,
     "medium": 19,
     "high": 10
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 931,
+      "title": "agent-merge cannot merge a chief-cleared workflow PR once main has moved on a workflow file it also edits: mergePullRequest refused without `workflows` permission (#899 open 25h)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-12T15:50:36Z",
+      "updated": "2026-11-12T15:50:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 929,
+      "title": "agent-research opens its corpus PR with github.token: pull_request suites are held in action_required, PR #915 has no gates (10h)",
+      "ask": "Mint the publisher token in agent-research.yml exactly as agent-work.yml does and use it for push and gh pr create.",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-12T11:14:01Z",
+      "updated": "2026-11-12T11:14:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 925,
       "title": "[OPS] Peak day used 83% of the Groq daily budget",
@@ -56,23 +82,6 @@
       ],
       "created": "2026-11-12T03:59:29Z",
       "updated": "2026-11-12T03:59:29Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 924,
-      "title": "[UI] Inline-CSS text under 12px remains: /learn callout labels (11.2px) and /muhurat mobile card labels (10px)",
-      "ask": "",
-      "area": "UI",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-12T03:58:37Z",
-      "updated": "2026-11-12T11:11:08Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -180,10 +189,12 @@
       "priority": "medium",
       "labels": [
         "priority:medium",
-        "chore"
+        "chore",
+        "qa-pass",
+        "qa:independent"
       ],
       "created": "2026-11-11T02:08:27Z",
-      "updated": "2026-11-11T02:38:47Z",
+      "updated": "2026-11-12T11:24:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -589,10 +600,13 @@
       "priority": "unset",
       "labels": [
         "ui",
-        "skill:ui-fixer"
+        "skill:ui-fixer",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-29T23:50:32Z",
-      "updated": "2026-11-10T08:54:07Z",
+      "updated": "2026-11-12T16:08:25Z",
       "blocked": false,
       "needs_evidence": false
     },
