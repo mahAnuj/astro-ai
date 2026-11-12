@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-12T17:40:33Z",
+ "generated_at": "2026-11-12T19:00:26Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -711,6 +711,16 @@
     ]
    },
    {
+    "number": 913,
+    "at": "2026-11-12T17:58:33Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/913#issuecomment-6831651536",
+    "summary": "QA: FAIL \u2014 verified at 5cf43c91dac9f20fcda035bb7b571a4397c57990 (independent round, cold read, by execution)  One defect, documentation-grade but a named FAIL condition in qa.md (\"a comment left asserting something the change disproved\"). Everything behavioural passed.  ## The defect  The change del",
+    "themes": [
+     "tokens",
+     "tests"
+    ]
+   },
+   {
     "number": 916,
     "at": "2026-11-12T01:50:58Z",
     "url": "https://github.com/mahAnuj/astro-ai/pull/916#issuecomment-6812016924",
@@ -720,6 +730,11 @@
   ],
   "reverts": [],
   "verify_production_failed": [
+   {
+    "run": 43273160187,
+    "at": "2026-11-12T17:47:41Z",
+    "sha": "2e4f741"
+   },
    {
     "run": 43152675934,
     "at": "2026-11-12T04:07:14Z",
@@ -740,7 +755,7 @@
    {
     "kind": "loop-last-run-failed",
     "level": "amber",
-    "title": "agent-prioritise.yml: last run failed",
+    "title": "agent-prioritise.yml, verify-production.yml: last run failed",
     "detail": "The schedule verdict is fine, so `agents.json` raised no alert, but the most recent run of each loop named here was red. A weekly loop is not re-run before its next slot, so nothing else will notice. Check whether a fix has landed since; if one has, dispatch the workflow.",
     "where": "/admin/ops"
    },
@@ -754,18 +769,18 @@
    {
     "kind": "loop-idle",
     "level": "amber",
-    "title": "Build lane idle 78% of the last 7d",
-    "detail": "130.2h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "title": "Build lane idle 77% of the last 7d",
+    "detail": "130.0h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
  },
  "error_themes": {
   "regression": 19,
+  "tests": 18,
   "grounding": 18,
-  "tests": 17,
+  "tokens": 17,
   "copy": 17,
-  "tokens": 16,
   "security": 9,
   "i18n": 8,
   "performance": 8
@@ -986,9 +1001,9 @@
   }
  ],
  "outcome_counts": {
-  "PASS": 5,
   "PENDING": 11,
   "HIT": 2,
+  "PASS": 5,
   "UNSCOREABLE": 10,
   "PARTIAL": 1
  },

@@ -1,6 +1,54 @@
 {
-  "generated_at": "2026-11-12T17:38:37Z",
+  "generated_at": "2026-11-12T18:58:39Z",
   "rows": [
+    {
+      "owner_helped": null,
+      "run": 43282818297,
+      "workflow": "agent-work",
+      "date": "2026-11-12",
+      "started": "2026-11-12T18:43:35Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 14.9,
+      "issue": 381,
+      "pr": 937,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "ranked"
+    },
+    {
+      "owner_helped": null,
+      "run": 43272413793,
+      "workflow": "agent-work",
+      "date": "2026-11-12",
+      "started": "2026-11-12T17:43:22Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 2.4,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
+    },
+    {
+      "owner_helped": null,
+      "run": 43271468741,
+      "workflow": "agent-work",
+      "date": "2026-11-12",
+      "started": "2026-11-12T17:37:51Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 5.2,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round"
+    },
     {
       "owner_helped": false,
       "run": 43251160612,
@@ -5284,20 +5332,20 @@
   ],
   "waste": {
     "days": 7,
-    "cycles": 162,
+    "cycles": 164,
     "minutes_by_outcome": {
       "shipped": 2284.0,
-      "pr open": 0.0,
-      "judged": 516.8,
-      "nothing": 40.8,
+      "pr open": 14.9,
+      "judged": 524.4,
+      "nothing": 37.6,
       "failed": 3.3,
       "unknown": 0.0
     },
-    "minutes_total": 2844.9,
-    "minutes_without_result": 44.1,
-    "share_without_result": 0.016,
+    "minutes_total": 2864.2,
+    "minutes_without_result": 40.9,
+    "share_without_result": 0.014,
     "shipped_prs": 71,
-    "build_idle_hours": 130.2,
-    "build_idle_share": 0.775
+    "build_idle_hours": 130.0,
+    "build_idle_share": 0.774
   }
 }
