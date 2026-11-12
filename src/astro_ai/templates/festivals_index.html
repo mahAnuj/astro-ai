@@ -138,7 +138,7 @@
         {# Purely decorative: every day cell already carries its own full
            date in the aria-label, so a screen reader gains nothing from
            seven ambiguous single letters. #}
-        <div class="grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-wider text-bhagya-border"
+        <div class="grid grid-cols-7 text-center text-xs font-semibold uppercase tracking-wider text-bhagya-border"
              aria-hidden="true">
           {% for wd in ['S', 'M', 'T', 'W', 'T', 'F', 'S'] %}<div class="pb-1">{{ wd }}</div>{% endfor %}
         </div>
@@ -191,7 +191,7 @@
                    keyboard focus as well as hover; column-aware alignment keeps
                    the bubble inside the month card so it can never push the
                    375px layout sideways. #}
-                <span class="pointer-events-none absolute bottom-full z-20 mb-1 hidden w-max max-w-[9rem] rounded-md bg-bhagya-night px-2 py-1 text-[11px] font-normal normal-case leading-snug text-bhagya-cream group-hover:block group-focus:block
+                <span class="pointer-events-none absolute bottom-full z-20 mb-1 hidden w-max max-w-[9rem] rounded-md bg-bhagya-night px-2 py-1 text-xs font-normal normal-case leading-snug text-bhagya-cream group-hover:block group-focus:block
                              {%- if loop.index0 <= 1 %} left-0{% elif loop.index0 >= 5 %} right-0{% else %} left-1/2 -translate-x-1/2{% endif %}">
                   {{ cell.festivals | map(attribute='name_en') | join(' · ') }}
                 </span>
@@ -386,14 +386,14 @@
 
         {% if f.significance %}
         <div>
-          <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Significance</div>
+          <div class="text-xs uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Significance</div>
           <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">{{ f.significance }}</p>
         </div>
         {% endif %}
 
         {% if f.observance %}
         <div>
-          <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">How it is observed</div>
+          <div class="text-xs uppercase font-semibold text-bhagya-muted tracking-wider mb-1">How it is observed</div>
           <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">{{ f.observance }}</p>
         </div>
         {% endif %}

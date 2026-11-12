@@ -248,13 +248,13 @@
           <td data-label="Tithi" class="py-2 pr-3">{{ c.tithi }}<span class="text-xs text-bhagya-muted-2 ml-1">{{ c.tithi_paksha }}</span></td>
           <td data-label="Nakshatra" class="py-2 pr-3 text-xs">
             {{ c.nakshatra }}
-            {% if c.nitya_yoga %}<div class="text-[10px] text-bhagya-muted-2 mt-0.5">Yoga: {{ c.nitya_yoga }}</div>{% endif %}
+            {% if c.nitya_yoga %}<div class="text-xs text-bhagya-muted-2 mt-0.5">Yoga: {{ c.nitya_yoga }}</div>{% endif %}
           </td>
           <td data-label="Rating" class="py-2 pr-3">
             <div class="flex flex-col gap-1">
               <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded {{ color }} capitalize">{{ c.rating }}</span>
               {% if c.boosters %}
-              <span class="inline-block px-1.5 py-0.5 text-[10px] rounded bg-emerald-100 text-emerald-800" title="{{ ' + '.join(c.boosters) }}">★ boost</span>
+              <span class="inline-block px-1.5 py-0.5 text-xs rounded bg-emerald-100 text-emerald-800" title="{{ ' + '.join(c.boosters) }}">★ boost</span>
               {% endif %}
             </div>
           </td>
@@ -283,17 +283,17 @@
               <span class="inline-block px-1.5 py-0.5 rounded {{ vcolor }} font-semibold" title="Combined bride+groom verdict">
                 {{ c.couple.combined_verdict.replace('-', ' ') }}
               </span>
-              <div class="text-[10px] text-bhagya-muted leading-tight" title="Bride: Tara / Chandra / Manglik">
+              <div class="text-xs text-bhagya-muted leading-tight" title="Bride: Tara / Chandra / Manglik">
                 Bride: {{ c.couple.bride.tara_bala_name }} · Ch:{{ c.couple.bride.chandra_bala }}
               </div>
-              <div class="text-[10px] text-bhagya-muted leading-tight" title="Groom: Tara / Chandra / Manglik">
+              <div class="text-xs text-bhagya-muted leading-tight" title="Groom: Tara / Chandra / Manglik">
                 Groom: {{ c.couple.groom.tara_bala_name }} · Ch:{{ c.couple.groom.chandra_bala }}
               </div>
             </div>
             {% else %}<span class="text-bhagya-muted-2">—</span>{% endif %}
           </td>
           {% endif %}
-          <td data-label="Windows" data-span class="py-2 pr-3 text-[11px] text-bhagya-muted tabular-nums whitespace-nowrap">
+          <td data-label="Windows" data-span class="py-2 pr-3 text-xs text-bhagya-muted tabular-nums whitespace-nowrap">
             {#- Empty means "this date has no sunrise-to-sunset span", not
                "not computed" — muhurat.py leaves all three window fields empty
                on such a date because each is a fraction of that span (#228).
@@ -317,22 +317,22 @@
             <div title="Abhijit Muhurta — the 8th of 15 equal parts of daylight, around solar noon. Its length follows the day: ~48 min on a 12-hour day, but 16 min to 84 min across a year at high latitude."><span class="text-emerald-800">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
             <div title="Rahu Kaal — avoid for launches"><span class="text-rose-600">✗</span> Rahu Kaal {{ c.rahu_kaal }}</div>
             {%- else %}
-            <div class="text-amber-800 text-[10px] whitespace-normal max-w-[220px] leading-tight"
+            <div class="text-amber-800 text-xs whitespace-normal max-w-[220px] leading-tight"
                  title="Abhijit, Rahu Kaal and Choghadiya are each a fixed fraction of the sunrise-to-sunset period">
               No sunrise-to-sunset span on this date — the sub-day windows are fractions of one, so none is shown.
             </div>
             {% endif %}
-            {% if c.bhadra_window %}<div class="text-rose-600 text-[10px]" title="Vishti/Bhadra karana active">✗ Bhadra active</div>{% endif %}
+            {% if c.bhadra_window %}<div class="text-rose-600 text-xs" title="Vishti/Bhadra karana active">✗ Bhadra active</div>{% endif %}
             {% if c.choghadiya %}
             <details class="mt-1">
-              <summary class="cursor-pointer text-bhagya-sindoor text-[10px] font-semibold">Choghadiya ▼</summary>
+              <summary class="cursor-pointer text-bhagya-sindoor text-xs font-semibold">Choghadiya ▼</summary>
               <div class="mt-1 space-y-0.5">
                 {% for w in c.choghadiya %}
                 {% set ch_colors = {'best': 'emerald-100 text-emerald-800', 'good': 'emerald-50 text-emerald-800', 'neutral': 'bhagya-cream-2 text-bhagya-ink-soft', 'avoid': 'rose-50 text-bhagya-sindoor'} %}
                 {% set ch_class = ch_colors.get(w.auspiciousness, 'bhagya-cream-2 text-bhagya-ink-soft') %}
-                <div class="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-{{ ch_class }}">
+                <div class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded bg-{{ ch_class }}">
                   <span class="font-semibold w-12">{{ w.name }}</span>
-                  <span class="text-[10px] opacity-70">{{ w.start }}-{{ w.end }}</span>
+                  <span class="text-xs opacity-70">{{ w.start }}-{{ w.end }}</span>
                 </div>
                 {% endfor %}
               </div>
@@ -344,7 +344,7 @@
                drop the Bhadra detail on exactly those dates. Bhadra is a
                karana window — Sun and Moon longitudes, not daylength — so it
                is unaffected and belongs outside. #}
-            {% if c.bhadra_window %}<div class="text-[10px] text-bhagya-sindoor mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
+            {% if c.bhadra_window %}<div class="text-xs text-bhagya-sindoor mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
           </td>
           <td data-label="Notes" data-span class="py-2 text-xs text-bhagya-muted">{{ c.reason }}</td>
         </tr>
