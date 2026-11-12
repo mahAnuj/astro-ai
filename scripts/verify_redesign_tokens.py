@@ -347,7 +347,7 @@ TEXT_FLOOR_CLEAN = (
     # #366: `/` measured 24 and `/panchang` 10 nodes under 12px at 375px.
     "src/astro_ai/templates/index.html",
     "src/astro_ai/templates/panchang.html",
-    # #921: the remaining 10-11px labels outside numerology.html (that file is #595).
+    # #921: the remaining 10-11px labels (numerology.html followed in #595, below).
     "src/astro_ai/templates/_ask_cta.html",  # #921
     "src/astro_ai/templates/_dasha_timeline.html",  # #921
     "src/astro_ai/templates/_rashifal_card_content.html",  # #921
@@ -362,6 +362,7 @@ TEXT_FLOOR_CLEAN = (
     "src/astro_ai/templates/rashifal_grid.html",  # #921
     "src/astro_ai/templates/result.html",  # #921
     "src/astro_ai/templates/today.html",  # #921
+    "src/astro_ai/templates/numerology.html",  # #595
 )
 _SUB_FLOOR = re.compile(r"text-\[(\d+(?:\.\d+)?)px\]")
 _STYLE_BLOCK = re.compile(r"<style\b[^>]*>(.*?)</style\s*>", re.IGNORECASE | re.DOTALL)
