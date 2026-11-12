@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-12T18:58:50Z",
+  "generated_at": "2026-11-12T21:44:57Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 103,
+  "open": 102,
   "with_ask": 37,
   "by_area": {
     "UNCLASSIFIED": 39,
@@ -16,7 +16,6 @@
     "MATCHING": 2,
     "MEASURE": 2,
     "NUMEROLOGY": 2,
-    "UI": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
@@ -24,6 +23,7 @@
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
+    "UI": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
@@ -33,11 +33,10 @@
     "bug": 20,
     "chore": 15,
     "correctness": 7,
-    "design": 4,
-    "ui": 1
+    "design": 4
   },
   "by_priority": {
-    "unset": 75,
+    "unset": 74,
     "medium": 19,
     "high": 9
   },
@@ -640,9 +639,11 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "provenance:trusted"
+      ],
       "created": "2026-10-23T19:06:26Z",
-      "updated": "2026-11-10T08:53:57Z",
+      "updated": "2026-11-12T21:44:24Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -946,25 +947,6 @@
       ],
       "created": "2026-10-16T05:59:24Z",
       "updated": "2026-11-10T08:53:34Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 381,
-      "title": "[UI] Install/favicon icons are still the retired purple — #233 moved the site to night/gold and the manifest says night",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-15T22:59:03Z",
-      "updated": "2026-11-12T18:58:05Z",
       "blocked": false,
       "needs_evidence": false
     },
