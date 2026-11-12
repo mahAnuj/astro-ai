@@ -716,14 +716,15 @@ MUTATIONS = [
 
     ("#345: dropping measure.if runs the ANALYST on every collector run against the cap",
      ".github/workflows/agent-measure.yml",
-     "    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *'\n",
+     # Re-pointed 2026-11-11 (#903): the guard now leads with the loop pause.
+     "    if: \"!(vars.LOOP_PAUSED == 'true') && (github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *')\"\n",
      "",
      "test_the_second_slot_runs_the_collectors_without_the_analyst"),
 
     ("#353: the analyst guard goes back to a deny-list, which fails open on a new slot",
      ".github/workflows/agent-measure.yml",
-     "    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *'",
-     "    if: github.event.schedule != '23 9 * * *'",
+     "&& (github.event_name == 'workflow_dispatch' || github.event.schedule == '0 21 * * *')",
+     "&& (github.event.schedule != '23 9 * * *')",
      "test_the_second_slot_runs_the_collectors_without_the_analyst"),
 
     ("#353: the cycle-completion trigger removed — team health goes back to a day stale (re-pointed 2026-11-09)",

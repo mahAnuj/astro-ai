@@ -37,13 +37,13 @@
         <span class="text-xs text-bhagya-muted">{{ e.ts }}</span>
         {% if e.page %}<span class="text-xs text-bhagya-muted">&middot; {{ e.page }}</span>{% endif %}
         {% if e.email %}<span class="text-xs text-bhagya-ink-soft">&middot; <a href="mailto:{{ e.email }}" class="text-bhagya-sindoor hover:underline">{{ e.email }}</a></span>{% endif %}
-        <span class="text-[10px] text-bhagya-border ml-auto font-mono">{{ e.id }}</span>
+        <span class="text-xs text-bhagya-border ml-auto font-mono">{{ e.id }}</span>
       </div>
       <p class="text-sm text-bhagya-ink whitespace-pre-wrap leading-relaxed">{{ e.message }}</p>
       {% if e.ua %}
       <details class="mt-2">
-        <summary class="text-[10px] text-bhagya-muted-2 cursor-pointer">user-agent</summary>
-        <p class="text-[10px] text-bhagya-muted-2 mt-1 font-mono break-all">{{ e.ua }}</p>
+        <summary class="text-xs text-bhagya-muted-2 cursor-pointer">user-agent</summary>
+        <p class="text-xs text-bhagya-muted-2 mt-1 font-mono break-all">{{ e.ua }}</p>
       </details>
       {% endif %}
     </article>

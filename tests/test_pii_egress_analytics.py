@@ -40,6 +40,7 @@ SCENARIOS = (
     "numerology", "numerology-compatibility", "ask", "subscribe", "feedback", "snapshot",
     "personal-readings", "rashifal-is-shared", "dasha", "muhurat-personal",
     "email-my-reading", "llm-exhausted", "brevo-fails", "place-rejected",
+    "strip-place-unresolved",
 )
 
 

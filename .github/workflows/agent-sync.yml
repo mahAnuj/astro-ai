@@ -23,6 +23,9 @@ concurrency:
 
 jobs:
   sync:
+    # LOOP PAUSE (#903): set the repository variable LOOP_PAUSED=true to skip
+    # every Claude-spending loop job; delete it (or set anything else) to resume.
+    if: vars.LOOP_PAUSED != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -265,7 +268,7 @@ jobs:
 
   persist:
     needs: sync
-    if: always()
+    if: always() && needs.sync.result != 'skipped'   # #903: nothing to keep when the loop is paused
     runs-on: ubuntu-latest
     permissions:
       # contents       the branch push

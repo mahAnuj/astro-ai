@@ -69,7 +69,7 @@
         </svg>
         {# Center content overlay — count-up number driven by JS #}
         <div class="absolute inset-0 flex flex-col items-center justify-center">
-          <div class="text-[10px] font-semibold uppercase tracking-wider {{ palette.text }} opacity-70 mb-0.5">
+          <div class="text-xs font-semibold uppercase tracking-wider {{ palette.text }} opacity-70 mb-0.5">
             {{ t(lang, 'matching_total') }}
           </div>
           <div class="font-marcellus text-5xl sm:text-6xl {{ palette.text }} tabular-nums leading-none">{{ guna.total_awarded }}</div>
@@ -233,6 +233,10 @@
         {{ diamond_labels(ch, '#a16207', '#1c1917', '#b45309') }}
       </svg>
     </div>
+    {# #889: the diamond drops a degree / R in a crowded cell and /matching has no
+       positions table to recover it from, so every planet is listed here in full. #}
+    {% from "_chart_positions.html" import chart_positions %}
+    {{ chart_positions(ch, t(lang, 'matching_positions_label')) }}
   {%- endmacro %}
   <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     {# The old form here was `t(...) if t(...) else 'Both charts'`, which could

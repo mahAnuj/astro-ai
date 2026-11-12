@@ -259,8 +259,13 @@ def test_privacy_page_says_email_can_reach_the_operational_logs(client):
     text = _text(client.get("/privacy").text)
     ops = text[text.index("Operational logs:"):]
     assert "can include your email address" in ops[:500]
-    # a failed place lookup logs the place (routes/deps.py panchang strip), so
-    # the page must not claim birth details stay out of the logs (QA, PR #909)
-    assert "can include the place name you typed" in ops[:500]
+    # #908: a failed place lookup no longer logs the place (routes/deps.py panchang
+    # strip logs its length), so the page must not claim it does -- that clause was
+    # true under PR #909 and is false now. What the web server's request log DOES
+    # hold is the page address, and the question rides in /ask?q=.
+    assert "place name" not in ops[:1400]
+    assert "request log records the page address" in ops[:1400]
+    assert "/ask?q=" in ops[:1400]
+    assert "/panchang?city=" in ops[:1400]
     assert "does not write your birth details" not in text
     assert "unsubscribe link" in ops[:500]

@@ -38,6 +38,9 @@ concurrency:
 
 jobs:
   prioritise:
+    # LOOP PAUSE (#903): set the repository variable LOOP_PAUSED=true to skip
+    # every Claude-spending loop job; delete it (or set anything else) to resume.
+    if: vars.LOOP_PAUSED != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -314,7 +317,7 @@ jobs:
   persist:
     needs: prioritise
     # The retrofit writes issue comments, not a queue: nothing to commit.
-    if: always() && inputs.mode != 'evidence'
+    if: always() && inputs.mode != 'evidence' && needs.prioritise.result != 'skipped'   # #903: nothing to keep when the loop is paused
     runs-on: ubuntu-latest
     permissions:
       # contents       the branch push

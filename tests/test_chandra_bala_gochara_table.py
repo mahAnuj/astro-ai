@@ -74,7 +74,7 @@ def test_an_unplaceable_rashi_still_returns_the_empty_verdict():
 
 
 def _partner(chandra: str) -> PartnerFactors:
-    return PartnerFactors("excellent", "Ati-Mitra", chandra, "none", "", "")
+    return PartnerFactors("excellent", "Parama Mitra", chandra, "none", "", "")
 
 
 def test_a_partner_with_the_moon_in_house_2_no_longer_passes_the_couple_verdict():

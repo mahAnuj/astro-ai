@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-11T21:59:16Z",
+ "generated_at": "2026-11-12T11:13:16Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -700,10 +700,31 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/891#issuecomment-6788977028",
     "summary": "QA: FAIL \u2014 verified at `e58a2cbf157ca0587d2e83e283744772b80c5947` Independent-of-author round (qa:in-cycle). Original defect reproduced on bc25d83 (banner [12,505,363,571] covers home CTA centre, both iOS and beforeinstallprompt paths); fixed before scroll (CTA hit-tests as itself). DEFECT: scroll t",
     "themes": []
+   },
+   {
+    "number": 913,
+    "at": "2026-11-12T00:48:30Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/913#issuecomment-6811015796",
+    "summary": "QA: FAIL \u2014 verified at `66c22228e43998ec6b929ef97ad4e7184870e411` FAIL at 66c2222. (1) BLOCKING: red_gates.py cannot read the real logs it was built for. run_gh() calls `gh api repos/R/actions/jobs/ID/logs`; gh 2.103.3 (the runner image) refuses any log containing ANSI escapes: \"the response contain",
+    "themes": [
+     "tests"
+    ]
+   },
+   {
+    "number": 916,
+    "at": "2026-11-12T01:50:58Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/916#issuecomment-6812016924",
+    "summary": "QA: FAIL \u2014 verified at `ca718fa0aa372e0390d7d3f721873eca6738415e` Claim 1 FAIL: data-clarity-mask on <body> is lost on hx-boost navigation (htmx swaps body innerHTML and discards the response <body> attributes; demonstrated in jsdom with htmx 2.0.4: /learn/ -> boosted click -> /kundli leaves body ma",
+    "themes": []
    }
   ],
   "reverts": [],
   "verify_production_failed": [
+   {
+    "run": 43152675934,
+    "at": "2026-11-12T04:07:14Z",
+    "sha": "3f1b798"
+   },
    {
     "run": 42868967144,
     "at": "2026-11-10T17:50:03Z",
@@ -713,26 +734,28 @@
     "run": 38333011428,
     "at": "2026-10-13T01:37:27Z",
     "sha": "be4046b"
-   },
-   {
-    "run": 38270665641,
-    "at": "2026-10-12T15:29:53Z",
-    "sha": "be4046b"
    }
   ],
   "ops_findings": [
    {
     "kind": "loop-last-run-failed",
     "level": "amber",
-    "title": "agent-prioritise.yml: last run failed",
+    "title": "agent-prioritise.yml, verify-production.yml: last run failed",
     "detail": "The schedule verdict is fine, so `agents.json` raised no alert, but the most recent run of each loop named here was red. A weekly loop is not re-run before its next slot, so nothing else will notice. Check whether a fix has landed since; if one has, dispatch the workflow.",
+    "where": "/admin/ops"
+   },
+   {
+    "kind": "token-ceiling",
+    "level": "amber",
+    "title": "Peak day used 83% of the Groq daily budget",
+    "detail": "166053 tokens on 2026-11-09 against ~200000 TPD per model (CLAUDE.md, \"Token budget\"). Overshooting it is an outage, not slowness. Raise the cache hit rate first (see cache-low); move bulk generation to a scheduled Claude Code job; never widen a prompt to fill the gap. Adding a model is the owner's decision.",
     "where": "/admin/ops"
    },
    {
     "kind": "loop-idle",
     "level": "amber",
-    "title": "Build lane idle 78% of the last 7d",
-    "detail": "131.1h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "title": "Build lane idle 77% of the last 7d",
+    "detail": "130.1h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
@@ -740,8 +763,8 @@
  "error_themes": {
   "regression": 19,
   "grounding": 18,
+  "tests": 17,
   "copy": 17,
-  "tests": 16,
   "tokens": 16,
   "security": 9,
   "i18n": 8,
@@ -953,10 +976,17 @@
    "headline": "pending \u2014 scoreable from 2026-12-04",
    "at": "2026-11-08T00:12:30Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/685#issuecomment-6714891475"
+  },
+  {
+   "number": 735,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-12",
+   "at": "2026-11-12T02:08:37Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/735#issuecomment-6812290654"
   }
  ],
  "outcome_counts": {
-  "PENDING": 10,
+  "PENDING": 11,
   "PASS": 5,
   "HIT": 2,
   "UNSCOREABLE": 10,

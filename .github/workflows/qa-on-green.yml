@@ -404,6 +404,7 @@ jobs:
       - name: Carry out the dispatch
         if: steps.pick.outputs.go == 'true'
         env:
+          LOOP_PAUSED: ${{ vars.LOOP_PAUSED }}   # #903: paused queues, never dispatches
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           TARGET: ${{ steps.pick.outputs.target }}

@@ -269,6 +269,30 @@ CONTRACT_NONZERO_CONCLUSION = "failure"
 #: `None` is a run still in flight and is excluded by the caller, not here.
 SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")
 
+#: A `cancelled` run that ended this soon after it was created was DROPPED FROM
+#: THE QUEUE, not killed (2026-11-11). GitHub keeps one pending run per
+#: concurrency group and cancels the waiting one when a newer run arrives, with
+#: or without `cancel-in-progress`. Measured that day: the "at least 3 loop
+#: runs failed today" alert named Agent merge (run 42963999553) and
+#: verify-production (run 42977495873); both were `cancelled` 18s and 28s after
+#: creation with ZERO jobs, so neither ran a step. A run killed by
+#: `timeout-minutes` -- the reason `cancelled` counts as a failure above -- runs
+#: to its limit, and the shortest loop job limit is minutes, not seconds. So
+#: only a cancellation this fast is read as superseded.
+SUPERSEDED_WITHIN_S = 120
+
+
+def superseded(run: dict) -> bool:
+    """A cancelled run that never got going: replaced in the queue, not failed."""
+    if run.get("conclusion") != "cancelled":
+        return False
+    try:
+        start = datetime.fromisoformat(str(run["created_at"]).replace("Z", "+00:00"))
+        end = datetime.fromisoformat(str(run["updated_at"]).replace("Z", "+00:00"))
+    except (KeyError, TypeError, ValueError):
+        return False        # cannot tell: keep counting it, never hide a failure
+    return (end - start).total_seconds() <= SUPERSEDED_WITHIN_S
+
 #: 100 rows a page, and MORE PAGES ONLY WHEN THE PAGE DID NOT REACH BACK PAST
 #: THE DAY START. "One page is always enough" was close to false already:
 #: measured 2026-10-18, page 1 of the runs query spanned 31 hours against a
@@ -419,6 +443,9 @@ def fetch_today(repo: str, day_start: datetime, *,
         # conclusion is excluded here rather than in the set, because "has not
         # finished" is a different kind of thing from "finished badly".
         if concl is None or concl in SUCCEEDED_CONCLUSIONS:
+            continue
+        # Dropped from the queue by a newer run, never started: not a failure.
+        if superseded(r):
             continue
         # A workflow whose job is to exit non-zero when it finds something.
         # Checked against ONE conclusion, not the whole non-success range: a

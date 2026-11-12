@@ -20,8 +20,10 @@ Modes per (house, n planets), first that fits wins:
   full     one column of "Su 29° R" labels
   compact  "Su R" labels (degree dropped) -- up to three per row
   tiny     "Su" labels (degree and R dropped) -- only a triangle holding 7+ grahas
-The degree is dropped only in a cell too small for it; the positions table under
-the chart still carries every degree.
+The degree is dropped only in a cell too small for it. It is not lost from the
+page: /kundli has a planetary-positions table under the chart, and /matching (which
+has none) prints a compact positions line under each mini chart (#889,
+`templates/_chart_positions.html`).
 
 Widths are an ESTIMATE (Manrope is a webfont, not installed here). The per-glyph
 numbers below are deliberately wider than Manrope SemiBold and a 6% safety pad is

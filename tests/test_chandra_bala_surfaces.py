@@ -117,7 +117,7 @@ def test_the_couple_partner_factors_grade_house_6_weak(geo):
 
 
 def _partner(chandra: str) -> PartnerFactors:
-    return PartnerFactors("excellent", "Ati-Mitra", chandra, "none", "", "")
+    return PartnerFactors("excellent", "Parama Mitra", chandra, "none", "", "")
 
 
 def test_a_partner_with_the_moon_in_the_6th_downgrades_the_couple_day():

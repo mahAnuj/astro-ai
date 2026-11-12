@@ -77,6 +77,9 @@ concurrency:
 
 jobs:
   steward:
+    # LOOP PAUSE (#903): set the repository variable LOOP_PAUSED=true to skip
+    # every Claude-spending loop job; delete it (or set anything else) to resume.
+    if: vars.LOOP_PAUSED != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -331,6 +334,7 @@ jobs:
         id: steward_dispatch
         if: steps.detect.outputs.stalled == 'true'
         env:
+          LOOP_PAUSED: ${{ vars.LOOP_PAUSED }}   # #903: paused queues, never dispatches
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: bash scripts/dispatch_cycle.sh /tmp/steward-dispatch.txt steward
@@ -563,6 +567,7 @@ jobs:
       - name: Carry out chief's dispatch ruling
         if: steps.acted.outputs.ok == 'false'
         env:
+          LOOP_PAUSED: ${{ vars.LOOP_PAUSED }}   # #903: paused queues, never dispatches
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: bash scripts/dispatch_cycle.sh /tmp/chief-dispatch.txt chief

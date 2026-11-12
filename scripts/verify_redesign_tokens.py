@@ -332,13 +332,57 @@ def gate_2_no_purple_returns() -> list[str]:
 # carry 10-11px labels that are not yet decided, and a gate that fails today
 # on files nobody is touching just gets switched off. Add a file here when its
 # sub-12px text is fixed.
+#
+# #924: inline CSS is covered too. The `text-[Npx]` scan reads utility classes
+# only, so `font-size: 0.7rem` / `font-size: 10px` inside a template's own
+# `<style>` block (.callout-label, the muhurat card labels) walked straight past
+# it while #921 declared both files clean. `font-size: <N>px|<N>rem` under 12px
+# (rem x 16) inside `<style>...</style>` now fails the same way. SVG `font-size=`
+# attributes and the `font:` shorthand are NOT scanned.
 MIN_TEXT_PX = 12
 TEXT_FLOOR_CLEAN = (
     "src/astro_ai/templates/_tab_bar.html",
     "src/astro_ai/templates/_panchang_strip.html",
     "src/astro_ai/templates/learn_index.html",
+    # #366: `/` measured 24 and `/panchang` 10 nodes under 12px at 375px.
+    "src/astro_ai/templates/index.html",
+    "src/astro_ai/templates/panchang.html",
+    # #921: the remaining 10-11px labels outside numerology.html (that file is #595).
+    "src/astro_ai/templates/_ask_cta.html",  # #921
+    "src/astro_ai/templates/_dasha_timeline.html",  # #921
+    "src/astro_ai/templates/_rashifal_card_content.html",  # #921
+    "src/astro_ai/templates/account.html",  # #921
+    "src/astro_ai/templates/admin_feedback.html",  # #921
+    "src/astro_ai/templates/ask.html",  # #921
+    "src/astro_ai/templates/festivals_index.html",  # #921
+    "src/astro_ai/templates/learn_article_base.html",  # #921
+    "src/astro_ai/templates/matching_result.html",  # #921
+    "src/astro_ai/templates/muhurat_finder.html",  # #921
+    "src/astro_ai/templates/numerology_compat.html",  # #921
+    "src/astro_ai/templates/rashifal_grid.html",  # #921
+    "src/astro_ai/templates/result.html",  # #921
+    "src/astro_ai/templates/today.html",  # #921
 )
 _SUB_FLOOR = re.compile(r"text-\[(\d+(?:\.\d+)?)px\]")
+_STYLE_BLOCK = re.compile(r"<style\b[^>]*>(.*?)</style\s*>", re.IGNORECASE | re.DOTALL)
+_CSS_FONT_SIZE = re.compile(r"font-size\s*:\s*(\d+(?:\.\d+)?|\.\d+)(px|rem)\b", re.IGNORECASE)
+_REM_PX = 16
+
+
+def inline_css_sub_floor(text: str) -> list[tuple[int, str, float, str]]:
+    """(line, declaration, rendered px, line text) for each `font-size` under
+    MIN_TEXT_PX inside a `<style>` block of `text`. Pure: takes the text, reads no
+    file, so a test can hand it a synthetic template (#924)."""
+    found: list[tuple[int, str, float, str]] = []
+    lines = text.splitlines()
+    for block in _STYLE_BLOCK.finditer(text):
+        first = text.count("\n", 0, block.start(1))  # 0-based line the block body starts on
+        for m in _CSS_FONT_SIZE.finditer(block.group(1)):
+            px = float(m.group(1)) * (_REM_PX if m.group(2).lower() == "rem" else 1)
+            if px < MIN_TEXT_PX:
+                n = first + block.group(1).count("\n", 0, m.start()) + 1
+                found.append((n, m.group(0), px, lines[n - 1] if n <= len(lines) else ""))
+    return found
 
 
 def gate_3_text_floor() -> list[str]:
@@ -348,7 +392,15 @@ def gate_3_text_floor() -> list[str]:
         if not path.exists():
             failures.append(f"  FAIL {rel} does not exist — update TEXT_FLOOR_CLEAN")
             continue
-        for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        text = path.read_text(encoding="utf-8")
+        for n, decl, px, line in inline_css_sub_floor(text):
+            failures.append(
+                f"  FAIL {rel}:{n} has inline CSS `{decl}` ({px:g}px), under the "
+                f"{MIN_TEXT_PX}px mobile floor (#924).\n"
+                f"       {line.strip()[:100]}\n"
+                f"       Use 0.75rem / 12px or larger."
+            )
+        for n, line in enumerate(text.splitlines(), 1):
             for m in _SUB_FLOOR.finditer(line):
                 if float(m.group(1)) < MIN_TEXT_PX:
                     failures.append(

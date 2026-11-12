@@ -483,7 +483,10 @@ def test_the_second_slot_runs_the_collectors_without_the_analyst():
     # it too -- so it must be gone, and no `!=` (a deny-list fails open).
     cond = doc["jobs"]["measure"]["if"]
     assert "!=" not in cond, "a deny-list here fails open; list what MAY run the analyst"
-    assert cond == f"github.event_name == 'workflow_dispatch' || github.event.schedule == '{ANALYST_CRON}'"
+    # Since #903 the allow-list is wrapped in the loop pause, spelled !(==) so
+    # the rule above still holds; the allow-list itself is unchanged.
+    assert cond == (f"!(vars.LOOP_PAUSED == 'true') && "
+                    f"(github.event_name == 'workflow_dispatch' || github.event.schedule == '{ANALYST_CRON}')")
     assert "workflow_run" not in cond and "schedule == ''" not in cond
     assert f"== '{COLLECTORS_ONLY_CRON}'" not in cond
 
