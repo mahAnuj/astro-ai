@@ -43,6 +43,7 @@ SCENARIOS = (
     "numerology", "numerology-compatibility", "ask", "subscribe", "feedback", "snapshot",
     "personal-readings", "rashifal-is-shared", "dasha", "muhurat-personal",
     "email-my-reading", "llm-exhausted", "brevo-fails", "place-rejected",
+    "strip-place-unresolved",
 )
 DOSHA = ("manglik-dosha", "sade-sati-dosha", "kaal-sarp-dosha")
 BIRTH = {"name", "dob", "tob", "city", "region"}
@@ -169,6 +170,21 @@ def test_a_rejected_place_relays_no_place_and_no_name(run):
         assert "ChartError" in text
         assert pii.classes_in(text + dedup) == set(), text
     assert {c for s, _, c in e.scan() if s in ("events", "log")} <= pii.POLICY["log"].allow
+
+
+def test_a_failed_strip_lookup_logs_no_birth_place(run):
+    """#908: the homepage strip geocodes the saved birth place and, on failure,
+    used to log it (and, when the fallback city failed too, print it in the
+    chained traceback). The log sink allows only the email."""
+    e = run("strip-place-unresolved")
+    msgs = [r.getMessage() for r in e.log_records if r.name.startswith("astro_ai")]
+    assert any("panchang strip" in m for m in msgs), (
+        "the strip's failure path did not log, so the scenario no longer reaches it", msgs)
+    assert any(r.exc_info for r in e.log_records if "default city failed too" in r.getMessage()), (
+        "the second failure did not log a traceback, so the chained-context leak is unchecked")
+    seen = {c for s, _, c in e.scan() if s == "log"}
+    assert seen == set(), f"a birth detail reached the log sink: {seen}"
+    assert _server(e) == set(), sorted(_server(e))
 
 
 def test_the_sign_in_alert_is_checked_too(run):

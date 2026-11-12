@@ -992,15 +992,35 @@ Dated, with the evidence. **Check here before proposing a change.**
   still names the visitor. `KNOWN_GAPS` is now empty and a reappearing leak fails the gate.
   **Not measured:** what GA4 stored before the fix (`scripts/fetch_ga4.py` does not export titles)
   and whether production sets `GA4_MEASUREMENT_ID`. Tab and bookmark titles no longer carry the name.
-- **What Clarity records is unknown.** Session replay captures the rendered DOM, which on `/kundli`
-  includes the reading and the name. `grep data-clarity` over the templates returns nothing, so no
-  element is masked, and whether `CLARITY_PROJECT_ID` is set in production could not be determined.
-  Browser-side, so nothing in-process can observe it.
-- **The access logs record `GET /ask?q=<the question>`.** The uvicorn access log and Cloud Run's
-  request log both do, since #528 only keeps the question out of GA4's `page_location`. The test
-  client never goes through either, and the sweep scans only `astro_ai*` loggers (httpx's own
-  client log names the URL too, which is the harness talking to itself). `privacy.html` says
-  operational logs are kept "a few weeks" and does not say they hold the question.
+- **Clarity is masked on every page since #908; what it records is still not observable here.**
+  `base.html` puts `data-clarity-mask="True"` on `<body>` unconditionally. It cannot depend on the
+  path: `hx-boost` swaps the body's children and discards the response's `<body>` attributes, so a
+  path-conditional attribute went stale across a boosted click (`/learn/` then `/kundli` left the live
+  body unmasked; QA round 1). A constant is set by every full page load, so it cannot. **Cost:** a
+  replay of public `/learn` pages shows layout, clicks and scroll but no text; heatmaps and click
+  data are unaffected. Re-introducing an allowlist needs a browser-level test of the boost path, as
+  `scripts/verify_lang_switch_browser.py` does for `<html lang>` (the 2026-10-05 row above).
+  `privacy.html` says so, and only when `CLARITY_PROJECT_ID` is set. **Still unknown:** whether
+  production sets that id, and whether Clarity honours the attribute on every element (browser-side; a
+  replay has to be watched). **Not covered by the mask:** attributes. The signed-in nav chip's `title`
+  carries the email, and a Clarity replay of attribute values is unverified. Masking blanks text only.
+- **The access logs record `GET /ask?q=<the question>` and `GET /panchang?city=<city>`.** The uvicorn
+  access log and Cloud Run's request log both do. For `/ask` it is not only a hand-typed address:
+  `POST /ask` answers with a 303 to `/ask?q=<question>&c=...`, so every question is in the URL of its
+  answer page. #528 only keeps it out of GA4's `page_location`. For `/panchang` (and
+  `/panchang/<date>`) the place box is a `method="get"` form pre-filled with the saved birth place
+  (`routes/panchang.py`), so submitting it puts that place in the URL. Enumerated: those are the only
+  `method="get"` forms that carry personal data (the other is an admin day picker); every other place
+  field is a POST form. The test client goes through neither log, and the sweep scans only `astro_ai*`
+  loggers (httpx's own client log names the URL too). `privacy.html` says since #908 that the request
+  log records the page address, naming the question and the Panchang city.
+- **The panchang strip no longer logs the saved birth place (#908).** When the geocoder failed for it,
+  `panchang_strip_for_city` logged `%r` of the place, and when the fallback city failed too
+  `log.exception` printed the first failure through `__context__`. It logs the length now and the context
+  link is cut. `verify_pii_egress` scenario `strip-place-unresolved` drives both lines. Other `log.`
+  calls were checked by AST: none else interpolates a place that reaches the visitor's birth place
+  (`ChartError` messages embed it, but every route that catches one renders it to the visitor rather
+  than logging it, and `_fire_error_alert` strips it).
 - **Fixed (#818): the LLM cache keys now carry the visitor's name.** `prompts/natal.txt:59`
   allows "the seeker's NAME, used naturally" and `cache.fingerprint_chart` hashes date, time and
   place only, so the durable blob `llm/natal/*`, kept indefinitely, could hold one visitor's name

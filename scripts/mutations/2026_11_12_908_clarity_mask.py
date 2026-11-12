@@ -1,0 +1,55 @@
+"""#908: Clarity masks every page; the panchang-strip warning logs no birth place.
+
+Rows target templates/base.html, privacy.html and routes/deps.py, rendered or driven by
+tests/test_clarity_masking.py and tests/test_pii_egress.py. One area file, a literal list
+(test_mutation_tables.py requires it)."""
+
+MUTATIONS = [
+    ("#908: the <body> never carries the mask attribute",
+     "src/astro_ai/templates/base.html",
+     '<body hx-boost="true" data-clarity-mask="True" class=',
+     '<body hx-boost="true" class=',
+     "test_the_body_is_masked_on_every_page_class"),
+    ("#908: the mask becomes path-conditional, so a boosted click from /learn leaves the body unmasked",
+     "src/astro_ai/templates/base.html",
+     '<body hx-boost="true" data-clarity-mask="True" class=',
+     "<body hx-boost=\"true\"{% if not request.url.path.startswith('/learn') %} data-clarity-mask=\"True\"{% endif %} class=",
+     "test_the_body_tag_is_identical_on_every_path"),
+    ("#908: the conditional is keyed on something the render test never varies (the user)",
+     "src/astro_ai/templates/base.html",
+     '<body hx-boost="true" data-clarity-mask="True" class=',
+     '<body hx-boost="true"{% if current_user %} data-clarity-mask="True"{% endif %} class=',
+     "test_the_attribute_is_not_conditional_in_the_template_source"),
+    ("#908: the mask value flips to False, so nothing is masked",
+     "src/astro_ai/templates/base.html",
+     '<body hx-boost="true" data-clarity-mask="True" class=',
+     '<body hx-boost="true" data-clarity-mask="False" class=',
+     "test_the_body_is_masked_on_every_page_class"),
+    ("#908: /privacy claims a session replay even when Clarity is not configured",
+     "src/astro_ai/templates/privacy.html",
+     "{% if clarity_project_id %} Our usage analytics may record",
+     "{% if true %} Our usage analytics may record",
+     "test_privacy_page_discloses_the_replay_only_when_clarity_is_configured"),
+    ("#908: /privacy goes back to promising public pages are exempt from the mask",
+     "src/astro_ai/templates/privacy.html",
+     "On every page the on-screen text is masked, so a replay does not show what the page said.",
+     "On every page except our public information pages the on-screen text is masked, so a replay does not show what the page said.",
+     "test_privacy_page_discloses_the_replay_only_when_clarity_is_configured"),
+    ("#908: /privacy drops the Panchang city from what the request log records",
+     "src/astro_ai/templates/privacy.html",
+     "and a city you type into the place box on the Panchang page (<code>/panchang?city=&hellip;</code>, which is pre-filled with your saved birth place), so that text is in that log too.",
+     "so that text is in that log too.",
+     "test_privacy_page_says_the_request_log_holds_the_panchang_city"),
+    ("#908: the strip's warning logs the saved birth place again",
+     "src/astro_ai/routes/deps.py",
+     '"panchang strip: a %d-character place did not resolve — "\n'
+     '                    "falling back to %s", len(resolved_city), _STRIP_DEFAULT_CITY)',
+     '"panchang strip: %r did not resolve — "\n'
+     '                    "falling back to %s", resolved_city, _STRIP_DEFAULT_CITY)',
+     "test_a_failed_strip_lookup_logs_no_birth_place"),
+    ("#908: the default-city traceback chains the birth place back in via __context__",
+     "src/astro_ai/routes/deps.py",
+     "            default_err.__context__ = None\n",
+     "            pass\n",
+     "test_a_failed_strip_lookup_logs_no_birth_place"),
+]
