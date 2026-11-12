@@ -59,6 +59,7 @@ def test_the_finder_discloses_how_janma_is_graded(monkeypatch, flags):
     assert "a groom on the day ruled by his own birth star is no longer counted as a pass" in note
     assert "a bride on her own birth-star day still passes" in note
     assert "does not apply the exception Raman allows only in urgent cases" in note
+    assert "Splitting the other five into good and excellent" in note
     assert "not sourced to a text this site holds" in note
 
 
