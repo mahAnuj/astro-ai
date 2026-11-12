@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-11-12T16:09:12Z",
+  "generated_at": "2026-11-12T17:38:46Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 105,
+  "open": 103,
   "with_ask": 38,
   "by_area": {
     "UNCLASSIFIED": 40,
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "OPS": 5,
+    "OPS": 4,
     "SEO": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
-    "UI": 3,
     "MATCHING": 2,
     "MEASURE": 2,
     "NUMEROLOGY": 2,
+    "UI": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
@@ -31,14 +31,14 @@
     "untyped": 33,
     "enhancement": 23,
     "bug": 21,
-    "chore": 15,
+    "chore": 14,
     "correctness": 7,
     "design": 4,
-    "ui": 2
+    "ui": 1
   },
   "by_priority": {
-    "unset": 76,
-    "medium": 19,
+    "unset": 75,
+    "medium": 18,
     "high": 10
   },
   "blocked": 6,
@@ -177,24 +177,6 @@
       ],
       "created": "2026-11-11T05:23:36Z",
       "updated": "2026-11-12T02:25:06Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 876,
-      "title": "[OPS] agent-prioritise.yml: last run failed",
-      "ask": "",
-      "area": "OPS",
-      "type": "chore",
-      "priority": "medium",
-      "labels": [
-        "priority:medium",
-        "chore",
-        "qa-pass",
-        "qa:independent"
-      ],
-      "created": "2026-11-11T02:08:27Z",
-      "updated": "2026-11-12T11:24:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -588,25 +570,6 @@
       ],
       "created": "2026-11-01T00:10:33Z",
       "updated": "2026-11-10T08:54:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 595,
-      "title": "[UI] /numerology result: 38 text nodes under 12px, down to 9px on the Lo Shu grid — not on #366's checklist",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-29T23:50:32Z",
-      "updated": "2026-11-12T16:08:25Z",
       "blocked": false,
       "needs_evidence": false
     },
