@@ -98,7 +98,7 @@
              class="w-14 h-14 object-contain shrink-0"
              decoding="async" fetchpriority="high">
         <div class="flex-1 min-w-0">
-          <div class="text-[10px] uppercase tracking-wider font-semibold text-bhagya-sindoor">Your Rashifal today</div>
+          <div class="text-xs uppercase tracking-wider font-semibold text-bhagya-sindoor">Your Rashifal today</div>
           <div class="font-marcellus text-lg text-bhagya-ink truncate">{{ user_moon_display }}</div>
           <a href="/rashifal/{{ user_moon_slug }}"
              class="inline-flex items-center gap-1 mt-1 text-bhagya-sindoor hover:text-bhagya-ink font-semibold text-sm">
@@ -125,7 +125,7 @@
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-semibold text-bhagya-ink text-base truncate">{{ active.name if active.name else 'Saved chart' }}</span>
-                <span class="text-[9px] font-semibold tracking-wider text-bhagya-sindoor bg-bhagya-cream border border-bhagya-saffron px-1.5 py-0.5 rounded uppercase">Active</span>
+                <span class="text-xs font-semibold tracking-wider text-bhagya-sindoor bg-bhagya-cream border border-bhagya-saffron px-1.5 py-0.5 rounded uppercase">Active</span>
               </div>
               <div class="text-sm text-bhagya-muted mt-0.5 truncate">
                 {{ active.birth_date }} &middot; {{ active.birth_time }} &middot; {{ active.birth_place }}
@@ -239,24 +239,24 @@
            changing it back to four stacked rows. #}
         <div class="space-y-3 sm:space-y-4">
           <label class="block">
-            <span class="block leading-5 sm:leading-6 text-[11px] font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Name <span class="font-medium tracking-normal normal-case text-bhagya-muted">(optional)</span></span>
+            <span class="block leading-5 sm:leading-6 text-xs font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Name <span class="font-medium tracking-normal normal-case text-bhagya-muted">(optional)</span></span>
             <input type="text" name="name" placeholder="e.g. Priya" autofocus autocomplete="name"
                    class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-bhagya-border bg-white rounded text-bhagya-ink placeholder-bhagya-placeholder focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           </label>
           <div class="grid grid-cols-2 gap-3">
             <label class="block">
-              <span class="block leading-5 sm:leading-6 text-[11px] font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Birth date</span>
+              <span class="block leading-5 sm:leading-6 text-xs font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Birth date</span>
               <input type="date" name="birth_date" required autocomplete="bday"
                      class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-bhagya-border bg-white rounded text-bhagya-ink focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             </label>
             <label class="block">
-              <span class="block leading-5 sm:leading-6 text-[11px] font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Birth time <span class="font-medium tracking-normal normal-case text-bhagya-muted">(local)</span></span>
+              <span class="block leading-5 sm:leading-6 text-xs font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Birth time <span class="font-medium tracking-normal normal-case text-bhagya-muted">(local)</span></span>
               <input type="time" name="birth_time" required
                      class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-bhagya-border bg-white rounded text-bhagya-ink focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             </label>
           </div>
           <label class="block">
-            <span class="block leading-5 sm:leading-6 text-[11px] font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Birth place <span class="font-medium tracking-normal normal-case text-bhagya-muted">(city, country)</span></span>
+            <span class="block leading-5 sm:leading-6 text-xs font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Birth place <span class="font-medium tracking-normal normal-case text-bhagya-muted">(city, country)</span></span>
             <input type="text" name="birth_place" placeholder="e.g. Mumbai, India" required autocomplete="address-level2"
                    class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-bhagya-border bg-white rounded text-bhagya-ink placeholder-bhagya-placeholder focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           </label>
@@ -351,7 +351,7 @@
 
       <div class="flex items-center gap-2.5 mb-3 sm:mb-5">
         <span class="w-[26px] h-px bg-bhagya-gold flex-none" aria-hidden="true"></span>
-        <span class="text-[11px] font-bold tracking-[0.2em] text-bhagya-gold uppercase">
+        <span class="text-xs font-bold tracking-[0.2em] text-bhagya-gold uppercase">
           Free &middot; Instant &middot; No signup needed
         </span>
       </div>
@@ -570,7 +570,7 @@
     {% macro trust_cell(value, label) %}
     <div class="bg-bhagya-cream-2 px-4 sm:px-7 py-5 sm:py-6">
       <div class="font-marcellus text-lg sm:text-[22px] text-bhagya-ink leading-tight">{{ value }}</div>
-      <div class="text-[11px] sm:text-xs uppercase tracking-[0.1em] text-bhagya-muted-2 mt-1">{{ label }}</div>
+      <div class="text-xs uppercase tracking-[0.1em] text-bhagya-muted-2 mt-1">{{ label }}</div>
     </div>
     {% endmacro %}
     {{ trust_cell(learn_article_count, "Explainers written") }}
@@ -619,7 +619,7 @@
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
     <div class="sm:flex sm:items-end sm:justify-between sm:gap-10 mb-8 sm:mb-9">
       <div class="max-w-[560px]">
-        <div class="text-[11px] font-bold uppercase tracking-[0.2em] text-bhagya-saffron mb-3">For those who hesitate</div>
+        <div class="text-xs font-bold uppercase tracking-[0.2em] text-bhagya-saffron mb-3">For those who hesitate</div>
         <h2 class="font-marcellus text-[29px] sm:text-4xl lg:text-[44px] leading-[1.08] text-bhagya-cream">Don&rsquo;t fear your Kundali.</h2>
       </div>
       <p class="text-bhagya-cream/[.55] max-w-[330px] mt-3 sm:mt-0 leading-relaxed">
@@ -701,7 +701,7 @@
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
     <div class="sm:flex sm:items-end sm:justify-between sm:gap-10 mb-8 sm:mb-10">
       <div class="max-w-[620px]">
-        <div class="text-[11px] font-bold uppercase tracking-[0.2em] text-bhagya-sindoor mb-3">One chart, every reading</div>
+        <div class="text-xs font-bold uppercase tracking-[0.2em] text-bhagya-sindoor mb-3">One chart, every reading</div>
         <h2 class="font-marcellus text-[29px] sm:text-4xl lg:text-[44px] leading-[1.08] text-bhagya-ink mb-3">Every reading, one chart</h2>
         <p class="text-bhagya-muted leading-[1.65]">
           Enter your birth details once &mdash; they all work off the same chart. No signup needed.
@@ -724,7 +724,7 @@
        class="group flex flex-col gap-3 bg-bhagya-cream hover:bg-white p-6 sm:p-7 sm:min-h-[186px] transition-colors">
       <div class="flex items-center justify-between text-bhagya-sindoor">
         <span class="w-6 h-6" aria-hidden="true">{{ icon_svg | safe }}</span>
-        <span class="text-[11px] font-bold uppercase tracking-[0.14em]">{{ tag }}</span>
+        <span class="text-xs font-bold uppercase tracking-[0.14em]">{{ tag }}</span>
       </div>
       <h3 class="font-marcellus text-xl sm:text-[23px] leading-[1.15] text-bhagya-ink group-hover:text-bhagya-ink transition-colors">{{ title }} &rarr;</h3>
       <p class="text-sm text-bhagya-muted leading-[1.6]">{{ body }}</p>
@@ -810,7 +810,7 @@
 <section class="bg-bhagya-cream border-t border-bhagya-line">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid md:grid-cols-[1fr_auto] gap-6 md:gap-14 items-center">
     <div>
-      <div class="text-[11px] font-bold uppercase tracking-[0.2em] text-bhagya-sindoor mb-3">Every morning at sunrise</div>
+      <div class="text-xs font-bold uppercase tracking-[0.2em] text-bhagya-sindoor mb-3">Every morning at sunrise</div>
       <div class="flex items-center gap-2.5 mb-2">
         <svg viewBox="0 0 100 100" class="w-7 h-7 flex-none text-bhagya-sindoor" aria-hidden="true">
           <g fill="none" stroke="currentColor" stroke-width="6">
