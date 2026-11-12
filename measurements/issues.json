@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-11T11:11:12Z",
+  "generated_at": "2026-11-11T21:57:48Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 103,
+  "open": 102,
   "with_ask": 36,
   "by_area": {
-    "UNCLASSIFIED": 37,
+    "UNCLASSIFIED": 38,
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "UI": 6,
     "OPS": 4,
+    "UI": 4,
     "SEO": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
@@ -28,32 +28,50 @@
   },
   "by_type": {
     "untyped": 30,
-    "enhancement": 23,
-    "bug": 21,
-    "chore": 14,
+    "enhancement": 24,
+    "bug": 20,
+    "chore": 15,
     "correctness": 7,
-    "design": 6,
+    "design": 4,
     "ui": 2
   },
   "by_priority": {
-    "unset": 76,
+    "unset": 75,
     "medium": 18,
     "high": 9
   },
   "blocked": 6,
   "rows": [
     {
-      "number": 893,
-      "title": "Charts print a planet at 29.5°–29.99° as '30°', which does not exist within a sign",
+      "number": 908,
+      "title": "Clarity masking unverified and /ask?q= in request logs: privacy disclosure gaps left from #819",
       "ask": "",
       "area": "UNCLASSIFIED",
-      "type": "bug",
+      "type": "chore",
       "priority": "unset",
       "labels": [
-        "bug"
+        "chore"
       ],
-      "created": "2026-11-11T11:09:54Z",
-      "updated": "2026-11-11T11:10:05Z",
+      "created": "2026-11-11T21:48:17Z",
+      "updated": "2026-11-11T21:53:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 903,
+      "title": "Loop pause/resume: one switch that stops every Claude-spending loop job",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "qa-pass",
+        "qa:independent"
+      ],
+      "created": "2026-11-11T16:47:25Z",
+      "updated": "2026-11-11T17:46:48Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -71,7 +89,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-11T05:23:36Z",
-      "updated": "2026-11-11T11:09:52Z",
+      "updated": "2026-11-11T11:14:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -217,10 +235,13 @@
       "type": "chore",
       "priority": "unset",
       "labels": [
-        "chore"
+        "chore",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-09T03:30:35Z",
-      "updated": "2026-11-10T08:54:43Z",
+      "updated": "2026-11-11T21:57:08Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -262,9 +283,13 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-11-07T16:59:47Z",
-      "updated": "2026-11-11T11:10:14Z",
+      "updated": "2026-11-11T15:21:48Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1060,38 +1085,6 @@
       ],
       "created": "2026-10-09T00:18:11Z",
       "updated": "2026-11-11T07:09:30Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 309,
-      "title": "[UI] Subscribe modal fires over the empty form on the second tool page a visitor opens",
-      "ask": "",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal"
-      ],
-      "created": "2026-10-09T00:18:09Z",
-      "updated": "2026-11-11T11:10:12Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 308,
-      "title": "[UI] Mobile feedback FAB sits on top of reading text on result and form pages",
-      "ask": "",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal"
-      ],
-      "created": "2026-10-09T00:18:08Z",
-      "updated": "2026-11-11T11:10:13Z",
       "blocked": false,
       "needs_evidence": false
     },
