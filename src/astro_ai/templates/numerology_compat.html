@@ -65,7 +65,7 @@
             <input type="radio" name="context" value="{{ value }}" {% if value == 'general' %}checked{% endif %} class="peer sr-only">
             <div class="p-3 border-2 border-bhagya-line rounded peer-checked:border-bhagya-saffron peer-checked:bg-bhagya-cream-2 text-center">
               <div class="font-semibold text-sm text-bhagya-ink">{{ label }}</div>
-              <div class="text-[10px] text-bhagya-muted mt-0.5">{{ desc }}</div>
+              <div class="text-xs text-bhagya-muted mt-0.5">{{ desc }}</div>
             </div>
           </label>
           {% endfor %}
@@ -137,7 +137,7 @@
         <span class="font-marcellus text-2xl text-bhagya-sindoor">{{ b_num }}</span>
       </div>
       <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded {{ c }} capitalize">{{ verdict }}</span>
-      <p class="text-[11px] text-bhagya-muted mt-1 italic">{{ note }}</p>
+      <p class="text-xs text-bhagya-muted mt-1 italic">{{ note }}</p>
     </div>
     {% endfor %}
   </section>
@@ -147,7 +147,7 @@
      Birthday number always reduces. _pair_verdict() reads masters as their
      base, so the pairing above can show a 22 next to a verdict computed for
      4 — said here rather than left to look like an inconsistency. #}
-  <p class="text-[11px] text-bhagya-muted italic leading-relaxed">
+  <p class="text-xs text-bhagya-muted italic leading-relaxed">
     Life Path uses the all-digits birth-date method, so it and Destiny can show 11, 22 or 33; the Birthday number always reduces to 1&ndash;9. Pair verdicts read 11/22/33 as 2/4/6, so a master number can legitimately sit beside a verdict computed for its base. Full conventions are on the <a href="/numerology" class="text-bhagya-sindoor hover:underline">numerology reading page</a>.
   </p>
 

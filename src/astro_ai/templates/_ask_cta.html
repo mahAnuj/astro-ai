@@ -33,11 +33,11 @@
     </div>
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 mb-1 flex-wrap">
-        <span class="text-[11px] uppercase tracking-[0.14em] font-bold text-bhagya-sindoor bg-bhagya-cream border border-bhagya-border px-2 py-0.5 rounded-full">
+        <span class="text-xs uppercase tracking-[0.14em] font-bold text-bhagya-sindoor bg-bhagya-cream border border-bhagya-border px-2 py-0.5 rounded-full">
           {{ t(lang, 'ask_cta_free') }}
         </span>
         {% if _remaining and _remaining < 3 %}
-        <span class="text-[11px] text-bhagya-muted">
+        <span class="text-xs text-bhagya-muted">
           {{ t(lang, 'ask_cta_remaining_one') if _remaining == 1 else t(lang, 'ask_cta_remaining', n=_remaining) }}
         </span>
         {% endif %}
