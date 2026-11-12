@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-12T17:40:33Z)
+# Lessons — last 30 days (generated 2026-11-12T19:00:26Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -16,18 +16,18 @@ deterministic, no LLM.
 - **performance** — 8 QA FAIL(s): #524, #536, #565, #675, #747, #815
 - **regression** — 19 QA FAIL(s): #536, #544, #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747, #815, #841, #884
 - **security** — 9 QA FAIL(s): #544, #564, #636, #712, #747, #841, #846
-- **tests** — 17 QA FAIL(s): #448, #536, #544, #550, #701, #713, #747, #754, #801, #804, #833, #841, #846, #913
-- **tokens** — 16 QA FAIL(s): #536, #564, #649, #654, #660, #675, #747, #815, #841, #846
+- **tests** — 18 QA FAIL(s): #448, #536, #544, #550, #701, #713, #747, #754, #801, #804, #833, #841, #846, #913
+- **tokens** — 17 QA FAIL(s): #536, #564, #649, #654, #660, #675, #747, #815, #841, #846, #913
 
 ## Our errors
 
-- QA FAIL verdicts: 78
+- QA FAIL verdicts: 79
 - reverted commits on main: 0
-- failed verify-production runs: 3
+- failed verify-production runs: 4
 - ops findings now: 3
-  - [amber] loop-last-run-failed: agent-prioritise.yml: last run failed
+  - [amber] loop-last-run-failed: agent-prioritise.yml, verify-production.yml: last run failed
   - [amber] token-ceiling: Peak day used 83% of the Groq daily budget
-  - [amber] loop-idle: Build lane idle 78% of the last 7d
+  - [amber] loop-idle: Build lane idle 77% of the last 7d
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
