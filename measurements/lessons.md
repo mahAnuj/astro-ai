@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-11T03:45:22Z)
+# Lessons — last 30 days (generated 2026-11-11T21:59:16Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -10,23 +10,23 @@ deterministic, no LLM.
 
 ## Repeated error themes: act on these
 
-- **copy** — 16 QA FAIL(s): #536, #544, #550, #564, #649, #654, #675, #691, #815, #833, #841
+- **copy** — 17 QA FAIL(s): #536, #544, #550, #564, #649, #654, #675, #691, #815, #833, #841, #884
 - **grounding** — 18 QA FAIL(s): #524, #536, #635, #701, #706, #713, #747, #772, #815, #833, #841, #845, #859, #875
 - **i18n** — 8 QA FAIL(s): #448, #524, #564, #737, #815, #875
 - **performance** — 8 QA FAIL(s): #524, #536, #565, #675, #747, #815
-- **regression** — 18 QA FAIL(s): #536, #544, #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747, #815, #841
+- **regression** — 19 QA FAIL(s): #536, #544, #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747, #815, #841, #884
 - **security** — 9 QA FAIL(s): #544, #564, #636, #712, #747, #841, #846
 - **tests** — 16 QA FAIL(s): #448, #536, #544, #550, #701, #713, #747, #754, #801, #804, #833, #841, #846
 - **tokens** — 16 QA FAIL(s): #536, #564, #649, #654, #660, #675, #747, #815, #841, #846
 
 ## Our errors
 
-- QA FAIL verdicts: 73
+- QA FAIL verdicts: 76
 - reverted commits on main: 0
 - failed verify-production runs: 3
 - ops findings now: 2
   - [amber] loop-last-run-failed: agent-prioritise.yml: last run failed
-  - [amber] loop-idle: Build lane idle 80% of the last 7d
+  - [amber] loop-idle: Build lane idle 78% of the last 7d
 
 ## Our outcomes (analyst verdicts, latest per issue)
 

@@ -181,6 +181,18 @@
       /^\/muhurat(\/|$)/,
       /^\/panchang(\/|$)/,
     ];
+    // #309: pages the auto-show never opens over (see the gate below): the
+    // calculators and /ask, whose forms are the thing the visitor came for.
+    // /rashifal is deliberately NOT here: the issue's own direction is to prompt
+    // there, where a daily-reading offer is on topic.
+    var TOOL_FORM_PATHS = [
+      /^\/kundli(\/|$)/,
+      /^\/matching(\/|$)/,
+      /^\/numerology(\/|$)/,
+      /^\/muhurat(\/|$)/,
+      /^\/panchang(\/|$)/,
+      /^\/ask(\/|$)/,
+    ];
     try {
       var path = window.location.pathname || '';
       for (var i = 0; i < INTENT_PATHS.length; i++) {
@@ -344,6 +356,15 @@
     try {
       if (localStorage.getItem(DONE_KEY) === '1') return;
       if (localStorage.getItem(INTENT_KEY) !== '1') return;   // intent gate
+      // #309: a load of a calculator page with its form still empty must not be
+      // covered either. The visitor has not been served yet and the form is the
+      // thing they came for, so a full-screen email prompt over it blocks the task.
+      // Decided by path, because these pages render no marker until a result
+      // exists. Not counted as a visit, for the reason below.
+      var here = window.location.pathname || '';
+      for (var j = 0; j < TOOL_FORM_PATHS.length; j++) {
+        if (TOOL_FORM_PATHS[j].test(here)) return;
+      }
       // #382: a load that IS a tool result (matching, numerology) must not be
       // covered by this modal — the visitor has just received what they came
       // for. It is not counted as a visit either, so the very next load is the

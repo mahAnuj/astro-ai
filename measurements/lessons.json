@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-11T03:45:22Z",
+ "generated_at": "2026-11-11T21:59:16Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -676,6 +676,30 @@
      "grounding",
      "i18n"
     ]
+   },
+   {
+    "number": 884,
+    "at": "2026-11-11T04:40:16Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/884#issuecomment-6787196420",
+    "summary": "QA: FAIL \u2014 verified at `e08df198e67e24500f2ee396387f67643ae9c006` Finder sentence 'the days he says to avoid (the 1st, 3rd, 5th and 7th) are the ones marked avoid' is false for the 1st: Janma is graded ok for the personal match and the bride, avoid only for a Vivah groom; it also contradicts the par",
+    "themes": [
+     "copy",
+     "regression"
+    ]
+   },
+   {
+    "number": 890,
+    "at": "2026-11-11T05:45:23Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/890#issuecomment-6788162805",
+    "summary": "QA: FAIL \u2014 verified at `b1ac4c5a7b215289c081730c9e4a8be963e0d734` Round 1 (qa:in-cycle): verdicts unchanged over all 81 position pairs (0 diffs), full suite 3870 passed, 5 mutation rows red, no conflict with #884, gates green. ONE defect: the new paragraph says 'check each partner's own Tara chip' b",
+    "themes": []
+   },
+   {
+    "number": 891,
+    "at": "2026-11-11T06:38:37Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/891#issuecomment-6788977028",
+    "summary": "QA: FAIL \u2014 verified at `e58a2cbf157ca0587d2e83e283744772b80c5947` Independent-of-author round (qa:in-cycle). Original defect reproduced on bc25d83 (banner [12,505,363,571] covers home CTA centre, both iOS and beforeinstallprompt paths); fixed before scroll (CTA hit-tests as itself). DEFECT: scroll t",
+    "themes": []
    }
   ],
   "reverts": [],
@@ -707,18 +731,18 @@
    {
     "kind": "loop-idle",
     "level": "amber",
-    "title": "Build lane idle 80% of the last 7d",
-    "detail": "134.0h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "title": "Build lane idle 78% of the last 7d",
+    "detail": "131.1h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
  },
  "error_themes": {
+  "regression": 19,
   "grounding": 18,
-  "regression": 18,
+  "copy": 17,
   "tests": 16,
   "tokens": 16,
-  "copy": 16,
   "security": 9,
   "i18n": 8,
   "performance": 8

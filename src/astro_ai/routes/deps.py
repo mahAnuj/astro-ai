@@ -37,7 +37,7 @@ from fastapi import Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
-from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot, local_today
+from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot, degree_text, local_today
 from astro_ai.i18n import translate as _i18n_translate
 
 # Deliberately copied UNPRUNED from main.py: several of these names are unused
@@ -303,6 +303,7 @@ def _linkify_learn(text: str) -> str:
 
 
 templates.env.filters["linkify_learn"] = _linkify_learn
+templates.env.filters["degree_text"] = degree_text  # #896: 0.0..29.9 within a sign, truncated
 
 
 def _site_url() -> str:

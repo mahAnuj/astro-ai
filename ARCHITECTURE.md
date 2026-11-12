@@ -980,7 +980,7 @@ Dated, with the evidence. **Check here before proposing a change.**
   can still be established out of band by fetching the css2 URL and summing the woff2
   responses (that is where #242's numbers came from); which FACE painted a given node
   cannot be, and needs the browser.
-- **The page `<title>` of eight routes carried the visitor's name, and GA4 collects `document.title` (#744, fixed #817).**
+- **The page `<title>` of eight routes carried the visitor's name, and GA4 would collect `document.title` by default (#744, fixed #817).**
   `/kundli`, `/monthly`, `/yearly`, `/manglik-check`, `/sade-sati-check`, `/kaal-sarp-check`,
   `/numerology` and `/numerology/compatibility` rendered the name into `{% block title %}`;
   `static/analytics.js` sets no `page_title`, and `privacy.html` says analytics carry "no birth
