@@ -3,7 +3,7 @@
 Living document tracking what's been extracted from each source PDF,
 what's still pending, and how new articles should cite them.
 
-**Last updated:** 2026-10-17 (#191 — Rao textbook extraction: Ch. 6, Ch. 7,
+**Last updated:** 2026-11-12 (registry reconciliation and three superseded statements annotated; see the last section. Previously 2026-10-17, #191 — Rao textbook extraction: Ch. 6, Ch. 7,
 Ch. 16/25/26 + Part 6, line-pinning of Ch. 11, 13 and 34, and a **correction to
 this file's own chapter map**, which was wrong about Ch. 4-5, 6-8, 9-15 and the
 muhurta chapter. Provenance ledger at the end. Earlier: 2026-08-27, #216 — the
@@ -58,7 +58,7 @@ So it can settle the Western-school questions (#161 Karmic Debt intermediates, #
 
 > "Always add the numbers after separately determining the number representing the month, day and year. If you add them all…"
 
-— followed by a worked example (March = 3; 12 = 1+2 = 3; 1940 = 1+9+4+0). **That is exactly the method `numerology.py` implements**, which Johari contradicts (§2.2, sum all digits).
+— followed by a worked example (March = 3; 12 = 1+2 = 3; 1940 = 1+9+4+0). **That was the method `numerology.py` implemented** — *SUPERSEDED, annotated 2026-11-12:* #162 moved `_life_path` to Johari's all-digits sum (`numerology.py` `_life_path` docstring; `numerology.md` §2.2 "Implemented as of #162"). Goodwin now stands as contrast only. The sentence is kept because the history is the evidence for why the page must name its school.
 
 **This does not make our code "correct" — it makes #162 a properly sourced two-school divergence.** Both schools are now citable in-repo. Under the project's sourcing rule the defect is therefore the **silence**, not the value: the page must declare which school it follows. Citing a 1981 Californian Western text as the authority for a reading advertised as *Vedic* would be its own error — Goodwin evidences that our method is legitimate practice, not that it is the Vedic method.
 
@@ -81,16 +81,16 @@ audit does not re-derive them:
 - **Lo Shu 3×3 grid** — implemented in `numerology.py` and rendered on `/numerology`,
   but absent from both numerology books above. `numerology.md` §13.2 flags it as
   Chinese-tradition material needing a Feng Shui source; §13.3 assigns Cheiro to
-  *compound numbers*, not to Lo Shu. Cheiro's *Book of Numbers* is **not in `data/`**
-  and has not been read. See issue #172.
+  *compound numbers*, not to Lo Shu. ~~Cheiro's *Book of Numbers* is **not in `data/`**
+  and has not been read.~~ **SUPERSEDED 2026-11-12:** Cheiro is registered in `scripts/fetch_corpus.py` (14,183 plain lines) and has been read; `numerology.md` §13.3 records `Lo Shu` **0** in it. The gap stands for Lo Shu — only the "not read" half was wrong. See issue #172.
 - **Per-number Rudraksha mukhi mapping** (`numerology.md` §11, Rudraksha column) — does
   not trace to Johari: `grep -i rudraksha` over the Johari extraction returns 2
   incidental prose mentions and no per-number table. Source unlocated. See issue #173.
 - **Life Path reduction method** — `numerology.md` §2.2 documents "sum all digits of
   DOB" and Johari states it verbatim ("The single whole number obtained from the
   addition of the date, month, and year of birth", ch. "Destiny Number"). The
-  reduce-components-separately method that `numerology.py` implements is real modern
-  practice but is **not sourced anywhere in this repo**. See issue #162.
+  reduce-components-separately method that `numerology.py` implemented is real modern
+  practice but was **not sourced anywhere in this repo**. **SUPERSEDED 2026-11-12:** #162 replaced it with the Johari all-digits method; Goodwin L1861-1865, L1989-1991 and L2026-2028 (plain) are cited in `numerology.md` §2.2 as the contrasting school.
 - **Symmetry of the §7 compatibility pairs** — §7 lists several pairs (1↔8, 5↔6, 3↔5)
   as friendly under one number's row and as enemies under the other's. Needs a pass
   against Johari's per-pair sections before any code table is regenerated from it.
@@ -570,3 +570,84 @@ every section declares its flag — which they all now do.
    name **BPHS** or a `[MISSING]` Raman as a primary source. Rao's Ch. 7 now
    covers the houses from a book we hold; the BPHS lines in those headers are
    still the #216 defect and were not touched here.
+
+
+---
+
+## Registry reconciliation — 2026-11-12 (Research run; **0 of 10 books present**)
+
+**What this run could and could not do.** `scripts/fetch_corpus.py` printed
+`corpus completeness: 0/10 usable` and `data/` held no files, so nothing below was
+measured against a book. Every line count is the **registry's recorded value (plain
+`pdftotext`, no `-layout`)** carried forward, not re-measured. No absence is claimed
+by this section. What it does record is read from tracked files and is checkable by
+anyone with the tree.
+
+### The registry holds 10 books; the table at the top of this file lists 7
+
+| Registry entry (`BOOKS` in `fetch_corpus.py`) | Recorded plain lines | In this file's top table? |
+|---|---|---|
+| Raman, *Astrology for Beginners* | 15,409 | yes (#1) |
+| Rao, *Vedic Astrology: An Integrated Approach* | 20,669 | yes (#2) |
+| Rao, *Lessons on Vedic Astrology* Vol. I | 12,244 | yes (#3) |
+| Vasudev, *Astrology* (e-book) | 5,220 | yes (#4) |
+| Johari, *Numerology: With Tantra, Ayurveda, and Astrology* | 5,952 | yes (#6) |
+| Kumar, *Numerology & You* (43-page sample) | 1,110 | yes (#7) |
+| **Raman, *Muhurtha or Electional Astrology* (1948)** | **9,158** | **no** |
+| Goodwin, *Numerology: The Complete Guide* Vol. 1 | 28,171 | yes (#9) |
+| **Cheiro, *Cheiro's Book of Numbers*** | **14,183** | **no** (named only in the 2026-10-17 paragraph below) |
+| **Chaldean Numerology — New and Improved (compilation)** | **4,268** | **no** — and the registry says it is *not citable*: a multi-source compilation has no single edition a reader can check a line range against. Use it to locate a claim, cite Cheiro or Kumar for it |
+
+The three bold rows are the books the shipped engines lean on most: Raman *Muhurtha*
+carries the `COMBUSTION_ORBS` and retrograde-orb citations in `chart.py` and the Vasya
+and Yoni material in `matching.md`; Cheiro is the Chaldean letter table in
+`numerology.py` (`numerology.md` §14). Neither had a row in the ledger a reader is told
+to consult first.
+
+### One book the code and the corpus depend on is in no registry
+
+**Muhurta Chintamani (Daivagya Ramacharya, Vivaha prakarana, Hindi tika)** is the
+**sole source** of `knowledge/matching.md` and therefore of the 36-point Ashtakoota
+weights. Measured by grep this run, over the tracked tree:
+
+- `matching.py` names it on **10 lines** (28, 59, 138, 161, 257, 608, 685, 729, 794, 863; `grep -ci chintamani`).
+- `scripts/` contains **0** occurrences of `muhurta-chintamani` or `muhurta_chintamani`
+  — `fetch_corpus.py` does not register it, so `corpus completeness` can never report it
+  missing, and nothing can say which edition or line count a citation was taken against.
+- `verify_rule_citations.py` reads `chart.py` (checks 1-6) and `muhurat.py` (check 7). It
+  does **not** read `matching.py`, so the "a label may name a book only if `fetch_corpus.py`
+  registers it" rule that check 7 enforces for `muhurat.py` is not applied to the file
+  that cites this book most.
+- **The tree contradicts itself about whether the book is held.** `matching.md` ("The source") says it is
+  held at `data/matching/muhurta-chintamani-daivagya-ramacharya_sanskrit_djvu.txt`. But
+  `verify_rule_citations.py` lines 580-583 describe the texts `muhurat.py` may not name — and `_MUHURAT_UNHELD`
+  lists `Muhurta Chintamani` and `Chintamani` among them (lines 591-592) — as "held nowhere in `data/`". Both can be
+  true on different dates; neither says when it was measured. A run with `data/` populated settles it.
+- `matching.md` locates its claims by **verse number** (`v.21`, `v.23`, `vv.32-33`) and by
+  an `[IMG]` / `[TIKA]` / `[UNREAD]` confidence marker. It carries **no line range into the
+  extraction**, so a reader cannot machine-check a quotation. Verse numbers are a sound
+  locator for a verse text; they are not what #194 asks for.
+
+**This is a finding, not a task done here.** Closing it needs the book present to measure
+a line count and a registry row (`scripts/fetch_corpus.py`, an engineering file), and a
+decision on whether `matching.py` joins the citation gate. Both are out of this run's reach:
+no book, and `matching.py` is not Research's to edit.
+
+### The "14 books" figure above does not reconcile with the registry
+
+The 2026-10-17 paragraph earlier in this file says the corpus "is now 14 books,
+94,019 `-layout` lines". The registry registers **10**. The tree names two of the
+difference — Muhurta Chintamani, and "four small number-compatibility PDFs" it does not
+name — and that is five, not four, so the figure cannot be reconciled without the files.
+Treat 14 as unverified until a run with `data/` populated lists them by filename.
+
+### Three statements in this file were superseded and are now annotated in place
+
+| Statement | Why it was wrong | Where the truth lives |
+|---|---|---|
+| Goodwin L1989 "is exactly the method `numerology.py` implements" | #162 moved `_life_path` to Johari's all-digits sum | `numerology.py` `_life_path`; `numerology.md` §2.2 |
+| Cheiro "is **not in `data/`** and has not been read" (Known gaps, Lo Shu) | Registered and read; `Lo Shu` 0 in it | `numerology.md` §13.3 |
+| "reduce-components-separately ... is **not sourced anywhere**" | The method was replaced, and Goodwin's lines are cited as the contrast | `numerology.md` §2.2 |
+
+The old text is struck through or marked SUPERSEDED rather than deleted, because the
+history is the evidence for why `numerology.py`'s header names its school.
