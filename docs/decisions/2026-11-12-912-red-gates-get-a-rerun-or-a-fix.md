@@ -38,6 +38,18 @@ permission changes: `qa-on-green` already holds `actions: write` and `pull-reque
 **Checked against the real logs from that day:** both #899 jobs classify as flakes; #892 and #884
 classify as real.
 
+**Found in QA (#913).** gh 2.103, the version on the runner image, refuses an Actions log unless
+called with `--allow-escape-sequences`, and every log carries ANSI codes. Without the flag, every
+log read failed, came back empty, and a DNS flake was classified as real. The tests used a fake
+`gh` and could not see it. Now the flag is sent, an older `gh` that does not know it falls back,
+the codes are stripped, and a mutation row pins the flag. I re-checked through the real CLI:
+#899 ×2 flake, #892 and #884 real.
+
+**Unmeasured, stated rather than claimed.** A `fix` dispatches a normal `issue=<n>` cycle. It adopts
+the existing branch (`agent-cycle.md` Step 2.5), but nothing yet tells that cycle the PR is red. The
+marker comment is on the PR, not the issue. Whether such a cycle fixes the gate rather than
+re-verifying the issue is untested. It is bounded by the once-per-head guard either way.
+
 **Rejected:**
 - **Retrying apt inside `pr-gates` and `verify-build`.** It narrows one flake source, but a red PR
   of any cause would still strand. Worth adding separately.

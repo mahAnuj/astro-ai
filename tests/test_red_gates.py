@@ -40,7 +40,7 @@ class Gh:
         self.logs, self.comments, self.files = list(logs), list(comments), list(files)
 
     def __call__(self, args):
-        url = args[1]
+        url = args[-1]          # the URL is last; a flag may precede it
         if url.startswith("repos/o/r/pulls?state=open"):
             return json.dumps([self.pr])
         if url == "repos/o/r/actions/runs/77/jobs":
@@ -159,3 +159,38 @@ def test_the_red_job_cannot_label_or_merge():
         run = s.get("run") or ""
         for banned in ("--add-label", "--remove-label", "gh pr edit", "gh pr merge"):
             assert banned not in run, banned
+
+
+# --- reading the real logs (QA on #913) --------------------------------------
+
+def test_the_log_is_asked_for_with_escape_sequences_allowed():
+    # gh 2.103 refuses an Actions log (they all carry ANSI codes) without the flag.
+    seen = []
+
+    def gh(args):
+        seen.append(args)
+        return "\x1b[36;1mTemporary failure resolving 'x'\x1b[0m"
+    out = rg.job_log(gh, "o/r", 5)
+    assert seen == [["api", "--allow-escape-sequences", "repos/o/r/actions/jobs/5/logs"]]
+    assert "\x1b" not in out and rg.is_flake(out)
+
+
+def test_an_older_gh_without_the_flag_still_reads_the_log():
+    calls = []
+
+    def gh(args):
+        calls.append(args)
+        if "--allow-escape-sequences" in args:
+            raise RuntimeError("unknown flag: --allow-escape-sequences")
+        return "log"
+    assert rg.job_log(gh, "o/r", 5) == "log" and len(calls) == 2
+
+
+def test_any_other_log_error_is_not_swallowed_into_a_retry():
+    def gh(args):
+        raise RuntimeError("HTTP 410")
+    try:
+        rg.job_log(gh, "o/r", 5)
+    except RuntimeError:
+        return
+    raise AssertionError("a 410 must surface so decide() treats the log as unreadable")

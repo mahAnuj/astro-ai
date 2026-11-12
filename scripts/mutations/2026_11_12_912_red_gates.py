@@ -27,4 +27,9 @@ MUTATIONS = [
      'if [ "$GATES_WORKFLOW" != "PR gates" ]; then',
      'if false; then',
      "test_red_runs_from_both_gate_workflows_and_green_stays_on_pr_gates"),
+    ("#912 (QA on #913): the log is fetched without --allow-escape-sequences (every read fails on gh 2.103)",
+     "scripts/red_gates.py",
+     '        out = gh(["api", "--allow-escape-sequences", url])\n',
+     '        out = gh(["api", url])\n',
+     "test_the_log_is_asked_for_with_escape_sequences_allowed"),
 ]

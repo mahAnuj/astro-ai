@@ -451,7 +451,9 @@ jobs:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
           AGENT_AUTHORS: claude[bot],github-actions[bot],shubhagya-publisher[bot],${{ github.repository_owner }}
-        run: python3 scripts/red_gates.py | tee -a "$GITHUB_STEP_SUMMARY"
+        run: |
+          set -o pipefail      # QA on #913: without it, tee hid red_gates.py's exit 2
+          python3 scripts/red_gates.py | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Re-run the jobs the runner failed
         if: steps.decide.outputs.action == 'rerun'

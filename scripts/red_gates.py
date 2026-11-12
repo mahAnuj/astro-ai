@@ -65,6 +65,25 @@ def run_gh(args: list[str]) -> str:
     return out.stdout
 
 
+ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+
+
+def job_log(gh: Runner, repo: str, job_id) -> str:
+    """One job's raw log. QA on #913: gh 2.103 (the runner image) refuses any log
+    with terminal escape sequences unless given --allow-escape-sequences, and
+    every Actions log has them -- so without the flag every log read failed,
+    came back "", and a DNS flake was classified real. Older gh (2.89 here)
+    does not know the flag, so it is retried without it only on that error."""
+    url = f"repos/{repo}/actions/jobs/{job_id}/logs"
+    try:
+        out = gh(["api", "--allow-escape-sequences", url])
+    except RuntimeError as exc:
+        if "unknown flag" not in str(exc):
+            raise
+        out = gh(["api", url])
+    return ANSI.sub("", out)
+
+
 def is_flake(log: str) -> bool:
     return bool(FLAKE.search(log)) and not JUDGED.search(log)
 
@@ -94,7 +113,7 @@ def decide(gh: Runner, env: dict) -> dict:
     logs = []
     for j in jobs:
         try:
-            logs.append(gh(["api", f"repos/{repo}/actions/jobs/{j['id']}/logs"]))
+            logs.append(job_log(gh, repo, j["id"]))
         except RuntimeError:
             logs.append("")          # unreadable log: never call it a flake
     if jobs and all(is_flake(lg) for lg in logs):
