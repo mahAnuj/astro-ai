@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T03:59:18Z",
+  "generated_at": "2026-11-12T11:11:46Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 104,
@@ -9,8 +9,8 @@
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "UI": 5,
-    "OPS": 4,
+    "OPS": 5,
+    "UI": 4,
     "SEO": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
@@ -28,37 +28,40 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 33,
+    "untyped": 32,
     "enhancement": 23,
     "bug": 21,
-    "chore": 14,
+    "chore": 15,
     "correctness": 7,
     "design": 4,
     "ui": 2
   },
   "by_priority": {
-    "unset": 76,
-    "medium": 18,
+    "unset": 75,
+    "medium": 19,
     "high": 10
   },
   "blocked": 6,
   "rows": [
     {
-      "number": 924,
-      "title": "[UI] Inline-CSS text under 12px remains: /learn callout labels (11.2px) and /muhurat mobile card labels (10px)",
+      "number": 925,
+      "title": "[OPS] Peak day used 83% of the Groq daily budget",
       "ask": "",
-      "area": "UI",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-11-12T03:58:37Z",
-      "updated": "2026-11-12T03:58:37Z",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "chore"
+      ],
+      "created": "2026-11-12T03:59:29Z",
+      "updated": "2026-11-12T03:59:29Z",
       "blocked": false,
       "needs_evidence": false
     },
     {
-      "number": 921,
-      "title": "[UI] Sub-12px text remains in 14 more templates, remainder of #366 (mobile legibility floor)",
+      "number": 924,
+      "title": "[UI] Inline-CSS text under 12px remains: /learn callout labels (11.2px) and /muhurat mobile card labels (10px)",
       "ask": "",
       "area": "UI",
       "type": "untyped",
@@ -68,8 +71,8 @@
         "provenance:trusted",
         "qa:in-cycle"
       ],
-      "created": "2026-11-12T02:17:19Z",
-      "updated": "2026-11-12T03:58:45Z",
+      "created": "2026-11-12T03:58:37Z",
+      "updated": "2026-11-12T11:11:08Z",
       "blocked": false,
       "needs_evidence": false
     },
