@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-12T02:10:42Z",
+  "generated_at": "2026-11-12T03:59:18Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 106,
+  "open": 104,
   "with_ask": 37,
   "by_area": {
-    "UNCLASSIFIED": 40,
+    "UNCLASSIFIED": 38,
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
+    "UI": 5,
     "OPS": 4,
-    "UI": 4,
     "SEO": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
@@ -20,7 +20,6 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "MAIN-RED": 1,
     "CORPUS": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
@@ -29,33 +28,48 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 32,
-    "enhancement": 24,
-    "bug": 22,
+    "untyped": 33,
+    "enhancement": 23,
+    "bug": 21,
     "chore": 14,
-    "correctness": 8,
+    "correctness": 7,
     "design": 4,
     "ui": 2
   },
   "by_priority": {
-    "unset": 78,
+    "unset": 76,
     "medium": 18,
     "high": 10
   },
   "blocked": 6,
   "rows": [
     {
-      "number": 919,
-      "title": "[main-red] pr-gates did not pass on main at 77e2385",
+      "number": 924,
+      "title": "[UI] Inline-CSS text under 12px remains: /learn callout labels (11.2px) and /muhurat mobile card labels (10px)",
       "ask": "",
-      "area": "MAIN-RED",
-      "type": "bug",
+      "area": "UI",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-12T03:58:37Z",
+      "updated": "2026-11-12T03:58:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 921,
+      "title": "[UI] Sub-12px text remains in 14 more templates, remainder of #366 (mobile legibility floor)",
+      "ask": "",
+      "area": "UI",
+      "type": "untyped",
       "priority": "unset",
       "labels": [
-        "bug"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
-      "created": "2026-11-12T02:08:57Z",
-      "updated": "2026-11-12T02:08:57Z",
+      "created": "2026-11-12T02:17:19Z",
+      "updated": "2026-11-12T03:58:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -137,24 +151,6 @@
       "needs_evidence": false
     },
     {
-      "number": 903,
-      "title": "Loop pause/resume: one switch that stops every Claude-spending loop job",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "qa-pass",
-        "qa:independent"
-      ],
-      "created": "2026-11-11T16:47:25Z",
-      "updated": "2026-11-11T17:46:48Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 889,
       "title": "Diamond chart: header comment says degrees stay in a table under /matching charts (false), and the South-Indian LAGNA caption overlaps a crowded house 1 (follow-up to #871)",
       "ask": "",
@@ -168,25 +164,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-11T05:23:36Z",
-      "updated": "2026-11-11T11:14:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 879,
-      "title": "Muhurat: Tara names differ from Raman's, and 'avoid only when both avoid' is unsourced (follow-up to #714)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-11T03:27:41Z",
-      "updated": "2026-11-12T02:09:11Z",
+      "updated": "2026-11-12T02:25:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -350,7 +328,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-07T16:59:47Z",
-      "updated": "2026-11-11T15:21:48Z",
+      "updated": "2026-11-12T02:25:31Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1005,21 +983,6 @@
       ],
       "created": "2026-10-15T22:59:03Z",
       "updated": "2026-11-10T08:53:33Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 366,
-      "title": "[UI] Sub-12px text remains on / (24 nodes), /panchang (9) and 16 other templates — remainder of #307",
-      "ask": "",
-      "area": "UI",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "provenance:trusted"
-      ],
-      "created": "2026-10-15T16:26:29Z",
-      "updated": "2026-11-12T02:05:44Z",
       "blocked": false,
       "needs_evidence": false
     },
