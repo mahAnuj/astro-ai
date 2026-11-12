@@ -1,0 +1,30 @@
+"""#912 (2026-11-12): a red PR gets a re-run for a runner flake and a fix cycle
+for a real failure. Each row re-breaks one piece and names the test."""
+
+MUTATIONS = [
+    ("#912: a flaky line beside a real test failure is re-run instead of fixed",
+     "scripts/red_gates.py",
+     "    return bool(FLAKE.search(log)) and not JUDGED.search(log)\n",
+     "    return bool(FLAKE.search(log))\n",
+     "test_a_gate_verdict_is_never_a_flake"),
+    ("#912: a flake is re-run forever, outage or not",
+     "scripts/red_gates.py",
+     "        if attempt > 1:\n",
+     "        if False:\n",
+     "test_a_flake_again_on_a_re_run_is_left_alone"),
+    ("#912: the same head gets a fix cycle on every red run",
+     "scripts/red_gates.py",
+     '        if f"{FIX_MARK} {sha}" in seen:\n',
+     "        if False:\n",
+     "test_the_same_head_never_gets_a_second_fix"),
+    ("#912: a cycle is dispatched at a workflows diff it cannot push",
+     "scripts/red_gates.py",
+     "    if m and not touches_wf:\n",
+     "    if m:\n",
+     "test_a_workflows_diff_is_noted_not_dispatched"),
+    ("#912: the green path starts answering to verify-build too",
+     ".github/workflows/qa-on-green.yml",
+     "    if: github.event.workflow_run.name == 'PR gates'\n",
+     "    if: always()\n",
+     "test_red_runs_from_both_gate_workflows_and_green_stays_on_pr_gates"),
+]
