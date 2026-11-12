@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-12T02:02:41Z",
+  "generated_at": "2026-11-12T02:10:42Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 104,
+  "open": 106,
   "with_ask": 37,
   "by_area": {
-    "UNCLASSIFIED": 39,
+    "UNCLASSIFIED": 40,
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -20,6 +20,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "MAIN-RED": 1,
     "CORPUS": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
@@ -28,21 +29,49 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 31,
+    "untyped": 32,
     "enhancement": 24,
-    "bug": 21,
+    "bug": 22,
     "chore": 14,
     "correctness": 8,
     "design": 4,
     "ui": 2
   },
   "by_priority": {
-    "unset": 76,
+    "unset": 78,
     "medium": 18,
     "high": 10
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 919,
+      "title": "[main-red] pr-gates did not pass on main at 77e2385",
+      "ask": "",
+      "area": "MAIN-RED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-12T02:08:57Z",
+      "updated": "2026-11-12T02:08:57Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 918,
+      "title": "qa-on-green loses a PR's only QA edge when gates complete in a burst: 3 PRs (#892, #899, #900) cancelled in the pending slot, no marker written, nothing retries",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-12T02:05:41Z",
+      "updated": "2026-11-12T02:05:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 914,
       "title": "corpus: Muhurta Chintamani, the sole source of the 36-point matching weights, is in no registry and matching.py is outside the citation gate",
@@ -85,7 +114,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-11T21:59:55Z",
-      "updated": "2026-11-11T21:59:55Z",
+      "updated": "2026-11-12T02:05:52Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -103,7 +132,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-11T21:48:17Z",
-      "updated": "2026-11-12T02:02:01Z",
+      "updated": "2026-11-12T02:08:43Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -157,7 +186,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-11T03:27:41Z",
-      "updated": "2026-11-11T06:22:58Z",
+      "updated": "2026-11-12T02:09:11Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -986,9 +1015,11 @@
       "area": "UI",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "provenance:trusted"
+      ],
       "created": "2026-10-15T16:26:29Z",
-      "updated": "2026-11-10T08:53:31Z",
+      "updated": "2026-11-12T02:05:44Z",
       "blocked": false,
       "needs_evidence": false
     },

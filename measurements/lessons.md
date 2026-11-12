@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-12T02:04:12Z)
+# Lessons — last 30 days (generated 2026-11-12T02:11:55Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -30,7 +30,7 @@ deterministic, no LLM.
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 2, PARTIAL 1, PASS 5, PENDING 10, UNSCOREABLE 10
+counts: HIT 2, PARTIAL 1, PASS 5, PENDING 11, UNSCOREABLE 10
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: PENDING — pending — scoreable from 2026-11-14
 - #311: PENDING — pending — scoreable from 2026-11-13
@@ -59,6 +59,7 @@ counts: HIT 2, PARTIAL 1, PASS 5, PENDING 10, UNSCOREABLE 10
 - #570: PENDING — pending — not scoreable until the export exists (#782); earliest clean window 2026-12-04
 - #607: PASS — PASS
 - #685: PENDING — pending — scoreable from 2026-12-04
+- #735: PENDING — pending — scoreable from 2026-12-12
 
 A MISS is the most useful line here: before proposing work of the same kind, say why this time differs, or do not propose it.
 
