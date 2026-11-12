@@ -113,11 +113,17 @@ def test_the_trigger_names_the_workflow_by_its_name_and_not_its_filename():
     is #421's class -- wiring that reports present and never runs. The value
     must be pr-gates.yml's `name:`.
     """
-    assert ON["workflow_run"]["workflows"] == ["PR gates"]
+    # verify-build joined in #912, for the `red` job only (the green path is
+    # still gated on PR gates). Both must be real `name:` values.
+    assert ON["workflow_run"]["workflows"] == ["PR gates", "verify-build"]
     pr_gates = (WF.parent / "pr-gates.yml").read_text(encoding="utf-8")
     assert re.search(r"^name:\s*PR gates\s*$", pr_gates, re.M), (
         "pr-gates.yml no longer declares `name: PR gates`, so this trigger "
         "now matches nothing and this workflow can never fire"
+    )
+    verify_build = (WF.parent / "verify-build.yml").read_text(encoding="utf-8")
+    assert re.search(r"^name:\s*verify-build\s*$", verify_build, re.M), (
+        "verify-build.yml no longer declares `name: verify-build`, so its red runs are never seen"
     )
 
 

@@ -46,7 +46,9 @@ on:
     # is why `agent-steward.yml`'s own `workflow_run` leg could never fire
     # (#421's class, three times in this repo) -- `verify_workflows.py` now
     # checks that this string matches a workflow some file declares.
-    workflows: ["PR gates"]
+    # verify-build since #912: its red runs are handled by the `red` job below;
+    # the green path (`consider`) still answers to PR gates alone.
+    workflows: ["PR gates", "verify-build"]
     types: [completed]
 
 # One at a time. Two pushes in quick succession fire two of these, and the
@@ -88,6 +90,7 @@ jobs:
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           GATES_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          GATES_WORKFLOW: ${{ github.event.workflow_run.name }}
           # Same list, same meaning as agent-merge.yml and the steward: who
           # WROTE the PR decides whether it is ours, never what the branch is
           # called. #531 and #534 removed six copies of the branch-name rule;
@@ -111,6 +114,13 @@ jobs:
               say "\`$HEAD_BRANCH\` is a measurement PR — it self-merges, no QA round."
               exit 0 ;;
           esac
+
+          # The green path answers to PR gates alone; verify-build joined the trigger
+          # for the red-gates steps below (#912).
+          if [ "$GATES_WORKFLOW" != "PR gates" ]; then
+            say "\`$GATES_WORKFLOW\` completed — the green path answers to PR gates only."
+            exit 0
+          fi
 
           if [ "$GATES_CONCLUSION" != "success" ]; then
             say "\`PR gates\` concluded \`$GATES_CONCLUSION\` on \`$HEAD_BRANCH\` — a red gate is information, not a stall."
@@ -420,3 +430,75 @@ jobs:
           # ruling verbatim and makes no claim about which one it is.
           printf '%s\n' "$TARGET" > /tmp/qa-on-green-dispatch.txt
           bash scripts/dispatch_cycle.sh /tmp/qa-on-green-dispatch.txt qa-on-green
+
+      # RED GATES (#912). Measured 2026-11-12: five PRs sat 9-20h red and nothing
+      # acted -- three on a runner DNS blip (apt could not resolve
+      # security.ubuntu.com, so no test ever ran), two on real failures a cycle
+      # could fix. `consider` exits on red by design; detect_stalls.py has no
+      # red-gates kind; an empty commit to re-trigger CI is forbidden. So:
+      # scripts/red_gates.py decides rerun (flake, first attempt only) / fix (one
+      # build cycle per head, on a branch naming its issue, never a workflows diff)
+      # / notify (one comment per head) / none. Deterministic: no Claude here.
+
+      - id: decide
+        name: What should happen to this red PR?
+        if: github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.event == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          AGENT_AUTHORS: claude[bot],github-actions[bot],shubhagya-publisher[bot],${{ github.repository_owner }}
+        run: |
+          set -o pipefail      # QA on #913: without it, tee hid red_gates.py's exit 2
+          python3 scripts/red_gates.py | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Re-run the jobs the runner failed
+        if: steps.decide.outputs.action == 'rerun'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: gh run rerun "$RUN_ID" --failed --repo "$GH_REPO"
+
+      # Marker FIRST, then the dispatch: the same loop guard as the green path.
+      - name: Record the fix dispatch on the PR
+        if: steps.decide.outputs.action == 'fix'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ steps.decide.outputs.pr }}
+          JOBS: ${{ steps.decide.outputs.jobs }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          gh pr comment "$PR" --repo "$GH_REPO" --body "qa-on-green: fix dispatched at $HEAD_SHA
+
+          \`$JOBS\` failed on this head and the failure is in the code, not the runner, so one build cycle is being dispatched to fix it (#912). One per head: a new push earns another, this one does not."
+
+      - name: Dispatch the fix cycle
+        if: steps.decide.outputs.action == 'fix'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ steps.decide.outputs.issue }}
+          QUEUE_ON: ${{ steps.decide.outputs.pr }}
+          LOOP_PAUSED: ${{ vars.LOOP_PAUSED }}   # #903: a red-gates fix is queued too while paused
+        run: |
+          printf 'issue=%s\n' "$ISSUE" > /tmp/red-gates-dispatch.txt
+          bash scripts/dispatch_cycle.sh /tmp/red-gates-dispatch.txt qa-on-green
+
+      - name: Say what failed, once per head
+        if: steps.decide.outputs.action == 'notify'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ steps.decide.outputs.pr }}
+          JOBS: ${{ steps.decide.outputs.jobs }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          gh pr comment "$PR" --repo "$GH_REPO" --body "qa-on-green: red gates noted at $HEAD_SHA
+
+          \`$JOBS\` failed on this head, and no cycle can fix this branch (it names no issue, or it touches .github/workflows/, which the cycle token cannot push). A session has to push the fix (#912)."
