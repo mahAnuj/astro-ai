@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-12",
-    "2026-11-08"
+    "2026-10-13",
+    "2026-11-09"
   ],
   "dimensions": [
     "eventName"
@@ -14,47 +14,47 @@
   "rows": [
     {
       "event": "page_view",
-      "count": 1093
+      "count": 1137
     },
     {
       "event": "user_identified",
-      "count": 646
+      "count": 671
     },
     {
       "event": "feature_view",
-      "count": 629
+      "count": 652
     },
     {
       "event": "session_start",
-      "count": 622
+      "count": 643
     },
     {
       "event": "first_visit",
-      "count": 492
+      "count": 512
     },
     {
       "event": "user_engagement",
-      "count": 272
+      "count": 284
     },
     {
       "event": "scroll",
-      "count": 159
+      "count": 170
     },
     {
       "event": "form_start",
-      "count": 135
+      "count": 139
     },
     {
       "event": "ask_answered",
-      "count": 134
+      "count": 135
     },
     {
       "event": "kundli_generated",
-      "count": 53
+      "count": 52
     },
     {
       "event": "cta_click",
-      "count": 8
+      "count": 9
     },
     {
       "event": "view_search_results",
@@ -77,11 +77,22 @@
       "count": 1
     }
   ],
-  "events_total": 4255,
-  "coverage_note": "cta_click: 8 events recorded in the window; the from/to split is NOT available: every row reports (not set) for from_path and to_path, so the parameters are not registered as custom dimensions (or were never collected); the TOTAL count above is still valid; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "events_total": 4416,
+  "coverage_note": "cta_click: 9 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
-    "count": 8,
-    "split_available": false,
-    "rows": []
+    "count": 9,
+    "split_available": true,
+    "rows": [
+      {
+        "from_path": "(not set)",
+        "to_path": "(not set)",
+        "count": 8
+      },
+      {
+        "from_path": "/learn/kaal-sarp-dosh/",
+        "to_path": "/kaal-sarp-check",
+        "count": 1
+      }
+    ]
   }
 }

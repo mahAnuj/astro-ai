@@ -65,7 +65,7 @@
   <section class="bg-bhagya-cream-2 border border-bhagya-line p-5 sm:p-6 no-print">
     <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
       <div class="flex-1">
-        <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-800 mb-1">Shared reading</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-emerald-800 mb-1">Shared reading</div>
         <h2 class="font-marcellus text-lg text-bhagya-ink mb-1">
           {% if details.name %}{{ details.name }}'s Janma Kundli reading{% else %}A shared Janma Kundli reading{% endif %}
         </h2>
@@ -176,7 +176,7 @@
     <div class="max-w-5xl mx-auto mt-8 grid grid-cols-2 lg:grid-cols-4 gap-px bg-bhagya-gold/25 border border-bhagya-gold/25">
       {% macro snapshot_tile(label, value, meta, glyph=None) %}
       <div data-snapshot-tile class="bg-bhagya-night px-4 py-4 sm:px-5 sm:py-5 min-w-0">
-        <div class="text-[10px] font-bold uppercase tracking-[0.16em] text-bhagya-gold mb-1.5">{{ label }}</div>
+        <div class="text-xs font-bold uppercase tracking-[0.16em] text-bhagya-gold mb-1.5">{{ label }}</div>
         <div class="font-marcellus text-xl sm:text-[29px] leading-tight text-bhagya-cream break-words">
           {%- if glyph %}<span aria-hidden="true" class="text-bhagya-saffron">{{ glyph }}</span> {% endif -%}
           {{ value }}
@@ -426,9 +426,9 @@
     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
       {# The big number — a stylized dial-style label. #}
       <div class="shrink-0 relative w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-bhagya-cream border border-bhagya-gold/60 flex flex-col items-center justify-center">
-        <div class="text-[10px] uppercase tracking-[0.16em] text-bhagya-muted-2 font-bold">{{ t(lang, 'bhagya_label') }}</div>
+        <div class="text-xs uppercase tracking-[0.16em] text-bhagya-muted-2 font-bold">{{ t(lang, 'bhagya_label') }}</div>
         <div class="font-marcellus text-5xl sm:text-6xl {{ _score_text }} tabular-nums leading-none">{{ bhagya_score.value }}</div>
-        <div class="text-[10px] text-bhagya-muted-2">{{ t(lang, 'bhagya_out_of') }}</div>
+        <div class="text-xs text-bhagya-muted-2">{{ t(lang, 'bhagya_out_of') }}</div>
       </div>
       <div class="flex-1 min-w-0">
         <div class="text-xs uppercase tracking-[0.16em] font-bold {{ _score_text }} mb-1">{{ t(lang, 'bhagya_heading') }}</div>
@@ -610,7 +610,7 @@
             <div class="yoga-card group bg-bhagya-cream-2 border border-bhagya-line rounded p-3.5 transition-shadow">
               <div class="font-marcellus text-base text-emerald-800 mb-1">{{ y.name }}</div>
               <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ y.effect }}</p>
-              <div class="yoga-source text-[11px] text-bhagya-muted italic mt-1.5">Source: {{ y.source }}</div>
+              <div class="yoga-source text-xs text-bhagya-muted italic mt-1.5">Source: {{ y.source }}</div>
             </div>
             {% endfor %}
           </div>

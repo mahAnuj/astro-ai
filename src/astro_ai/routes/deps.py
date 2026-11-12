@@ -906,8 +906,13 @@ def panchang_strip_for_city(city: str) -> tuple:
         #
         # Geocoding is a live Nominatim call with a 10s timeout, so a
         # transient upstream blip is enough to land here.
-        log.warning("panchang strip: %r did not resolve — falling back to %s",
-                    resolved_city, _STRIP_DEFAULT_CITY)
+        # Logs the place's LENGTH, never the place (#908): `resolved_city` is
+        # the visitor's saved birth place, and privacy.html's "Operational logs"
+        # line does not (and must not) say a birth place can be in one. The
+        # length still tells "empty/garbled" from "a real city the geocoder
+        # missed" when reading the log.
+        log.warning("panchang strip: a %d-character place did not resolve — "
+                    "falling back to %s", len(resolved_city), _STRIP_DEFAULT_CITY)
         try:
             if resolved_city == _STRIP_DEFAULT_CITY:
                 # The failing input WAS the default. Re-solving it calls the
@@ -916,7 +921,14 @@ def panchang_strip_for_city(city: str) -> tuple:
                 # homepage, i.e. every visitor without a saved chart.
                 raise
             result = _solve(_STRIP_DEFAULT_CITY)
-        except Exception:
+        except Exception as default_err:
+            # The traceback below would print the FIRST failure as well, via
+            # `__context__` ("During handling of the above exception, another
+            # exception occurred"), and that one is `ChartError("Geocoding
+            # failed for '<birth place>'")` -- the very string the warning above
+            # no longer logs (#908). Cut the link so the log shows only the
+            # default city's own failure.
+            default_err.__context__ = None
             # Default failed too: something is properly broken. Return the
             # empty tuple rather than raising — a missing strip must never
             # take the page down — but do NOT cache it for the day, so the

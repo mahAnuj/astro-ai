@@ -61,13 +61,13 @@
                   animation-delay: {{ 50 * (dasha_strip | length if _st == 'now' else loop.index0) }}ms"
            {% if _st == 'now' %}aria-current="true"{% endif %}>
         <div class="font-marcellus text-lg leading-none {{ 'text-bhagya-ink' if _st != 'past' else 'text-bhagya-muted' }}">{{ p.lord }}</div>
-        <div class="text-[11px] tabular-nums mt-1 {{ 'text-bhagya-muted' if _st == 'past' else 'text-bhagya-ink-soft' }}">
+        <div class="text-xs tabular-nums mt-1 {{ 'text-bhagya-muted' if _st == 'past' else 'text-bhagya-ink-soft' }}">
           {{ p.start.year }}–{{ p.end.year }}
         </div>
         {% if _st == 'now' %}
-        <div class="text-[10px] font-bold uppercase tracking-[0.16em] text-bhagya-sindoor mt-1">{{ t(lang, 'dasha_now') }}</div>
+        <div class="text-xs font-bold uppercase tracking-[0.16em] text-bhagya-sindoor mt-1">{{ t(lang, 'dasha_now') }}</div>
         {% else %}
-        <div class="text-[10px] text-bhagya-muted-2 mt-1 tabular-nums">{{ p.years | round(1) }}y</div>
+        <div class="text-xs text-bhagya-muted-2 mt-1 tabular-nums">{{ p.years | round(1) }}y</div>
         {% endif %}
       </div>
       {% endfor %}
@@ -87,10 +87,10 @@
           <div class="dasha-seg dasha-seg--{{ _st }} h-6 flex items-center px-2"
                style="width: {{ (p.years / _total * 100) | round(1) }}%; min-width: 3.5rem;
                       animation-delay: {{ 50 * (dasha_strip | length if _st == 'now' else loop.index0) }}ms">
-            <span class="text-[10px] tabular-nums {{ 'text-bhagya-muted' if _st == 'past' else 'text-bhagya-ink-soft' }}">{{ p.years | round(1) }}y</span>
+            <span class="text-xs tabular-nums {{ 'text-bhagya-muted' if _st == 'past' else 'text-bhagya-ink-soft' }}">{{ p.years | round(1) }}y</span>
           </div>
         </div>
-        <div class="w-24 shrink-0 text-right text-[11px] tabular-nums {{ 'text-bhagya-sindoor font-bold' if _st == 'now' else 'text-bhagya-muted' }}">
+        <div class="w-24 shrink-0 text-right text-xs tabular-nums {{ 'text-bhagya-sindoor font-bold' if _st == 'now' else 'text-bhagya-muted' }}">
           {% if _st == 'now' %}{{ t(lang, 'dasha_now') }}{% else %}{{ p.start.year }}–{{ p.end.year }}{% endif %}
         </div>
       </div>
@@ -98,7 +98,7 @@
     </div>
 
     {# ── Legend — same classes as the segments above, so it cannot lie ── #}
-    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-4 text-[11px] text-bhagya-muted">
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-4 text-xs text-bhagya-muted">
       {% for _st, _label in [('past', t(lang, 'dasha_legend_past')),
                              ('now',  t(lang, 'dasha_legend_now')),
                              ('future', t(lang, 'dasha_legend_future'))] %}
@@ -113,14 +113,14 @@
        labels round away. #}
     <div class="mt-5 pt-4 border-t border-bhagya-line grid sm:grid-cols-2 gap-4">
       <div>
-        <div class="text-[10px] font-bold uppercase tracking-[0.16em] text-bhagya-sindoor mb-1">{{ t(lang, 'dasha_active_maha') }}</div>
+        <div class="text-xs font-bold uppercase tracking-[0.16em] text-bhagya-sindoor mb-1">{{ t(lang, 'dasha_active_maha') }}</div>
         <div class="font-marcellus text-xl text-bhagya-ink">{{ dasha.mahadasha.lord }}</div>
         <div class="text-sm text-bhagya-muted mt-0.5 tabular-nums">
           {{ dasha.mahadasha.start.isoformat() }} <span class="text-bhagya-border">→</span> {{ dasha.mahadasha.end.isoformat() }}
         </div>
       </div>
       <div>
-        <div class="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-800 mb-1">{{ t(lang, 'dasha_active_antar') }}</div>
+        <div class="text-xs font-bold uppercase tracking-[0.16em] text-emerald-800 mb-1">{{ t(lang, 'dasha_active_antar') }}</div>
         <div class="font-marcellus text-xl text-bhagya-ink">{{ dasha.antardasha.lord }}</div>
         <div class="text-sm text-bhagya-muted mt-0.5 tabular-nums">
           {{ dasha.antardasha.start.isoformat() }} <span class="text-bhagya-border">→</span> {{ dasha.antardasha.end.isoformat() }}

@@ -51,8 +51,8 @@ MUTATIONS = [
 
     ("#150: a second Gulika card is rendered OUTSIDE the daylight_ordinary guard (Tromso prints an inverted window)",
      "src/astro_ai/templates/panchang.html",
-     "    {%- else %}\n    <div class=\"sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 p-4\">\n      <div class=\"text-[11px] uppercase font-semibold text-amber-800 tracking-wider mb-1\">No ordinary sunrise-to-sunset day</div>",
-     "    {%- else %}\n    <div class=\"p-4\"><div>Gulika Kaal (avoid)</div><div>{{ p.gulika_start.strftime('%H:%M') }} — {{ p.gulika_end.strftime('%H:%M') }}</div></div>\n    <div class=\"sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 p-4\">\n      <div class=\"text-[11px] uppercase font-semibold text-amber-800 tracking-wider mb-1\">No ordinary sunrise-to-sunset day</div>",
+     "    {%- else %}\n    <div class=\"sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 p-4\">\n      <div class=\"text-xs uppercase font-semibold text-amber-800 tracking-wider mb-1\">No ordinary sunrise-to-sunset day</div>",
+     "    {%- else %}\n    <div class=\"p-4\"><div>Gulika Kaal (avoid)</div><div>{{ p.gulika_start.strftime('%H:%M') }} — {{ p.gulika_end.strftime('%H:%M') }}</div></div>\n    <div class=\"sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 p-4\">\n      <div class=\"text-xs uppercase font-semibold text-amber-800 tracking-wider mb-1\">No ordinary sunrise-to-sunset day</div>",
      "test_a_polar_day_has_no_gulika_card_and_no_inverted_window"),
 
     ("#150: Gate 8's almanac row for Friday is shifted an hour",

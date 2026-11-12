@@ -1,25 +1,26 @@
 {
-  "generated_at": "2026-11-11T21:57:48Z",
+  "generated_at": "2026-11-12T16:09:12Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 102,
-  "with_ask": 36,
+  "open": 105,
+  "with_ask": 38,
   "by_area": {
-    "UNCLASSIFIED": 38,
+    "UNCLASSIFIED": 40,
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "OPS": 4,
-    "UI": 4,
+    "OPS": 5,
     "SEO": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "UI": 3,
     "MATCHING": 2,
     "MEASURE": 2,
     "NUMEROLOGY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "CORPUS": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
@@ -27,21 +28,122 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 30,
-    "enhancement": 24,
-    "bug": 20,
+    "untyped": 33,
+    "enhancement": 23,
+    "bug": 21,
     "chore": 15,
     "correctness": 7,
     "design": 4,
     "ui": 2
   },
   "by_priority": {
-    "unset": 75,
-    "medium": 18,
-    "high": 9
+    "unset": 76,
+    "medium": 19,
+    "high": 10
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 931,
+      "title": "agent-merge cannot merge a chief-cleared workflow PR once main has moved on a workflow file it also edits: mergePullRequest refused without `workflows` permission (#899 open 25h)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-12T15:50:36Z",
+      "updated": "2026-11-12T15:50:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 929,
+      "title": "agent-research opens its corpus PR with github.token: pull_request suites are held in action_required, PR #915 has no gates (10h)",
+      "ask": "Mint the publisher token in agent-research.yml exactly as agent-work.yml does and use it for push and gh pr create.",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-12T11:14:01Z",
+      "updated": "2026-11-12T11:14:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 925,
+      "title": "[OPS] Peak day used 83% of the Groq daily budget",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "chore"
+      ],
+      "created": "2026-11-12T03:59:29Z",
+      "updated": "2026-11-12T03:59:29Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 918,
+      "title": "qa-on-green loses a PR's only QA edge when gates complete in a burst: 3 PRs (#892, #899, #900) cancelled in the pending slot, no marker written, nothing retries",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-12T02:05:41Z",
+      "updated": "2026-11-12T02:05:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 914,
+      "title": "corpus: Muhurta Chintamani, the sole source of the 36-point matching weights, is in no registry and matching.py is outside the citation gate",
+      "ask": "",
+      "area": "CORPUS",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness",
+        "chore"
+      ],
+      "created": "2026-11-12T01:26:53Z",
+      "updated": "2026-11-12T01:26:53Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 912,
+      "title": "Red gates strand PRs: nothing re-runs a runner flake or dispatches a fix (5 PRs, 9–20h)",
+      "ask": "Infra flake (DNS, apt fetch, runner shutdown) with no test or gate result in the log: re-run the failed jobs once, only on run_attempt == 1.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-11-12T00:25:22Z",
+      "updated": "2026-11-12T00:25:22Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 911,
+      "title": "agent-merge sweep picks the lowest-numbered MERGEABLE PR even when its checks are red, starving #904",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-11T21:59:55Z",
+      "updated": "2026-11-12T02:05:52Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 908,
       "title": "Clarity masking unverified and /ask?q= in request logs: privacy disclosure gaps left from #819",
@@ -50,28 +152,13 @@
       "type": "chore",
       "priority": "unset",
       "labels": [
-        "chore"
+        "chore",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-11T21:48:17Z",
-      "updated": "2026-11-11T21:53:37Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 903,
-      "title": "Loop pause/resume: one switch that stops every Claude-spending loop job",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "qa-pass",
-        "qa:independent"
-      ],
-      "created": "2026-11-11T16:47:25Z",
-      "updated": "2026-11-11T17:46:48Z",
+      "updated": "2026-11-12T02:08:43Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -89,25 +176,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-11T05:23:36Z",
-      "updated": "2026-11-11T11:14:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 879,
-      "title": "Muhurat: Tara names differ from Raman's, and 'avoid only when both avoid' is unsourced (follow-up to #714)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-11T03:27:41Z",
-      "updated": "2026-11-11T06:22:58Z",
+      "updated": "2026-11-12T02:25:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -120,10 +189,12 @@
       "priority": "medium",
       "labels": [
         "priority:medium",
-        "chore"
+        "chore",
+        "qa-pass",
+        "qa:independent"
       ],
       "created": "2026-11-11T02:08:27Z",
-      "updated": "2026-11-11T02:38:47Z",
+      "updated": "2026-11-12T11:24:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -228,24 +299,6 @@
       "needs_evidence": false
     },
     {
-      "number": 819,
-      "title": "PII egress policy allows classes privacy.html does not disclose: geocoder, stored questions, email in logs (found by #744)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "chore",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-09T03:30:35Z",
-      "updated": "2026-11-11T21:57:08Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 807,
       "title": "[OPS] agent-work.yml is broken",
       "ask": "",
@@ -289,7 +342,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-07T16:59:47Z",
-      "updated": "2026-11-11T15:21:48Z",
+      "updated": "2026-11-12T02:25:31Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -547,10 +600,13 @@
       "priority": "unset",
       "labels": [
         "ui",
-        "skill:ui-fixer"
+        "skill:ui-fixer",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-29T23:50:32Z",
-      "updated": "2026-11-10T08:54:07Z",
+      "updated": "2026-11-12T16:08:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -944,19 +1000,6 @@
       ],
       "created": "2026-10-15T22:59:03Z",
       "updated": "2026-11-10T08:53:33Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 366,
-      "title": "[UI] Sub-12px text remains on / (24 nodes), /panchang (9) and 16 other templates — remainder of #307",
-      "ask": "",
-      "area": "UI",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-10-15T16:26:29Z",
-      "updated": "2026-11-10T08:53:31Z",
       "blocked": false,
       "needs_evidence": false
     },

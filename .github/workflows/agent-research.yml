@@ -27,6 +27,9 @@ concurrency:
 
 jobs:
   research:
+    # LOOP PAUSE (#903): set the repository variable LOOP_PAUSED=true to skip
+    # every Claude-spending loop job; delete it (or set anything else) to resume.
+    if: vars.LOOP_PAUSED != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 75
     permissions:
@@ -170,7 +173,7 @@ jobs:
   # A direct push would skip it.
   propose:
     needs: research
-    if: always()
+    if: always() && needs.research.result != 'skipped'   # #903: nothing to keep when the loop is paused
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -183,9 +186,23 @@ jobs:
           path: /tmp/corpus-out
         continue-on-error: true
 
+      # THE PUBLISHER, NOT github-actions[bot] (#393, measured on #915 2026-11-12).
+      # A PR opened with github.token is authored by github-actions[bot], and
+      # GitHub holds its pull_request suites in `action_required`: #915 sat 14h
+      # with every check unrun and `mergeable_state: blocked`. A push with
+      # github.token also starts no workflow. The other loops already open PRs
+      # this way; continue-on-error keeps a missing key no worse than before.
+      - name: Mint a publisher token
+        id: app-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.PUBLISHER_APP_PRIVATE_KEY }}
+
       - name: Open a PR for any corpus additions
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           if [ ! -d /tmp/corpus-out/knowledge ]; then
@@ -206,5 +223,5 @@ jobs:
 
           Sourced additions to knowledge/. Every citation carries a line range;
           verify_rule_citations checks them in pr-gates."
-          git push -u origin "$branch"
+          git push -u "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git" "$branch"
           gh pr create --repo "$GH_REPO" --base main --head "$branch" --fill

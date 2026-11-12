@@ -147,6 +147,13 @@ fi
 busy=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 20 \
          --json status,displayTitle \
          --jq "[.[] | select(.status != \"completed\") | $lane_sel] | length" 2>/dev/null || echo unknown)
+# PAUSED IS BUSY (#903). With the repository variable LOOP_PAUSED=true every
+# Claude-spending loop job is skipped, so a dispatch now would start a run that
+# does nothing while spending the caller's one-per-commit marker. Queue it
+# instead: agent-queue drains it after the owner resumes the loop.
+if [ "${LOOP_PAUSED:-}" = "true" ]; then
+  busy="paused"
+fi
 #
 # BUSY MEANS QUEUED, NOT DROPPED -- since 2026-11-02. This used to print "it
 # waits for the next run" and exit, and nothing ever came back for the ruling:

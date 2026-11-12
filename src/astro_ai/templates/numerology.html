@@ -22,8 +22,9 @@
      the form off-screen on mobile. Classical-source research from
      2026-08-04 lives in the expanded body: BPHS/Phaladeepika/etc.
      don't contain numerology; the Chaldean table traces to Cheiro
-     (knowledge/numerology.md §14.2); K.N. Rao dropped it (that last
-     claim is NOT in knowledge/*.md, see #773). The earlier "Balliett/
+     (knowledge/numerology.md §14.2). The earlier "K.N. Rao dropped it" and
+     "scholar Shyamasundara Dasa argues" sentence is removed (not in
+     knowledge/*.md, #773 item 2). The earlier "Balliett/
      Seton invented the Life Path framework" line is removed — also
      unsourced there (#200, chief's ruling 2026-11-07). #}
   <details class="border border-amber-300 bg-amber-50/60 px-4 py-3 group">
@@ -127,13 +128,14 @@
          comes from the "classical-source research (2026-08-04)" recorded in the
          comment above i18n.py num_caveat_heading. num_caveat_body_2 stated it
          until chief's ruling on #200 (2026-11-07) removed that sentence, so no
-         visible copy names those authors any more. Treat the bullets' dating as
-         that research's claim, not the corpus's. #}
+         visible copy names those authors any more. The bullets' "~1908-1940s
+         American" dating was softened to "20th-century Western" (#773 item 3),
+         the wording num_caveat_body_1 and _3 already use. #}
     <h3 class="font-marcellus text-xl text-bhagya-ink mb-3">The 5 numbers we compute (and where they come from)</h3>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6">
       <ul class="space-y-2.5 text-sm sm:text-base text-bhagya-ink leading-relaxed">
-        <li>&bull; <strong>Life Path Number</strong> &mdash; all the digits of your birth date added together, then reduced; your reading spells out that convention and why this page uses it. Origin: early-20th-century American numerology, ~1908-1940s.</li>
-        <li>&bull; <strong>Destiny / Expression Number</strong> &mdash; English-letter name reduction. Origin: same early-20th-century American lineage.</li>
+        <li>&bull; <strong>Life Path Number</strong> &mdash; all the digits of your birth date added together, then reduced; your reading spells out that convention and why this page uses it. Origin: 20th-century Western numerology.</li>
+        <li>&bull; <strong>Destiny / Expression Number</strong> &mdash; English-letter name reduction. Origin: same 20th-century Western lineage.</li>
         <li>&bull; <strong>Soul Urge Number</strong> &mdash; from name vowels. Origin: 20th-c. Western numerology.</li>
         <li>&bull; <strong>Personality Number</strong> &mdash; from name consonants. Origin: 20th-c. Western numerology.</li>
         <li>&bull; <strong>Name Number</strong> &mdash; the total of your name letters on the Chaldean table, then reduced; it is the same quantity as the Destiny/Expression number, under the name Indian numerology uses for it. Origin of the Chaldean table: early-20th-century Western Chaldean numerology; the tables in wide Indian circulation trace to that lineage.</li>
@@ -177,9 +179,9 @@
   <section class="bg-bhagya-cream-2 border border-bhagya-line p-5 sm:p-6">
     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
       <div class="shrink-0 relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-bhagya-cream border border-bhagya-gold/60 flex flex-col items-center justify-center">
-        <div class="text-[10px] uppercase tracking-[0.16em] text-bhagya-muted-2 font-bold">{{ t(lang, 'bhagya_label') }}</div>
+        <div class="text-xs uppercase tracking-[0.16em] text-bhagya-muted-2 font-bold">{{ t(lang, 'bhagya_label') }}</div>
         <div class="font-marcellus text-4xl sm:text-5xl {{ _nc_text }} tabular-nums leading-none">{{ num_bhagya_score.value }}</div>
-        <div class="text-[10px] text-bhagya-muted-2">{{ t(lang, 'bhagya_out_of') }}</div>
+        <div class="text-xs text-bhagya-muted-2">{{ t(lang, 'bhagya_out_of') }}</div>
       </div>
       <div class="flex-1 min-w-0">
         <div class="text-xs uppercase tracking-[0.16em] font-bold {{ _nc_text }} mb-1">{{ t(lang, 'num_bhagya_heading') }}</div>
@@ -296,7 +298,7 @@
   </section>
 
   {# Primary numbers — Life Path + Birthday + 3 name-derived numbers from
-     the modern Western (Balliett/Jordan/Cheiro) framework. Subtitles show
+     the modern 20th-century Western framework (authors not sourced, #773). Subtitles show
      the Sanskrit-neologism labels (Bhagyank, Mulank, Namank) used in
      Hindi-language numerology books, but flag them as modern coinages, not
      classical shastra terms. #}
@@ -317,7 +319,7 @@
       </div>
       <div class="min-w-0 flex-1">
         <h2 class="font-marcellus text-lg text-bhagya-ink mb-0.5">{{ label }}</h2>
-        <div class="text-[11px] text-bhagya-muted mb-2 italic">{{ subtitle }}</div>
+        <div class="text-xs text-bhagya-muted mb-2 italic">{{ subtitle }}</div>
         <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ meaning }}</p>
       </div>
     </article>
@@ -379,9 +381,9 @@
         <div class="relative flex flex-col items-center justify-center rounded border-2 {% if count > 0 %}bg-bhagya-cream-2 border-bhagya-saffron{% else %}bg-bhagya-cream-2 border-bhagya-line border-dashed{% endif %} aspect-square">
           <div class="font-marcellus text-2xl sm:text-3xl {% if count > 0 %}text-bhagya-sindoor{% else %}text-bhagya-muted-2{% endif %} leading-none">{{ digit }}</div>
           {% if count > 0 %}
-          <div class="text-[10px] mt-1 px-1.5 py-0.5 rounded-full bg-bhagya-night text-bhagya-cream font-semibold tabular-nums">×{{ count }}</div>
+          <div class="text-xs mt-1 px-1.5 py-0.5 rounded-full bg-bhagya-night text-bhagya-cream font-semibold tabular-nums">×{{ count }}</div>
           {% else %}
-          <div class="text-[9px] mt-1 text-bhagya-muted-2 uppercase tracking-wider">Missing</div>
+          <div class="text-xs mt-1 text-bhagya-muted-2 uppercase tracking-wider">Missing</div>
           {% endif %}
         </div>
         {% endfor %}
@@ -397,7 +399,7 @@
         {% for arrow in _grid.present_arrows %}
         <div class="p-3 bg-emerald-50 border border-emerald-200 rounded">
           <div class="flex items-center gap-2 mb-1">
-            <span class="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ arrow.digits | join('-') }}</span>
+            <span class="text-xs font-mono shrink-0 whitespace-nowrap bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ arrow.digits | join('-') }}</span>
             <span class="font-semibold text-sm text-emerald-900">{{ arrow.name }}</span>
           </div>
           <div class="text-sm text-bhagya-ink-soft leading-relaxed">{{ arrow.meaning }}</div>
@@ -415,7 +417,7 @@
         {% for arrow in _grid.missing_arrows %}
         <div class="p-3 bg-amber-50 border border-amber-200 rounded">
           <div class="flex items-center gap-2 mb-1">
-            <span class="text-[10px] font-mono bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">{{ arrow.digits | join('-') }}</span>
+            <span class="text-xs font-mono shrink-0 whitespace-nowrap bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">{{ arrow.digits | join('-') }}</span>
             <span class="font-semibold text-sm text-amber-900">{{ arrow.name }}</span>
           </div>
           <div class="text-sm text-bhagya-ink-soft leading-relaxed">{{ arrow.meaning }}</div>
@@ -445,8 +447,8 @@
             <span class="font-marcellus text-lg {% if c > 0 %}text-bhagya-sindoor{% else %}text-bhagya-muted{% endif %}">{{ m.digit }}</span>
             <span class="text-xs text-bhagya-muted">·</span>
             <span class="text-sm font-semibold text-bhagya-ink">{{ m.theme }}</span>
-            <span class="text-[10px] text-bhagya-muted-2">({{ m.planet }})</span>
-            <span class="ml-auto text-[10px] px-1.5 py-0.5 rounded-full {% if c > 0 %}bg-bhagya-night text-bhagya-cream{% else %}bg-bhagya-line text-bhagya-ink-soft{% endif %} font-semibold tabular-nums">
+            <span class="text-xs text-bhagya-muted-2">({{ m.planet }})</span>
+            <span class="ml-auto shrink-0 whitespace-nowrap text-xs px-1.5 py-0.5 rounded-full {% if c > 0 %}bg-bhagya-night text-bhagya-cream{% else %}bg-bhagya-line text-bhagya-ink-soft{% endif %} font-semibold tabular-nums">
               {% if c > 0 %}×{{ c }} present{% else %}missing{% endif %}
             </span>
           </div>

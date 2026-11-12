@@ -62,7 +62,7 @@
       {{ t(lang, 'ask_asking_for') }} <strong>{{ active_chart.display_name() }}</strong>
       &middot; <a href="/" class="text-bhagya-sindoor hover:text-bhagya-sindoor underline">{{ t(lang, 'ask_switch_chart') }}</a>
       {% if current_context == 'numerology' %}
-      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-bhagya-cream-2 border border-bhagya-line text-bhagya-sindoor font-semibold text-[10px] uppercase tracking-wider">{{ t(lang, 'ask_numerology_badge') }}</span>
+      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-bhagya-cream-2 border border-bhagya-line text-bhagya-sindoor font-semibold text-xs uppercase tracking-wider">{{ t(lang, 'ask_numerology_badge') }}</span>
       {% endif %}
       {% endif %}
     </p>
@@ -82,7 +82,7 @@
     {% if matching_available and matching_names and current_context in ['chart', 'matching'] %}
     {% set _qs = ('&q=' ~ (current_question | urlencode) ~ '&c=' ~ (current_category | urlencode)) if current_question else '' %}
     <div class="mt-4 inline-flex flex-wrap items-center justify-center gap-1 p-1 bg-bhagya-cream-2 border border-bhagya-line">
-      <span class="px-2 text-[11px] uppercase tracking-wider text-bhagya-muted-2 font-semibold">{{ t(lang, 'ask_answer_using') }}</span>
+      <span class="px-2 text-xs uppercase tracking-wider text-bhagya-muted-2 font-semibold">{{ t(lang, 'ask_answer_using') }}</span>
       <a href="/ask?ctx=matching{{ _qs }}"
          class="px-3 py-1.5 rounded text-xs font-semibold transition-colors
                 {% if current_context == 'matching' %}bg-white text-bhagya-sindoor border border-bhagya-line{% else %}text-bhagya-muted hover:text-bhagya-sindoor{% endif %}"
@@ -178,7 +178,7 @@
       {# Secondary refinement — visually demoted, appears below the submit
          since it's optional (backend defaults to 'general' if not picked). #}
       <div class="pt-2 border-t border-bhagya-line-2">
-        <div class="text-[11px] text-bhagya-muted mb-2 uppercase tracking-wider font-semibold">Focus area <span class="font-normal normal-case text-bhagya-muted-2">(optional)</span></div>
+        <div class="text-xs text-bhagya-muted mb-2 uppercase tracking-wider font-semibold">Focus area <span class="font-normal normal-case text-bhagya-muted-2">(optional)</span></div>
         <div class="flex flex-wrap gap-1.5">
           {% for cat in ['general', 'career', 'marriage', 'money', 'health', 'spiritual', 'travel', 'relationships', 'education'] %}
           <label class="relative cursor-pointer">
