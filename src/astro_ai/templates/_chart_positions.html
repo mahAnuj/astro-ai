@@ -1,0 +1,28 @@
+{# Compact positions line under a mini chart (#889).
+
+   WHY THIS EXISTS. The diamond macro (`_diamond_labels.html`) drops a planet's
+   degree in a cell too small for it (slot mode 1) and its retrograde flag in a
+   triangle holding 7+ grahas (mode 2). On /kundli that is recoverable: the
+   planetary-positions table sits under the chart. /matching has no such table,
+   so a degree or an "R" dropped from a /matching chart was simply gone. This
+   line is the table's stand-in there: EVERY planet of the chart, full degree and
+   retrograde flag, whatever the diamond printed.
+
+   Built from `ch.diamond_chart()` (the same data the diamond reads), flattened
+   house by house in the order the chart gives. The abbreviations are the ones
+   the chart prints (English 2-letter, `PLANET_SHORT`). `label` is passed in
+   because an imported macro has no `t()`.
+
+   `text-xs` (12px) is the floor, `text-bhagya-muted` is the colour the caption
+   above the chart already uses on this white section. #}
+{% macro chart_positions(ch, label) -%}
+  {% set ns = namespace(first=true) %}
+  <p class="mt-2 text-xs text-bhagya-muted leading-relaxed" data-chart-positions>
+    <span class="text-bhagya-ink">{{ label }}:</span>
+    {%- for cell in ch.diamond_chart() %}{% for p in cell.planets %}
+    {%- if not ns.first %} &middot; {% else %} {% endif %}
+    {%- set ns.first = false -%}
+    <span class="whitespace-nowrap">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}&nbsp;R{% endif %}</span>
+    {%- endfor %}{% endfor %}
+  </p>
+{%- endmacro %}
