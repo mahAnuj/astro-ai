@@ -44,7 +44,14 @@
   {% if not reading %}
   <header class="text-center">
     <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink mb-3">Free Numerology Calculator</h1>
-    <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
+    {# #944: at 375x667 the full lede below is 182px (7 lines) and pushed the first
+       input to y 611-661, entirely under the fixed tab bar (y 591-667). Below `sm`
+       the visitor gets one short line; the full list stays from `sm` up. The
+       tradition note above is untouched. #}
+    <p class="sm:hidden text-base text-bhagya-muted max-w-xl mx-auto leading-relaxed">
+      Life Path, Soul Urge, Karmic Debt and your Lo Shu grid. Free, no sign-up.
+    </p>
+    <p class="hidden sm:block text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
       {# Was "Chaldean (Cheiro) and Lo Shu grid" (#200). The author went from the
          visible copy first and from the SEO strings (page_title/page_meta in
          routes/numerology.py, tool_desc above) on chief's ruling: "cheiro
