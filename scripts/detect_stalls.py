@@ -290,12 +290,12 @@ def conflict_age(pr: int, pr_age: float, head_sha: str) -> float:
       3. the head commit's age, when the head has more than one parent. A merge
          of `main` resolved any conflict that existed when it was made.
 
-    AN UPPER BOUND, not a measurement, and it can only err toward the old
-    behaviour (a larger age): a `workflow_dispatch` or rerun is not merge-ref
-    bound and can start a check on a conflicting head, and a merge of something
-    other than `main` proves nothing. Both leave the age larger than the truth,
-    never smaller, so `steward-ineffective` can fire late and never early. The
-    18h threshold is untouched. `agent-merge`'s own `merge` check run is left
+    A BOUND, not a measurement, and where it is wrong it is wrong SMALL: a
+    `workflow_dispatch` or rerun is not merge-ref bound and can start a check on
+    a head that already conflicts, and a merge of something other than `main`
+    proves nothing about `main`. Either makes the bound younger than the true
+    conflict, so `steward-ineffective` can fire LATE and never early -- a delayed
+    escalation, not a false one. The 18h threshold is untouched. `agent-merge`'s own `merge` check run is left
     out for the reason `find_stalls` leaves it out of `checks`: it is not a
     gate, and the sweep can start one on a conflicting head.
 
