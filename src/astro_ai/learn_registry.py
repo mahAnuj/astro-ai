@@ -1413,6 +1413,10 @@ ARTICLES: tuple[Article, ...] = (
         related=("surya-sun-in-vedic-astrology", "sun-mahadasha", "career-not-progressing"),
         faqs=(
             {
+                "q": "In which sign is the Sun debilitated?",
+                "a": "The Sun is debilitated in Libra (Tula), most deeply at 10° Libra, and exalted in Aries (Mesha) at 10°. Libra is ruled by Venus, the planet of partnership and negotiation, so the tradition frames the placement as the king asked to preside in the council chamber rather than the throne room: he keeps his authority but has to negotiate for it.",
+            },
+            {
                 "q": "Is a debilitated Sun always bad?",
                 "a": "No. Debilitated Sun (Sun in Libra) reshapes how authority operates in your life — from commanded to negotiated — but it does not remove capability. Many highly successful leaders across history and industry carry this placement, especially in fields where diplomatic authority matters more than dominant authority: judiciary, mediation, senior advisory, coalition politics, academic leadership. When Neecha Bhanga (debilitation cancellation) applies, the placement can even become a source of unusual strength called Neecha Bhanga Raja Yoga, a genuine classical yoga. The actual outcome depends on whether cancellation conditions are present, which house Sun sits in, and how well the career direction is matched to the placement.",
             },
