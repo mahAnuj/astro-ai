@@ -898,7 +898,7 @@ cache layers) are still edited in place when they change — those are rarely to
 
 ## The agent team
 
-`.claude/agents/` holds **15** roles — the count said "seven" until 2026-10-10 while fifteen files sat in the directory, which is the same stale-number defect this file warns about elsewhere. The seven below are the ones an implementation task reaches for; the rest (`analyst`, `chief`, `conversion-lead`, `frontend-engineer`, `infra-lead`, `numerologist`, `qa-lead`, `steward`) are driven by their own scheduled loops.
+`.claude/agents/` holds **15** roles — the count said "seven" until 2026-10-10 while fifteen files sat in the directory, which is the same stale-number defect this file warns about elsewhere. The seven below are the ones an implementation task reaches for. Of the rest, four run from their own scheduled workflows (`analyst` in agent-measure, `steward` in agent-steward, `infra-lead` in agent-infra, `numerologist` with `astro-auditor` in agent-research) and `chief` is woken for held PRs and runs the oversight review in agent-sync; `frontend-engineer` is called inside a build cycle like `engineer`; and **`conversion-lead` and `qa-lead` have no schedule at all** — chief or a session calls them (`chief.md`'s routing table). Until 2026-11-13 this sentence said all eight "are driven by their own scheduled loops", which three of them never were. `agent_status.AGENTS` carries the same map and shows every one as a card on `/admin/ops`; `tests/test_agent_status.py` fails if a file here has no card.
 
 | Agent | Answers |
 |---|---|

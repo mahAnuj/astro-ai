@@ -62,19 +62,37 @@ GH_TOKEN = os.environ.get("OPS_GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or N
 HTTP_TIMEOUT = 4.0
 CACHE_TTL = float(os.environ.get("AGENT_STATUS_TTL") or (60 if GH_TOKEN else 300))
 
-#: The cards, in display order: (id, name, workflow file or None, role line).
-AGENTS: tuple[tuple[str, str, str | None, str], ...] = (
-    ("developer", "developer", "agent-work.yml", "builds the next issue, end to end"),
-    ("qa", "QA", None, "reviews every PR before it can merge"),
-    ("merge", "merge", "agent-merge.yml", "merges PRs that passed QA and the gates"),
-    ("chief", "chief", None, "rules on PRs held for a decision"),
-    ("steward", "steward", "agent-steward.yml", "restarts work that has stalled"),
-    ("analyst", "analyst", "agent-measure.yml", "measures the loop and the site"),
-    ("discover", "discover", "agent-discover.yml", "finds what to build next"),
-    ("prioritise", "prioritise", "agent-prioritise.yml", "ranks the backlog"),
+#: One card per agent definition in .claude/agents/ (all 15, owner 2026-11-13:
+#: "add cards for all agents ... we just show it upfront"), plus the merge
+#: workflow, which is not an agent but is a step every change waits on.
+#: (id, name, group, where it runs, role line). tests/test_agent_status.py
+#: fails if a file in .claude/agents/ has no card here.
+AGENTS: tuple[tuple[str, str, str, str, str], ...] = (
+    ("dev-lead", "dev-lead", "build", "runs every build cycle (Agent work)", "coordinates one issue from design to a QA'd PR"),
+    ("architect", "architect", "build", "called by dev-lead inside a build cycle", "designs a change before it is written"),
+    ("engineer", "engineer", "build", "called by dev-lead inside a build cycle", "writes the code and commits it, unpushed"),
+    ("frontend-engineer", "frontend-engineer", "build", "called by dev-lead inside a build cycle",
+     "writes templates, CSS and client code"),
+    ("qa", "QA", "build", "runs a QA round on every green PR", "reviews every PR before it can merge"),
+    ("merge", "merge", "build", "a workflow, not an agent (Agent merge)", "merges PRs that passed QA and the gates"),
+    ("chief", "chief", "decide", "woken for held PRs; oversight review (Agent sync)", "rules on PRs held for a decision"),
+    ("project-manager", "project-manager", "decide", "runs the ranking (Agent prioritise)", "ranks the backlog"),
+    ("product-manager", "product-manager", "decide", "leads discovery (Agent discover)", "finds and specifies what to build next"),
+    ("analyst", "analyst", "measure", "runs the measurements (Agent measure)", "measures the loop and the site"),
+    ("astro-auditor", "astro-auditor", "measure", "audits the rules (Agent research)", "checks astrology rules in code against the sources"),
+    ("numerologist", "numerologist", "measure", "audits the numbers (Agent research)", "checks numerology tables against the sources"),
+    ("steward", "steward", "operate", "checks for stalls (Agent steward)", "restarts work that has stalled"),
+    ("infra-lead", "infra-lead", "operate", "reviews the platform (Agent infra)", "keeps the site up, fast and free"),
+    ("conversion-lead", "conversion-lead", "on request", "chief or a session calls it for a drop-off question",
+     "audits where visitors drop out"),
+    ("qa-lead", "qa-lead", "on request", "chief or a session calls it when the kind of QA is unclear",
+     "routes each change to the right verification"),
 )
+GROUPS = ("build", "decide", "measure", "operate", "on request")
 
-STATES = ("building", "running", "queued", "blocked", "waiting", "done", "failed", "idle")
+#: "standby": the run this agent is called from is live, but which helper a
+#: cycle is using at this minute is not visible from outside the Claude step.
+STATES = ("building", "running", "standby", "queued", "blocked", "waiting", "done", "failed", "idle")
 FAILED_CONCLUSIONS = {"failure", "timed_out", "cancelled", "startup_failure"}
 QA_ROUND = re.compile(r"QA round: PR #(\d+)")
 #: agent-work.yml's run-name for a cycle dispatched at one issue.
@@ -232,7 +250,7 @@ def build(
     unreviewed = [p for p in work_prs if not _labels(p) & {"qa-pass", "qa-fail"} and not p.get("draft")]
     cards: dict[str, dict] = {}
 
-    # developer. The target comes from the run itself: agent-work.yml names a
+    # dev-lead. The target comes from the run itself: agent-work.yml names a
     # dispatched cycle "Agent work: issue #N". A ranked cycle (no input) picks
     # its issue inside the Claude step, so nothing outside it can know which
     # until it opens a PR, and the card says that rather than guessing.
@@ -246,11 +264,11 @@ def build(
             detail = f"working on {t['label']}"
         else:
             detail = "picking the next issue from the ranked backlog"
-        cards["developer"] = from_run(run, "building", detail)
+        cards["dev-lead"] = from_run(run, "building", detail)
         if t["kind"] != "trigger":
-            cards["developer"]["url"] = t["url"]
+            cards["dev-lead"]["url"] = t["url"]
     else:
-        cards["developer"] = from_history("agent-work.yml", "build cycle")
+        cards["dev-lead"] = from_history("agent-work.yml", "build cycle")
 
     # QA
     if qa_runs:
@@ -292,22 +310,40 @@ def build(
         more = f" (+{len(held) - 1} more)" if len(held) > 1 else ""
         cards["chief"] = {"state": "blocked", "detail": f"{_pr_line(p)} held for a ruling{more}",
                           "at": p.get("updated_at"), "url": p.get("html_url")}
+    elif runs_of("Agent sync"):
+        cards["chief"] = from_run(runs_of("Agent sync")[0], "running", "oversight review in progress")
     else:
         cards["chief"] = {"state": "idle", "detail": "no PR held for a ruling", "at": None}
 
-    # the scheduled agents
+    # helpers called inside a build cycle: standby while one runs
+    for key in ("architect", "engineer", "frontend-engineer"):
+        if build_runs:
+            card = from_run(build_runs[0], "standby", "on call in the running build cycle")
+            card["state"] = "standby" if build_runs[0].get("status") != "queued" else "queued"
+            cards[key] = card
+        else:
+            cards[key] = {"state": "idle", "detail": "waits for the next build cycle", "at": None}
+
+    # on request only: nothing schedules them
+    for key in ("conversion-lead", "qa-lead"):
+        cards[key] = {"state": "idle", "detail": "not on any schedule", "at": None}
+
+    # the scheduled agents, one workflow each
     for key, workflow_name, workflow, what in (
         ("steward", "Agent steward", "agent-steward.yml", "check"),
         ("analyst", "Agent measure", "agent-measure.yml", "measurement"),
-        ("discover", "Agent discover", "agent-discover.yml", "discovery run"),
-        ("prioritise", "Agent prioritise", "agent-prioritise.yml", "ranking"),
+        ("product-manager", "Agent discover", "agent-discover.yml", "discovery run"),
+        ("project-manager", "Agent prioritise", "agent-prioritise.yml", "ranking"),
+        ("astro-auditor", "Agent research", "agent-research.yml", "research audit"),
+        ("numerologist", "Agent research", "agent-research.yml", "research audit"),
+        ("infra-lead", "Agent infra", "agent-infra.yml", "platform review"),
     ):
         running = runs_of(workflow_name)
         cards[key] = from_run(running[0], "running", f"{what} in progress") if running else from_history(workflow, what)
 
     agents = []
-    for key, name, _workflow, role in AGENTS:
-        card = {"id": key, "name": name, "role": role, "url": None, **cards[key]}
+    for key, name, group, where, role in AGENTS:
+        card = {"id": key, "name": name, "group": group, "where": where, "role": role, "url": None, **cards[key]}
         agents.append(card)
     counts = {s: sum(1 for a in agents if a["state"] == s) for s in STATES}
     workflows = []
@@ -330,6 +366,7 @@ def build(
         "generated_at": now.isoformat(timespec="seconds"),
         "live": live,
         "agents": agents,
+        "groups": list(GROUPS),
         "counts": counts,
         "open_prs": len(work_prs),
         "workflows": workflows,

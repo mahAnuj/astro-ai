@@ -52,24 +52,53 @@ def test_a_dispatched_cycle_names_its_exact_issue_and_its_pr():
     prs = [_pr(952, "issue/900-other", title="something else"), _pr(951, "issue/835-sun-career")]
     doc = agent_status.build([_run("Agent work", "Agent work: issue #835")], prs, LOOPS,
                              issues={835: "Debilitated Sun and career"}, now=NOW)
-    dev = {a["id"]: a for a in doc["agents"]}["developer"]
+    dev = {a["id"]: a for a in doc["agents"]}["dev-lead"]
     assert dev["state"] == "building"
     assert dev["detail"].startswith("working on issue #835 · Debilitated Sun and career · PR #951 · started 12m ago")
     assert dev["url"].endswith("/issues/835")
 
 
+def test_every_agent_definition_has_a_card():
+    from pathlib import Path
+
+    defined = {f.stem for f in (Path(__file__).resolve().parents[1] / ".claude/agents").glob("*.md")}
+    carded = {a[0] for a in agent_status.AGENTS}
+    assert defined, "no agent definitions found"
+    assert defined <= carded, f"agents with no card: {sorted(defined - carded)}"
+    assert carded - defined == {"merge"}  # the one card that is a workflow, said so on the card
+    assert {a[2] for a in agent_status.AGENTS} <= set(agent_status.GROUPS)
+
+
+def test_helpers_are_on_standby_only_while_a_build_cycle_runs():
+    c = _cards([_run("Agent work", "Agent work")])
+    assert {c[k]["state"] for k in ("architect", "engineer", "frontend-engineer")} == {"standby"}
+    c = _cards([_run("Agent work", "QA round: PR #940")])  # a QA round is not a build cycle
+    assert {c[k]["state"] for k in ("architect", "engineer", "frontend-engineer")} == {"idle"}
+
+
+def test_on_request_agents_say_they_have_no_schedule():
+    c = _cards()
+    assert c["conversion-lead"]["state"] == "idle" and "not on any schedule" in c["conversion-lead"]["detail"]
+    assert "not on any schedule" in c["qa-lead"]["detail"]
+
+
+def test_research_runs_light_both_auditors():
+    c = _cards([_run("Agent research", "Agent research", event="schedule")])
+    assert c["astro-auditor"]["state"] == "running" and c["numerologist"]["state"] == "running"
+
+
 def test_a_ranked_cycle_says_it_is_picking_never_guesses_a_pr():
     c = _cards([_run("Agent work", "Agent work")], [_pr(951, "issue/835-sun-career", title="answer-first lede")])
-    assert c["developer"]["state"] == "building"
-    assert c["developer"]["detail"].startswith("picking the next issue from the ranked backlog")
-    assert "951" not in c["developer"]["detail"]
+    assert c["dev-lead"]["state"] == "building"
+    assert c["dev-lead"]["detail"].startswith("picking the next issue from the ranked backlog")
+    assert "951" not in c["dev-lead"]["detail"]
 
 
 def test_a_qa_round_is_qa_running_not_developer_building():
     c = _cards([_run("Agent work", "QA round: PR #940")], [_pr(940, "partial/812-lede", title="lede rewrite")])
     assert c["qa"]["state"] == "running"
     assert "reviewing PR #940 · lede rewrite · issue #812" in c["qa"]["detail"]
-    assert c["developer"]["state"] == "done"  # from agents.json, not from the QA run
+    assert c["dev-lead"]["state"] == "done"  # from agents.json, not from the QA run
 
 
 def test_every_running_workflow_is_listed_with_what_it_works_on():
@@ -123,7 +152,7 @@ def test_history_gives_done_failed_or_idle():
     c = _cards()
     assert c["steward"]["state"] == "failed" and "failed 5h ago" in c["steward"]["detail"]
     assert c["analyst"]["state"] == "done" and "10m ago" in c["analyst"]["detail"]
-    assert c["discover"]["state"] == "idle"  # no row in agents.json
+    assert c["product-manager"]["state"] == "idle"  # no row in agents.json
 
 
 def test_a_queued_run_says_queued():
@@ -153,7 +182,7 @@ def test_snapshot_fetches_the_title_of_the_issue_a_cycle_names(monkeypatch: pyte
     monkeypatch.setattr(agent_status, "_get", fake)
     monkeypatch.setattr(agent_status, "_loops", lambda: LOOPS)
     monkeypatch.setattr(agent_status, "_cache", None)
-    dev = {a["id"]: a for a in agent_status.snapshot()["agents"]}["developer"]
+    dev = {a["id"]: a for a in agent_status.snapshot()["agents"]}["dev-lead"]
     assert "issue #835 · Debilitated Sun and career" in dev["detail"]
 
 
