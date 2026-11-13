@@ -1,38 +1,42 @@
-# Chief guidance — 2026-11-10 (Tuesday review)
+# Chief guidance — 2026-11-13 (Friday review)
 
-Sources: /tmp/week.txt, agents.json (21:27Z), loop.json (21:27Z, 7d), claude_usage.json (21:28Z),
-lessons.md, latest.md (2026-11-10), llm-usage.json (11-10 03:07Z), sync/2026-11-06.md.
-No earlier `chief-guidance.md` is on disk, so last time's instructions are the 2026-11-06 sync decisions (checked below).
-Quota: seven_day 0.49, five_hour 0.15, resets 2026-11-13 06:00Z, no rejected runs. Build lane idle 137.9h (82%).
-Objective status: 0 of the top-10 pages are at position <= 5 (analyst 11-10); site impressions +120% vs prior window, clicks +147%.
+Sources: /tmp/week.txt, agents.json (21:45Z), loop.json (21:44Z, 7d), claude_usage.json (21:46Z),
+lessons.md (21:46Z), latest.md (analyst 2026-11-13), llm-usage.json (11-13 01:38Z), chief-guidance 2026-11-10.
+Quota: seven_day 0.12, five_hour 0.10 (reset 2026-11-13 06:00Z, no rejected runs). #949 was filed at 85%
+before the reset; it self-cleared at 15:27Z. Build lane: 158 cycles/7d, 72 shipped PRs, 1.9% of 2,896 min
+without result, idle 128.1h (76%). Groq: 143 calls/7d, 76% cache hit, peak measured day 166k tokens (83%, 11-09).
+Objective: 0 of top-10 pages at position <= 5 (best 5.4); 98% of 23,921 impressions sit at 6-20; 296 clicks, CTR 1.24%.
 
 | agent | verdict | evidence | guidance |
 |---|---|---|---|
-| agent-work (build cycles) | on-objective | 138 cycles/7d, 52 PRs shipped, 2.5% of 2,319 min without result; grounding fixes merged (#833 Panchak, #859 Chandra Bala, #848 Life Path, #857/#839 Manglik) | Take #852 first (priority:high, 0 comments): Groq paid 177 calls / 778k input tokens in 7d because the nightly Claude job publishes after Groq has generated. Fits the Claude-first rule. Then #835 (480 impressions, 0 clicks) |
-| qa | on-objective | Caught real grounding defects (#833, #845, #859); but 33% first-submission FAIL, #747 took 14 rounds, #833 9, #536 8; "tests" theme 16 FAILs | #853 (qa-fail at 678c304): defect 1 is a mutation row that cannot go red. A new row must be shown red before PASS. Do not re-run a round on an unchanged head |
-| agent-merge | on-objective | 93 success / 9 skipped / 1 cancelled; the 52 shipped PRs merged | None. Keep the merge-then-redispatch chain |
-| agent-queue | on-objective | 17 success; #826 (never drains) closed 11-10 | None. Re-check at next review that no queued entry sits as `-taken` with no run |
-| steward | drifting | #865 `[main-red]` filed on a CANCELLED run at bb3cc23, while a success run for the same sha (21:30:34Z) exists, and main is green at a433b7a | Treat `cancelled` as not-red when a success exists for the same sha; comment on #865 that main is green rather than leaving it open as a stall |
-| analyst | drifting | 19 of 29 scored theses are PENDING (9) or UNSCOREABLE (10); only 4 HIT/PASS-clean; 603 sessions/28d | Before filing a thesis state the traffic needed to score it. No new `metric:` line below that floor. Score #311 and #276 on 11-13/11-14 as scheduled, and call a MISS a MISS |
-| project-manager / prioritise | on-objective | Ran 11-08; #151 reassessed with counts (tithi 86, karana 42, vyatipata 9); open issues 107 (131 on 11-06) | Rank #852 and the #835/#685 SEO band above machinery issues. Do not file a new title-only SEO issue until #685 is scored (about 12-04) |
-| discover | on-objective | Ran 11-10; filed #835 with competitor-pattern marker | Keep the rule: a rival pattern shapes what we build, never an astrological claim |
-| chief (self) | drifting | needs-human-review issues 13 -> 6, but #263, #233, #203, #198 untouched since Aug/Sep | Each of the four is act #4 (product). Next steward-dispatched chief run: one comment per issue naming a single owner act, or close the question |
-| agent-measure | on-objective | 3 runs success; ga4 events export exists (#788); analyst reads 100% page coverage | #782: confirm `cta_click` is readable by `fetch_ga4.py --events` before the 12-04 window |
-| agent-sync | wasting | `/tmp/week.txt` "Merged this week" lists 1 commit vs 52 shipped PRs in loop.json (depth-1 checkout; same defect as #666, still open) | Fix the checkout depth in the same place as #666; do not file a fourth copy |
-| agent-design / agent-infra / agent-research | not rated | Green and not due (design 11-06, infra 11-03); outputs not read this review | No instruction |
+| agent-work (build) | on-objective | 72 shipped PRs/7d; grounding fixes #948, #960, #901, #878, #875, #890; no-result share 1.9% (was 2.5%) | Next three picks: #968 (natal.txt:32 demands '4th house' for Manglik, unsourced) with #970, then #914 (Muhurta Chintamani, source of the 36-point rule). Seven PRs this week were sub-12px sweeps (#922, #923, #927, #932, #870...): finish #944 and #924, then open no new text-size sweep without a GA4 mobile figure |
+| qa | on-objective | 30% first-submission FAIL (65 of 218 issues); lessons: regression 19, copy 18, grounding 18, tests 18 FAILs; #747 took 14 rounds | Keep one round per head. On a FAIL that names a test or mutation row, show that row red before PASS (themes 'tests' and 'tokens' are still 18 and 17) |
+| agent-merge | on-objective | 77 success / 8 skipped / 2 cancelled; every PR merged this week | None |
+| agent-queue / qa-on-green | on-objective | queue 16 success, 1 failure; qa-on-green 58 success | Check the 1 queue failure by run id before the next review; no other action |
+| steward | on-objective | 5 success; #865 main-red closed after last week's instruction; 159 comments/30d | Do not leave #949-type `[OPS]` findings open once the finding clears: post one line citing the clearing reading and stop |
+| analyst | drifting | 10 of 29 scored theses UNSCOREABLE, 11 PENDING, 1 MISS (#311); 677 sessions/28d | State the traffic needed to score a thesis before filing it; no new `metric:` below that floor. Score #276 on 11-14; #953 asks for `--page-daily` in agent-measure, so scoring needs that export committed |
+| project-manager / prioritise | on-objective | Ran 11-13 (success); #685, #835, #852, #782 all closed by merge | Rank the three band pages with no open issue above machinery: rahu-mahadasha-ketu-antardasha (3,699 impr, pos 6.5), jupiter-in-10th-house-career (1,623, 6.9), 7th-lord-placement-marriage-guide (1,310, 7.3). Content must trace to knowledge/*.md |
+| discover | on-objective | Last run 11-10; #835 shipped as #940/#948 | None; next slot Monday |
+| chief (self) | drifting | needs-human-review issues: 6, and #263, #233, #203, #198 still carry no ruling since Aug/Sep | One comment each naming the single owner act (product, act #4) at the next steward-dispatched run; #974 is routed as act #1 |
+| agent-measure | on-objective | 4 success; `--page-daily` (#952) and events export (#782) landed | #974 (depth-1 checkout) is the open act-#1 item; no further instruction |
+| agent-sync | wasting | `/tmp/week.txt` lists 1 merged commit against 72 shipped PRs in loop.json (shallow checkout) | Unchanged: #666 and #974 own it. Read shipped PR counts from loop.json, not "Merged this week", until the owner pushes fetch-depth: 0 |
+| agent-design / infra / research | not rated | Green and not due (design 11-13, infra 11-10, research 11-12); outputs not read | No instruction |
 
-## Last time's instructions (2026-11-06 sync)
-- Followed: #513 closed 11-09 (qa-pass bound); #697 re-read (seven_day 0.49, over the 40% bar, so no second cron); #151 reassessed 11-08.
-- Not followed: the four design-label needs-human-review issues (above). The `closes #N`-in-PR-title question was not filed; this week's titles use `refs`/`(#N)`, so I treat it as moot.
+## Last time's instructions (2026-11-10)
+- Followed: #852 closed; #853 merged; #865 closed with main green; #782 closed; #835 and #685 shipped and closed.
+- Not followed: #666 sync depth (still shallow, now escalated as #974); the four design-label needs-human-review issues (#263, #233, #203, #198) have no ruling.
+- Not yet checkable: #852's effect. llm-usage.json shows rashifal at 599k input tokens/7d and 64% hit rate; compare on 11-17.
 
 ## Stop
-- Opening a second build lane or cron: quota is 0.49 and the lane idles for want of ranked work, not capacity.
-- Re-reading an unchanged head (#853, #747-style loops).
-- Scoring theses that cannot be read at 600 sessions a month.
+- Sub-12px text sweeps without a measured mobile figure.
+- Opening a second build lane: quota is 0.12 and the lane idles for want of ranked work, so more lanes add nothing.
+- Re-running QA on an unchanged head.
+- Filing theses that cannot be scored at ~680 sessions/28d.
 
 ## Start
-- Move rashifal generation off Groq (#852). `llm-usage.json` shows `total_input_tokens` 0 for all routes, so the `token-ceiling` detector reads blind; the 778k figure is from /admin/ops. Fix the collector's input-token field before trusting `cache-low`/`token-ceiling`. `ask` has 0 of 16 cache hits (0%): note it, no action yet.
-- Ranking Learn pages in the 5.5-7.3 position band for position moves, not CTR rewrites (11-06 verdict on #311 stands).
+- Grounding before polish: #968, #970, #914, #856, #777.
+- Learn-page position moves on the three unowned band pages above (lede, title and FAQ answered from the corpus, as #940/#948 did).
+- Reading `peak_day_measured` (166k on 11-09, #925) against the next rashifal run to see whether #852 cut Groq spend.
 
 ## Definition fixes filed
-- None. No drift this week traces to a `.claude/` line; #865 and the sync depth are workflow/script defects (#666 open), which the PR path already owns.
+- None. No drift traces to a `.claude/` line: the sync shortfall is a workflow checkout (#974, act #1), and the sweep volume is a ranking choice.
