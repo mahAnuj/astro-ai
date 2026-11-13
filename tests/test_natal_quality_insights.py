@@ -67,6 +67,20 @@ def test_missing_model_and_unreadable_ts_degrade_instead_of_raising():
     assert out["banned_kinds"] == [], "a non-integer count is ignored, not summed"
 
 
+def test_an_unreadable_week_sorts_last_not_first():
+    out = profiling.natal_quality([
+        {"type": "form_kundli", "ts": "garbage", "data": {"q_ok": True}},
+        _ev(W45, True), _ev(W46, True)])
+    assert [r["week"] for r in out["rows"]] == ["2026-W46", "2026-W45", "unknown"]
+
+
+def test_a_malformed_q_banned_is_ignored_and_never_raises():
+    out = profiling.natal_quality([
+        _ev(W46, False, banned=["planet"]), _ev(W46, False, banned={"sign": True}),
+        _ev(W46, False, banned={"sign": -3, "planet": 2})])
+    assert out["checked"] == 3 and out["banned_kinds"] == [("planet", 2)]
+
+
 def test_no_events_gives_zero_rate_not_a_division_error():
     out = profiling.natal_quality([])
     assert out["rows"] == [] and out["pass_pct"] == 0.0

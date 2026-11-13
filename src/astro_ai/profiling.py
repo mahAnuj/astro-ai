@@ -207,14 +207,18 @@ def natal_quality(kundlis: list[dict[str, Any]]) -> dict[str, Any]:
                               {"checked": 0, "passed": 0})
         row["checked"] += 1
         row["passed"] += 1 if d["q_ok"] is True else 0
-        for kind, n in (d.get("q_banned") or {}).items():
-            if isinstance(n, int):
+        banned = d.get("q_banned")
+        for kind, n in (banned.items() if isinstance(banned, dict) else ()):
+            # bool is an int subclass; a count is a positive int and nothing else.
+            if isinstance(n, int) and not isinstance(n, bool) and n > 0:
                 kinds[str(kind)] += n
     table = [
         {"week": week, "model": model, "checked": r["checked"], "passed": r["passed"],
          "pass_pct": _pct(r["passed"], r["checked"])}
-        for (week, model), r in sorted(rows.items(), key=lambda kv: (kv[0][0], kv[0][1]),
-                                       reverse=True)
+        # Newest week first; an unreadable week ("unknown") goes last, not first.
+        for (week, model), r in sorted(
+            rows.items(), key=lambda kv: (kv[0][0] != "unknown", kv[0][0], kv[0][1]),
+            reverse=True)
     ]
     checked = sum(r["checked"] for r in table)
     passed = sum(r["passed"] for r in table)

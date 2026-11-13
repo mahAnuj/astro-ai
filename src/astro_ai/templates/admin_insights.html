@@ -171,7 +171,7 @@
     {% endif %}
     {% endif %}
     {% if nq %}
-    <p class="text-xs text-bhagya-muted mt-3">Left out of every rate: {{ nq.hindi_excluded }} Hindi readings (the bans are Latin words, so Hindi would read better than it is) and {{ nq.unchecked }} Kundli events with no verdict (before the check shipped, a cached re-view, or a snapshot-route generation). English only; the checker is case-sensitive and does not check five of natal.txt&rsquo;s DO NOT phrases (#970), so read it as a trend, not an absolute.</p>
+    <p class="text-xs text-bhagya-muted mt-3">Left out of every rate: {{ nq.hindi_excluded }} Hindi readings (the bans are Latin words, so Hindi would read better than it is) and {{ nq.unchecked }} Kundli events with no verdict (before the check shipped, a cached re-view, or a snapshot-route generation). English only; the checker is case-sensitive and does not check five of natal.txt&rsquo;s DO NOT phrases (#970), so read it as a trend, not an absolute. Weeks are UTC. The rate is not split by Manglik: natal.txt line 32 contradicts its own bans on a Manglik chart (#968), so a model that happened to serve more of them can read lower for that reason alone.</p>
     {% endif %}
   </section>
 
