@@ -207,7 +207,12 @@ def test_one_chart_gets_one_key_across_routes(client, saved_chart, stub_llm, sin
 
 _ALLOWED = {
     "form_kundli": {"identity", "lang", "model", "rashi_lagna", "rashi_moon",
-                    "rashi_sun", "age_band", "city"},
+                    "rashi_sun", "age_band", "city",
+                    # #327/#966: the natal reading verdict. A closed vocabulary
+                    # of a bool, ints and kind->count; the matched terms go to
+                    # the log, never here, and the seeker's name is stripped
+                    # before matching (tests/test_reading_quality.py).
+                    "q_ok", "q_sections", "q_banned", "q_words", "q_manglik"},
     "form_matching": {"groom_key", "bride_key", "total_score", "verdict", "lang", "model"},
 }
 _FORBIDDEN_IN_EVENT = [

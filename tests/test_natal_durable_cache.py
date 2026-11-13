@@ -601,3 +601,93 @@ def test_the_blob_is_quality_gated_against_natals_own_thresholds(
     assert llm_providers.passes_quality(fake_gcs["blobs"][key], "natal")[0], (
         "the regeneration did not heal the blob"
     )
+
+
+# --- the natal verdict (#327 slice 1, #966) ----------------------------------
+
+
+def _capture_form_kundli(monkeypatch):
+    """Spy on the `form_kundli` events and on every call to the verdict checker."""
+    from astro_ai import events
+    from astro_ai.routes import kundli as kundli_routes
+
+    seen = {"events": [], "checks": 0}
+    _real_record = events.record
+    _real_check = kundli_routes.check_natal_reading
+
+    def _record(*a, **kw):
+        if kw.get("type") == "form_kundli":
+            seen["events"].append(kw["data"])
+        return _real_record(*a, **kw)
+
+    def _check(*a, **kw):
+        seen["checks"] += 1
+        return _real_check(*a, **kw)
+
+    monkeypatch.setattr(kundli_routes.events, "record", _record)
+    monkeypatch.setattr(kundli_routes, "check_natal_reading", _check)
+    return seen
+
+
+def test_a_fresh_render_carries_the_verdict_and_a_cached_review_runs_no_check(
+        client, saved_chart, stub_llm, fake_gcs, cold_start, monkeypatch):
+    """Every fresh generation gets a verdict on its event, as counts and kind names
+    only; a re-view (warm or after a cold start) is not checked again, and writes no
+    second event. `_natal_body` has two sections, so it must read as not-ok."""
+    seen = _capture_form_kundli(monkeypatch)
+    stub_llm(_natal_body)
+    saved_chart(name="Zorbaxy Quillfeather")
+
+    assert client.get("/kundli").status_code == 200
+    assert seen["checks"] == 1 and len(seen["events"]) == 1, seen
+    data = seen["events"][0]
+    assert data["q_ok"] is False and data["q_sections"] == 2, data
+    assert data["q_banned"] == {} and isinstance(data["q_words"], int), data
+    assert data["q_manglik"] in (True, False), data
+    assert "Zorbaxy" not in str(data) and "Quillfeather" not in str(data), (
+        "the event carries the seeker's name"
+    )
+
+    client.get("/kundli")                       # warm re-view
+    cold_start()
+    client.get("/kundli")                       # durable-tier re-view
+    assert seen["checks"] == 1 and len(seen["events"]) == 1, (
+        f"a cached re-view ran the verdict again: {seen}"
+    )
+
+
+def test_a_cached_reread_runs_no_verdict(client, saved_chart, stub_llm, fake_gcs,
+                                         cold_start, monkeypatch):
+    """The verdict belongs to the `not was_cached` block. Outside it, every pageview
+    of a finished reading would be re-scored and counted against the pass rate."""
+    seen = _capture_form_kundli(monkeypatch)
+    stub_llm(_natal_body)
+    saved_chart()
+    client.get("/kundli")
+    before = seen["checks"]
+    for _ in range(2):
+        client.get("/kundli")
+    cold_start()
+    client.get("/kundli")
+    assert seen["checks"] == before == 1, seen
+
+
+def test_a_raising_checker_still_serves_the_page_and_writes_the_event(
+        client, saved_chart, stub_llm, fake_gcs, monkeypatch):
+    """A measurement may never cost the seeker their reading, nor the owner the
+    activity event that was already being written."""
+    from astro_ai.routes import kundli as kundli_routes
+
+    seen = _capture_form_kundli(monkeypatch)
+
+    def _boom(*a, **kw):
+        raise RuntimeError("checker on fire")
+
+    monkeypatch.setattr(kundli_routes, "check_natal_reading", _boom)
+    stub_llm(_natal_body)
+    saved_chart()
+
+    page = client.get("/kundli")
+    assert page.status_code == 200
+    assert len(seen["events"]) == 1, "the form_kundli event was lost with the checker"
+    assert not any(k.startswith("q_") for k in seen["events"][0]), seen["events"][0]
