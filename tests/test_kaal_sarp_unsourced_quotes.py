@@ -36,6 +36,10 @@ _BANNED = (
     "Astrological Magazine",
     "Three Hundred Important Combinations",
     "six houses Mars must sit",
+    # Round-1 QA: attributions knowledge/ does not hold (section 3.3 supports only focus/struggle in
+    # the Rahu/Ketu houses, and section 3.2 says the five texts do not contain the concept at all).
+    "treat Kaal Sarp as binary",
+    "modern practitioners say a true Kaal Sarp",
     # Hindi renderings of the same quotations and the magazine name.
     "सबसे बड़ी धोखाधड़",  # stem: the old text had the plural, धोखाधड़ियों
     "बहुत भयभीत करने वाला",

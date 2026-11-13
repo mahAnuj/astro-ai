@@ -3,6 +3,16 @@
 Each row restores one removed claim (or the Manglik leftover) and names the test that must go red."""
 
 MUTATIONS = [
+    ("#959: kaal-sarp-dosh says 'modern practitioners say ... stuck', an attribution knowledge/ does not hold",
+     "src/astro_ai/templates/learn/kaal-sarp-dosh.html",
+     "The serpent is a modern image for the pattern; what the pattern can indicate is periods of focus or struggle in the houses Rahu and Ketu occupy, never a guaranteed misfortune.",
+     "The serpent metaphor captures the constricting feeling \u2014 modern practitioners say a true Kaal Sarp chart can produce a sense of being \"stuck\".",
+     "test_no_template_carries_a_banned_phrase"),
+    ("#959: kaal-sarp-dosh says BPHS, Phaladeepika and Saravali 'treat Kaal Sarp as binary' again",
+     "src/astro_ai/templates/learn/kaal-sarp-dosh.html",
+     "Kaal Sarp itself is not in Brihat Parashara Hora Shastra, Phaladeepika or Saravali, so those texts give no definition of a \"partial\" version either:",
+     "Brihat Parashara Hora Shastra, Phaladeepika, and Saravali treat Kaal Sarp as binary:",
+     "test_no_template_carries_a_banned_phrase"),
     ("#959: kaal-sarp-dosh quotes K.N. Rao as calling it 'one of the biggest frauds' again",
      "src/astro_ai/templates/learn/kaal-sarp-dosh.html",
      "Many classical scholars, K.N. Rao among them, state outright that Kaal Sarp Dosha has no scriptural basis.",
