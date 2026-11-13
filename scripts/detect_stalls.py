@@ -269,6 +269,65 @@ def head_pushed_hours_ago(pr: int) -> float | None:
     return age_hours(commits[-1].get("committedDate") or "")
 
 
+def conflict_age(pr: int, pr_age: float, head_sha: str) -> float:
+    """An UPPER BOUND, in hours, on how long this PR has been CONFLICTING (#457).
+
+    THE DEFECT. `pr-conflicting` was stamped with the PR's own age. A PR can be
+    days old and conflicted for an hour -- `main` moves under every open branch
+    -- and `steward-ineffective` escalates at 18h on the premise that the steward
+    "had at least three runs and cleared nothing". Measured on #410: 79h old,
+    conflicted ~1h, and the detector told the steward to ESCALATE TO CHIEF for
+    "outliving 3+ runs" of a conflict that had existed for one.
+
+    GitHub exposes no "became conflicting at" timestamp, so this takes the
+    SMALLEST of three facts, each of which the conflict cannot be older than:
+
+      1. the PR's age;
+      2. the newest check-run `started_at` on the head SHA. `pull_request`
+         workflows run against the MERGE REF, which GitHub cannot compute while
+         the PR conflicts (see the no-checks arm in `find_stalls`), so a check
+         that STARTED on this head proves the PR was mergeable at that moment;
+      3. the head commit's age, when the head has more than one parent. A merge
+         of `main` resolved any conflict that existed when it was made.
+
+    AN UPPER BOUND, not a measurement, and it can only err toward the old
+    behaviour (a larger age): a `workflow_dispatch` or rerun is not merge-ref
+    bound and can start a check on a conflicting head, and a merge of something
+    other than `main` proves nothing. Both leave the age larger than the truth,
+    never smaller, so `steward-ineffective` can fire late and never early. The
+    18h threshold is untouched. `agent-merge`'s own `merge` check run is left
+    out for the reason `find_stalls` leaves it out of `checks`: it is not a
+    gate, and the sweep can start one on a conflicting head.
+
+    NEVER RAISES. A bound that cannot be read is skipped and the others stand;
+    all unreadable gives `pr_age`, which is the previous behaviour exactly.
+    """
+    bounds = [pr_age]
+    try:
+        out = gh("api", f"repos/{REPO}/commits/{head_sha}/check-runs", "--paginate", "--jq",
+                 r'.check_runs[] | "\(.name)\t\(.started_at)"')
+        started = []
+        for ln in out.splitlines():
+            name, _, ts = ln.partition("\t")
+            if name != "merge" and ts and ts != "null":
+                started.append(ts)
+        if started:
+            bounds.append(age_hours(max(started)))
+    except Exception:  # noqa: BLE001 - see docstring: a skipped bound, never a crash
+        pass
+    try:
+        meta = json.loads(gh("api", f"repos/{REPO}/commits/{head_sha}",
+                             "--jq", "{parents: (.parents | length)}"))
+        parents = int(meta.get("parents", 1))
+        if parents > 1:
+            head_age = head_pushed_hours_ago(pr)
+            if head_age is not None:
+                bounds.append(head_age)
+    except Exception:  # noqa: BLE001 - same
+        pass
+    return max(0.0, min(bounds))
+
+
 def post_verdict_commits(pr: int, fail_age: float) -> tuple[int, int] | None:
     """`(non_merge, merge)` counts for commits newer than the verdict.
 
@@ -478,6 +537,12 @@ def find_stalls(hours: float) -> list[dict]:
             # Emitted with `conflicting=True` and the same `kind` as that
             # branch, so `steward.md`'s routing table needs no new row: one
             # cause, one kind, one action, whatever the check history says.
+            #
+            # `age` IS REBOUND to the CONFLICT's age here (#457): the PR's own age
+            # said nothing about how long it had conflicted, and fed
+            # `steward-ineffective` a 79h-old PR conflicted for one hour. This
+            # arm is the last of the chain, so nothing reads `age` after it.
+            age = conflict_age(n, age, pr["headRefOid"])
             stalls.append(dict(
                 kind="pr-conflicting", pr=n, issue=issue, age_h=round(age, 1),
                 detail=(f"CONFLICTING for {age:.0f}h. Its checks may still read green -- they "
@@ -544,6 +609,11 @@ def find_stalls(hours: float) -> list[dict]:
                 # resolutions this repo produces mechanically and REFUSES
                 # anything else, so the split is safe: a source-file conflict
                 # still lands in front of a person.
+                #
+                # `age` IS REBOUND to the conflict's age (#457), as in the arm
+                # above: the PR's age is not how long it has conflicted. The
+                # `continue` below ends this iteration, so nothing reads it after.
+                age = conflict_age(n, age, pr["headRefOid"])
                 stalls.append(dict(
                     kind="pr-conflicting", pr=n, issue=issue, age_h=round(age, 1),
                     detail=(f"CONFLICTING for {age:.0f}h, so GitHub cannot build the merge ref "
@@ -715,6 +785,10 @@ def find_stalls(hours: float) -> list[dict]:
     # reading that history needs the Actions API, and the agent's own token 403s
     # on it (#323). A detector that can fail on a permission is how the
     # measurement arm stayed silent for its entire life.
+    # `age_h` is the PR's age for every kind here EXCEPT `pr-conflicting`, where
+    # it is `conflict_age`'s bound on how long the conflict has existed (#457):
+    # "persistence" is only true of the thing that persisted, and a PR's age is
+    # not a conflict's age.
     STEWARD_CLEARABLE = {"draft-never-readied", "no-qa-verdict",
                          "qa-fail-unaddressed", "qa-fail-refixed",
                          "draft-held-by-qa-fail", "pr-conflicting"}
