@@ -175,7 +175,13 @@ jobs:
     # The sweep is the cost and it is a real one; 178 mutations have to run the
     # suite 178 times. The durable fix is to shard it into a parallel job. This
     # buys the room to do that deliberately instead of under a red PR.
-    timeout-minutes: 35
+    #
+    # 60 since 2026-11-13, for PROMPT EVALUATION (below) and only on PRs that
+    # change src/astro_ai/prompts/: measured that day, one prompt costs ~5 min
+    # (8 charts x 2 versions through Claude Code at ~17-49 s a call, then 16
+    # judge calls), and an ask.txt change evaluates four prompts. Every other
+    # PR skips those steps and finishes where it did.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -307,6 +313,62 @@ jobs:
         run: |
           uv sync --all-groups
           npm ci
+
+      # PROMPT EVALUATION (2026-11-13, owner: "ensuring every prompt change is
+      # properly evaluated"). On a PR that changes src/astro_ai/prompts/*.txt,
+      # scripts/eval_prompts.py runs each changed prompt's base and head
+      # versions on 8 fixture charts and has a judge compare the readings
+      # (prompteval, pairwise, both orders). It FAILS this job only when the
+      # new version is measurably worse (--gate-mode significant), so a worse
+      # prompt cannot merge: agent-merge requires `gates` green. Models: Claude
+      # through Claude Code on the loop's own subscription token (owner's
+      # decision), Haiku writing and Sonnet judging. Steps, not a new job, on
+      # purpose: a new job fails verify_workflow_permissions closed, and these
+      # need nothing beyond this job's `contents: read`. The datasets are
+      # re-captured at THIS commit from the real routes, so a PR that also
+      # changes a message builder is evaluated on what it would send.
+      - name: Prompts changed?
+        id: prompts
+        if: steps.scope.outputs.code == 'true' && github.event_name == 'pull_request'
+        run: |
+          if git diff --quiet origin/main...HEAD -- src/astro_ai/prompts/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"; echo "no prompt changed"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --name-only origin/main...HEAD -- src/astro_ai/prompts/
+          fi
+
+      - name: Install Claude Code and prompteval
+        if: steps.prompts.outputs.changed == 'true'
+        run: |
+          npm install -g @anthropic-ai/claude-code@2.1.312
+          uv tool install prompteval-delta==0.3.0
+
+      - name: Capture the eval datasets at this commit
+        if: steps.prompts.outputs.changed == 'true'
+        run: PYTHONPATH=tests uv run pytest -p conftest -p no:cacheprovider -q evals/capture_datasets.py
+
+      - name: Evaluate the changed prompts
+        if: steps.prompts.outputs.changed == 'true'
+        timeout-minutes: 30
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          set +e
+          python3 scripts/eval_prompts.py --base origin/main --out eval-report.md
+          rc=$?
+          cat eval-report.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "no report written" >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
+
+      - name: Keep the prompt evaluation report
+        if: always() && steps.prompts.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-eval
+          path: |
+            eval-report.md
+            .prompteval/
+          retention-days: 30
 
       # verify_css_build skips without this, and a skip is not a pass.
       - name: Build CSS
