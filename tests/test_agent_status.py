@@ -12,9 +12,11 @@ from astro_ai import agent_status
 NOW = datetime(2026, 11, 13, 6, 0, tzinfo=timezone.utc)
 
 
-def _run(name: str, title: str, status: str = "in_progress", minutes_ago: int = 12) -> dict:
+def _run(name: str, title: str, status: str = "in_progress", minutes_ago: int = 12,
+         branch: str = "main", event: str = "workflow_dispatch") -> dict:
     ts = datetime.fromtimestamp(NOW.timestamp() - minutes_ago * 60, timezone.utc).isoformat().replace("+00:00", "Z")
     return {"name": name, "display_title": title, "status": status, "run_started_at": ts,
+            "head_branch": branch, "event": event,
             "html_url": f"https://github.com/x/runs/{abs(hash(title)) % 1000}"}
 
 
@@ -44,16 +46,52 @@ def test_every_agent_has_a_card_in_order_with_a_known_state():
     assert sum(doc["counts"].values()) == len(agent_status.AGENTS)
 
 
-def test_a_running_build_cycle_is_building_and_names_its_pr():
+def test_a_dispatched_cycle_names_its_exact_issue_and_its_pr():
+    # The other open cycle PR comes FIRST: a card that guessed "the newest
+    # cycle PR" would name #952 instead of the issue the run was started on.
+    prs = [_pr(952, "issue/900-other", title="something else"), _pr(951, "issue/835-sun-career")]
+    doc = agent_status.build([_run("Agent work", "Agent work: issue #835")], prs, LOOPS,
+                             issues={835: "Debilitated Sun and career"}, now=NOW)
+    dev = {a["id"]: a for a in doc["agents"]}["developer"]
+    assert dev["state"] == "building"
+    assert dev["detail"].startswith("working on issue #835 · Debilitated Sun and career · PR #951 · started 12m ago")
+    assert dev["url"].endswith("/issues/835")
+
+
+def test_a_ranked_cycle_says_it_is_picking_never_guesses_a_pr():
     c = _cards([_run("Agent work", "Agent work")], [_pr(951, "issue/835-sun-career", title="answer-first lede")])
     assert c["developer"]["state"] == "building"
-    assert c["developer"]["detail"].startswith("working on PR #951 · answer-first lede · started 12m ago")
+    assert c["developer"]["detail"].startswith("picking the next issue from the ranked backlog")
+    assert "951" not in c["developer"]["detail"]
 
 
 def test_a_qa_round_is_qa_running_not_developer_building():
-    c = _cards([_run("Agent work", "QA round: PR #940")])
-    assert c["qa"]["state"] == "running" and "reviewing PR #940" in c["qa"]["detail"]
+    c = _cards([_run("Agent work", "QA round: PR #940")], [_pr(940, "partial/812-lede", title="lede rewrite")])
+    assert c["qa"]["state"] == "running"
+    assert "reviewing PR #940 · lede rewrite · issue #812" in c["qa"]["detail"]
     assert c["developer"]["state"] == "done"  # from agents.json, not from the QA run
+
+
+def test_every_running_workflow_is_listed_with_what_it_works_on():
+    active = [
+        _run("PR gates", "lede rewrite", branch="partial/812-lede", event="pull_request", minutes_ago=3),
+        _run("Agent work", "Agent work: issue #835", minutes_ago=20),
+        _run("Agent measure", "Agent measure", event="schedule", minutes_ago=1),
+        _run("Agent merge", "Agent merge", status="queued", event="workflow_run", minutes_ago=30),
+    ]
+    doc = agent_status.build(active, [_pr(940, "partial/812-lede", title="lede rewrite")], LOOPS, now=NOW)
+    wf = {w["name"]: w for w in doc["workflows"]}
+    assert wf["PR gates"]["target"] == "PR #940 · lede rewrite" and wf["PR gates"]["target_url"].endswith("/pull/940")
+    assert wf["Agent work"]["target"] == "issue #835" and wf["Agent work"]["target_kind"] == "issue"
+    assert wf["Agent measure"]["target"] == "scheduled run"
+    assert wf["Agent merge"]["state"] == "queued"
+    assert [w["state"] for w in doc["workflows"]] == ["running", "running", "running", "queued"]  # running first
+    assert doc["workflows"][0]["name"] == "Agent work"  # oldest RUNNING first, though the queued one is older
+
+
+def test_a_still_running_history_row_does_not_say_finished():
+    loops = [{"workflow": "agent-steward.yml", "last_run": "2026-11-13T05:00:00Z", "last_conclusion": None}]
+    assert "started 1h ago" in _cards(loops=loops)["steward"]["detail"]
 
 
 def test_labels_decide_qa_merge_and_chief():
@@ -102,6 +140,21 @@ def test_snapshot_never_raises_and_says_it_is_not_live(monkeypatch: pytest.Monke
     monkeypatch.setattr(agent_status, "_cache", None)
     doc = agent_status.snapshot()
     assert doc["live"] is False and len(doc["agents"]) == len(agent_status.AGENTS)
+
+
+def test_snapshot_fetches_the_title_of_the_issue_a_cycle_names(monkeypatch: pytest.MonkeyPatch):
+    def fake(path: str):
+        if path.startswith("pulls"):
+            return []
+        if path.startswith("issues/"):
+            return {"title": "Debilitated Sun and career"}
+        return {"workflow_runs": [_run("Agent work", "Agent work: issue #835")] if "in_progress" in path else []}
+
+    monkeypatch.setattr(agent_status, "_get", fake)
+    monkeypatch.setattr(agent_status, "_loops", lambda: LOOPS)
+    monkeypatch.setattr(agent_status, "_cache", None)
+    dev = {a["id"]: a for a in agent_status.snapshot()["agents"]}["developer"]
+    assert "issue #835 · Debilitated Sun and career" in dev["detail"]
 
 
 def test_snapshot_reads_three_endpoints_once_per_ttl(monkeypatch: pytest.MonkeyPatch):

@@ -77,6 +77,12 @@ AGENTS: tuple[tuple[str, str, str | None, str], ...] = (
 STATES = ("building", "running", "queued", "blocked", "waiting", "done", "failed", "idle")
 FAILED_CONCLUSIONS = {"failure", "timed_out", "cancelled", "startup_failure"}
 QA_ROUND = re.compile(r"QA round: PR #(\d+)")
+#: agent-work.yml's run-name for a cycle dispatched at one issue.
+ISSUE_CYCLE = re.compile(r"Agent work: issue #(\d+)")
+#: Cycle branches carry their issue number (CLAUDE.md: issue/, partial/, fix/).
+CYCLE_BRANCH = re.compile(r"(?:issue|partial|fix)/(\d+)-")
+#: How many issue titles snapshot() may fetch per refresh (one read each).
+MAX_ISSUE_READS = 3
 #: Branches whose PRs self-merge without QA (CLAUDE.md: measurement PRs).
 SELF_MERGING = ("measurements/",)
 
@@ -102,11 +108,34 @@ def _labels(pr: dict) -> set[str]:
     return {lab.get("name", "") for lab in pr.get("labels") or []}
 
 
+def _short(title: str | None, limit: int = 60) -> str:
+    title = (title or "").strip()
+    return title[: limit - 3].rstrip() + "…" if len(title) > limit else title
+
+
 def _pr_line(pr: dict) -> str:
-    title = (pr.get("title") or "").strip()
-    if len(title) > 60:
-        title = title[:57].rstrip() + "…"
+    title = _short(pr.get("title"))
     return f"PR #{pr.get('number')} · {title}" if title else f"PR #{pr.get('number')}"
+
+
+def _issue_line(n: int | str, title: str | None) -> str:
+    title = _short(title)
+    return f"issue #{n} · {title}" if title else f"issue #{n}"
+
+
+def _branch_issue(pr: dict) -> int | None:
+    m = CYCLE_BRANCH.match(str((pr.get("head") or {}).get("ref", "")))
+    return int(m.group(1)) if m else None
+
+
+def cycle_issues(active: list[dict]) -> list[int]:
+    """Issue numbers named by running 'Agent work: issue #N' runs, newest first."""
+    seen: list[int] = []
+    for r in active:
+        m = ISSUE_CYCLE.search(r.get("display_title") or "")
+        if m and int(m.group(1)) not in seen:
+            seen.append(int(m.group(1)))
+    return seen
 
 
 def build(
@@ -114,11 +143,53 @@ def build(
     prs: list[dict],
     loops: list[dict],
     *,
+    issues: dict[int, str] | None = None,
     now: datetime | None = None,
     live: bool = True,
 ) -> dict:
-    """The cards, from already-fetched data. Pure: the tests drive this."""
+    """The cards and the running workflows, from already-fetched data. Pure:
+    the tests drive this. ``issues`` maps an issue number to its title, for the
+    issues a running cycle names (snapshot() fetches at most MAX_ISSUE_READS)."""
     now = now or datetime.now(timezone.utc)
+    issues = issues or {}
+    issue_url = f"https://github.com/{GH_REPO}/issues/{{}}"
+    pr_by_number = {p.get("number"): p for p in prs}
+    pr_by_branch = {str((p.get("head") or {}).get("ref", "")): p for p in prs}
+
+    def pr_for_issue(n: int) -> dict | None:
+        return next((p for p in prs if _branch_issue(p) == n), None)
+
+    def target_of(run: dict) -> dict:
+        """What one run is working on: a PR, an issue, or what started it.
+        Only facts GitHub states: a run-name, a branch, an open PR. Never a guess."""
+        title = run.get("display_title") or ""
+        m = QA_ROUND.search(title)
+        if m:
+            n = int(m.group(1))
+            pr = pr_by_number.get(n)
+            return {"kind": "pr", "number": n, "label": _pr_line(pr) if pr else f"PR #{n}",
+                    "url": (pr or {}).get("html_url") or f"https://github.com/{GH_REPO}/pull/{n}"}
+        m = ISSUE_CYCLE.search(title)
+        if m:
+            n = int(m.group(1))
+            return {"kind": "issue", "number": n, "label": _issue_line(n, issues.get(n)), "url": issue_url.format(n)}
+        branch = str(run.get("head_branch") or "")
+        pr = pr_by_branch.get(branch) if branch and branch != "main" else None
+        if pr:
+            return {"kind": "pr", "number": pr.get("number"), "label": _pr_line(pr), "url": pr.get("html_url")}
+        mb = CYCLE_BRANCH.match(branch)
+        if mb:
+            n = int(mb.group(1))
+            return {"kind": "issue", "number": n, "label": _issue_line(n, issues.get(n)), "url": issue_url.format(n)}
+        event = run.get("event") or ""
+        label = {
+            "schedule": "scheduled run",
+            "workflow_run": "started by another workflow finishing",
+            "push": f"push to {branch or 'a branch'}",
+        }.get(event)
+        if label is None:
+            label = title if title and title != run.get("name") else (f"{event} run" if event else "run")
+        return {"kind": "trigger", "number": None, "label": _short(label, 80), "url": run.get("html_url")}
     last = {r.get("workflow"): r for r in loops if isinstance(r, dict)}
     work_prs = [p for p in prs if not str((p.get("head") or {}).get("ref", "")).startswith(SELF_MERGING)]
 
@@ -129,10 +200,15 @@ def build(
         row = last.get(workflow) if workflow else None
         if not row or not row.get("last_run"):
             return {"state": "idle", "detail": f"no recent {what}", "at": None}
-        bad = row.get("last_conclusion") in FAILED_CONCLUSIONS
+        conclusion = row.get("last_conclusion")
+        bad = conclusion in FAILED_CONCLUSIONS
+        # agents.json is collected while runs are live, so its newest row can be
+        # a run that had not finished, or one GitHub skipped. Say which.
+        verb = ("failed" if bad else "was skipped" if conclusion == "skipped"
+                else "started" if conclusion in (None, "", "in_progress", "queued") else "finished")
         return {
             "state": "failed" if bad else "done",
-            "detail": f"last {what} {'failed' if bad else 'finished'} {_ago(row['last_run'], now)}",
+            "detail": f"last {what} {verb} {_ago(row['last_run'], now)}",
             "at": row["last_run"],
             "url": f"https://github.com/{GH_REPO}/actions/workflows/{workflow}",
         }
@@ -154,24 +230,36 @@ def build(
     held = [p for p in work_prs if "needs-human-review" in _labels(p) and "chief-cleared" not in _labels(p)]
     passed = [p for p in work_prs if "qa-pass" in _labels(p) and "needs-human-review" not in _labels(p)]
     unreviewed = [p for p in work_prs if not _labels(p) & {"qa-pass", "qa-fail"} and not p.get("draft")]
-    newest_cycle_pr = next(
-        (p for p in work_prs if re.match(r"(issue|partial|fix)/\d+", str((p.get("head") or {}).get("ref", "")))),
-        None,
-    )
-
     cards: dict[str, dict] = {}
 
-    # developer
+    # developer. The target comes from the run itself: agent-work.yml names a
+    # dispatched cycle "Agent work: issue #N". A ranked cycle (no input) picks
+    # its issue inside the Claude step, so nothing outside it can know which
+    # until it opens a PR, and the card says that rather than guessing.
     if build_runs:
-        detail = f"working on {_pr_line(newest_cycle_pr)}" if newest_cycle_pr else "building the next ranked issue"
-        cards["developer"] = from_run(build_runs[0], "building", detail)
+        run = build_runs[0]
+        t = target_of(run)
+        if t["kind"] == "issue":
+            pr = pr_for_issue(t["number"])
+            detail = f"working on {t['label']}" + (f" · PR #{pr.get('number')}" if pr else "")
+        elif t["kind"] == "pr":
+            detail = f"working on {t['label']}"
+        else:
+            detail = "picking the next issue from the ranked backlog"
+        cards["developer"] = from_run(run, "building", detail)
+        if t["kind"] != "trigger":
+            cards["developer"]["url"] = t["url"]
     else:
         cards["developer"] = from_history("agent-work.yml", "build cycle")
 
     # QA
     if qa_runs:
-        n = QA_ROUND.search(qa_runs[0].get("display_title") or "").group(1)
-        cards["qa"] = from_run(qa_runs[0], "running", f"reviewing PR #{n}")
+        t = target_of(qa_runs[0])
+        pr = pr_by_number.get(t["number"])
+        n_issue = _branch_issue(pr) if pr else None
+        cards["qa"] = from_run(qa_runs[0], "running",
+                               f"reviewing {t['label']}" + (f" · issue #{n_issue}" if n_issue else ""))
+        cards["qa"]["url"] = t["url"]
     elif failed_qa:
         p = failed_qa[0]
         more = f" (+{len(failed_qa) - 1} more)" if len(failed_qa) > 1 else ""
@@ -187,7 +275,10 @@ def build(
     # merge
     merge_runs = runs_of("Agent merge")
     if merge_runs:
-        cards["merge"] = from_run(merge_runs[0], "running", "checking PRs that passed QA")
+        # The sweep takes one eligible PR per run; GitHub does not say which
+        # from outside, so name the first passed PR only as a candidate.
+        what = f"checking {_pr_line(passed[0])}" if passed else "checking for PRs that passed QA"
+        cards["merge"] = from_run(merge_runs[0], "running", what)
     elif passed:
         p = passed[0]
         cards["merge"] = {"state": "waiting", "detail": f"{_pr_line(p)} passed QA, ready to merge",
@@ -219,6 +310,21 @@ def build(
         card = {"id": key, "name": name, "role": role, "url": None, **cards[key]}
         agents.append(card)
     counts = {s: sum(1 for a in agents if a["state"] == s) for s in STATES}
+    workflows = []
+    for run in sorted(active, key=lambda r: (r.get("status") != "in_progress",
+                                             r.get("run_started_at") or r.get("created_at") or "")):
+        at = run.get("run_started_at") or run.get("created_at")
+        t = target_of(run)
+        workflows.append({
+            "name": run.get("name") or "workflow",
+            "state": "queued" if run.get("status") == "queued" else "running",
+            "target": t["label"],
+            "target_kind": t["kind"],
+            "target_url": t["url"],
+            "at": at,
+            "ago": _ago(at, now),
+            "url": run.get("html_url"),
+        })
     return {
         "repo": GH_REPO,
         "generated_at": now.isoformat(timespec="seconds"),
@@ -226,6 +332,7 @@ def build(
         "agents": agents,
         "counts": counts,
         "open_prs": len(work_prs),
+        "workflows": workflows,
     }
 
 
@@ -266,11 +373,20 @@ def snapshot() -> dict:
                 active += (body.get("workflow_runs") or []) if isinstance(body, dict) else []
             prs = _get("pulls?state=open&per_page=50")
             prs = prs if isinstance(prs, list) else []
-            doc = build(active, prs, _loops())
+            issues: dict[int, str] = {}
+            for n in cycle_issues(active)[:MAX_ISSUE_READS]:
+                try:
+                    body = _get(f"issues/{n}")
+                    issues[n] = str(body.get("title") or "") if isinstance(body, dict) else ""
+                except Exception:  # noqa: BLE001 -- a missing title still names the issue
+                    issues[n] = ""
+            doc = build(active, prs, _loops(), issues=issues)
         # Broad on purpose, for the reason ops_data._fetch records: a narrow
         # tuple missed http.client.IncompleteRead and 500'd the whole page.
         except Exception as exc:  # noqa: BLE001
-            log.warning("agent_status: live read failed, serving the last answer: %s", exc, exc_info=True)
+            # One line, not a traceback: this fires on every refresh while
+            # GitHub is unreachable (QA note on #947).
+            log.warning("agent_status: live read failed, serving the last answer: %r", exc)
             if hit:
                 stale = dict(hit[1], live=False)
                 _cache = (time.monotonic(), stale)
@@ -279,6 +395,6 @@ def snapshot() -> dict:
                 doc = build([], [], _loops(), live=False)
             except Exception:  # noqa: BLE001
                 doc = {"repo": GH_REPO, "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                       "live": False, "agents": [], "counts": {}, "open_prs": 0}
+                       "live": False, "agents": [], "counts": {}, "open_prs": 0, "workflows": []}
         _cache = (time.monotonic(), doc)
         return doc
