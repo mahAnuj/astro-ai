@@ -50,6 +50,7 @@ from astro_ai.routes import charts as _charts_routes
 # Added after the #154 splice, so it goes last in both blocks below — it
 # owns a brand-new path (/health) and cannot shadow any existing route.
 from astro_ai.routes import health as _health_routes
+from astro_ai.routes import agents_status as _agents_status_routes
 # Re-exported, not redefined: scripts/perf_homepage.py --stages reaches into
 # astro_ai.main for `templates`, `_PANCHANG_STRIP_CACHE` and
 # `panchang_strip_for_city`, and degrades to "n/a (not in this tree)" —
@@ -400,6 +401,7 @@ app.include_router(_ask_routes.router)
 app.include_router(_matching_routes.router)
 app.include_router(_charts_routes.router)
 app.include_router(_health_routes.router)
+app.include_router(_agents_status_routes.router)
 
 
 def cli() -> None:

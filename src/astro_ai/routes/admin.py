@@ -27,7 +27,7 @@ import json
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from astro_ai import cache, events, feedback, ops_data, subscribers, users
+from astro_ai import agent_status, cache, events, feedback, ops_data, subscribers, users
 from astro_ai.routes.deps import _lang, require_admin, templates
 
 router = APIRouter()
@@ -194,6 +194,8 @@ async def admin_ops(request: Request, window: str = "", day: str = "") -> HTMLRe
     # `day` is a string for the same reason: ops_data.pick_day refuses a bad
     # value and the page shows the window instead of a 422.
     ops = await asyncio.to_thread(ops_data.snapshot, app_days=days, app_day=day)
+    # The "Agents right now" cards: 3 GitHub reads per CACHE_TTL, never raises.
+    agents_now = await asyncio.to_thread(agent_status.snapshot)
     L, I = ops["loop"], ops["issues"]
     client = {
         "repo": "mahAnuj/astro-ai",
@@ -218,6 +220,7 @@ async def admin_ops(request: Request, window: str = "", day: str = "") -> HTMLRe
         {
             "lang": _lang(request),
             "ops": ops,
+            "agents_now": agents_now,
             # </script> inside a JSON string would end the block early.
             "ops_json": json.dumps(client).replace("</", "<\\/"),
         },

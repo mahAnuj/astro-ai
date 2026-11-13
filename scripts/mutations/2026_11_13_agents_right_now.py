@@ -1,0 +1,30 @@
+"""Agents right now (agent_status.py): the cards on /admin/ops and in
+/api/agents/status. Each row re-breaks one decision the cards rest on."""
+
+MUTATIONS = [
+    ("agents-now: a held PR counts as ready to merge",
+     "src/astro_ai/agent_status.py",
+     '    passed = [p for p in work_prs if "qa-pass" in _labels(p) and "needs-human-review" not in _labels(p)]\n',
+     '    passed = [p for p in work_prs if "qa-pass" in _labels(p)]\n',
+     "test_labels_decide_qa_merge_and_chief"),
+    ("agents-now: a chief-cleared PR still shows as held",
+     "src/astro_ai/agent_status.py",
+     '    held = [p for p in work_prs if "needs-human-review" in _labels(p) and "chief-cleared" not in _labels(p)]\n',
+     '    held = [p for p in work_prs if "needs-human-review" in _labels(p)]\n',
+     "test_labels_decide_qa_merge_and_chief"),
+    ("agents-now: self-merging measurement PRs count as work waiting for QA",
+     "src/astro_ai/agent_status.py",
+     'SELF_MERGING = ("measurements/",)\n',
+     'SELF_MERGING = ("no-such-prefix/",)\n',
+     "test_measurement_prs_are_not_work_waiting_for_anyone"),
+    ("agents-now: a QA round shows as the developer building",
+     "src/astro_ai/agent_status.py",
+     '    build_runs = [r for r in work_runs if not QA_ROUND.search(r.get("display_title") or "")]\n',
+     '    build_runs = list(work_runs)\n',
+     "test_a_qa_round_is_qa_running_not_developer_building"),
+    ("agents-now: no cache, so every render re-reads GitHub",
+     "src/astro_ai/agent_status.py",
+     'CACHE_TTL = float(os.environ.get("AGENT_STATUS_TTL") or (60 if GH_TOKEN else 300))\n',
+     'CACHE_TTL = 0.0\n',
+     "test_snapshot_reads_three_endpoints_once_per_ttl"),
+]
