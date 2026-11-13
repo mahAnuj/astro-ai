@@ -40,6 +40,11 @@ nine English words and a fixed list of texts; banning more would invent a rule).
   snapshot route (`_cached(... call_fn=generate_reading)`) also generates; that reading is then
   cached so the next `/kundli` view is `was_cached=True`, and nothing restored from GCS is
   checked either. The metric "0 -> 100% of natal readings" in #966 is unreachable by this slice.
+- **Not checked: five of natal.txt:54's DO NOT phrases** ("transit", "gochar", "natal Lagna",
+  "Bhava", "lord of the"; "natal Moon" only via the Moon planet rule), so `ok` is True for a
+  reading using them. Follow-up: #970. QA round 1 found this and the docs had not said it.
+- **Broader than the prompt:** the decimal and chapter rules also flag "10.30", "1.0" and
+  "chapter 4" prose, and the stems over-match ("manifesto", "navigator"). Read a rate as a trend.
 - **Undercounts by construction:** planets and signs are case-sensitive ("the moon" is missed),
   and the seeker's name is stripped before matching (Meena, Tula, Kanya, Leo are real first
   names), which hides a genuine hit on a name equal to a banned term. "second house" may flag a

@@ -28,6 +28,12 @@ What this deliberately does NOT claim, so nobody reads a rate as more than it is
   in the 4th house" for Manglik charts, which breaks the planet and house-number bans
   at once. A Manglik chart can fail here for a reason the model cannot fix, which is
   why the call site also records `q_manglik`.
+- **Five of natal.txt's DO NOT phrases are NOT checked** (line 54): "transit", "gochar",
+  "natal Lagna", "Bhava" and "lord of the". Only "natal Moon" is caught, and only through
+  the `Moon` planet rule. `ok` is therefore True for a reading that uses them (#970).
+- **The decimal and chapter rules are broader than the prompt.** They also flag a time
+  ("10.30"), a version ("1.0") and prose like "chapter 4"; read the rate as a trend, not an
+  absolute.
 - **No Surya/Mangal/Shani, no Saravali/Raman.** natal.txt names nine English planet
   words and a fixed list of texts; banning more would be inventing a rule.
 """
