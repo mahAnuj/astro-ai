@@ -18,10 +18,11 @@ Ranked by impressions x achievable CTR gain, not by impressions alone: a query
 at position 11 with 2,000 impressions is worth more than one at position 4 with
 5,000, because the second has already won.
 
-TWO MODES BEYOND THE SNAPSHOT
------------------------------
+THREE MODES BEYOND THE SNAPSHOT
+-------------------------------
 `--by date` returns one row per day. `--trend` returns the same dimension
-measured over TWO adjacent windows with the delta between them.
+measured over TWO adjacent windows with the delta between them. `--page-daily`
+returns a page x date series (see the last paragraph).
 
 Both exist because "trending" was believed to be impossible here: nothing in
 this repo retains history, each run overwrites its JSON, so a trend looked like
@@ -36,6 +37,16 @@ Neither movement was visible anywhere in this repo before.
 A `--trend --by query` carries the same ~9% coverage caveat as any query fetch,
 and the emitted document repeats it, because a ranked list of risers looks
 equally authoritative whether it saw all the data or a twelfth of it.
+
+`--page-daily` (#490) exists so a page-level ship can be scored against its own
+deploy date. Measured gap: `gsc-daily.json` is site-level (date only) and
+`gsc-all.json` is page-level with no date, so neither can say whether /learn/x/
+moved after the day it shipped. The request is dimensions [page, date]; GSC
+returns no row for a day with no impressions, so an absent day is NOT a
+measured zero and the export does not zero-fill it. `--pages` is a watchlist of
+URL substrings applied client-side to one request, not one request per entry:
+the fetch is a single call and `coverage_pct` stays measured against the whole
+property, with `emitted_*` describing what survived the filter.
 """
 
 from __future__ import annotations
@@ -135,6 +146,85 @@ def trend(args, start: str, end: str, url: str, bearer: str) -> int:
     return 0
 
 
+def page_daily_rows(raw: list[dict], pages: list[str] | None = None) -> dict:
+    """Group API rows (keys=[page, date]) into one chronological series per page.
+
+    Pure: no network, so the grouping, the watchlist and the no-zero-fill rule
+    are testable. `pages` is a watchlist of URL substrings; a page is kept when
+    it contains any of them, and an entry that matched nothing is returned in
+    `unmatched_pages` rather than omitted, because a page that never appeared
+    and a page that was never asked for look identical in the output otherwise.
+    """
+    series: dict[str, list[dict]] = {}
+    matched: set[str] = set()
+    for r in raw:
+        page, date = r["keys"][0], r["keys"][1]
+        hits = [w for w in (pages or []) if w in page]
+        if pages and not hits:
+            continue
+        matched.update(hits)
+        series.setdefault(page, []).append({
+            "date": date, "impressions": r["impressions"], "clicks": r["clicks"],
+            "ctr": round(r["ctr"], 4), "position": round(r["position"], 1)})
+
+    totals = {}
+    for page, days in series.items():
+        days.sort(key=lambda d: d["date"])
+        imp, clk = sum(d["impressions"] for d in days), sum(d["clicks"] for d in days)
+        totals[page] = {
+            "impressions": imp, "clicks": clk,
+            "ctr": round(clk / imp, 4) if imp else None,
+            # Impression-weighted: a plain mean of daily positions would let a
+            # day with 1 impression count as much as a day with 500.
+            "position": round(sum(d["position"] * d["impressions"] for d in days) / imp, 1)
+            if imp else None,
+            "days_with_data": len(days)}
+    order = sorted(series, key=lambda p: -totals[p]["impressions"])
+    return {
+        "pages": {p: series[p] for p in order},
+        "page_totals": {p: totals[p] for p in order},
+        "unmatched_pages": [w for w in (pages or []) if w not in matched],
+        "rows_impressions": sum(r["impressions"] for r in raw),
+        "emitted_impressions": sum(t["impressions"] for t in totals.values()),
+    }
+
+
+def page_daily(args, start: str, end: str, url: str, bearer: str) -> int:
+    """Page x date series, optionally narrowed to a watchlist. Two requests."""
+    # 25000 is the per-request maximum; ~141 pages x 28 days is ~4,000 rows today,
+    # so no startRow pagination, and `truncated` says so if that ever stops being true.
+    data = post(url, {"startDate": start, "endDate": end, "dimensions": ["page", "date"],
+                      "rowLimit": ROW_LIMIT, "dataState": "final"}, bearer)
+    total_imp = property_impressions(url, bearer, start, end)
+    raw = data.get("rows", [])
+    pages = [p.strip() for p in args.pages.split(",") if p.strip()] if args.pages else None
+    out = page_daily_rows(raw, pages)
+
+    coverage = round(out["rows_impressions"] / total_imp * 100) if total_imp else None
+    if coverage is None:
+        cov_note = "property total impressions were 0 or unavailable; coverage not computable"
+    else:
+        cov_note = f"rows account for {coverage}% of the property's {total_imp} impressions"
+    truncated = len(raw) >= ROW_LIMIT
+    if truncated:
+        cov_note += (f" — TRUNCATED at rowLimit {ROW_LIMIT}: page x date rows beyond the "
+                     f"limit were not returned, so a series may be missing days")
+
+    print(json.dumps({
+        "source": "gsc", "site": args.site, "mode": "page-daily",
+        "dimension": ["page", "date"], "window": [start, end],
+        "note": ("a day with no row had no impressions or its data was withheld by Google; "
+                 "it is NOT a measured zero and is not zero-filled. Window excludes the "
+                 "last 3 days — GSC data is not final before that"),
+        "total_impressions": total_imp, "rows_impressions": out["rows_impressions"],
+        "coverage_pct": coverage, "coverage_note": cov_note, "truncated": truncated,
+        "watchlist": pages, "unmatched_pages": out["unmatched_pages"],
+        "emitted_pages": len(out["pages"]), "emitted_impressions": out["emitted_impressions"],
+        "pages": out["pages"], "page_totals": out["page_totals"],
+    }, indent=2))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=28)
@@ -143,11 +233,26 @@ def main() -> int:
     # that reads like a permissions failure rather than a wrong identifier.
     ap.add_argument("--site", default=os.environ.get("GSC_SITE_URL", "sc-domain:shubhagya.com"))
     ap.add_argument("--band", action="store_true", help="only the 6-20 position band")
-    ap.add_argument("--by", choices=("page", "query", "date"), default="page",
-                    help="dimension; query is a PARTIAL view (anonymised queries are withheld)")
+    # default None so --page-daily can tell an explicit --by from the default;
+    # it is resolved to "page" below, before anything reads it.
+    ap.add_argument("--by", choices=("page", "query", "date"), default=None,
+                    help="dimension (default page); query is a PARTIAL view "
+                         "(anonymised queries are withheld)")
     ap.add_argument("--trend", action="store_true",
                     help="compare this window with the one before it and emit deltas")
+    ap.add_argument("--page-daily", action="store_true",
+                    help="page x date series, to score a page against its deploy date (#490)")
+    ap.add_argument("--pages", default=None,
+                    help="with --page-daily: comma-separated URL substrings to keep, "
+                         "e.g. /learn/sade-sati/,/festivals")
     args = ap.parse_args()
+    if args.page_daily and (args.trend or args.band or args.by is not None):
+        sys.exit("--page-daily is its own page x date series; it cannot be combined "
+                 "with --trend, --band or --by")
+    if args.pages is not None and not args.page_daily:
+        sys.exit("--pages is the watchlist for --page-daily; it does nothing without it")
+    if args.by is None:
+        args.by = "page"
     if args.trend and args.by == "date":
         sys.exit("--trend compares two windows on one dimension; "
                  "--by date is already a series, so the two are redundant")
@@ -156,6 +261,8 @@ def main() -> int:
     url = API.format(site=urllib.parse.quote(args.site, safe=""))
     bearer = token()
 
+    if args.page_daily:
+        return page_daily(args, start, end, url, bearer)
     if args.trend:
         return trend(args, start, end, url, bearer)
     # 25000 is the API maximum per request. The site has ~133 pages with impressions, so no
