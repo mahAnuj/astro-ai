@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-13",
-    "2026-11-09"
+    "2026-10-14",
+    "2026-11-10"
   ],
   "dimensions": [
     "eventName"
@@ -14,39 +14,39 @@
   "rows": [
     {
       "event": "page_view",
-      "count": 1137
+      "count": 1169
     },
     {
       "event": "user_identified",
-      "count": 671
-    },
-    {
-      "event": "feature_view",
-      "count": 652
+      "count": 689
     },
     {
       "event": "session_start",
-      "count": 643
+      "count": 674
+    },
+    {
+      "event": "feature_view",
+      "count": 670
     },
     {
       "event": "first_visit",
-      "count": 512
+      "count": 541
     },
     {
       "event": "user_engagement",
-      "count": 284
+      "count": 290
     },
     {
       "event": "scroll",
-      "count": 170
+      "count": 173
     },
     {
       "event": "form_start",
-      "count": 139
+      "count": 140
     },
     {
       "event": "ask_answered",
-      "count": 135
+      "count": 137
     },
     {
       "event": "kundli_generated",
@@ -54,7 +54,7 @@
     },
     {
       "event": "cta_click",
-      "count": 9
+      "count": 10
     },
     {
       "event": "view_search_results",
@@ -77,10 +77,10 @@
       "count": 1
     }
   ],
-  "events_total": 4416,
-  "coverage_note": "cta_click: 9 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "events_total": 4557,
+  "coverage_note": "cta_click: 10 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
-    "count": 9,
+    "count": 10,
     "split_available": true,
     "rows": [
       {
@@ -91,6 +91,11 @@
       {
         "from_path": "/learn/kaal-sarp-dosh/",
         "to_path": "/kaal-sarp-check",
+        "count": 1
+      },
+      {
+        "from_path": "/learn/name-numerology-explained/",
+        "to_path": "/numerology",
         "count": 1
       }
     ]

@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-13T00:24:12Z",
+ "generated_at": "2026-11-13T01:43:59Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -814,10 +814,10 @@
   },
   {
    "number": 311,
-   "verdict": "PENDING",
-   "headline": "pending \u2014 scoreable from 2026-11-13",
-   "at": "2026-11-08T00:12:27Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/311#issuecomment-6714890987"
+   "verdict": "MISS",
+   "headline": "MISS",
+   "at": "2026-11-13T01:40:48Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/311#issuecomment-6841267605"
   },
   {
    "number": 329,
@@ -993,12 +993,20 @@
    "headline": "pending \u2014 scoreable from 2026-12-12",
    "at": "2026-11-12T02:08:37Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/735#issuecomment-6812290654"
+  },
+  {
+   "number": 835,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-14",
+   "at": "2026-11-13T01:40:49Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/835#issuecomment-6841267939"
   }
  ],
  "outcome_counts": {
   "PENDING": 11,
   "PASS": 5,
   "UNSCOREABLE": 10,
+  "MISS": 1,
   "HIT": 1,
   "PARTIAL": 1
  },
@@ -1006,7 +1014,7 @@
   {
    "number": 835,
    "title": "SEO debilitated-sun-career: 480 impressions on 'which sign' questions, 0 clicks \u2014 answer-first FAQ +",
-   "state": "open",
+   "state": "closed",
    "url": "https://github.com/mahAnuj/astro-ai/issues/835",
    "labels": [
     "seo",
