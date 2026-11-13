@@ -2097,12 +2097,12 @@ a{color:#1f5fae} a:hover{color:#174a88}
    cards. Built with textContent only; a failed read leaves the cards as they
    are and says so. */
 (function () {
-  var grid = document.getElementById('an-grid'), meta = document.getElementById('an-meta');
-  if (!grid || !window.fetch) return;
+  var cards = document.getElementById('an-grid'), meta = document.getElementById('an-meta');
+  if (cards === null || !window.fetch) return;
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
   function draw(doc) {
     if (!doc || !doc.agents || !doc.agents.length) return;
-    grid.textContent = '';
+    cards.textContent = '';
     doc.agents.forEach(function (a) {
       var card = el('a', 'ag ' + a.state);
       card.href = a.url || ('https://github.com/' + doc.repo + '/actions');
@@ -2110,7 +2110,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
       var dot = el('span', 'ag-dot'); dot.setAttribute('aria-hidden', 'true');
       var bd = el('span', 'bd'); bd.appendChild(el('span', 'nm', a.name)); bd.appendChild(el('span', 'dt', a.detail));
       card.appendChild(dot); card.appendChild(bd); card.appendChild(el('span', 'st', a.state));
-      grid.appendChild(card);
+      cards.appendChild(card);
     });
     meta.textContent = (doc.live ? 'live' : 'last known') + ' · refreshes every minute';
   }
