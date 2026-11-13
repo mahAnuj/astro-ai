@@ -32,6 +32,7 @@ WHAT IT ENFORCES, per published Hindi URL
      technical term.
   2. A Devanagari FLOOR over <main>'s text, per page type — see FLOORS. The
      floor stops a page getting worse; it does not certify one as finished.
+     A 503 is held to DEGRADED_FLOOR instead (#433).
 
 ALLOWED English, deliberately: "Shubh Bhagya", the sign names in parentheses
 (`मेष (Aries)` is the intended bilingual form), "WhatsApp", "Lahiri", the
@@ -90,12 +91,36 @@ floor had been cleared on thirteen pages where it was never applied.
 A gate whose every assertion is a negative passes hardest when it is given
 nothing. So three guards now stand before any of them, and all three exit 2:
 
-  1. /health must answer 200 with this app's JSON. A server answering is not
-     this app answering, and the port is the only thing the URL proves.
+  1. /health must answer 200 with this app's JSON: `ok` true AND a `revision`
+     key (routes/health.py returns both on every tier, `build_sha` null or
+     not). A server answering is not this app answering, and the port is the
+     only thing the URL proves. Each clause is pinned by its own fixture (#433):
+     one stub violating both at once pins the conjunction and neither half, and
+     `{"status":"ok","service":"grafana"}` passed the old `'"ok"' in body` test.
   2. A page's status must be 200 or 503. 503 is the documented degraded path
      (above); anything else means the response is not a page of ours.
-  3. <main> must be present and carry visible text. An empty region satisfies
-     every negative check in this file and proves nothing about any of them.
+  3. <main> must be present and carry visible text, on a 503 as on a 200. An
+     empty region satisfies every negative check in this file and proves
+     nothing about any of them.
+
+A 503 must also BE HINDI (#433; defect F9 was never enforced): the visible-text
+guard asks for text, not Hindi, and the Devanagari floor used to be 200-only, so
+thirteen 503s whose whole <main> was `<p>Shubh Bhagya</p>` printed
+`devanagari=0%` and exited 0. DEGRADED_FLOOR is applied to every 503.
+
+EXIT CODES, when a page cannot be read. Guards 2 and 3 no longer `return 2` on
+the first offending page, which threw away every defect already collected: an
+English leak on /hi/rashifal plus a 404 on /hi/rashifal/leo reported "skipped"
+and never printed the leak. Unreadable pages are now collected, both lists are
+printed, and the exit is decided after the loop:
+
+    a real problem found (with or without unreadable pages)   -> 1
+    unreadable pages only, no problem found                   -> 2
+    neither                                                   -> 0
+
+1 outranks 2 because 2 means "the check did not run" (pr-gates: "SKIPPED"), and
+a gate that found a defect did run. The unreadable pages are still printed, so a
+FAIL is never read as covering pages it never saw.
 """
 from __future__ import annotations
 
@@ -123,6 +148,21 @@ DEFAULT_BASE = "http://127.0.0.1:8000"
 # 13 prose hits — not the floor. The floor is a coarse backstop for a page
 # losing most of its Hindi at once.
 FLOORS = {"hub": 0.20, "rashi": 0.60}
+
+# The floor for a 503 -- the degraded error card, whatever the page type (#433).
+#
+# MEASURED 2026-11-13, on the real route (TestClient, key set, provider stubbed
+# to fail), Devanagari share of <main> through this file's own _visible() and
+# _devanagari_share(): /hi/rashifal/aries on AllProvidersExhausted = 0.959
+# ("अभी बहुत माँग है ... फ़ॉर्म पर वापस जाएँ"; the residue is the `&larr;`
+# entity, 4 Latin letters); on the regeneration cooldown card = 0.930. Those
+# are the two 503s a Hindi URL can serve with a Hindi body. 0.60 sits 33 points
+# under the lower of them and equals the rashi floor: a card that is mostly
+# English fails, and so does `<p>Shubh Bhagya</p>` at 0%, which is the case it
+# exists for. The same reasoning as the hub floor above, not "just under the
+# measurement". The keyless dev box serves an English 503 on purpose (operator
+# message, lang="en") and fails the sentinel sweep before it reaches this.
+DEGRADED_FLOOR = 0.60
 
 
 # English strings that actually leaked onto a Hindi page during #124.
@@ -224,6 +264,22 @@ def _devanagari_share(text: str) -> float:
     return sum(1 for c in letters if "ऀ" <= c <= "ॿ") / len(letters)
 
 
+def _is_this_app(probe: str) -> bool:
+    """/health's own JSON: `ok` true and a `revision` key.
+
+    Parsed, not substring-matched: `"ok"` is the commonest token in existence
+    and `{"status":"ok","service":"grafana"}` contains it. `revision` is on
+    both tiers (routes/health.py: K_REVISION or "local"), so requiring it
+    rejects no legitimate response.
+    """
+    import json
+    try:
+        d = json.loads(probe)
+    except ValueError:
+        return False
+    return isinstance(d, dict) and d.get("ok") is True and "revision" in d
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--url", default=DEFAULT_BASE)
@@ -253,7 +309,7 @@ def main() -> int:
     except Exception as e:
         print(f"COULD NOT VERIFY: {args.url}/health unreachable ({e})")
         return 2
-    if probe_code != 200 or '"ok"' not in probe:
+    if probe_code != 200 or not _is_this_app(probe):
         print(f"COULD NOT VERIFY: {args.url}/health answered {probe_code} and does "
               f"not look like this app: {probe[:120]!r}\n"
               f"Something else is on that port. Start the app, or pass --url.")
@@ -265,7 +321,9 @@ def main() -> int:
     print(f"Hindi surface (#124) — {len(hindi_urls)} published URLs, reading <main>\n")
     problems: list[str] = []
     checked = 0
-    floored = 0        # pages the Devanagari floor was actually applied to
+    floored = 0        # 200s the per-page-type Devanagari floor was applied to
+    degraded = 0       # 503s DEGRADED_FLOOR was applied to
+    unreadable: list[str] = []   # pages the gate could not read: see EXIT CODES
 
     for url in hindi_urls:
         full = args.url + url
@@ -277,24 +335,25 @@ def main() -> int:
             html = e.read().decode("utf-8", "replace")
             code = e.code
         except Exception as e:
-            print(f"COULD NOT VERIFY: {full} unreachable ({e})")
-            return 2
+            unreadable.append(f"{full} unreachable ({e})")
+            continue
 
         # 200 is a rendered page and 503 is the documented degraded card. Any
         # other status is not a page of ours, and every check below is a search
         # for something BAD -- all of which a non-page passes.
         if code not in (200, 503):
-            print(f"COULD NOT VERIFY: {full} answered {code}; this gate reads "
-                  f"rendered Hindi and a {code} has none to read.")
-            return 2
+            unreadable.append(f"{full} answered {code}; this gate reads "
+                              f"rendered Hindi and a {code} has none to read.")
+            continue
 
         main = _region(html, "main")
         text = _visible(main)
         if not text.strip():
-            print(f"COULD NOT VERIFY: {full} [{code}] has no visible text in "
-                  f"<main>. An empty region satisfies every negative check in "
-                  f"this file; it is not evidence that any of them held.")
-            return 2
+            unreadable.append(f"{full} [{code}] has no visible text in <main>. "
+                              f"An empty region satisfies every negative check "
+                              f"in this file; it is not evidence that any of "
+                              f"them held.")
+            continue
         share = _devanagari_share(text)
         hits = [s for s in SENTINELS if s in text]
         prose = _english_prose(text)
@@ -323,16 +382,24 @@ def main() -> int:
         #   3. read the expectation out of i18n — self-defeating: a mutated
         #      TABLE value is "found" in an English page.
         #
-        # `<nav aria-label="Main">` is the top nav specifically. An English
-        # label inside it is a lost call site; the Devanagari check on the
-        # expected value additionally catches the table reverting.
+        # `<nav aria-label="Main">` is the top nav specifically. On a 200 its
+        # Hindi label must be IN that element (#433: the check used to read only
+        # the i18n table, so deleting the nav element entirely left it green);
+        # an English label inside it is a lost call site; the Devanagari check
+        # on the expected value additionally catches the table reverting.
+        #
+        # NOT required on a 503: error.html renders no nav at all, measured
+        # 2026-11-13 on both Hindi degraded cards (nav region empty), so
+        # requiring it there would fail every legitimate degraded page.
         nav_main = _visible(_region_attr(html, "nav", 'aria-label="Main"'))
         missing_nav = [k for k, want in NAV_EXPECTED.items()
                        if not any("\u0900" <= c <= "\u097f" for c in want)]
         missing_nav += [e for e in NAV_ENGLISH if e in nav_main]
+        if code == 200:
+            missing_nav += [w for w in NAV_EXPECTED.values() if w not in nav_main]
 
-        # A degraded page is still required to be Hindi — that was defect F9 —
-        # but its body is short, so the floor is only applied to a 200.
+        # A degraded page is still required to be Hindi -- that was defect F9
+        # -- and DEGRADED_FLOOR is what enforces it (#433).
         if hits:
             problems.append(f"{url} [{code}]: English in <main>: {hits}")
         if prose:
@@ -346,31 +413,44 @@ def main() -> int:
                 f"English literal"
             )
         kind = "rashi" if re.match(r"^/hi/rashifal/[a-z]+$", url) else "hub"
-        floor = FLOORS[kind]
         if code == 200:
             floored += 1
-        if code == 200 and share < floor:
+            floor = FLOORS[kind]
+        else:
+            degraded += 1
+            floor = DEGRADED_FLOOR
+        if share < floor:
             problems.append(
-                f"{url} [200]: Devanagari share {share:.0%} is below the "
-                f"{floor:.0%} {kind} floor — a block has reverted to English"
+                f"{url} [{code}]: Devanagari share {share:.0%} is below the "
+                f"{floor:.0%} {kind if code == 200 else 'degraded'} floor — "
+                f"a block has reverted to English"
             )
         checked += 1
         print(f"  {url:<28} [{code}] devanagari={share:5.0%} "
               f"sentinels={len(hits)} prose={len(prose)} nav={len(missing_nav)}")
 
+    # Both lists are printed before the exit is chosen: see EXIT CODES.
     if problems:
         print(f"\nFAIL — {len(problems)} problem(s):")
         for p in problems:
             print(f"  - {p}")
         print("\nAn English string inside <main> on an indexed Hindi URL is the defect\n"
               "this gate exists for. Route it through t(lang, …).")
+    if unreadable:
+        print(f"\nCOULD NOT VERIFY — {len(unreadable)} page(s) could not be read:")
+        for u in unreadable:
+            print(f"  - {u}")
+    if problems:
         return 1
+    if unreadable:
+        return 2
 
-    # Says which pages the floor was actually applied to. The old line claimed
-    # it for all of them, including the 503s where `code == 200` skips it.
+    # Says which floor each page met. `floored` counts 200s only and `degraded`
+    # 503s only, so thirteen 503s read "on the 0 that rendered 200".
     print(f"\nPASS ({checked} Hindi URLs: no English sentinel in <main>; "
           f"Devanagari above each page type's floor on the {floored} that "
-          f"rendered 200, not applied to the {checked - floored} degraded)")
+          f"rendered 200, and above the {DEGRADED_FLOOR:.0%} degraded floor on "
+          f"the {degraded} that served 503)")
     return 0
 
 

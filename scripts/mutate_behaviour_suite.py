@@ -2304,7 +2304,7 @@ MUTATIONS = [
 
     ("#hindi-gate: no health probe, so a foreign server on the port is measured as ours",
      "scripts/verify_hindi_surface.py",
-     '    if probe_code != 200 or \'"ok"\' not in probe:',
+     '    if probe_code != 200 or not _is_this_app(probe):',
      '    if False:',
      "test_a_foreign_server_on_the_port_is_not_this_app"),
 
