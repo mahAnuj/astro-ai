@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-13T17:15:50Z",
+  "generated_at": "2026-11-13T19:42:25Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 101,
+  "open": 102,
   "with_ask": 37,
   "by_area": {
-    "UNCLASSIFIED": 39,
+    "UNCLASSIFIED": 40,
     "INFRA": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -31,18 +31,37 @@
   "by_type": {
     "untyped": 31,
     "enhancement": 23,
-    "bug": 20,
+    "bug": 21,
     "chore": 16,
     "correctness": 7,
     "design": 4
   },
   "by_priority": {
-    "unset": 72,
+    "unset": 73,
     "medium": 20,
     "high": 9
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 959,
+      "title": "Kaal Sarp pages print unsourced verbatim quotes from K.N. Rao and B.V. Raman; manglik-dosh meta still says six houses",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-13T18:32:32Z",
+      "updated": "2026-11-13T19:34:33Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 953,
       "title": "agent-measure: call fetch_gsc.py --page-daily and commit the export (follow-up to #490)",
@@ -84,7 +103,7 @@
         "chore"
       ],
       "created": "2026-11-12T17:43:39Z",
-      "updated": "2026-11-13T00:23:29Z",
+      "updated": "2026-11-13T19:42:24Z",
       "blocked": false,
       "needs_evidence": false
     },

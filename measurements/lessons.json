@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-13T17:17:10Z",
+ "generated_at": "2026-11-13T19:44:23Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -733,6 +733,15 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/951#issuecomment-6846242110",
     "summary": "QA: FAIL \u2014 verified at `8fc86421b556b67311554a820bd7ae48476c5be8` One defect; everything else passed. Judge-only round (qa:in-cycle), nothing pushed.  DEFECT (measured): the merge card names a PR the merge sweep does not take, and docs/decisions/2026-11-13-agents-exact-targets.md:39 says it does (\"t",
     "themes": []
+   },
+   {
+    "number": 960,
+    "at": "2026-11-13T19:17:34Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/960#issuecomment-6862577848",
+    "summary": "QA: FAIL \u2014 verified at `42c80375879ae43dfb0184d268a03455d6f97499` Round 1 (qa:in-cycle). Executed: 20 new tests pass (19-20 fail on d97f8ad), scoped mutation 78/78 caught incl. all 14 #959 rows, 37 verify_* gates rc=0 except 2 Playwright-only (env), all banned phrases 0 in rendered EN/HI pages. FAIL",
+    "themes": [
+     "copy"
+    ]
    }
   ],
   "reverts": [],
@@ -765,7 +774,7 @@
     "kind": "loop-idle",
     "level": "amber",
     "title": "Build lane idle 77% of the last 7d",
-    "detail": "130.0h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "detail": "129.7h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
@@ -774,8 +783,8 @@
   "regression": 19,
   "tests": 18,
   "grounding": 18,
+  "copy": 18,
   "tokens": 17,
-  "copy": 17,
   "security": 9,
   "i18n": 8,
   "performance": 8
