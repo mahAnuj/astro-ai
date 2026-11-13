@@ -46,6 +46,16 @@ def test_every_agent_has_a_card_in_order_with_a_known_state():
     assert sum(doc["counts"].values()) == len(agent_status.AGENTS)
 
 
+def test_a_running_build_cycle_is_building_and_names_its_pr():
+    # Kept under its original name (#947): a running build cycle reads as
+    # building and names its PR. Since this PR the PR comes from the cycle's
+    # own issue, never from a guess at "the newest cycle PR".
+    c = _cards([_run("Agent work", "Agent work: issue #835")],
+               [_pr(952, "issue/900-other"), _pr(951, "issue/835-sun-career", title="answer-first lede")])
+    assert c["dev-lead"]["state"] == "building"
+    assert "PR #951" in c["dev-lead"]["detail"] and "952" not in c["dev-lead"]["detail"]
+
+
 def test_a_dispatched_cycle_names_its_exact_issue_and_its_pr():
     # The other open cycle PR comes FIRST: a card that guessed "the newest
     # cycle PR" would name #952 instead of the issue the run was started on.
