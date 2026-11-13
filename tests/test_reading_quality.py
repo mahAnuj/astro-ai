@@ -155,3 +155,60 @@ def test_banned_by_kind_reports_counts_and_never_terms():
     counts = rq.banned_by_kind(v)
     assert counts == {"planet": 2, "decimal_age": 1, "banned_word": 1}, counts
     assert rq.banned_by_kind(rq.check_natal_reading(_clean(), n_sections=7)) == {}
+
+
+# natal.txt line 54 lists six phrases; "natal Moon" is caught by the planet rule (`Moon`),
+# so it is deliberately not a `forbidden_phrase` and is excluded from the per-phrase set.
+_PHRASE_FIXTURES = {
+    "transit": "A long transit is ending.",
+    "gochar": "The gochar of the year helps.",
+    "natal Lagna": "Your natal Lagna shapes this.",
+    "Bhava": "Each Bhava carries a theme.",
+    "lord of the": "The lord of the home matters.",
+}
+
+
+def test_each_jargon_phrase_fails_the_verdict_as_a_forbidden_phrase():
+    for phrase, sentence in _PHRASE_FIXTURES.items():
+        v = rq.check_natal_reading(_clean(extra=sentence), n_sections=7)
+        assert v["ok"] is False, f"{phrase!r} passes"
+        assert "forbidden_phrase" in _kinds(v), f"{phrase!r} not a forbidden_phrase: {v}"
+
+
+def test_every_phrase_natal_txt_line_54_bans_is_caught():
+    line = next(l for l in NATAL.splitlines() if l.startswith("- DO NOT use the words"))
+    phrases = re.findall(r'"([^"]+)"', line)
+    assert len(phrases) == 6, f"natal.txt's phrase line changed size: {phrases}"
+    for phrase in phrases:
+        v = rq.check_natal_reading(_clean(extra=f"Here the {phrase} appears."), n_sections=7)
+        assert v["ok"] is False and v["banned"], f"natal.txt bans {phrase!r}; not caught"
+    # `natal Moon` is caught once, by the planet rule, never twice.
+    moon = rq.check_natal_reading(_clean(extra="Your natal Moon is calm."), n_sections=7)
+    assert rq.banned_by_kind(moon) == {"planet": 1}, moon
+
+
+def test_phrases_match_case_insensitively_and_across_a_line_wrap():
+    for bad in ("Transit", "GOCHAR", "natal\nLagna", "bhava", "Lord  of\nthe"):
+        v = rq.check_natal_reading(_clean(extra=f"See {bad} here."), n_sections=7)
+        assert "forbidden_phrase" in _kinds(v), f"{bad!r} not flagged"
+
+
+def test_ordinary_prose_is_not_a_forbidden_phrase():
+    # Only the listed words: a longer word, a name, or "lord" / "of the" apart is clean,
+    # and so is the prompt's own "house of service" phrasing.
+    for ok_text in ("A transitory phase passes.", "Your friend Bhavana helps.",
+                    "The house of service calls.", "A lord, and the owner of the shop.",
+                    "Your rising sign shapes first impressions.",
+                    "The ruler of your career house sits in the house of service."):
+        v = rq.check_natal_reading(_clean(extra=ok_text), n_sections=7)
+        assert v["ok"] is True, f"{ok_text!r} wrongly flagged: {v['banned']}"
+    assert rq.check_natal_reading(_clean(), n_sections=7)["ok"] is True
+
+
+def test_a_seeker_named_bhava_is_not_a_phrase_hit_but_a_stranger_is():
+    text = _clean(name_in_prose="Bhava, you tend to carry others.")
+    assert rq.check_natal_reading(text, n_sections=7, name="Bhava Rao")["ok"] is True
+    assert "forbidden_phrase" in _kinds(rq.check_natal_reading(text, n_sections=7, name=""))
+    # ...and the name excuses only itself, not a different phrase elsewhere.
+    sep = _clean(extra="Your gochar is kind.", name_in_prose="Bhava")
+    assert "forbidden_phrase" in _kinds(rq.check_natal_reading(sep, n_sections=7, name="Bhava"))

@@ -1,7 +1,7 @@
 """A deterministic verdict on a generated natal reading (#327 slice 1, #966).
 
 `prompts/natal.txt` states a set of hard bans -- no planet names, no sign names,
-no house numbers, no decimals, no classical-text names, 17 banned words -- and
+no house numbers, no decimals, no classical-text names, 17 banned words, five jargon phrases -- and
 seven sections. A prompt rule is a request, not a guarantee: `rashifal_quality`
 measured its own planet ban broken in 31.0% of 252 published readings. Nothing
 checked the natal reading at all, so a provider swapping its model underneath us
@@ -28,9 +28,12 @@ What this deliberately does NOT claim, so nobody reads a rate as more than it is
   in the 4th house" for Manglik charts, which breaks the planet and house-number bans
   at once. A Manglik chart can fail here for a reason the model cannot fix, which is
   why the call site also records `q_manglik`.
-- **Five of natal.txt's DO NOT phrases are NOT checked** (line 54): "transit", "gochar",
-  "natal Lagna", "Bhava" and "lord of the". Only "natal Moon" is caught, and only through
-  the `Moon` planet rule. `ok` is therefore True for a reading that uses them (#970).
+- **The jargon phrases match as listed, not as stems** (#970). natal.txt line 54 bans the
+  words "transit", "gochar", "natal Lagna", "Bhava" and "lord of the" and, unlike its
+  BANNED WORDS paragraph, does not say "in any form". So `transits`, `transiting` and
+  `bhavas` are NOT flagged: widening a stem would be inventing a rule, and an undercount
+  is the safer error. "natal Moon" is on the same line but is caught only by the `Moon`
+  planet rule, deliberately not a second time here, so a reading with it counts once.
 - **The decimal and chapter rules are broader than the prompt.** They also flag a time
   ("10.30"), a version ("1.0") and prose like "chapter 4"; read the rate as a trend, not an
   absolute.
@@ -87,6 +90,14 @@ _BANNED_WORD_RULE = re.compile(
     r"|propensit\w+|endeavou?r\w*|facilitat\w+|delve\w*|unlock\w*|harness\w*"
     r"|empower\w*|leverag\w+|moreover|furthermore|intricac\w+)\b", re.I)
 
+# natal.txt line 54, minus "natal Moon" (the planet rule already catches the `Moon` in
+# it; a second rule would count one phrase twice). Exact words with a boundary on each
+# side, so "Bhavana" (a name or a different word) and "transitory" are clean. Whitespace
+# inside a phrase is flexible because the model wraps lines. tests/test_reading_quality.py
+# parses the prompt line and fails if a phrase is added to it and not here.
+_PHRASE_RULE = re.compile(
+    r"\b(?:transit|gochar|natal\s+Lagna|Bhava|lord\s+of\s+the)\b", re.I)
+
 _RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("planet", _PLANET_RULE),
     ("sign", _SIGN_RULE),
@@ -94,6 +105,7 @@ _RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("decimal_age", _DECIMAL_RULE),
     ("classical_text", _TEXT_RULE),
     ("banned_word", _BANNED_WORD_RULE),
+    ("forbidden_phrase", _PHRASE_RULE),
 )
 
 
