@@ -97,11 +97,16 @@ ALLOWED_HOSTS: dict[str, tuple[str, str]] = {
     "api.mistral.ai": ("runtime", "providers.py preset: mistral (opt-in via BHAGYA_LLM_PROVIDERS)"),
     "api.telegram.org": ("runtime", "notify.py: sendMessage alert to the owner's chat"),
     "api.brevo.com": ("runtime", "email_sender.py: BREVO_ENDPOINT, transactional mail"),
-    "api.github.com": ("runtime", "ops_today.py and issue_backlog.py: read-only issue/PR listing for /admin/ops"),
+    "api.github.com": ("runtime", "ops_today.py, issue_backlog.py and agent_status.py: read-only issue/PR/run "
+                       "listing for /admin/ops and /api/agents/status"),
     "raw.githubusercontent.com": ("runtime", "ops_data.py: reads measurements/*.json from main for /admin/ops"),
     "www.drikpanchang.com": ("reference", "festival_registry.py SOURCE_URL_BY_YEAR: a provenance link the /festivals "
                              "page renders; checked 2026-11-08, no code fetches it (sankranti.py/adhik_maas.py "
                              "mention it only in docstrings, which this gate skips)"),
+    "github.com": ("reference", "agent_status.py: links to a run, PR or workflow page on the Agents right now "
+                   "cards; rendered, never fetched"),
+    "anujmahajan.com": ("reference", "routes/agents_status.py: the Access-Control-Allow-Origin value for the one "
+                        "page that reads /api/agents/status; a header, never fetched"),
     "shubhagya.com": ("reference", "routes/deps.py default site URL and snapshots.py; our own origin, a link"),
     "www.sitemaps.org": ("reference", "routes/seo.py: sitemap XML namespace URI, an identifier"),
     "www.w3.org": ("reference", "routes/seo.py: xhtml XML namespace URI, an identifier"),
@@ -123,6 +128,8 @@ CLIENT_MODULES: dict[str, tuple[set[str], str]] = {
     "src/astro_ai/ops_today.py": ({"urllib.request"}, "GitHub API read for /admin/ops (api.github.com)"),
     "src/astro_ai/issue_backlog.py": ({"urllib.request"}, "GitHub API read for the backlog panel (api.github.com)"),
     "src/astro_ai/ops_data.py": ({"urllib.request"}, "measurements from raw.githubusercontent.com"),
+    "src/astro_ai/agent_status.py": ({"urllib.request"}, "GitHub API read (api.github.com) for the Agents right "
+                                     "now cards: 3 requests per cache TTL"),
     "src/astro_ai/providers.py": ({"openai"}, "OpenAI SDK; api_base=None means api.openai.com (paid safety net), "
                                   "and ASTRO_AI_API_BASE can repoint any provider"),
     "src/astro_ai/chart.py": ({"geopy"}, "city geocoding via Nominatim (nominatim.openstreetmap.org)"),
