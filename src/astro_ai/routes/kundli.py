@@ -50,6 +50,7 @@ from astro_ai.chart import (
 )
 from astro_ai.llm import BirthDetails, generate_reading, parse_sectioned_reading
 from astro_ai.providers import AllProvidersExhausted
+from astro_ai.reading_quality import banned_by_kind, check_natal_reading
 from astro_ai.routes.deps import (
     PROMPT_PATH,
     _ask_cta_ctx,
@@ -307,6 +308,29 @@ async def _render_natal_for(request: Request, details: BirthDetails,
                 tokens=llm_providers.last_used_tokens(),
                 latency_s=_generated["secs"],
             )
+        # #327: a deterministic verdict on the reading against natal.txt's own
+        # bans, recorded and logged, NEVER acted on. Fresh generations only --
+        # a cached re-view was checked when it was generated -- and the
+        # snapshot route's generations are not covered (#967). Counts and kind
+        # names only: the matched terms go to the log, the seeker's prose and
+        # name go nowhere. A checker that raises costs the keys, not the page.
+        _q: dict = {}
+        try:
+            _verdict = check_natal_reading(
+                reading_text, n_sections=len(sections), name=details.name, lang=lang)
+            _q = {
+                "q_ok": _verdict["ok"], "q_sections": _verdict["sections"],
+                "q_banned": banned_by_kind(_verdict), "q_words": _verdict["words"],
+                "q_manglik": bool(flags.manglik),
+            }
+            log.log(
+                logging.INFO if _verdict["ok"] else logging.WARNING,
+                "natal verdict ok=%s sections=%s words=%s lang=%s banned=%s",
+                _verdict["ok"], _verdict["sections"], _verdict["words"], lang,
+                sorted({f"{h['kind']}:{h['term']}" for h in _verdict["banned"]}),
+            )
+        except Exception as err:  # noqa: BLE001 — a measurement never breaks the page
+            log.warning("natal verdict failed: %s", type(err).__name__)
         events.record(
             type="form_kundli",
             email=(_u_natal.email if _u_natal else ""),
@@ -315,6 +339,7 @@ async def _render_natal_for(request: Request, details: BirthDetails,
                 "lang": lang, "model": _model,
                 "rashi_lagna": _lagna, "rashi_moon": _moon, "rashi_sun": _sun,
                 **coarse_profile(details.birth_date, details.birth_place),
+                **_q,
             },
         )
 
