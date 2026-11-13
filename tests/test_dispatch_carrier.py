@@ -397,3 +397,23 @@ def test_a_quick_success_that_commented_is_a_cycle_that_stood_down(tmp_path):
              comments_left=1)
     assert p.returncode == 0, p.stdout + p.stderr
     assert "stood down" in p.stdout and "See #421" not in p.stdout
+
+
+# --- fix runs on a PR (2026-11-13, owner: "let the loop fix session PRs too") --
+
+def test_a_fix_pr_ruling_dispatches_the_fix_input(tmp_path):
+    r = _run(tmp_path, "fix_pr=951\n")
+    assert r.returncode == 0, r.stderr
+    assert "would dispatch agent-work at fix_pr #951" in r.stdout
+
+
+def test_a_fix_pr_ruling_is_checked_as_a_PR(tmp_path):
+    """Same number-space trap as `pr=`: a merged PR is refused even if
+    `issue view` would have said OPEN."""
+    r = _run(tmp_path, "fix_pr=638\n", state="OPEN", pr_state="MERGED")
+    assert r.returncode == 1 and "MERGED" in r.stdout, r.stdout
+
+
+def test_a_fix_run_waits_in_the_BUILD_lane_because_it_pushes(tmp_path):
+    assert "QUEUED" in _run(tmp_path, "fix_pr=951", busy=1, busy_qa=0).stdout
+    assert "would dispatch" in _run(tmp_path, "fix_pr=951", busy=0, busy_qa=1).stdout

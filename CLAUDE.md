@@ -316,6 +316,14 @@ What has NOT changed, and why it matters more now than before:
   label could hand itself `qa-pass` and make `agent-merge` decorative. A `qa-fail` PR
   with no fix since its verdict is still left alone: that needs a FIX, and which fix is a
   judgment `steward.md`'s routing table holds across three kinds with different actions.
+- **A session's PR gets fixed by the loop too — since 2026-11-13** (owner: *"let the loop fix
+  session PRs too"*). A QA FAIL or red gates on a PR whose branch names no issue used to wait for a
+  session, because a judge-only round pushes nothing and so nothing fired again (#951). Now
+  `scripts/pr_fix_after_qa.py` (after a failed round) and `scripts/red_gates.py` (red gates) send
+  `fix_pr=<n>`: `/agent-cycle --fix-pr <n>` (Step 0d) fixes exactly the findings, pushes to the PR's
+  branch and writes **no verdict**, and the push earns a separate QA round through `qa-on-green`'s
+  refix path. **At most three per PR** (shared `qa-on-green: fix dispatched at <sha>` markers), one
+  per head, never a `.github/workflows/` diff, never a fork. `docs/decisions/2026-11-13-loop-fixes-session-prs.md`.
 - **A dispatch made while a cycle runs is QUEUED, not dropped — `agent-queue.yml`, added
   2026-11-02 on the owner's request.** `agent-work` runs one cycle at a time, and GitHub
   keeps at most ONE pending run per concurrency group: a third dispatch **cancels** the

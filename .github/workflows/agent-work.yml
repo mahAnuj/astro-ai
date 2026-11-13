@@ -42,7 +42,9 @@ name: Agent work
 # dispatch_cycle.sh and cycle_queue.py tell a QA round from a build cycle by
 # this. Change the prefix and both lanes merge silently -- tests pin it.
 # QUOTED: unquoted, `: ` reads as a mapping and ` #` as a comment.
-run-name: "${{ inputs.pr && format('QA round: PR #{0}', inputs.pr) || 'Agent work' }}"
+# A fix run (`fix_pr`, 2026-11-13) is a BUILD -- it pushes -- so its title must
+# not start with "QA round".
+run-name: "${{ inputs.pr && format('QA round: PR #{0}', inputs.pr) || inputs.fix_pr && format('Agent work: fix PR #{0}', inputs.fix_pr) || 'Agent work' }}"
 
 on:
   # TWICE a day since 2026-10-13, not once. The repo going public removed the
@@ -135,6 +137,16 @@ on:
       # rather than picking one.
       pr:
         description: "PR number to run a QA round on (blank = none; cannot be combined with issue)"
+        required: false
+      # A FIX ON A PR (2026-11-13, owner: "let the loop fix session PRs too").
+      # Sent by scripts/pr_fix_after_qa.py after a QA round FAILS on a PR whose
+      # branch names no issue, and by scripts/red_gates.py on such a PR's red
+      # gates. `/agent-cycle --fix-pr <n>` (Step 0d) fixes exactly the findings
+      # and pushes to the PR's own branch. It pushes, so it runs in the BUILD
+      # lane (the concurrency group below keys on `pr` only). Mutually
+      # exclusive with `issue` and `pr`.
+      fix_pr:
+        description: "PR number to fix (its latest QA FAIL or red gates) and push to (blank = none)"
         required: false
 
 # ONE cycle at a time PER LANE. GitHub keeps at most ONE pending run in a group
@@ -278,6 +290,7 @@ jobs:
         env:
           ISSUE: ${{ github.event.inputs.issue }}
           PR: ${{ github.event.inputs.pr }}
+          FIX_PR: ${{ github.event.inputs.fix_pr }}
         run: |
           set -uo pipefail
           # `:-` because a `schedule` fire has no `inputs` object at all, so
@@ -285,11 +298,12 @@ jobs:
           # every cron run. That is the whole reason this is not an expression.
           issue="${ISSUE:-}"
           pr="${PR:-}"
+          fix_pr="${FIX_PR:-}"
 
           # These reach the agent's PROMPT, not a shell, so the risk is a cycle
           # aimed at nonsense rather than injection -- still refused, because
           # "aimed at nonsense" is a ~50-minute run that reads as a success.
-          for v in "$issue" "$pr"; do
+          for v in "$issue" "$pr" "$fix_pr"; do
             case "$v" in
               "") ;;
               *[!0-9]*)
@@ -302,8 +316,16 @@ jobs:
             echo "::error::dispatched with BOTH issue=$issue and pr=$pr. A cycle does one thing; refusing rather than choosing."
             exit 1
           fi
+          if [ -n "$fix_pr" ] && { [ -n "$issue" ] || [ -n "$pr" ]; }; then
+            echo "::error::dispatched with fix_pr=$fix_pr AND issue='$issue' pr='$pr'. A fix run does one thing; refused."
+            exit 1
+          fi
 
-          if [ -n "$pr" ]; then
+          if [ -n "$fix_pr" ]; then
+            # Step 0d in .claude/commands/agent-cycle.md: fix this PR's latest
+            # QA FAIL (or red gates), push to its branch, stop. No verdict.
+            args="--fix-pr $fix_pr"
+          elif [ -n "$pr" ]; then
             # Step 0c in .claude/commands/agent-cycle.md. It skips Step 0a --
             # which is an ISSUE provenance check and the thing that killed both
             # dispatched rounds on #642 on 2026-11-01, `OUTSIDER -- author is a
@@ -760,6 +782,33 @@ jobs:
       # still in progress is safe. Best effort: the steward's completion
       # remains the backstop. It sits before the receipt, which must stay last
       # (test_collect_loop_measurements); agent-queue waits for the whole run.
+      # AFTER A QA ROUND FAILS, THE FIX (2026-11-13, owner: "let the loop fix
+      # session PRs too"). A judge-only round pushes nothing, so the gates never
+      # re-run and qa-on-green never fires again: a FAIL on a branch naming no
+      # issue used to wait for a session. scripts/pr_fix_after_qa.py reads the
+      # round's own verdict and, for a FAIL on the current head of such a PR
+      # (no .github/workflows/ diff, under 3 fixes), writes the marker and hands
+      # `fix_pr=<n>` to the shared carrier, which queues it if the build lane is
+      # busy. No model decides it, and it writes no label.
+      - name: Dispatch a fix when this QA round failed
+        id: qa-fix
+        if: always() && github.event.inputs.pr != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.inputs.pr }}
+          QUEUE_ON: ${{ github.event.inputs.pr }}
+          LOOP_PAUSED: ${{ vars.LOOP_PAUSED }}   # #903: paused queues, never dispatches
+        run: |
+          set -uo pipefail
+          python3 scripts/pr_fix_after_qa.py | tee -a "$GITHUB_STEP_SUMMARY"
+          target=$(sed -n 's/^target=//p' "$GITHUB_OUTPUT" | tail -1)
+          if [ -n "$target" ]; then
+            printf '%s\n' "$target" > /tmp/qa-fix-dispatch.txt
+            bash scripts/dispatch_cycle.sh /tmp/qa-fix-dispatch.txt agent-work-qa-fix
+          fi
+
       - name: Wake agent-queue when this run completes
         if: always() && github.event_name == 'workflow_dispatch'
         continue-on-error: true

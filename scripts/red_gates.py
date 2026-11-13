@@ -17,13 +17,17 @@ $GITHUB_OUTPUT):
   rerun   the failed job log shows an infrastructure flake and NO test or
           gate result -- the code was never judged. Only on run_attempt 1, so
           a real outage is re-run once, not forever.
-  fix     a real failure on a loop branch that names its issue (issue/, partial/
-          or fix/ + <n>-), whose diff does not touch .github/workflows/ (the
-          cycle's token cannot push there). Dispatched once per head: the
-          workflow writes a marker comment first, the same guard as the green
-          path's `qa-on-green: dispatched at <sha>`.
-  notify  a real failure nothing here can fix (an owner branch, a workflows
-          diff): one comment naming the failing gates, once per head.
+  fix     a real failure whose diff does not touch .github/workflows/ (the
+          cycle's token cannot push there). A branch that names its issue
+          (issue/, partial/ or fix/ + <n>-) gets `target=issue=<n>`; any other
+          branch -- a session's or the owner's -- gets `target=fix_pr=<pr>`
+          (agent-cycle.md Step 0d, since 2026-11-13: "let the loop fix session
+          PRs too"), at most MAX_PR_FIXES times per PR. Dispatched once per
+          head: the workflow writes a marker comment first, the same guard as
+          the green path's `qa-on-green: dispatched at <sha>`.
+  notify  a real failure nothing here can fix (a workflows diff, or a session
+          PR that has used its MAX_PR_FIXES): one comment naming the failing
+          gates, once per head.
   none    not this loop's PR, a moved head, or already handled for this head.
 
 EXIT CODES: 0 decided (action may be none)   2 bad environment
@@ -55,6 +59,10 @@ JUDGED = re.compile(
 
 ISSUE_BRANCH = re.compile(r"^(?:issue|partial|fix)/(\d+)-")
 FIX_MARK = "qa-on-green: fix dispatched at"
+#: Automatic fixes per session PR (fix_pr), counted from FIX_MARK comments.
+#: A fix that fails again would otherwise earn another forever: one per head,
+#: and every fix is a new head.
+MAX_PR_FIXES = 3
 NOTE_MARK = "qa-on-green: red gates noted at"
 
 
@@ -128,16 +136,23 @@ def decide(gh: Runner, env: dict) -> dict:
     m = ISSUE_BRANCH.match(branch)
     files = json.loads(gh(["api", f"repos/{repo}/pulls/{num}/files?per_page=100"]))
     touches_wf = any((f.get("filename") or "").startswith(".github/workflows/") for f in files)
-    if m and not touches_wf:
+    fixes = sum(1 for c in comments if (c.get("body") or "").startswith(FIX_MARK))
+    capped = not m and fixes >= MAX_PR_FIXES
+    if not touches_wf and not capped:
         if f"{FIX_MARK} {sha}" in seen:
             return {"action": "none", "pr": num, "why": f"a fix was already dispatched at {sha[:7]}"}
-        return {"action": "fix", "pr": num, "issue": int(m.group(1)), "jobs": names,
-                "why": f"real failure in {names}; a cycle can push to {branch}"}
+        if m:
+            return {"action": "fix", "pr": num, "issue": int(m.group(1)), "jobs": names,
+                    "target": f"issue={int(m.group(1))}",
+                    "why": f"real failure in {names}; a cycle can push to {branch}"}
+        return {"action": "fix", "pr": num, "jobs": names, "target": f"fix_pr={num}",
+                "why": (f"real failure in {names}; {branch} names no issue, so a fix run "
+                        f"aims at the PR itself ({fixes + 1} of {MAX_PR_FIXES})")}
     if f"{NOTE_MARK} {sha}" in seen:
         return {"action": "none", "pr": num, "why": f"already noted at {sha[:7]}"}
     return {"action": "notify", "pr": num, "jobs": names,
             "why": ("the diff touches .github/workflows/, which a cycle cannot push" if touches_wf
-                    else f"{branch} names no issue for a cycle to adopt")}
+                    else f"{MAX_PR_FIXES} automatic fixes already tried on #{num}; a person takes it from here")}
 
 
 def main(argv: list[str], gh: Runner = run_gh) -> int:
@@ -155,7 +170,7 @@ def main(argv: list[str], gh: Runner = run_gh) -> int:
     out = os.environ.get("GITHUB_OUTPUT")
     if out:
         with open(out, "a") as fh:
-            for k in ("action", "pr", "issue", "jobs"):
+            for k in ("action", "pr", "issue", "jobs", "target"):
                 if k in d:
                     fh.write(f"{k}={str(d[k]).replace(chr(10), ' ')}\n")
     return 0

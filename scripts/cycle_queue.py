@@ -79,7 +79,7 @@ WRITER = "github-actions[bot]"
 #: this is about a head that has almost certainly moved on.
 MAX_AGE_DAYS = 7
 ENTRY = re.compile(
-    r"<!-- agent-work-queue: kind=(issue|pr) target=([0-9]+) by=([A-Za-z0-9_.-]+) -->")
+    r"<!-- agent-work-queue: kind=(issue|pr|fix_pr) target=([0-9]+) by=([A-Za-z0-9_.-]+) -->")
 _BY = re.compile(r"[^A-Za-z0-9_.-]+")
 CARRIER = Path(__file__).resolve().parent / "dispatch_cycle.sh"
 #: The carrier's two rc=1 messages that mean "the ruling was fine, the RUN
@@ -287,6 +287,23 @@ def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
     except RuntimeError:
         return None
     passed = "qa-pass" in labels.strip().split(",")
+    if e.kind == "fix_pr":
+        # A FIX for a session PR (2026-11-13). Drop it only when the PR has
+        # since passed QA on its current head: then there is nothing to fix.
+        # Anything unreadable starts it; the fix run re-reads the verdict.
+        if not passed:
+            return None
+        try:
+            head = gh(["api", f"repos/{repo}/pulls/{e.target}", "--jq", ".head.sha"]).strip()
+            pass_lines = gh(["api", "--paginate", f"repos/{repo}/issues/{e.target}/comments?per_page=100",
+                             "--jq", '.[] | select(.body | startswith("QA: PASS")) '
+                                     '| "\\(.user.login)\\t\\(.body | split("\\n")[0])"'])
+        except RuntimeError:
+            return None
+        if head and _pass_names_head(pass_lines, repo, head):
+            return (f"PR #{e.target} passed QA at its head `{head[:7]}` since this fix was "
+                    f"queued; there is nothing left to fix.")
+        return None
     if e.kind != "pr":
         pr = _mergeable_passed_pr(gh, repo, e.target) if passed else None
         if pr is None:
@@ -436,7 +453,7 @@ def main(argv: list[str], gh: Runner = run_gh) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
     q = sub.add_parser("enqueue")
-    q.add_argument("--kind", required=True, choices=("issue", "pr"))
+    q.add_argument("--kind", required=True, choices=("issue", "pr", "fix_pr"))
     q.add_argument("--target", required=True, type=int)
     q.add_argument("--by", required=True)
     q.add_argument("--on", type=int, help="issue/PR to write the entry on (default: target)")
