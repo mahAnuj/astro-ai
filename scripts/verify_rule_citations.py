@@ -53,6 +53,18 @@ WHAT IT CHECKS
    name wrapped across two comment lines. The gate fails closed if the file
    cannot be read or the anchor it scans around has moved. A rule that has no
    held source is to say so in plain words, not to name a text.
+8. `matching.py`, WHOLE FILE, must not name an unheld book either
+   (`_matching_problems`; #914). Same scan as check 7 over the same name list,
+   MINUS Muhurta Chintamani: `knowledge/matching.md` says that book is held and
+   it is the sole source of the 36-point weights, but `fetch_corpus.py` has no
+   row for it (a row needs a plain line count, measurable only with `data/`
+   present - #914 step 1). It is passed through `_MATCHING_HELD_UNREGISTERED`,
+   an EXACT one-entry ledger: it passes only while the registry still lacks the
+   book AND `matching.py` still names it. Add the registry row, or stop naming
+   the book, and the gate fails until the ledger entry is deleted. Fails closed
+   if the file is unreadable or its anchors have moved. #914 found
+   `matching.py` credited Brihat Parashara Hora Shastra in its module docstring
+   while this gate printed PASS - the #216 defect in the one file nobody scanned.
 
 RULES FOR ANYONE EDITING THIS FILE
 ----------------------------------
@@ -67,10 +79,12 @@ RULES FOR ANYONE EDITING THIS FILE
   (count, yoga removed, seven moolatrikona spellings plus the plain claim,
   seven banned phrases, the missing section, a positional-slug yoga), and #716
   nine more (`_MUHURAT_MUTATIONS`: each unheld name in `muhurat.py`, one wrapped
-  across a comment line), and asserts this gate goes red on each. A gate that has never failed is not
+  across a comment line), #914 ten more (`_MATCHING_MUTATIONS`: seven unheld
+  names in `matching.py`; `_MATCHING_LEDGER_CASES`: the three ways the Muhurta
+  Chintamani ledger can be wrong), and asserts this gate goes red on each. A gate that has never failed is not
   evidence (ARCHITECTURE.md). The count in this sentence is the length of
-  `_MUTATIONS` plus the HTML one plus the #209 cases plus `_MUHURAT_MUTATIONS`;
-  keep it honest if you add another.
+  `_MUTATIONS` plus the HTML one plus the #209 cases plus `_MUHURAT_MUTATIONS` plus
+  `_MATCHING_MUTATIONS` plus `_MATCHING_LEDGER_CASES`; keep it honest if you add another.
 """
 from __future__ import annotations
 
@@ -84,6 +98,7 @@ CHART = ROOT / "src" / "astro_ai" / "chart.py"
 RESULT_HTML = ROOT / "src" / "astro_ai" / "templates" / "result.html"
 ABOUT_HTML = ROOT / "src" / "astro_ai" / "templates" / "about.html"
 MUHURAT = ROOT / "src" / "astro_ai" / "muhurat.py"
+MATCHING = ROOT / "src" / "astro_ai" / "matching.py"
 
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -629,6 +644,94 @@ def _muhurat_problems(text: str) -> list[str]:
     return fails
 
 
+# #914: `matching.py` is scanned like `muhurat.py` for the same names, except the
+# two spellings of Muhurta Chintamani, which are handled by the ledger below.
+# Filtered from `_MUHURAT_UNHELD` rather than restated so the lists cannot drift.
+_MATCHING_LEDGERED_LABELS = frozenset({"Muhurta Chintamani", "Chintamani"})
+_MATCHING_UNHELD = tuple(
+    (n, p) for n, p in _MUHURAT_UNHELD if n not in _MATCHING_LEDGERED_LABELS)
+_MATCHING_MC = tuple(
+    (n, p) for n, p in _MUHURAT_UNHELD if n in _MATCHING_LEDGERED_LABELS)
+
+# Books `matching.py` names that `knowledge/matching.md` records as HELD but that
+# `fetch_corpus.py` does not register. EXACT, like check 3: the entry must be
+# deleted the moment the registry gains a row or `matching.py` stops naming the
+# book, or the gate fails. This is the sanctioned TEMPORARY mechanism for one
+# book and it closes with #914 step 1 (measure the plain line count with
+# `data/matching/muhurta-chintamani-daivagya-ramacharya_sanskrit_djvu.txt`
+# present, add the `BOOKS` row). It is NOT precedent: adding an entry to make a
+# new citation green is the regression this gate exists to stop, and a count
+# invented for want of `data/` would be worse than this ledger.
+_MATCHING_HELD_UNREGISTERED: dict[str, str] = {
+    "Muhurta Chintamani": (
+        "knowledge/matching.md ('The source') records it as held at "
+        "data/matching/muhurta-chintamani-daivagya-ramacharya_sanskrit_djvu.txt "
+        "and it is the sole source of the 36-point weights; fetch_corpus.py has "
+        "no BOOKS row because a row needs a plain line count that only a machine "
+        "with data/ present can measure (#914 step 1)"),
+}
+
+
+def _matching_problems(text: str,
+                       ledger: dict[str, str] | None = None,
+                       registered: set[str] | None = None) -> list[str]:
+    """#914: `matching.py` - every unheld book name, plus the Muhurta Chintamani
+    ledger held exact. `ledger` / `registered` default to the real ones; the
+    self-test passes altered copies to prove each way the ledger can be wrong
+    turns this red.
+
+    Same textual, whole-file scan as `_muhurat_problems`, for the same reason
+    (`matching.py` put its attributions in a docstring and `#` comments, which no
+    AST check reads), and the same fail-closed anchor."""
+    if "def compute_guna_milan" not in text or "MATCHING_RULES_VERSION" not in text:
+        return ["matching.py no longer has the anchors this scan reads "
+                "(`compute_guna_milan`, `MATCHING_RULES_VERSION`) - it has moved "
+                "or is not the file, and a gate that cannot find its subject "
+                "passes vacuously (#193)"]
+    if ledger is None:
+        ledger = _MATCHING_HELD_UNREGISTERED
+    if registered is None:
+        registered = set(_registry()[0])
+    fails: list[str] = []
+    for label, pattern in _MATCHING_UNHELD:
+        for m in re.finditer(pattern, text, re.I):
+            line = text.count("\n", 0, m.start()) + 1
+            fails.append(
+                f"matching.py:{line}: names {label!r} ({m.group(0)!r}). That text "
+                f"is not in data/ and not in fetch_corpus.py's registry, so the "
+                f"attribution cannot be checked by anyone (#914, #216). Cite a "
+                f"book the repo holds and a section from knowledge/*.md, or say "
+                f"'Source not held' without naming one.")
+    mc = sorted({text.count("\n", 0, m.start()) + 1
+                 for _, pattern in _MATCHING_MC
+                 for m in re.finditer(pattern, text, re.I)})
+    book = "Muhurta Chintamani"
+    in_registry = any("chintamani" in t.lower() for t in registered)
+    if book in ledger:
+        if in_registry:
+            fails.append(
+                f"_MATCHING_HELD_UNREGISTERED lists {book!r} but fetch_corpus.py "
+                f"now registers it. The ledger is exact: delete the entry (#914 "
+                f"step 1 is done).")
+        elif not mc:
+            fails.append(
+                f"_MATCHING_HELD_UNREGISTERED lists {book!r} but matching.py no "
+                f"longer names it. The ledger is exact: delete the entry.")
+    elif mc and not in_registry:
+        fails.append(
+            f"matching.py:{mc[0]}: names {book!r} ({len(mc)} line(s)), which is "
+            f"neither in fetch_corpus.py's registry nor in "
+            f"_MATCHING_HELD_UNREGISTERED. Register it (#914 step 1) - a ledger "
+            f"entry is not a way to turn a new citation green.")
+    for extra in ledger:
+        if extra != book:
+            fails.append(
+                f"_MATCHING_HELD_UNREGISTERED holds {extra!r}; the only entry "
+                f"this gate sanctions is {book!r} (#914). A ledger that only "
+                f"grows becomes a list nobody looks at again.")
+    return fails
+
+
 def _about_problems(text: str, about: str) -> list[str]:
     """#209: what /about says the code does, against what the code does."""
     flat = _normalise(about)
@@ -739,6 +842,67 @@ def _muhurat_self_test(mtext: str) -> list[str]:
     return survived
 
 
+# #914: an unheld name re-inserted into matching.py, as a comment line placed
+# above `def compute_guna_milan`. Each must turn `_matching_problems` red.
+_MATCHING_MUTATIONS: tuple[tuple[str, str], ...] = (
+    ("#914: BPHS is credited again", "# BPHS gives the 36-point weights."),
+    ("#914: the full title is spelled out",
+     "# Per Brihat Parashara Hora Shastra."),
+    ("#914: lowercase bphs", "# bphs awards these points."),
+    ("#914: Phaladeepika is credited", "# Sources: Phaladeepika."),
+    ("#914: Jataka Parijata is credited", "# See Jataka Parijata."),
+    ("#914: Brihat Parashara wrapped across a comment line",
+     "# Per Brihat\n# Parashara Hora Shastra."),
+    ("#914: Ashvalayana Grihya Sutra is credited",
+     "# Sources: Ashvalayana Grihya Sutra."),
+)
+
+# The three ways the Muhurta Chintamani ledger can be wrong. Each is
+# (name, ledger, extra registry titles, strip the name from the file?).
+_MATCHING_LEDGER_CASES: tuple[tuple[str, bool, tuple[str, ...], bool], ...] = (
+    ("#914: Muhurta Chintamani is named and the ledger entry is removed",
+     False, (), False),
+    ("#914: the registry gained a Muhurta Chintamani row, ledger entry stale",
+     True, ("Muhurta Chintamani (Daivagya Ramacharya)",), False),
+    ("#914: matching.py no longer names Muhurta Chintamani, ledger entry stale",
+     True, (), True),
+)
+
+
+def _matching_self_test(text: str) -> list[str]:
+    """`_MATCHING_MUTATIONS` and `_MATCHING_LEDGER_CASES` against the real file.
+    Returns the ones that did not turn the check red. The clean file must pass
+    first, or red means nothing."""
+    if _matching_problems(text):
+        return ["matching check is already red before any mutation"]
+    anchor = "def compute_guna_milan"
+    if anchor not in text:
+        return [f"anchor {anchor!r} no longer in matching.py; re-point it"]
+    survived: list[str] = []
+    for name, line in _MATCHING_MUTATIONS:
+        if not _matching_problems(text.replace(anchor, f"{line}\n{anchor}", 1)):
+            survived.append(name)
+        else:
+            print(f"    red on: {name}")
+    real = set(_registry()[0])
+    for name, keep_ledger, extra, strip in _MATCHING_LEDGER_CASES:
+        t = text
+        if strip:
+            for _, pattern in _MATCHING_MC:
+                t = re.sub(pattern, "the source text", t, flags=re.I)
+            if t == text:
+                survived.append(f"{name} - the file names no such book to strip")
+                continue
+        fails = _matching_problems(
+            t, ledger=_MATCHING_HELD_UNREGISTERED if keep_ledger else {},
+            registered=real | set(extra))
+        if not fails:
+            survived.append(name)
+        else:
+            print(f"    red on: {name}")
+    return survived
+
+
 def _self_test(text: str, html: str) -> list[str]:
     """Mutations that must fail the gate. Returns the ones that did not."""
     survived: list[str] = []
@@ -831,6 +995,16 @@ def main(argv: list[str]) -> int:
                      f"vacuously (#193).")
     else:
         fails += _muhurat_problems(mtext)
+    # Fail closed: an unreadable matching.py is an unchecked one (#914).
+    try:
+        gtext = MATCHING.read_text(encoding="utf-8")
+    except OSError as exc:
+        gtext = ""
+        fails.append(f"cannot read {MATCHING}: {exc}. The #914 scan has nothing to "
+                     f"read, and a gate that cannot find its subject passes "
+                     f"vacuously (#193).")
+    else:
+        fails += _matching_problems(gtext)
     for n in notes:
         print(f"NOT VERIFIED — {n}")
     for f in fails:
@@ -848,11 +1022,16 @@ def main(argv: list[str]) -> int:
               f"were checked by NAME only. That is not a source verification.")
     print(f"muhurat.py: {len(mtext.splitlines())} lines scanned (comments and "
           f"docstrings included), no attribution to an unheld book (#716).")
+    print(f"matching.py: {len(gtext.splitlines())} lines scanned (comments and "
+          f"docstrings included), no attribution to an unheld book; Muhurta "
+          f"Chintamani passed by the exact ledger, registry row still open "
+          f"(#914 step 1).")
     print(f"disclosed gaps still open (#216): "
           f"{len(_UNHELD_ATTRIBUTIONS)} unheld book names, "
           f"{len(_VAGUE_ATTRIBUTIONS)} non-citations.")
     print("Self-test (each known defect must turn this gate red):")
-    survived = _self_test(text, html) + _muhurat_self_test(mtext)
+    survived = (_self_test(text, html) + _muhurat_self_test(mtext)
+                + _matching_self_test(gtext))
     for s in survived:
         print(f"FAIL — mutation did not turn the gate red: {s}")
     if survived:
