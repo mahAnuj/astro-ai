@@ -686,10 +686,30 @@ a.ag:hover{border-color:var(--line-2);border-left-color:var(--st)}
 .ag .bd{min-width:0;flex:1}
 .ag .nm{display:block;font:600 15px/1.3 var(--mono);color:var(--ink)}
 .ag .dt{display:block;font:400 12px/1.45 var(--mono);color:var(--ink-dim);margin-top:2px;overflow-wrap:anywhere}
+.ag .wh{display:block;font:400 11px/1.45 var(--mono);color:var(--ink-mute);margin-top:5px}
+.agents-now .an-g{grid-column:1/-1;margin:6px 0 -2px;font:600 11px/1.6 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute)}
+.agents-now .an-g:first-child{margin-top:0}
 .ag .st{flex:none;font:600 11px/1.6 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--st)}
 .ag.building{--st:var(--st-building)} .ag.running{--st:var(--st-running)} .ag.queued{--st:var(--judged)}
 .ag.blocked{--st:var(--open)} .ag.waiting{--st:var(--judged)} .ag.done{--st:var(--shipped)}
 .ag.failed{--st:var(--failed)} .ag.idle{--st:var(--nothing-text)}
+/* standby: the run this helper is called from is live; a hollow dot, no pulse,
+   because whether it is active this minute is not visible. */
+.ag.standby{--st:var(--st-running)} .ag.standby .ag-dot{background:transparent;border:2px solid var(--st)}
+/* Workflows running now: one row per in-progress or queued run, with the PR,
+   issue or trigger it is working on (agent_status.build, "workflows"). */
+.agents-now .wf-h{margin:0;padding:0 20px 6px;font:600 11px/1.6 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute)}
+.agents-now .wf-list{list-style:none;margin:0;padding:0 20px 18px}
+.agents-now .wf-row{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font:400 13px/1.45 var(--mono);min-width:0}
+.agents-now .wf-row .ag-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--st);align-self:center}
+.agents-now .wf-row.running{--st:var(--st-running)} .agents-now .wf-row.queued{--st:var(--judged)}
+.agents-now .wf-nm{flex:none;color:var(--ink);font-weight:600}
+.agents-now .wf-tg{flex:1;min-width:0;color:var(--ink-dim);overflow-wrap:anywhere}
+.agents-now .wf-ago{flex:none;color:var(--ink-mute);font-size:12px}
+.agents-now .wf-none{padding:6px 0 0;color:var(--ink-mute);font:400 13px/1.45 var(--mono)}
+@media (max-width:720px){.agents-now .wf-h,.agents-now .wf-list{padding-left:14px;padding-right:14px}
+  .agents-now .wf-row{flex-wrap:wrap;row-gap:2px}.agents-now .wf-row .ag-dot{align-self:auto}
+  .agents-now .wf-nm{flex:1}.agents-now .wf-tg{flex-basis:100%;order:3;padding-left:18px}}
 @media (prefers-reduced-motion:no-preference){
   .ag.building .ag-dot,.ag.running .ag-dot{animation:an-pulse 1.6s ease-in-out infinite}
   @keyframes an-pulse{50%{opacity:.35}}
@@ -756,14 +776,29 @@ a{color:#1f5fae} a:hover{color:#174a88}
       <span class="lbl" id="an-meta">{{ 'live' if AN.live else 'last known' }} · refreshes every minute</span></h2>
     <div class="an-grid" id="an-grid">
       {% for a in AN.agents %}
+      {% if loop.first or a.group != loop.previtem.group %}<p class="an-g">{{ a.group }}</p>{% endif %}
       <a class="ag {{ a.state }}" href="{{ a.url or ('https://github.com/' ~ AN.repo ~ '/actions') }}" target="_blank" rel="noopener"
          title="{{ a.role }}">
         <span class="ag-dot" aria-hidden="true"></span>
-        <span class="bd"><span class="nm">{{ a.name }}</span><span class="dt">{{ a.detail }}</span></span>
+        <span class="bd"><span class="nm">{{ a.name }}</span><span class="dt">{{ a.detail }}</span>{% if a.where %}<span class="wh">{{ a.where }}</span>{% endif %}</span>
         <span class="st">{{ a.state }}</span>
       </a>
       {% endfor %}
     </div>
+    <h3 class="wf-h" id="wf-h">Workflows running now</h3>
+    <ul class="wf-list" id="wf-list" aria-labelledby="wf-h">
+      {% for w in AN.workflows or [] %}
+      <li class="wf-row {{ w.state }}">
+        <span class="ag-dot" aria-hidden="true"></span>
+        <a class="wf-nm" href="{{ w.url or ('https://github.com/' ~ AN.repo ~ '/actions') }}" target="_blank" rel="noopener">{{ w.name }}</a>
+        {% if w.target_url %}<a class="wf-tg" href="{{ w.target_url }}" target="_blank" rel="noopener">{{ w.target }}</a>
+        {% else %}<span class="wf-tg">{{ w.target }}</span>{% endif %}
+        <span class="wf-ago">{{ w.state }} {{ w.ago }}</span>
+      </li>
+      {% else %}
+      <li class="wf-none">nothing running</li>
+      {% endfor %}
+    </ul>
   </section>
   {% endif %}
 
@@ -2103,15 +2138,33 @@ a{color:#1f5fae} a:hover{color:#174a88}
   function draw(doc) {
     if (!doc || !doc.agents || !doc.agents.length) return;
     cards.textContent = '';
+    var group = null;
     doc.agents.forEach(function (a) {
+      if (a.group && a.group !== group) { group = a.group; cards.appendChild(el('p', 'an-g', group)); }
       var card = el('a', 'ag ' + a.state);
       card.href = a.url || ('https://github.com/' + doc.repo + '/actions');
       card.target = '_blank'; card.rel = 'noopener'; card.title = a.role || '';
       var dot = el('span', 'ag-dot'); dot.setAttribute('aria-hidden', 'true');
       var bd = el('span', 'bd'); bd.appendChild(el('span', 'nm', a.name)); bd.appendChild(el('span', 'dt', a.detail));
+      if (a.where) bd.appendChild(el('span', 'wh', a.where));
       card.appendChild(dot); card.appendChild(bd); card.appendChild(el('span', 'st', a.state));
       cards.appendChild(card);
     });
+    var list = document.getElementById('wf-list');
+    if (list !== null && doc.workflows) {
+      list.textContent = '';
+      doc.workflows.forEach(function (w) {
+        var row = el('li', 'wf-row ' + w.state);
+        var dot = el('span', 'ag-dot'); dot.setAttribute('aria-hidden', 'true');
+        var nm = el('a', 'wf-nm', w.name);
+        nm.href = w.url || ('https://github.com/' + doc.repo + '/actions'); nm.target = '_blank'; nm.rel = 'noopener';
+        var tg = el(w.target_url ? 'a' : 'span', 'wf-tg', w.target);
+        if (w.target_url) { tg.href = w.target_url; tg.target = '_blank'; tg.rel = 'noopener'; }
+        row.appendChild(dot); row.appendChild(nm); row.appendChild(tg); row.appendChild(el('span', 'wf-ago', w.state + ' ' + w.ago));
+        list.appendChild(row);
+      });
+      if (!doc.workflows.length) list.appendChild(el('li', 'wf-none', 'nothing running'));
+    }
     meta.textContent = (doc.live ? 'live' : 'last known') + ' · refreshes every minute';
   }
   setInterval(function () {
