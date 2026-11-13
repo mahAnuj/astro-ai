@@ -28,7 +28,6 @@ from __future__ import annotations
 
 import http.server
 import importlib.util
-import socket
 import sys
 import threading
 from pathlib import Path
@@ -55,6 +54,21 @@ GOOD_HINDI = (
 ).encode()
 
 
+#: The same page without its top nav. Real 503s look like this: error.html
+#: renders no <nav aria-label="Main"> (measured 2026-11-13 on both Hindi
+#: degraded cards), so a 503 must be accepted without one.
+GOOD_HINDI_NO_NAV = (
+    '<html><body><main>' + 'आज का राशिफल ' * 30 + '</main></body></html>'
+).encode()
+
+HUB = "/hi/rashifal"
+
+
+def _page(code, body):
+    """Handler: valid /health, and `body` at `code` on every page."""
+    return lambda path: (200, HEALTH) if path == "/health" else (code, body)
+
+
 def _serve(handler_body):
     """A stub server on an ephemeral port. Returns (base_url, shutdown)."""
     class H(http.server.BaseHTTPRequestHandler):
@@ -71,12 +85,15 @@ def _serve(handler_body):
         def log_message(self, *a):
             pass
 
-    with socket.socket() as s:
-        s.bind(("127.0.0.1", 0))
-        port = s.getsockname()[1]
-    srv = http.server.HTTPServer(("127.0.0.1", port), H)
+    # Port 0 on the server itself: no bind-close-rebind window (#433).
+    srv = http.server.HTTPServer(("127.0.0.1", 0), H)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
-    return f"http://127.0.0.1:{port}", srv.shutdown
+
+    def stop():
+        srv.shutdown()
+        srv.server_close()      # shutdown() alone leaves the listening fd open
+
+    return f"http://127.0.0.1:{srv.server_address[1]}", stop
 
 
 def _run(handler_body):
@@ -150,3 +167,150 @@ def test_a_readable_page_is_still_read(code):
     def body(path):
         return (200, HEALTH) if path == "/health" else (code, GOOD_HINDI)
     assert _run(body) == 0
+
+
+# ---- #433: the guards QA round 1 on #424 found unpinned -------------------
+
+
+@pytest.mark.parametrize("health", [
+    # Each of these violates exactly ONE thing /health must satisfy, so the
+    # one test that sends them cannot be passed by a gate that checks the
+    # other. The old single fixture (404 "not me") violated everything at once.
+    pytest.param(b'{"status":"ok","service":"grafana"}', id="ok-token-but-not-our-json"),
+    pytest.param(b'{"ok":true,"service":"grafana"}', id="ok-true-but-no-revision"),
+    pytest.param(b'{"revision":"r","build_sha":null}', id="revision-but-no-ok"),
+    pytest.param(b'{"ok":false,"revision":"r"}', id="not-ok"),
+    pytest.param(b"ok revision", id="not-json"),
+])
+def test_health_200_with_foreign_json_is_not_this_app(health):
+    """The identity clause alone: status 200, so only the BODY can reject it.
+
+    `{"status":"ok","service":"grafana"}` passed the old `'"ok"' in body`
+    check; the revision-less and ok-less bodies each pin one half of the new one.
+    """
+    def body(path):
+        return (200, health) if path == "/health" else (200, GOOD_HINDI)
+    assert _run(body) == 2
+
+
+def test_health_503_with_our_own_json_is_not_a_pass():
+    """The status clause alone: the body is exactly the app's, so only the code
+    can reject it. routes/health.py answers 200 on every tier."""
+    def body(path):
+        return (503, HEALTH) if path == "/health" else (200, GOOD_HINDI)
+    assert _run(body) == 2
+
+
+def test_health_with_a_null_build_sha_is_still_this_app():
+    """`revision` must not be so strict that the weaker tier is rejected."""
+    def body(path):
+        return (200, b'{"ok":true,"revision":"local","build_sha":null}') \
+            if path == "/health" else (200, GOOD_HINDI)
+    assert _run(body) == 0
+
+
+def test_an_empty_main_on_a_503_is_not_a_pass():
+    """Guard 3 is not 200-only. With the guard exempted on 503 the page falls
+    through to DEGRADED_FLOOR and exits 1, so this asserts 2 -- the rejection
+    must come from the guard under test, not from the floor behind it."""
+    assert _run(_page(503, b"<html><body><main>   </main></body></html>")) == 2
+
+
+def test_a_503_that_is_not_hindi_fails_the_degraded_floor():
+    """Defect F9 was never enforced: thirteen 503s whose whole <main> is
+    `<p>Shubh Bhagya</p>` printed devanagari=0% and exited 0. Visible text is
+    present, so the empty-<main> guard passes; only the floor can reject it."""
+    assert _run(_page(503, b"<html><body><main><p>Shubh Bhagya</p></main></body></html>")) == 1
+
+
+def test_a_half_english_503_fails_the_degraded_floor(capsys):
+    """DEGRADED_FLOOR is a number, not a presence check. This card has
+    Devanagari, so it is above zero, and no run of four ASCII words and no
+    sentinel, so only the floor can reject it. The real degraded cards measure
+    93% and 96% (see DEGRADED_FLOOR)."""
+    card = "आज Vedic का Horoscope राशिफल Yoga " * 4
+    text = gate._visible(card)
+    assert gate._english_prose(text) == [] and not [s for s in gate.SENTINELS if s in text]
+    assert 0 < gate._devanagari_share(text) < gate.DEGRADED_FLOOR
+    assert _run(_page(503, f"<html><body><main>{card}</main></body></html>".encode())) == 1
+    assert "degraded floor" in capsys.readouterr().out
+
+
+def test_a_503_needs_no_nav_but_a_200_does():
+    """error.html renders no top nav, so requiring one on a 503 would fail every
+    legitimate degraded page. A 200 without it is a lost call site."""
+    assert _run(_page(503, GOOD_HINDI_NO_NAV)) == 0
+    assert _run(_page(200, GOOD_HINDI_NO_NAV)) == 1
+
+
+def test_a_present_devanagari_nav_label_passes():
+    assert _run(_page(200, GOOD_HINDI)) == 0
+
+
+def test_an_english_label_in_the_nav_fails_even_beside_the_hindi_one():
+    page = GOOD_HINDI.replace("राशिफल</nav>".encode(), "राशिफल Matching</nav>".encode())
+    assert page != GOOD_HINDI
+    assert _run(_page(200, page)) == 1
+
+
+def test_the_nav_check_reads_the_page_not_the_table(capsys):
+    """Finding 5: it tested only the i18n value, so deleting <nav> stayed green.
+    The nav is present here but carries another label, so presence of the
+    element alone is not enough either."""
+    page = GOOD_HINDI.replace("राशिफल</nav>".encode(), "कुंडली</nav>".encode())
+    assert _run(_page(200, page)) == 1
+    assert "nav label" in capsys.readouterr().out
+
+
+def test_the_pass_line_does_not_claim_the_floor_for_pages_that_503(capsys):
+    """Finding 3. Thirteen 503s must read `on the 0 that rendered 200`; the
+    over-claim #424 removed was `floor applied` for all thirteen."""
+    from astro_ai import hindi_pages
+    n = len(hindi_pages.HINDI_PUBLISHED)
+
+    assert _run(_page(503, GOOD_HINDI)) == 0
+    out = capsys.readouterr().out
+    assert "on the 0 that rendered 200" in out, out
+    assert f"on the {n} that served 503" in out, out
+
+    def mixed(path):
+        if path == "/health":
+            return 200, HEALTH
+        return (200 if path == HUB else 503), GOOD_HINDI
+    assert _run(mixed) == 0
+    out = capsys.readouterr().out
+    assert "on the 1 that rendered 200" in out, out
+    assert f"on the {n - 1} that served 503" in out, out
+
+
+def test_an_unreadable_page_does_not_discard_a_real_leak(capsys):
+    """Finding 8. An English leak on the hub plus a 404 on one rashi page used to
+    exit 2 on whichever came first and, when the 404 did, never print the leak.
+    Exit 1: a gate that found a defect ran; the 404 is still listed."""
+    leak = ('<nav aria-label="Main">राशिफल</nav><main>'
+            + 'आज का राशिफल ' * 30
+            + ' great day for all twelve signs </main>').encode()
+
+    def body(path):
+        if path == "/health":
+            return 200, HEALTH
+        if path == HUB:
+            return 200, leak
+        if path == "/hi/rashifal/leo":
+            return 404, b"gone"
+        return 200, GOOD_HINDI
+    assert _run(body) == 1
+    out = capsys.readouterr().out
+    assert "great day for all twelve signs" in out, out
+    assert "/hi/rashifal/leo answered 404" in out, out
+
+
+def test_unreadable_pages_alone_still_exit_2_and_are_all_listed(capsys):
+    def body(path):
+        if path == "/health":
+            return 200, HEALTH
+        return (404, b"gone") if path in ("/hi/rashifal/leo", "/hi/rashifal/aries") \
+            else (200, GOOD_HINDI)
+    assert _run(body) == 2
+    out = capsys.readouterr().out
+    assert "/hi/rashifal/leo answered 404" in out and "/hi/rashifal/aries answered 404" in out, out
