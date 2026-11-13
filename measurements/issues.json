@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-12T21:44:57Z",
+  "generated_at": "2026-11-13T00:23:04Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 102,
+  "open": 103,
   "with_ask": 37,
   "by_area": {
     "UNCLASSIFIED": 39,
@@ -19,6 +19,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "GROUNDING": 1,
     "CORPUS": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
@@ -28,7 +29,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 33,
+    "untyped": 34,
     "enhancement": 23,
     "bug": 20,
     "chore": 15,
@@ -36,12 +37,27 @@
     "design": 4
   },
   "by_priority": {
-    "unset": 74,
+    "unset": 75,
     "medium": 19,
     "high": 9
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 941,
+      "title": "[grounding] /learn/debilitated-sun-career/ body attributes council-chamber framing to 'classical Vedic tradition' with no knowledge/*.md source",
+      "ask": "",
+      "area": "GROUNDING",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "provenance:trusted"
+      ],
+      "created": "2026-11-13T00:22:21Z",
+      "updated": "2026-11-13T00:22:21Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 936,
       "title": "[OPS] agent-prioritise.yml: last run failed",
@@ -54,7 +70,7 @@
         "chore"
       ],
       "created": "2026-11-12T17:43:39Z",
-      "updated": "2026-11-12T17:43:39Z",
+      "updated": "2026-11-12T21:45:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -258,10 +274,12 @@
       "priority": "unset",
       "labels": [
         "seo",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-10T02:33:29Z",
-      "updated": "2026-11-11T02:38:49Z",
+      "updated": "2026-11-13T00:22:19Z",
       "blocked": false,
       "needs_evidence": false
     },
