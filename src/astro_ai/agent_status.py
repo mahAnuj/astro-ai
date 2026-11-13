@@ -293,9 +293,12 @@ def build(
     # merge
     merge_runs = runs_of("Agent merge")
     if merge_runs:
-        # The sweep takes one eligible PR per run; GitHub does not say which
-        # from outside, so name the first passed PR only as a candidate.
-        what = f"checking {_pr_line(passed[0])}" if passed else "checking for PRs that passed QA"
+        # The sweep picks its PR inside the job (lowest number first, and it
+        # skips any it cannot merge), and its run names no PR. So the card
+        # counts the candidates rather than naming one it may not take.
+        n = len(passed)
+        what = (f"checking {n} PR{'s' if n != 1 else ''} that passed QA" if n
+                else "checking for PRs that passed QA")
         cards["merge"] = from_run(merge_runs[0], "running", what)
     elif passed:
         p = passed[0]

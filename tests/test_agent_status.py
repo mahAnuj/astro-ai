@@ -46,6 +46,16 @@ def test_every_agent_has_a_card_in_order_with_a_known_state():
     assert sum(doc["counts"].values()) == len(agent_status.AGENTS)
 
 
+def test_a_running_merge_sweep_never_names_a_pr_it_may_not_take():
+    # QA round 1 (#951): the sweep takes the lowest-numbered eligible PR, the
+    # open-PR list comes newest first, so naming passed[0] named the wrong one.
+    prs = [_pr(950, "issue/950-a", ("qa-pass",)), _pr(940, "issue/940-b", ("qa-pass",))]
+    c = _cards([_run("Agent merge", "Agent merge", event="schedule")], prs)
+    assert c["merge"]["state"] == "running"
+    assert "checking 2 PRs that passed QA" in c["merge"]["detail"]
+    assert "#950" not in c["merge"]["detail"] and "#940" not in c["merge"]["detail"]
+
+
 def test_a_running_build_cycle_is_building_and_names_its_pr():
     # Kept under its original name (#947): a running build cycle reads as
     # building and names its PR. Since this PR the PR comes from the cycle's

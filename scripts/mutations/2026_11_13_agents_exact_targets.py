@@ -48,4 +48,9 @@ MUTATIONS = [
      '        ("numerologist", "Agent research", "agent-research.yml", "research audit"),\n',
      '        ("numerologist", "Agent nothing", "agent-research.yml", "research audit"),\n',
      "test_research_runs_light_both_auditors"),
+    ("agents-exact: a running merge sweep names a PR it may not take",
+     "src/astro_ai/agent_status.py",
+     '        what = (f"checking {n} PR{\'s\' if n != 1 else \'\'} that passed QA" if n\n',
+     '        what = (f"checking {_pr_line(passed[0])}" if n\n',
+     "test_a_running_merge_sweep_never_names_a_pr_it_may_not_take"),
 ]

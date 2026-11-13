@@ -34,6 +34,8 @@ cycle names, capped at `MAX_ISSUE_READS = 3` (one in practice: build cycles run 
 `in_progress` (collected while the run was live) now reads "started", and `skipped` reads
 "was skipped", instead of "finished"; a failed refresh logs one line instead of a traceback.
 
-**Rejected:** naming the merge sweep's PR exactly. `agent-merge` picks one eligible PR inside the
-job and its run carries no PR in its title or branch, so the card names the first passed PR as
-the one it is checking, the same PR the sweep's own ordering takes.
+**Rejected:** naming the PR a running merge sweep is checking. `agent-merge` picks one eligible PR
+inside the job (lowest number first, skipping any it cannot merge) and its run carries no PR in its
+title or branch, so any name would be a guess. QA round 1 on this PR measured exactly that guess
+naming the wrong PR (#950 shown, #940 taken). While the sweep runs, the card counts the PRs that
+passed QA instead; when it is not running, it names the first one waiting, which is a fact.
