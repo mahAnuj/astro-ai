@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-13T00:24:12Z)
+# Lessons — last 30 days (generated 2026-11-13T01:43:59Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -32,10 +32,10 @@ deterministic, no LLM.
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 1, PARTIAL 1, PASS 5, PENDING 11, UNSCOREABLE 10
+counts: HIT 1, MISS 1, PARTIAL 1, PASS 5, PENDING 11, UNSCOREABLE 10
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: PENDING — pending — scoreable from 2026-11-14
-- #311: PENDING — pending — scoreable from 2026-11-13
+- #311: MISS — MISS
 - #329: PENDING — pending — scoreable from 2026-11-14, and likely unscoreable at this traffic
 - #338: PASS — PASS
 - #345: UNSCOREABLE — UNSCORED (not determinable this run)
@@ -61,9 +61,10 @@ counts: HIT 1, PARTIAL 1, PASS 5, PENDING 11, UNSCOREABLE 10
 - #607: PASS — PASS
 - #685: PENDING — pending — scoreable from 2026-12-04
 - #735: PENDING — pending — scoreable from 2026-12-12
+- #835: PENDING — pending — scoreable from 2026-12-14
 
 A MISS is the most useful line here: before proposing work of the same kind, say why this time differs, or do not propose it.
 
 ## Competitor patterns
 
-- #835 [open] SEO debilitated-sun-career: 480 impressions on 'which sign' questions, 0 clicks — answer-first FAQ +
+- #835 [closed] SEO debilitated-sun-career: 480 impressions on 'which sign' questions, 0 clicks — answer-first FAQ +

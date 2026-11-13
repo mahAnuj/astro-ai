@@ -1,12 +1,12 @@
 {
- "generated_at": "2026-11-12T02:06:13Z",
+ "generated_at": "2026-11-13T01:38:16Z",
  "days": 7,
- "total_calls": 139,
- "cache_hits": 103,
- "cache_misses": 36,
- "hit_rate_pct": 74,
- "total_input_tokens": 797056,
- "total_output_tokens": 71463,
+ "total_calls": 143,
+ "cache_hits": 110,
+ "cache_misses": 33,
+ "hit_rate_pct": 76,
+ "total_input_tokens": 688681,
+ "total_output_tokens": 63848,
  "peak_day_tokens": 14050,
  "peak_day": "2026-11-07",
  "peak_day_measured_tokens": 166053,
@@ -14,33 +14,43 @@
  "by_route": [
   {
    "route": "natal",
-   "calls": 96,
-   "hits": 87,
-   "hit_rate_pct": 90,
-   "input_tokens": 59382,
-   "output_tokens": 10967,
+   "calls": 101,
+   "hits": 92,
+   "hit_rate_pct": 91,
+   "input_tokens": 59683,
+   "output_tokens": 11199,
    "measured_calls": 9,
-   "tokens_per_call": 6598
+   "tokens_per_call": 6631
   },
   {
    "route": "rashifal",
    "calls": 28,
-   "hits": 16,
-   "hit_rate_pct": 57,
-   "input_tokens": 705180,
-   "output_tokens": 61893,
-   "measured_calls": 160,
-   "tokens_per_call": 4407
+   "hits": 18,
+   "hit_rate_pct": 64,
+   "input_tokens": 599117,
+   "output_tokens": 53880,
+   "measured_calls": 136,
+   "tokens_per_call": 4405
   },
   {
    "route": "ask",
-   "calls": 15,
+   "calls": 13,
    "hits": 0,
    "hit_rate_pct": 0,
-   "input_tokens": 32494,
-   "output_tokens": 5042,
-   "measured_calls": 15,
-   "tokens_per_call": 2166
+   "input_tokens": 28107,
+   "output_tokens": 4614,
+   "measured_calls": 13,
+   "tokens_per_call": 2162
+  },
+  {
+   "route": "matching",
+   "calls": 1,
+   "hits": 0,
+   "hit_rate_pct": 0,
+   "input_tokens": 1774,
+   "output_tokens": 471,
+   "measured_calls": 1,
+   "tokens_per_call": 1774
   }
  ]
 }

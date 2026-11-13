@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-13T00:23:04Z",
+  "generated_at": "2026-11-13T01:42:29Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 103,
+  "open": 104,
   "with_ask": 37,
   "by_area": {
     "UNCLASSIFIED": 39,
@@ -10,12 +10,13 @@
     "REDESIGN": 10,
     "FEATURE": 7,
     "OPS": 5,
-    "SEO": 3,
+    "UI": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "MATCHING": 2,
     "MEASURE": 2,
     "NUMEROLOGY": 2,
+    "SEO": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
@@ -24,25 +25,57 @@
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
-    "UI": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 34,
+    "untyped": 33,
     "enhancement": 23,
     "bug": 20,
     "chore": 15,
     "correctness": 7,
-    "design": 4
+    "design": 5,
+    "ui": 1
   },
   "by_priority": {
-    "unset": 75,
+    "unset": 76,
     "medium": 19,
     "high": 9
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 944,
+      "title": "[UI] /numerology: form starts below the first mobile fold (375x667)",
+      "ask": "",
+      "area": "UI",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "design-proposal"
+      ],
+      "created": "2026-11-13T00:48:48Z",
+      "updated": "2026-11-13T00:48:48Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 943,
+      "title": "[UI] /learn search placeholder is truncated at 375px",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-11-13T00:48:47Z",
+      "updated": "2026-11-13T00:48:47Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 941,
       "title": "[grounding] /learn/debilitated-sun-career/ body attributes council-chamber framing to 'classical Vedic tradition' with no knowledge/*.md source",
@@ -70,7 +103,7 @@
         "chore"
       ],
       "created": "2026-11-12T17:43:39Z",
-      "updated": "2026-11-12T21:45:06Z",
+      "updated": "2026-11-13T00:23:29Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -262,24 +295,6 @@
       ],
       "created": "2026-11-10T04:36:46Z",
       "updated": "2026-11-10T18:33:37Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 835,
-      "title": "[SEO] debilitated-sun-career: 480 impressions on 'which sign' questions, 0 clicks — answer-first FAQ + lede (not a title test; hold to 2026-11-13)",
-      "ask": "",
-      "area": "SEO",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "seo",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-10T02:33:29Z",
-      "updated": "2026-11-13T00:22:19Z",
       "blocked": false,
       "needs_evidence": false
     },
