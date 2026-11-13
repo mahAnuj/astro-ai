@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-12T21:46:32Z",
+ "generated_at": "2026-11-13T00:24:12Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -744,11 +744,6 @@
     "run": 42868967144,
     "at": "2026-11-10T17:50:03Z",
     "sha": "b500fd9"
-   },
-   {
-    "run": 38333011428,
-    "at": "2026-10-13T01:37:27Z",
-    "sha": "be4046b"
    }
   ],
   "ops_findings": [
@@ -757,6 +752,13 @@
     "level": "amber",
     "title": "agent-prioritise.yml: last run failed",
     "detail": "The schedule verdict is fine, so `agents.json` raised no alert, but the most recent run of each loop named here was red. A weekly loop is not re-run before its next slot, so nothing else will notice. Check whether a fix has landed since; if one has, dispatch the workflow.",
+    "where": "/admin/ops"
+   },
+   {
+    "kind": "claude-quota",
+    "level": "amber",
+    "title": "Claude weekly quota 85% used",
+    "detail": "Every agent shares one Claude Max subscription. 0 run(s) in the sample hit a limit. Levers, cheapest first: stop dispatching ranked (`/agent-cycle`) cycles that end in nothing; space out the weekly agent loops; keep QA rounds to one per head. Do not add a parallel build lane until it resets.",
     "where": "/admin/ops"
    },
    {
@@ -769,8 +771,8 @@
    {
     "kind": "loop-idle",
     "level": "amber",
-    "title": "Build lane idle 78% of the last 7d",
-    "detail": "130.2h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "title": "Build lane idle 77% of the last 7d",
+    "detail": "129.9h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
@@ -816,13 +818,6 @@
    "headline": "pending \u2014 scoreable from 2026-11-13",
    "at": "2026-11-08T00:12:27Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/311#issuecomment-6714890987"
-  },
-  {
-   "number": 320,
-   "verdict": "HIT",
-   "headline": "HIT on `main`'s history; residual disclosed",
-   "at": "2026-10-14T00:09:07Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/320#issuecomment-6157875164"
   },
   {
    "number": 329,
@@ -1002,9 +997,9 @@
  ],
  "outcome_counts": {
   "PENDING": 11,
-  "HIT": 2,
   "PASS": 5,
   "UNSCOREABLE": 10,
+  "HIT": 1,
   "PARTIAL": 1
  },
  "competitor_patterns": [
@@ -1015,7 +1010,9 @@
    "url": "https://github.com/mahAnuj/astro-ai/issues/835",
    "labels": [
     "seo",
-    "provenance:trusted"
+    "qa-pass",
+    "provenance:trusted",
+    "qa:in-cycle"
    ]
   }
  ]

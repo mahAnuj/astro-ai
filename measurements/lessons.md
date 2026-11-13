@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-12T21:46:32Z)
+# Lessons — last 30 days (generated 2026-11-13T00:24:12Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -23,19 +23,19 @@ deterministic, no LLM.
 
 - QA FAIL verdicts: 79
 - reverted commits on main: 0
-- failed verify-production runs: 4
-- ops findings now: 3
+- failed verify-production runs: 3
+- ops findings now: 4
   - [amber] loop-last-run-failed: agent-prioritise.yml: last run failed
+  - [amber] claude-quota: Claude weekly quota 85% used
   - [amber] token-ceiling: Peak day used 83% of the Groq daily budget
-  - [amber] loop-idle: Build lane idle 78% of the last 7d
+  - [amber] loop-idle: Build lane idle 77% of the last 7d
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 2, PARTIAL 1, PASS 5, PENDING 11, UNSCOREABLE 10
+counts: HIT 1, PARTIAL 1, PASS 5, PENDING 11, UNSCOREABLE 10
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: PENDING — pending — scoreable from 2026-11-14
 - #311: PENDING — pending — scoreable from 2026-11-13
-- #320: HIT — HIT on `main`'s history; residual disclosed
 - #329: PENDING — pending — scoreable from 2026-11-14, and likely unscoreable at this traffic
 - #338: PASS — PASS
 - #345: UNSCOREABLE — UNSCORED (not determinable this run)
