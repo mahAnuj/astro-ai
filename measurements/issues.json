@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-13T11:00:18Z",
+  "generated_at": "2026-11-13T15:27:12Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 105,
+  "open": 104,
   "with_ask": 37,
   "by_area": {
     "UNCLASSIFIED": 39,
@@ -14,7 +14,6 @@
     "RETRIEVAL": 3,
     "CHORE": 3,
     "MATCHING": 2,
-    "MEASURE": 2,
     "NUMEROLOGY": 2,
     "SEO": 2,
     "RASHIFAL": 2,
@@ -22,6 +21,7 @@
     "BUG": 2,
     "AGENT-MEASURE": 1,
     "CORPUS": 1,
+    "MEASURE": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
@@ -29,7 +29,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 33,
+    "untyped": 32,
     "enhancement": 23,
     "bug": 20,
     "chore": 16,
@@ -38,7 +38,7 @@
     "ui": 1
   },
   "by_priority": {
-    "unset": 76,
+    "unset": 75,
     "medium": 20,
     "high": 9
   },
@@ -82,10 +82,13 @@
       "priority": "unset",
       "labels": [
         "ui",
-        "design-proposal"
+        "design-proposal",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-13T00:48:48Z",
-      "updated": "2026-11-13T00:48:48Z",
+      "updated": "2026-11-13T15:26:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -691,23 +694,6 @@
       ],
       "created": "2026-10-23T19:06:26Z",
       "updated": "2026-11-12T21:44:24Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 490,
-      "title": "[MEASURE] No per-page x per-day export, so no page-level ship can be scored before its 28-day window ends",
-      "ask": "",
-      "area": "MEASURE",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-22T23:55:18Z",
-      "updated": "2026-11-13T10:59:32Z",
       "blocked": false,
       "needs_evidence": false
     },
