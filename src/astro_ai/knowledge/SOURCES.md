@@ -633,6 +633,20 @@ a line count and a registry row (`scripts/fetch_corpus.py`, an engineering file)
 decision on whether `matching.py` joins the citation gate. Both are out of this run's reach:
 no book, and `matching.py` is not Research's to edit.
 
+**Update 2026-11-13 (#914 Ask 2, Engineering; `data/` still absent, so nothing below was
+measured against a book).** The third bullet above is no longer true:
+`verify_rule_citations.py` check 8 now scans `matching.py` whole-file, comments and
+docstrings included, and fails on any unheld book name. It found one: the module docstring
+credited Brihat Parashara Hora Shastra, the #216 defect, and a history note in `_nadi`'s
+docstring carried a "BPHS matching tradition" label. Both were reworded (comments only; the
+AST with docstrings stripped is identical before and after). Muhurta Chintamani is the one
+name passed through, by an exact one-entry ledger (`_MATCHING_HELD_UNREGISTERED`) that fails
+the moment the registry gains a row or `matching.py` stops naming the book. **Still open:**
+the registry row itself (#914 step 1: measure the plain line count with the djvu text
+present, add the `BOOKS` entry), which also retires the ledger. The verse-number locator
+complaint (#194) is untouched. Saravali and Raman mentions in `matching.py` are not gated
+here.
+
 ### The "14 books" figure above does not reconcile with the registry
 
 The 2026-10-17 paragraph earlier in this file says the corpus "is now 14 books,
