@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-13T17:17:10Z)
+# Lessons — last 30 days (generated 2026-11-13T19:44:23Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -10,7 +10,7 @@ deterministic, no LLM.
 
 ## Repeated error themes: act on these
 
-- **copy** — 17 QA FAIL(s): #536, #544, #550, #564, #649, #654, #675, #691, #815, #833, #841, #884
+- **copy** — 18 QA FAIL(s): #536, #544, #550, #564, #649, #654, #675, #691, #815, #833, #841, #884, #960
 - **grounding** — 18 QA FAIL(s): #524, #536, #635, #701, #706, #713, #747, #772, #815, #833, #841, #845, #859, #875
 - **i18n** — 8 QA FAIL(s): #448, #524, #564, #737, #815, #875
 - **performance** — 8 QA FAIL(s): #524, #536, #565, #675, #747, #815
@@ -21,7 +21,7 @@ deterministic, no LLM.
 
 ## Our errors
 
-- QA FAIL verdicts: 80
+- QA FAIL verdicts: 81
 - reverted commits on main: 0
 - failed verify-production runs: 3
 - ops findings now: 2
