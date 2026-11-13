@@ -1414,7 +1414,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "In which sign is the Sun debilitated?",
-                "a": "The Sun is debilitated in Libra (Tula), most deeply at 10° Libra, and exalted in Aries (Mesha) at 10°. Libra is ruled by Venus, the planet of partnership and negotiation, so the tradition frames the placement as the king asked to preside in the council chamber rather than the throne room: he keeps his authority but has to negotiate for it.",
+                "a": "The Sun is debilitated in Libra (Tula), most deeply at 10° Libra, and exalted in Aries (Mesha) at 10°. Libra is ruled by Venus; the Sun's own sign is Leo.",
             },
             {
                 "q": "Is a debilitated Sun always bad?",
