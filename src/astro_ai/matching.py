@@ -27,7 +27,6 @@ evaluation of cancellations.
 
 References: Muhurta Chintamani (Vivaha prakarana; see knowledge/matching.md
 for the verse-by-verse reading); modern syntheses (Kapiel Raaj, B.V. Raman).
-No other classical text is credited here: none is held in data/ (#216, #914).
 This implementation uses the most widely accepted variants — different schools
 differ on edge cases.
 """
