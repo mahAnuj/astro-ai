@@ -1,45 +1,21 @@
 {
- "generated_at": "2026-11-13T15:28:17Z",
+ "generated_at": "2026-11-13T17:16:46Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 43449082944,
-  "at": "2026-11-13T15:05:38Z",
-  "five_hour": 0.15,
-  "seven_day": 0.07,
+  "run": 43456726097,
+  "at": "2026-11-13T15:51:03Z",
+  "five_hour": 0.18,
+  "seven_day": 0.08,
   "status": "allowed",
   "resets": {
    "five_hour": 1794598200,
    "seven_day": 1795154400
   }
  },
- "peak_seven_day": 0.07,
+ "peak_seven_day": 0.08,
  "rejected_runs": [],
  "readings": [
-  {
-   "workflow": "agent-work",
-   "run": 43379982617,
-   "at": "2026-11-13T06:37:24Z",
-   "five_hour": 0.13,
-   "seven_day": 0.01,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1794560400,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 43390791655,
-   "at": "2026-11-13T08:07:44Z",
-   "five_hour": 0.15,
-   "seven_day": 0.01,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1794560400,
-    "seven_day": 1795154400
-   }
-  },
   {
    "workflow": "agent-work",
    "run": 43411199753,
@@ -58,6 +34,42 @@
    "at": "2026-11-13T15:05:38Z",
    "five_hour": 0.15,
    "seven_day": 0.07,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1794598200,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 43452791026,
+   "at": "2026-11-13T15:27:28Z",
+   "five_hour": 0.17,
+   "seven_day": 0.08,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1794598200,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-prioritise",
+   "run": 43452964775,
+   "at": "2026-11-13T15:28:32Z",
+   "five_hour": 0.16,
+   "seven_day": 0.08,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1794598200,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 43456726097,
+   "at": "2026-11-13T15:51:03Z",
+   "five_hour": 0.18,
+   "seven_day": 0.08,
    "status": "allowed",
    "resets": {
     "five_hour": 1794598200,
