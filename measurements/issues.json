@@ -1,16 +1,15 @@
 {
-  "generated_at": "2026-11-13T15:27:12Z",
+  "generated_at": "2026-11-13T17:15:50Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 104,
+  "open": 101,
   "with_ask": 37,
   "by_area": {
     "UNCLASSIFIED": 39,
-    "INFRA": 13,
+    "INFRA": 12,
     "REDESIGN": 10,
     "FEATURE": 7,
     "OPS": 6,
-    "UI": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "MATCHING": 2,
@@ -25,20 +24,20 @@
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
+    "UI": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 32,
+    "untyped": 31,
     "enhancement": 23,
     "bug": 20,
     "chore": 16,
     "correctness": 7,
-    "design": 5,
-    "ui": 1
+    "design": 4
   },
   "by_priority": {
-    "unset": 75,
+    "unset": 72,
     "medium": 20,
     "high": 9
   },
@@ -53,7 +52,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-13T10:59:23Z",
-      "updated": "2026-11-13T10:59:30Z",
+      "updated": "2026-11-13T15:58:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -69,42 +68,7 @@
         "chore"
       ],
       "created": "2026-11-13T03:30:48Z",
-      "updated": "2026-11-13T03:30:48Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 944,
-      "title": "[UI] /numerology: form starts below the first mobile fold (375x667)",
-      "ask": "",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-13T00:48:48Z",
-      "updated": "2026-11-13T15:26:33Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 943,
-      "title": "[UI] /learn search placeholder is truncated at 375px",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer"
-      ],
-      "created": "2026-11-13T00:48:47Z",
-      "updated": "2026-11-13T00:48:47Z",
+      "updated": "2026-11-13T15:27:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -133,7 +97,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-12T15:50:36Z",
-      "updated": "2026-11-12T15:50:36Z",
+      "updated": "2026-11-13T15:34:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -146,7 +110,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-12T11:14:01Z",
-      "updated": "2026-11-12T11:14:01Z",
+      "updated": "2026-11-13T15:35:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -175,7 +139,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-12T02:05:41Z",
-      "updated": "2026-11-12T02:05:41Z",
+      "updated": "2026-11-13T15:34:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -188,10 +152,11 @@
       "priority": "unset",
       "labels": [
         "astrology-correctness",
-        "chore"
+        "chore",
+        "provenance:trusted"
       ],
       "created": "2026-11-12T01:26:53Z",
-      "updated": "2026-11-12T01:26:53Z",
+      "updated": "2026-11-13T15:34:55Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -204,7 +169,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-11T21:59:55Z",
-      "updated": "2026-11-12T02:05:52Z",
+      "updated": "2026-11-13T15:34:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -241,23 +206,6 @@
       ],
       "created": "2026-11-11T05:23:36Z",
       "updated": "2026-11-12T02:25:06Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 868,
-      "title": "[INFRA] collect_llm_usage.py reads the always-zero input_tokens field, so token-ceiling and cache-low read blind",
-      "ask": "",
-      "area": "INFRA",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-11T00:01:08Z",
-      "updated": "2026-11-11T07:09:55Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -693,7 +641,7 @@
         "provenance:trusted"
       ],
       "created": "2026-10-23T19:06:26Z",
-      "updated": "2026-11-12T21:44:24Z",
+      "updated": "2026-11-13T15:58:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -839,11 +787,13 @@
       "area": "INFRA",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "needs-evidence"
+      ],
       "created": "2026-10-20T08:48:15Z",
-      "updated": "2026-11-10T11:33:31Z",
+      "updated": "2026-11-13T15:35:10Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 433,
@@ -922,7 +872,7 @@
         "qa:independent"
       ],
       "created": "2026-10-17T07:36:25Z",
-      "updated": "2026-11-10T02:11:53Z",
+      "updated": "2026-11-13T15:58:22Z",
       "blocked": false,
       "needs_evidence": false
     },
