@@ -57,11 +57,13 @@ def test_a_qa_round_is_qa_running_not_developer_building():
 
 
 def test_labels_decide_qa_merge_and_chief():
+    # Order matters: the cleared and the held PRs come FIRST, so a card that
+    # stopped excluding them would name them instead of the right PR.
     prs = [
+        _pr(4, "issue/4-d", ("needs-human-review", "chief-cleared")),
+        _pr(3, "fix/3-c", ("qa-pass", "needs-human-review")),
         _pr(1, "issue/1-a", ("qa-fail",)),
         _pr(2, "issue/2-b", ("qa-pass", "qa:independent")),
-        _pr(3, "fix/3-c", ("qa-pass", "needs-human-review")),
-        _pr(4, "issue/4-d", ("needs-human-review", "chief-cleared")),
     ]
     c = _cards(prs=prs)
     assert c["qa"]["state"] == "blocked" and "PR #1" in c["qa"]["detail"]

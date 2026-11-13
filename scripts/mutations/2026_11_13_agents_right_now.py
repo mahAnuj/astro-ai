@@ -22,9 +22,9 @@ MUTATIONS = [
      '    build_runs = [r for r in work_runs if not QA_ROUND.search(r.get("display_title") or "")]\n',
      '    build_runs = list(work_runs)\n',
      "test_a_qa_round_is_qa_running_not_developer_building"),
-    ("agents-now: the cache is skipped and every render re-reads GitHub",
+    ("agents-now: no cache, so every render re-reads GitHub",
      "src/astro_ai/agent_status.py",
-     '    if hit and time.monotonic() - hit[0] < CACHE_TTL:\n        return hit[1]\n    with _lock:\n',
-     '    with _lock:\n',
+     'CACHE_TTL = float(os.environ.get("AGENT_STATUS_TTL") or (60 if GH_TOKEN else 300))\n',
+     'CACHE_TTL = 0.0\n',
      "test_snapshot_reads_three_endpoints_once_per_ttl"),
 ]
