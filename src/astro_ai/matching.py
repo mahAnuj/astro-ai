@@ -25,9 +25,11 @@ comparable (see _severity_comparable) — a low against a high does not
 mutually cancel. One of each is the classic dosha that requires careful
 evaluation of cancellations.
 
-References: Brihat Parashara Hora Shastra; Muhurta Chintamani; modern
-syntheses (Kapiel Raaj, B.V. Raman). This implementation uses the most
-widely accepted variants — different schools differ on edge cases.
+References: Muhurta Chintamani (Vivaha prakarana; see knowledge/matching.md
+for the verse-by-verse reading); modern syntheses (Kapiel Raaj, B.V. Raman).
+No other classical text is credited here: none is held in data/ (#216, #914).
+This implementation uses the most widely accepted variants — different schools
+differ on edge cases.
 """
 
 from __future__ import annotations
@@ -1029,8 +1031,8 @@ def _nadi(g_nak: str, b_nak: str) -> KootaScore:
     unsourced after reading the Nadi section end to end: the text has no
     same-rashi clause and no half-credit anywhere. Classical Nadi is binary.
     Removed rather than rehomed, because there is nothing to rehome it to. It
-    also carried a "BPHS matching tradition" provenance label that #170 could
-    not verify and that this reading does not support.
+    also carried an unnamed-tradition provenance label that #170 could not
+    verify and that this reading does not support.
 
     Unlike Bhakoot, Nadi is not among the parihāras — the Bhakoot section ends
     परन्तु नाडी सभीमें होनी चाहिये, Nadi must be sound alongside them. What the
