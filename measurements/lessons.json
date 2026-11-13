@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-13T03:31:52Z",
+ "generated_at": "2026-11-13T11:01:57Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -726,6 +726,13 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/916#issuecomment-6812016924",
     "summary": "QA: FAIL \u2014 verified at `ca718fa0aa372e0390d7d3f721873eca6738415e` Claim 1 FAIL: data-clarity-mask on <body> is lost on hx-boost navigation (htmx swaps body innerHTML and discards the response <body> attributes; demonstrated in jsdom with htmx 2.0.4: /learn/ -> boosted click -> /kundli leaves body ma",
     "themes": []
+   },
+   {
+    "number": 951,
+    "at": "2026-11-13T06:46:33Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/951#issuecomment-6846242110",
+    "summary": "QA: FAIL \u2014 verified at `8fc86421b556b67311554a820bd7ae48476c5be8` One defect; everything else passed. Judge-only round (qa:in-cycle), nothing pushed.  DEFECT (measured): the merge card names a PR the merge sweep does not take, and docs/decisions/2026-11-13-agents-exact-targets.md:39 says it does (\"t",
+    "themes": []
    }
   ],
   "reverts": [],
@@ -755,13 +762,6 @@
     "where": "/admin/ops"
    },
    {
-    "kind": "claude-quota",
-    "level": "amber",
-    "title": "Claude weekly quota 88% used",
-    "detail": "Every agent shares one Claude Max subscription. 0 run(s) in the sample hit a limit. Levers, cheapest first: stop dispatching ranked (`/agent-cycle`) cycles that end in nothing; space out the weekly agent loops; keep QA rounds to one per head. Do not add a parallel build lane until it resets.",
-    "where": "/admin/ops"
-   },
-   {
     "kind": "token-ceiling",
     "level": "amber",
     "title": "Peak day used 83% of the Groq daily budget",
@@ -772,7 +772,7 @@
     "kind": "loop-idle",
     "level": "amber",
     "title": "Build lane idle 78% of the last 7d",
-    "detail": "130.2h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
+    "detail": "130.5h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]

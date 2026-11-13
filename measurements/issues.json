@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-11-13T03:30:39Z",
+  "generated_at": "2026-11-13T11:00:18Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 104,
+  "open": 105,
   "with_ask": 37,
   "by_area": {
     "UNCLASSIFIED": 39,
     "INFRA": 13,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "OPS": 5,
+    "OPS": 6,
     "UI": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
@@ -20,7 +20,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "GROUNDING": 1,
+    "AGENT-MEASURE": 1,
     "CORPUS": 1,
     "DETECT_STALLS": 1,
     "AGENT-MERGE": 1,
@@ -32,18 +32,47 @@
     "untyped": 33,
     "enhancement": 23,
     "bug": 20,
-    "chore": 15,
+    "chore": 16,
     "correctness": 7,
     "design": 5,
     "ui": 1
   },
   "by_priority": {
     "unset": 76,
-    "medium": 19,
+    "medium": 20,
     "high": 9
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 953,
+      "title": "agent-measure: call fetch_gsc.py --page-daily and commit the export (follow-up to #490)",
+      "ask": "",
+      "area": "AGENT-MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-13T10:59:23Z",
+      "updated": "2026-11-13T10:59:30Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 949,
+      "title": "[OPS] Claude weekly quota 85% used",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "chore"
+      ],
+      "created": "2026-11-13T03:30:48Z",
+      "updated": "2026-11-13T03:30:48Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 944,
       "title": "[UI] /numerology: form starts below the first mobile fold (375x667)",
@@ -73,23 +102,6 @@
       ],
       "created": "2026-11-13T00:48:47Z",
       "updated": "2026-11-13T00:48:47Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 941,
-      "title": "[grounding] /learn/debilitated-sun-career/ body attributes council-chamber framing to 'classical Vedic tradition' with no knowledge/*.md source",
-      "ask": "",
-      "area": "GROUNDING",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-13T00:22:21Z",
-      "updated": "2026-11-13T03:30:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -689,9 +701,13 @@
       "area": "MEASURE",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-10-22T23:55:18Z",
-      "updated": "2026-11-10T08:53:56Z",
+      "updated": "2026-11-13T10:59:32Z",
       "blocked": false,
       "needs_evidence": false
     },
