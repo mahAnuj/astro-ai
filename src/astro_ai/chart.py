@@ -4829,14 +4829,13 @@ def _parse_local_datetime(date_str: str, time_str: str, tz_name: str) -> datetim
 #
 # Kaal Sarp Yoga does NOT appear in the classical Sanskrit Jyotish canon —
 # not in Brihat Parashara Hora Shastra, Brihat Jataka, Saravali,
-# Phaladeepika, Jataka Parijata, or Uttara Kalamrita. Its first verifiable
-# Indian print discussion is in The Astrological Magazine in the late
-# 1970s–early 1980s. K.N. Rao (Bharatiya Vidya Bhavan, founder of the
-# Jyotish course) has publicly called it "one of the biggest frauds in
-# astrology" and "of not much importance in individual charts." B.V. Raman
-# added it as an APPENDIX (not the main text) to the 9th edition of
-# Three Hundred Important Combinations because it had become "much feared"
-# — his own treatment was nuanced, not alarmist.
+# Phaladeepika or Jataka Parijata. It is a 20th-century innovation
+# popularised by Trimbakeshwar priests, and many classical scholars
+# (including K.N. Rao) state it has no scriptural basis — all of it
+# knowledge/vedic_reference.md §3.2. This comment used to carry verbatim
+# quotations from K.N. Rao and B.V. Raman, an Astrological Magazine print
+# history and a Three Hundred Important Combinations appendix claim; none
+# is in knowledge/, so they were removed with the page copy (#959).
 #
 # We keep the geometric detection because users search for it — but the
 # 12 named variants (Anant, Kulik, Vasuki, ...) are unattributed folk
@@ -4897,11 +4896,11 @@ def compute_kaal_sarp(chart: Chart) -> KaalSarpDetails:
     Shastra, Phaladeepika, Saravali) treat Kaal Sarp Dosh as BINARY... No
     'partial' concept exists in the classical texts."
 
-    That contradicted the module comment 64 lines above it, which records --
-    with its print history -- that Kaal Sarp Yoga "does NOT appear in the
-    classical Sanskrit Jyotish canon -- not in Brihat Parashara Hora Shastra,
-    Brihat Jataka, Saravali, Phaladeepika, Jataka Parijata, or Uttara
-    Kalamrita", first surfacing in The Astrological Magazine around 1980.
+    That contradicted the module comment 64 lines above it, which records
+    that Kaal Sarp Yoga "does NOT appear in the classical Sanskrit Jyotish
+    canon -- not in Brihat Parashara Hora Shastra, Brihat Jataka, Saravali,
+    Phaladeepika or Jataka Parijata" (the print history that sentence once
+    carried was unsourced and was removed, #959).
     Both cannot be true: a text that does not contain the concept cannot
     treat it as binary. The comment above is the researched one, so this is
     the sentence that was wrong -- and it was wrong in the direction that
