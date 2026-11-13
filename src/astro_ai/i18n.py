@@ -382,15 +382,19 @@ _EN: Final[dict[str, str]] = {
     "manglik_caveat_heading":  "Manglik is not the whole marriage story",
     "manglik_caveat_body":     "Mars-related dosha is one of several factors classical astrology weighs for marriage. A person with a well-placed Mars can still face marital difficulty if the 7th house lord, Venus, Upapada, or Dasha timing carry other afflictions. A Manglik chart with strong protective yogas can equally have a harmonious married life. Treat this as one data point among many — a full 7th-house reading with a trained astrologer is worth the time if marriage is your central question.",
 
-    # Kaal Sarp caveat — sourced from classical-source research (2026-08-04):
-    # not in BPHS, Brihat Jataka, Saravali, Phaladeepika, Jataka Parijata, or
-    # Uttara Kalamrita. K.N. Rao dismissed it publicly; B.V. Raman added it as
-    # an appendix (not main text) to Three Hundred Important Combinations 9th
-    # ed. because it had "become much feared". First Indian print debate in
-    # Astrological Magazine, late 1970s. Shown at TOP of /kaal-sarp-check.
+    # Kaal Sarp caveat — sourced to knowledge/vedic_reference.md §3.2 and nothing
+    # else: not in BPHS, Brihat Jataka, Saravali, Phaladeepika or Jataka Parijata;
+    # a 20th-century innovation popularised by Trimbakeshwar priests; many
+    # classical scholars (including K.N. Rao) state it has no scriptural basis.
+    # Until #959 this block also printed verbatim quotations attributed to K.N. Rao
+    # and B.V. Raman, a Three Hundred Important Combinations appendix claim and an
+    # Astrological Magazine print history, none of which is in knowledge/ (data/ is
+    # absent from the checkout), and listed Uttara Kalamrita among the texts that
+    # lack it, which §3.2 does not. tests/test_kaal_sarp_unsourced_quotes.py bans
+    # them. Shown at TOP of /kaal-sarp-check.
     "ksy_caveat_heading":      "A note before you read this: Kaal Sarp is a modern classification",
-    "ksy_caveat_body_1":       "Unlike the yogas and doshas we analyse elsewhere on this site, Kaal Sarp Yoga is not defined in the classical Sanskrit Jyotish texts we cite as sources — not in Brihat Parashara Hora Shastra, Brihat Jataka, Saravali, Phaladeepika, Jataka Parijata, or Uttara Kalamrita. The concept surfaces in Indian astrological writing only in the 20th century and was widely debated in The Astrological Magazine in the late 1970s and 1980s.",
-    "ksy_caveat_body_2":       "Respected teachers disagree about its predictive weight. K.N. Rao (founder of the Bharatiya Vidya Bhavan Jyotish course) publicly dismissed Kaal Sarp Dosha as \"one of the biggest frauds in astrology\" and \"of not much importance in individual charts.\" B.V. Raman (editor of The Astrological Magazine) added it as an appendix to the ninth edition of Three Hundred Important Combinations because it had \"become much feared\" — his own treatment was nuanced, not alarmist.",
+    "ksy_caveat_body_1":       "Unlike the yogas and doshas we analyse elsewhere on this site, Kaal Sarp Yoga is not defined in the classical Sanskrit Jyotish texts we cite as sources — not in Brihat Parashara Hora Shastra, Brihat Jataka, Saravali, Phaladeepika or Jataka Parijata. It is a 20th-century innovation, popularised heavily by the priests of the Trimbakeshwar temple in Maharashtra.",
+    "ksy_caveat_body_2":       "Many classical scholars, K.N. Rao among them, state outright that Kaal Sarp Dosha has no scriptural basis. That is why we show it as a chart pattern to note, not as a verdict.",
     "ksy_caveat_body_3":       "We show the geometry here because it is a real chart pattern users ask about — but treat any single Kaal Sarp reading, especially one urging expensive remedies at Trimbakeshwar or elsewhere, with healthy skepticism. Serious readings of Rahu and Ketu judge them by the houses and lords they conjoin, not by axis-based blanket yogas.",
     "ksy_present_heading":     "Kaal Sarp geometry — present",
     "ksy_present_subtitle":    "All seven non-shadow planets sit on one side of the Rahu-Ketu axis",
@@ -951,8 +955,8 @@ _HI: Final[dict[str, str]] = {
     "manglik_caveat_body":     "मंगल-सम्बन्धी दोष शास्त्रीय ज्योतिष के विवाह-मूल्यांकन में कई कारकों में से एक है। अच्छी स्थिति वाले मंगल के बावजूद भी यदि सप्तमेश, शुक्र, उपपद, या वर्तमान दशा में अन्य दोष हों तो वैवाहिक कठिनाई सम्भव है। इसी प्रकार, मजबूत रक्षक योगों वाली मंगली कुंडली में सुखी विवाह भी हो सकता है। इसे कई डेटा-बिन्दुओं में से एक मानें — यदि विवाह आपका मुख्य प्रश्न है तो किसी अनुभवी ज्योतिषी से सप्तम भाव का पूर्ण अध्ययन करवाना उचित है।",
 
     "ksy_caveat_heading":      "पढ़ने से पहले जानें: काल सर्प एक आधुनिक वर्गीकरण है",
-    "ksy_caveat_body_1":       "इस साइट पर विश्लेषण किए जाने वाले अन्य योगों और दोषों के विपरीत, काल सर्प योग शास्त्रीय संस्कृत ज्योतिष ग्रंथों में परिभाषित नहीं है — न बृहत् पराशर होरा शास्त्र में, न बृहज्जातक में, न सारावली में, न फलदीपिका, जातक पारिजात, या उत्तर कालामृत में। यह अवधारणा भारतीय ज्योतिष लेखन में केवल 20वीं शताब्दी में उभरी और 1970-1980 के दशक के अंत में एस्ट्रोलॉजिकल मैगजीन में इस पर व्यापक बहस हुई।",
-    "ksy_caveat_body_2":       "इसके भविष्यसूचक महत्त्व पर सम्मानित आचार्यों में मतभेद है। के.एन. राव (भारतीय विद्या भवन के ज्योतिष पाठ्यक्रम के संस्थापक) ने काल सर्प दोष को सार्वजनिक रूप से \"ज्योतिष की सबसे बड़ी धोखाधड़ियों में से एक\" तथा \"व्यक्तिगत कुंडलियों में अधिक महत्त्व का नहीं\" कहकर अस्वीकृत किया है। बी.वी. रमन (एस्ट्रोलॉजिकल मैगजीन के संपादक) ने Three Hundred Important Combinations के नौवें संस्करण में इसे परिशिष्ट के रूप में जोड़ा क्योंकि यह \"बहुत भयभीत करने वाला\" बन गया था — उनका स्वयं का उपचार सूक्ष्म था, भयजनक नहीं।",
+    "ksy_caveat_body_1":       "इस साइट पर विश्लेषण किए जाने वाले अन्य योगों और दोषों के विपरीत, काल सर्प योग शास्त्रीय संस्कृत ज्योतिष ग्रंथों में परिभाषित नहीं है — न बृहत् पराशर होरा शास्त्र में, न बृहज्जातक में, न सारावली में, न फलदीपिका या जातक पारिजात में। यह 20वीं शताब्दी का नवाचार है, जिसे महाराष्ट्र के त्र्यंबकेश्वर मंदिर के पुरोहितों ने बड़े पैमाने पर लोकप्रिय बनाया।",
+    "ksy_caveat_body_2":       "अनेक शास्त्रीय विद्वान, जिनमें के.एन. राव भी शामिल हैं, स्पष्ट रूप से कहते हैं कि काल सर्प दोष का कोई शास्त्रीय आधार नहीं है। इसीलिए हम इसे निर्णय नहीं, बल्कि एक कुंडली-पैटर्न के रूप में दिखाते हैं जिस पर ध्यान दिया जाए।",
     "ksy_caveat_body_3":       "हम यहाँ ज्यामिति दिखाते हैं क्योंकि यह एक वास्तविक कुंडली-पैटर्न है जिसके बारे में उपयोगकर्ता पूछते हैं — किंतु किसी भी एकल काल सर्प पठन को, विशेषकर त्र्यंबकेश्वर या अन्यत्र महँगे उपायों की सलाह देने वाले पठन को, स्वस्थ संदेह के साथ लें। राहु और केतु का गम्भीर पठन उनके साथ युत ग्रहों और भावेशों को देखकर होता है, न कि अक्षीय व्यापक योगों से।",
     "ksy_present_heading":     "काल सर्प ज्यामिति — उपस्थित",
     "ksy_present_subtitle":    "सातों गैर-छाया ग्रह राहु-केतु अक्ष के एक ओर स्थित हैं",

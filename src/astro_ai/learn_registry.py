@@ -680,7 +680,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is Kaal Sarp Dosh in the classical Vedic texts?",
-                "a": "No — Kaal Sarp Dosh is NOT mentioned in any major classical text (Brihat Parashara, Phaladeepika, Brihat Jataka). The concept entered popular astrology in the 19th-20th century via regional traditions, especially around Trimbakeshwar in Maharashtra. This doesn't make it fake, but the dramatic claims about it are folk wisdom rather than scriptural fact.",
+                "a": "No — Kaal Sarp Dosh is NOT mentioned in any major classical text (Brihat Parashara, Phaladeepika, Brihat Jataka, Saravali, Jataka Parijata). It is a 20th-century innovation, popularised heavily by priests at Trimbakeshwar in Maharashtra, and many classical scholars state it has no scriptural basis. This doesn't make it fake, but the dramatic claims about it are folk wisdom rather than scriptural fact.",
             },
             {
                 "q": "How is Kaal Sarp Dosh formed?",
@@ -800,7 +800,7 @@ ARTICLES: tuple[Article, ...] = (
         title="Manglik Dosh: What It Really Means, How to Check, and Remedies",
         summary="A clear, honest guide to Manglik Dosh — what it actually is, the houses that cause it, the cancellation rules most websites skip, and the remedies classical texts recommend.",
         seo_title="Manglik Dosh: Is It Real? Cancellation Rules Most Skip",
-        seo_description="Is Manglik Dosh real? The six houses Mars must sit in, the cancellation rules most online calculators ignore, and the remedies classical texts recommend.",
+        seo_description="Is Manglik Dosh real? Mars in five houses (the 1st optional), the cancellation rules online calculators ignore, and the remedies classical texts recommend.",
         category="Doshas",
         hero_image="/static/learn/manglik-dosh/hero.svg",
         read_time="7 min",

@@ -261,10 +261,10 @@ async def kaal_sarp_check_form(request: Request) -> HTMLResponse:
 
     Framing rewritten 2026-08-04 after classical-source review:
     Kaal Sarp Yoga is not defined in BPHS / Brihat Jataka / Saravali /
-    Phaladeepika / Jataka Parijata / Uttara Kalamrita — it is a
-    20th-century Indian classification. The form and result page are
-    now honest about this; see kaal_sarp_check_result.html for the
-    top-of-page caveat citing K.N. Rao and B.V. Raman.
+    Phaladeepika / Jataka Parijata — it is a 20th-century Indian
+    classification (knowledge/vedic_reference.md §3.2). The form and
+    result page are now honest about this; see _ksy_caveat.html for the
+    top-of-page caveat.
     """
     return templates.TemplateResponse(
         request, "dosha_check_form.html",
