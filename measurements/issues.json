@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-14T15:52:11Z",
+  "generated_at": "2026-11-14T16:58:30Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 118,
+  "open": 119,
   "with_ask": 40,
   "by_area": {
-    "UNCLASSIFIED": 44,
+    "UNCLASSIFIED": 45,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -30,19 +30,35 @@
   },
   "by_type": {
     "untyped": 33,
-    "bug": 28,
+    "bug": 29,
     "enhancement": 24,
     "chore": 18,
     "correctness": 11,
     "design": 4
   },
   "by_priority": {
-    "unset": 87,
+    "unset": 88,
     "medium": 20,
     "high": 11
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1036,
+      "title": "Jupiter-in-10th guide: 'classical' wording left at l.30 and l.97, and the registry FAQ's unlabelled career signatures (residue of #1032)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T16:57:56Z",
+      "updated": "2026-11-14T16:57:56Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1032,
       "title": "Jupiter-in-10th guide: three more soft authority claims left after #1016 (l.62, l.86, judiciary bullet)",
@@ -52,10 +68,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-14T14:09:51Z",
-      "updated": "2026-11-14T14:12:30Z",
+      "updated": "2026-11-14T16:57:57Z",
       "blocked": false,
       "needs_evidence": false
     },
