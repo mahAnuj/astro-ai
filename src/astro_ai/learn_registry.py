@@ -164,7 +164,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Sun mean?",
-                "a": "Sun debilitated in Libra weakens the sense of self and authority. It can show up as self-doubt, difficulty holding boundaries, complicated father-relationship, uneven physical vitality. Libra is Venus's sign — Sun there gets 'pulled toward relationships and pleasing others' rather than being centred in itself. Cancellation exists (Neechabhanga Raja Yoga) when the Sun's lord Venus is well-placed — debilitated Sun with strong Venus can actually flip into a powerful yoga.",
+                "a": "Sun debilitated in Libra weakens the sense of self and authority. It can show up as self-doubt, difficulty holding boundaries, complicated father-relationship, uneven physical vitality. Libra is Venus's sign — Sun there gets 'pulled toward relationships and pleasing others' rather than being centred in itself. Cancellation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether the Sun is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's Sun's relationship with the father?",
@@ -296,7 +296,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Mars mean?",
-                "a": "Mars debilitated in Cancer loses much of its drive — the fiery planet in the watery, emotional sign becomes indecisive, easily upset, and less able to hold ground under pressure. Interestingly, a debilitated Mars in a Manglik house actually cancels the Manglik dosha under a commonly repeated rule (not every source gives it) — the weakened Mars lacks the strength to disturb marriage. Cancellation of debilitation (Neechabhanga) exists when the Cancer lord Moon is well-placed.",
+                "a": "Mars debilitated in Cancer loses much of its drive — the fiery planet in the watery, emotional sign becomes indecisive, easily upset, and less able to hold ground under pressure. Interestingly, a debilitated Mars in a Manglik house actually cancels the Manglik dosha under a commonly repeated rule (not every source gives it) — the weakened Mars lacks the strength to disturb marriage. Cancellation of debilitation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Mars is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's the best remedy for a difficult Mars?",
@@ -339,7 +339,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Venus mean?",
-                "a": "Venus debilitated in Virgo (Mercury's analytical, service-oriented sign) loses its natural warmth and grace. Common manifestations: difficulty in romantic relationships (over-analysis of partners), tendency toward criticism in love, delayed marriage, or discomfort with sensual pleasure and material luxury. Cancellation exists — if Mercury (the Virgo lord) is strong, Neechabhanga Raja Yoga forms.",
+                "a": "Venus debilitated in Virgo (Mercury's analytical, service-oriented sign) loses its natural warmth and grace. Common manifestations: difficulty in romantic relationships (over-analysis of partners), tendency toward criticism in love, delayed marriage, or discomfort with sensual pleasure and material luxury. Cancellation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Venus is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's the best remedy for a weak Venus?",
@@ -382,7 +382,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Mercury mean?",
-                "a": "Mercury debilitated in Pisces loses precision — the analytical planet in the mystical, boundless sign struggles with concrete thinking. Common manifestations: scattered focus, difficulty with numbers or details, tendency toward dreaminess over action. Interestingly, debilitated Mercury can be excellent for spiritual pursuits, poetry, and intuitive work — it's specifically the linear-analytical function that suffers. Cancellation exists when Jupiter (Pisces lord) is strong.",
+                "a": "Mercury debilitated in Pisces loses precision — the analytical planet in the mystical, boundless sign struggles with concrete thinking. Common manifestations: scattered focus, difficulty with numbers or details, tendency toward dreaminess over action. Interestingly, debilitated Mercury can be excellent for spiritual pursuits, poetry, and intuitive work — it's specifically the linear-analytical function that suffers. Cancellation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Mercury is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's the best remedy for a weak Mercury?",
@@ -1325,7 +1325,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Can the effects of Saturn in the 10th house be cancelled?",
-                "a": "Not cancelled, but significantly moderated. Jupiter's aspect on Saturn or on the 10th house is the classical rescuer — it softens the harshness and adds ethical authority. A strong Sun elsewhere in the chart complements Saturn-10 (Sun provides visibility, Saturn provides structure). A well-placed 10th lord amplifies the good side. Debilitated Saturn in Aries can be partially rescued through Neechabhanga (cancellation of debility) if Moon or Mars are well-placed. Full cancellation is a marketing claim, not a classical concept.",
+                "a": "Not cancelled, but significantly moderated. Jupiter's aspect on Saturn or on the 10th house is the classical rescuer — it softens the harshness and adds ethical authority. A strong Sun elsewhere in the chart complements Saturn-10 (Sun provides visibility, Saturn provides structure). A well-placed 10th lord amplifies the good side. Debilitated Saturn in Aries may have its debility cancelled (Neechabhanga): the one condition we can state from the sources we hold is the navamsha test, so check whether Saturn is exalted in the D-9 chart; the fuller set of conditions is a matter for a chart reading. Full cancellation is a marketing claim, not a classical concept.",
             },
             {
                 "q": "What careers suit Saturn in the 10th house natives?",
@@ -1418,11 +1418,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Is a debilitated Sun always bad?",
-                "a": "No. Debilitated Sun (Sun in Libra) reshapes how authority operates in your life — from commanded to negotiated — but it does not remove capability. Many highly successful leaders across history and industry carry this placement, especially in fields where diplomatic authority matters more than dominant authority: judiciary, mediation, senior advisory, coalition politics, academic leadership. When Neecha Bhanga (debilitation cancellation) applies, the placement can even become a source of unusual strength called Neecha Bhanga Raja Yoga, a genuine classical yoga. The actual outcome depends on whether cancellation conditions are present, which house Sun sits in, and how well the career direction is matched to the placement.",
+                "a": "No. Debilitated Sun (Sun in Libra) reshapes how authority operates in your life — from commanded to negotiated — but it does not remove capability. Many highly successful leaders across history and industry carry this placement, especially in fields where diplomatic authority matters more than dominant authority: judiciary, mediation, senior advisory, coalition politics, academic leadership. When Neecha Bhanga (debilitation cancellation) applies, the debilitation is treated as removed. The actual outcome depends on whether cancellation conditions are present, which house Sun sits in, and how well the career direction is matched to the placement.",
             },
             {
-                "q": "What is Neecha Bhanga Raja Yoga for Sun?",
-                "a": "Neecha Bhanga is classical Vedic cancellation of a planet's debilitation, and when it applies, the placement can produce genuine strength. The one condition we can state from the sources we hold is the navamsha test: a planet debilitated in the D-1 chart but exalted in the D-9 has its debilitation cancelled, so for Sun in Libra, check whether the Sun is exalted in the navamsha (D-9) chart. The fuller set of cancellation conditions is a matter for a chart reading, not a checklist we can give here. Where the navamsha condition is present, the placement may read as strength rather than weakness. Generate your free Kundli on Shubh Bhagya to see your D-9 chart.",
+                "q": "What is Neecha Bhanga for Sun?",
+                "a": "Neecha Bhanga is classical Vedic cancellation of a planet's debilitation, and when it applies the debilitation is treated as removed. The one condition we can state from the sources we hold is the navamsha test: a planet debilitated in the D-1 chart but exalted in the D-9 has its debilitation cancelled, so for Sun in Libra, check whether the Sun is exalted in the navamsha (D-9) chart. The fuller set of cancellation conditions is a matter for a chart reading, not a checklist we can give here. Where the navamsha condition is present, the placement may read as strength rather than weakness. Generate your free Kundli on Shubh Bhagya to see your D-9 chart.",
             },
             {
                 "q": "Which careers suit debilitated Sun natives?",
@@ -1438,7 +1438,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Can debilitated Sun give success?",
-                "a": "Yes, and often significant success — but the arc is typically late-blooming rather than early-flashy. The common pattern: early career of over-performance without proportionate recognition, mid-career forced elevation into a leadership role the person did not overtly seek, and late-career unexpected authority earned through years of quiet respect. Where the debilitation is cancelled, the late-career recognition can be more substantial (senior advisor, coalition leader, respected academic head). The people who suffer most with this placement are those who fight it — trying to force themselves into dominance-forward careers that punish the diplomatic instinct. Those who work with the placement often produce the most respected version of leadership in their field.",
+                "a": "Yes, and often significant success — but the arc is typically late-blooming rather than early-flashy. The common pattern: early career of over-performance without proportionate recognition, mid-career forced elevation into a leadership role the person did not overtly seek, and late-career unexpected authority earned through years of quiet respect. The people who suffer most with this placement are those who fight it — trying to force themselves into dominance-forward careers that punish the diplomatic instinct. Those who work with the placement often produce the most respected version of leadership in their field.",
             },
         ),
         llm_summary=(
