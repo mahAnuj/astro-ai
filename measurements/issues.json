@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-14T20:17:39Z",
+  "generated_at": "2026-11-14T23:31:31Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 118,
@@ -9,9 +9,9 @@
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "MUHURAT": 6,
     "OPS": 6,
     "CORPUS": 5,
+    "MUHURAT": 5,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "MEASURE": 2,
@@ -21,6 +21,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "KNOWLEDGE": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
@@ -30,9 +31,9 @@
   },
   "by_type": {
     "untyped": 33,
-    "bug": 28,
+    "bug": 27,
     "enhancement": 24,
-    "chore": 18,
+    "chore": 19,
     "correctness": 11,
     "design": 4
   },
@@ -43,6 +44,21 @@
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1041,
+      "title": "knowledge: vedic_reference.md 29.9 and the 29 closing note still say the nitya-yoga blocker is 'narrower than its source' (stale after #1023)",
+      "ask": "",
+      "area": "KNOWLEDGE",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-14T23:30:53Z",
+      "updated": "2026-11-14T23:30:53Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1036,
       "title": "Jupiter-in-10th guide: 'classical' wording left at l.30 and l.97, and the registry FAQ's unlabelled career signatures (residue of #1032)",
@@ -55,7 +71,7 @@
         "astrology-correctness"
       ],
       "created": "2026-11-14T16:57:56Z",
-      "updated": "2026-11-14T16:57:56Z",
+      "updated": "2026-11-14T20:19:51Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -188,10 +204,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-14T13:15:41Z",
-      "updated": "2026-11-14T13:15:41Z",
+      "updated": "2026-11-14T23:30:40Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -208,25 +227,6 @@
       ],
       "created": "2026-11-14T13:15:38Z",
       "updated": "2026-11-14T13:15:38Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1021,
-      "title": "muhurat: Tuesday/Saturday cost one point, so Tuesday weddings rate 'excellent' — Raman rejects Tuesday for marriage (WRONG)",
-      "ask": "",
-      "area": "MUHURAT",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-14T13:15:36Z",
-      "updated": "2026-11-14T20:16:53Z",
       "blocked": false,
       "needs_evidence": false
     },
