@@ -44,7 +44,11 @@ def _flat(s: str) -> str:
 def test_note_says_the_step_down_is_bhagyas_own_convention_in_both_languages():
     en, hi = _t("en", _NOTE_KEY), _t("hi", _NOTE_KEY)
     assert "only when counted from your Venus" in en, en
-    assert "one step lower" in en and "no stronger than mitigated" in en, en
+    assert "up to one step lower" in en and "no stronger than mitigated" in en, en
+    # The grade floors at low (chart.py): a Venus-only 2nd-house chart is already low and
+    # nothing drops, so the note may not promise a drop it did not make (QA round 1).
+    assert "(never below low)" in en, en
+    assert "अधिकतम एक स्तर" in hi and "अल्प से नीचे कभी नहीं" in hi, hi
     assert "Bhagya's own convention" in en and "not a classical rule" in en, en
     assert "more powerful" in en and "not the weaker" in en, en
     assert "शुभ भाग्य की अपनी परिपाटी" in hi and "शास्त्रीय नियम नहीं" in hi, hi
@@ -130,4 +134,9 @@ def test_venus_only_2nd_house_keeps_the_low_paragraph_and_floors_at_low(render):
     details, pages = render(_chart(mars_house=3, venus_house=2, moon_house=1))
     assert details.venus_axis_only and details.houses == (2,) and details.severity == "low"
     assert _about(pages["en"]) == _flat(_t("en", "manglik_about_low"))
-    assert _flat(_t("en", _NOTE_KEY)) in _flat(pages["en"])
+    for lang in ("en", "hi"):
+        assert _flat(_t(lang, _NOTE_KEY)) in _flat(pages[lang]), lang
+    # The note on this page is the one that promises "up to one step ... never below low",
+    # because here the badge did not move.
+    assert "never below low" in _flat(pages["en"])
+    assert _t("en", "manglik_severity_low") in pages["en"]
