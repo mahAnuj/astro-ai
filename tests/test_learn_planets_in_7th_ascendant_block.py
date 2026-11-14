@@ -102,9 +102,14 @@ def test_meaningless_dispositor_mirror_reason_is_gone(client):
 def test_mars_line_gives_the_supported_reason_and_stays_a_mitigation(client):
     t = _bullet(client, "Aries or Scorpio Ascendant, Mars in 7th")
     assert "Venus" in t and "Libra" in t and "Taurus" in t
-    assert "mitigate" in t and "softened" in t
+    assert "mitigate" in t and "at least softened" in t
+    # §1.3 rule 4: Mars in a movable sign (Libra, the Aries Ascendant's 7th) cancels on some lists, so the
+    # line must not say the reading is never removed (QA round 1 on #991) ...
+    assert "not removed" not in t and "so the reading is removed" not in t
+    assert "movable" in t and "Libra" in t and "on lists that" in t
+    # ... and must not state the cancellation as the page's own verdict: it is qualified and contested.
+    assert t.count("cancels") == 1 and "on lists that count movable signs Mars there cancels" in t
     assert "contested" in t  # §1.6: the cancellation family is disputed
-    assert "cancels" not in t.lower()
     assert 'href="/learn/manglik-dosh/"' in client.get(f"/learn/{SLUG}/").text
 
 
