@@ -456,8 +456,15 @@ def _ravi_yoga_flag(weekday: str, nakshatra: str) -> str:
     return ""
 
 
-# ─── Vaidhriti + Vyatipata Nitya Yogas — universal BLOCKERS ──────────
-# Two of the 27 nitya yogas are classical hard-exclusions for shubh karya.
+# ─── Atiganda, Shula, Ganda, Vyatipata, Vaidhriti — universal BLOCKERS ─
+# Five of the 27 nitya yogas are hard exclusions (#1023). Raman, Muhurtha (1948),
+# Panchanga Suddhi, lines 1343-1346 (knowledge/vedic_reference.md section 29.9):
+# "the 16th (Atiganda) the 9th (Sula) 10th (Ganda) 17th (Vyathipatha) and 27th
+# (Vaidhruti) have deleterious effects upon events which are started or commenced
+# under them." ("16th" is an OCR slip for 6th: Atiganda is 6th in his own list.)
+# Until #1023 only the last two blocked, so a day under Atiganda or Ganda could rate
+# 'excellent'. His longer marriage-only list (lines 3757-3759) is NOT applied here: it
+# names "Mrityu", which is not one of the 27, and needs its own check first.
 # Nitya yoga is computed as (Sun_longitude + Moon_longitude) / 13.333°.
 # Positions:
 #   17 = Vyatipata — "great transgression"
@@ -470,10 +477,10 @@ def _ravi_yoga_flag(weekday: str, nakshatra: str) -> str:
 # not a guarantee. chart.py's spellings win because /panchang is the almanac
 # users read and chart.py is where the anga functions live.
 #
-# The blocking set is safe to key on names because "Vyatipata" and "Vaidhriti"
-# were spelled identically in both copies — the divergence was elsewhere in
-# the tuple.
-_BLOCKING_NITYA_YOGAS = {"Vyatipata", "Vaidhriti"}
+# The blocking set is keyed on chart.py's spellings ("Shula", not Raman's "Sula"):
+# `tests/test_muhurat_nitya_blockers.py` pins each name to its index in
+# chart._NITYA_YOGA_NAMES, so a spelling drift cannot silently stop a blocker.
+_BLOCKING_NITYA_YOGAS = {"Atiganda", "Shula", "Ganda", "Vyatipata", "Vaidhriti"}
 
 
 def _nitya_yoga_flag(chart: Chart, when: datetime) -> tuple[str, bool]:
@@ -501,7 +508,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "hero_title": "Vivah Muhurat — Auspicious Wedding Dates",
         "hero_subtitle": "Classical Panchang rules + your chart, not calendar guesswork.",
         "seo_title": "Vivah Muhurat Finder — Wedding Dates with Bride+Groom Pair Scoring",
-        "seo_desc": "Free Vivah Muhurat finder: tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana, Nitya Yogas (Vaidhriti/Vyatipata avoided), Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga boosters, plus Guru+Shukra combustion checks. Bride+groom two-chart scoring (Tara Bala + Chandra Bala + Manglik + Sade Sati per partner).",
+        "seo_desc": "Free Vivah Muhurat finder: tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana, Nitya Yogas (Atiganda, Shula, Ganda, Vyatipata and Vaidhriti avoided), Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga boosters, plus Guru+Shukra combustion checks. Bride+groom two-chart scoring (Tara Bala + Chandra Bala + Manglik + Sade Sati per partner).",
         "intro_paragraphs": [
             "A Vivah Muhurat is not merely an 'auspicious day' from a calendar. Classical tradition applies six specific criteria that must all align: Guru (Jupiter) and Shukra (Venus) visible above the horizon and uncombust, favourable tithi and nakshatra, no Panchak, no Chaturmas (Devshayani → Devuthani Ekadashi), no Kharmas (Sun in Sagittarius or Pisces), and no eclipse days. This tool checks all of these plus Dagdha tithi-weekday combinations and calls out Abujha muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya) that override normal scoring.",
             "For a fully personalised recommendation, sign in first — the tool will then overlay Tara Bala (star strength between your natal Moon nakshatra and the transit day) and Chandra Bala (Moon-strength from your natal Moon) on every candidate, plus surface chart-level cautions from Sade Sati phase or active Rahu/Ketu Mahadasha.",
@@ -1351,7 +1358,7 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
       1. Adhik Maas — universal blocker for all shubh karya
       2. Eclipse day / ±1 day — universal
       3. Panchak, Chaturmas, Kharmas, Dagdha (per-event flag)
-      4. Vaidhriti / Vyatipata Nitya Yogas — universal
+      4. Atiganda / Shula / Ganda / Vyatipata / Vaidhriti Nitya Yogas — universal
       5. Combust karaka (per-event flag)
       6. Avoid-nakshatra, avoid-tithi
       7. Tuesday (_HARD_AVOID_WEEKDAYS) — Raman, see the constant
@@ -1382,10 +1389,11 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
     if eclipse_reason:
         flags.append("eclipse")
         return "avoid", eclipse_reason, tuple(flags)
-    # Vaidhriti / Vyatipata nitya yogas — universal blockers.
+    # Atiganda / Shula / Ganda / Vyatipata / Vaidhriti nitya yogas — universal blockers.
     if nitya_blocks:
         flags.append("nitya_yoga_block")
-        return "avoid", f"{nitya_yoga} Nitya Yoga — universally inauspicious for shubh karya", tuple(flags)
+        return "avoid", (f"{nitya_yoga} Nitya Yoga — Raman names it among the five yogas that harm "
+                         "whatever is started under them"), tuple(flags)
     if rules["check_panchak"] and is_panchak:
         flags.append("panchak")
         return "avoid", f"Panchak day ({nakshatra}) — inauspicious", tuple(flags)

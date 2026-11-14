@@ -8,7 +8,7 @@
 {% set breadcrumbs = [('Home', '/'), ('Muhurat Finder', '/muhurat')] %}
 {% include "_breadcrumb_schema.html" %}
 {% set tool_name = "Muhurat Finder" %}
-{% set tool_desc = "Free Muhurat Finder covering Vivah, Griha Pravesh, Namkaran, Vidyarambh and Business dates. Applies classical Panchang rules — tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana, Nitya Yogas (Vaidhriti/Vyatipata avoided), Choghadiya sub-day windows, Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga boosters, plus combustion checks for Guru and Shukra. Bride+groom two-chart scoring for Vivah; baby-first-letter Nakshatra table for Namkaran." %}
+{% set tool_desc = "Free Muhurat Finder covering Vivah, Griha Pravesh, Namkaran, Vidyarambh and Business dates. Applies classical Panchang rules — tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana, Nitya Yogas (Atiganda, Shula, Ganda, Vyatipata and Vaidhriti avoided), Choghadiya sub-day windows, Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga boosters, plus combustion checks for Guru and Shukra. Bride+groom two-chart scoring for Vivah; baby-first-letter Nakshatra table for Namkaran." %}
 {% set tool_url = "/muhurat" %}
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
@@ -352,7 +352,7 @@
       </tbody>
     </table>
     <p class="text-xs text-bhagya-muted mt-2 italic">
-      <span class="text-emerald-800">✓</span> Abhijit Muhurta = the most auspicious window, a fifteenth of daylight around solar noon. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Vaidhriti/Vyatipata days are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present (universal auspiciousness).
+      <span class="text-emerald-800">✓</span> Abhijit Muhurta = the most auspicious window, a fifteenth of daylight around solar noon. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Days under Atiganda, Shula, Ganda, Vyatipata or Vaidhriti are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present (universal auspiciousness).
     </p>
     {% endif %}
 
@@ -385,7 +385,7 @@
     {% endif %}
 
     <div class="text-xs text-bhagya-muted mt-4 space-y-1">
-      <p><strong>Classical criteria applied:</strong> tithi + nakshatra + weekday scoring; hard exclusions for Panchak, Chaturmas (Devshayani → Devuthani), Kharmas / Malmas (Sun in Sagittarius/Pisces), Adhik Maas (computed from the ephemeris for each date searched, not read from a fixed table), Dagdha tithi-weekday combinations, the Vaidhriti and Vyatipata nitya-yogas, Guru + Shukra + Budh combustion per event karaka, and eclipse days (±1 day universal blocker). Bhadra / Vishti Karana sub-day windows are computed and shown on each day so you can plan the ceremony around them.</p>
+      <p><strong>Classical criteria applied:</strong> tithi + nakshatra + weekday scoring; hard exclusions for Panchak, Chaturmas (Devshayani → Devuthani), Kharmas / Malmas (Sun in Sagittarius/Pisces), Adhik Maas (computed from the ephemeris for each date searched, not read from a fixed table), Dagdha tithi-weekday combinations, the Atiganda, Shula, Ganda, Vyatipata and Vaidhriti nitya-yogas, Guru + Shukra + Budh combustion per event karaka, and eclipse days (±1 day universal blocker). Bhadra / Vishti Karana sub-day windows are computed and shown on each day so you can plan the ceremony around them.</p>
       {#- #219: states only what muhurat.py does and the orbs knowledge/grahas.md 12.1 holds
          (Raman, Muhurtha, Appendix). No claim about any other text's method. -#}
       <p><strong>Combustion (asta):</strong> this finder calls a planet combust when, at noon on the date, it is within a fixed number of degrees of the Sun: Guru 11°, Shukra 10° (9° when retrograde), Budh 14° (13° when retrograde). Those orbs are from B.V. Raman's <em>Muhurtha</em>. A combust planet marks the date "avoid" outright, but only for the events that check it: Guru for Vivah, Griha Pravesh and Vidyarambh; Shukra for Vivah; Budh for Business. Namkaran checks none of them. The finder does not count days around a planet's rising or setting in the sky, and it knows only "combust" or "not combust". For Business, Budh combustion blocks every weekday, not only Wednesday; that is this finder's own extension, not a rule we source.</p>
