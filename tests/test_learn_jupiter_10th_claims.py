@@ -29,6 +29,12 @@ UNSOURCED = (
     "different classical outcomes",
     "classical outcomes tend to arrive",
     "classically produce the outcomes",
+    # #1016: residue after #1014
+    "fullest classical",
+    "classical hamsa yoga native",
+    "scandal-prone",
+    "hamsa yoga at maximum power",
+    "full hamsa yoga",
 )
 
 _WEAK_WORD = re.compile(r"\b(weak|weaker|weakened|difficult|afflicted|compromised|malefic)\b", re.I)
@@ -101,7 +107,7 @@ def test_page_keeps_the_sourced_rules(client):
     assert "retrograde planets as stronger, not weaker" in t
     assert "deep learning and an expansion of meaning" in t
     # the Libra-ascendant line names what is held instead of a classical verdict
-    assert "It forms Hamsa Yoga, which the sources we hold list with wisdom, respect, dharma, and scholarly fame" in t
+    assert "This forms Hamsa Yoga, which the sources we hold list with wisdom, respect, dharma, and scholarly fame" in t
 
 
 def test_registry_keeps_the_sourced_rules():
@@ -118,3 +124,17 @@ def test_registry_faq_text_is_what_the_page_renders_in_its_json_ld(client):
     raw = client.get(f"/learn/{SLUG}/").text
     assert "long-lived" not in raw
     assert "stronger, not weaker" in raw
+
+
+def test_registry_llm_summary_reaching_the_natal_prompt_names_guru_chandala_without_scandal():
+    """chart.py injects llm_summary into the natal prompt, so 'scandal-prone' there is a claim made to every reading."""
+    summary = _article().llm_summary
+    assert "Guru Chandala" in summary
+    assert "scandal-prone" not in summary.lower()
+
+
+def test_page_labels_the_hamsa_career_roles_as_a_reading_not_a_rule(client):
+    t = _text(client)
+    assert "practitioner's reading of those themes, not a rule the texts state" in t
+    assert t.count("This forms Hamsa Yoga, which the sources we hold list") == 1
+    assert "Hamsa Yoga formed at full strength" not in t
