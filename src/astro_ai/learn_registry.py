@@ -253,7 +253,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Jupiter mean?",
-                "a": "Jupiter debilitated in Capricorn loses its natural expansiveness — the sign belongs to Saturn (limits, structure), and Jupiter's optimism gets compressed. Common manifestations: struggles with children or fertility, difficulty finding good teachers, tendency toward pessimism, and material scarcity despite hard work. Cancellation exists — if the Capricorn lord Saturn is well-placed, Neechabhanga Raja Yoga forms and the debilitation flips into strength.",
+                "a": "Jupiter debilitated in Capricorn loses its natural expansiveness — the sign belongs to Saturn (limits, structure), and Jupiter's optimism gets compressed. Common manifestations: struggles with children or fertility, difficulty finding good teachers, tendency toward pessimism, and material scarcity despite hard work. Cancellation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Jupiter is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's the best remedy for a weak Jupiter?",
@@ -1422,7 +1422,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What is Neecha Bhanga Raja Yoga for Sun?",
-                "a": "Neecha Bhanga is classical Vedic cancellation of a planet's debilitation, and when it applies, the placement can produce genuine strength. The four most commonly cited conditions for Sun's debilitation in Libra to cancel: (1) Venus (the lord of Libra) is in a kendra (1st/4th/7th/10th) from the Lagna or Moon; (2) Saturn (which is exalted in Libra) is in a kendra from the Lagna or Moon; (3) Mars (which rules Aries, Sun's exaltation sign) is in a kendra from the Lagna or Moon; (4) Sun is exalted in the navamsha (D-9) chart. If any of these are present, the debilitation is functionally cancelled and the person often produces late-blooming institutional recognition and respected leadership. Generate your free Kundli on Shubh Bhagya to see if any of these apply.",
+                "a": "Neecha Bhanga is classical Vedic cancellation of a planet's debilitation, and when it applies, the placement can produce genuine strength. The one condition we can state from the sources we hold is the navamsha test: a planet debilitated in the D-1 chart but exalted in the D-9 has its debilitation cancelled, so for Sun in Libra, check whether the Sun is exalted in the navamsha (D-9) chart. The fuller set of cancellation conditions is a matter for a chart reading, not a checklist we can give here. Where the navamsha condition is present, the placement may read as strength rather than weakness. Generate your free Kundli on Shubh Bhagya to see your D-9 chart.",
             },
             {
                 "q": "Which careers suit debilitated Sun natives?",
@@ -1438,7 +1438,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Can debilitated Sun give success?",
-                "a": "Yes, and often significant success — but the arc is typically late-blooming rather than early-flashy. The common pattern: early career of over-performance without proportionate recognition, mid-career forced elevation into a leadership role the person did not overtly seek, and late-career unexpected authority earned through years of quiet respect. When Neecha Bhanga applies, the late-career recognition can be substantial (chief justice, senior advisor, coalition leader, respected academic head). The people who suffer most with this placement are those who fight it — trying to force themselves into dominance-forward careers that punish the diplomatic instinct. Those who work with the placement often produce the most respected version of leadership in their field.",
+                "a": "Yes, and often significant success — but the arc is typically late-blooming rather than early-flashy. The common pattern: early career of over-performance without proportionate recognition, mid-career forced elevation into a leadership role the person did not overtly seek, and late-career unexpected authority earned through years of quiet respect. Where the debilitation is cancelled, the late-career recognition can be more substantial (senior advisor, coalition leader, respected academic head). The people who suffer most with this placement are those who fight it — trying to force themselves into dominance-forward careers that punish the diplomatic instinct. Those who work with the placement often produce the most respected version of leadership in their field.",
             },
         ),
         llm_summary=(
@@ -1447,8 +1447,8 @@ ARTICLES: tuple[Article, ...] = (
             '• Career pattern: over-perform without recognition early → forced-into-leadership mid → respected-authority late\n'
             '• Best-fit careers: negotiation-forward (judiciary, arbitration, advisory, diplomacy, consulting, academia)\n'
             '• Fights: dominance-forward (aggressive sales, competitive politics, alpha-founder roles)\n'
-            '• Neechabhanga Raja Yoga (cancellation): Venus/Saturn/Mars in kendra from Lagna/Moon, OR Sun exalted in D-9\n'
-            '• When cancelled, produces unusual late-career strength — chief-justice / senior-advisor patterns\n'
+            '• Neechabhanga (cancellation): the one condition we can state is Sun exalted in D-9; the fuller set is for a chart reading\n'
+            '• When cancelled, the placement can read as strength rather than weakness\n'
             '• Remedies: Sun-strengthening practices (water offering), honour father-figures, wheat/jaggery Sunday charity'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
@@ -1521,7 +1521,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What if Sun in the 10th house is combust or debilitated?",
-                "a": "Both configurations flip the natural authority pattern. Debilitated Sun in the 10th means Sun in Libra (Capricorn ascendant) — the capable person who cannot get promoted, authority that feels borrowed. However, Neecha Bhanga cancellation rules apply here and often cancel the debilitation, producing late-career elevation. A combust planet in the 10th (usually Mercury or Venus close to Sun) tends to burn the significations of that planet in career — Mercury combust here can indicate analytical skill that is never quite credited; Venus combust can dim creative or partnership recognition. Sun himself is not combust, but he can burn the 10th lord if that lord is close to him. In every case, the placement is workable — Neecha Bhanga, transit windows, and consciously choosing careers aligned to the actual configuration all shift the outcome.",
+                "a": "Both configurations flip the natural authority pattern. Debilitated Sun in the 10th means Sun in Libra (Capricorn ascendant) — the capable person who cannot get promoted, authority that feels borrowed. However, Neecha Bhanga can apply here (check whether the Sun is exalted in the D-9 navamsha chart), and where it does the debilitation is cancelled. A combust planet in the 10th (usually Mercury or Venus close to Sun) tends to burn the significations of that planet in career — Mercury combust here can indicate analytical skill that is never quite credited; Venus combust can dim creative or partnership recognition. Sun himself is not combust, but he can burn the 10th lord if that lord is close to him. In every case, the placement is workable — Neecha Bhanga, transit windows, and consciously choosing careers aligned to the actual configuration all shift the outcome.",
             },
             {
                 "q": "Which ascendants benefit most from Sun in the 10th?",
