@@ -105,10 +105,29 @@ def test_a_workflows_diff_is_noted_not_dispatched():
 
 
 def test_an_owner_branch_with_no_issue_is_noted_once():
+    # Since 2026-11-13 a session/owner branch is FIXED (fix_pr), not just noted;
+    # it is noted -- once per head -- only after MAX_PR_FIXES automatic fixes.
     b = "claude/peaceful-pascal-x"
-    assert rg.decide(Gh(branch=b, login="mahAnuj"), env(branch=b))["action"] == "notify"
-    gh = Gh(branch=b, login="mahAnuj", comments=(f"{rg.NOTE_MARK} {SHA}",))
+    tried = tuple(f"{rg.FIX_MARK} {i:040x}" for i in range(rg.MAX_PR_FIXES))
+    d = rg.decide(Gh(branch=b, login="mahAnuj", comments=tried), env(branch=b))
+    assert d["action"] == "notify" and "automatic fixes" in d["why"]
+    gh = Gh(branch=b, login="mahAnuj", comments=(*tried, f"{rg.NOTE_MARK} {SHA}"))
     assert rg.decide(gh, env(branch=b))["action"] == "none"
+
+
+def test_a_session_branch_with_no_issue_gets_a_fix_run_on_the_pr():
+    b = "claude/peaceful-pascal-x"
+    d = rg.decide(Gh(branch=b, login="mahAnuj"), env(branch=b))
+    assert d["action"] == "fix" and d["target"] == "fix_pr=892" and "issue" not in d
+    # one per head, like every other dispatch here
+    gh = Gh(branch=b, login="mahAnuj", comments=(f"{rg.FIX_MARK} {SHA}",))
+    assert rg.decide(gh, env(branch=b))["action"] == "none"
+
+
+def test_an_issue_branch_fix_still_aims_at_the_issue_and_is_never_capped():
+    many = tuple(f"{rg.FIX_MARK} {i:040x}" for i in range(rg.MAX_PR_FIXES + 2))
+    d = rg.decide(Gh(comments=many), env())
+    assert d["action"] == "fix" and d["target"] == "issue=889"
 
 
 def test_an_outsider_a_moved_head_and_a_measurement_pr_are_left_alone():

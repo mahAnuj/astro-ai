@@ -37,7 +37,7 @@ FLAT = " ".join(SRC.split())
 def test_the_steward_can_dispatch_a_pr_scoped_round():
     """THE FIX. `pr=<n>` aims a QA round at the PR itself and needs no owning
     issue, which is the state that held four green PRs."""
-    assert "`issue=<n>` **or** `pr=<n>`" in FLAT, (
+    assert "`issue=<n>`, `pr=<n>` **or**" in FLAT, (
         "the ruling line offers only one form; a PR with no owning issue is "
         "then unreachable and the steward can only comment about it"
     )
@@ -116,10 +116,10 @@ def test_every_ruling_form_the_steward_offers_is_one_the_carrier_parses():
     carrier parses `^(issue|pr)=[0-9]+$` and refuses anything else, so a third
     form invented here would be written, refused, and reported as a dispatch."""
     carrier = (ROOT / "scripts" / "dispatch_cycle.sh").read_text(encoding="utf-8")
-    m = re.search(r"grep -oE '\^\(([a-z|]+)\)=\[0-9\]\+\$'", carrier)
+    m = re.search(r"grep -oE '\^\(([a-z_|]+)\)=\[0-9\]\+\$'", carrier)
     assert m, "the carrier's ruling pattern is no longer recognisable"
     accepted = set(m.group(1).split("|"))
-    offered = set(re.findall(r"`([a-z]+)=<n>`", SRC))
+    offered = set(re.findall(r"`([a-z_]+)=<n>`", SRC))
     assert offered <= accepted, (
         f"steward.md offers {sorted(offered - accepted)}, which "
         f"dispatch_cycle.sh does not parse (it accepts {sorted(accepted)})"

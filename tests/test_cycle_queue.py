@@ -631,7 +631,18 @@ def test_the_queue_and_the_carrier_tell_lanes_apart_the_SAME_way():
 def test_agent_work_names_and_groups_QA_rounds_by_the_same_rule():
     src = (ROOT / ".github" / "workflows" / "agent-work.yml").read_text()
     doc = yaml.safe_load(src)
-    assert doc["run-name"] == "${{ inputs.pr && format('QA round: PR #{0}', inputs.pr) || 'Agent work' }}"
+    assert doc["run-name"] == ("${{ inputs.pr && format('QA round: PR #{0}', inputs.pr) || "
+                               "inputs.fix_pr && format('Agent work: fix PR #{0}', inputs.fix_pr) || 'Agent work' }}")
+    # A fix run pushes, so it must count in the BUILD lane: its title may not
+    # start with the QA prefix, and the concurrency group keys on `pr` alone.
+    assert not "Agent work: fix PR #1".startswith(cq.QA_TITLE)
+    assert cq.lane_of("fix_pr") == "build"
     assert doc["run-name"].split("format('")[1].startswith(cq.QA_TITLE)
     assert doc["concurrency"]["group"] == "${{ inputs.pr && 'agent-work-qa' || 'agent-work' }}"
     assert doc["concurrency"]["cancel-in-progress"] is False
+
+
+def test_a_fix_pr_entry_is_parsed_and_runs_in_the_build_lane():
+    m = cq.ENTRY.search("<!-- agent-work-queue: kind=fix_pr target=951 by=agent-work-qa-fix -->")
+    assert m and m.group(1) == "fix_pr" and m.group(2) == "951"
+    assert cq.lane_of("fix_pr") == "build"

@@ -118,10 +118,11 @@ ATTRIBUTIONS = ("receipt", "log", "unattributed")
 # measured that day, 13 of the 47 `nothing` runs (158 of 1,303 minutes) were
 # rounds that had done their job. `judged` is the outcome of a successful round.
 #   qa-round   `/agent-cycle --qa-pr <n>`   judge one PR
+#   fix-pr     `/agent-cycle --fix-pr <n>`  fix one PR's QA FAIL / red gates (2026-11-13)
 #   issue      `/agent-cycle <n>`           work one named issue
 #   ranked     `/agent-cycle`               project-manager picks the issue
 #   unknown    no prompt line in the log (expired, or older than this field)
-KINDS = ("qa-round", "issue", "ranked", "unknown")
+KINDS = ("qa-round", "fix-pr", "issue", "ranked", "unknown")
 LOOP_FIELDS = ("run", "workflow", "date", "started", "trigger", "conclusion", "minutes",
                "issue", "pr", "pr_merged", "outcome", "attribution", "kind", "owner_helped")
 # `owner_helped` (2026-11-09, owner: "at many times, I am also pushing things moving the
@@ -133,7 +134,7 @@ LOOP_FIELDS = ("run", "workflow", "date", "started", "trigger", "conclusion", "m
 LOOP_IDENTITIES = frozenset({"github-actions[bot]", "claude[bot]", "shubhagya-publisher[bot]"})
 # The action step's env listing prints the RESOLVED prompt (`PROMPT: /agent-cycle
 # --qa-pr 679`), never the template, so this cannot match a step's echoed source.
-PROMPT = re.compile(r"\bPROMPT: /agent-cycle(?: (--qa-pr )?(\d+))?[ \t]*$", re.M)
+PROMPT = re.compile(r"\bPROMPT: /agent-cycle(?: (--qa-pr |--fix-pr )?(\d+))?[ \t]*$", re.M)
 COST_FIELDS = ("item", "vendor", "monthly_usd", "basis", "status", "note")
 FIGURE_STATUSES = ("known", "free-tier")
 
@@ -349,7 +350,9 @@ def kind_of(logs: list[str]) -> str:
     for log in logs:
         m = PROMPT.search(log)
         if m:
-            return "qa-round" if m.group(1) else ("issue" if m.group(2) else "ranked")
+            if m.group(1):
+                return "fix-pr" if m.group(1).startswith("--fix-pr") else "qa-round"
+            return "issue" if m.group(2) else "ranked"
     return "unknown"
 
 
