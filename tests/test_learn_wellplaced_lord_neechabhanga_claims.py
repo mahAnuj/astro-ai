@@ -137,3 +137,24 @@ def test_registry_faq_text_is_what_the_page_renders_in_its_json_ld(client):
         raw = client.get(f"/learn/{slug}/").text
         assert "exalted in the D-9" in raw, slug
         assert "Neechabhanga Raja Yoga" not in raw, slug
+
+
+SUN_CAREER = "debilitated-sun-career"
+
+
+def _specific(text: str) -> list[str]:
+    # not _LORD_STRENGTH: on this long page it matches 'strong' sentences about the Sun that are not a cancellation rule
+    return [m.group(0) for rx in (_RAJA_YOGA_NAME, _OUTCOME_PROMISE) for m in rx.finditer(text)]
+
+
+def test_sun_career_page_and_registry_do_not_call_neechabhanga_a_raja_yoga_or_time_the_recognition(client):
+    """The page was the one #1006 left carrying the 'Raja Yoga' label and 'late-blooming recognition arrives'."""
+    t = _text(client, SUN_CAREER)
+    assert "Neecha Bhanga" in t and "exalted in the navamsha (D-9) chart" in t  # the sourced rule survives
+    assert not _specific(t), _specific(t)
+    assert "genuine classical yoga" not in t
+    assert "late-blooming recognition arrives" not in t
+    for field in _registry_fields(SUN_CAREER):
+        assert not _specific(field), f"{_specific(field)} in {field[:120]}"
+        assert "genuine classical yoga" not in field
+        assert "genuine strength" not in field
