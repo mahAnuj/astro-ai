@@ -35,6 +35,11 @@ UNSOURCED = (
     "scandal-prone",
     "hamsa yoga at maximum power",
     "full hamsa yoga",
+    # #1032: residue after #1016
+    "beyond the classical hamsa",
+    "not classical hamsa territory",
+    "unusual moral weight",
+    "dharmaraja",
 )
 
 _WEAK_WORD = re.compile(r"\b(weak|weaker|weakened|difficult|afflicted|compromised|malefic)\b", re.I)
@@ -138,3 +143,17 @@ def test_page_labels_the_hamsa_career_roles_as_a_reading_not_a_rule(client):
     assert "practitioner's reading of those themes, not a rule the texts state" in t
     assert t.count("This forms Hamsa Yoga, which the sources we hold list") == 1
     assert "Hamsa Yoga formed at full strength" not in t
+
+
+def test_1032_the_three_phrases_are_gone_and_the_replacements_state_the_held_rule(client):
+    t = _text(client)
+    low = t.lower()
+    for phrase in ("beyond the classical hamsa", "not classical hamsa territory", "unusual moral weight"):
+        assert phrase not in low, phrase
+    # the Gemini/Virgo line now says why Hamsa is not formed, from the held rule (own sign or exalted)
+    assert "does not form Hamsa Yoga, which needs Jupiter in his own sign or exalted" in t
+    # the judiciary bullet is labelled a reading and keeps the held theme
+    assert "Dharma is one of the themes the sources we hold list for Hamsa Yoga" in t
+    assert "a practitioner's reading of that theme, not a rule the texts state" in t
+    # the career-field cluster is attributed to practitioners
+    assert "practitioners read Jupiter in the 10th as supporting a specific cluster of career fields" in t
