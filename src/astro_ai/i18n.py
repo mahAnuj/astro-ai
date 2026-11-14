@@ -168,6 +168,9 @@ _EN: Final[dict[str, str]] = {
     "manglik_about_high":  "Mars sitting in the 7th or 8th house — counted from your Lagna, your Moon or your Venus — is the most-discussed form of Manglik. Classically it suggests friction, restlessness, or assertive energy in marital matters, with the 7th house (partnership) and 8th house (spouse's longevity, transformation) being the most-cited concerns. The actual effect varies enormously with the rest of the chart.",
     "manglik_about_moderate":"Mars in the 1st, 4th or 12th house counts toward Manglik here, and Bhagya grades it moderate, below the 7th and 8th. That grade is Bhagya's own weighting, not a classical grade, and it is not drawn from the classical texts we hold. The 1st affects personality and restlessness; the 4th affects home and inner peace; the 12th affects private life and expenses.",
     "manglik_about_low":   "Mars in the 2nd house counts toward Manglik here, and Bhagya grades it low. That grade is Bhagya's own weighting, not a classical grade, and it is not drawn from the classical texts we hold. The 2nd mainly affects speech and family dynamics.",
+    # #777: the Venus-only one-grade drop is Bhagya's own convention (Raman, Muhurtha, ranks the
+    # Venus frame the most powerful; vedic_reference.md §1.6.3). Page-only: no prompt reads this key.
+    "manglik_venus_only_note": "Mars counts toward Manglik here only when counted from your Venus, so Bhagya shows the grade one step lower than the house alone would give, and reads the dosha as no stronger than mitigated. That step is Bhagya's own convention, not a classical rule: the one source we work from that ranks the three frames calls the Venus frame the more powerful one, not the weaker.",
     "manglik_cancel_label":"Possible cancellations",
 
     # Sade Sati explanatory panel
@@ -750,6 +753,7 @@ _HI: Final[dict[str, str]] = {
     "manglik_about_high":  "लग्न, चंद्र अथवा शुक्र से सप्तम अथवा अष्टम भाव में मंगल का होना मंगल दोष का सबसे चर्चित स्वरूप है। शास्त्रीय रूप से यह वैवाहिक मामलों में टकराव, अस्थिरता या तीव्र ऊर्जा का सूचक माना जाता है, जहाँ सप्तम (साझेदारी) और अष्टम (जीवनसाथी की आयु, परिवर्तन) सबसे चिंतनीय हैं। वास्तविक प्रभाव शेष कुंडली पर बहुत निर्भर करता है।",
     "manglik_about_moderate":"प्रथम, चतुर्थ अथवा द्वादश भाव में मंगल यहाँ मंगल दोष में गिना जाता है, और शुभ भाग्य इसे सप्तम व अष्टम से नीचे, मध्यम श्रेणी में रखता है। यह श्रेणी शुभ भाग्य का अपना भार-निर्धारण है, कोई शास्त्रीय श्रेणी नहीं, और हमारे पास उपलब्ध शास्त्रीय ग्रंथों से नहीं ली गई है। प्रथम व्यक्तित्व व अस्थिरता को, चतुर्थ घर व मानसिक शांति को, और द्वादश निजी जीवन व व्यय को प्रभावित करता है।",
     "manglik_about_low":   "द्वितीय भाव में मंगल यहाँ मंगल दोष में गिना जाता है, और शुभ भाग्य इसे अल्प श्रेणी में रखता है। यह श्रेणी शुभ भाग्य का अपना भार-निर्धारण है, कोई शास्त्रीय श्रेणी नहीं, और हमारे पास उपलब्ध शास्त्रीय ग्रंथों से नहीं ली गई है। द्वितीय मुख्य रूप से वाणी और पारिवारिक गतिविधि को प्रभावित करता है।",
+    "manglik_venus_only_note": "इस कुंडली में मंगल केवल आपके शुक्र से गिनने पर मंगल दोष में आता है, इसलिए शुभ भाग्य यह श्रेणी भाव से मिलने वाली श्रेणी से एक स्तर नीचे दिखाता है और दोष को अधिक से अधिक शमित मानता है। यह एक स्तर की कमी शुभ भाग्य की अपनी परिपाटी है, कोई शास्त्रीय नियम नहीं: तीनों आधारों का क्रम बताने वाला हमारा उपलब्ध स्रोत शुक्र को अधिक प्रबल कहता है, कमज़ोर नहीं।",
     "manglik_cancel_label":"संभावित निवारण",
 
     # Sade Sati panel
