@@ -560,7 +560,7 @@ def main() -> int:
         print("  This proves the TERM is absent, not the CONCEPT. Before")
         print("  reporting a rule as unsourced, check its constituent names:")
         print("  'nitya yoga' matches nothing while vyatipata and vaidhriti —")
-        print("  the two yogas muhurat.py actually blocks on — are in the books;")
+        print("  two of the five yogas muhurat.py blocks on — are in the books;")
         print("  'graha maitri' matches nothing while planetary friendship is")
         print("  covered 170 times under 'naisargika' and 'friendship'.")
         return 0

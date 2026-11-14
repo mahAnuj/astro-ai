@@ -466,7 +466,10 @@ def _ravi_yoga_flag(weekday: str, nakshatra: str) -> str:
 # 'excellent'. His longer marriage-only list (lines 3757-3759) is NOT applied here: it
 # names "Mrityu", which is not one of the 27, and needs its own check first.
 # Nitya yoga is computed as (Sun_longitude + Moon_longitude) / 13.333°.
-# Positions:
+# Positions in the 27:
+#    6 = Atiganda
+#    9 = Shula (Raman: "Sula")
+#   10 = Ganda
 #   17 = Vyatipata — "great transgression"
 #   27 = Vaidhriti — "no support"
 # The 27 nitya-yoga names used to be duplicated here, with two spellings that
