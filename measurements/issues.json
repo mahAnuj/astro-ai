@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-14T14:10:34Z",
+  "generated_at": "2026-11-14T15:52:11Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 119,
+  "open": 118,
   "with_ask": 40,
   "by_area": {
-    "UNCLASSIFIED": 45,
+    "UNCLASSIFIED": 44,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -30,14 +30,14 @@
   },
   "by_type": {
     "untyped": 33,
-    "bug": 29,
+    "bug": 28,
     "enhancement": 24,
     "chore": 18,
     "correctness": 11,
     "design": 4
   },
   "by_priority": {
-    "unset": 88,
+    "unset": 87,
     "medium": 20,
     "high": 11
   },
@@ -55,7 +55,7 @@
         "astrology-correctness"
       ],
       "created": "2026-11-14T14:09:51Z",
-      "updated": "2026-11-14T14:09:51Z",
+      "updated": "2026-11-14T14:12:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -291,25 +291,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1016,
-      "title": "Jupiter-in-10th guide residue after #1014: 'fullest classical results', 'classical Hamsa Yoga native … authority', 'scandal-prone wisdom'",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-14T10:19:56Z",
-      "updated": "2026-11-14T14:09:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 975,
       "title": "Four issues closed within 3s of their PR merging, before verify-production could run (#732, #826, #852, #912)",
       "ask": "",
@@ -439,11 +420,13 @@
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "needs-evidence"
+      ],
       "created": "2026-11-12T11:14:01Z",
-      "updated": "2026-11-13T15:35:07Z",
+      "updated": "2026-11-14T14:12:51Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 925,
