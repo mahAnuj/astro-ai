@@ -127,3 +127,38 @@ def test_credentials_reach_only_the_watcher_and_are_gone_before_any_agent():
 def test_the_filer_is_given_the_app_findings():
     step = next(s for s in _steps() if s.get("name") == "File the ops dashboard's findings as issues")
     assert "--app /tmp/app-health.json" in step["run"]
+
+
+def test_zero_calls_read_is_unreadable_not_a_clean_bill():
+    # QA on #1002: a swallowed 403 reads as ok:true with 0 calls.
+    doc = watch.evaluate(view_of({1: {"calls": 0, "errors": 0, "error_rate": 0.0, "measured": False},
+                                  7: {"calls": 0, "errors": 0, "error_rate": 0.0, "measured": False}}))
+    assert doc["ok"] is False and doc["findings"] == []
+
+
+def test_the_real_view_with_an_unreachable_bucket_clears_nothing(tmp_path, monkeypatch):
+    # The real _app_view, a bucket name, and no way to read it: the exact path QA
+    # measured. Local fallbacks point at empty dirs so nothing leaks in.
+    from astro_ai import events, llm_stats, storage
+    monkeypatch.setenv("BHAGYA_STORAGE_BUCKET", "shubhagya-cache-us")
+    monkeypatch.setattr(storage, "_client", lambda: None)
+    monkeypatch.setattr(llm_stats, "_LOCAL_FALLBACK_DIR", tmp_path / "s", raising=False)
+    monkeypatch.setattr(events, "_LOCAL_FALLBACK_DIR", tmp_path / "e", raising=False)
+    ops_data._app_cache.clear()
+    out = tmp_path / "app.json"
+    assert watch.main(["x", "--out", str(out)]) == 0
+    doc = json.loads(out.read_text())
+    assert doc["ok"] is False, doc
+    gh = _run_filer(tmp_path, doc, existing_kinds=("app-errors",))
+    issue = next(iter(gh.issues.values()))
+    assert not any("did not fire" in c for c in issue["comments"])
+    assert len(gh.issues) == 1, "no false 'No LLM calls recorded' issue"
+
+
+def test_local_numbers_behind_an_unreadable_bucket_are_never_reported_as_production():
+    # Reproduced after QA on #1002: no credentials, local stats present -> the
+    # view returned this machine's numbers under a gcs: store name.
+    doc = watch.evaluate(view_of({1: {"calls": 400, "errors": 41, "error_rate": 10.25}, 7: {}}),
+                         probe=lambda: (False, "could not read gs://x/llm_stats/yesterday.json"))
+    assert doc["ok"] is False and doc["findings"] == []
+    assert "could not read" in doc["why"]
