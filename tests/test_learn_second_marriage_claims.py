@@ -76,3 +76,15 @@ def test_title_and_seo_title_are_untouched():
     a = _article()
     assert a.title == "Second Marriage Indicators in Kundli — Classical Rules and Honest Reading"
     assert a.seo_title == "Second Marriage Yoga in Kundli: Classical Rules, Honest Reading"
+
+
+def test_7th_lord_guide_dignity_bullet_keeps_the_venus_condition(client):
+    """#980 item 2: houses.md:229 reads 'Strong 7th lord + Venus (for men) unafflicted = harmonious
+    marriage'. The Dignity bullet had dropped the Venus condition."""
+    import re
+
+    r = client.get("/learn/7th-lord-placement-marriage-guide/")
+    assert r.status_code == 200
+    t = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", r.text))
+    assert "a strong 7th lord, together with an unafflicted Venus (for men), as a harmonious marriage" in t
+    assert "read a strong 7th lord as favouring a harmonious marriage" not in t

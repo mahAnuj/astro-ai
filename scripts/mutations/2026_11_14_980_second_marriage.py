@@ -26,4 +26,9 @@ MUTATIONS = [
      "(6/8/12; any ranking among them is unsourced)",
      "(6/8/12 — 8 strongest)",
      "test_registry_fields_do_not_carry_the_strongest_8th_claim"),
+    ("#980: the 7th-lord guide's Dignity bullet drops the unafflicted-Venus condition again",
+     "src/astro_ai/templates/learn/7th-lord-placement-marriage-guide.html",
+     "a strong 7th lord, together with an unafflicted Venus (for men), as a harmonious marriage.",
+     "a strong 7th lord as favouring a harmonious marriage.",
+     "test_7th_lord_guide_dignity_bullet_keeps_the_venus_condition"),
 ]
