@@ -425,7 +425,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does Rahu Mahadasha bring?",
-                "a": "Rahu Mahadasha runs 18 years — the second-longest after Venus. It typically brings dramatic life transformation — foreign travel or settlement, obsessive pursuits, sudden career shifts, addiction risk, and boom-and-bust cycles. Where Rahu sits in your natal chart shapes which life area gets the transformation. See our detailed Rahu-Ketu antardasha guide for the classic mid-Mahadasha inflection point.",
+                "a": "Rahu Mahadasha runs 18 years — the third-longest of the nine, after Venus (20) and Saturn (19). It typically brings dramatic life transformation — foreign travel or settlement, obsessive pursuits, sudden career shifts, addiction risk, and boom-and-bust cycles. Where Rahu sits in your natal chart shapes which life area gets the transformation. See our detailed Rahu-Ketu antardasha guide for the classic mid-Mahadasha inflection point.",
             },
             {
                 "q": "What's the best remedy for a difficult Rahu?",
@@ -437,7 +437,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Shadow planet — northern lunar node. No physical body, no ownership of signs\n'
             '• Karaka: ambition, foreign, technology, unconventional paths, obsession, sudden gains/losses, alcohol/drugs, deception\n'
             '• Considered exalted in Taurus (some texts) or Gemini (other texts); debilitated in Scorpio or Sagittarius\n'
-            '• Rahu Mahadasha (18 years) — the second-longest, and most disruptive\n'
+            '• Rahu Mahadasha (18 years) — the third-longest, and most disruptive\n'
             '• Strong Rahu: material success, foreign gains, entrepreneurial rise, technology mastery\n'
             '• Weak/afflicted Rahu: addictions, deception (self and others), scandal, confusion\n'
             '• Amplifies whichever house/planet it associates with — takes on that flavour\n'
@@ -1479,7 +1479,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "When does Jupiter in the 10th house give career results?",
-                "a": "Three timing windows. First — Jupiter Mahadasha (16 years, second-longest Vimshottari period after Venus) is the peak career activation window; recognition, institutional elevation, and wealth accumulation through dharmic work cluster here. Second — Jupiter Antardasha within another Mahadasha (roughly 2 years 4 months to 2 years 10 months depending on the outer Mahadasha lord) produces smaller versions of the same signature. Third — Jupiter transits: Jupiter takes about 12 years to complete a zodiacal cycle, and when he transits over the natal 10th house or aspects it, career expansion opportunities cluster; Jupiter returns (approximately ages 12, 24, 36, 48, 60, 72) frequently mark career inflection points.",
+                "a": "Three timing windows. First — Jupiter Mahadasha (16 years, the fifth-longest of the nine Vimshottari periods) is the peak career activation window; recognition, institutional elevation, and wealth accumulation through dharmic work cluster here. Second — Jupiter Antardasha within another Mahadasha (16/120 of the outer Mahadasha: just under 10 months inside Sun Mahadasha, up to 2 years 8 months inside Venus Mahadasha) produces smaller versions of the same signature. Third — Jupiter transits: Jupiter takes about 12 years to complete a zodiacal cycle, and when he transits over the natal 10th house or aspects it, career expansion opportunities cluster; Jupiter returns (approximately ages 12, 24, 36, 48, 60, 72) frequently mark career inflection points.",
             },
             {
                 "q": "Does retrograde Jupiter in the 10th house give different results?",
@@ -1863,7 +1863,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "How long does Rahu Mahadasha last?",
-                "a": "18 years — the second-longest of the nine Vimshottari Mahadashas (only Venus at 20 years is longer). The 18 years break into 9 Antardashas: Rahu (2 years 8 months 12 days), Jupiter (2 years 4 months 24 days), Saturn (2 years 10 months 6 days), Mercury (2 years 6 months 18 days), Ketu (1 year 0 months 18 days), Venus (3 years 0 months 0 days), Sun (0 years 10 months 24 days), Moon (1 year 6 months 0 days), Mars (1 year 0 months 18 days). Each sub-period has a very different flavour, so knowing which one you are in matters more than the outer Mahadasha alone.",
+                "a": "18 years — the third-longest of the nine Vimshottari Mahadashas (only Venus at 20 years and Saturn at 19 are longer). The 18 years break into 9 Antardashas: Rahu (2 years 8 months 12 days), Jupiter (2 years 4 months 24 days), Saturn (2 years 10 months 6 days), Mercury (2 years 6 months 18 days), Ketu (1 year 0 months 18 days), Venus (3 years 0 months 0 days), Sun (0 years 10 months 24 days), Moon (1 year 6 months 0 days), Mars (1 year 0 months 18 days). Each sub-period has a very different flavour, so knowing which one you are in matters more than the outer Mahadasha alone.",
             },
             {
                 "q": "What are the best remedies for career during Rahu Mahadasha?",
@@ -2203,7 +2203,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "How do I know if I have Moon in Swati nakshatra?",
-                "a": "Your Moon needs to sit between 6°40' and 20°00' of Libra in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position. Swati natives always have Rahu as their first Mahadasha (18 years, the longest first-Mahadasha of any nakshatra), producing a distinctive Rahu-shaped early life — unusual family circumstances, international influences, or early independence.",
+                "a": "Your Moon needs to sit between 6°40' and 20°00' of Libra in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position. Swati natives always have Rahu as their first Mahadasha (18 years, the third-longest Mahadasha after Venus and Saturn), producing a distinctive Rahu-shaped early life — unusual family circumstances, international influences, or early independence.",
             },
             {
                 "q": "Who is Vayu, the deity of Swati?",
@@ -2403,7 +2403,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "How do I know if I have Moon in Pushya nakshatra?",
-                "a": "Your Moon needs to sit between 3°20' and 16°40' of Cancer in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position and nakshatra. Pushya natives always have Saturn as their first Mahadasha — the longest of all Mahadashas at 19 years — which shapes their whole approach to life from childhood.",
+                "a": "Your Moon needs to sit between 3°20' and 16°40' of Cancer in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position and nakshatra. Pushya natives always have Saturn as their first Mahadasha — the second-longest of all Mahadashas at 19 years — which shapes their whole approach to life from childhood.",
             },
             {
                 "q": "Why is Pushya called the most auspicious nakshatra?",
