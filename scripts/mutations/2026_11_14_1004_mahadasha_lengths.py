@@ -55,7 +55,7 @@ MUTATIONS = [
      _T + "ardra-nakshatra.html",
      "Rahu's 18 years is the third-longest Mahadasha (only Venus at 20 and Saturn at 19 are longer), and this is one of the most distinctive signatures.",
      "This is the longest first-Mahadasha of any nakshatra, and one of the most distinctive signatures.",
-     "test_nothing_calls_a_non_venus_mahadasha_the_longest_of_all"),
+     "test_rahu_first_mahadasha_is_not_the_longest_first_mahadasha"),
     ("#1004: the Jupiter-in-10th page says Jupiter is 'the longest Mahadasha after Venus' again",
      _J,
      "At 16 years, the fifth-longest of the nine Vimshottari Mahadashas (Venus 20, Saturn 19, Rahu 18 and Mercury 17 are longer), and often",
