@@ -30,6 +30,7 @@ PAGES = (
 REGISTRY_PAGES = (
     "surya-sun-in-vedic-astrology",
     "shukra-venus-in-vedic-astrology",
+    "budha-mercury-in-vedic-astrology",
     "mangal-mars-in-vedic-astrology",
     "saturn-in-10th-house-career",
 )
@@ -47,6 +48,12 @@ PLANET = {
 # 'well-placed' / 'strong' in the same sentence as 'neecha', either order ('[^.]' stops at the sentence end)
 _LORD_STRENGTH = re.compile(
     r"neecha[^.]{0,250}(well[- ]placed|\bstrong\b)|(well[- ]placed|\bstrong\b)[^.]{0,250}neecha", re.I
+)
+# the same claim without the word 'neecha': 'Cancellation exists when Jupiter (Pisces lord) is strong'
+_LORD_STRENGTH_NO_NAME = re.compile(
+    r"cancel\w*[^.]{0,120}\blord\b[^.]{0,60}\b(well[- ]placed|strong)\b"
+    r"|\blord\b[^.]{0,60}\b(well[- ]placed|strong)\b[^.]{0,120}cancel",
+    re.I,
 )
 _RAJA_YOGA_NAME = re.compile(r"neecha[ -]?bhanga\s+raja\s*yoga", re.I)
 _OUTCOME_PROMISE = re.compile(r"highly successful (people|writers)|flips? (a|the) (weak|debilitat)", re.I)
@@ -74,7 +81,7 @@ def _registry_fields(slug: str) -> list[str]:
 
 
 def _violations(text: str) -> list[str]:
-    return [m.group(0)[:200] for rx in (_LORD_STRENGTH, _RAJA_YOGA_NAME, _OUTCOME_PROMISE) for m in rx.finditer(text)]
+    return [m.group(0)[:200] for rx in (_LORD_STRENGTH, _LORD_STRENGTH_NO_NAME, _RAJA_YOGA_NAME, _OUTCOME_PROMISE) for m in rx.finditer(text)]
 
 
 def test_no_page_states_a_well_placed_lord_neechabhanga_condition(client):
@@ -114,6 +121,7 @@ def test_registry_faqs_keep_the_navamsha_test_and_agree_with_the_pages():
     expect = {
         "surya-sun-in-vedic-astrology": "check whether the Sun is exalted in the D-9",
         "shukra-venus-in-vedic-astrology": "check whether Venus is exalted in the D-9",
+        "budha-mercury-in-vedic-astrology": "check whether Mercury is exalted in the D-9",
         "mangal-mars-in-vedic-astrology": "check whether Mars is exalted in the D-9",
         "saturn-in-10th-house-career": "check whether Saturn is exalted in the D-9 chart",
     }

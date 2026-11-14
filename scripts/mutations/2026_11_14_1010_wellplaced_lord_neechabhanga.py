@@ -67,4 +67,9 @@ MUTATIONS = [
      'exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Venus is exalted in the D-9 chart. The fuller set of conditions is a matter for a chart reading.',
      "exists when Mercury (Virgo's lord) is strong.",
      'test_no_page_states_a_well_placed_lord_neechabhanga_condition'),
+    ('#1010: registry Mercury FAQ says cancellation exists when Jupiter (Pisces lord) is strong',
+     'src/astro_ai/learn_registry.py',
+     'Cancellation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Mercury is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.',
+     'Cancellation exists when Jupiter (Pisces lord) is strong.',
+     'test_no_registry_entry_states_a_well_placed_lord_neechabhanga_condition'),
 ]

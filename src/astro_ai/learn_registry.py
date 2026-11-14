@@ -382,7 +382,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Mercury mean?",
-                "a": "Mercury debilitated in Pisces loses precision — the analytical planet in the mystical, boundless sign struggles with concrete thinking. Common manifestations: scattered focus, difficulty with numbers or details, tendency toward dreaminess over action. Interestingly, debilitated Mercury can be excellent for spiritual pursuits, poetry, and intuitive work — it's specifically the linear-analytical function that suffers. Cancellation exists when Jupiter (Pisces lord) is strong.",
+                "a": "Mercury debilitated in Pisces loses precision — the analytical planet in the mystical, boundless sign struggles with concrete thinking. Common manifestations: scattered focus, difficulty with numbers or details, tendency toward dreaminess over action. Interestingly, debilitated Mercury can be excellent for spiritual pursuits, poetry, and intuitive work — it's specifically the linear-analytical function that suffers. Cancellation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Mercury is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's the best remedy for a weak Mercury?",
