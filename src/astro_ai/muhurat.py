@@ -1315,7 +1315,7 @@ def _combustion_flags(chart: Chart, when: datetime) -> dict[str, bool]:
 # Tuesday is a HARD exclusion for every event (#1021). Raman, Muhurtha (1948),
 # knowledge/vedic_reference.md section 29.9: line 790 "Tuesday and Saturday should be
 # invariably avoided for all good and auspicious work"; the marriage chapter (lines
-# 3734-3746) has Tuesday "invariably rejected"; Rao Table 79 (knowledge/grahas.md) lists
+# 3734-3746) rejects Tuesday outright (the knowledge file's paraphrase, not a quote); Rao Table 79 (knowledge/grahas.md) lists
 # Mon, Wed, Thu, Fri for a wedding. A one-point penalty let a good tithi + nakshatra
 # still rate Tuesday 'acceptable', and a booster then lifted it to 'excellent'.
 # Saturday is deliberately NOT here: Raman's Ch. II (avoid) and his marriage chapter
@@ -1327,7 +1327,7 @@ _HARD_AVOID_WEEKDAYS = frozenset({"Tuesday"})
 # overrides line 790 (vedic_reference.md section 29.9), so this finder picks "no" and says so.
 _HARD_AVOID_WEEKDAY_REASON = (
     "Tuesday is avoided for all auspicious work (Raman, Muhurtha: 'invariably avoided'; "
-    "for marriage, 'invariably rejected'). Amrit Siddhi's Tuesday + Ashwini pairing does "
+    "his marriage chapter rejects Tuesday outright for a wedding). Amrit Siddhi's Tuesday + Ashwini pairing does "
     "not override this in this finder; the source is silent on that case."
 )
 # Raman's one sourced exception (line 1331) is for the child's own days, which this

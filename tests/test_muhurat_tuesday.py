@@ -2,7 +2,7 @@
 
 Raman, Muhurtha (1948), knowledge/vedic_reference.md section 29.9: line 790 "Tuesday and
 Saturday should be invariably avoided for all good and auspicious work"; the marriage
-chapter has Tuesday "invariably rejected"; Rao Table 79 lists Mon, Wed, Thu, Fri for a
+chapter rejects Tuesday outright; Rao Table 79 lists Mon, Wed, Thu, Fri for a
 wedding. `score_event` used to take one point off, so a Tuesday with a good tithi and
 nakshatra rated 'acceptable' and a booster lifted it to 'excellent'.
 
