@@ -1,17 +1,18 @@
 {
-  "generated_at": "2026-11-13T21:45:07Z",
+  "generated_at": "2026-11-14T00:53:23Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 100,
+  "open": 106,
   "with_ask": 36,
   "by_area": {
-    "UNCLASSIFIED": 39,
-    "INFRA": 12,
+    "UNCLASSIFIED": 42,
+    "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
     "OPS": 6,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "MEASURE": 2,
     "MATCHING": 2,
     "NUMEROLOGY": 2,
     "SEO": 2,
@@ -20,7 +21,6 @@
     "BUG": 2,
     "AGENT-MEASURE": 1,
     "CORPUS": 1,
-    "MEASURE": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
     "UI": 1,
@@ -28,20 +28,138 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 30,
+    "untyped": 34,
     "enhancement": 23,
-    "bug": 20,
-    "chore": 16,
+    "bug": 21,
+    "chore": 17,
     "correctness": 7,
     "design": 4
   },
   "by_priority": {
-    "unset": 71,
+    "unset": 77,
     "medium": 20,
     "high": 9
   },
-  "blocked": 6,
+  "blocked": 7,
   "rows": [
+    {
+      "number": 982,
+      "title": "second-marriage-yoga-kundli: ~31 lines still attribute second-marriage signatures to 'classical texts' (BPHS, Jataka Parijata, Saravali) with no knowledge/ source (follow-up to #980)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T00:51:23Z",
+      "updated": "2026-11-14T00:51:23Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 980,
+      "title": "second-marriage-yoga-kundli: 7th lord in 8th called 'strongest signature in classical texts' with no knowledge/ source (follow-up to #978)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-14T00:28:03Z",
+      "updated": "2026-11-14T00:51:46Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 975,
+      "title": "Four issues closed within 3s of their PR merging, before verify-production could run (#732, #826, #852, #912)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "category:technical"
+      ],
+      "created": "2026-11-13T23:26:00Z",
+      "updated": "2026-11-13T23:26:00Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 974,
+      "title": "[MEASURE] agent-sync.yml and agent-measure.yml check out at depth 1: blocked at three syncs, owner act: push fetch-depth: 0",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "needs-human-review",
+        "chore"
+      ],
+      "created": "2026-11-13T23:25:59Z",
+      "updated": "2026-11-13T23:25:59Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 970,
+      "title": "[INFRA] reading_quality: add the five natal.txt:54 DO NOT phrases it does not check (#327)",
+      "ask": "",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "category:technical",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-13T22:27:23Z",
+      "updated": "2026-11-14T00:13:28Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 968,
+      "title": "natal.txt:32 requires 'Mars ... 4th house' for Manglik while :51/:53 ban both",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "category:technical",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-13T21:55:05Z",
+      "updated": "2026-11-13T22:55:00Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 967,
+      "title": "[INFRA] natal verdict surfaces: notify alert, /admin/readings, weekly rate, snapshot coverage (#327 rest)",
+      "ask": "",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "category:technical",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-13T21:55:04Z",
+      "updated": "2026-11-13T23:27:42Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 953,
       "title": "agent-measure: call fetch_gsc.py --page-daily and commit the export (follow-up to #490)",
@@ -154,10 +272,10 @@
         "chore",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-11-12T01:26:53Z",
-      "updated": "2026-11-13T21:44:27Z",
+      "updated": "2026-11-13T22:49:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -304,7 +422,7 @@
         "astrology-correctness"
       ],
       "created": "2026-11-07T20:12:37Z",
-      "updated": "2026-11-10T08:54:42Z",
+      "updated": "2026-11-13T23:26:18Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -478,7 +596,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-02T00:15:45Z",
-      "updated": "2026-11-10T08:54:23Z",
+      "updated": "2026-11-13T23:26:17Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -782,24 +900,6 @@
       "needs_evidence": true
     },
     {
-      "number": 433,
-      "title": "verify_hindi_surface: eight guard gaps from QA round 1 on #424 (five live mutation survivors)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-20T03:39:56Z",
-      "updated": "2026-11-13T21:25:56Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 423,
       "title": "verify_hindi_surface and verify_english_surface run nowhere — excluded from pr-gates on a move that was never made",
       "ask": "",
@@ -1012,10 +1112,11 @@
       "priority": "medium",
       "labels": [
         "category:technical",
-        "priority:medium"
+        "priority:medium",
+        "provenance:trusted"
       ],
       "created": "2026-10-11T18:12:08Z",
-      "updated": "2026-11-10T08:53:27Z",
+      "updated": "2026-11-13T21:55:10Z",
       "blocked": false,
       "needs_evidence": false
     },

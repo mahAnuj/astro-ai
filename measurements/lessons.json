@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-13T21:46:35Z",
+ "generated_at": "2026-11-14T00:54:35Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -747,6 +747,16 @@
   "reverts": [],
   "verify_production_failed": [
    {
+    "run": 43532716485,
+    "at": "2026-11-14T00:13:31Z",
+    "sha": "6b7a646"
+   },
+   {
+    "run": 43522390211,
+    "at": "2026-11-13T22:49:29Z",
+    "sha": "c7c8587"
+   },
+   {
     "run": 43273160187,
     "at": "2026-11-12T17:47:41Z",
     "sha": "2e4f741"
@@ -768,13 +778,6 @@
     "level": "amber",
     "title": "Peak day used 83% of the Groq daily budget",
     "detail": "166053 tokens on 2026-11-09 against ~200000 TPD per model (CLAUDE.md, \"Token budget\"). Overshooting it is an outage, not slowness. Raise the cache hit rate first (see cache-low); move bulk generation to a scheduled Claude Code job; never widen a prompt to fill the gap. Adding a model is the owner's decision.",
-    "where": "/admin/ops"
-   },
-   {
-    "kind": "loop-idle",
-    "level": "amber",
-    "title": "Build lane idle 76% of the last 7d",
-    "detail": "128.1h with no build cycle running. With a backlog open that is unused capacity: the schedule, not the work, is the limit. Check the Claude weekly quota first -- if it has headroom, more cron slots in agent-work.yml are the lever; if not, idle is the right answer.",
     "where": "/admin/ops"
    }
   ]
@@ -1005,10 +1008,10 @@
   }
  ],
  "outcome_counts": {
-  "PENDING": 11,
-  "PASS": 5,
   "UNSCOREABLE": 10,
   "MISS": 1,
+  "PENDING": 11,
+  "PASS": 5,
   "HIT": 1,
   "PARTIAL": 1
  },
