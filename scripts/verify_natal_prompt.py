@@ -168,7 +168,7 @@ HEADINGS = (
 # were guesses in the first version of this file and every one of them was
 # wrong — the guessed chars-per-token over-counted the prompt by 16%.
 #
-#   * The system prompt is 3,111 tok at 13,135 B (13,013 B after #398, 12,640 B after #399) — 4.22 B/tok for instruction
+#   * The system prompt is 3,111 tok at 13,135 B (13,013 B after #398, 12,640 B after #399, 12,631 B after #968) — 4.22 B/tok for instruction
 #     prose. It is identical on every request; only the user message varies.
 #   * The largest chart payload across the eight fixtures is 3,687 tok
 #     (cancer-lagna-manglik-exempt: Manglik detail block plus topic summaries).
@@ -732,6 +732,13 @@ FORBIDDEN = (
     (r"black[- ]sesame", "'black' is ours; Rao says sesame"),
     (r"per Parashara", "misattributed: his rule is a ten-chart count, not a D-9 gate"),
     (r"fully manifested", "Rao §11.7.2 / §11.11 deny that any one factor settles a yoga"),
+    # #968: the FRAME DISAMBIGUATION example read "Mars falls in the 4th house" while
+    # STRICT OUTPUT RULES ban naming Mars and natal house numbers, so a model that obeyed
+    # the example broke both bans. An example sentence that places a planet in a numbered
+    # house contradicts those bans whichever planet it names.
+    (r"\b(?:Mars|Moon|Venus|Sun|Jupiter|Saturn|Mercury|Rahu|Ketu)\s+(?:falls|sits|is|lies|stands|is placed)"
+     r"\s+in\s+the\s+\d+(?:st|nd|rd|th)\s+house",
+     "an example that names a planet in a numbered house contradicts the STRICT OUTPUT RULES bans (#968)"),
 )
 
 
