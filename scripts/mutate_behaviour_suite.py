@@ -5206,7 +5206,10 @@ _SANDBOX_DIRS: list[str] = []
 # unrunnable rather than merely slow.
 # `docs` and ARCHITECTURE.md since 2026-11-09: tests/test_decision_log_frozen.py reads
 # both, and a test that reads a file the sandbox lacks reports every row blind.
-_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude", "docs")
+# `evals` since 2026-11-14 (#1000): tests/test_eval_prompts.py reads evals/, and
+# without it the CONTROL row reported CAUGHT on a no-op edit -- the harness blind.
+_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude", "docs",
+                    "evals")
 # Repo-root FILES the sandbox needs. `CLAUDE.md` is load-bearing behaviour in this
 # repo the same way `.claude/` is -- it is loaded into every session, several gates
 # and tests read it, and a mutation row targeting it could not run at all before
