@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-14T00:54:35Z",
+ "generated_at": "2026-11-14T01:19:36Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -812,10 +812,10 @@
   },
   {
    "number": 276,
-   "verdict": "PENDING",
-   "headline": "pending \u2014 scoreable from 2026-11-14",
-   "at": "2026-11-08T00:12:28Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/276#issuecomment-6714891135"
+   "verdict": "OTHER",
+   "headline": "BAR MET, not attributable to the CTA",
+   "at": "2026-11-14T01:16:45Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/276#issuecomment-6869203606"
   },
   {
    "number": 311,
@@ -826,10 +826,10 @@
   },
   {
    "number": 329,
-   "verdict": "PENDING",
-   "headline": "pending \u2014 scoreable from 2026-11-14, and likely unscoreable at this traffic",
-   "at": "2026-11-08T00:12:29Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/329#issuecomment-6714891302"
+   "verdict": "UNSCOREABLE",
+   "headline": "UNSCOREABLE at this traffic: 3 vs 10",
+   "at": "2026-11-14T01:16:47Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/329#issuecomment-6869203895"
   },
   {
    "number": 338,
@@ -1008,12 +1008,13 @@
   }
  ],
  "outcome_counts": {
-  "UNSCOREABLE": 10,
+  "UNSCOREABLE": 11,
   "MISS": 1,
-  "PENDING": 11,
+  "OTHER": 1,
   "PASS": 5,
   "HIT": 1,
-  "PARTIAL": 1
+  "PARTIAL": 1,
+  "PENDING": 9
  },
  "competitor_patterns": [
   {

@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-14T00:54:35Z)
+# Lessons — last 30 days (generated 2026-11-14T01:19:36Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -29,11 +29,11 @@ deterministic, no LLM.
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 1, MISS 1, PARTIAL 1, PASS 5, PENDING 11, UNSCOREABLE 10
+counts: HIT 1, MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 9, UNSCOREABLE 11
 - #272: PASS — PASS on shape; the query-level half is NOT MET
-- #276: PENDING — pending — scoreable from 2026-11-14
+- #276: OTHER — BAR MET, not attributable to the CTA
 - #311: MISS — MISS
-- #329: PENDING — pending — scoreable from 2026-11-14, and likely unscoreable at this traffic
+- #329: UNSCOREABLE — UNSCOREABLE at this traffic: 3 vs 10
 - #338: PASS — PASS
 - #345: UNSCOREABLE — UNSCORED (not determinable this run)
 - #349: UNSCOREABLE — UNSCORED (not determinable this run)
