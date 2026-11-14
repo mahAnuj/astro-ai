@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-14T03:36:10Z",
+  "generated_at": "2026-11-14T10:04:43Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 105,
+  "open": 104,
   "with_ask": 36,
   "by_area": {
-    "UNCLASSIFIED": 41,
+    "UNCLASSIFIED": 40,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -30,21 +30,21 @@
   "by_type": {
     "untyped": 33,
     "enhancement": 23,
-    "bug": 21,
+    "bug": 20,
     "chore": 17,
     "correctness": 7,
     "design": 4
   },
   "by_priority": {
-    "unset": 76,
+    "unset": 75,
     "medium": 20,
     "high": 9
   },
   "blocked": 7,
   "rows": [
     {
-      "number": 993,
-      "title": "rahu-mahadasha-ketu-antardasha guide: stop attributing unsourced claims to 'the texts' and classical interpretation",
+      "number": 1008,
+      "title": "Guru-Jupiter guide: yellow-sapphire per-Ascendant functional-malefic verdict (after #1005)",
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
@@ -56,24 +56,8 @@
         "provenance:trusted",
         "qa:in-cycle"
       ],
-      "created": "2026-11-14T03:17:18Z",
-      "updated": "2026-11-14T03:35:30Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 992,
-      "title": "planets-in-7th guide + registry: unsourced 'BEST' ranking and functional-malefic claims per Ascendant (follow-up to #990)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness"
-      ],
-      "created": "2026-11-14T03:12:06Z",
-      "updated": "2026-11-14T03:35:31Z",
+      "created": "2026-11-14T05:39:08Z",
+      "updated": "2026-11-14T10:03:42Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -88,7 +72,7 @@
         "category:technical"
       ],
       "created": "2026-11-13T23:26:00Z",
-      "updated": "2026-11-13T23:26:00Z",
+      "updated": "2026-11-14T04:43:37Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -104,7 +88,7 @@
         "chore"
       ],
       "created": "2026-11-13T23:25:59Z",
-      "updated": "2026-11-13T23:25:59Z",
+      "updated": "2026-11-14T04:43:36Z",
       "blocked": true,
       "needs_evidence": false
     },
@@ -568,7 +552,7 @@
         "chore"
       ],
       "created": "2026-11-03T20:55:15Z",
-      "updated": "2026-11-08T21:00:59Z",
+      "updated": "2026-11-14T03:36:23Z",
       "blocked": false,
       "needs_evidence": false
     },

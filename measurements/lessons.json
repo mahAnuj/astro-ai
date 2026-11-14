@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-14T03:37:19Z",
+ "generated_at": "2026-11-14T10:06:14Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -749,6 +749,54 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/991#issuecomment-6870454187",
     "summary": "QA: FAIL \u2014 verified at `cfe9f46255f01b64876244c6ef6b92b990bd3342` Sign arithmetic, route render, 7 new tests, 18/18 mutation rows caught (CONTROL missed), 11 gates green; verify_devanagari_serif NOT RUN (no chromium). FAIL on one sentence: Mars line says 'softened, not removed', but vedic_reference.",
     "themes": []
+   },
+   {
+    "number": 1002,
+    "at": "2026-11-14T04:38:40Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1002#issuecomment-6871840084",
+    "summary": "QA: FAIL \u2014 verified at `bc5a2237525f54b36ed400dbec589d1b96fbbc71` Judge-only round (diff touches .github/workflows/; nothing pushed). EXECUTED on bc5a223: pytest tests/test_app_health_watch.py + tests/test_file_ops_findings.py = 22 passed; verify_workflow_permissions rc=0; verify_no_relaxation rc=0;",
+    "themes": [
+     "regression"
+    ]
+   },
+   {
+    "number": 1002,
+    "at": "2026-11-14T05:40:06Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1002#issuecomment-6872531714",
+    "summary": "QA: FAIL \u2014 verified at `cf6c521f6b0074267b35c4ba47fc32961aa14bcf`  Independent round (`qa:independent`), judge-only, nothing pushed. Executed on the head. `data/` was empty on this runner and the PR asserts no astrological rule, so the sourcing check does not apply.  ## What passed (executed) - `tes",
+    "themes": [
+     "regression"
+    ]
+   },
+   {
+    "number": 999,
+    "at": "2026-11-14T04:54:56Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/999#issuecomment-6872024438",
+    "summary": "QA: FAIL \u2014 verified at `d12276919b585c00bab7cd2c1e297b2077f54312` Independent round dispatched by chief. One defect: docs/decisions/2026-11-13-loop-fixes-session-prs.md and CLAUDE.md say the fix path is 'never an author outside AGENT_AUTHORS' and that every limit is 'enforced in code and pinned by t",
+    "themes": [
+     "tests"
+    ]
+   },
+   {
+    "number": 1000,
+    "at": "2026-11-14T06:07:17Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1000#issuecomment-6872845904",
+    "summary": "QA: FAIL \u2014 verified at `45c2122e9988521348f7cc566d4a881d454fc8df`  Independent round (`qa:independent`), judge-only: the diff touches `.github/workflows/`, so nothing was pushed. Executed in a worktree of exactly this head. This FAIL supersedes the earlier in-cycle `QA: PASS` bound to the same SHA. ",
+    "themes": [
+     "tokens",
+     "security",
+     "copy",
+     "regression"
+    ]
+   },
+   {
+    "number": 1011,
+    "at": "2026-11-14T07:14:33Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1011#issuecomment-6873651059",
+    "summary": "QA: FAIL \u2014 verified at `86f1c08e95641e9a99db9c4d9b4c4836b34485ea` debilitated-sun-career still promises Neecha Bhanga outcomes no source holds, contradicting the new line 75: line 83 ('may bend toward late-blooming institutional recognition') and line 101 ('a strong debilitated Sun with Neecha Bhang",
+    "themes": [
+     "grounding"
+    ]
    }
   ],
   "reverts": [],
@@ -790,12 +838,12 @@
   ]
  },
  "error_themes": {
-  "regression": 19,
-  "tests": 18,
-  "grounding": 18,
-  "copy": 18,
-  "tokens": 17,
-  "security": 9,
+  "regression": 22,
+  "tests": 19,
+  "grounding": 19,
+  "copy": 19,
+  "tokens": 18,
+  "security": 10,
   "i18n": 8,
   "performance": 8
  },
