@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-14T16:58:30Z",
+  "generated_at": "2026-11-14T20:17:39Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 119,
+  "open": 118,
   "with_ask": 40,
   "by_area": {
-    "UNCLASSIFIED": 45,
+    "UNCLASSIFIED": 44,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -30,14 +30,14 @@
   },
   "by_type": {
     "untyped": 33,
-    "bug": 29,
+    "bug": 28,
     "enhancement": 24,
     "chore": 18,
     "correctness": 11,
     "design": 4
   },
   "by_priority": {
-    "unset": 88,
+    "unset": 87,
     "medium": 20,
     "high": 11
   },
@@ -56,25 +56,6 @@
       ],
       "created": "2026-11-14T16:57:56Z",
       "updated": "2026-11-14T16:57:56Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1032,
-      "title": "Jupiter-in-10th guide: three more soft authority claims left after #1016 (l.62, l.86, judiciary bullet)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-14T14:09:51Z",
-      "updated": "2026-11-14T16:57:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -239,10 +220,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-14T13:15:36Z",
-      "updated": "2026-11-14T13:15:36Z",
+      "updated": "2026-11-14T20:16:53Z",
       "blocked": false,
       "needs_evidence": false
     },
