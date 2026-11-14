@@ -1497,7 +1497,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Hamsa Yoga forms if Jupiter is in Cancer/Sagittarius/Pisces in 10th (Panch Mahapurush yoga)\n'
             '• Best-fit careers: teaching, judiciary, law, medicine, finance/wealth advisory, publishing, religion, non-profit\n'
             '• Debilitated in Capricorn (Aries ascendant): capable but institutional recognition stalls; check Neechabhanga\n'
-            '• Guru Chandala Yoga (Jupiter+Rahu): scandal-prone wisdom; unorthodox teachings\n'
+            '• Guru Chandala Yoga (Jupiter+Rahu): a named classical yoga, real and worth explaining; do not call it difficult or predict scandal from it\n'
             '• Jupiter Mahadasha (16 years) is peak activation — recognition, wealth via dharma, marriage often triggers\n'
             '• Does NOT auto-produce wealth — check Dhana Yogas (2+11+5 house connections) separately'
         ),
