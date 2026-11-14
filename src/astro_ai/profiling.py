@@ -171,6 +171,68 @@ def _pct(part: int, whole: int) -> float:
     return round(100.0 * part / whole, 1)
 
 
+def _iso_week(ts: str) -> str:
+    """`2026-W46` for an event's `ts`, or "" when it cannot be read."""
+    try:
+        y, w, _ = datetime.fromisoformat(str(ts)).isocalendar()
+    except (TypeError, ValueError):
+        return ""
+    return f"{y}-W{w:02d}"
+
+
+def natal_quality(kundlis: list[dict[str, Any]]) -> dict[str, Any]:
+    """Weekly natal pass rate per model from the `q_*` keys (#327, #972).
+
+    Counts and kind names only -- `q_banned` is already `{kind: count}`, so no
+    prose, name or matched term can reach this block. English readings only:
+    `reading_quality` says a Hindi pass rate must not be published (its banned
+    terms are Latin words, so Hindi UNDERCOUNTS), so those events are counted
+    as `hindi_excluded`, not rated. An event with no `q_ok` is `unchecked`:
+    written before #969, a cached re-view, a snapshot-route generation (#967),
+    or a checker that raised.
+    """
+    rows: dict[tuple[str, str], dict[str, Any]] = {}
+    kinds: Counter[str] = Counter()
+    unchecked = hindi_excluded = 0
+    for e in kundlis:
+        d = e.get("data") or {}
+        if "q_ok" not in d:
+            unchecked += 1
+            continue
+        if str(d.get("lang") or "en") != "en":
+            hindi_excluded += 1
+            continue
+        week = _iso_week(e.get("ts", "")) or "unknown"
+        row = rows.setdefault((week, str(d.get("model") or "unknown")),
+                              {"checked": 0, "passed": 0})
+        row["checked"] += 1
+        row["passed"] += 1 if d["q_ok"] is True else 0
+        banned = d.get("q_banned")
+        for kind, n in (banned.items() if isinstance(banned, dict) else ()):
+            # bool is an int subclass; a count is a positive int and nothing else.
+            if isinstance(n, int) and not isinstance(n, bool) and n > 0:
+                kinds[str(kind)] += n
+    table = [
+        {"week": week, "model": model, "checked": r["checked"], "passed": r["passed"],
+         "pass_pct": _pct(r["passed"], r["checked"])}
+        # Newest week first; an unreadable week ("unknown") goes last, not first.
+        for (week, model), r in sorted(
+            rows.items(), key=lambda kv: (kv[0][0] != "unknown", kv[0][0], kv[0][1]),
+            reverse=True)
+    ]
+    checked = sum(r["checked"] for r in table)
+    passed = sum(r["passed"] for r in table)
+    return {
+        "rows": table,
+        "checked": checked,
+        "passed": passed,
+        "pass_pct": _pct(passed, checked),
+        "banned_kinds": sorted(kinds.items(), key=lambda kv: (-kv[1], kv[0])),
+        "unchecked": unchecked,
+        "hindi_excluded": hindi_excluded,
+    }
+
+
 def _cache_key(days: int) -> str:
     return f"profiling/summary-{days}d-{date.today().isoformat()}.json"
 
@@ -194,6 +256,7 @@ def audience_summary(*, days: int = 30, force_refresh: bool = False) -> dict[str
             "ask_categories": [...],
             "ask_contexts": [...],
             "ask_cache_hit_pct": float,
+            "natal_quality": {"rows": [{"week", "model", "checked", "passed", "pass_pct"}], ...},
             "funnel": {
                 "unique_emails": int,
                 "kundli_only": int, "kundli_plus_ask": int,
@@ -288,6 +351,7 @@ def audience_summary(*, days: int = 30, force_refresh: bool = False) -> dict[str
         "ask_categories": _to_list(cat_hist),
         "ask_contexts": _to_list(ctx_hist),
         "ask_cache_hit_pct": _pct(ask_cache_hits, len(asks)),
+        "natal_quality": natal_quality(kundlis),
         "funnel": {
             "unique_emails": unique_emails,
             "kundli_only": kundli_only,

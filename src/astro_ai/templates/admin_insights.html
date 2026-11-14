@@ -139,6 +139,42 @@
 
   </div>
 
+  {# NATAL QUALITY (#972, #327) — the deterministic verdict from reading_quality,
+     as a weekly pass rate per model. Counts only; never prose. `.get` because a
+     summary cached before this block existed has no such key. #}
+  {% set nq = summary.get('natal_quality') %}
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
+    <div class="mb-3">
+      <h2 class="font-marcellus text-lg text-bhagya-ink">Natal reading quality</h2>
+      <p class="text-xs text-bhagya-muted mt-0.5">Share of English natal readings that kept all seven sections and broke none of natal.txt&rsquo;s bans, by ISO week and model. Only the last {{ days }} days exist: events are kept 30 days.</p>
+    </div>
+    {% if not nq or not nq.rows %}
+    <p class="text-sm text-bhagya-muted italic">No checked natal readings in this window{% if nq and nq.unchecked %} ({{ nq.unchecked }} Kundli events carry no verdict){% endif %}.</p>
+    {% else %}
+    <p class="text-sm text-bhagya-ink-soft mb-3">Overall: <strong class="text-bhagya-sindoor tabular-nums">{{ nq.passed }} of {{ nq.checked }}</strong> passed &middot; <span class="tabular-nums">{{ nq.pass_pct }}%</span></p>
+    <ul class="space-y-2">
+      {% for row in nq.rows %}
+      <li>
+        <div class="flex items-baseline justify-between gap-3 text-sm mb-0.5">
+          <span class="font-medium text-bhagya-ink truncate">{{ row.week }} &middot; {{ row.model }}</span>
+          <span class="tabular-nums text-bhagya-muted flex-shrink-0">{{ row.passed }} of {{ row.checked }} &middot; {{ row.pass_pct }}%</span>
+        </div>
+        <div class="h-1.5 bg-bhagya-cream-2 rounded-full overflow-hidden">
+          <div class="h-full bg-bhagya-saffron rounded-full" style="width: {{ row.pass_pct }}%;"></div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if nq.banned_kinds %}
+    <p class="text-xs text-bhagya-muted mt-3">Bans broken, by kind:
+      {% for kind, n in nq.banned_kinds %}{{ kind }} {{ n }}{% if not loop.last %} &middot; {% endif %}{% endfor %}.</p>
+    {% endif %}
+    {% endif %}
+    {% if nq %}
+    <p class="text-xs text-bhagya-muted mt-3">Left out of every rate: {{ nq.hindi_excluded }} Hindi readings (the bans are Latin words, so Hindi would read better than it is) and {{ nq.unchecked }} Kundli events with no verdict (before the check shipped, a cached re-view, or a snapshot-route generation). English only; the checker is case-sensitive and does not check five of natal.txt&rsquo;s DO NOT phrases (#970), so read it as a trend, not an absolute. Weeks are UTC. The rate is not split by Manglik: natal.txt line 32 contradicts its own bans on a Manglik chart (#968), so a model that happened to serve more of them can read lower for that reason alone.</p>
+    {% endif %}
+  </section>
+
   {# METHODOLOGY NOTE — sets user expectations about what "insight" means
      here (aggregate, existing data, one-hour cache). #}
   <section class="text-xs text-bhagya-muted bg-bhagya-cream-2 border border-bhagya-line p-4 space-y-2">
