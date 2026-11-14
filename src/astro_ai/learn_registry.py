@@ -944,7 +944,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is yellow sapphire safe to wear for anyone?",
-                "a": "Safer than blue sapphire, but still requires knowing your Ascendant. For Aries, Cancer, Leo, Scorpio, Sagittarius, and Pisces Ascendants, Jupiter is a functional benefic and yellow sapphire generally helps. For Taurus and Libra Ascendants, Jupiter is a functional malefic and yellow sapphire should be avoided. Even for indicated Ascendants, a 3-5 day test period is traditionally recommended before permanent wearing. Never buy an expensive Pukhraj without knowing your Ascendant first.",
+                "a": "Not by default. The sources we hold say gemstones of functional malefics for your chart should be avoided and gemstones of favourable planets speed up good results, and that telling which is which needs your Ascendant and the classification of Jupiter for that Ascendant. They give no table of functional benefics and malefics by Ascendant, so we issue no verdict by Ascendant here. What can be worked out is which houses Jupiter rules from your Ascendant: he owns Sagittarius and Pisces, so he rules the 9th and 12th from Aries and the 1st and 4th from Sagittarius, for example. That is arithmetic, not a ruling on whether the stone suits you. Never wear a planet's gemstone during that planet's maraka dasha, and never buy an expensive Pukhraj without a chart consultation. Even after one, a 3-5 day test period is traditionally recommended before permanent wearing.",
             },
             {
                 "q": "What is Jupiter's mantra?",
@@ -1127,7 +1127,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Should I wear blue sapphire for Saturn?",
-                "a": "Only after a proper chart consultation. Blue sapphire is Saturn's classical gemstone AND the single most dangerous gemstone in Vedic astrology when worn incorrectly. Rao (§34.2): wear a planet's gemstone only when that planet is a functional benefic in your chart. Saturn is a functional benefic mainly for Taurus and Libra ascendants (where Saturn is a Yogakaraka). For Aries, Cancer, Leo ascendants Saturn is a functional malefic and blue sapphire should be avoided. Even when indicated, classical tradition recommends a 3-5 day test period first — remove immediately if dreams disturb, sleep breaks, or health dips.",
+                "a": "Only after a proper chart consultation. Blue sapphire is Saturn's classical gemstone AND the single most dangerous gemstone in Vedic astrology when worn incorrectly. Gemstones of functional malefics for your chart should be avoided, and telling which is which needs your Ascendant and the classification of Saturn for that Ascendant. The sources we hold give no table of functional benefics and malefics by Ascendant, so we issue no verdict by Ascendant here. What can be worked out is which houses Saturn rules from your Ascendant: he is the Yogakaraka for Taurus and Libra (a kendra and a trikona) and the Ascendant lord for Capricorn and Aquarius, and he rules the 10th and 11th from Aries, for example. That is arithmetic, not a ruling on whether blue sapphire suits you, so have your chart read first. Even after that, classical tradition recommends a 3-5 day test period first — remove immediately if dreams disturb, sleep breaks, or health dips.",
             },
             {
                 "q": "What is the safest Saturn remedy that works for anyone?",
