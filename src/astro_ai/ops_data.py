@@ -1716,6 +1716,90 @@ PEAK_DAY_AMBER = 60
 PEAK_DAY_RED = 100
 
 
+def _app_alerts(app: dict) -> list[dict]:
+    """The PRODUCT half of `_alerts`, each tagged with a stable `kind`.
+
+    Split out 2026-11-14 so `scripts/watch_app_health.py` files exactly what
+    the dashboard shows -- same thresholds, same wording -- as issues the loop
+    works, from the steward's run after every build cycle, instead of no agent
+    seeing it at all (the detector's NOT_COVERED list). One definition, two
+    readers: a copy would drift, which is how the strip and the tile disagreed
+    on the error threshold once already.
+    """
+    out: list[dict] = []
+
+    def add_kind(kind, level, title, detail, where=""):
+        out.append({"kind": kind, "level": level, "title": title, "detail": detail,
+                    "where": where})
+
+    if not app.get("ok"):
+        add_kind("app-unreadable", "amber", "App health unreadable",
+            "events and llm_stats could not be read, so nothing below covers the product.")
+    elif not app.get("measured"):
+        add_kind("app-idle", "amber", "No LLM calls recorded",
+            f"Nothing in the last {app.get('days')} days. Either the app is idle or "
+            "stats are not reaching GCS — a zero here is not a clean bill of health.")
+    else:
+        # EVERY COUNT HERE IS EXACT. `exhausted`, `too_large` and the budget
+        # breaks come from the same uncapped walk as the total and the rate, so
+        # there is no floor to mark and no disclosure to word. The previous
+        # version marked them "at least" off a capped sample -- which could not
+        # mark a zero, so a window holding 300 provider failures behind 500
+        # newer 429s printed `0` and raised nothing. See ERROR_EVENT_LIMIT.
+        rate = app.get("error_rate") or 0.0
+        if rate >= ERROR_RATE_RED:
+            add_kind("app-errors", "red", f"{rate}% of LLM calls are erroring",
+                f"{app['errors']} error events against {app['calls']} calls in "
+                f"{app['days']} days.", "/admin/activity")
+        elif rate >= ERROR_RATE_AMBER:
+            add_kind("app-errors", "amber", f"Error rate {rate}%",
+                f"{app['errors']} of {app['calls']} calls in {app['days']}d.",
+                "/admin/activity")
+        if app.get("exhausted"):
+            add_kind("app-exhausted", "red", f"{app['exhausted']} requests had every provider fail "
+                       f"in {app['days']}d",
+                "AllProvidersExhausted — the user saw the \u201chigh demand\u201d page, "
+                "not a reading.", "/admin/activity")
+        if app.get("too_large"):
+            add_kind("app-too-large", "red", f"{app['too_large']} requests exceeded the provider's "
+                       f"size limit in {app['days']}d",
+                "RequestTooLarge (413) is a prompt-size failure, not a rate limit. "
+                "Shrinking the prompt is the fix; waiting is not.", "/admin/activity")
+        fr = app.get("fallback_rate") or 0.0
+        if fr >= FALLBACK_RATE_AMBER:
+            # Name the CAUSE, rather than adding a second alert beside this one
+            # saying the same thing in other words. The distinction is the only
+            # actionable part: a budget failure is our prompt size or our
+            # pacing and a change fixes it; a timeout is the provider having a
+            # bad minute and no change we make does anything.
+            bf = app.get("budget_failures") or 0
+            why = (f"{bf} of them hit the token budget (413 or 429) — that is prompt size or "
+                   "pacing, and a change fixes it. "
+                   if bf else
+                   "None of them hit the token budget, so this is provider instability, "
+                   "not prompt size — shrinking a prompt would do nothing. ")
+            add_kind("app-fallbacks", "amber", f"{fr}% of calls needed a second provider",
+                why + "Rising fallbacks arrive BEFORE user-visible failure.", "/admin/usage")
+        # THE DAILY CEILING, which no panel showed before #355. 2026-10-08 read
+        # `TPD: Limit 200000, Used 198888` and took every rashifal page down for
+        # the day; an average over the window hides that completely, so the
+        # alarm is on the WORST day, not the mean.
+        pk = app.get("peak_day_pct")
+        if pk is not None and pk >= PEAK_DAY_RED:
+            add_kind("app-token-peak", "red", f"the busiest day used {pk}% of a model's daily token cap",
+                f"{app.get('peak_day_tokens'):,} tokens on {app.get('peak_day')}, against "
+                f"{TPD_PER_MODEL:,} TPD per model. Over 100% means it only survived by "
+                "spreading across the chain; one more page on the wrong model is an outage.",
+                "/admin/usage")
+        elif pk is not None and pk >= PEAK_DAY_AMBER:
+            add_kind("app-token-peak", "amber", f"the busiest day used {pk}% of a model's daily token cap",
+                f"{app.get('peak_day_tokens'):,} tokens on {app.get('peak_day')}. The cap is "
+                "per model and per day; headroom is smaller than the window average suggests.",
+                "/admin/usage")
+
+    return out
+
+
 def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
             ages: dict) -> list[dict]:
     """Everything currently wrong, worst first, or an empty list.
@@ -1741,70 +1825,8 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
         out.append({"level": level, "title": title, "detail": detail, "where": where})
 
     # --- the product ----------------------------------------------------
-    if not app.get("ok"):
-        add("amber", "App health unreadable",
-            "events and llm_stats could not be read, so nothing below covers the product.")
-    elif not app.get("measured"):
-        add("amber", "No LLM calls recorded",
-            f"Nothing in the last {app.get('days')} days. Either the app is idle or "
-            "stats are not reaching GCS — a zero here is not a clean bill of health.")
-    else:
-        # EVERY COUNT HERE IS EXACT. `exhausted`, `too_large` and the budget
-        # breaks come from the same uncapped walk as the total and the rate, so
-        # there is no floor to mark and no disclosure to word. The previous
-        # version marked them "at least" off a capped sample -- which could not
-        # mark a zero, so a window holding 300 provider failures behind 500
-        # newer 429s printed `0` and raised nothing. See ERROR_EVENT_LIMIT.
-        rate = app.get("error_rate") or 0.0
-        if rate >= ERROR_RATE_RED:
-            add("red", f"{rate}% of LLM calls are erroring",
-                f"{app['errors']} error events against {app['calls']} calls in "
-                f"{app['days']} days.", "/admin/activity")
-        elif rate >= ERROR_RATE_AMBER:
-            add("amber", f"Error rate {rate}%",
-                f"{app['errors']} of {app['calls']} calls in {app['days']}d.",
-                "/admin/activity")
-        if app.get("exhausted"):
-            add("red", f"{app['exhausted']} requests had every provider fail "
-                       f"in {app['days']}d",
-                "AllProvidersExhausted — the user saw the \u201chigh demand\u201d page, "
-                "not a reading.", "/admin/activity")
-        if app.get("too_large"):
-            add("red", f"{app['too_large']} requests exceeded the provider's "
-                       f"size limit in {app['days']}d",
-                "RequestTooLarge (413) is a prompt-size failure, not a rate limit. "
-                "Shrinking the prompt is the fix; waiting is not.", "/admin/activity")
-        fr = app.get("fallback_rate") or 0.0
-        if fr >= FALLBACK_RATE_AMBER:
-            # Name the CAUSE, rather than adding a second alert beside this one
-            # saying the same thing in other words. The distinction is the only
-            # actionable part: a budget failure is our prompt size or our
-            # pacing and a change fixes it; a timeout is the provider having a
-            # bad minute and no change we make does anything.
-            bf = app.get("budget_failures") or 0
-            why = (f"{bf} of them hit the token budget (413 or 429) — that is prompt size or "
-                   "pacing, and a change fixes it. "
-                   if bf else
-                   "None of them hit the token budget, so this is provider instability, "
-                   "not prompt size — shrinking a prompt would do nothing. ")
-            add("amber", f"{fr}% of calls needed a second provider",
-                why + "Rising fallbacks arrive BEFORE user-visible failure.", "/admin/usage")
-        # THE DAILY CEILING, which no panel showed before #355. 2026-10-08 read
-        # `TPD: Limit 200000, Used 198888` and took every rashifal page down for
-        # the day; an average over the window hides that completely, so the
-        # alarm is on the WORST day, not the mean.
-        pk = app.get("peak_day_pct")
-        if pk is not None and pk >= PEAK_DAY_RED:
-            add("red", f"the busiest day used {pk}% of a model's daily token cap",
-                f"{app.get('peak_day_tokens'):,} tokens on {app.get('peak_day')}, against "
-                f"{TPD_PER_MODEL:,} TPD per model. Over 100% means it only survived by "
-                "spreading across the chain; one more page on the wrong model is an outage.",
-                "/admin/usage")
-        elif pk is not None and pk >= PEAK_DAY_AMBER:
-            add("amber", f"the busiest day used {pk}% of a model's daily token cap",
-                f"{app.get('peak_day_tokens'):,} tokens on {app.get('peak_day')}. The cap is "
-                "per model and per day; headroom is smaller than the window average suggests.",
-                "/admin/usage")
+    for x in _app_alerts(app):
+        add(x["level"], x["title"], x["detail"], x["where"])
 
     # --- the agent team -------------------------------------------------
     for lp in (agents.get("loops") or []):
