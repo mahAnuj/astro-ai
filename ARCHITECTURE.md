@@ -144,7 +144,7 @@ src/astro_ai/
   knowledge_lookup.py 206  chart-keyed read of knowledge/remedies.md §5.1 + §7.1 for the natal REMEDY RULES
                         block; the first runtime read of knowledge/ (#399)
   rashifal_derive.py 144  /rashifal/{rashi} reading cut from the cached combined text (#268)
-  reading_quality.py 130  deterministic verdict on a fresh natal reading vs natal.txt's own bans; log-only, recorded
+  reading_quality.py 148  deterministic verdict on a fresh natal reading vs natal.txt's own bans; log-only, recorded
                         as q_* on the form_kundli event, never blocks (#327 slice 1, #966)
   matching.py      1,056  Ashtakoota 36-guna
   i18n.py          1,220  en/hi, symmetric key sets — enforced by
