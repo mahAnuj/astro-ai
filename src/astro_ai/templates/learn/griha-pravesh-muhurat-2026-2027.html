@@ -28,7 +28,7 @@
   <li><strong>No Dagdha yoga</strong> — burnt tithi-weekday pairings per Muhurta Chintamani: Sunday+Dwadashi, Monday+Ekadashi, Tuesday+Panchami, Wednesday+Tritiya, Thursday+Shashti, Friday+Ashtami, Saturday+Navami. The day is "burnt" and unfit for shubh karya.</li>
   <li><strong>No eclipse (solar or lunar)</strong> — including the days immediately before and after</li>
   <li><strong>No Panchak days</strong> — five-day nakshatra window (Dhanishta latter half through Revati)</li>
-  <li><strong>Weekday preference</strong> — Monday, Wednesday, Thursday, Friday best. Tuesday and Saturday avoided (heaviness planets). Sunday depends on tradition.</li>
+  <li><strong>Weekday preference</strong> — Monday, Wednesday, Thursday, Friday best. Tuesday is avoided outright (Raman: &ldquo;invariably avoided&rdquo;), and our finder excludes it. Saturday is avoided in one of Raman&rsquo;s chapters and called middling in another, so the finder scores it one point lower rather than excluding it. Sunday depends on tradition.</li>
 </ol>
 
 <h2>Personal factors on top of the calendar</h2>
@@ -78,8 +78,8 @@
 
 <ul>
   {# festival registry, Makar Sankranti 2027 = 2027-01-15 (verified); muhurat._kharmas_flag: date(2027,1,14) -> True, date(2027,1,15) -> False #}
-  {# find_candidates("griha_pravesh", "Delhi", date(2027,1,13), 10) -> 2027-01-15 "avoid" (panchak, Revati); 2027-01-16 "avoid" (avoid_tithi); 2027-01-17 and 2027-01-18 "avoid" (avoid_nakshatra); 2027-01-19 Tuesday "acceptable" (Rohini, avoid_weekday); 2027-01-20 Wednesday "excellent" (Mrigashira, sarvartha_siddhi) #}
-  <li><strong>Makar Sankranti — Friday, 15 Jan 2027</strong> — the Sun enters Capricorn, the winter Kharmas lifts, and the day before it is the last restricted one. Lifting Kharmas is not the same as being bookable, though: the sankranti falls under Revati inside a Panchak run, and the days straight after it carry avoid tithis and nakshatras. The finder's first usable dates come the following week, 19-20 Jan 2027 — Rohini, then Mrigashira with Sarvartha Siddhi Yoga.</li>
+  {# find_candidates("griha_pravesh", "Delhi", date(2027,1,13), 10) -> 2027-01-15 "avoid" (panchak, Revati); 2027-01-16 "avoid" (avoid_tithi); 2027-01-17 and 2027-01-18 "avoid" (avoid_nakshatra); 2027-01-19 Tuesday "avoid" (avoid_weekday, #1021); 2027-01-20 Wednesday "excellent" (Mrigashira, sarvartha_siddhi) #}
+  <li><strong>Makar Sankranti — Friday, 15 Jan 2027</strong> — the Sun enters Capricorn, the winter Kharmas lifts, and the day before it is the last restricted one. Lifting Kharmas is not the same as being bookable, though: the sankranti falls under Revati inside a Panchak run, and the days straight after it carry avoid tithis and nakshatras. The finder's first usable date comes the following week, the Wednesday of 19-20 Jan 2027 — Mrigashira with Sarvartha Siddhi Yoga. The Tuesday of that pair (Rohini) is excluded as a Tuesday.</li>
 </ul>
 
 <p>From there the winter window runs through February 2027, and it is the easiest season of the year to book — no Chaturmas, no Kharmas, and the wedding rush has not yet peaked.</p>
@@ -116,7 +116,7 @@
   {# Drik Panchang, Dhanu Sankranti 2026 = 2026-12-16, ingress 10:25 IST (read 2026-08-08) #}
   <li><strong>Dhanu Sankranti — 16 Dec 2026</strong> starts the winter Kharmas.</li>
   {# festival registry, Makar Sankranti 2027 = 2027-01-15 (verified); muhurat._kharmas_flag(date(2027,1,15)) -> (False, "") #}
-  {# find_candidates("griha_pravesh", "Delhi", date(2027,1,13), 10) -> 2027-01-15 "avoid" (panchak, Revati); first non-avoid days are 2027-01-19 "acceptable" and 2027-01-20 "excellent" #}
+  {# find_candidates("griha_pravesh", "Delhi", date(2027,1,13), 10) -> 2027-01-15 "avoid" (panchak, Revati); first non-avoid day is 2027-01-20 "excellent" (2027-01-19 is a Tuesday, "avoid" since #1021) #}
   <li><strong>Makar Sankranti — 15 Jan 2027</strong> ends the winter Kharmas. The restriction is gone on the day itself, but Panchak covers it, so the season opens a few days later rather than on the sankranti.</li>
   {# Drik Panchang, Meena Sankranti 2027 = 2027-03-15, ingress 07:00 IST (read 2026-08-08) #}
   <li><strong>Meena Sankranti — 15 Mar 2027</strong> starts the spring Kharmas (Meenmas).</li>
