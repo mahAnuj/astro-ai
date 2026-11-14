@@ -1,15 +1,17 @@
 {
-  "generated_at": "2026-11-14T10:04:43Z",
+  "generated_at": "2026-11-14T14:10:34Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 104,
-  "with_ask": 36,
+  "open": 119,
+  "with_ask": 40,
   "by_area": {
-    "UNCLASSIFIED": 40,
+    "UNCLASSIFIED": 45,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
+    "MUHURAT": 6,
     "OPS": 6,
+    "CORPUS": 5,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "MEASURE": 2,
@@ -20,7 +22,6 @@
     "DESIGN": 2,
     "BUG": 2,
     "AGENT-MEASURE": 1,
-    "CORPUS": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
     "UI": 1,
@@ -29,22 +30,269 @@
   },
   "by_type": {
     "untyped": 33,
-    "enhancement": 23,
-    "bug": 20,
-    "chore": 17,
-    "correctness": 7,
+    "bug": 29,
+    "enhancement": 24,
+    "chore": 18,
+    "correctness": 11,
     "design": 4
   },
   "by_priority": {
-    "unset": 75,
+    "unset": 88,
     "medium": 20,
-    "high": 9
+    "high": 11
   },
   "blocked": 7,
   "rows": [
     {
-      "number": 1008,
-      "title": "Guru-Jupiter guide: yellow-sapphire per-Ascendant functional-malefic verdict (after #1005)",
+      "number": 1032,
+      "title": "Jupiter-in-10th guide: three more soft authority claims left after #1016 (l.62, l.86, judiciary bullet)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T14:09:51Z",
+      "updated": "2026-11-14T14:09:51Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1030,
+      "title": "corpus: research runs never fetch the books — add fetch_corpus.py --fetch to agent-research, and decide where the owned copies live",
+      "ask": "Workflow (a session or the owner authors it; the App token cannot push workflows, #421): add uv run python scripts/fetch_corpus.py --fetch before \"Which books are present\" in",
+      "area": "CORPUS",
+      "type": "chore",
+      "priority": "high",
+      "labels": [
+        "priority:high",
+        "layer:data",
+        "chore"
+      ],
+      "created": "2026-11-14T13:51:32Z",
+      "updated": "2026-11-14T13:51:32Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1029,
+      "title": "corpus: source Rahu Kaal segments, the eclipse window, Abhijit/Rahu/Bhadra precedence and the Magha-Mula wedding contradiction",
+      "ask": "Settle Magha and Mula by the canonical lineage (Raman 1948 for muhurta).",
+      "area": "CORPUS",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "skill:knowledge-integrator",
+        "layer:data",
+        "astrology-correctness",
+        "chore"
+      ],
+      "created": "2026-11-14T13:51:32Z",
+      "updated": "2026-11-14T13:51:32Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1028,
+      "title": "corpus: source or rule absent Chaturmas, Kharmas, Dagdha, Sarvartha Siddhi, Ravi Yoga, Choghadiya and Abujha (§29.10) across the full corpus — feeds #1024",
+      "ask": "Write each sourced rule into knowledge/ with its line range.",
+      "area": "CORPUS",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "skill:knowledge-integrator",
+        "layer:data",
+        "astrology-correctness",
+        "chore"
+      ],
+      "created": "2026-11-14T13:51:31Z",
+      "updated": "2026-11-14T13:51:31Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1027,
+      "title": "corpus: source Griha Pravesh, Vidyarambh, Business and Namkaran muhurat rules from Raman's Muhurtha (1948) and Rao Table 79 — the finder's top pages cite nothing",
+      "ask": "Extract each event's tithi, nakshatra, weekday, lagna and month rules from Raman 1948 and from Rao's Table 79, into a new vedic_reference.md section with line ranges.",
+      "area": "CORPUS",
+      "type": "correctness",
+      "priority": "high",
+      "labels": [
+        "priority:high",
+        "skill:knowledge-integrator",
+        "layer:data",
+        "astrology-correctness",
+        "chore"
+      ],
+      "created": "2026-11-14T13:51:30Z",
+      "updated": "2026-11-14T13:51:30Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1026,
+      "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T13:15:49Z",
+      "updated": "2026-11-14T13:15:49Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1025,
+      "title": "muhurat: Abhijit marked best while half inside Rahu Kaal every Wed/Fri, and inside Bhadra on some days — precedence UNSOURCED",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T13:15:47Z",
+      "updated": "2026-11-14T13:15:47Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1024,
+      "title": "muhurat pages call Chaturmas, Kharmas, Dagdha, eclipse, Sarvartha/Ravi and Choghadiya 'classical' — none is in knowledge/ (UNSOURCED)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T13:15:44Z",
+      "updated": "2026-11-14T13:15:44Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1023,
+      "title": "muhurat: only Vyatipata/Vaidhriti block — Raman names five condemned yogas; Atiganda/Shula/Ganda days rate 'excellent' (WRONG)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T13:15:41Z",
+      "updated": "2026-11-14T13:15:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1022,
+      "title": "muhurat Vivah: dark-half Ekadashi-Trayodashi score as 'good tithi' — Raman's marriage rule rejects them (WRONG; 12th CONTESTED)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T13:15:38Z",
+      "updated": "2026-11-14T13:15:38Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1021,
+      "title": "muhurat: Tuesday/Saturday cost one point, so Tuesday weddings rate 'excellent' — Raman rejects Tuesday for marriage (WRONG)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T13:15:36Z",
+      "updated": "2026-11-14T13:15:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1020,
+      "title": "muhurat: tithi read at sunrise but nakshatra/yoga/Panchak at noon — 35 ratings judge angas that never coexist (WRONG, internal)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T13:15:33Z",
+      "updated": "2026-11-14T13:15:33Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1019,
+      "title": "muhurat: Bhadra window starts up to 3h late (3-hourly sampling) — daytime Vishti shown as clear on 49 of 136 days (WRONG)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T13:15:30Z",
+      "updated": "2026-11-14T13:15:30Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1018,
+      "title": "muhurat: _ECLIPSE_DATES 2028 lists two lunar eclipses that do not exist (Feb 12, Aug 6) and misses four real ones (WRONG)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-14T13:15:28Z",
+      "updated": "2026-11-14T13:15:28Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1017,
+      "title": "Muhurat Finder: what \"the best results\" means — ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-11-14T13:09:28Z",
+      "updated": "2026-11-14T13:16:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1016,
+      "title": "Jupiter-in-10th guide residue after #1014: 'fullest classical results', 'classical Hamsa Yoga native … authority', 'scandal-prone wisdom'",
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
@@ -56,8 +304,8 @@
         "provenance:trusted",
         "qa:in-cycle"
       ],
-      "created": "2026-11-14T05:39:08Z",
-      "updated": "2026-11-14T10:03:42Z",
+      "created": "2026-11-14T10:19:56Z",
+      "updated": "2026-11-14T14:09:49Z",
       "blocked": false,
       "needs_evidence": false
     },
