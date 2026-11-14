@@ -2771,7 +2771,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Which yoga indicates second marriage in Kundli?",
-                "a": "No single yoga is verdict-level, but a specific set of classical signatures shifts probability when they converge: (1) 7th lord in a dusthana (6th, 8th, or 12th house) — 8th is the strongest single signature; (2) malefics (Mars, Saturn, Rahu, Ketu) in the 7th house, especially two or more conjunct; (3) Venus in the 8th house in a male chart, or Jupiter in the 8th in a female chart (marriage karaka in transformation house); (4) 8th lord placed in the 7th house; (5) multiple planets in a dual (dvi-swabhava) sign in the 7th; (6) 7th house heavily aspected by malefics. Convergence of three or more of these, confirmed in the D-9 Navamsha, produces a meaningful tendency reading. Isolated single signatures should never be taken as prediction.",
+                "a": "No single yoga is verdict-level, but a specific set of classical signatures shifts probability when they converge: (1) 7th lord in a dusthana (6th, 8th, or 12th house) — practitioners most often single out the 8th, though we cannot source that ranking to the texts we hold; (2) malefics (Mars, Saturn, Rahu, Ketu) in the 7th house, especially two or more conjunct; (3) Venus in the 8th house in a male chart, or Jupiter in the 8th in a female chart (marriage karaka in transformation house); (4) 8th lord placed in the 7th house; (5) multiple planets in a dual (dvi-swabhava) sign in the 7th; (6) 7th house heavily aspected by malefics. Convergence of three or more of these, confirmed in the D-9 Navamsha, produces a meaningful tendency reading. Isolated single signatures should never be taken as prediction.",
             },
             {
                 "q": "Does Venus in 8th house always mean second marriage?",
@@ -2797,7 +2797,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n'
             '• Second marriage = life event, not moral judgement; chart shows tendency, not verdict\n'
-            '• Classical signatures (need 3+ convergence): 7th lord in dusthana (6/8/12 — 8 strongest), malefics in 7th (Mars/Saturn/Rahu/Ketu), Venus in 8 (male) or Jupiter in 8 (female), 8th lord in 7th, multiple planets in dvi-swabhava sign in 7th, 7th aspected by malefics\n'
+            '• Classical signatures (need 3+ convergence): 7th lord in dusthana (6/8/12; any ranking among them is unsourced), malefics in 7th (Mars/Saturn/Rahu/Ketu), Venus in 8 (male) or Jupiter in 8 (female), 8th lord in 7th, multiple planets in dvi-swabhava sign in 7th, 7th aspected by malefics\n'
             '• D-9 Navamsha 7th house MUST confirm before drawing conclusions\n'
             '• Timing: Rahu/Saturn Mahadashas peak-risk, 8th lord Dasha, Sade Sati window, Rahu-Ketu 1st-7th transit\n'
             '• Supportive signatures against transition: 7th lord in kendra with Jupiter aspect, benefics in 7th, strong Venus/Jupiter karaka, clean D-9\n'
