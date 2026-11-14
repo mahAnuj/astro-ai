@@ -34,7 +34,13 @@
 {% set sade_about_key  = {'rising': 'sade_sati_rising_about', 'peak': 'sade_sati_peak_about',   'setting': 'sade_sati_setting_about'}.get(sade_sati.phase, '') %}
 {% set sade_themes_key = {'rising': 'sade_sati_rising_themes','peak': 'sade_sati_peak_themes',  'setting': 'sade_sati_setting_themes'}.get(sade_sati.phase, '') %}
 {% set sade_guide_key  = {'rising': 'sade_sati_rising_guidance','peak':'sade_sati_peak_guidance','setting':'sade_sati_setting_guidance'}.get(sade_sati.phase, '') %}
-{% set manglik_about_key = {'high': 'manglik_about_high', 'moderate': 'manglik_about_moderate', 'low': 'manglik_about_low'}.get(manglik.severity, 'manglik_about_moderate') %}
+{# The paragraph describes the HOUSES that qualify, so it is keyed on the ladder's grade for
+   those houses -- not on manglik.severity, which has had the Venus-axis-only one-grade drop
+   applied (chart.py). Keyed on the dropped grade, Mars 7th from Venus alone was told
+   "Mars in the 1st, 4th or 12th house counts toward Manglik here" (#777). The badge still
+   shows manglik.severity; the drop is disclosed by manglik_venus_only_note below. #}
+{% set _house_grade = 'high' if (7 in manglik.houses or 8 in manglik.houses) else ('moderate' if (1 in manglik.houses or 4 in manglik.houses or 12 in manglik.houses) else 'low') %}
+{% set manglik_about_key = {'high': 'manglik_about_high', 'moderate': 'manglik_about_moderate', 'low': 'manglik_about_low'}.get(_house_grade, 'manglik_about_moderate') %}
 {% set manglik_severity_label = {'high':'manglik_severity_high','moderate':'manglik_severity_moderate','low':'manglik_severity_low'}.get(manglik.severity, 'manglik_severity_moderate') %}
 
 {% set active_page = "natal" %}
@@ -519,6 +525,9 @@
       <div>
         <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1.5">{{ t(lang, 'manglik_about_label') }}</div>
         <p class="text-base text-bhagya-ink leading-relaxed">{{ t(lang, manglik_about_key) }}</p>
+        {% if manglik.venus_axis_only %}
+        <p class="text-sm text-bhagya-muted leading-relaxed mt-2">{{ t(lang, 'manglik_venus_only_note') }}</p>
+        {% endif %}
       </div>
       {# COMPUTED CANCELLATIONS — replaces the old "consult an astrologer" boilerplate
          with the actual classical rules that fire for this chart, cited by source. #}
