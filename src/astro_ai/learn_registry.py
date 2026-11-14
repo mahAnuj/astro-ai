@@ -1438,7 +1438,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Can debilitated Sun give success?",
-                "a": "Yes, and often significant success — but the arc is typically late-blooming rather than early-flashy. The common pattern: early career of over-performance without proportionate recognition, mid-career forced elevation into a leadership role the person did not overtly seek, and late-career unexpected authority earned through years of quiet respect. Where the debilitation is cancelled, the late-career recognition can be more substantial (senior advisor, coalition leader, respected academic head). The people who suffer most with this placement are those who fight it — trying to force themselves into dominance-forward careers that punish the diplomatic instinct. Those who work with the placement often produce the most respected version of leadership in their field.",
+                "a": "Yes, and often significant success — but the arc is typically late-blooming rather than early-flashy. The common pattern: early career of over-performance without proportionate recognition, mid-career forced elevation into a leadership role the person did not overtly seek, and late-career unexpected authority earned through years of quiet respect. The people who suffer most with this placement are those who fight it — trying to force themselves into dominance-forward careers that punish the diplomatic instinct. Those who work with the placement often produce the most respected version of leadership in their field.",
             },
         ),
         llm_summary=(

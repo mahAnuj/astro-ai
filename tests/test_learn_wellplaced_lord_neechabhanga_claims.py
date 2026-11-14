@@ -154,7 +154,10 @@ def test_sun_career_page_and_registry_do_not_call_neechabhanga_a_raja_yoga_or_ti
     assert not _specific(t), _specific(t)
     assert "genuine classical yoga" not in t
     assert "late-blooming recognition arrives" not in t
+    assert "late-blooming institutional recognition" not in t
+    assert "genuinely respected institutional leader" not in t
     for field in _registry_fields(SUN_CAREER):
         assert not _specific(field), f"{_specific(field)} in {field[:120]}"
         assert "genuine classical yoga" not in field
         assert "genuine strength" not in field
+        assert "late-career recognition can be" not in field  # the outcome promised under cancellation
