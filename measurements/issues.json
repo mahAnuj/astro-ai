@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-14T01:18:25Z",
+  "generated_at": "2026-11-14T03:36:10Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 105,
   "with_ask": 36,
   "by_area": {
-    "UNCLASSIFIED": 40,
+    "UNCLASSIFIED": 41,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -19,7 +19,6 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "MAIN-RED": 1,
     "AGENT-MEASURE": 1,
     "CORPUS": 1,
     "AGENT-MERGE": 1,
@@ -44,23 +43,27 @@
   "blocked": 7,
   "rows": [
     {
-      "number": 984,
-      "title": "[main-red] pr-gates did not pass on main at f5c2919",
+      "number": 993,
+      "title": "rahu-mahadasha-ketu-antardasha guide: stop attributing unsourced claims to 'the texts' and classical interpretation",
       "ask": "",
-      "area": "MAIN-RED",
+      "area": "UNCLASSIFIED",
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
-      "created": "2026-11-14T00:58:20Z",
-      "updated": "2026-11-14T00:58:20Z",
+      "created": "2026-11-14T03:17:18Z",
+      "updated": "2026-11-14T03:35:30Z",
       "blocked": false,
       "needs_evidence": false
     },
     {
-      "number": 982,
-      "title": "second-marriage-yoga-kundli: ~31 lines still attribute second-marriage signatures to 'classical texts' (BPHS, Jataka Parijata, Saravali) with no knowledge/ source (follow-up to #980)",
+      "number": 992,
+      "title": "planets-in-7th guide + registry: unsourced 'BEST' ranking and functional-malefic claims per Ascendant (follow-up to #990)",
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
@@ -69,8 +72,8 @@
         "bug",
         "astrology-correctness"
       ],
-      "created": "2026-11-14T00:51:23Z",
-      "updated": "2026-11-14T00:51:23Z",
+      "created": "2026-11-14T03:12:06Z",
+      "updated": "2026-11-14T03:35:31Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -404,7 +407,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-07T20:12:37Z",
-      "updated": "2026-11-14T01:17:46Z",
+      "updated": "2026-11-14T01:25:00Z",
       "blocked": false,
       "needs_evidence": false
     },

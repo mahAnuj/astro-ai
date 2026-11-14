@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-14T01:19:36Z",
+ "generated_at": "2026-11-14T03:37:19Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -742,6 +742,13 @@
     "themes": [
      "copy"
     ]
+   },
+   {
+    "number": 991,
+    "at": "2026-11-14T02:47:24Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/991#issuecomment-6870454187",
+    "summary": "QA: FAIL \u2014 verified at `cfe9f46255f01b64876244c6ef6b92b990bd3342` Sign arithmetic, route render, 7 new tests, 18/18 mutation rows caught (CONTROL missed), 11 gates green; verify_devanagari_serif NOT RUN (no chromium). FAIL on one sentence: Mars line says 'softened, not removed', but vedic_reference.",
+    "themes": []
    }
   ],
   "reverts": [],
