@@ -536,13 +536,13 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "seo_desc": "Free Griha Pravesh Muhurat finder: Jupiter visibility, tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana avoidance, plus Choghadiya sub-day windows and Amrit Siddhi / Sarvartha Siddhi boosters. Covers Apoorva / Sapoorva / Dwandwa entry types.",
         "intro_paragraphs": [
             "Griha Pravesh (house-warming) is the ceremony marking entry into a new home. Classical tradition names three types: Apoorva (brand-new home), Sapoorva (re-entry after long absence or renovation), and Dwandwa (entry into a home you own but haven't lived in). Each still requires the same classical timing rules.",
-            "The seven classical criteria: Guru (Jupiter) uncombust and visible; favourable moon nakshatra; favourable tithi; no Chaturmas; no eclipse; no Panchak; weekday preference (Monday/Wednesday/Thursday/Friday best, Tuesday/Saturday avoided). This tool applies all of these plus Kharmas (Sun in Sagittarius/Pisces) and Dagdha tithi-weekday exclusions.",
+            "The seven classical criteria: Guru (Jupiter) uncombust and visible; favourable moon nakshatra; favourable tithi; no Chaturmas; no eclipse; no Panchak; weekday preference (Monday/Wednesday/Thursday/Friday best; Tuesday excluded outright, Saturday scored one point lower because Raman's chapters disagree about it). This tool applies all of these plus Kharmas (Sun in Sagittarius/Pisces) and Dagdha tithi-weekday exclusions.",
         ],
         "rules_summary": [
             "Guru (Jupiter) uncombust — must be visible during ceremony hours",
             "Favourable nakshatra: Rohini, Mrigashira, Uttara Phalguni, Hasta, Chitra, Anuradha, Uttara Ashadha, Revati",
             "Favourable tithi: 2, 3, 5, 7, 10, 11, 13",
-            "Weekday: Mon, Wed, Thu, Fri preferred; Tue, Sat avoided",
+            "Weekday: Mon, Wed, Thu, Fri preferred; Tuesday excluded (Raman); Saturday scores one point lower (Raman's chapters disagree)",
             "No Chaturmas (mid-July to mid-November)",
             "No Kharmas (Sun in Sagittarius/Pisces)",
             "No Panchak days",
@@ -571,7 +571,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "rules_summary": [
             "Soft/friendly nakshatra required (mridu, laghu, dhruva, chara classifications)",
             "Favourable tithi (2, 3, 5, 7, 10, 11, 12, 13)",
-            "Weekday: Mon, Wed, Thu, Fri preferred; Tue, Sat avoided",
+            "Weekday: Mon, Wed, Thu, Fri preferred; Tuesday excluded (Raman allows it on the child's 10th, 12th or 16th day; this tool has no birth date to apply that); Saturday scores one point lower",
             "No Panchak",
             "No eclipse days",
             "Chaturmas, Kharmas, Dagdha, combustion checks NOT applied (child-driven timing)",
@@ -657,7 +657,9 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "avoid_nakshatras": {"Bharani", "Krittika", "Ardra", "Ashlesha",
                               "Jyeshtha", "Vishakha", "Purva Phalguni",
                               "Purva Ashadha", "Purva Bhadrapada"},
-        "good_days":  {"Monday", "Wednesday", "Thursday", "Friday", "Sunday"},
+        # No Sunday (#1021): Raman's marriage chapter calls Sunday middling and Rao's
+        # Table 79 Wedding row lists Mon, Wed, Thu, Fri; neither held source calls it good.
+        "good_days":  {"Monday", "Wednesday", "Thursday", "Friday"},
         "avoid_days": {"Tuesday", "Saturday"},
         "check_panchak": True,
         "check_chaturmas": True,
@@ -1310,6 +1312,32 @@ def _combustion_flags(chart: Chart, when: datetime) -> dict[str, bool]:
     }
 
 
+# Tuesday is a HARD exclusion for every event (#1021). Raman, Muhurtha (1948),
+# knowledge/vedic_reference.md section 29.9: line 790 "Tuesday and Saturday should be
+# invariably avoided for all good and auspicious work"; the marriage chapter (lines
+# 3734-3746) rejects Tuesday outright (the knowledge file's paraphrase, not a quote); Rao Table 79 (knowledge/grahas.md) lists
+# Mon, Wed, Thu, Fri for a wedding. A one-point penalty let a good tithi + nakshatra
+# still rate Tuesday 'acceptable', and a booster then lifted it to 'excellent'.
+# Saturday is deliberately NOT here: Raman's Ch. II (avoid) and his marriage chapter
+# (middling) disagree, so it stays a one-point penalty in `avoid_days`.
+_HARD_AVOID_WEEKDAYS = frozenset({"Tuesday"})
+
+# User-facing reason. The Amrit Siddhi sentence is a disclosure, not a rule: Raman's
+# Amrita Siddha list pairs Tuesday with Ashwini and his text does not say whether that
+# overrides line 790 (vedic_reference.md section 29.9), so this finder picks "no" and says so.
+_HARD_AVOID_WEEKDAY_REASON = (
+    "Tuesday is avoided for all auspicious work (Raman, Muhurtha: 'invariably avoided'; "
+    "his marriage chapter rejects Tuesday outright for a wedding). Amrit Siddhi's Tuesday + Ashwini pairing does "
+    "not override this in this finder; the source is silent on that case."
+)
+# Raman's one sourced exception (line 1331) is for the child's own days, which this
+# finder cannot apply: it has no birth date. So it is disclosed, not computed.
+_NAMKARAN_TUESDAY_EXCEPTION = (
+    " Raman allows a Tuesday for the naming on the child's 10th, 12th or 16th day after "
+    "birth; this finder has no birth date, so it cannot apply that exception."
+)
+
+
 def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
                 is_panchak: bool, is_chaturmas: bool,
                 kharmas_reason: str, eclipse_reason: str,
@@ -1326,6 +1354,7 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
       4. Vaidhriti / Vyatipata Nitya Yogas — universal
       5. Combust karaka (per-event flag)
       6. Avoid-nakshatra, avoid-tithi
+      7. Tuesday (_HARD_AVOID_WEEKDAYS) — Raman, see the constant
 
     UNIVERSAL BOOSTERS override caution/acceptable → excellent:
       - Amrit Siddhi Yoga (nakshatra+weekday)
@@ -1333,8 +1362,9 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
       - Ravi Yoga (Sun-based)
 
     SOFT scoring: +2 favourable tithi, +2 favourable nakshatra, +1 favourable
-    weekday. Peak-day (e.g. Thu for Vidyarambh) adds an extra +1. Avoid-weekday
-    subtracts 1. Final rating: >=5 excellent, 4 good, 3 acceptable, else caution.
+    weekday. Peak-day (e.g. Thu for Vidyarambh) adds an extra +1. A Saturday
+    subtracts 1 (it is the only avoid-weekday that reaches here: Tuesday is a hard
+    exclusion above, Saturday is contested within Raman). Final rating: >=5 excellent, 4 good, 3 acceptable, else caution.
     """
     rules = EVENT_RULES.get(event_type)
     if rules is None:
@@ -1385,6 +1415,14 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
     if panchang.tithi_name in rules["avoid_tithis"]:
         flags.append("avoid_tithi")
         return "avoid", f"Avoid tithi ({panchang.tithi_name})", tuple(flags)
+    # Last of the hard exclusions, and still ahead of the boosters below: they only
+    # lift soft scores, so an Amrit/Sarvartha Siddhi Tuesday cannot reach them.
+    if weekday_name in _HARD_AVOID_WEEKDAYS:
+        flags.append("avoid_weekday")
+        reason = _HARD_AVOID_WEEKDAY_REASON
+        if event_type == "namkaran":
+            reason += _NAMKARAN_TUESDAY_EXCEPTION
+        return "avoid", reason, tuple(flags)
 
     # ─── Soft scoring ───────────────────────────────────────────────
     score = 0
