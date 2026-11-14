@@ -757,7 +757,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="rahu-mahadasha-ketu-antardasha",
         title="Rahu Mahadasha + Ketu Antardasha: Surviving the Nodal Axis Flip",
-        summary="The exact transition Reddit asks about: Rahu's 18-year outward hunger meeting Ketu's ~12-month inward release. What it feels like, why it hits so hard, what the classical texts say, and how to make it through.",
+        summary="The exact transition Reddit asks about: Rahu's 18-year outward hunger meeting Ketu's ~12-month inward release. What it feels like, why it hits so hard, how practitioners read it (the sources we hold do not describe this pairing), and how to make it through.",
         category="Dasha",
         hero_image="/static/learn/rahu-mahadasha-ketu-antardasha/hero.svg",
         read_time="9 min",
@@ -773,7 +773,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Why is Rahu Mahadasha + Ketu Antardasha considered uniquely difficult?",
-                "a": "Rahu and Ketu sit exactly 180 degrees apart in your chart — they're perpetual opposites. When their energies overlap in time as well as space, internal contradiction maxes out. Part of you keeps chasing (Rahu); part of you is exhausted (Ketu). Both pull simultaneously and neither resolves.",
+                "a": "Rahu and Ketu sit exactly 180 degrees apart in your chart — they oppose each other across the axis. When their energies overlap in time as well as space, internal contradiction maxes out. Part of you keeps chasing (Rahu); part of you is exhausted (Ketu). Both pull simultaneously and neither resolves.",
             },
             {
                 "q": "If Ketu is in my 11th house with Saturn, what does this transition mean?",
@@ -781,13 +781,13 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What's the best remedy during Ketu Antardasha?",
-                "a": "Beyond mantras and donations: classical texts emphasise tyaga (willing renunciation). What you give up during Ketu antardasha, you get back tenfold during the Venus antardasha that follows. Stop optimising for outcomes, reduce intake (news/social/ambition-feed), pick one anchor (one practice, one relationship, one piece of steady work), don't make permanent decisions in the worst weeks.",
+                "a": "Beyond mantras and donations: practitioners often stress tyaga (willing renunciation) and say what you let go of during Ketu antardasha tends to be replaced by something steadier in the Venus antardasha that follows (a saying, not a promise or a sourced rule). Stop optimising for outcomes, reduce intake (news/social/ambition-feed), pick one anchor (one practice, one relationship, one piece of steady work), don't make permanent decisions in the worst weeks.",
             },
         ),
         llm_summary=(
             'Keypoints:\n'
             "• Nodal axis flip — Rahu Mahadasha's Ketu Antardasha is a ~1-year window (Ketu Antardasha in Rahu Mahadasha = 12 months and 18 days)\n"
-            '• Classical difficulty: Rahu wants to grasp, Ketu wants to release — internal tug-of-war\n'
+            '• Difficulty (practice, not sourced for this pairing): Rahu wants to grasp, Ketu wants to release — internal tug-of-war\n'
             '• Common patterns: sudden loss of what Rahu had built, spiritual awakening, relationship endings, career detachment\n'
             '• Health themes: mysterious ailments, exhaustion, low immunity — Ketu weakens body\n'
             '• Not universally bad — often initiates the deepest spiritual work of Rahu Mahadasha\n'

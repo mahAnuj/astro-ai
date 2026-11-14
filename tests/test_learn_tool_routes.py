@@ -160,13 +160,15 @@ def test_saturn_in_10th_links_the_tool_not_the_homepage():
 
 
 def test_rahu_tip_was_moved_not_copied():
-    """Rahu already carried this exact tip after "What the texts say"; slice 4 MOVES it to
-    sit after "In short". One copy, and it is ahead of the classical callout."""
+    """Rahu already carried this exact tip after its pattern callout; slice 4 MOVES it to
+    sit after "In short". One copy, and it is ahead of that callout (relabelled "What
+    practitioners say" by #993, when the old "What the texts say" label was found to
+    attribute an unsourced reading)."""
     src = (LEARN / "rahu-mahadasha-ketu-antardasha.html").read_text()
     tip = "Enter your birth details in the free Dasha calculator"
     assert src.count(tip) == 1
     assert src.count('<div class="callout-label">Find your own dates</div>') == 1
-    assert src.index(tip) < src.index("What the texts say")
+    assert src.index(tip) < src.index("What practitioners say")
 
 
 class _Nesting(HTMLParser):
