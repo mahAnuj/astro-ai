@@ -800,6 +800,8 @@ jobs:
           PR: ${{ github.event.inputs.pr }}
           QUEUE_ON: ${{ github.event.inputs.pr }}
           LOOP_PAUSED: ${{ vars.LOOP_PAUSED }}   # #903: paused queues, never dispatches
+          # agent-merge.yml's list: a fix is never dispatched at an outsider's PR (QA on #999)
+          AGENT_AUTHORS: claude[bot],github-actions[bot],shubhagya-publisher[bot],${{ github.repository_owner }}
         run: |
           set -uo pipefail
           python3 scripts/pr_fix_after_qa.py | tee -a "$GITHUB_STEP_SUMMARY"

@@ -43,4 +43,9 @@ MUTATIONS = [
      "**no verdict is\nwritten**",
      "a verdict when\ndone",
      "test_the_cycle_doc_says_a_fix_run_never_judges_or_labels_itself"),
+    ("session PR fix (QA on #999): an outsider's PR gets a fix dispatched",
+     "scripts/pr_fix_after_qa.py",
+     "    if login not in (authors if authors is not None else authors_for(repo)):\n",
+     "    if False:\n",
+     "test_an_outsiders_pr_never_gets_a_fix"),
 ]

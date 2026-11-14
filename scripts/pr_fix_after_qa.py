@@ -56,12 +56,28 @@ def run_gh(args: list[str]) -> str:
     return p.stdout
 
 
-def decide(gh: Runner, repo: str, num: int) -> dict:
+#: The loop's own identities. The repo owner is added from the repo name, and
+#: AGENT_AUTHORS (agent-merge.yml's list) overrides all of it when set.
+LOOP_BOTS = ("claude[bot]", "github-actions[bot]", "shubhagya-publisher[bot]")
+
+
+def authors_for(repo: str) -> set[str]:
+    env = {a.strip() for a in os.environ.get("AGENT_AUTHORS", "").split(",") if a.strip()}
+    return env or {*LOOP_BOTS, repo.split("/", 1)[0]}
+
+
+def decide(gh: Runner, repo: str, num: int, authors: set[str] | None = None) -> dict:
     pr = json.loads(gh(["api", f"repos/{repo}/pulls/{num}"]))
     if pr.get("state") != "open":
         return {"action": "none", "why": f"#{num} is {pr.get('state')}"}
     if (pr.get("head") or {}).get("repo", {}).get("full_name") != repo:
         return {"action": "none", "why": f"#{num} is from a fork"}
+    # QA on #999: the decision file and CLAUDE.md say the fix path is "never an
+    # author outside AGENT_AUTHORS", enforced in code -- and this had no such
+    # check, so a stranger's same-repo PR with a claude[bot] FAIL got a fix.
+    login = (pr.get("user") or {}).get("login", "")
+    if login not in (authors if authors is not None else authors_for(repo)):
+        return {"action": "none", "why": f"#{num} is by {login or 'unknown'}, not in AGENT_AUTHORS"}
     branch, head = pr["head"]["ref"], pr["head"]["sha"]
     if ISSUE_BRANCH.match(branch):
         return {"action": "none", "why": f"{branch} names its issue; the steward routes that fix"}

@@ -18,9 +18,10 @@ REPO = "o/r"
 
 
 class Gh:
-    def __init__(self, *, branch="claude/session-x", head=HEAD, state="open", fork=False,
+    def __init__(self, *, branch="claude/session-x", head=HEAD, state="open", fork=False, login="o",
                  files=("src/astro_ai/x.py",), comments=()):
-        self.pr = {"state": state, "head": {"ref": branch, "sha": head,
+        self.pr = {"state": state, "user": {"login": login},
+                   "head": {"ref": branch, "sha": head,
                                             "repo": {"full_name": "other/r" if fork else REPO}}}
         self.files, self.comments, self.posted = list(files), list(comments), []
 
@@ -101,3 +102,16 @@ def test_the_cycle_doc_says_a_fix_run_never_judges_or_labels_itself():
     assert "## Step 0d" in doc and "--fix-pr <n>" in doc
     assert "**no verdict is\nwritten**" in doc
     assert "run a QA round, write or remove a label, open a PR, or touch `.github/workflows/`" in doc
+
+
+def test_an_outsiders_pr_never_gets_a_fix(monkeypatch):
+    # QA on #999: the docs promised this and the code had no check.
+    monkeypatch.delenv("AGENT_AUTHORS", raising=False)
+    d = pfq.decide(Gh(login="stranger", comments=[fail()]), REPO, 951)
+    assert d["action"] == "none" and "not in AGENT_AUTHORS" in d["why"]
+
+
+def test_agent_authors_from_the_workflow_wins(monkeypatch):
+    monkeypatch.setenv("AGENT_AUTHORS", "claude[bot]")
+    assert pfq.decide(Gh(login="o", comments=[fail()]), REPO, 951)["action"] == "none"
+    assert pfq.decide(Gh(login="claude[bot]", comments=[fail()]), REPO, 951)["action"] == "fix"
