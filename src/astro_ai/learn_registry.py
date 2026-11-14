@@ -2694,11 +2694,11 @@ ARTICLES: tuple[Article, ...] = (
             '• Mars in 7th: Manglik trigger + energetic/short-tempered spouse; check cancellations\n'
             '• Mercury in 7th: communicative, younger-looking spouse, business-partnership orientation\n'
             '• Jupiter in 7th: wise/dharmic spouse, blessings; commonly cited late-marriage flag for women (practice, not sourced)\n'
-            '• Venus in 7th: BEST — Malavya Yoga possibility (own sign), refined spouse, marital happiness\n'
+            '• Venus in 7th: Malavya Yoga only when Venus is in her own sign or exalted there (the 7th is a kendra); the yoga lists beauty, luxury, art and marital happiness\n'
             '• Saturn in 7th: delay + older spouse + long-tenure marriage; NOT verdict of bad marriage\n'
             '• Rahu in 7th: foreign/unconventional spouse, sudden marriage, fascination-based attraction, second-marriage risk if untreated\n'
             '• Ketu in 7th: detached/spiritual spouse, past-life karma theme, most sombre single placement\n'
-            '• Per-Ascendant shifts matter: Cancer/Leo lagna Saturn in 7th (own sign) reads very differently\n'
+            '• Per-Ascendant: functional nature differs by Lagna, but the held sources give no table by Ascendant; the page does not call any planet a functional benefic or malefic there\n'
             '• Per-planet 7th-house readings are common practice; the held sources do not set them out'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
