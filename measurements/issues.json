@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-14T00:53:23Z",
+  "generated_at": "2026-11-14T01:18:25Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 106,
+  "open": 105,
   "with_ask": 36,
   "by_area": {
-    "UNCLASSIFIED": 42,
+    "UNCLASSIFIED": 40,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -19,6 +19,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "MAIN-RED": 1,
     "AGENT-MEASURE": 1,
     "CORPUS": 1,
     "AGENT-MERGE": 1,
@@ -28,7 +29,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 34,
+    "untyped": 33,
     "enhancement": 23,
     "bug": 21,
     "chore": 17,
@@ -36,12 +37,27 @@
     "design": 4
   },
   "by_priority": {
-    "unset": 77,
+    "unset": 76,
     "medium": 20,
     "high": 9
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 984,
+      "title": "[main-red] pr-gates did not pass on main at f5c2919",
+      "ask": "",
+      "area": "MAIN-RED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-14T00:58:20Z",
+      "updated": "2026-11-14T00:58:20Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 982,
       "title": "second-marriage-yoga-kundli: ~31 lines still attribute second-marriage signatures to 'classical texts' (BPHS, Jataka Parijata, Saravali) with no knowledge/ source (follow-up to #980)",
@@ -55,25 +71,6 @@
       ],
       "created": "2026-11-14T00:51:23Z",
       "updated": "2026-11-14T00:51:23Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 980,
-      "title": "second-marriage-yoga-kundli: 7th lord in 8th called 'strongest signature in classical texts' with no knowledge/ source (follow-up to #978)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-14T00:28:03Z",
-      "updated": "2026-11-14T00:51:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -123,24 +120,6 @@
       ],
       "created": "2026-11-13T22:27:23Z",
       "updated": "2026-11-14T00:13:28Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 968,
-      "title": "natal.txt:32 requires 'Mars ... 4th house' for Manglik while :51/:53 ban both",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "category:technical",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-13T21:55:05Z",
-      "updated": "2026-11-13T22:55:00Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -419,10 +398,13 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-07T20:12:37Z",
-      "updated": "2026-11-13T23:26:18Z",
+      "updated": "2026-11-14T01:17:46Z",
       "blocked": false,
       "needs_evidence": false
     },

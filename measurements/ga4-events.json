@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-14",
-    "2026-11-10"
+    "2026-10-15",
+    "2026-11-11"
   ],
   "dimensions": [
     "eventName"
@@ -14,31 +14,31 @@
   "rows": [
     {
       "event": "page_view",
-      "count": 1169
+      "count": 1215
     },
     {
       "event": "user_identified",
-      "count": 689
+      "count": 717
     },
     {
       "event": "session_start",
-      "count": 674
+      "count": 700
     },
     {
       "event": "feature_view",
-      "count": 670
+      "count": 698
     },
     {
       "event": "first_visit",
-      "count": 541
+      "count": 567
     },
     {
       "event": "user_engagement",
-      "count": 290
+      "count": 301
     },
     {
       "event": "scroll",
-      "count": 173
+      "count": 175
     },
     {
       "event": "form_start",
@@ -46,15 +46,15 @@
     },
     {
       "event": "ask_answered",
-      "count": 137
+      "count": 133
     },
     {
       "event": "kundli_generated",
-      "count": 52
+      "count": 55
     },
     {
       "event": "cta_click",
-      "count": 10
+      "count": 12
     },
     {
       "event": "view_search_results",
@@ -77,16 +77,21 @@
       "count": 1
     }
   ],
-  "events_total": 4557,
-  "coverage_note": "cta_click: 10 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "events_total": 4725,
+  "coverage_note": "cta_click: 12 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
-    "count": 10,
+    "count": 12,
     "split_available": true,
     "rows": [
       {
         "from_path": "(not set)",
         "to_path": "(not set)",
         "count": 8
+      },
+      {
+        "from_path": "/learn/career-during-sade-sati/",
+        "to_path": "/",
+        "count": 1
       },
       {
         "from_path": "/learn/kaal-sarp-dosh/",
@@ -96,6 +101,11 @@
       {
         "from_path": "/learn/name-numerology-explained/",
         "to_path": "/numerology",
+        "count": 1
+      },
+      {
+        "from_path": "/learn/rahu-mahadasha-ketu-antardasha/",
+        "to_path": "/dasha",
         "count": 1
       }
     ]
