@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-15T11:00:55Z",
+ "generated_at": "2026-11-15T14:49:38Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -816,11 +816,31 @@
     "themes": []
    },
    {
+    "number": 1027,
+    "at": "2026-11-15T11:11:50Z",
+    "url": "https://github.com/mahAnuj/astro-ai/issues/1027#issuecomment-6893453445",
+    "summary": "QA: FAIL \u2014 verified at `5b8581debab8e261b483aef77d869cc8dfdde485`  Independent round (`qa:independent`), cold read, by execution. Substance passes; the FAIL is two present-tense statements in the new section that are false at this head. Both are cheap to fix. Provenance of #1027: `resolve_provenance",
+    "themes": [
+     "grounding",
+     "tests"
+    ]
+   },
+   {
     "number": 1058,
     "at": "2026-11-15T09:16:16Z",
     "url": "https://github.com/mahAnuj/astro-ai/pull/1058#issuecomment-6892206771",
     "summary": "QA: FAIL \u2014 verified at `05e89d6b09560b1123ca3670d2491ffd79d6104e` Citations, Rao rows, code values and issue repros verified (30 Raman ranges, full suite 4491 passed). DEFECTS: (1) section says Raman names no Panchak rule; Raman L1227-1235 and L961-1040 do, and 29.9 records it as sourced. (2) 'neith",
     "themes": []
+   },
+   {
+    "number": 1058,
+    "at": "2026-11-15T11:11:48Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1058#issuecomment-6893453136",
+    "summary": "QA: FAIL \u2014 verified at `5b8581debab8e261b483aef77d869cc8dfdde485`  Independent round (`qa:independent`), cold read, by execution. Substance passes; the FAIL is two present-tense statements in the new section that are false at this head. Both are cheap to fix. Provenance of #1027: `resolve_provenance",
+    "themes": [
+     "grounding",
+     "tests"
+    ]
    },
    {
     "number": 1077,
@@ -872,10 +892,10 @@
   ]
  },
  "error_themes": {
+  "grounding": 23,
   "regression": 22,
-  "grounding": 21,
+  "tests": 21,
   "copy": 20,
-  "tests": 19,
   "tokens": 18,
   "security": 10,
   "i18n": 9,
