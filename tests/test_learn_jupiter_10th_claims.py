@@ -47,6 +47,12 @@ UNSOURCED = (
     "most fortunate career placements",
     "lifelong gift of",
     "marriage often triggers",
+    # #1045: residue after #1036 -- the per-ascendant career signatures stated with no label
+    "careers in teaching, philosophy, publishing, spiritual leadership, and religious scholarship are common",
+    "careers here often combine",
+    "careers often lean toward",
+    "career often requires proving",
+    "produces the classic",
 )
 
 _WEAK_WORD = re.compile(r"\b(weak|weaker|weakened|difficult|afflicted|compromised|malefic)\b", re.I)
@@ -164,3 +170,16 @@ def test_1032_the_three_phrases_are_gone_and_the_replacements_state_the_held_rul
     assert "a practitioner's reading of that theme, not a rule the texts state" in t
     # the career-field cluster is attributed to practitioners
     assert "practitioners read Jupiter in the 10th as supporting a specific cluster of career fields" in t
+
+
+def test_1045_every_per_ascendant_bullet_that_names_careers_is_labelled_a_reading(client):
+    """The Libra bullet was labelled by #1036; its five siblings stated career signatures flat. A lead-in sentence
+    would not do (the issue's grep must find nothing), so each bullet that names a career carries its own label."""
+    raw = client.get(f"/learn/{SLUG}/").text
+    block = raw.split("Per-ascendant variations", 1)[1].split("</ul>", 1)[0]
+    bullets = [_plain(b) for b in re.findall(r"<li>(.*?)</li>", block, re.S)]
+    assert len(bullets) == 6, len(bullets)
+    careers = [b for b in bullets if re.search(r"\bcareers?\b", b, re.I)]
+    assert len(careers) == 6, "every per-ascendant bullet names a career; the scan must see all six"
+    for b in careers:
+        assert "practitioner" in b.lower() and "not a rule the texts state" in b, b[:120]
