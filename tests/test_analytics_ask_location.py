@@ -265,3 +265,54 @@ def test_referrer_carrying_city_is_sent_without_it(tmp_path):
 @pytest.mark.parametrize("path", ["/panchang", "/panchang?c=love", "/panchang/2026-11-20"])
 def test_panchang_urls_without_city_get_no_override(tmp_path, path):
     assert "page_location" not in _config(_run(tmp_path, path)["initial"])
+
+
+# ─── #1093: the unsubscribe link, /unsubscribe?email=<address>&token=<hmac> ───
+# Every email footer links there (routes/subscribe.py), and /unsubscribe renders
+# through base.html, so opening the link would record the subscriber's address and
+# a token that unsubscribes it as GA4's page_location.
+
+EMAIL = "reader%40example.com"
+TOKEN = "3f9a1c0de5b84a77"
+
+
+def _unsub(extra=""):
+    return f"/unsubscribe?email={EMAIL}&token={TOKEN}{extra}"
+
+
+def test_unsubscribe_email_and_token_never_reach_gtag_config(tmp_path):
+    out = _run(tmp_path, _unsub())
+    assert _config(out["initial"])["page_location"] == f"{ORIGIN}/unsubscribe"
+    blob = json.dumps(out["initial"])
+    assert "example.com" not in blob and "email=" not in blob
+    assert TOKEN not in blob and "token=" not in blob
+
+
+def test_email_and_token_are_stripped_but_other_params_survive(tmp_path):
+    out = _run(tmp_path, _unsub("&c=x&utm_source=mail"))
+    loc = _config(out["initial"])["page_location"]
+    assert loc == f"{ORIGIN}/unsubscribe?c=x&utm_source=mail"
+
+
+def test_email_token_city_and_q_are_all_removed_from_one_url(tmp_path):
+    out = _run(tmp_path, f"/x?city=Pune&q=a+thing&email={EMAIL}&token={TOKEN}&c=love")
+    assert _config(out["initial"])["page_location"] == f"{ORIGIN}/x?c=love"
+
+
+def test_a_boosted_unsubscribe_navigation_keeps_the_address_out_of_the_event(tmp_path):
+    out = _run(tmp_path, "/", navigateTo=_unsub(), trackAfterNav=True)
+    assert _loc_before_event(out["afterTrack"], "ask_answered") == f"{ORIGIN}/unsubscribe"
+    blob = json.dumps(out["afterTrack"])
+    assert "example.com" not in blob and TOKEN not in blob
+
+
+def test_referrer_carrying_the_unsubscribe_link_is_sent_without_it(tmp_path):
+    out = _run(tmp_path, "/", referrer=f"{ORIGIN}{_unsub()}")
+    assert _config(out["initial"])["page_referrer"] == f"{ORIGIN}/unsubscribe"
+    blob = json.dumps(out["initial"])
+    assert "example.com" not in blob and TOKEN not in blob
+
+
+@pytest.mark.parametrize("path", ["/unsubscribe", "/unsubscribe?c=x"])
+def test_unsubscribe_urls_without_pii_get_no_override(tmp_path, path):
+    assert "page_location" not in _config(_run(tmp_path, path)["initial"])

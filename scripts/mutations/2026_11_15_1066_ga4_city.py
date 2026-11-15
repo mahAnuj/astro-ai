@@ -6,8 +6,8 @@ under Node. One area file, a literal list (test_mutation_tables.py requires it).
 MUTATIONS = [
     ("#1066: `city` is dropped from the strip-list, so the saved birth place reaches GA4",
      "src/astro_ai/static/analytics.js",
-     "  var PII_PARAMS = ['q', 'city'];\n",
-     "  var PII_PARAMS = ['q'];\n",
+     "  var PII_PARAMS = ['q', 'city', 'email', 'token'];\n",
+     "  var PII_PARAMS = ['q', 'email', 'token'];\n",
      "test_panchang_city_never_reaches_gtag_config"),
     ("#1066: the sanitiser stops after the first parameter it finds, so q and city are not both removed",
      "src/astro_ai/static/analytics.js",

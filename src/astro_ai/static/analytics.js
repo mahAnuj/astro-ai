@@ -40,9 +40,11 @@
   // Query parameters that carry personal text and so must never reach GA4 in a
   // URL: `q` is the visitor's whole /ask question (#528); `city` is the Panchang
   // place box, which /panchang pre-fills with the SAVED BIRTH PLACE, so pressing
-  // Update navigates to /panchang?city=<birth place> (#1066). Add a name here
-  // when a new GET form or shareable URL carries free text.
-  var PII_PARAMS = ['q', 'city'];
+  // Update navigates to /panchang?city=<birth place> (#1066); `email` and `token`
+  // are the unsubscribe link every email footer carries, /unsubscribe?email=<address>
+  // &token=<hmac> (#1093) -- the address, and a token that unsubscribes it. Add a
+  // name here when a new GET form or shareable URL carries free text.
+  var PII_PARAMS = ['q', 'city', 'email', 'token'];
 
   // `url` with every PII_PARAMS parameter removed. Everything else -- path, `c`,
   // utm_* -- is kept, so reports still split by them. Returns `url` unchanged
