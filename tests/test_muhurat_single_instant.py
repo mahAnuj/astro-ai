@@ -131,3 +131,16 @@ def test_the_page_says_when_each_verdict_is_read_and_names_the_overlap():
     assert "One verdict, one moment" in body and "are all read at 12:00 local time on the date, so" in body
     assert "Abhijit and Rahu Kaal overlap 11:45-12:06" in body
     assert 'read at 12:00 local time on the date">Tithi</th>' in body
+
+
+def test_the_griha_pravesh_article_names_the_date_the_finder_now_rates_first_excellent():
+    # QA on #1057: the article said 2027-04-19 (Hasta, Monday), the repro date this change flips to avoid.
+    from pathlib import Path
+
+    rows = sorted(m.find_candidates("griha_pravesh", "Delhi", date(2027, 4, 14), 8), key=lambda c: c.d)
+    first = next(c for c in rows if c.rating == "excellent")
+    assert (first.d, first.weekday, first.nakshatra, first.tithi) == (
+        date(2027, 4, 18), "Sunday", "Uttara Phalguni", "Trayodashi")
+    text = Path("src/astro_ai/templates/learn/griha-pravesh-muhurat-2026-2027.html").read_text()
+    assert "Uttara Phalguni nakshatra, Shukla Trayodashi, on a Sunday." in text
+    assert "Hasta nakshatra, Shukla Trayodashi, on a Monday" not in text

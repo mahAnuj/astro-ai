@@ -56,4 +56,9 @@ MUTATIONS = [
      "One verdict, one moment: tithi, nakshatra, yoga, Panchak, Dagdha and combustion are all read at",
      "Tithi, nakshatra, yoga, Panchak, Dagdha and combustion are read at",
      "test_the_page_says_when_each_verdict_is_read_and_names_the_overlap"),
+    ("#1020 QA: the Griha Pravesh article names the old April 2027 date again",
+     "src/astro_ai/templates/learn/griha-pravesh-muhurat-2026-2027.html",
+     "Uttara Phalguni nakshatra, Shukla Trayodashi, on a Sunday.</li>",
+     "Hasta nakshatra, Shukla Trayodashi, on a Monday.</li>",
+     "test_the_griha_pravesh_article_names_the_date_the_finder_now_rates_first_excellent"),
 ]
