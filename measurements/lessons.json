@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-15T02:39:32Z",
+ "generated_at": "2026-11-15T14:49:38Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -797,6 +797,60 @@
     "themes": [
      "grounding"
     ]
+   },
+   {
+    "number": 1057,
+    "at": "2026-11-15T08:13:25Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1057#issuecomment-6891535999",
+    "summary": "QA: FAIL \u2014 verified at `3bd4fbf727d3156cf3a3504b294e7c5fcb36d04c` DEFECT: learn/griha-pravesh-muhurat-2026-2027.html:97 says the first date the finder rates excellent is 2027-04-19 (Hasta, Shukla Trayodashi, Monday); this PR correctly flips that date to avoid (noon tithi is Chaturdashi). On the bran",
+    "themes": [
+     "grounding",
+     "i18n"
+    ]
+   },
+   {
+    "number": 1057,
+    "at": "2026-11-15T08:38:22Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1057#issuecomment-6891799564",
+    "summary": "QA: FAIL \u2014 verified at `0a5c138ad73ee097c01eb695a58cff3cabd4f37d` DEFECT: src/astro_ai/templates/learn/vivah-muhurat-2027.html:54-55 says the finder rates 16 Apr 2027 the first excellent wedding day. Measured on the branch (vivah, Delhi, from 2027-04-12): 04-16 Friday is avoid (nitya_yoga_block, Gan",
+    "themes": []
+   },
+   {
+    "number": 1027,
+    "at": "2026-11-15T11:11:50Z",
+    "url": "https://github.com/mahAnuj/astro-ai/issues/1027#issuecomment-6893453445",
+    "summary": "QA: FAIL \u2014 verified at `5b8581debab8e261b483aef77d869cc8dfdde485`  Independent round (`qa:independent`), cold read, by execution. Substance passes; the FAIL is two present-tense statements in the new section that are false at this head. Both are cheap to fix. Provenance of #1027: `resolve_provenance",
+    "themes": [
+     "grounding",
+     "tests"
+    ]
+   },
+   {
+    "number": 1058,
+    "at": "2026-11-15T09:16:16Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1058#issuecomment-6892206771",
+    "summary": "QA: FAIL \u2014 verified at `05e89d6b09560b1123ca3670d2491ffd79d6104e` Citations, Rao rows, code values and issue repros verified (30 Raman ranges, full suite 4491 passed). DEFECTS: (1) section says Raman names no Panchak rule; Raman L1227-1235 and L961-1040 do, and 29.9 records it as sourced. (2) 'neith",
+    "themes": []
+   },
+   {
+    "number": 1058,
+    "at": "2026-11-15T11:11:48Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1058#issuecomment-6893453136",
+    "summary": "QA: FAIL \u2014 verified at `5b8581debab8e261b483aef77d869cc8dfdde485`  Independent round (`qa:independent`), cold read, by execution. Substance passes; the FAIL is two present-tense statements in the new section that are false at this head. Both are cheap to fix. Provenance of #1027: `resolve_provenance",
+    "themes": [
+     "grounding",
+     "tests"
+    ]
+   },
+   {
+    "number": 1077,
+    "at": "2026-11-15T10:27:41Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1077#issuecomment-6892976797",
+    "summary": "QA: FAIL \u2014 verified at `0ea4f10ea74f8efd1cf0afe362d26a4ef225c800` Round 1: four sentences cite a finder 'source note' crediting Muhurta Chintamani for Dagdha that the finder does not carry (muhurat.py:949 only says the pre-#716 text is not held), and 'not a book this site holds' contradicts matching",
+    "themes": [
+     "grounding",
+     "copy"
+    ]
    }
   ],
   "reverts": [],
@@ -838,13 +892,13 @@
   ]
  },
  "error_themes": {
+  "grounding": 23,
   "regression": 22,
-  "tests": 19,
-  "grounding": 19,
-  "copy": 19,
+  "tests": 21,
+  "copy": 20,
   "tokens": 18,
   "security": 10,
-  "i18n": 8,
+  "i18n": 9,
   "performance": 8
  },
  "repeated_themes": [

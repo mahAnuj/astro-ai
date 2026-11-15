@@ -209,3 +209,110 @@ def test_referrer_carrying_q_is_sent_without_it(tmp_path):
 def test_referrer_without_q_is_left_alone(tmp_path, ref):
     out = _run(tmp_path, "/kundli", referrer=ref)
     assert "page_referrer" not in _config(out["initial"])
+
+
+# ─── #1066: the saved birth place, via /panchang?city= ───────────────────────
+# /panchang pre-fills its GET place box with `saved.birth_place`, so pressing
+# Update (even untouched) navigates to /panchang?city=<birth place>. The same
+# sanitiser as `q` must apply, and nothing else may be dropped with it.
+
+CITY = "Varanasi%2C+Uttar+Pradesh%2C+India"
+
+
+def test_panchang_city_never_reaches_gtag_config(tmp_path):
+    out = _run(tmp_path, f"/panchang?city={CITY}")
+    cfg = _config(out["initial"])
+    assert cfg["page_location"] == f"{ORIGIN}/panchang"
+    blob = json.dumps(out["initial"])
+    assert "Varanasi" not in blob and "city=" not in blob
+
+
+def test_city_is_stripped_but_other_params_survive(tmp_path):
+    out = _run(tmp_path, f"/panchang?city={CITY}&c=love&utm_source=x")
+    loc = _config(out["initial"])["page_location"]
+    assert "city" not in loc and "Varanasi" not in loc
+    assert "c=love" in loc and "utm_source=x" in loc
+
+
+def test_city_and_q_are_both_removed_from_one_url(tmp_path):
+    out = _run(tmp_path, "/x?city=Pune&q=a+private+thing&c=love")
+    assert _config(out["initial"])["page_location"] == f"{ORIGIN}/x?c=love"
+
+
+def test_a_boosted_panchang_update_keeps_the_city_out_of_the_event(tmp_path):
+    """Update is an hx-boost GET: the script is NOT re-run, htmx pushes
+    /panchang?city=..., and the next event must not carry the raw URL."""
+    out = _run(tmp_path, "/panchang", navigateTo=f"/panchang?city={CITY}",
+               trackAfterNav=True)
+    assert "page_location" not in _config(out["initial"])
+    assert _loc_before_event(out["afterTrack"], "ask_answered") == f"{ORIGIN}/panchang"
+    assert "Varanasi" not in json.dumps(out["afterTrack"])
+
+
+def test_manual_page_view_carries_no_city(tmp_path):
+    out = _run(tmp_path, f"/panchang?city={CITY}", pageView=True)
+    ev = [c for c in out["afterPageView"] if c[0] == "event" and c[1] == "page_view"]
+    assert len(ev) == 1 and ev[0][2]["page_location"] == f"{ORIGIN}/panchang"
+    assert "Varanasi" not in json.dumps(ev)
+
+
+def test_referrer_carrying_city_is_sent_without_it(tmp_path):
+    out = _run(tmp_path, "/kundli", referrer=f"{ORIGIN}/panchang?city={CITY}")
+    assert _config(out["initial"])["page_referrer"] == f"{ORIGIN}/panchang"
+    assert "Varanasi" not in json.dumps(out["initial"])
+
+
+@pytest.mark.parametrize("path", ["/panchang", "/panchang?c=love", "/panchang/2026-11-20"])
+def test_panchang_urls_without_city_get_no_override(tmp_path, path):
+    assert "page_location" not in _config(_run(tmp_path, path)["initial"])
+
+
+# ─── #1093: the unsubscribe link, /unsubscribe?email=<address>&token=<hmac> ───
+# Every email footer links there (routes/subscribe.py), and /unsubscribe renders
+# through base.html, so opening the link would record the subscriber's address and
+# a token that unsubscribes it as GA4's page_location.
+
+EMAIL = "reader%40example.com"
+TOKEN = "3f9a1c0de5b84a77"
+
+
+def _unsub(extra=""):
+    return f"/unsubscribe?email={EMAIL}&token={TOKEN}{extra}"
+
+
+def test_unsubscribe_email_and_token_never_reach_gtag_config(tmp_path):
+    out = _run(tmp_path, _unsub())
+    assert _config(out["initial"])["page_location"] == f"{ORIGIN}/unsubscribe"
+    blob = json.dumps(out["initial"])
+    assert "example.com" not in blob and "email=" not in blob
+    assert TOKEN not in blob and "token=" not in blob
+
+
+def test_email_and_token_are_stripped_but_other_params_survive(tmp_path):
+    out = _run(tmp_path, _unsub("&c=x&utm_source=mail"))
+    loc = _config(out["initial"])["page_location"]
+    assert loc == f"{ORIGIN}/unsubscribe?c=x&utm_source=mail"
+
+
+def test_email_token_city_and_q_are_all_removed_from_one_url(tmp_path):
+    out = _run(tmp_path, f"/x?city=Pune&q=a+thing&email={EMAIL}&token={TOKEN}&c=love")
+    assert _config(out["initial"])["page_location"] == f"{ORIGIN}/x?c=love"
+
+
+def test_a_boosted_unsubscribe_navigation_keeps_the_address_out_of_the_event(tmp_path):
+    out = _run(tmp_path, "/", navigateTo=_unsub(), trackAfterNav=True)
+    assert _loc_before_event(out["afterTrack"], "ask_answered") == f"{ORIGIN}/unsubscribe"
+    blob = json.dumps(out["afterTrack"])
+    assert "example.com" not in blob and TOKEN not in blob
+
+
+def test_referrer_carrying_the_unsubscribe_link_is_sent_without_it(tmp_path):
+    out = _run(tmp_path, "/", referrer=f"{ORIGIN}{_unsub()}")
+    assert _config(out["initial"])["page_referrer"] == f"{ORIGIN}/unsubscribe"
+    blob = json.dumps(out["initial"])
+    assert "example.com" not in blob and TOKEN not in blob
+
+
+@pytest.mark.parametrize("path", ["/unsubscribe", "/unsubscribe?c=x"])
+def test_unsubscribe_urls_without_pii_get_no_override(tmp_path, path):
+    assert "page_location" not in _config(_run(tmp_path, path)["initial"])

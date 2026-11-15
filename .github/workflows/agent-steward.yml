@@ -123,6 +123,46 @@ jobs:
       # never refiled), which project-manager ranks and /agent-cycle works.
       # Deterministic: no model, no new permission (`issues: write` is held).
       # continue-on-error: a carrier hiccup must never stop the stall check.
+      # THE LIVE APP, NOT ONLY THE CHECKOUT (owner, 2026-11-14: "the ops dashboard
+      # monitoring should be more realtime vs nightly run"). The detector below
+      # cannot see the LLM error rate, provider exhaustion, 413s or fallbacks --
+      # they live in the GCS event and usage logs -- so /admin/ops showed
+      # "10.19% of LLM calls are erroring" and no agent ever heard of it. This
+      # job runs after every agent-work cycle and twice a day, already holds
+      # id-token: write, and files the findings; so it reads the bucket with the
+      # analyst's read-only identity and adds the dashboard's own product alerts
+      # (ops_data._app_alerts) to what gets filed. continue-on-error: an auth
+      # failure leaves the app-* issues untouched, never "cleared".
+      - name: Authenticate to the bucket (read-only)
+        id: gcs
+        continue-on-error: true
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/89117619584/locations/global/workloadIdentityPools/github/providers/astro-ai
+          service_account: agent-analytics@bhagya-500701.iam.gserviceaccount.com
+          # NOT exported to the job: the steward and chief agents run later in
+          # this job, and they get no bucket credentials. Only the next step
+          # receives the file, and the step after deletes it.
+          export_environment_variables: false
+          create_credentials_file: true
+
+      - name: Read the live app's health
+        if: steps.gcs.outcome == 'success'
+        continue-on-error: true
+        env:
+          BHAGYA_STORAGE_BUCKET: shubhagya-cache-us
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.gcs.outputs.credentials_file_path }}
+        run: uv run python scripts/watch_app_health.py --out /tmp/app-health.json
+
+      - name: Remove the bucket credentials before any agent runs
+        if: always()
+        env:
+          CREDS: ${{ steps.gcs.outputs.credentials_file_path }}
+        run: |
+          [ -n "$CREDS" ] && rm -f "$CREDS"
+          rm -f gha-creds-*.json
+          ls gha-creds-*.json 2>/dev/null && { echo "::error::credentials survived"; exit 1; } || echo "no credentials left in the workspace"
+
       - name: File the ops dashboard's findings as issues
         continue-on-error: true
         env:
@@ -138,7 +178,7 @@ jobs:
             echo "::warning::the ops detector could not run; no findings filed"
             exit 0
           fi
-          uv run python scripts/file_ops_findings.py --repo "$GH_REPO" --findings /tmp/ops-findings.json
+          uv run python scripts/file_ops_findings.py --repo "$GH_REPO" --findings /tmp/ops-findings.json --app /tmp/app-health.json
 
       - name: Is anything actually stuck?
         id: detect
