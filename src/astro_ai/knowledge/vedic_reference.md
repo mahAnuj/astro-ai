@@ -2861,10 +2861,14 @@ read with `pypdf` in layout mode** (PDF pp. 485–486, printed pp. 473–474), s
 Rao citations below are *table, row and printed page*, not line numbers; the older
 line references elsewhere in this file (15966–16051) come from a `pdftotext`
 extraction this runner cannot reproduce. Raman's line numbers are for the djvu
-text above. **Not present, so every absence below is an absence against these two
-books only:** Raman's *Astrology for Beginners*, Johari, Goodwin, Cheiro, Kumar,
-Vasudev, Rao's *Lessons*, and *Muhurta Chintamani* (#914). `data/matching/` held
-only the Raman file.
+text above. **Also present in `data/` but unreadable to `fetch_corpus.py` and
+`corpus_search.py` (no `pdftotext`):** `Astrology-e-book-compressed.pdf` (Vasudev,
+164 pp) and `book1-for-CD.pdf` (Rao, *Lessons*, 122 pp). QA read both with `pypdf`
+and searched for griha pravesh, naming, vidyarambh, aksharabhyasa, shop, new business
+and first-letter syllable tables: **no rule for any of these events**. **Not
+present:** Raman's *Astrology for Beginners*, Johari, Goodwin, Cheiro, Kumar, and
+*Muhurta Chintamani* (#914). `data/matching/` held only the Raman file. So every
+absence below is against Raman, both Rao books and Vasudev, and nothing else.
 
 #### Griha Pravesh — Raman, "Entering a New House", Ch. XII, L4879–5018 (printed pp. 133–136); Rao Table 79 row "Entering a new house"
 
@@ -2877,9 +2881,21 @@ only the Raman file.
 | Month and season | Sun in Uttarayana, "Jupiter and Venus are strongly disposed" (L4926–4928); Vaisakha, Jyeshtha, Magha, Phalguna best, Karthika and Margasira neutral (L4971–4974) | — |
 | Other | not in advanced pregnancy (above 6 months) (L5016–5018); own Janma Rasi, Nakshatra or Lagna "highly beneficial" (L5012–5015) | — |
 
-**Raman names no Chaturmas, Kharmas, Dagdha, Panchak or Rahu Kaal rule here** (the
-season rule is Uttarayana and the lunar-month list above). Those are §29.10's
-UNSOURCED items and #1028's job.
+**Two checks the code runs for every event ARE sourced, and must not be read as
+unsourced.** *Nakshatra Panchaka* (Raman L1227–1235): "Beginning from the third
+quarter of Dhanishta and ending with the last part of Revati, the time is held to be
+highly unsuitable for any kind of auspicious work", and he names "house repairing or
+renovation" among the things to avoid; `_is_panchak` implements it and all four
+events set `check_panchak=True` (§29.9). And Raman's **numeric Panchaka**
+(L961–1040) says that for "very important ceremonies such as marriage, nuptials,
+entry into new houses" it "should be carefully looked into", and that "in elections
+bearing on housebuilding, avoid both Raja and Agni panchaka" (L1033–1037). The code
+does not implement the numeric Panchaka (no Raja, Agni, Chora, Roga or Mrityu check
+in `muhurat.py`), so that one is **sourced and unimplemented**.
+
+What Raman's house-entry passage does **not** name is a Chaturmas, Kharmas or Dagdha
+rule; those stay §29.10's UNSOURCED items and #1028's job. His Rahu Kalam table is
+elsewhere (L7318) and is not part of the house-entry passage.
 
 **Code vs books (`EVENT_RULES["griha_pravesh"]`, `muhurat.py` ~L693):**
 
@@ -2896,13 +2912,17 @@ UNSOURCED items and #1028's job.
 | good days Mon, Wed, Thu, Fri | **CORRECT** | both books |
 | avoid Saturday | **CONTESTED** | Raman: "recommended by some", with a theft risk; Rao does not list it. The code follows the stricter reading |
 | lunar-month list (Vaisakha, Jyeshtha, Magha, Phalguna) | **NOT IMPLEMENTED** | the code has no month-level credit |
-| `check_kharmas` blocks Sun in Dhanu and Meena | **UNSOURCED** | Raman asks only for Uttarayana; Meena falls inside it (#1028) |
+| `check_kharmas` blocks Sun in Dhanu and Meena | **UNSOURCED** | The Kharmas names are absent (§29.10, #1028), but Raman's own Uttarayana rule bears on it: he puts the northern course "between Capricorn and Gemini" (Upanayana, L2580–2581). Dhanu is outside that span, so his rule does exclude it, and also Karka to Vrischika, which the code allows. Meena is inside the span, so Raman gives no ground for blocking it |
 | `check_jupiter_combust` | **CONTESTED** | Raman says Jupiter and Venus "strongly disposed", not "not combust"; the code ignores Venus |
 
 #### Vidyarambh (Aksharabhyasa) — Raman Ch. XI "Commencing Education", L4207–4300 (printed pp. 114–117); Rao Table 79 row "Teaching alphabet"
 
-Raman's index lists "Alphabet (Aksharabhyasa)" and sends "Education, commencing"
-to the same pages (L7499–7504, L7913). He also says the Janma Nakshatra is
+Raman's index gives "Aksharabhyasa 62, See also Auspicious Ceremonies" and
+"Alphabet (Aksharabhyasa) 62, 22", and "Education, commencing, see Aksharabhyasa and
+Chapter XI" (L7499–7505, L7913–7915). The word "Aksharabhyasa" never appears in the
+text outside the index, so the link between the child's first alphabet and Chapter XI
+rests on that cross-reference alone, and Chapter XI covers education in general where
+Rao's row is specific to the alphabet. Raman also says the Janma Nakshatra is
 "favourable without exception" for "learning the alphabet" (L1085).
 
 | Anga | Raman | Rao Table 79 |
@@ -2919,6 +2939,7 @@ to the same pages (L7499–7504, L7913). He also says the Janma Nakshatra is
 | Rule in code | Verdict | Why |
 |---|---|---|
 | good tithis 2, 3, 5, 10, 11 | **CORRECT** | both books |
+| **Shashthi (6) and Saptami (7) missing from good** | **CONTESTED (omission)** | Raman calls the 6th "highly auspicious" for commencing education (L4245); Rao lists the 7th. Each is on one book only |
 | good tithi 12 (Dwadashi) | **CONTESTED** | Rao lists it; Raman's Ch. II list rejects the 12th (L802) and his education tithis stop at the 11th |
 | avoid 4, 8, 9, 14, Amavasya | **CORRECT** | Raman L4245–4247 |
 | **Purnima not avoided** | **WRONG (omission)** | Raman: "New and Full Moon days should be avoided"; Rao's row has no 15 |
@@ -2975,7 +2996,7 @@ for that:
 
 | Result | Nakshatras |
 |---|---|
-| **Same syllables** | Ashwini, Bharani, Rohini, Mrigashira, Punarvasu, Pushya, Ashlesha, Magha, Purva Phalguni, Uttara Phalguni, Chitra, Anuradha, Jyeshtha, Uttara Ashadha, Dhanishta, Shatabhisha, Purva Bhadrapada, Revati (18 of 27) |
+| **Clear match under Raman's scheme** | Ashwini, Bharani, Rohini, Mrigashira, Punarvasu, Pushya, Ashlesha, Magha, Purva Phalguni, Uttara Phalguni, Chitra, Anuradha, Jyeshtha, Uttara Ashadha, Dhanishta, Shatabhisha, Purva Bhadrapada, Revati (18 of 27). Of these, 15 need no mapping beyond the vowel spellings; **Purva Bhadrapada** (Tha/Thi read as Da/Di), **Revati** (Thay/Tho as De/Do) and **Uttara Ashadha** (Bay/Bo as Bhe/Bho) match only if Raman's `Th` means *D* and `B` means *Bh*. The same kind of mapping is what leaves Vishakha and Mula in the ambiguous row, so read the count as **15 clear, 3 more under that reading, 6 ambiguous, 3 different** |
 | **Different syllables** | **Shravana.** Raman: Ju, Jay, Jo, Gha. Code: Khi, Khu, Khe, Kho. Both sets circulate in practice; the book holds the first |
 | **Different or unreadable** | **Ardra** pada 3 (Raman "Jna", code "Ang"); **Uttara Bhadrapada** (Raman's pada 2 is OCR-garbled as "Syatn", pada 3 reads "Cha" where the code has "Jha") |
 | **Transliteration cannot settle it** | **Krittika** (Raman "Aa, Ec, U, A", code "A, I, U, E"); **Hasta** pada 4 (Raman "Dha", code "Tha"); **Swati** pada 4 (Raman "Tha", code "Ta"); **Vishakha** (Raman "Thi, Thu, Thay, Tho", code "Ti, Tu, Te, To"); **Mula** pada 3–4 (Raman "Ba, Bi", code "Bha, Bhi"); **Purva Ashadha** pada 1 and 3 (Raman "Bu … Bha", code "Bhu … Pha") |
@@ -2987,15 +3008,18 @@ other rows need a printed Devanagari source or a second book before anyone edits
 
 #### Business start / shop opening — UNSOURCED
 
-Neither book has a rule for **starting a business or opening a shop**. Table 79 has
-no such row. The nearest Raman material is for neighbouring acts:
+Neither book has a **tithi, nakshatra or weekday** rule for **starting a business or
+opening a shop**. Table 79 has no such row. The only direct business-start text is a
+Panchaka example and exception, and the nearest weekday material is for neighbouring
+acts:
 
+- **Starting a business, Panchaka** (L993–998, L1033–1037): his worked example is "A wants to start a business on a day…" and he says "when an election is to do with occupation, avoid Raja panchaka". It is a numeric check, which the code does not run.
 - **Buying for business** (L4117–4122, printed p. 112): "Thursday, the 10th lunar day and the constellation of Pushyami are the best. Tuesday should be completely rejected. Saturday is passable. Mercury, the 2nd lord and the 2nd house should all be fortified."
 - **Selling for profit** (L4135–4143): "Monday, Wednesday and Thursday are the best. While Friday is unpropitious, Saturday is middling. … Tuesday should be avoided."
 - **Pecuniary gain** (L4160–4167): "let there be Tarabala and Chandrabala and let the ascendant be fortified"; Moon and ascendant in fixed signs; Jupiter or Venus in an angle.
 - **Learning a trade** (L4361–4400): the planet that rules the vocation well placed; "Tuesday must be avoided".
 
-The code's business lists are therefore **UNSOURCED** — good tithis, good and avoid
+The code's business **tithi, nakshatra and weekday lists** are therefore **UNSOURCED** — good tithis, good and avoid
 nakshatras, `good_days` including **Sunday**, `peak_day: Wednesday`, and the Kharmas
 and Mercury-combustion checks. Raman's closest weekday evidence points at Thursday
 for buying and Monday, Wednesday, Thursday for selling, and says nothing for Sunday.
