@@ -27,10 +27,17 @@ MUTATIONS = [
      "scripts/watch_app_health.py",
      '    if int(app.get("calls") or 0) == 0:\n',
      '    if False:\n',
-     "test_the_real_view_with_an_unreachable_bucket_clears_nothing"),
+     # Not test_the_real_view_with_an_unreachable_bucket_clears_nothing: the
+     # probe catches that path first, so it stays green with this guard gone.
+     "test_zero_calls_read_is_unreadable_not_a_clean_bill"),
     ("app watch (QA on #1002): the bucket probe is ignored, so local numbers pass as production",
      "scripts/watch_app_health.py",
      "    if not readable:\n",
      "    if False:\n",
      "test_local_numbers_behind_an_unreadable_bucket_are_never_reported_as_production"),
+    ("app watch (QA on #1002, round 2): only llm_stats is probed, so a 403 on events/ reads as 0 errors",
+     "scripts/watch_app_health.py",
+     '_PROBED_PREFIXES = ("llm_stats", "events")\n',
+     '_PROBED_PREFIXES = ("llm_stats",)\n',
+     "test_a_half_readable_bucket_is_unreadable_and_clears_nothing"),
 ]

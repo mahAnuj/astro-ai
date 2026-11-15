@@ -44,6 +44,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 MIN_CALLS = 30
 
 
+# Every bucket prefix `ops_data._app_view` reads: llm_stats.usage_summary/
+# range_summary read `llm_stats/<day>.json` (llm_stats.py:267) and
+# events.error_breakdown reads `events/<day>.json` (events._key_for). Probing
+# one is not probing both -- see probe_bucket().
+_PROBED_PREFIXES = ("llm_stats", "events")
+
+
 def probe_bucket() -> tuple[bool, str]:
     """Can this job actually read production? Checked directly, not inferred.
 
@@ -51,9 +58,15 @@ def probe_bucket() -> tuple[bool, str]:
     missing credential and returns None, and llm_stats/events then fall back to
     a LOCAL directory. Run with no credentials on a machine that had local
     stats, the watcher reported that machine's numbers as production's
-    ("ok=True ... findings=[app-errors, ...]"). So read yesterday's
-    llm_stats/<date>.json from the bucket itself: a site with traffic always
-    has one, and any failure here means nothing below can be trusted."""
+    ("ok=True ... findings=[app-errors, ...]"). So read yesterday's blob under
+    EVERY prefix the view reads, from the bucket itself: a site with traffic
+    always has both, and any failure here means nothing below can be trusted.
+
+    The second QA round on #1002 is why it is every prefix and not just
+    llm_stats: with llm_stats/* readable and events/* returning 403, the view
+    read 500 calls and 0 errors (the events read swallowed to None), reported
+    ok:true, and the filer told the open `app-errors` issue it "did not fire".
+    A half-readable bucket is an unreadable one, and the reason names the half."""
     from datetime import date, timedelta
     from astro_ai import storage
     name = os.environ.get("BHAGYA_STORAGE_BUCKET", "")
@@ -62,11 +75,14 @@ def probe_bucket() -> tuple[bool, str]:
     client = storage._client()
     if client is None:
         return False, "no GCS client (credentials missing or rejected)"
-    key = f"llm_stats/{(date.today() - timedelta(days=1)).isoformat()}.json"
-    try:
-        client.bucket(name).blob(key).download_as_text()
-    except Exception as exc:  # noqa: BLE001 - any failure is "could not read"
-        return False, f"could not read gs://{name}/{key} ({exc.__class__.__name__})"
+    day = (date.today() - timedelta(days=1)).isoformat()
+    bucket = client.bucket(name)
+    for prefix in _PROBED_PREFIXES:
+        key = f"{prefix}/{day}.json"
+        try:
+            bucket.blob(key).download_as_text()
+        except Exception as exc:  # noqa: BLE001 - any failure is "could not read"
+            return False, f"could not read gs://{name}/{key} ({exc.__class__.__name__})"
     return True, ""
 
 

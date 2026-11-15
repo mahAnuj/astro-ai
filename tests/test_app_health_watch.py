@@ -162,3 +162,44 @@ def test_local_numbers_behind_an_unreadable_bucket_are_never_reported_as_product
                          probe=lambda: (False, "could not read gs://x/llm_stats/yesterday.json"))
     assert doc["ok"] is False and doc["findings"] == []
     assert "could not read" in doc["why"]
+
+
+class _HalfReadableClient:
+    """llm_stats/* reads; events/* answers 403 -- the second QA round's bucket."""
+
+    def __init__(self):
+        self.read = []
+
+    def bucket(self, name):
+        client = self
+
+        class _Bucket:
+            def blob(self, key):
+                class _Blob:
+                    def download_as_text(self):
+                        client.read.append(key)
+                        if key.startswith("events/"):
+                            from google.api_core.exceptions import Forbidden
+                            raise Forbidden(f"GET gs://{name}/{key}: 403")
+                        return "{}"
+                return _Blob()
+        return _Bucket()
+
+
+def test_a_half_readable_bucket_is_unreadable_and_clears_nothing(tmp_path, monkeypatch):
+    # QA on #1002, round 2: llm_stats readable, events 403. The view then reads
+    # real calls and ZERO errors (the events read is swallowed), so without a
+    # probe of events/ this was ok:true and cleared the live app-errors issue.
+    from astro_ai import storage
+    client = _HalfReadableClient()
+    monkeypatch.setenv("BHAGYA_STORAGE_BUCKET", "shubhagya-cache-us")
+    monkeypatch.setattr(storage, "_client", lambda: client)
+    healthy = view_of({1: {"calls": 500, "errors": 0, "error_rate": 0.0, "exhausted": 0}, 7: {}})
+    doc = watch.evaluate(healthy, probe=watch.probe_bucket)
+    assert doc["ok"] is False and doc["findings"] == [], doc
+    assert "events/" in doc["why"] and "Forbidden" in doc["why"], doc["why"]
+    assert any(k.startswith("llm_stats/") for k in client.read), "llm_stats was probed too"
+    gh = _run_filer(tmp_path, doc, existing_kinds=("app-errors",))
+    issue = next(iter(gh.issues.values()))
+    assert not any("did not fire" in c for c in issue["comments"]), "unreadable is not cleared"
+    assert len(gh.issues) == 1
