@@ -519,7 +519,9 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "rules_summary": [
             "Guru (Jupiter) uncombust — marriage karaka must be visible",
             "Shukra (Venus) uncombust — marriage karaka must be visible",
-            "Favourable tithi: 2, 3, 5, 7, 10, 11, 12, 13 (avoid 4, 8, 9, 14, Amavasya, Purnima)",
+            "Favourable tithi: 2, 3, 5, 7, 10, 11, 13 (avoid 4, 8, 9, 14, Amavasya, Purnima); the 11th-13th are excluded in the waning half, below",
+            "Wedding dates on the 11th, 12th or 13th tithi of the waning (Krishna paksha) half are excluded, following B.V. Raman's Muhurtha, which rejects the dark-half 11th through New Moon for marriage",
+            "The bright-half 12th is not credited: Rao's wedding guideline table lists it, Raman's rejects it, so the finder gives it no credit either way",
             "Favourable nakshatra: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati",
             "No Panchak (Moon in Dhanishta latter half through Revati)",
             "No Chaturmas (Devshayani → Devuthani Ekadashi ≈ mid-July to mid-November)",
@@ -657,10 +659,17 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
 EVENT_RULES: dict[str, dict[str, Any]] = {
     "vivah": {
         "label": "Vivah (Wedding)",
+        # No Dwadashi (#1022): Rao's Table 79 Wedding row lists the 12th but Raman's marriage
+        # chapter rejects it, so it is contested and gets no credit (and no exclusion) here.
         "good_tithis": {"Dwitiya", "Tritiya", "Panchami", "Saptami", "Dashami",
-                         "Ekadashi", "Dwadashi", "Trayodashi"},
+                         "Ekadashi", "Trayodashi"},
         "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",
                           "Amavasya", "Purnima"},
+        # Krishna-paksha only (#1022): Raman's marriage chapter, as knowledge/vedic_reference.md
+        # section 29.9 paraphrases it, rejects "the 11th of the dark half through New Moon"
+        # and names the bright-half 11th and 13th among the best. Read by score_event via
+        # .get(), so no other event has this key and none changes.
+        "avoid_krishna_tithis": {"Ekadashi", "Dwadashi", "Trayodashi"},
         "good_nakshatras": {"Rohini", "Mrigashira", "Magha", "Uttara Phalguni",
                              "Hasta", "Swati", "Anuradha", "Mula",
                              "Uttara Ashadha", "Uttara Bhadrapada", "Revati"},
@@ -1347,6 +1356,18 @@ _NAMKARAN_TUESDAY_EXCEPTION = (
     "birth; this finder has no birth date, so it cannot apply that exception."
 )
 
+# Vivah only (#1022). User-facing reason for a Krishna-paksha tithi in
+# EVENT_RULES['vivah']['avoid_krishna_tithis']. It names Raman and the dark half and claims
+# nothing about the other waning-half tithis: the knowledge file records Raman's marriage
+# chapter as rejecting the dark-half 11th "through New Moon" and calling the bright-half
+# 2nd, 3rd, 5th, 7th, 10th, 11th and 13th best, and it records nothing for the dark-half
+# 2nd-10th, which keep the finder's own credit. Not worded as a quote: it is a paraphrase.
+_VIVAH_KRISHNA_TITHI_REASON = (
+    "Krishna-paksha (dark half, waning Moon) {tithi}: B.V. Raman's Muhurtha, marriage "
+    "chapter, rejects the dark-half 11th through New Moon for a wedding. The bright-half "
+    "{tithi} is not excluded."
+)
+
 
 def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
                 is_panchak: bool, is_chaturmas: bool,
@@ -1363,7 +1384,7 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
       3. Panchak, Chaturmas, Kharmas, Dagdha (per-event flag)
       4. Atiganda / Shula / Ganda / Vyatipata / Vaidhriti Nitya Yogas — universal
       5. Combust karaka (per-event flag)
-      6. Avoid-nakshatra, avoid-tithi
+      6. Avoid-nakshatra, avoid-tithi, and the paksha-aware avoid_krishna_tithis (Vivah, #1022)
       7. Tuesday (_HARD_AVOID_WEEKDAYS) — Raman, see the constant
 
     UNIVERSAL BOOSTERS override caution/acceptable → excellent:
@@ -1426,6 +1447,13 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
     if panchang.tithi_name in rules["avoid_tithis"]:
         flags.append("avoid_tithi")
         return "avoid", f"Avoid tithi ({panchang.tithi_name})", tuple(flags)
+    # Paksha-aware tithi exclusion (#1022). `avoid_tithis` is keyed on the NAME alone, so
+    # it cannot say "dark half only". The event key is read with .get() and the paksha is
+    # read only after the name matches, so every other event (no key) is unaffected.
+    if (panchang.tithi_name in rules.get("avoid_krishna_tithis", ())
+            and panchang.tithi_paksha == "Krishna"):
+        flags.append("avoid_krishna_tithi")
+        return "avoid", _VIVAH_KRISHNA_TITHI_REASON.format(tithi=panchang.tithi_name), tuple(flags)
     # Last of the hard exclusions, and still ahead of the boosters below: they only
     # lift soft scores, so an Amrit/Sarvartha Siddhi Tuesday cannot reach them.
     if weekday_name in _HARD_AVOID_WEEKDAYS:
