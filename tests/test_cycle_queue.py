@@ -70,7 +70,8 @@ class FakeGh:
                              for c in self.comments
                              if c["on"] == n and c["body"].startswith("QA: "))
         if args[0] == "api" and "/pulls?state=open" in args[1]:
-            return "\n".join(json.dumps({"number": n, "ref": ref, "labels": [l for l in labs.split(",") if l]})
+            return "\n".join(json.dumps({"number": n, "ref": ref, "sha": self.heads.get(n, ""),
+                                         "labels": [l for l in labs.split(",") if l]})
                              for n, (ref, labs, _m) in self.open_prs.items())
         if args[0] == "api" and "/pulls/" in args[1] and args[-1] == ".mergeable":
             return self.open_prs[int(args[1].rsplit("/", 1)[1])][2] + "\n"
@@ -307,11 +308,34 @@ def test_an_unreadable_head_starts_the_round_rather_than_dropping_it():
     assert cq.stale_reason(broken, REPO, cq.pending(gh, REPO)[0]) is None
 
 
-def _issue_431(mergeable="true", ref="issue/431-prefix-row-known-shapes", pr_labels="qa-pass,qa:in-cycle"):
-    gh = FakeGh(labels={431: "bug,qa-pass,qa:in-cycle"},
+HEAD_694 = "6" * 40
+
+
+def _issue_431(mergeable="true", ref="issue/431-prefix-row-known-shapes", pr_labels="qa-pass,qa:in-cycle",
+               pass_at=HEAD_694):
+    gh = FakeGh(labels={431: "bug,qa-pass,qa:in-cycle"}, heads={694: HEAD_694},
                 open_prs={694: (ref, pr_labels, mergeable), 650: ("issue/43-other", "qa-pass", "true")})
     gh.add(entry("issue", 431))
+    if pass_at:
+        gh.add(f"QA: PASS — verified at `{pass_at}`", login="claude[bot]", on=694)
     return gh
+
+
+def test_an_ISSUE_entry_whose_PR_passed_an_OLDER_commit_is_still_started():
+    """2026-11-15, PR #1058: `qa-pass` from 274e42f, head 98f14fb with gates red.
+    red_gates queued the fix and this check dropped it twice as "waiting to
+    merge"; agent-merge refuses a stale pass, so nothing was waiting."""
+    gh = _issue_431(pass_at="2" * 40)
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls and car.calls[0][0] == "issue=431"
+
+
+def test_an_ISSUE_entry_whose_PR_has_no_PASS_comment_at_all_is_still_started():
+    gh = _issue_431(pass_at=None)
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls and car.calls[0][0] == "issue=431"
 
 
 def test_an_ISSUE_entry_whose_PR_has_passed_and_is_mergeable_is_dropped():
