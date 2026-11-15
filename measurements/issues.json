@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-15T00:45:37Z",
+  "generated_at": "2026-11-15T02:38:11Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 117,
+  "open": 118,
   "with_ask": 40,
   "by_area": {
-    "UNCLASSIFIED": 44,
+    "UNCLASSIFIED": 45,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -31,19 +31,35 @@
   },
   "by_type": {
     "untyped": 33,
-    "bug": 26,
+    "bug": 27,
     "enhancement": 24,
     "chore": 19,
     "correctness": 11,
     "design": 4
   },
   "by_priority": {
-    "unset": 86,
+    "unset": 87,
     "medium": 20,
     "high": 11
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1045,
+      "title": "Jupiter-in-10th guide: Pisces/Gemini/Virgo ascendant bullets (l.83-86) state career signatures unlabelled",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-15T02:37:24Z",
+      "updated": "2026-11-15T02:37:33Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1041,
       "title": "knowledge: vedic_reference.md 29.9 and the 29 closing note still say the nitya-yoga blocker is 'narrower than its source' (stale after #1023)",
@@ -68,10 +84,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-14T16:57:56Z",
-      "updated": "2026-11-14T20:19:51Z",
+      "updated": "2026-11-15T02:37:22Z",
       "blocked": false,
       "needs_evidence": false
     },
