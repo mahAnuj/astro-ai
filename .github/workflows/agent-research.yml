@@ -20,6 +20,9 @@ on:
       domain:
         description: "astrology | numerology | both (default both)"
         required: false
+      issues:
+        description: "optional: comma-separated issue numbers to work instead of the built queue"
+        required: false
 
 concurrency:
   group: agent-research
@@ -93,6 +96,19 @@ jobs:
       # data/ is gitignored, so a CI checkout holds ONE of the eight registered
       # books. An absence measured against a partial corpus is worthless, which
       # is why the agent is told to state which books it actually had.
+      # #1030: WHAT to look up in the books is read from the issues each run,
+      # not typed into this file. An issue joins the queue by carrying
+      # `skill:knowledge-integrator` or by its Evidence Block saying
+      # `corpus: [UNSOURCED]`; see scripts/research_queue.py for the order.
+      - name: Build the research queue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ONLY: ${{ inputs.issues }}
+        run: |
+          uv run python scripts/research_queue.py --repo "${{ github.repository }}" --only "$ONLY" \
+            | tee /tmp/research-queue.md
+          cat /tmp/research-queue.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Which books are present
         run: |
           {
@@ -138,12 +154,15 @@ jobs:
             - numerology.py uses Johari's all-digits reduction (see its header),
               not Goodwin's. Goodwin stays contrast-only.
 
-            FIRST, muhurat (owner 2026-11-14: muhurat search is the site's top
-            organic landing; #1017): #1027 (Griha Pravesh, Vidyarambh, Business,
-            Namkaran lists), #1029 (Rahu Kaal, eclipse, Abhijit precedence,
-            Magha/Mula), #1028 (Chaturmas, Kharmas, Dagdha, Choghadiya...).
-            Comment each result on its issue; the code fixes are Engineering's.
-            Then the standing queue: #177/#178 (Ashtakoota has no source in the
+            YOUR WORK LIST IS /tmp/research-queue.md, built this run from open
+            issues (labelled skill:knowledge-integrator, or corpus: [UNSOURCED]).
+            Work it top-down. For each issue: extract what the books say into
+            knowledge/*.md with line ranges, or state the absence naming the
+            books present, and COMMENT the result on that issue. The code fixes
+            are Engineering's. When you find a new rule that needs a source, file
+            an issue with corpus: [UNSOURCED] -- that is how the next run gets it.
+            Only if the list is empty, use the standing queue below.
+            Standing queue (fallback): #177/#178 (Ashtakoota has no source in the
             repo at all), #175, #209, #211, #219, #163, #201, #200, #191, #230.
 
             Classify every finding WRONG / UNSOURCED / CONTESTED / CORRECT.

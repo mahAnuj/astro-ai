@@ -52,9 +52,3 @@ def test_no_book_is_ever_committed():
         any(line.strip() in ("data", "data/", "/data/", "/data") for line in (ROOT / ".gitignore").read_text().splitlines())
     assert "git add data" not in WF.read_text()
 
-
-def test_the_muhurat_sourcing_issues_lead_the_queue():
-    text = WF.read_text()
-    first = text.index("#1027")
-    assert first < text.index("#177/#178"), "the muhurat sourcing work is named before the old queue"
-    assert "#1028" in text and "#1029" in text
