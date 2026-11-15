@@ -1,52 +1,138 @@
 {
-  "generated_at": "2026-11-15T02:38:11Z",
+  "generated_at": "2026-11-15T10:59:30Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 118,
-  "with_ask": 40,
+  "open": 140,
+  "with_ask": 47,
   "by_area": {
-    "UNCLASSIFIED": 45,
+    "UNCLASSIFIED": 52,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
+    "CORPUS": 6,
     "OPS": 6,
-    "CORPUS": 5,
-    "MUHURAT": 4,
+    "LEARN": 4,
+    "SEO": 4,
+    "ANALYTICS": 4,
+    "NUMEROLOGY": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "PRIVACY": 2,
+    "ASK": 2,
     "MEASURE": 2,
     "MATCHING": 2,
-    "NUMEROLOGY": 2,
-    "SEO": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "KUNDLI": 1,
+    "SADE-SATI": 1,
+    "GOCHAR-2026": 1,
     "KNOWLEDGE": 1,
+    "MUHURAT": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
-    "ASK": 1,
     "UI": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
+    "bug": 40,
     "untyped": 33,
-    "bug": 27,
-    "enhancement": 24,
+    "enhancement": 32,
     "chore": 19,
-    "correctness": 11,
+    "correctness": 12,
     "design": 4
   },
   "by_priority": {
-    "unset": 87,
+    "unset": 103,
     "medium": 20,
-    "high": 11
+    "high": 17
   },
   "blocked": 7,
   "rows": [
     {
-      "number": 1045,
-      "title": "Jupiter-in-10th guide: Pisces/Gemini/Virgo ascendant bullets (l.83-86) state career signatures unlabelled",
+      "number": 1093,
+      "title": "privacy: /unsubscribe?email=&token= sends the subscriber's address to GA4 in page_location",
+      "ask": "Add 'email' and 'token' to PII_PARAMS in static/analytics.js (one line), add a Node-driven test next to the #1066 ones in tests/test_analytics_ask_location.py",
+      "area": "PRIVACY",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "severity:high"
+      ],
+      "created": "2026-11-15T10:58:04Z",
+      "updated": "2026-11-15T10:58:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1089,
+      "title": "numerology: a mixed-script name (\"Anuj महाजन\") is silently scored on its Latin words only and shown as the whole-name reading",
+      "ask": "",
+      "area": "NUMEROLOGY",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-15T10:31:11Z",
+      "updated": "2026-11-15T10:31:11Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1088,
+      "title": "kundli: an LLM failure withholds the whole computed chart; /kundli returns a 503 error page with no lagna, planets, dasha or doshas",
+      "ask": "",
+      "area": "KUNDLI",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high"
+      ],
+      "created": "2026-11-15T10:31:10Z",
+      "updated": "2026-11-15T10:31:54Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1087,
+      "title": "ask: /ask?q= renders a silent blank page (question echoed, no answer, no notice) whenever the answer is not in that instance's SQLite: second instance, any deploy, or a bookmarked/shared link",
+      "ask": "",
+      "area": "ASK",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high"
+      ],
+      "created": "2026-11-15T10:31:09Z",
+      "updated": "2026-11-15T10:31:55Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1086,
+      "title": "corpus: knowledge/ contradicts itself on Rahu's exaltation (Taurus vs Gemini) and Saturn's dig bala (10th vs 7th)",
+      "ask": "Find each rule in the held books (Rao, Integrated Approach and Lessons; Raman; Vasudev) and cite line ranges.",
+      "area": "CORPUS",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "skill:knowledge-integrator",
+        "astrology-correctness",
+        "chore"
+      ],
+      "created": "2026-11-15T10:27:01Z",
+      "updated": "2026-11-15T10:27:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1085,
+      "title": "7th-lord-placement: \"own house is the strongest possible placement\" contradicts the dignity ladder (exaltation is peak)",
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
@@ -55,8 +141,390 @@
         "bug",
         "astrology-correctness"
       ],
-      "created": "2026-11-15T02:37:24Z",
-      "updated": "2026-11-15T02:37:33Z",
+      "created": "2026-11-15T10:25:51Z",
+      "updated": "2026-11-15T10:25:51Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1084,
+      "title": "rahu-mahadasha-career-problems: phase lengths 8y/5y should be 9.45y/3.45y; Rahu \"combust\" and \"Sagittarius exaltation\" contradict the corpus",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-15T10:25:50Z",
+      "updated": "2026-11-15T10:25:50Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1083,
+      "title": "10th-lord-in-6th: \"Jupiter debilitated in Scorpio\" is wrong (debilitated in Capricorn); five unsourced \"classical\" attributions",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-15T10:25:50Z",
+      "updated": "2026-11-15T10:25:50Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1082,
+      "title": "career-during-sade-sati: \"Classical tradition explicitly notes\" own/exalted/kendra Saturn, but the source's condition is lagna lord or yogakaraka",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-15T10:25:49Z",
+      "updated": "2026-11-15T10:25:49Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1081,
+      "title": "sade-sati: first Sade Sati \"typically at ages 27-35\" is impossible (always starts before ~23); Phaladeepika/BPHS citations to books not held",
+      "ask": "",
+      "area": "SADE-SATI",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-15T10:25:48Z",
+      "updated": "2026-11-15T10:26:58Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1080,
+      "title": "debilitated-sun-career: calls Sun in the 10th \"most classically difficult\" though the corpus gives Sun digbala there; remedies labelled classical are unsourced",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-15T10:25:47Z",
+      "updated": "2026-11-15T10:25:47Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1079,
+      "title": "gochar-2026: Mars-in-Taurus, Mercury-retrograde and Rahu-shift dates off by 9 days to 4 months; 6 per-rashi readings invert the Gochara table",
+      "ask": "",
+      "area": "GOCHAR-2026",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-15T10:25:46Z",
+      "updated": "2026-11-15T10:26:57Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1076,
+      "title": "seo investigation: /matching fell from position 4.2 (321 impr) to 7.8 (106) — date the onset with --page-daily before changing anything (#508, #953)",
+      "ask": "This needs the GSC credential, which today only the analyst job holds.",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo"
+      ],
+      "created": "2026-11-15T10:19:17Z",
+      "updated": "2026-11-15T10:19:17Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1075,
+      "title": "learn: rahu-mahadasha-ketu-antardasha — surface the 'effects' and 'remedies' intents (171 query impr at pos 8.9) on the top page without touching what ranks",
+      "ask": "",
+      "area": "LEARN",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "content"
+      ],
+      "created": "2026-11-15T10:19:16Z",
+      "updated": "2026-11-15T10:19:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1074,
+      "title": "seo: /panchang/{date} titles say \"Today's Panchang\" on every non-today date and the description carries no values — put the computed tithi/nakshatra/Rahu Kaal in the snippet",
+      "ask": "",
+      "area": "SEO",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo"
+      ],
+      "created": "2026-11-15T10:19:15Z",
+      "updated": "2026-11-15T10:19:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1073,
+      "title": "learn: jupiter-in-10th-house-career lacks Jupiter-in-Pisces/Sagittarius, aspect and marriage-timing answers for its long tail (280 query impr at pos 9.2) — content, not title",
+      "ask": "",
+      "area": "LEARN",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "content"
+      ],
+      "created": "2026-11-15T10:19:14Z",
+      "updated": "2026-11-15T10:19:14Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1072,
+      "title": "learn: answer 'which mahadasha is best for career' (33 impr, pos 9.2-9.8) as a section of vimshottari-dasha-explained, not a new article",
+      "ask": "",
+      "area": "LEARN",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "content"
+      ],
+      "created": "2026-11-15T10:19:14Z",
+      "updated": "2026-11-15T10:19:14Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1071,
+      "title": "learn: write gochar-2027-planetary-transits before January — the 2026 sibling has 1,627 impressions at position 5.7 (swisseph-computed dates)",
+      "ask": "",
+      "area": "LEARN",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "content"
+      ],
+      "created": "2026-11-15T10:19:13Z",
+      "updated": "2026-11-15T10:19:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1070,
+      "title": "analytics: instrument the core funnels",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "enhancement",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "priority:high"
+      ],
+      "created": "2026-11-15T10:14:10Z",
+      "updated": "2026-11-15T10:38:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1069,
+      "title": "analytics: feature_view and user_identified fire only on full loads under hx-boost; user_identified is 44% of code-sent events; languageSwitched/pwaInstalled never called",
+      "ask": "Drop feature_view.",
+      "area": "ANALYTICS",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "severity:low"
+      ],
+      "created": "2026-11-15T10:14:10Z",
+      "updated": "2026-11-15T10:14:10Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1068,
+      "title": "analytics: kundli_generated and ask_answered fire on every re-render (/kundli revisit, /r/ snapshot, /ask?q= reload), not on completion",
+      "ask": "Keep the event names, so the history stays comparable, and record the semantic change date in docs/decisions/.",
+      "area": "ANALYTICS",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "severity:medium"
+      ],
+      "created": "2026-11-15T10:14:09Z",
+      "updated": "2026-11-15T10:14:09Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1067,
+      "title": "analytics: kundli_generated, ask_answered and dasha_deep_dive_viewed throw 'Analytics is not defined' on full page loads (inline script runs before deferred analytics.js)",
+      "ask": "Template: <div hidden data-analytics-event=\"kundli_generated\" data-analytics-params='{\"lang\":\"en\"}'></div>.",
+      "area": "ANALYTICS",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "severity:medium"
+      ],
+      "created": "2026-11-15T10:14:08Z",
+      "updated": "2026-11-15T10:14:08Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1066,
+      "title": "privacy: /panchang?city= prefilled with the saved birth place is sent to GA4 as page_location (stripQ strips only q)",
+      "ask": "In analytics.js, generalise stripQ into a strip-list: q and city.",
+      "area": "PRIVACY",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "severity:high",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-15T10:14:07Z",
+      "updated": "2026-11-15T10:58:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1065,
+      "title": "seo: track index status per sitemap URL (URL Inspection API), flag pages changed after Google's last crawl, and list which to request indexing for",
+      "ask": "",
+      "area": "SEO",
+      "type": "enhancement",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "seo",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-11-15T10:10:28Z",
+      "updated": "2026-11-15T10:10:28Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1062,
+      "title": "Namkaran first-letter table: Raman's Appendix holds it, the code says no book does, and Shravana differs (#1027)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-15T09:04:12Z",
+      "updated": "2026-11-15T09:04:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1061,
+      "title": "Griha Pravesh rules: Hasta credited though neither book lists it, Uttara Bhadrapada missing (#1027)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-15T09:04:11Z",
+      "updated": "2026-11-15T10:05:00Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1060,
+      "title": "Namkaran rules: Dwadashi credited though Raman rejects it, Dhanishtha/Satabhisha missing, and the '11th day per Grihya Sutras' copy has no source (#1027)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-15T09:04:10Z",
+      "updated": "2026-11-15T10:10:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1059,
+      "title": "Vidyarambh rules: Ardra avoided though both books call it beneficial, Purnima not avoided, Thursday ranked above Raman's Wednesday (#1027)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-15T09:04:09Z",
+      "updated": "2026-11-15T10:05:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1056,
+      "title": "learn muhurat articles (vivah-muhurat-2027, griha-pravesh-muhurat-2026-2027) still call unsourced rules classical and credit Grihya Sutra / Padma Purana",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness",
+        "qa-pass",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-15T07:17:29Z",
+      "updated": "2026-11-15T10:39:19Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -72,25 +540,6 @@
       ],
       "created": "2026-11-14T23:30:53Z",
       "updated": "2026-11-14T23:30:53Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1036,
-      "title": "Jupiter-in-10th guide: 'classical' wording left at l.30 and l.97, and the registry FAQ's unlabelled career signatures (residue of #1032)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-14T16:57:56Z",
-      "updated": "2026-11-15T02:37:22Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -159,10 +608,13 @@
         "skill:knowledge-integrator",
         "layer:data",
         "astrology-correctness",
-        "chore"
+        "chore",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-14T13:51:30Z",
-      "updated": "2026-11-14T13:51:30Z",
+      "updated": "2026-11-15T09:32:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -199,86 +651,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1024,
-      "title": "muhurat pages call Chaturmas, Kharmas, Dagdha, eclipse, Sarvartha/Ravi and Choghadiya 'classical' — none is in knowledge/ (UNSOURCED)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness"
-      ],
-      "created": "2026-11-14T13:15:44Z",
-      "updated": "2026-11-14T13:15:44Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1022,
-      "title": "muhurat Vivah: dark-half Ekadashi-Trayodashi score as 'good tithi' — Raman's marriage rule rejects them (WRONG; 12th CONTESTED)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness"
-      ],
-      "created": "2026-11-14T13:15:38Z",
-      "updated": "2026-11-14T13:15:38Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1020,
-      "title": "muhurat: tithi read at sunrise but nakshatra/yoga/Panchak at noon — 35 ratings judge angas that never coexist (WRONG, internal)",
-      "ask": "",
-      "area": "MUHURAT",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness"
-      ],
-      "created": "2026-11-14T13:15:33Z",
-      "updated": "2026-11-14T13:15:33Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1019,
-      "title": "muhurat: Bhadra window starts up to 3h late (3-hourly sampling) — daytime Vishti shown as clear on 49 of 136 days (WRONG)",
-      "ask": "",
-      "area": "MUHURAT",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness"
-      ],
-      "created": "2026-11-14T13:15:30Z",
-      "updated": "2026-11-14T13:15:30Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1018,
-      "title": "muhurat: _ECLIPSE_DATES 2028 lists two lunar eclipses that do not exist (Feb 12, Aug 6) and misses four real ones (WRONG)",
-      "ask": "",
-      "area": "MUHURAT",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness"
-      ],
-      "created": "2026-11-14T13:15:28Z",
-      "updated": "2026-11-14T13:15:28Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1017,
       "title": "Muhurat Finder: what \"the best results\" means — ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
       "ask": "",
@@ -289,7 +661,7 @@
         "enhancement"
       ],
       "created": "2026-11-14T13:09:28Z",
-      "updated": "2026-11-14T13:16:41Z",
+      "updated": "2026-11-15T10:15:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -367,7 +739,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-13T10:59:23Z",
-      "updated": "2026-11-13T15:58:23Z",
+      "updated": "2026-11-15T10:19:47Z",
       "blocked": false,
       "needs_evidence": false
     },
