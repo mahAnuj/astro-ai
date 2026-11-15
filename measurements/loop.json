@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-14T23:31:22Z",
+  "generated_at": "2026-11-15T00:45:29Z",
   "rows": [
     {
-      "owner_helped": null,
+      "owner_helped": false,
       "run": 43650379461,
       "workflow": "agent-work",
       "date": "2026-11-14",
@@ -12,8 +12,8 @@
       "minutes": 38.3,
       "issue": 1023,
       "pr": 1040,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked"
     },
@@ -6118,8 +6118,8 @@
     "days": 7,
     "cycles": 169,
     "minutes_by_outcome": {
-      "shipped": 2796.0,
-      "pr open": 38.3,
+      "shipped": 2834.3,
+      "pr open": 0.0,
       "judged": 431.0,
       "nothing": 49.9,
       "failed": 3.3,
@@ -6128,7 +6128,7 @@
     "minutes_total": 3318.5,
     "minutes_without_result": 53.2,
     "share_without_result": 0.016,
-    "shipped_prs": 83,
+    "shipped_prs": 84,
     "build_idle_hours": 121.7,
     "build_idle_share": 0.725
   }
