@@ -696,9 +696,16 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
                          "Ekadashi", "Trayodashi"},
         "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",
                           "Amavasya", "Purnima"},
+        # Nakshatras (#1061), knowledge/vedic_reference.md 29.13: Raman's house-entry chapter
+        # names Rohini, Mrigasira, Uttara Phalguni, Uttarashadha, Chitta and Uttarabhadra as the
+        # best and Anuradha and Revati as permissible; Rao's Table 79 row lists the same
+        # and omits Hasta. Hasta was credited here with no support in either book, so it
+        # is not credited now (it stays out of avoid_nakshatras: neither book names it as
+        # a bad one for this event, it is simply not on their lists). Dhanishta and
+        # Satabhisha are on Rao's row only, so they are contested and get no credit.
         "good_nakshatras": {"Rohini", "Mrigashira", "Uttara Phalguni",
-                             "Hasta", "Chitra", "Anuradha",
-                             "Uttara Ashadha", "Revati"},
+                             "Chitra", "Anuradha",
+                             "Uttara Ashadha", "Uttara Bhadrapada", "Revati"},
         "avoid_nakshatras": {"Bharani", "Krittika", "Ardra", "Ashlesha",
                               "Magha", "Jyeshtha", "Mula"},
         "good_days":  {"Monday", "Wednesday", "Thursday", "Friday"},
@@ -743,19 +750,29 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
     },
     "vidyarambh": {
         "label": "Vidyarambh (Starting Education)",
-        # Jupiter is karaka of learning — Jupiter's day (Thursday) is peak.
         "good_tithis": {"Dwitiya", "Tritiya", "Panchami", "Dashami",
                          "Ekadashi", "Dwadashi"},
+        # Purnima (#1059): Raman's commencing-education chapter says "New and Full Moon
+        # days should be avoided" (knowledge/vedic_reference.md 29.13); Amavasya was
+        # already here, Purnima was not.
         "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",
-                          "Amavasya"},
-        "good_nakshatras": {"Ashwini", "Rohini", "Mrigashira", "Punarvasu",
+                          "Amavasya", "Purnima"},
+        # Nakshatras (#1059): Ardra, Dhanishta and Satabhisha are on Raman's "most
+        # beneficial for commencing education" list and in Rao's Table 79 "Teaching
+        # alphabet" bracket. Ardra used to be AVOIDED here, which neither book supports.
+        "good_nakshatras": {"Ashwini", "Rohini", "Mrigashira", "Ardra", "Punarvasu",
                              "Pushya", "Hasta", "Chitra", "Swati",
-                             "Anuradha", "Shravana", "Revati"},
-        "avoid_nakshatras": {"Bharani", "Krittika", "Ardra", "Ashlesha",
+                             "Anuradha", "Shravana", "Dhanishta", "Shatabhisha",
+                             "Revati"},
+        "avoid_nakshatras": {"Bharani", "Krittika", "Ashlesha",
                               "Magha", "Jyeshtha", "Mula"},
-        # Thursday best (Guru's day) — reflect via boost in scoring.
         "good_days":  {"Wednesday", "Thursday", "Friday", "Monday"},
         "avoid_days": {"Tuesday", "Saturday", "Sunday"},
+        # THIS FINDER'S CONVENTION, not a sourced rule (#1059, 29.13): Jupiter is karaka
+        # of learning, so Guru's day gets the +1 peak bonus. Raman's one explicit best day
+        # for commencing education is "Wednesday morning" (provided the chart is otherwise
+        # well disposed); Thursday appears only inside a conditional Vidya Yoga, and Rao's
+        # row lists Mon, Wed, Thu, Fri without ranking them.
         "peak_day":   "Thursday",
         "check_panchak": True,
         "check_chaturmas": False,
