@@ -155,6 +155,19 @@ jobs:
             echo "- biggest page move: $(jq -r '.rows[0] | "\(.page) \(.impressions_prev) -> \(.impressions)"' /tmp/gsc-trend-page.json)"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # The busiest pages, ranked deterministically (owner, 2026-11-15: "look at
+      # what users are spending more time on and make sure that is absolutely
+      # working fine"). Written to /tmp/measure so the commit job carries it to
+      # measurements/verify-first.json, where scripts/research_queue.py hands it
+      # to the Research team. No model; a failure costs nothing but this file.
+      - name: Rank the pages to verify first
+        continue-on-error: true
+        run: |
+          mkdir -p /tmp/measure
+          uv run python scripts/verify_first.py --ga4 /tmp/ga4.json --gsc /tmp/gsc-all.json \
+            --out /tmp/measure/verify-first.json \
+            && cp /tmp/measure/verify-first.json /tmp/verify-first.json
+
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -170,6 +183,9 @@ jobs:
               /tmp/gsc-trend-page.json   per-page change, this window vs the previous one
               /tmp/gsc-trend-query.json  per-query change, this window vs the previous one
               /tmp/ga4-events.json       GA4 event counts incl. cta_click (#782); may be absent
+              /tmp/verify-first.json     the busiest pages by engaged sessions, with their
+                                         impressions and serving module; may be absent
+              /tmp/measure/llm-usage.json the app's LLM calls, cache hits, tokens per route
             All eight are written by the fetch step above (the events file only when its
             export succeeded; absent means not measured, never zero). Until 2026-11-06 this list
             named only the first three, and runs reported decay as "not determinable"
@@ -207,9 +223,19 @@ jobs:
                working — #253 served a stale stylesheet for weeks and #266 fails
                intermittently under the Groq TPM ceiling. Traffic to a broken page is
                not engagement.
-            4. File issues only for findings that need action, with an Evidence Block.
+            4. THE OWNER'S LEVERS, every run (owner, 2026-11-15: "the objective is to
+               increase the user-base ... the things I am asking manually are important
+               levers"). Follow the "Levers" section of analyst.md: a growth breakdown
+               against the previous window; where time is spent (verify-first.json);
+               errors per route (llm-usage.json plus `gh run list --workflow
+               verify-production.yml`); search demand with no page and time-bound
+               content (festival dates only from festivals.py); index status when
+               measurements/index-status.json exists; and measurement gaps. A gap you
+               cannot measure that also appears in the last three
+               measurements/<date>.md reports becomes ONE issue, if none is open.
+            5. File issues only for findings that need action, with an Evidence Block.
 
-            5. WRITE YOUR FULL REPORT TO /tmp/report.md. This is not optional.
+            6. WRITE YOUR FULL REPORT TO /tmp/report.md. This is not optional.
                In automation mode nothing you say reaches a human — the run log
                carries the prompt and the cost, not your reasoning. A report that
                exists only in your context did not happen, and an unattended loop

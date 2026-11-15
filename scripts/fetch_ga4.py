@@ -208,6 +208,15 @@ def events(args, start: str, end: str, bearer: str) -> int:
     return 0
 
 
+def _engagement(mv: list) -> dict:
+    """engaged_sessions and engagement_seconds (total userEngagementDuration),
+    or nothing if the response carried only the first four metrics."""
+    if len(mv) < 6:
+        return {}
+    return {"engaged_sessions": int(float(mv[4]["value"])),
+            "engagement_seconds": int(float(mv[5]["value"]))}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=28)
@@ -237,7 +246,11 @@ def main() -> int:
         "dimensions": [{"name": "landingPagePlusQueryString"},
                        {"name": "sessionDefaultChannelGroup"}],
         "metrics": [{"name": "sessions"}, {"name": "bounceRate"},
-                    {"name": "screenPageViewsPerSession"}, {"name": "activeUsers"}],
+                    {"name": "screenPageViewsPerSession"}, {"name": "activeUsers"},
+                    # Appended, never reordered: rows below read metrics by index.
+                    # The owner's "what are users spending time on" (2026-11-15)
+                    # was unanswerable because no export carried engagement time.
+                    {"name": "engagedSessions"}, {"name": "userEngagementDuration"}],
         "orderBys": [{"metric": {"metricName": "sessions"}, "desc": True}],
         # Each landing now splits into one row per channel group, so the old 100
         # would cover far fewer pages. Truncation is reported below, not assumed away.
@@ -256,7 +269,8 @@ def main() -> int:
          "sessions": int(r["metricValues"][0]["value"]),
          "bounce_rate": round(float(r["metricValues"][1]["value"]), 4),
          "pages_per_session": round(float(r["metricValues"][2]["value"]), 2),
-         "active_users": int(r["metricValues"][3]["value"])}
+         "active_users": int(r["metricValues"][3]["value"]),
+         **_engagement(r["metricValues"])}
         for r in data.get("rows", [])
     ]
     landing_count = len({r["landing"] for r in rows})

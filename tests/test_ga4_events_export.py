@@ -153,8 +153,11 @@ def test_the_default_and_daily_reports_keep_their_request_bodies(monkeypatch, ca
     run(monkeypatch, capsys, fake)
     assert [d["name"] for d in calls[0]["dimensions"]] == [
         "landingPagePlusQueryString", "sessionDefaultChannelGroup"]
+    # The first four keep their order (rows read them by index); engagement was
+    # appended 2026-11-15 so "where do users spend time" has a number.
     assert [m["name"] for m in calls[0]["metrics"]] == [
-        "sessions", "bounceRate", "screenPageViewsPerSession", "activeUsers"]
+        "sessions", "bounceRate", "screenPageViewsPerSession", "activeUsers",
+        "engagedSessions", "userEngagementDuration"]
     assert "dimensionFilter" not in calls[0]
     calls.clear()
     run(monkeypatch, capsys, fake, "--daily")

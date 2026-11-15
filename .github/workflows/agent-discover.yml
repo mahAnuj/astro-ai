@@ -113,6 +113,11 @@ jobs:
             Read it before forming a plan. Do not re-derive its conclusions, and
             do not contradict a measured finding without saying why.
 
+            Its "Search demand" and "Content opportunities" sections are YOUR inbox
+            (2026-11-15): for each item, file an issue with a full Evidence Block, or
+            write one line in your report saying why not. An item left silent is the
+            gap the owner had to fill by hand.
+
             Follow .claude/commands/discover.md exactly. In particular: the
             analyst's data first, then rivals by WebFetch, then social by
             WebSearch, then the corpus. File an issue ONLY if it carries a

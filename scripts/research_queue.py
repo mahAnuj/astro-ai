@@ -92,6 +92,31 @@ def build(gh: Runner, repo: str, only: list[int] | None = None, cap: int = CAP) 
     return picked[:cap]
 
 
+VERIFY_FIRST = Path(__file__).resolve().parent.parent / "measurements" / "verify-first.json"
+
+
+def verify_first_section(path: Path = VERIFY_FIRST, top: int = 5) -> str:
+    """The busiest pages, from scripts/verify_first.py (2026-11-15). Owner: "look
+    at what users are spending more time on and make sure that is absolutely
+    working fine ... 100% correctness". Absent file -> nothing, never an error."""
+    try:
+        doc = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return ""
+    rows = (doc.get("rows") or [])[:top]
+    if not rows:
+        return ""
+    win = doc.get("window") or ["?", "?"]
+    out = ["", f"## Verify first: the busiest pages ({win[0]}..{win[1]}, measurements/verify-first.json)", "",
+           "After the queue above: audit every astrological claim and rule these pages",
+           "show against knowledge/*.md, unless an issue from the last 30 days already",
+           "covers that page (search issues for its path). File one issue per page with defects.", ""]
+    for r in rows:
+        out.append(f"- {r['path']}: {r.get('engaged_sessions')} engaged sessions, "
+                   f"{r.get('gsc_impressions')} impressions; serves: {r.get('serves')}")
+    return "\n".join(out) + "\n"
+
+
 def render(picked: list[tuple[dict, str]], total_note: str = "") -> str:
     lines = ["## Research queue (built this run from open issues)", ""]
     if not picked:
@@ -129,7 +154,7 @@ def main(argv: list[str] | None = None, gh: Runner = run_gh) -> int:
     except (RuntimeError, ValueError) as exc:
         print(f"::error::could not read issues: {exc}")
         return 2
-    sys.stdout.write(render(picked))
+    sys.stdout.write(render(picked) + verify_first_section())
     return 0
 
 
