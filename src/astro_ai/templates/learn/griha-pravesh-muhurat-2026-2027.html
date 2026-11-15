@@ -78,7 +78,7 @@
 
 <ul>
   {# festival registry, Makar Sankranti 2027 = 2027-01-15 (verified); muhurat._kharmas_flag: date(2027,1,14) -> True, date(2027,1,15) -> False #}
-  {# find_candidates("griha_pravesh", "Delhi", date(2027,1,13), 10) -> 2027-01-15 "avoid" (panchak, Revati); 2027-01-16 "avoid" (avoid_tithi); 2027-01-17 and 2027-01-18 "avoid" (avoid_nakshatra); 2027-01-19 Tuesday "avoid" (avoid_weekday, #1021); 2027-01-20 Wednesday "excellent" (Mrigashira, sarvartha_siddhi) #}
+  {# find_candidates("griha_pravesh", "Delhi", date(2027,1,13), 10) -> 2027-01-15 "avoid" (panchak, Revati); 2027-01-16 "avoid" (avoid_tithi); 2027-01-17 "avoid" (avoid_nakshatra); 2027-01-18 "avoid" (dagdha: Monday + Ekadashi at the finder's noon reading, #1020); 2027-01-19 Tuesday "avoid" (avoid_weekday, #1021); 2027-01-20 Wednesday "excellent" (Mrigashira, sarvartha_siddhi) #}
   <li><strong>Makar Sankranti — Friday, 15 Jan 2027</strong> — the Sun enters Capricorn, the winter Kharmas lifts, and the day before it is the last restricted one. Lifting Kharmas is not the same as being bookable, though: the sankranti falls under Revati inside a Panchak run, and the days straight after it carry avoid tithis and nakshatras. The finder's first usable date comes the following week, the Wednesday of 19-20 Jan 2027 — Mrigashira with Sarvartha Siddhi Yoga. The Tuesday of that pair (Rohini) is excluded as a Tuesday.</li>
 </ul>
 
@@ -91,10 +91,10 @@
   <li><strong>Meena Sankranti — Monday, 15 Mar 2027</strong> — the Sun enters Pisces at 07:00 IST, Meenmas Kharmas begins, and the winter window shuts.</li>
   {# Drik Panchang, Mesha Sankranti 2027 = 2027-04-14, ingress 15:28 IST (read 2026-08-08); muhurat._kharmas_flag(date(2027,4,14)) -> (True, "Meenmas ...") because the sample is taken at midday, before the 15:28 ingress #}
   <li><strong>Mesha Sankranti — Wednesday, 14 Apr 2027</strong> — the Sun enters Aries, but only at 15:28 IST. See the convention note below before you treat this as a usable date.</li>
-  {# find_candidates("griha_pravesh", "Delhi", date(2027,4,11), 6) -> 2027-04-14 "avoid" (kharmas); 2027-04-15 "avoid" (avoid_nakshatra, Ashlesha) — Kharmas gone, nakshatra still blocking; festival registry, Ram Navami 2027 = 2027-04-15 (verified, Chaitra Shukla Navami) #}
+  {# find_candidates("griha_pravesh", "Delhi", date(2027,4,11), 6) -> 2027-04-14 "avoid" (kharmas); 2027-04-15 "avoid" (nitya_yoga_block; Ashlesha is also in the avoid list) — Kharmas gone, still blocked; festival registry, Ram Navami 2027 = 2027-04-15 (verified, Chaitra Shukla Navami) #}
   <li>The first day free of Kharmas is <strong>Thursday, 15 Apr 2027</strong>, which is Ram Navami — though Ashlesha nakshatra still rules that day out for Griha Pravesh on criterion 2.</li>
-  {# find_candidates("griha_pravesh", "Delhi", date(2027,4,14), 8) -> 2027-04-19 Monday, rating "excellent", Hasta, Shukla Trayodashi #}
-  <li>The first date the finder rates excellent falls in the third week of April 2027 — Hasta nakshatra, Shukla Trayodashi, on a Monday.</li>
+  {# find_candidates("griha_pravesh", "Delhi", date(2027,4,14), 8) -> 2027-04-18 Sunday, rating "excellent", Uttara Phalguni, Shukla Trayodashi, boosters Sarvartha Siddhi + Ravi Yoga. Was 2027-04-19 (Hasta) until #1020: by noon, the instant the Hasta is read, that day's tithi is Chaturdashi, an avoid tithi, so it is now "avoid" #}
+  <li>The first date the finder rates excellent falls in the third week of April 2027 — Uttara Phalguni nakshatra, Shukla Trayodashi, on a Sunday.</li>
 </ul>
 
 <p><strong>Which convention this page uses.</strong> The Sun crosses into Aries after midday on Mesha Sankranti. Our muhurat finder samples the Sun's sign at midday of each date, so it reads that whole day as still Meenmas and clears the restriction from the following day. A panchang that fixes the sankranti at the instant of ingress will call that same afternoon clear; one that fixes it by the next sunrise agrees with us. All three are defensible readings of the same event, and this page follows the midday-sampling convention throughout, because that is what the finder linked below actually applies. If your family priest reckons by the ingress instant, expect a one-day difference on exactly these turn days — and follow your priest.</p>

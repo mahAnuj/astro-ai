@@ -51,8 +51,8 @@
   <li><strong>Mesha Sankranti</strong> — Wednesday, Apr 14, 2027. Meenmas ends: the ingress into Aries is at 15:28 IST, after the midday reading, so the 14th still counts as Meenmas and the season reopens on the 15th.</li>
 </ul>
 
-{# muhurat.find_candidates("vivah","Delhi",date(2027,4,12),10) run 2026-08-08 -> 12-14 Apr avoid (Meenmas), 15 Apr avoid (Ashlesha), 16 Apr excellent #}
-<p>Our own Muhurat Finder shows the same edge at Mesha Sankranti, Apr 14, 2027: it rejects that day for Meenmas, drops the Kharmas block from the 15th, and rates the 16th the first excellent wedding day of the spring season. Traditions that reckon from the ingress instant itself, rather than from a fixed sampling time, treat the hours after the transit as already clear — a convention difference, not an error on either side.</p>
+{# muhurat.find_candidates("vivah","Delhi",date(2027,4,12),10) re-run 2026-11-15 (#1020) -> 12 and 14 Apr avoid (kharmas), 13/15/16 Apr avoid (nitya_yoga_block), 17 Apr avoid (avoid_nakshatra), 18 Apr Sunday excellent (Uttara Phalguni, Trayodashi, sarvartha_siddhi + ravi_yoga), 19 Apr avoid (avoid_tithi); the old "16 Apr excellent" predated the Nitya Yoga block #}
+<p>Our own Muhurat Finder shows the same edge at Mesha Sankranti, Apr 14, 2027: it rejects that day for Meenmas, drops the Kharmas block from the 15th, and — because other rules still rule out the days straight after it — rates the 18th the first excellent wedding day of the spring season. Traditions that reckon from the ingress instant itself, rather than from a fixed sampling time, treat the hours after the transit as already clear — a convention difference, not an error on either side.</p>
 
 <h3>4. Chaturmas restriction (mid-Jul to mid-Nov)</h3>
 
@@ -112,7 +112,7 @@
 <p>Given the rules above, 2027 wedding dates cluster in specific windows:</p>
 
 <ul>
-  {# muhurat.find_candidates("vivah","Delhi",date(2027,1,13),14) run 2026-08-08 -> 13-15 Jan Panchak, 16 Jan Ashtami, 17-18 Jan avoid-nakshatra, 19 Jan Tuesday avoid (#1021; was acceptable), 20 Jan excellent #}
+  {# muhurat.find_candidates("vivah","Delhi",date(2027,1,13),14) run 2026-08-08 -> 13-15 Jan Panchak, 16 Jan Ashtami, 17 Jan avoid-nakshatra, 18 Jan Dagdha (Monday + Ekadashi, noon reading #1020), 19 Jan Tuesday avoid (#1021; was acceptable), 20 Jan excellent #}
   <li><strong>Winter window, mid-January into February</strong> — Kharmas ends at Makar Sankranti, Friday, Jan 15, 2027, but Panchak runs through that day and the next few carry avoid tithis and nakshatras, so our finder's first usable date is the Wednesday of Jan 19-20 (the Tuesday of that pair is excluded: Raman rejects Tuesday for a wedding).</li>
   {# sankranti.sankranti_instant(2027,"Mesha") -> 2027-04-14 15:28 IST; combustion scan above: Venus combust from 2027-07-07 #}
   <li><strong>Spring and summer window, mid-April to early July</strong> — opens the day after Mesha Sankranti on Apr 14, 2027 and closes in the first week of July, when Shukra goes combust a week ahead of Chaturmas. Most popular season in North India.</li>
