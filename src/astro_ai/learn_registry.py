@@ -491,12 +491,12 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="gochar-2026-planetary-transits",
         title="Gochar 2026: The Year's Major Planetary Transits and How They Affect Your Rashi",
-        summary="2026 is a rare year — Jupiter entering exaltation in Cancer in June 2026, Saturn still testing Aquarius/Pisces/Aries Moons via Sade Sati, and the Rahu-Ketu axis shifting into Capricorn-Cancer in December. Here's what's happening in the sky and what it means for each Moon sign.",
+        summary="2026 is a rare year — Jupiter entering exaltation in Cancer in June 2026, Saturn still testing Aquarius/Pisces/Aries Moons via Sade Sati, and the Rahu-Ketu axis shifting into Capricorn-Cancer in late November. Here's what's happening in the sky and what it means for each Moon sign.",
         category="Concepts",
         hero_image="/static/learn/gochar-2026-planetary-transits/hero.svg",
         read_time="12 min",
         related=("sade-sati", "guru-jupiter-in-vedic-astrology", "shani-saturn"),
-        last_updated="2026-07",
+        last_updated="2026-11",
         faqs=(
             {
                 "q": "What is Gochar in Vedic astrology?",
@@ -504,15 +504,15 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Which is the biggest transit of 2026?",
-                "a": "Jupiter exalted in Cancer (Karka) — Jupiter entered Cancer around 2 June 2026, moves on to Leo around 1 November 2026, returns to Cancer around 25 January 2027 and leaves for Leo again around 26 June 2027 (Lahiri sidereal reckoning). Jupiter reaches its exaltation sign only about once every 12 years, and this is one of the most benevolent single transits in Vedic astrology. Jupiter in its exaltation sign amplifies its natural blessings — wisdom, wealth, children, dharma — for anyone whose Moon or Lagna is well-positioned relative to Cancer.",
+                "a": "Jupiter exalted in Cancer (Karka) — Jupiter entered Cancer on 2 June 2026, moves on to Leo on 31 October 2026, returns to Cancer on 25 January 2027 and leaves for Leo again on 26 June 2027 (Lahiri sidereal reckoning, Indian Standard Time). Jupiter reaches its exaltation sign only about once every 12 years. Exaltation makes Jupiter strong, but the classical Gochara table judges a transit by the house it falls in, counted from your Moon sign: it counts Jupiter as favourable in the 2nd, 5th, 7th, 9th and 11th houses and unfavourable in the other seven, so whether this transit helps you depends on your Moon sign.",
             },
             {
                 "q": "How long is Saturn in Pisces?",
-                "a": "Saturn entered Pisces around 30 March 2025 and moves into Aries around 3 June 2027 on the Lahiri (sidereal) reckoning. It then slips back into Pisces around 21 October 2027 on its retrograde path and re-enters Aries around 24 February 2028. While it is in Pisces, Sade Sati is active for Aquarius (Sade Sati setting phase, final 2.5 years), Pisces (peak phase), and Aries Moons (rising phase). All three groups feel Saturn's transit differently.",
+                "a": "Saturn entered Pisces on 29 March 2025 and moves into Aries on 3 June 2027 on the Lahiri (sidereal) reckoning. It then slips back into Pisces on 20 October 2027 on its retrograde path and re-enters Aries on 23 February 2028. While it is in Pisces, Sade Sati is active for Aquarius (Sade Sati setting phase, final 2.5 years), Pisces (peak phase), and Aries Moons (rising phase). All three groups feel Saturn's transit differently.",
             },
             {
                 "q": "What happens to the Rahu-Ketu axis in late 2026?",
-                "a": "The Rahu-Ketu axis shifts around December 2026 — Rahu moves from Aquarius into Capricorn, and Ketu moves from Leo into Cancer. This is a major karmic-axis reset. Anyone with Moon or Lagna in Capricorn (new Rahu placement), Cancer (new Ketu placement), Aquarius (departing Rahu), or Leo (departing Ketu) feels the shift most.",
+                "a": "The Rahu-Ketu axis shifts on 25 November 2026 — Rahu moves from Aquarius into Capricorn, and Ketu moves from Leo into Cancer. That is the true node, the convention this site's charts use; almanacs that use the mean node give 5 December 2026. This is a major karmic-axis reset. Anyone with Moon or Lagna in Capricorn (new Rahu placement), Cancer (new Ketu placement), Aquarius (departing Rahu), or Leo (departing Ketu) feels the shift most.",
             },
             {
                 "q": "How do I know how these transits affect me specifically?",
@@ -522,7 +522,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n'
             '• Gochar = current planetary transits over natal houses (as of the reading date)\n'
-            '• 2026 major shifts: Saturn continues in Pisces (12th-related themes for many), Jupiter is in Cancer (exaltation) about 2 June–1 November 2026 and again 25 January–26 June 2027, in Leo in between\n'
+            '• 2026 major shifts: Saturn continues in Pisces (12th-related themes for many), Jupiter is in Cancer (exaltation) about 2 June–31 October 2026 and again 25 January–26 June 2027, in Leo in between\n'
             '• Rahu-Ketu axis: check current transit house from natal Moon for major karmic themes\n'
             '• Transit effects are amplified when a planet passes over natal position (return) or over natal 7th/10th/1st\n'
             "• Transits refine Dasha's broad timing — always read Dasha first, then transit\n"
@@ -638,7 +638,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "How do I know if I'm currently in Sade Sati?",
-                "a": "Sade Sati is active when Saturn is in your Moon sign (Janma Rashi), or one rashi before, or one rashi after. Saturn is in Pisces (Meen) until around 3 June 2027 on the Lahiri (sidereal) reckoning, goes back into Pisces around 21 October 2027 on its retrograde path, and re-enters Aries around 24 February 2028 — so Aquarius, Pisces, and Aries Moons are currently in Sade Sati phases. Generate your free Kundli on Shubh Bhagya for the exact phase + dates.",
+                "a": "Sade Sati is active when Saturn is in your Moon sign (Janma Rashi), or one rashi before, or one rashi after. Saturn is in Pisces (Meen) until around 3 June 2027 on the Lahiri (sidereal) reckoning, goes back into Pisces around 20 October 2027 on its retrograde path, and re-enters Aries around 23 February 2028 — so Aquarius, Pisces, and Aries Moons are currently in Sade Sati phases. Generate your free Kundli on Shubh Bhagya for the exact phase + dates.",
             },
             {
                 "q": "What are the three phases of Sade Sati?",
