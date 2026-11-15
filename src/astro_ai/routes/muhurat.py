@@ -227,5 +227,6 @@ async def muhurat_finder_compute(
          "child_all_letters": child_all_letters,
          "child_nakshatra": child_nakshatra,
          "child_pada": child_pada,
+         "judged_hour": _muhurat.MUHURTA_INSTANT_HOUR,
          "lang": _lang(request)},
     )
