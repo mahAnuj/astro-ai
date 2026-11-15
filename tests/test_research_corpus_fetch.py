@@ -48,7 +48,14 @@ def test_bucket_credentials_never_reach_the_agent():
 
 
 def test_no_book_is_ever_committed():
-    assert "data/" in (ROOT / ".gitignore").read_text().splitlines() or \
-        any(line.strip() in ("data", "data/", "/data/", "/data") for line in (ROOT / ".gitignore").read_text().splitlines())
     assert "git add data" not in WF.read_text()
+    # The mutation sandbox copies only _SANDBOX_SUBDIRS/_SANDBOX_FILES, not the
+    # root .gitignore. Reading it unconditionally failed the harness's CONTROL
+    # row on #1063 ("the sandbox reports CAUGHT for an edit that changes
+    # nothing"), so the ignore check runs wherever the file exists -- which is
+    # every real checkout -- and is skipped only inside that sandbox.
+    gi = ROOT / ".gitignore"
+    if gi.exists():
+        lines = [ln.strip() for ln in gi.read_text().splitlines()]
+        assert any(ln in ("data", "data/", "/data/", "/data") for ln in lines)
 
