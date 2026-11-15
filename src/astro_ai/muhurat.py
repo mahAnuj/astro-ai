@@ -511,11 +511,11 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
     "vivah": {
         "slug": "vivah",
         "hero_title": "Vivah Muhurat — Auspicious Wedding Dates",
-        "hero_subtitle": "Classical Panchang rules + your chart, not calendar guesswork.",
+        "hero_subtitle": "Panchang rules + your chart, not calendar guesswork.",
         "seo_title": "Vivah Muhurat Finder — Wedding Dates with Bride+Groom Pair Scoring",
         "seo_desc": "Free Vivah Muhurat finder: tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana, Nitya Yogas (Atiganda, Shula, Ganda, Vyatipata and Vaidhriti avoided), Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga boosters, plus Guru+Shukra combustion checks. Bride+groom two-chart scoring (Tara Bala + Chandra Bala + Manglik + Sade Sati per partner).",
         "intro_paragraphs": [
-            "A Vivah Muhurat is not merely an 'auspicious day' from a calendar. Classical tradition applies six specific criteria that must all align: Guru (Jupiter) and Shukra (Venus) visible above the horizon and uncombust, favourable tithi and nakshatra, no Panchak, no Chaturmas (Devshayani → Devuthani Ekadashi), no Kharmas (Sun in Sagittarius or Pisces), and no eclipse days. This tool checks all of these plus Dagdha tithi-weekday combinations and calls out Abujha muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya) that override normal scoring.",
+            "A Vivah Muhurat is not merely an 'auspicious day' from a calendar. This tool checks that Guru (Jupiter) and Shukra (Venus) are not combust, that the tithi and nakshatra are favourable, and that the day is clear of Panchak, a rule B.V. Raman's Muhurtha records. It also applies widely followed conventions that are this finder's own choices, not rules from the books this site holds: no Chaturmas (Devshayani → Devuthani Ekadashi), no Kharmas (Sun in Sagittarius or Pisces), no Dagdha tithi-weekday combinations and no eclipse days. It calls out Abujha muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya), another convention of this finder, that override normal scoring.",
             "For a fully personalised recommendation, sign in first — the tool will then overlay Tara Bala (star strength between your natal Moon nakshatra and the transit day) and Chandra Bala (Moon-strength from your natal Moon) on every candidate, plus surface chart-level cautions from Sade Sati phase or active Rahu/Ketu Mahadasha.",
         ],
         "rules_summary": [
@@ -526,10 +526,10 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
             "The bright-half 12th is not credited: Rao's wedding guideline table lists it, Raman's rejects it, so the finder gives it no credit either way",
             "Favourable nakshatra: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati",
             "No Panchak (Moon in Dhanishta latter half through Revati)",
-            "No Chaturmas (Devshayani → Devuthani Ekadashi ≈ mid-July to mid-November)",
-            "No Kharmas (Sun in Sagittarius ≈ mid-Dec to mid-Jan; Sun in Pisces ≈ mid-Mar to mid-Apr)",
-            "No Dagdha yoga (Sun+Dwadashi, Mon+Ekadashi, Tue+Panchami, Wed+Tritiya, Thu+Shashti, Fri+Ashtami, Sat+Navami)",
-            "No eclipse days (day of or ±1 day)",
+            "No Chaturmas (Devshayani → Devuthani Ekadashi ≈ mid-July to mid-November) — widely followed convention this finder applies",
+            "No Kharmas (Sun in Sagittarius ≈ mid-Dec to mid-Jan; Sun in Pisces ≈ mid-Mar to mid-Apr) — widely followed convention this finder applies",
+            "No Dagdha yoga (Sun+Dwadashi, Mon+Ekadashi, Tue+Panchami, Wed+Tritiya, Thu+Shashti, Fri+Ashtami, Sat+Navami) — widely followed convention this finder applies",
+            "No eclipse days (day of or ±1 day) — widely followed convention this finder applies",
         ],
         "related_articles": [
             ("/learn/vivah-muhurat-2027/", "Vivah Muhurat 2027 — full classical guide"),
@@ -545,23 +545,23 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
     "griha_pravesh": {
         "slug": "griha-pravesh",
         "hero_title": "Griha Pravesh Muhurat — Auspicious House-Warming Dates",
-        "hero_subtitle": "Classical seven criteria + your chart, not developer-handover convenience.",
+        "hero_subtitle": "Seven criteria + your chart, not developer-handover convenience.",
         "seo_title": "Griha Pravesh Muhurat Finder — Housewarming Date Calculator",
         "seo_desc": "Free Griha Pravesh Muhurat finder: Jupiter visibility, tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana avoidance, plus Choghadiya sub-day windows and Amrit Siddhi / Sarvartha Siddhi boosters. Covers Apoorva / Sapoorva / Dwandwa entry types.",
         "intro_paragraphs": [
-            "Griha Pravesh (house-warming) is the ceremony marking entry into a new home. Classical tradition names three types: Apoorva (brand-new home), Sapoorva (re-entry after long absence or renovation), and Dwandwa (entry into a home you own but haven't lived in). Each still requires the same classical timing rules.",
-            "The seven classical criteria: Guru (Jupiter) uncombust and visible; favourable moon nakshatra; favourable tithi; no Chaturmas; no eclipse; no Panchak; weekday preference (Monday/Wednesday/Thursday/Friday best; Tuesday excluded outright, Saturday scored one point lower because Raman's chapters disagree about it). This tool applies all of these plus Kharmas (Sun in Sagittarius/Pisces) and Dagdha tithi-weekday exclusions.",
+            "Griha Pravesh (house-warming) is the ceremony marking entry into a new home. Three kinds of entry are commonly distinguished: Apoorva (brand-new home), Sapoorva (re-entry after long absence or renovation), and Dwandwa (entry into a home you own but haven't lived in). This finder applies the same timing rules to each.",
+            "What this finder checks: Guru (Jupiter) not combust; favourable moon nakshatra; favourable tithi; no Panchak; weekday preference (Monday/Wednesday/Thursday/Friday best; Tuesday excluded outright, Saturday scored one point lower because Raman's chapters disagree about it). It also applies widely followed conventions that are this finder's own choices, not rules from the books this site holds: no Chaturmas, no eclipse days, no Kharmas (Sun in Sagittarius/Pisces) and no Dagdha tithi-weekday combinations.",
         ],
         "rules_summary": [
             "Guru (Jupiter) uncombust — must be visible during ceremony hours",
             "Favourable nakshatra: Rohini, Mrigashira, Uttara Phalguni, Hasta, Chitra, Anuradha, Uttara Ashadha, Revati",
             "Favourable tithi: 2, 3, 5, 7, 10, 11, 13",
             "Weekday: Mon, Wed, Thu, Fri preferred; Tuesday excluded (Raman); Saturday scores one point lower (Raman's chapters disagree)",
-            "No Chaturmas (mid-July to mid-November)",
-            "No Kharmas (Sun in Sagittarius/Pisces)",
+            "No Chaturmas (mid-July to mid-November) — widely followed convention this finder applies",
+            "No Kharmas (Sun in Sagittarius/Pisces) — widely followed convention this finder applies",
             "No Panchak days",
-            "No Dagdha yoga combinations",
-            "No eclipse days",
+            "No Dagdha yoga combinations — widely followed convention this finder applies",
+            "No eclipse days — widely followed convention this finder applies",
         ],
         "related_articles": [
             ("/learn/griha-pravesh-muhurat-2026-2027/", "Griha Pravesh Muhurat 2026-27 — full guide"),
@@ -577,9 +577,9 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "hero_title": "Namkaran Muhurat — Auspicious Baby Naming Ceremony Dates",
         "hero_subtitle": "Traditional 11th-day timing + soft nakshatra selection for a newborn.",
         "seo_title": "Namkaran Muhurat + Baby First-Letter Nakshatra Table Calculator",
-        "seo_desc": "Free Namkaran Muhurat finder with the classical 108-syllable first-letter table (27 nakshatras × 4 padas) — enter baby's birth details and get the traditional Sanskrit starting-letters for the name, plus soft-nakshatra day picks, favourable tithi, Bhadra avoidance, Choghadiya sub-day windows, and no-Panchak checks per Grihya Sutras.",
+        "seo_desc": "Free Namkaran Muhurat finder with the traditional 108-syllable first-letter table (27 nakshatras × 4 padas) — enter baby's birth details and get the traditional Sanskrit starting-letters for the name, plus soft-nakshatra day picks, favourable tithi, Bhadra avoidance, Choghadiya sub-day windows, and no-Panchak checks.",
         "intro_paragraphs": [
-            "Namkaran (naming ceremony) is classically observed on the 11th day after birth per Grihya Sutras, though modern families choose within the first 3-4 weeks. The muhurat rules apply to whichever day is chosen. Because this is a child-driven ceremony, some rules that apply to adult-planned events (Chaturmas, Kharmas, Dagdha, Guru combustion) do NOT block Namkaran — the ceremony must happen close to the birth regardless.",
+            "Namkaran (naming ceremony) is commonly held around the 11th day after birth, though modern families choose within the first 3-4 weeks; the day is custom, not a rule this finder sources to a book. The muhurat rules apply to whichever day is chosen. Because this is a child-driven ceremony, some rules that apply to adult-planned events (Chaturmas, Kharmas, Dagdha, Guru combustion) do NOT block Namkaran — the ceremony must happen close to the birth regardless.",
             "What we do check: soft/friendly nakshatras (Ashwini, Rohini, Mrigashira, Punarvasu, Pushya, Hasta, Chitra, Swati, Anuradha, Shravana, Revati), favourable tithi, weekday preference (Mon/Wed/Thu/Fri best), no Panchak, no eclipse. Harsh nakshatras (Bharani, Krittika, Ardra, Ashlesha, Magha, Jyeshtha, Mula) are avoided for infants.",
         ],
         "rules_summary": [
@@ -587,7 +587,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
             "Favourable tithi (2, 3, 5, 7, 10, 11, 12, 13)",
             "Weekday: Mon, Wed, Thu, Fri preferred; Tuesday excluded (Raman allows it on the child's 10th, 12th or 16th day; this tool has no birth date to apply that); Saturday scores one point lower",
             "No Panchak",
-            "No eclipse days",
+            "No eclipse days — widely followed convention this finder applies",
             "Chaturmas, Kharmas, Dagdha, combustion checks NOT applied (child-driven timing)",
         ],
         "related_articles": [
@@ -602,7 +602,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "hero_title": "Vidyarambh Muhurat — Auspicious Education-Starting Dates",
         "hero_subtitle": "Guru's day + Guru's uncombust position + soft nakshatras.",
         "seo_title": "Vidyarambh Muhurat Finder — Aksharabhyasa / Study-Start Calculator",
-        "seo_desc": "Free Vidyarambh (education-start) Muhurat finder: Thursday peak-day, Jupiter uncombust, soft nakshatras, Choghadiya sub-day windows, Amrit Siddhi / Sarvartha Siddhi boosters, Basant Panchami / Saraswati Puja Abujha auto-favourable. Classical Aksharabhyasa timing rules.",
+        "seo_desc": "Free Vidyarambh (education-start) Muhurat finder: Thursday peak-day, Jupiter uncombust, soft nakshatras, Choghadiya sub-day windows, Amrit Siddhi / Sarvartha Siddhi boosters, Basant Panchami / Saraswati Puja Abujha auto-favourable. Aksharabhyasa start-of-learning timing.",
         "intro_paragraphs": [
             "Vidyarambh (starting education / Aksharabhyasa) is one of the classical samskaras — the child's first formal introduction to letters and learning. Jupiter (Guru) is the karaka of knowledge, so this muhurat centres on Jupiter: his day (Thursday) is peak, his uncombust visibility is required, and Vasant Panchami (Saraswati puja day) is the annual universal Abujha muhurat.",
             "Peak days: Thursday (Jupiter's day, +1 bonus in scoring), Wednesday (Mercury — intellect), Friday (Venus — arts). Soft nakshatras favoured. Chaturmas doesn't block Vidyarambh (education is ongoing), but Jupiter combustion does (karaka must be visible).",
@@ -613,9 +613,9 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
             "Soft nakshatras (Ashwini, Rohini, Mrigashira, Punarvasu, Pushya, Hasta, Chitra, Swati, Anuradha, Shravana, Revati)",
             "Favourable tithi (2, 3, 5, 10, 11, 12)",
             "No Panchak",
-            "No Dagdha yoga",
-            "No eclipse days",
-            "Basant Panchami (Vasant Panchami / Saraswati Puja) auto-excellent — Abujha Muhurat",
+            "No Dagdha yoga — widely followed convention this finder applies",
+            "No eclipse days — widely followed convention this finder applies",
+            "Basant Panchami (Vasant Panchami / Saraswati Puja) auto-excellent — Abujha Muhurat — widely followed convention this finder applies",
         ],
         "related_articles": [
             ("/learn/guru-jupiter-brihaspati-in-vedic-astrology/", "Guru (Jupiter) — the karaka of learning"),
@@ -632,8 +632,8 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "seo_title": "Business Start Muhurat Finder — Shop Opening Date Calculator",
         "seo_desc": "Free business start Muhurat finder: Wednesday peak-day, Mercury uncombust, Kharmas exclusion, wealth-favourable tithis, Choghadiya sub-day opening windows (Labh, Amrit, Shubh), Bhadra Karana avoidance, plus Amrit Siddhi and Sarvartha Siddhi boosters. Ideal for shop openings, new ventures, and product launches.",
         "intro_paragraphs": [
-            "Starting a business, opening a shop, or launching a venture is classically treated similarly to any shubh karya — the day must align with tithi, nakshatra, weekday, and no-eclipse rules. Mercury (Budha) is the karaka of commerce and communication, so his day (Wednesday) is peak and his uncombust visibility is required.",
-            "Peak days: Wednesday (Mercury's day, +1 bonus), Thursday (Jupiter — wisdom in decisions), Friday (Venus — wealth), Sunday (Sun — authority) acceptable. Kharmas blocks new ventures (Sun in Sagittarius or Pisces = periods of turning inward, not launching). Abujha muhurats like Devuthani Ekadashi and Akshaya Tritiya are auto-excellent for business.",
+            "Starting a business, opening a shop, or launching a venture is treated here like any shubh karya: the day must align with tithi, nakshatra and weekday, and clear this finder's no-eclipse convention. Mercury (Budha) is the karaka of commerce and communication, so his day (Wednesday) is peak and his uncombust visibility is required.",
+            "Peak days: Wednesday (Mercury's day, +1 bonus), Thursday (Jupiter — wisdom in decisions), Friday (Venus — wealth), Sunday (Sun — authority) acceptable. Kharmas blocks new ventures here (Sun in Sagittarius or Pisces = periods of turning inward, not launching), and Abujha muhurats like Devuthani Ekadashi and Akshaya Tritiya are auto-excellent for business; both are widely followed conventions this finder applies, not rules from the books this site holds.",
         ],
         "rules_summary": [
             "Wednesday peak-day (Budha's day + extra bonus)",
@@ -641,10 +641,10 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
             "Favourable nakshatra: Ashwini, Pushya, Uttara Phalguni, Hasta, Chitra, Anuradha, Uttara Ashadha, Shravana, Revati",
             "Favourable tithi (2, 3, 5, 7, 10, 11, 13)",
             "No Panchak",
-            "No Kharmas (no new ventures during Sun in Sagittarius/Pisces)",
-            "No Dagdha yoga",
-            "No eclipse days",
-            "Devuthani Ekadashi, Akshaya Tritiya, Basant Panchami auto-excellent",
+            "No Kharmas (no new ventures during Sun in Sagittarius/Pisces) — widely followed convention this finder applies",
+            "No Dagdha yoga — widely followed convention this finder applies",
+            "No eclipse days — widely followed convention this finder applies",
+            "Devuthani Ekadashi, Akshaya Tritiya, Basant Panchami auto-excellent — widely followed convention this finder applies",
         ],
         "related_articles": [
             ("/learn/budha-mercury-in-vedic-astrology/", "Budha (Mercury) — karaka of commerce"),

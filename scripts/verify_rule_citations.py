@@ -607,9 +607,9 @@ _MUHURAT_UNHELD: tuple[tuple[str, str], ...] = tuple(
     ("Chintamani", r"chin[\s#_-]*tamani"),
     ("Phaladeepika", rf"phala(?:{_SEP})?d[ei]+pika"),
     ("Jataka Parijata / Chandrika", rf"jataka(?:{_SEP})?(?:parijata?|chandrika)"),
-    # Not "Grihya Sutra" on its own: muhurat.py's user-facing namkaran copy says
-    # "per Grihya Sutras" (a genre, in rendered strings, not a comment). That is a
-    # separate user-visible claim and a behaviour change, left for its own issue.
+    # Not "Grihya Sutra" on its own: it is a genre name, and #1024 withdrew the
+    # last user-facing "per Grihya Sutras" (EVENT_LANDING's namkaran copy and
+    # about.html). tests/test_muhurat_classical_copy.py now guards that phrase.
     ("Ashvalayana", r"ash?[vw]alayana"),
 )
 
