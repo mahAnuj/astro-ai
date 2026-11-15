@@ -31,6 +31,8 @@ from functools import lru_cache
 from typing import Any
 from zoneinfo import ZoneInfo
 
+import swisseph as swe
+
 from astro_ai import lunar_dates
 from astro_ai.adhik_maas import adhik_maas_flag
 from astro_ai.chart import (
@@ -860,36 +862,74 @@ def _kharmas_flag(chart: Chart, when: datetime) -> tuple[bool, str]:
 
 
 # ─── Eclipse days (Grahana) — universal BLOCKER for all shubh karya ──
-# Classical rule: eclipse day + 1 day before + 1 day after are all inauspicious.
-# Even after grahana sutak ends, the atmosphere is considered energetically
-# unsettled. Dates sourced from NASA eclipse tables + Drik Panchang.
-# Update annually. Applies to ALL event types (universal, not per-event).
-_ECLIPSE_DATES: dict[int, list[tuple[date, str]]] = {
-    2026: [
-        (date(2026, 2, 17), "Annular Solar Eclipse"),
-        (date(2026, 3, 3),  "Total Lunar Eclipse"),
-        (date(2026, 8, 12), "Total Solar Eclipse"),
-        (date(2026, 8, 28), "Partial Lunar Eclipse"),
-    ],
-    2027: [
-        (date(2027, 2, 6),  "Annular Solar Eclipse"),
-        (date(2027, 2, 20), "Penumbral Lunar Eclipse"),
-        (date(2027, 7, 18), "Penumbral Lunar Eclipse"),
-        (date(2027, 8, 2),  "Total Solar Eclipse"),
-    ],
-    2028: [
-        (date(2028, 1, 26), "Annular Solar Eclipse"),
-        (date(2028, 2, 12), "Total Lunar Eclipse"),
-        (date(2028, 7, 22), "Total Solar Eclipse"),
-        (date(2028, 8, 6),  "Partial Lunar Eclipse"),
-    ],
-}
+# Convention: eclipse day + 1 day before + 1 day after are all inauspicious. This
+# ±1-day rule is a widely-followed convention and is UNSOURCED: knowledge/*.md holds
+# no eclipse muhurta rule (the only eclipse lines are aspects.md:214, grahas.md:454,
+# vedic_reference.md:1279, none of them a muhurta rule), so neither the margin nor
+# "a penumbral or not-visible-in-India eclipse blocks too" is traced to a book.
+# Applies to ALL event types (universal, not per-event).
+#
+# The DATES are computed from Swiss Ephemeris, not typed (#1018). The hand-typed table
+# listed two 2028 lunar eclipses that do not exist (Feb 12, Aug 6 -- the real Jan 12
+# and Jul 6 shifted a month, the #141/#146 signature), omitted four real ones, and
+# was empty from 2029. Cross-checked against NASA GSFC, Lunar Eclipses 2021-2030 and
+# Solar Eclipses 2021-2030 (eclipse.gsfc.nasa.gov). Inclusion set is unchanged: every
+# GLOBAL eclipse of either kind and any type, whether or not India sees it.
+# The date is the IST calendar date of the maximum, because every other date here is
+# an Indian civil date; NASA lists UT, so 2027-02-21 04:42 IST is NASA's "Feb 20".
+_IST_OFFSET_DAYS = 5.5 / 24
+
+
+def _solar_eclipse_name(ret: int) -> str:
+    # Order matters: swe sets CENTRAL/NONCENTRAL beside the type, and a hybrid is its own
+    # flag, so test the type bits most-specific first.
+    if ret & swe.ECL_ANNULAR_TOTAL:
+        return "Hybrid Solar Eclipse"
+    if ret & swe.ECL_TOTAL:
+        return "Total Solar Eclipse"
+    if ret & swe.ECL_ANNULAR:
+        return "Annular Solar Eclipse"
+    return "Partial Solar Eclipse"
+
+
+def _lunar_eclipse_name(ret: int) -> str:
+    if ret & swe.ECL_TOTAL:
+        return "Total Lunar Eclipse"
+    if ret & swe.ECL_PARTIAL:
+        return "Partial Lunar Eclipse"
+    return "Penumbral Lunar Eclipse"
+
+
+@lru_cache(maxsize=64)
+def _eclipses_in_year(year: int) -> tuple[tuple[date, str], ...]:
+    """Every global solar and lunar eclipse whose maximum falls on IST calendar `year`.
+
+    Computed once per year (memoised), so it covers any year and costs nothing after
+    the first call. The search starts two days early and stops two days late because an
+    eclipse maximum near a year boundary changes calendar year when UT becomes IST.
+    """
+    start = swe.julday(year, 1, 1, 0.0) - 2
+    stop = swe.julday(year + 1, 1, 1, 0.0) + 2
+    found: list[tuple[date, str]] = []
+    for search, namer in ((swe.sol_eclipse_when_glob, _solar_eclipse_name),
+                          (swe.lun_eclipse_when, _lunar_eclipse_name)):
+        jd = start
+        while True:
+            ret, tret = search(jd)
+            if tret[0] > stop:
+                break
+            y, m, dd, _ = swe.revjul(tret[0] + _IST_OFFSET_DAYS)
+            if y == year:
+                found.append((date(y, m, dd), namer(ret)))
+            # Eclipses of one kind are at least ~29 days apart (lunar) or ~14 (solar).
+            jd = tret[0] + 10
+    return tuple(sorted(found))
 
 
 def _eclipse_flag(d: date) -> tuple[bool, str]:
-    """True if d is within 1 day of a known eclipse. Applies to ALL events."""
+    """True if d is within 1 day of a computed eclipse. Applies to ALL events."""
     for year in (d.year, d.year - 1, d.year + 1):  # handles Jan/Dec boundary
-        for edate, ename in _ECLIPSE_DATES.get(year, []):
+        for edate, ename in _eclipses_in_year(year):
             gap = abs((d - edate).days)
             if gap == 0:
                 return True, f"{ename} on this date — universal muhurat blocker"
