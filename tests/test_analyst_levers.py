@@ -113,3 +113,39 @@ def test_the_analyst_definition_carries_every_lever():
     for lever in ("**Growth**", "**Where time is spent**", "**Errors**", "**Search demand**",
                   "**Content opportunities**", "**Index status**", "**Measurement gaps**"):
         assert lever in md, lever
+
+
+# --- spikes explained (2026-11-15) -------------------------------------------
+
+def _days(vals):
+    return [{"date": f"2026-11-{i + 1:02d}", "active_users": v} for i, v in enumerate(vals)]
+
+
+def test_the_11_06_spike_is_found_and_ordinary_days_are_not():
+    fg = _load("fetch_ga4")
+    vals = [21, 29, 24, 22, 23, 32, 25, 28, 57, 22, 26]
+    hits = fg.spike_days(_days(vals))
+    assert [h["active_users"] for h in hits] == [57]
+    assert fg.spike_days(_days([20, 22, 25, 21, 24, 23, 26])) == []
+    assert fg.spike_days(_days([3, 1, 2])) == [], "too few days to call anything unusual"
+
+
+def test_the_explanation_separates_readers_from_bots_and_points_at_discover():
+    fg = _load("fetch_ga4")
+    readers = [{"sessionSourceMedium": "google / organic", "landingPagePlusQueryString": "/learn/x",
+                "sessions": 30, "new_users": 28, "engaged_rate": 0.6, "avg_engagement_seconds": 48.0}]
+    bots = [{"sessionSourceMedium": "(direct) / (none)", "landingPagePlusQueryString": "/",
+             "sessions": 40, "new_users": 40, "engaged_rate": 0.02, "avg_engagement_seconds": 0.4}]
+    tech = [{"browser": "Safari", "deviceCategory": "mobile", "country": "India",
+             "sessions": 30, "new_users": 28, "engaged_rate": 0.6, "avg_engagement_seconds": 48.0}]
+    r = fg.explain(readers, tech)
+    assert "real readers" in r and "Discover" in r and "Safari on mobile in India" in r
+    assert "automated" in fg.explain(bots, [])
+
+
+def test_measure_fetches_spikes_and_discover_and_hands_them_to_the_analyst():
+    text = (ROOT / ".github/workflows/agent-measure.yml").read_text()
+    assert "fetch_ga4.py --days 28 --anomalies > /tmp/ga4-anomalies.json" in text
+    assert "fetch_gsc.py --days 28 --discover > /tmp/gsc-discover.json" in text
+    assert "/tmp/ga4-anomalies.json /tmp/gsc-discover.json /tmp/measure/" in text
+    assert "ga4-anomalies.json" in (ROOT / ".claude/agents/analyst.md").read_text()

@@ -110,6 +110,95 @@ def daily(args, start: str, end: str, bearer: str) -> int:
     return 0
 
 
+def spike_days(rows: list[dict], top: int = 3) -> list[dict]:
+    """Days whose active users clear max(2 x median, median + 10) and 15 users.
+
+    A rule simple enough to argue with. The 2026-11-06 spike (57 users against a
+    median in the 20s) is exactly what it exists to catch: GA4's own insight
+    card flagged it, the analyst could not explain it, and the owner had to go
+    and ask. Returned most extreme first, at most `top`.
+    """
+    vals = sorted(r.get("active_users", 0) for r in rows if not r.get("no_data"))
+    if len(vals) < 7:
+        return []
+    med = vals[len(vals) // 2]
+    bar = max(2 * med, med + 10, 15)
+    hits = [dict(r, median=med, threshold=bar) for r in rows
+            if not r.get("no_data") and r.get("active_users", 0) >= bar]
+    return sorted(hits, key=lambda r: -r["active_users"])[:top]
+
+
+def _breakdown(rows: list[dict], dims: list[str]) -> list[dict]:
+    out = []
+    for r in rows:
+        mv = [float(m["value"]) for m in r["metricValues"]]
+        sess, new, engaged, secs = (mv + [0, 0, 0, 0])[:4]
+        out.append({**{d: r["dimensionValues"][i]["value"] for i, d in enumerate(dims)},
+                    "sessions": int(sess), "new_users": int(new),
+                    "engaged_rate": round(engaged / sess, 2) if sess else None,
+                    "avg_engagement_seconds": round(secs / sess, 1) if sess else None})
+    return out
+
+
+def explain(by_source: list[dict], by_tech: list[dict]) -> str:
+    """One line a reader can act on. A hint, never a verdict: say what to check."""
+    if not by_source:
+        return "no breakdown rows returned"
+    top = by_source[0]
+    sess = sum(r["sessions"] for r in by_source) or 1
+    engaged = sum((r["engaged_rate"] or 0) * r["sessions"] for r in by_source) / sess
+    secs = sum((r["avg_engagement_seconds"] or 0) * r["sessions"] for r in by_source) / sess
+    src = top.get("sessionSourceMedium", "?")
+    parts = [f"top source {src} ({top['sessions']} sessions) landing on "
+             f"{top.get('landingPagePlusQueryString', '?')}"]
+    if engaged < 0.15 and secs < 3:
+        parts.append(f"engaged rate {engaged:.0%} and {secs:.1f}s average engagement: "
+                     "looks automated, not readers")
+    else:
+        parts.append(f"engaged rate {engaged:.0%}, {secs:.1f}s average: looks like real readers")
+    if src.startswith("google / organic"):
+        parts.append("google/organic with flat Search Console clicks usually means Google "
+                     "Discover; compare gsc-discover.json for that date")
+    if by_tech:
+        t = by_tech[0]
+        parts.append(f"mostly {t.get('browser', '?')} on {t.get('deviceCategory', '?')} in "
+                     f"{t.get('country', '?')}")
+    return "; ".join(parts)
+
+
+def anomalies(args, start: str, end: str, bearer: str) -> int:
+    """Find unusual days in the window and say where their visitors came from."""
+    url = API.format(pid=args.property)
+    data = post(url, {"dateRanges": [{"startDate": start, "endDate": end}],
+                      "dimensions": [{"name": "date"}], "metrics": [{"name": "activeUsers"}],
+                      "limit": 400}, bearer)
+    rows = []
+    for r in data.get("rows", []):
+        raw = r["dimensionValues"][0]["value"]
+        rows.append({"date": f"{raw[0:4]}-{raw[4:6]}-{raw[6:8]}" if len(raw) == 8 else raw,
+                     "active_users": int(r["metricValues"][0]["value"])})
+    metrics = [{"name": m} for m in ("sessions", "newUsers", "engagedSessions",
+                                     "userEngagementDuration")]
+    found = []
+    for day in spike_days(rows):
+        rng = [{"startDate": day["date"], "endDate": day["date"]}]
+        src_dims = ["sessionSourceMedium", "landingPagePlusQueryString"]
+        tech_dims = ["browser", "deviceCategory", "country"]
+        order = [{"metric": {"metricName": "sessions"}, "desc": True}]
+        a = post(url, {"dateRanges": rng, "dimensions": [{"name": d} for d in src_dims],
+                       "metrics": metrics, "orderBys": order, "limit": 15}, bearer)
+        b = post(url, {"dateRanges": rng, "dimensions": [{"name": d} for d in tech_dims],
+                       "metrics": metrics, "orderBys": order, "limit": 10}, bearer)
+        by_source = _breakdown(a.get("rows", []), src_dims)
+        by_tech = _breakdown(b.get("rows", []), tech_dims)
+        found.append({**day, "explanation": explain(by_source, by_tech),
+                      "by_source": by_source, "by_tech": by_tech})
+    print(json.dumps({"source": "ga4", "property": args.property, "window": [start, end],
+                      "rule": "active users >= max(2 x median, median + 10, 15)",
+                      "days_checked": len(rows), "spikes": found}, indent=2))
+    return 0
+
+
 def events(args, start: str, end: str, bearer: str) -> int:
     """Event counts by name, plus the `cta_click` from/to split (#782).
 
@@ -226,6 +315,9 @@ def main() -> int:
     ap.add_argument("--events", action="store_true",
                     help="event counts by name plus the cta_click from/to split "
                          "(mutually exclusive with --daily)")
+    ap.add_argument("--anomalies", action="store_true",
+                    help="find spike days in the window and break each down by source, "
+                         "landing page, browser and engagement")
     args = ap.parse_args()
     if args.events and args.daily:
         sys.exit("--events and --daily are separate reports; run them one at a time")
@@ -240,6 +332,8 @@ def main() -> int:
         return daily(args, start, end, bearer)
     if args.events:
         return events(args, start, end, bearer)
+    if args.anomalies:
+        return anomalies(args, start, end, bearer)
 
     body = {
         "dateRanges": [{"startDate": start, "endDate": end}],

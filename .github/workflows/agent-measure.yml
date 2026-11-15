@@ -143,6 +143,12 @@ jobs:
           # than failing the whole measurement run.
           uv run python scripts/fetch_ga4.py --days 28 --events > /tmp/ga4-events.json \
             || { echo "::warning::GA4 event export failed; /tmp/ga4-events.json is absent this run (#782)"; rm -f /tmp/ga4-events.json; }
+          # Spikes explained (owner, 2026-11-15, on GA4's "spike in total users"
+          # card for 11-06: "can't u do it automatically?"). Both NON-FATAL.
+          uv run python scripts/fetch_ga4.py --days 28 --anomalies > /tmp/ga4-anomalies.json \
+            || { echo "::warning::GA4 anomaly breakdown failed; absent this run"; rm -f /tmp/ga4-anomalies.json; }
+          uv run python scripts/fetch_gsc.py --days 28 --discover > /tmp/gsc-discover.json \
+            || { echo "::warning::GSC Discover export failed; absent this run"; rm -f /tmp/gsc-discover.json; }
           uv run python scripts/fetch_gsc.py --days 28 --by date      > /tmp/gsc-daily.json
           uv run python scripts/fetch_gsc.py --days 28 --trend --by page  > /tmp/gsc-trend-page.json
           uv run python scripts/fetch_gsc.py --days 28 --trend --by query > /tmp/gsc-trend-query.json
@@ -183,6 +189,9 @@ jobs:
               /tmp/gsc-trend-page.json   per-page change, this window vs the previous one
               /tmp/gsc-trend-query.json  per-query change, this window vs the previous one
               /tmp/ga4-events.json       GA4 event counts incl. cta_click (#782); may be absent
+              /tmp/ga4-anomalies.json    spike days, each broken down by source, landing,
+                                         browser and engagement, with an explanation; may be absent
+              /tmp/gsc-discover.json     Google Discover clicks per day and top pages; may be absent
               /tmp/verify-first.json     the busiest pages by engaged sessions, with their
                                          impressions and serving module; may be absent
               /tmp/measure/llm-usage.json the app's LLM calls, cache hits, tokens per route
@@ -298,6 +307,7 @@ jobs:
                 /tmp/gsc-daily.json /tmp/ga4-daily.json \
                 /tmp/gsc-trend-page.json /tmp/gsc-trend-query.json /tmp/measure/ 2>/dev/null || true
           cp -f /tmp/ga4-events.json /tmp/measure/ 2>/dev/null || true
+          cp -f /tmp/ga4-anomalies.json /tmp/gsc-discover.json /tmp/measure/ 2>/dev/null || true
           date -u +%Y-%m-%dT%H:%M:%SZ > /tmp/measure/generated-at.txt
 
       - uses: actions/upload-artifact@v4
