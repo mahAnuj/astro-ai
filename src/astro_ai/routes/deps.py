@@ -234,6 +234,16 @@ templates = Jinja2Templates(env=jinja2.Environment(
 templates.env.globals["t"] = _i18n_translate
 # Cache-busting fingerprints for service-worker-cached static assets (#253).
 templates.env.globals["asset_v"] = _asset_fingerprint
+
+
+def _muhurta_instant_hour() -> int:
+    """The local hour every anga of a Muhurat Finder verdict is read at (#1020), so the
+    page can state it. Lazy: muhurat.py is a heavy import deps does not otherwise need."""
+    from astro_ai.muhurat import MUHURTA_INSTANT_HOUR
+    return MUHURTA_INSTANT_HOUR
+
+
+templates.env.globals["muhurta_instant_hour"] = _muhurta_instant_hour
 # current_year used by nav labels like "Horoscope 2026" — auto-updates yearly.
 templates.env.globals["current_year"] = lambda: date.today().year
 # Astrology-term Devanagari lookups — templates call e.g.
