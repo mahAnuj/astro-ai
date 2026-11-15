@@ -1847,15 +1847,15 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is Rahu Mahadasha good or bad for career?",
-                "a": "Neither by default — it depends on Rahu's placement in your chart. A well-placed Rahu (in the 3rd, 6th, 10th, or 11th house, in a friendly sign, aspected by benefics) in Mahadasha often produces spectacular career growth: foreign postings, sudden promotions, unconventional prestige, technology or media success. An afflicted Rahu (combust, badly aspected by Mars or Saturn, in the 8th or 12th without support) often produces compulsive job-hopping, obsession without direction, and the classical started-three-careers-mastered-none pattern. Generate your free Janma Kundli on Shubh Bhagya to see your Rahu placement.",
+                "a": "Neither by default — it depends on Rahu's placement in your chart. A well-placed Rahu (in the 3rd, 6th or 11th house, in a friendly sign, aspected by benefics) in Mahadasha often produces spectacular career growth: foreign postings, sudden promotions, unconventional prestige, technology or media success. An afflicted Rahu (badly aspected by Mars or Saturn, in the 8th or 12th without support) often produces compulsive job-hopping, obsession without direction, and the started-three-careers-mastered-none pattern. Rahu is never called combust: the nodes have no physical body, so a conjunction with the Sun eclipses the Sun rather than burning Rahu. Generate your free Janma Kundli on Shubh Bhagya to see your Rahu placement.",
             },
             {
                 "q": "Should I change jobs during Rahu Mahadasha?",
-                "a": "Slow down big decisions in the first year of any difficult Antardasha within the Mahadasha. Rahu creates distortion the person cannot see in real-time — what looks like a life-defining opportunity often looks very different from year seven. Rahu-Rahu (the first sub-period, about 2 years 8 months) is peak-confusion and the classical window for big moves that later feel unclear. If you must change, keep exit doors open, avoid 5-year commitments in the first 6 months, and journal the pattern so your later self has a record of what you were actually thinking.",
+                "a": "Slow down big decisions in the first year of any difficult Antardasha within the Mahadasha. Rahu creates distortion the person cannot see in real-time — what looks like a life-defining opportunity often looks very different from year seven. Rahu-Rahu (the first sub-period, about 2 years 8 months) is peak-confusion and the classical window for big moves that later feel unclear. If you must change, keep exit doors open, avoid 5-year commitments in the first 6 months (a rule of practice rather than a classical rule), and journal the pattern so your later self has a record of what you were actually thinking.",
             },
             {
                 "q": "Why do I feel confused about my career in Rahu Mahadasha?",
-                "a": "The confusion is structural, not a personal weakness. Classical Vedic tradition describes Rahu as the planet of maya (illusion) and vipreet buddhi (reversed intelligence). He amplifies ambition faster than he amplifies clarity — the person often knows exactly what they want to be seen as but has no idea what they actually want to do. This is a feature of the Mahadasha, not evidence that something is wrong with you. Recognising the pattern is the first step out of it.",
+                "a": "The confusion is structural, not a personal weakness. Rahu is the karaka of ambition, foreign matters, unusual paths and technology, and popular teaching calls him the planet of maya (illusion) and vipreet buddhi (reversed intelligence) — a teaching idiom, not a classical line. He amplifies ambition faster than he amplifies clarity — the person often knows exactly what they want to be seen as but has no idea what they actually want to do. This is a feature of the Mahadasha, not evidence that something is wrong with you. Recognising the pattern is the first step out of it.",
             },
             {
                 "q": "Which careers thrive in Rahu Mahadasha?",
@@ -1867,7 +1867,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the best remedies for career during Rahu Mahadasha?",
-                "a": "Safe universal practices: chant the Rahu Beej mantra Om Bhraam Bhreem Bhraum Sah Rahave Namah as a slow long-term practice (classical count 18,000 total), donate black gram daal or blue cloth on Saturdays, donate to a research organisation, undertake a pilgrimage to a shrine you have not visited, and worship Durga (Rahu's classical ruling deity). Avoid: expensive Rahu shanti puja packages, and never wear hessonite (gomedh) without proper chart consultation. The deepest remedy is often alignment — matching your work to what Rahu's placement actually wants.",
+                "a": "Safe universal practices: chant the Rahu Beej mantra Om Bhraam Bhreem Bhraum Sah Rahave Namah as a slow long-term practice (classical count 18,000 total), donate black gram daal, donate to a research organisation, undertake a pilgrimage to a shrine you have not visited, and worship Durga (Rahu's classical ruling deity). Avoid: expensive Rahu shanti puja packages, and never wear hessonite (gomedh) without proper chart consultation. The deepest remedy is often alignment — matching your work to what Rahu's placement actually wants.",
             },
         ),
         llm_summary=(
@@ -1876,8 +1876,8 @@ ARTICLES: tuple[Article, ...] = (
             "• First 2-3 years (Rahu-Rahu Antardasha) = peak-confusion window — big moves here often feel unclear later\n"
             "• Rahu FAVOURS: technology, foreign work, media, novel categories, entrepreneurship in emerging fields\n"
             "• Rahu FIGHTS: traditional government service, ancestral businesses, classical priesthood, conservative sales\n"
-            "• Best sub-periods for major decisions: Rahu-Jupiter and Rahu-Mercury Antardashas\n"
-            "• Safe remedies: Rahu Beej mantra (18,000 count target), Durga worship, pilgrimage, black-daal Saturday charity\n"
+            "• The three phases: Rahu-Jupiter about 5 years, Saturn-Mercury-Ketu-Venus about 9 years 5 months, Sun-Moon-Mars about 3 years 5 months (18 in all)\n"
+            "• Safe remedies: Rahu Beej mantra (18,000 count target), Durga worship, pilgrimage, black-gram charity\n"
             "• NEVER wear hessonite (gomedh) without full chart consultation"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
