@@ -789,9 +789,9 @@ ARTICLES: tuple[Article, ...] = (
             "• Nodal axis flip — Rahu Mahadasha's Ketu Antardasha is a ~1-year window (Ketu Antardasha in Rahu Mahadasha = 12 months and 18 days)\n"
             '• Difficulty (practice, not sourced for this pairing): Rahu wants to grasp, Ketu wants to release — internal tug-of-war\n'
             '• Common patterns: sudden loss of what Rahu had built, spiritual awakening, relationship endings, career detachment\n'
-            '• Health themes: mysterious ailments, exhaustion, low immunity — Ketu weakens body\n'
+            '• Health themes (practice, not sourced): practitioners link Ketu periods with mysterious ailments, exhaustion and low immunity\n'
             '• Not universally bad — often initiates the deepest spiritual work of Rahu Mahadasha\n'
-            '• Remedies: Ganesha worship (removes obstacles for both nodes), Ketu Beej mantra, avoid major life decisions'
+            '• Remedies: Ganesha is the deity the sources we hold pair with Ketu (Rahu is paired with Durga or Narasimha); Ketu Beej mantra and avoiding major life decisions are common practice, not sourced'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
