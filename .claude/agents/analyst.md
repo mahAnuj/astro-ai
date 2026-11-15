@@ -124,7 +124,7 @@ Write levers 4 and 5 under the headings **"Search demand"** and **"Content oppor
 `agent-discover` reads them from `measurements/latest.md` as its inbox. You still do not propose
 features: you name the demand and the existing page, and product-manager decides what to build.
 
-`verify-first.json` (`scripts/verify_first.py`) is also read by the Research team's queue, so the
+`verify-first.json` (`scripts/busiest_pages.py`) is also read by the Research team's queue, so the
 busiest pages get re-audited automatically. You never need to ask for it.
 
 ## Confounds you are required to name

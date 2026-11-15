@@ -20,6 +20,10 @@ Engaged sessions come from GA4's `engagedSessions` when the export carries it
 (fetch_ga4.py since 2026-11-15) and otherwise from sessions x (1 - bounce rate),
 which is the same quantity by GA4's definition of bounce rate.
 
+Named busiest_pages.py, NOT verify_first.py: pr-gates runs every
+`scripts/verify_*.py` with no arguments as a gate, and a script that needs
+--ga4/--gsc exits 2 there ("SKIPPED ... not a pass"), which turned #1063 red.
+
 No model, no network. EXIT CODES: 0 written   2 an input is missing or unreadable
 """
 from __future__ import annotations
@@ -109,7 +113,7 @@ def build(ga4: dict, gsc: dict, top: int = TOP) -> dict:
             "serves": serves(p["path"]),
         })
     rows.sort(key=lambda r: (-r["engaged_sessions"], -r["gsc_impressions"], r["path"]))
-    return {"source": "verify_first.py", "window": ga4.get("window"),
+    return {"source": "busiest_pages.py", "window": ga4.get("window"),
             "basis": ("GA4 engagedSessions" if any(r.get("engaged_sessions") is not None
                                                      for r in ga4.get("rows") or [])
                       else "sessions x (1 - bounce_rate)"),
@@ -127,7 +131,7 @@ def main(argv: list[str] | None = None) -> int:
         ga4 = json.loads(Path(a.ga4).read_text())
         gsc = json.loads(Path(a.gsc).read_text())
     except (OSError, ValueError) as exc:
-        print(f"::warning::verify_first.py could not read its inputs: {exc}")
+        print(f"::warning::busiest_pages.py could not read its inputs: {exc}")
         return 2
     out = build(ga4, gsc, a.top)
     Path(a.out).write_text(json.dumps(out, indent=2) + "\n")

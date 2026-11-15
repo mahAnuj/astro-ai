@@ -96,7 +96,7 @@ VERIFY_FIRST = Path(__file__).resolve().parent.parent / "measurements" / "verify
 
 
 def verify_first_section(path: Path = VERIFY_FIRST, top: int = 5) -> str:
-    """The busiest pages, from scripts/verify_first.py (2026-11-15). Owner: "look
+    """The busiest pages, from scripts/busiest_pages.py (2026-11-15). Owner: "look
     at what users are spending more time on and make sure that is absolutely
     working fine ... 100% correctness". Absent file -> nothing, never an error."""
     try:

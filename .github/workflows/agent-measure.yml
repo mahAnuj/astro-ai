@@ -170,7 +170,7 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p /tmp/measure
-          uv run python scripts/verify_first.py --ga4 /tmp/ga4.json --gsc /tmp/gsc-all.json \
+          uv run python scripts/busiest_pages.py --ga4 /tmp/ga4.json --gsc /tmp/gsc-all.json \
             --out /tmp/measure/verify-first.json \
             && cp /tmp/measure/verify-first.json /tmp/verify-first.json
 

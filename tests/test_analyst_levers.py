@@ -18,7 +18,7 @@ def _load(name):
     return mod
 
 
-vf = _load("verify_first")
+vf = _load("busiest_pages")
 rq = _load("research_queue")
 
 
@@ -31,7 +31,7 @@ def row(landing, sessions, bounce=0.5, **kw):
             "bounce_rate": bounce, **kw}
 
 
-# --- verify_first.py ----------------------------------------------------------
+# --- busiest_pages.py ----------------------------------------------------------
 
 def test_variants_of_one_page_are_folded_and_admin_is_dropped():
     out = vf.build(ga4([row("/learn/x/", 10), row("/learn/x?fbclid=1", 4),
@@ -94,7 +94,7 @@ def test_the_research_queue_carries_the_busiest_pages(tmp_path):
 def test_measure_ranks_pages_before_the_analyst_and_the_prompt_names_the_levers():
     doc = yaml.safe_load((ROOT / ".github/workflows/agent-measure.yml").read_text())
     steps = doc["jobs"]["measure"]["steps"]
-    rank = next(i for i, s in enumerate(steps) if "verify_first.py" in (s.get("run") or ""))
+    rank = next(i for i, s in enumerate(steps) if "busiest_pages.py" in (s.get("run") or ""))
     agent = next(i for i, s in enumerate(steps) if "claude-code-action" in (s.get("uses") or ""))
     assert rank < agent and steps[rank].get("continue-on-error") is True
     assert "/tmp/measure/verify-first.json" in steps[rank]["run"]
