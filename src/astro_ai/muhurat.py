@@ -26,7 +26,7 @@ it (vedic_reference.md 2A, 29.9, 29.10) or that its source is not held.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, timedelta, datetime
+from datetime import date, time, timedelta, timezone, datetime
 from functools import lru_cache
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -947,31 +947,107 @@ def _bhadra_active_at(chart: Chart, when: datetime) -> bool:
     return _karana_at(chart, when) == "Vishti"
 
 
-def _bhadra_window_for_day(chart: Chart, day_start: datetime) -> str:
-    """Return a short string describing Bhadra's presence during the day.
+# A karana is 6 degrees of Sun-Moon elongation. The Moon gains 10-15 degrees a
+# day on the Sun, so one karana lasts 9.4-14.2 hours and Vishti cannot begin and
+# end between two samples 3 hours apart, nor can the gap between two Vishti
+# spans. So a 3-hour grid sees every span and every edge lies in exactly one
+# grid interval; the edge is then found by bisection (#1019). It used to be
+# *reported* as the first sampled hour, up to 3 hours after Vishti began.
+_BHADRA_GRID = timedelta(hours=3)
+_BHADRA_EDGE_RESOLUTION = timedelta(seconds=1)
 
-    Samples 6 points across the day (every 4 hours) — accurate enough
-    for user-facing "morning / afternoon" guidance without doing full
-    half-tithi boundary computation.
+
+def _bhadra_edge(chart: Chart, before: datetime, after: datetime) -> datetime:
+    """First instant in (before, after] at which Vishti's on/off state differs
+    from its state at `before`. The two ends must differ and bracket one edge."""
+    was_active = _bhadra_active_at(chart, before)
+    while after - before > _BHADRA_EDGE_RESOLUTION:
+        mid = before + (after - before) / 2
+        if _bhadra_active_at(chart, mid) == was_active:
+            before = mid
+        else:
+            after = mid
+    return after
+
+
+def _bhadra_spans_for_day(
+    chart: Chart, day_start: datetime,
+) -> tuple[datetime, datetime, list[tuple[datetime, datetime]]]:
+    """(day_begin, day_end, spans): the local civil day containing `day_start`
+    and every interval inside it in which Vishti is active, as UTC instants.
+
+    A span that was already running at the day's first instant starts at
+    `day_begin`; one still running at its last ends at `day_end`. The day is
+    midnight to midnight in the datetime's own zone, stepped in UTC so a
+    23- or 25-hour DST day is measured as it is.
     """
-    from datetime import timedelta as _td
-    hours_active: list[int] = []
-    for h in range(0, 24, 3):
-        when = day_start.replace(hour=h, minute=0, second=0)
-        if _bhadra_active_at(chart, when):
-            hours_active.append(h)
-    if not hours_active:
+    zone = day_start.tzinfo
+    day = day_start.date()
+    begin = datetime.combine(day, time.min, tzinfo=zone).astimezone(timezone.utc)
+    end = datetime.combine(day + timedelta(days=1), time.min,
+                           tzinfo=zone).astimezone(timezone.utc)
+    points = [begin]
+    while points[-1] + _BHADRA_GRID < end:
+        points.append(points[-1] + _BHADRA_GRID)
+    points.append(end)
+    states = [_bhadra_active_at(chart, p) for p in points]
+
+    spans: list[tuple[datetime, datetime]] = []
+    opened = begin if states[0] else None
+    for i in range(1, len(points)):
+        if states[i] == states[i - 1]:
+            continue
+        edge = _bhadra_edge(chart, points[i - 1], points[i])
+        if states[i]:
+            opened = edge
+        else:
+            spans.append((opened, edge))
+            opened = None
+    if opened is not None:
+        spans.append((opened, end))
+    return begin, end, spans
+
+
+def _bhadra_window_for_day(
+    chart: Chart, day_start: datetime,
+    daylight: tuple[datetime, datetime] | None = None,
+) -> str:
+    """Return a short string giving when Bhadra (Vishti) is active that day,
+    to the minute, or "" when it is not active at any point of the day.
+
+    The boundaries are the true karana boundaries (the function /panchang uses),
+    rounded outward -- the start down and the end up to a whole minute -- so the
+    stated window never omits a Vishti minute. A span that began the day before
+    reads "until HH:MM" and one that runs past midnight reads "from HH:MM".
+    `daylight` is (sunrise, sunset); when one span covers all of it the text
+    says so, because the day then has no Bhadra-free daylight at all.
+    """
+    begin, end, spans = _bhadra_spans_for_day(chart, day_start)
+    if not spans:
         return ""
-    # Compress into a period description.
-    start_h = min(hours_active)
-    end_h = max(hours_active) + 3
-    if end_h > 23:
-        end_h = 23
-    period = "morning" if start_h < 12 and end_h < 15 else \
-             "afternoon" if start_h >= 12 and start_h < 17 else \
-             "evening" if start_h >= 17 else \
-             "most of day"
-    return f"Bhadra active ~{start_h:02d}:00-{end_h:02d}:00 ({period}) — avoid ceremonies in that window"
+    zone = day_start.tzinfo
+    parts: list[str] = []
+    for s, e in spans:
+        s_local = s.astimezone(zone)
+        e_local = (e + timedelta(seconds=59, microseconds=999999)).astimezone(zone)
+        e_local = e_local.replace(second=0, microsecond=0)
+        from_prev, into_next = s == begin, e == end
+        if from_prev and into_next:
+            parts.append("Bhadra active all day")
+        elif from_prev:
+            parts.append(f"Bhadra active until {e_local:%H:%M}")
+        elif into_next:
+            parts.append(f"Bhadra active from {s_local.replace(second=0, microsecond=0):%H:%M}"
+                         " (continues into the next day)")
+        else:
+            parts.append(f"Bhadra active {s_local.replace(second=0, microsecond=0):%H:%M}"
+                         f"-{e_local:%H:%M}")
+    text = " and ".join(parts)
+    if daylight is not None:
+        rise, sset = (t.astimezone(timezone.utc) for t in daylight)
+        if any(s <= rise and e >= sset for s, e in spans):
+            text += " (covers sunrise to sunset)"
+    return f"{text} — avoid ceremonies in that window"
 
 
 # ─── Choghadiya — 8 sub-day windows per weekday ──────────────────────
@@ -1620,7 +1696,10 @@ def find_candidates(event_type: str, city: str, start: date,
             else:
                 rk_str = ab_str = ""
             # Phase B — Bhadra / Vishti karana window + Choghadiya table
-            bhadra_window = _bhadra_window_for_day(base_chart, when)
+            bhadra_window = _bhadra_window_for_day(
+                base_chart, when,
+                (p.sunrise, p.sunset) if p.daylight_ordinary else None,
+            )
             choghadiya = (
                 tuple(_choghadiya_windows(p.weekday, p.sunrise, p.sunset))
                 if p.daylight_ordinary else ()
