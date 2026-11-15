@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-15T14:49:38Z",
+ "generated_at": "2026-11-15T16:27:29Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -826,6 +826,13 @@
     ]
    },
    {
+    "number": 1027,
+    "at": "2026-11-15T14:51:51Z",
+    "url": "https://github.com/mahAnuj/astro-ai/issues/1027#issuecomment-6896393248",
+    "summary": "QA: FAIL on PR #1058 at `021e6a138203d11b7c54d5bd8d4e26eb9ffad1f7` (independent round). The two defects from 5b8581d are fixed, and every Raman and Rao citation checked out. The new defect is that \u00a729.13's Griha Pravesh and Vidyarambh code-vs-book rows are stale against main: #1064 (merged after thi",
+    "themes": []
+   },
+   {
     "number": 1058,
     "at": "2026-11-15T09:16:16Z",
     "url": "https://github.com/mahAnuj/astro-ai/pull/1058#issuecomment-6892206771",
@@ -840,6 +847,15 @@
     "themes": [
      "grounding",
      "tests"
+    ]
+   },
+   {
+    "number": 1058,
+    "at": "2026-11-15T14:51:37Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1058#issuecomment-6896390309",
+    "summary": "QA: FAIL \u2014 verified at `021e6a138203d11b7c54d5bd8d4e26eb9ffad1f7`  Independent round (`qa:independent`), cold read of the head by execution. Both defects from the FAIL at 5b8581d are fixed. The FAIL is a new defect: `main` moved under this PR, and on merge \u00a729.13 makes false statements about the cod",
+    "themes": [
+     "grounding"
     ]
    },
    {
@@ -892,7 +908,7 @@
   ]
  },
  "error_themes": {
-  "grounding": 23,
+  "grounding": 24,
   "regression": 22,
   "tests": 21,
   "copy": 20,
