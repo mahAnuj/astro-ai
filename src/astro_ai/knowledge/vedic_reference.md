@@ -2847,8 +2847,9 @@ gate and QA.
 tithi, nakshatra and weekday lists for four events, and nothing in `knowledge/`
 stated them. This section extracts what the two muhurta books say for each event
 and records, rule by rule, whether the code agrees. **It changes no behaviour.**
-Every mismatch is filed as its own issue (listed at the end); a rule change needs
-the fix loop, a verification gate and QA.
+The mismatches are filed as four per-event issues, #1059 to #1062 (listed at the end);
+a rule change needs the fix loop, a verification gate and QA. Code is cited by symbol,
+not line number, because line numbers in `muhurat.py` move with every edit.
 
 **Books present when this was written: 2 muhurta books of the corpus.**
 `data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt` (Raman,
@@ -2897,7 +2898,7 @@ What Raman's house-entry passage does **not** name is a Chaturmas, Kharmas or Da
 rule; those stay §29.10's UNSOURCED items and #1028's job. His Rahu Kalam table is
 elsewhere (L7318) and is not part of the house-entry passage.
 
-**Code vs books (`EVENT_RULES["griha_pravesh"]`, `muhurat.py` ~L693):**
+**Code vs books (`EVENT_RULES["griha_pravesh"]`, `muhurat.py`):**
 
 | Rule in code | Verdict | Why |
 |---|---|---|
@@ -2912,7 +2913,7 @@ elsewhere (L7318) and is not part of the house-entry passage.
 | good days Mon, Wed, Thu, Fri | **CORRECT** | both books |
 | avoid Saturday | **CONTESTED** | Raman: "recommended by some", with a theft risk; Rao does not list it. The code follows the stricter reading |
 | lunar-month list (Vaisakha, Jyeshtha, Magha, Phalguna) | **NOT IMPLEMENTED** | the code has no month-level credit |
-| `check_kharmas` blocks Sun in Dhanu and Meena | **UNSOURCED** | The Kharmas names are absent (§29.10, #1028), but Raman's own Uttarayana rule bears on it: he puts the northern course "between Capricorn and Gemini" (Upanayana, L2580–2581). Dhanu is outside that span, so his rule points away from it, and from Karka to Vrischika too, which the code allows; but two lines on he rates the lunar months Karthika and Margasira (which overlap Sun in Vrischika or Dhanu) "neutral or middling" (L4971–4974), so the book does not settle it either way. Meena is inside the span, so Raman gives no ground for blocking it |
+| `check_kharmas` blocks Sun in Dhanu and Meena | **UNSOURCED** | The Kharmas names are absent (§29.10, #1028), but Raman's own Uttarayana rule bears on it: he puts the northern course "between Capricorn and Gemini" (Upanayana, L2580–2581). Dhanu is outside that span, so his rule points away from it, and from Karka to Vrischika too, which the code allows; but two lines on he rates the lunar months Karthika and Margasira (which overlap Sun in Vrischika or Dhanu, depending on whether the month is reckoned amanta or purnimanta) "neutral or middling" (L4971–4974), so the book does not settle it either way. Meena is inside the span, so Raman gives no ground for blocking it |
 | `check_jupiter_combust` | **CONTESTED** | Raman says Jupiter and Venus "strongly disposed", not "not combust"; the code ignores Venus |
 
 #### Vidyarambh (Aksharabhyasa) — Raman Ch. XI "Commencing Education", L4207–4300 (printed pp. 114–117); Rao Table 79 row "Teaching alphabet"
@@ -2934,7 +2935,7 @@ Rao's row is specific to the alphabet. Raman also says the Janma Nakshatra is
 | Other | forenoon and noon best; malefics in 3rd, 6th, 11th; 8th clean and empty (L4305–4308). **Saraswati Yoga** (Wednesday with Hasta and Gemini or Virgo rising, or Mercury exalted, or Jupiter exalted in lagna) and **Vidya Yoga** (Friday with Pisces rising and Venus in its 27th degree; Jupiter exalted with Cancer rising on Thursday; the Sun in its own hora) (L4265–4291) | — |
 | Subject-specific | Vedas and Sastras: Pushyami, Dhanishta, Sravana, "Let Jupiter be as strong as possible" (L4313–4315); grammar, logic, medicine, music have their own lists (L4317–4355) | — |
 
-**Code vs books (`EVENT_RULES["vidyarambh"]`, `muhurat.py` ~L744):**
+**Code vs books (`EVENT_RULES["vidyarambh"]`, `muhurat.py`):**
 
 | Rule in code | Verdict | Why |
 |---|---|---|
@@ -2966,7 +2967,7 @@ Rao's row is specific to the alphabet. Raman also says the Janma Nakshatra is
 | Name | male name an even number of letters, female an odd number; "appropriate to the ruling star" (L2469–2475) | — |
 | Combustion | **not mentioned** for Namakarana. He waives it for Seemantha (L2424) and Annaprasana (L2511), which are separate ceremonies | — |
 
-**Code vs books (`EVENT_RULES["namkaran"]`, `muhurat.py` ~L714):**
+**Code vs books (`EVENT_RULES["namkaran"]`, `muhurat.py`):**
 
 | Rule in code | Verdict | Why |
 |---|---|---|
@@ -2980,14 +2981,14 @@ Rao's row is specific to the alphabet. Raman also says the Janma Nakshatra is
 | **Dhanishtha, Satabhisha** missing from good | **WRONG (omission)** | on both lists |
 | good days Mon, Wed, Thu, Fri; avoid Tue, Sat | **CONTESTED** | Raman agrees exactly; Rao lists Sun and Sat and omits Fri |
 | `check_jupiter_combust: False` | **UNSOURCED** | Raman is silent on combustion for Namakarana; the waiver is by analogy (the code comment says so) |
-| copy: "classically observed on the 11th day after birth per Grihya Sutras" | **WRONG** | Raman gives the 10th, 12th or 16th day; no held book names the 11th or the Grihya Sutras (#1024, #1056 relabel the copy) |
+| The 11th-day claim: the code comment above `EVENT_RULES["namkaran"]` still says "classically done on the 11th day post-birth". The page copy was already reworded by #1024/#1055 to "commonly held around the 11th day ... custom, not a rule this finder sources" | **UNSOURCED** (comment: **WRONG** as "classical") | Raman gives the 10th, 12th or 16th day (L2431–2476); no held book names the 11th or the Grihya Sutras. The shipped page copy no longer claims otherwise; only the code comment does |
 
 #### The Namkaran first-letter table — Raman, Appendix "Nama Nakshatra, Finding", L6969–7110 (printed pp. 105–106; the OCR headers read "195" and "IOG")
 
 **Raman holds the table.** It is 27 lines of four syllables, one per nakshatra pada,
 introduced as: "Each constellation has been given four letters to be taken as 1st,
 2nd, 3rd, and 4th quarters" (L6969–6975); the nakshatra of a person "is known from
-the first letter of the name" (L7093). The code comment in `muhurat.py` (~L1140)
+the first letter of the name" (L7093). The comment above `_NAMKARAN_LETTERS` in `muhurat.py`
 that says "no book in the corpus carries this table" is therefore out of date.
 
 Raman's spelling is a different transliteration scheme (`Lay` for *Le*, `Chay` for
@@ -2997,7 +2998,7 @@ for that:
 | Result | Nakshatras |
 |---|---|
 | **Clear match under Raman's scheme** | Ashwini, Bharani, Rohini, Mrigashira, Punarvasu, Pushya, Ashlesha, Magha, Purva Phalguni, Uttara Phalguni, Chitra, Anuradha, Jyeshtha, Uttara Ashadha, Dhanishta, Shatabhisha, Purva Bhadrapada, Revati (18 of 27). Of these, 15 need no mapping beyond the vowel spellings; **Purva Bhadrapada** (Tha/Thi read as Da/Di), **Revati** (Thay/Tho as De/Do) and **Uttara Ashadha** (Bay/Bo as Bhe/Bho) match only if Raman's `Th` means *D* and `B` means *Bh*. The same kind of mapping is what leaves Vishakha and Mula in the ambiguous row, so read the count as **15 clear, 3 more under that reading, 6 ambiguous, 3 different** |
-| **Different syllables** | **Shravana.** Raman: Ju, Jay, Jo, Gha. Code: Khi, Khu, Khe, Kho. Both sets circulate in practice; the book holds the first |
+| **Different syllables** | **Shravana.** Raman: Ju, Jay, Jo, Gha. Code: Khi, Khu, Khe, Kho. The book holds the first set |
 | **Different or unreadable** | **Ardra** pada 3 (Raman "Jna", code "Ang"); **Uttara Bhadrapada** (Raman's pada 2 is OCR-garbled as "Syatn", pada 3 reads "Cha" where the code has "Jha") |
 | **Transliteration cannot settle it** | **Krittika** (Raman "Aa, Ec, U, A", code "A, I, U, E"); **Hasta** pada 4 (Raman "Dha", code "Tha"); **Swati** pada 4 (Raman "Tha", code "Ta"); **Vishakha** (Raman "Thi, Thu, Thay, Tho", code "Ti, Tu, Te, To"); **Mula** pada 3–4 (Raman "Ba, Bi", code "Bha, Bhi"); **Purva Ashadha** pada 1 and 3 (Raman "Bu … Bha", code "Bhu … Pha") |
 
@@ -3030,8 +3031,9 @@ disclosure.
 
 #### Issues filed from this section
 
-The WRONG and CONTESTED rows above are filed per event, each linked to #1017:
-see the list on #1027. Nothing here is applied.
+The WRONG and CONTESTED rows above are filed as one issue per event, each linked to
+#1017: #1059 (Vidyarambh), #1060 (Namkaran), #1061 (Griha Pravesh) and #1062 (the
+first-letter table). Nothing here is applied.
 
 ---
 
