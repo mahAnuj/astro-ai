@@ -61,4 +61,9 @@ MUTATIONS = [
      "Uttara Phalguni nakshatra, Shukla Trayodashi, on a Sunday.</li>",
      "Hasta nakshatra, Shukla Trayodashi, on a Monday.</li>",
      "test_the_griha_pravesh_article_names_the_date_the_finder_now_rates_first_excellent"),
+    ("#1020 QA: the Vivah article names 16 Apr as the first excellent spring date again",
+     "src/astro_ai/templates/learn/vivah-muhurat-2027.html",
+     "rates the 18th the first excellent wedding day of the spring season",
+     "rates the 16th the first excellent wedding day of the spring season",
+     "test_the_vivah_article_names_the_first_excellent_spring_date_the_finder_gives"),
 ]

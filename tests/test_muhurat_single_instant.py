@@ -144,3 +144,17 @@ def test_the_griha_pravesh_article_names_the_date_the_finder_now_rates_first_exc
     text = Path("src/astro_ai/templates/learn/griha-pravesh-muhurat-2026-2027.html").read_text()
     assert "Uttara Phalguni nakshatra, Shukla Trayodashi, on a Sunday." in text
     assert "Hasta nakshatra, Shukla Trayodashi, on a Monday" not in text
+
+
+def test_the_vivah_article_names_the_first_excellent_spring_date_the_finder_gives():
+    # QA on #1057 round 2: the article said "the 16th" (excellent); the finder has rated the 16th
+    # avoid (nitya_yoga_block) since before #1020, and the first excellent date is 2027-04-18.
+    from pathlib import Path
+
+    rows = sorted(m.find_candidates("vivah", "Delhi", date(2027, 4, 12), 10), key=lambda c: c.d)
+    by_date = {c.d: c for c in rows}
+    assert by_date[date(2027, 4, 16)].rating == "avoid"
+    assert next(c for c in rows if c.rating == "excellent").d == date(2027, 4, 18)
+    text = Path("src/astro_ai/templates/learn/vivah-muhurat-2027.html").read_text()
+    assert "rates the 18th the first excellent wedding day of the spring season" in text
+    assert "rates the 16th the first excellent" not in text
