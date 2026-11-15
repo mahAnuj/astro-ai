@@ -132,3 +132,23 @@ def test_the_real_routes_render_the_disclosure():
         assert "widely followed convention" in text.lower(), path
         assert not _bad_in_template(r.text), (path, _bad_in_template(r.text))
         assert "Grihya" not in text, path
+
+
+def test_the_vivah_combustion_veto_is_labelled_a_convention_not_a_sourced_rule():
+    """QA on #1024: knowledge/grahas.md 12.5 finds Raman's wedding criteria and Rao's Table 79
+    list no combustion, so the Vivah Guru/Shukra veto is the finder's own convention."""
+    text = _template_text(FINDER)
+    sourced = text.split("Criteria applied:")[1].split("Widely followed conventions")[0]
+    for sentence in re.split(r"(?<=[.!?])\s+", sourced):
+        if "combust" in sentence.lower():
+            assert "own convention" in sentence, sentence  # never listed beside Raman's items
+    para = text.split("Combustion (asta):")[1].split("Namkaran checks none")[0]
+    assert re.search(r"Vivah is this finder's own convention", para), para
+    assert "Table 79" in para and "do not list combustion" in para, para
+    intro = m.EVENT_LANDING["vivah"]["intro_paragraphs"][0]
+    sourced_clause, _, conventions_clause = intro.partition("widely followed conventions")
+    assert "combust" not in sourced_clause.lower(), sourced_clause
+    assert "not combust" in conventions_clause, conventions_clause
+    for line in m.EVENT_LANDING["vivah"]["rules_summary"]:
+        if "uncombust" in line:
+            assert "this finder's own convention" in line, line
