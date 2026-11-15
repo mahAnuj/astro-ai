@@ -1,0 +1,207 @@
+{
+  "tag": "natal-head",
+  "eval_name": "astro-natal",
+  "model": "claude-haiku-5-5",
+  "prompt_path": ".prompteval/pr/natal/head.txt",
+  "prompt_text": "You are an experienced Vedic astrologer writing a sectioned natal reading for th [trimmed for the fixture]",
+  "started_at": "2026-11-15T10:46:40+00:00",
+  "finished_at": "2026-11-15T10:46:40+00:00",
+  "examples": [
+    {
+      "id": "anuj",
+      "input": "Today's date: 2026-11-14 (Saturday). Treat this as the present moment. Do not re [trimmed]",
+      "expected": {},
+      "output": "",
+      "scores": [],
+      "cost": {
+        "model": "claude-haiku-5-5",
+        "uncached_input_tokens": 0,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_tokens": 0,
+        "uncached_input_cost": 0.0,
+        "cached_input_cost": 0.0,
+        "output_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "latency_s": 0.09384294799974668,
+      "error": "ClaudeCodeError: Claude Code returned an error: API Error: 429 rate_limit_error",
+      "judge_cost": 0.0,
+      "source": null
+    },
+    {
+      "id": "priya",
+      "input": "Today's date: 2026-11-14 (Saturday). Treat this as the present moment. Do not re [trimmed]",
+      "expected": {},
+      "output": "",
+      "scores": [],
+      "cost": {
+        "model": "claude-haiku-5-5",
+        "uncached_input_tokens": 0,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_tokens": 0,
+        "uncached_input_cost": 0.0,
+        "cached_input_cost": 0.0,
+        "output_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "latency_s": 0.05151988700026777,
+      "error": "ClaudeCodeError: Claude Code returned an error: API Error: 429 rate_limit_error",
+      "judge_cost": 0.0,
+      "source": null
+    },
+    {
+      "id": "arjun",
+      "input": "Today's date: 2026-11-14 (Saturday). Treat this as the present moment. Do not re [trimmed]",
+      "expected": {},
+      "output": "",
+      "scores": [],
+      "cost": {
+        "model": "claude-haiku-5-5",
+        "uncached_input_tokens": 0,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_tokens": 0,
+        "uncached_input_cost": 0.0,
+        "cached_input_cost": 0.0,
+        "output_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "latency_s": 0.07403845500039097,
+      "error": "ClaudeCodeError: Claude Code returned an error: API Error: 429 rate_limit_error",
+      "judge_cost": 0.0,
+      "source": null
+    },
+    {
+      "id": "meera",
+      "input": "Today's date: 2026-11-14 (Saturday). Treat this as the present moment. Do not re [trimmed]",
+      "expected": {},
+      "output": "",
+      "scores": [],
+      "cost": {
+        "model": "claude-haiku-5-5",
+        "uncached_input_tokens": 0,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_tokens": 0,
+        "uncached_input_cost": 0.0,
+        "cached_input_cost": 0.0,
+        "output_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "latency_s": 0.07730814399974406,
+      "error": "ClaudeCodeError: Claude Code returned an error: API Error: 429 rate_limit_error",
+      "judge_cost": 0.0,
+      "source": null
+    },
+    {
+      "id": "rohan",
+      "input": "Today's date: 2026-11-14 (Saturday). Treat this as the present moment. Do not re [trimmed]",
+      "expected": {},
+      "output": "",
+      "scores": [],
+      "cost": {
+        "model": "claude-haiku-5-5",
+        "uncached_input_tokens": 0,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_tokens": 0,
+        "uncached_input_cost": 0.0,
+        "cached_input_cost": 0.0,
+        "output_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "latency_s": 0.06289142500008893,
+      "error": "ClaudeCodeError: Claude Code returned an error: API Error: 429 rate_limit_error",
+      "judge_cost": 0.0,
+      "source": null
+    },
+    {
+      "id": "kavya",
+      "input": "Today's date: 2026-11-14 (Saturday). Treat this as the present moment. Do not re [trimmed]",
+      "expected": {},
+      "output": "",
+      "scores": [],
+      "cost": {
+        "model": "claude-haiku-5-5",
+        "uncached_input_tokens": 0,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_tokens": 0,
+        "uncached_input_cost": 0.0,
+        "cached_input_cost": 0.0,
+        "output_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "latency_s": 0.04859954399989874,
+      "error": "ClaudeCodeError: Claude Code returned an error: API Error: 429 rate_limit_error",
+      "judge_cost": 0.0,
+      "source": null
+    },
+    {
+      "id": "vikram",
+      "input": "Today's date: 2026-11-14 (Saturday). Treat this as the present moment. Do not re [trimmed]",
+      "expected": {},
+      "output": "A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full r",
+      "scores": [
+        {
+          "name": "substantial_reply",
+          "score": 1.0,
+          "reasoning": null,
+          "metadata": null
+        }
+      ],
+      "cost": {
+        "model": "claude-haiku-5-5",
+        "uncached_input_tokens": 1,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_tokens": 0,
+        "uncached_input_cost": 0.0,
+        "cached_input_cost": 0.0,
+        "output_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "latency_s": 0.0725298180000209,
+      "error": null,
+      "judge_cost": 0.0,
+      "source": null
+    },
+    {
+      "id": "sara",
+      "input": "Today's date: 2026-11-14 (Saturday). Treat this as the present moment. Do not re [trimmed]",
+      "expected": {},
+      "output": "A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full reading. A full r",
+      "scores": [
+        {
+          "name": "substantial_reply",
+          "score": 1.0,
+          "reasoning": null,
+          "metadata": null
+        }
+      ],
+      "cost": {
+        "model": "claude-haiku-5-5",
+        "uncached_input_tokens": 1,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_tokens": 0,
+        "uncached_input_cost": 0.0,
+        "cached_input_cost": 0.0,
+        "output_cost": 0.0,
+        "total_cost": 0.0
+      },
+      "latency_s": 0.08140792699987287,
+      "error": null,
+      "judge_cost": 0.0,
+      "source": null
+    }
+  ],
+  "dataset_sha256": "9cd0e36afa88799e59508725775c987fa57472b9fa966edc94bcf92a554617af",
+  "base_url": "claude-code",
+  "price_source": "reported by Claude Code (API list prices)",
+  "params": {},
+  "repeats": 1,
+  "criteria": "/home/user/astro-ai/.claude/worktrees/agent-a7fe0c039e951119f/evals/criteria/astro-reading.md"
+}
