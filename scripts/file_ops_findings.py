@@ -147,7 +147,15 @@ def body_for(f: dict, now: str) -> str:
             f"changes and when it clears, never refiled. See `/admin/ops`.")
 
 
-def carry(gh: Runner, repo: str, findings: list[dict], now: str) -> dict:
+#: Kinds raised by scripts/watch_app_health.py (the live app, read from GCS).
+APP_PREFIX = "app-"
+
+
+def carry(gh: Runner, repo: str, findings: list[dict], now: str,
+          keep_prefix: str | None = None) -> dict:
+    """`keep_prefix`: kinds that were NOT read this run (the app watcher could not
+    reach the bucket). Their open issues are left untouched rather than told
+    'cleared' -- an unreadable source is not a clean one."""
     stats = {"filed": 0, "updated": 0, "unchanged": 0, "cleared": 0}
     existing = open_findings(gh, repo)
     seen = set()
@@ -180,6 +188,8 @@ def carry(gh: Runner, repo: str, findings: list[dict], now: str) -> dict:
     for kind, cur in existing.items():
         if kind in seen:
             continue
+        if keep_prefix and kind.startswith(keep_prefix):
+            continue
         _, cleared = last_comment_state(gh, repo, cur["number"])
         if cleared:
             continue
@@ -195,15 +205,28 @@ def main(argv: list[str], gh: Runner = run_gh, now: datetime | None = None) -> i
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--repo", required=True)
     ap.add_argument("--findings", required=True, help="detect_ops_regressions.py --json output file")
+    ap.add_argument("--app", help="scripts/watch_app_health.py --out file (the live app, from GCS)")
     try:
         a = ap.parse_args(argv[1:])
         doc = json.loads(open(a.findings).read())
     except (SystemExit, OSError, json.JSONDecodeError) as exc:
         print(f"::error::file_ops_findings.py: bad input ({exc})")
         return 2
+    findings = list(doc.get("findings") or [])
+    keep = APP_PREFIX            # app-* issues are left alone unless the app was READ this run
+    if a.app:
+        try:
+            app = json.loads(open(a.app).read())
+        except (OSError, json.JSONDecodeError):
+            app = {"ok": False}
+        if app.get("ok"):
+            findings += [f for f in app.get("findings") or [] if str(f.get("kind", "")).startswith(APP_PREFIX)]
+            keep = None
+        else:
+            print(f"app health not read ({app.get('why', 'no file')}); app-* issues left as they are")
     stamp = (now or datetime.now(timezone.utc)).strftime("%Y-%m-%dT%H:%MZ")
     try:
-        stats = carry(gh, a.repo, doc.get("findings") or [], stamp)
+        stats = carry(gh, a.repo, findings, stamp, keep_prefix=keep)
     except (RuntimeError, json.JSONDecodeError) as exc:
         print(f"::error::ops findings could not be filed: {exc}")
         return 1
