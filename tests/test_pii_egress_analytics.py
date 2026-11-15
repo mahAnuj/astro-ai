@@ -107,7 +107,7 @@ def test_the_ask_redirect_may_carry_the_question_only_because_analytics_js_strip
     assert redirects, "POST /ask did not redirect"
     assert "zanzibar" in redirects[0]["location"].lower() or "q=" in redirects[0]["location"]
     assert {v for v in e.violations() if v[0] == "analytics:location"} == set()
-    assert "PII_PARAMS = ['q', 'city']" in ANALYTICS_JS.read_text(encoding="utf-8")
+    assert "PII_PARAMS = ['q', 'city', 'email', 'token']" in ANALYTICS_JS.read_text(encoding="utf-8")
 
 
 # ─── static: the templates, for states no scenario drives ──────────────────
