@@ -138,8 +138,13 @@ jobs:
             - numerology.py uses Johari's all-digits reduction (see its header),
               not Goodwin's. Goodwin stays contrast-only.
 
-            Standing queue: #177/#178 (Ashtakoota has no source in the repo at
-            all), #175, #209, #211, #219, #163, #201, #200, #191, #230.
+            FIRST, muhurat (owner 2026-11-14: muhurat search is the site's top
+            organic landing; #1017): #1027 (Griha Pravesh, Vidyarambh, Business,
+            Namkaran lists), #1029 (Rahu Kaal, eclipse, Abhijit precedence,
+            Magha/Mula), #1028 (Chaturmas, Kharmas, Dagdha, Choghadiya...).
+            Comment each result on its issue; the code fixes are Engineering's.
+            Then the standing queue: #177/#178 (Ashtakoota has no source in the
+            repo at all), #175, #209, #211, #219, #163, #201, #200, #191, #230.
 
             Classify every finding WRONG / UNSOURCED / CONTESTED / CORRECT.
             Cite as `file §section ← data/<book> L<start>-<end>`. A citation with
