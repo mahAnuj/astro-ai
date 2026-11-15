@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-15T16:26:02Z",
+  "generated_at": "2026-11-15T18:24:12Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 135,
+  "open": 136,
   "with_ask": 44,
   "by_area": {
     "UNCLASSIFIED": 50,
@@ -17,6 +17,7 @@
     "NUMEROLOGY": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "GOCHAR-2026": 2,
     "ASK": 2,
     "MEASURE": 2,
     "MATCHING": 2,
@@ -25,7 +26,6 @@
     "BUG": 2,
     "KUNDLI": 1,
     "SADE-SATI": 1,
-    "GOCHAR-2026": 1,
     "KNOWLEDGE": 1,
     "MUHURAT": 1,
     "AGENT-MEASURE": 1,
@@ -35,7 +35,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 36,
+    "bug": 37,
     "untyped": 33,
     "enhancement": 32,
     "chore": 19,
@@ -43,12 +43,28 @@
     "design": 4
   },
   "by_priority": {
-    "unset": 99,
+    "unset": 100,
     "medium": 20,
     "high": 16
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1100,
+      "title": "gochar-2026: six QA hand-mutations survive the new gate, and five per-rashi lines have no source (follow-up to #1079)",
+      "ask": "",
+      "area": "GOCHAR-2026",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-15T18:23:23Z",
+      "updated": "2026-11-15T18:23:23Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1089,
       "title": "numerology: a mixed-script name (\"Anuj महाजन\") is silently scored on its Latin words only and shown as the whole-name reading",
@@ -220,10 +236,13 @@
       "labels": [
         "bug",
         "priority:high",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T10:25:46Z",
-      "updated": "2026-11-15T10:26:57Z",
+      "updated": "2026-11-15T18:23:33Z",
       "blocked": false,
       "needs_evidence": false
     },
