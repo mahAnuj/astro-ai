@@ -108,10 +108,14 @@ def test_abhijit_overlaps_unit_cases():
 
 
 def test_a_date_with_no_daylight_span_carries_no_overlap_note(monkeypatch):
-    # Tromso 2026-05-17: no ordinary sunrise-to-sunset span, the windows are blank (#228)
-    monkeypatch.setattr(chart, "geocode_place", lambda place: TROMSO)
-    for c in m.find_candidates("griha_pravesh", "Tromso", date(2026, 5, 17), 1):
-        assert c.abhijit_muhurta == "" and c.abhijit_overlaps == ()
+    # Reykjavik, June 2026: 15 dates hold no ordinary sunrise-to-sunset span, the windows are
+    # blank (#228). The arithmetic is meaningless there (Abhijit '12:47-14:11' is 84 minutes), so
+    # an overlap computed from it would be a confident wrong note: 7 of those 15 dates would get one.
+    monkeypatch.setattr(chart, "geocode_place", lambda place: (64.1466, -21.9426, "Atlantic/Reykjavik"))
+    blank = [c for c in m.find_candidates("business", "Reykjavik", date(2026, 6, 10), 30)
+             if c.abhijit_muhurta == ""]
+    assert len(blank) >= 10, "the fixture no longer reaches the polar dates"
+    assert all(c.abhijit_overlaps == () for c in blank), [c.d for c in blank if c.abhijit_overlaps]
 
 
 def test_the_page_says_when_each_verdict_is_read_and_names_the_overlap():
@@ -124,6 +128,6 @@ def test_the_page_says_when_each_verdict_is_read_and_names_the_overlap():
         "start_date": "2026-11-14", "days": 14})
     assert page.status_code == 200
     body = html.unescape(page.text)
-    assert "all read at 12:00 local time" in body
+    assert "One verdict, one moment" in body and "are all read at 12:00 local time on the date, so" in body
     assert "Abhijit and Rahu Kaal overlap 11:45-12:06" in body
     assert 'read at 12:00 local time on the date">Tithi</th>' in body
