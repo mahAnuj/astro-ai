@@ -40,6 +40,13 @@ UNSOURCED = (
     "not classical hamsa territory",
     "unusual moral weight",
     "dharmaraja",
+    # #1036: residue after #1032 -- 'classical' or a bare superlative as authority for a claim the held text lacks
+    "one of the classical configurations",
+    "(classically) marriage",
+    "are common signatures",
+    "most fortunate career placements",
+    "lifelong gift of",
+    "marriage often triggers",
 )
 
 _WEAK_WORD = re.compile(r"\b(weak|weaker|weakened|difficult|afflicted|compromised|malefic)\b", re.I)
