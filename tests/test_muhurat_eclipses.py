@@ -72,6 +72,13 @@ def test_a_maximum_near_new_year_lands_on_its_ist_date():
     assert all(d.year == 2029 for d, _ in m._eclipses_in_year(2029))
 
 
+def test_a_maximum_that_crosses_new_year_only_in_ist_is_kept_in_the_later_year():
+    # 2009-12-31 19:22 UT partial lunar maximum is 2010-01-01 00:52 IST: it belongs to 2010,
+    # and finding it needs the two-day margin around the year in _eclipses_in_year.
+    assert (date(2010, 1, 1), "Partial Lunar Eclipse") in m._eclipses_in_year(2010)
+    assert all(d.year == 2009 for d, _ in m._eclipses_in_year(2009))
+
+
 def test_blocking_window_and_reason_text_are_unchanged():
     assert m._eclipse_flag(date(2028, 7, 5)) == (
         True, "Partial Lunar Eclipse (day before, Jul 06) — traditionally inauspicious")

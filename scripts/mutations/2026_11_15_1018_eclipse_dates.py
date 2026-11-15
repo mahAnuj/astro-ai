@@ -33,4 +33,9 @@ MUTATIONS = [
      "            if gap == 1:\n                which = \"day before\"",
      "            if gap <= 2:\n                which = \"day before\"",
      "test_blocking_window_and_reason_text_are_unchanged"),
+    ("#1018: the two-day margin before the year is dropped, losing a maximum that is on 31 Dec in UT and 1 Jan in IST",
+     "src/astro_ai/muhurat.py",
+     "    start = swe.julday(year, 1, 1, 0.0) - 2\n",
+     "    start = swe.julday(year, 1, 1, 0.0)\n",
+     "test_a_maximum_that_crosses_new_year_only_in_ist_is_kept_in_the_later_year"),
 ]
