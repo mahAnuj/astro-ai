@@ -1,211 +1,223 @@
-# Analyst report — run of 2026-11-14
+# Analyst report — run 2026-11-15
 
-**Window for every number: 2026-10-15 → 2026-11-11** (28 days, last 3 days excluded; GSC lags 2–3 days, GA4 24–48h) unless a row states another. **Previous window** for deltas: 2026-09-17 → 2026-10-14. All figures read this run from `/tmp/gsc-band.json`, `/tmp/gsc-all.json`, `/tmp/ga4.json`, `/tmp/gsc-daily.json`, `/tmp/ga4-daily.json`, `/tmp/gsc-trend-page.json`, `/tmp/gsc-trend-query.json`, `/tmp/ga4-events.json`.
+**Window for every number below: 2026-10-16 → 2026-11-12 (28 days; the last 3 days are excluded because GSC lags 2–3 days and GA4 24–48h).**
+Prior window where a delta is quoted: **2026-09-18 → 2026-10-15** (`gsc-trend-*.json`).
+All figures were read from `/tmp/*.json` this run. Anything taken from an issue comment is labelled as such.
 
 ## 0. Coverage — read before any number
 
-| export | dimension | coverage of property total | truncated | note |
-|---|---|---|---|---|
-| gsc-all / gsc-band / gsc-trend-page | page | 100% of 23,440 impressions (293 clicks) | no | band printed 102 rows = 82% of impressions (19,260) |
-| gsc-trend-query | query | **14%** of 23,440 | no | partial view: Google withholds rare queries; never read as the whole site |
-| ga4 | landing × channel | 100% of 703 sessions (151 rows, 97 landings) | no | 89 distinct paths after folding query strings and trailing slashes |
-| ga4-daily | date | 28 of 28 days with traffic | n/a | |
-| ga4-events | event | 4,725 events | no | `cta_click` exists only from 2026-11-03 04:42Z (PR #688): partial history |
+| export | dimension | window | coverage | truncated | note |
+|---|---|---|---:|---|---|
+| `gsc-band.json` | page, position 6–20 | 10-16 → 11-12 | 100% of 25,802 property impressions (rows sum 25,880) | no | `emitted_*`: 101 pages, 19,408 impressions = 75% |
+| `gsc-all.json` | page | 10-16 → 11-12 | 100% | no | 140 pages |
+| `gsc-daily.json` | date | 10-16 → 11-12 | 100% | no | 28 days |
+| `gsc-trend-page.json` | page, now vs prior | 10-16 → 11-12 vs 09-18 → 10-15 | 100% of 25,802 | – | 140 pages now, 126 prior |
+| `gsc-trend-query.json` | query, now vs prior | same | **14%** of 25,802 | – | partial view: Google withholds rare queries. 722 query keys now vs 196 prior. No site-wide conclusion can be drawn from it. |
+| `ga4.json` | landing × channel | 10-16 → 11-12 | 100% of 686 sessions (rows 685) | no | 149 rows, 97 raw landings, **89 after folding query strings and trailing slashes** |
+| `ga4-daily.json` | date | 10-16 → 11-12 | – | – | 27 of 28 days have traffic. **11-12 is `no_data: true`**, i.e. GA4 has not delivered that day, so it is not a zero. |
+| `ga4-events.json` | event | 10-16 → 11-12 | 16 event names, 4,631 events | no | `cta_click` exists only from 2026-11-03 04:42Z (PR #688), so ~10 of the 28 days |
 
-## 1. The 6–20 band against OBJECTIVE.md
+GA4 sessions are summed across channel rows per folded landing; bounce and pages/session are session-weighted. A page's "position" in page mode is its average across queries, not any one query's rank.
 
-Objective: *move the 6–20 band into the top 5 on the ten highest-impression queries.* The page-mode export measures **pages**, whose position is an average across their queries. The query export covers 14%, so "ten highest-impression queries" cannot be read for the whole site; the ten highest-impression **pages** are read instead.
+## 1. Site level
 
-| measure (2026-10-15 → 11-11, GSC page mode) | value |
-|---|---|
-| pages at average position 6–20 | 102 pages, 19,260 impressions, 220 clicks |
-| of those, pages at position ≤ 10 | 81 pages, 18,888 impressions |
-| ten highest-impression pages with average position ≤ 5.0 | **0 of 10** (objective target: 10 of 10) |
-| ten highest-impression pages, position range | 5.3 – 7.4 |
-| band CTR median, 25 pages with ≥ 100 impressions | 0.87% |
-| site-wide, this window vs previous | 23,518 vs 10,748 impressions (+119%); 293 vs 107 clicks (+174%) |
-
-Ten highest-impression pages (window above):
-
-| # | page | impressions | clicks | CTR | avg position | impressions prev | position prev |
-|---|---|---:|---:|---:|---:|---:|---:|
-| 1 | /learn/rahu-mahadasha-ketu-antardasha/ | 3,612 | 53 | 1.47% | 6.5 | 1,821 | 7.5 |
-| 2 | /learn/debilitated-sun-career/ | 2,469 | 14 | 0.57% | 6.6 | 1,013 | 6.1 |
-| 3 | /learn/sade-sati/ | 1,923 | 13 | 0.68% | 6.6 | 945 | 6.2 |
-| 4 | /learn/jupiter-in-10th-house-career/ | 1,609 | 14 | 0.87% | 6.9 | 358 | 6.8 |
-| 5 | /learn/7th-lord-placement-marriage-guide/ | 1,305 | 13 | 1.00% | 7.3 | 222 | 8.0 |
-| 6 | /learn/gochar-2026-planetary-transits/ | 1,147 | 16 | 1.39% | 6.2 | 16 | 6.9 |
-| 7 | /learn/career-during-sade-sati/ | 1,008 | 15 | 1.49% | 5.4 | 407 | 7.3 |
-| 8 | /learn/rahu-mahadasha-career-problems/ | 991 | 22 | 2.22% | 5.9 | 837 | 7.2 |
-| 9 | /learn/planets-in-7th-house-marriage/ | 882 | 7 | 0.79% | 6.2 | 512 | 6.1 |
-| 10 | /learn/panch-mahapurush-yoga/ | 800 | 10 | 1.25% | 6.9 | 379 | 6.8 |
-
-Band opportunity ranking (the export's `band_opportunity`, impressions × achievable CTR gain), top 8:
-
-| page | impressions | CTR | position | band_opportunity |
-|---|---:|---:|---:|---:|
-| /learn/rahu-mahadasha-ketu-antardasha/ | 3,612 | 1.47% | 6.5 | 163.7 |
-| /learn/debilitated-sun-career/ | 2,469 | 0.57% | 6.6 | 134.1 |
-| /learn/sade-sati/ | 1,923 | 0.68% | 6.6 | 102.4 |
-| /learn/jupiter-in-10th-house-career/ | 1,609 | 0.87% | 6.9 | 82.5 |
-| /learn/7th-lord-placement-marriage-guide/ | 1,305 | 1.00% | 7.3 | 65.3 |
-| /learn/gochar-2026-planetary-transits/ | 1,147 | 1.39% | 6.2 | 52.8 |
-| /learn/planets-in-7th-house-marriage/ | 882 | 0.79% | 6.2 | 45.9 |
-| /learn/panch-mahapurush-yoga/ | 800 | 1.25% | 6.9 | 38.0 |
-
-Reading: the band grew in width (impressions more than doubled) but not in height. The site-wide average position is flat (daily 6.5–8.1 across the window) and no top-10 page is at ≤ 5.0. The two nearest are `/learn/career-during-sade-sati/` (5.4) and `/learn/rahu-mahadasha-career-problems/` (5.9). Page-level position rose by 1 or more on `rahu-mahadasha-ketu-antardasha` (7.5 → 6.5) and `career-during-sade-sati` (7.3 → 5.4).
-
-## 2. Site-level trend
-
-| period (2026-10-15 → 11-11) | GSC impressions | GSC clicks | CTR | GA4 sessions |
-|---|---:|---:|---:|---:|
-| first 7 days (10-15 → 10-21) | 2,959 | 38 | 1.28% | 138 |
-| middle 14 days (10-22 → 11-04) | 13,686 | 155 | 1.13% | not split |
-| last 7 days (11-05 → 11-11) | 8,035 | 114 | 1.42% | 252 |
-| whole window | 23,440 | 293 | 1.25% | 704 (703 per property total) |
-
-Impressions step up from about 400/day (10-15 → 10-22) to about 1,000/day from 10-26 and stay there. GA4 sessions per day ranged 11–59 with one-day spikes on 2026-10-16 (42), 10-23 (34), 11-06 (59) and 11-10 (43). **Not determinable:** what produced those spikes; `ga4-daily.json` has no channel split, so organic cannot be separated from direct on a given day. Single-day spikes are not trends.
-
-### GA4 sessions by channel (2026-10-15 → 11-11, landing × channel rows summed; bounce and pages/session weighted by sessions)
-
-| channel | sessions | bounce rate | pages/session |
+| metric | 10-16 → 11-12 | 09-18 → 10-15 | change |
 |---|---:|---:|---:|
-| Organic Search | 390 | 45.4% | 1.63 |
-| Direct | 296 | 75.0% | 1.80 |
-| AI Assistant | 11 | 36.4% | 4.09 |
-| Unassigned | 5 | 80.0% | 0.40 |
-| all | 702 | 58.0% | 1.73 |
+| GSC impressions (page-row sum) | 25,880 | 10,938 | +137% |
+| GSC clicks (page-row sum) | 341 | 105 | +225% |
+| CTR | 1.32% (341 / 25,802 property) | 0.96% (105 / 10,938 rows) | +0.36 pt |
+| pages with any impression | 140 | 126 | +14 |
 
-North-star read: organic sessions = **390 of 702 (56%)**. The 296 Direct sessions carry 75% bounce, which is the shape of non-human or internal traffic; this cannot be settled from these exports.
+| GSC daily, this window | impressions | clicks | impressions-weighted position |
+|---|---:|---:|---|
+| first 14 days (10-16 → 10-29) | 9,438 | 108 | daily 6.6–8.1 |
+| last 14 days (10-30 → 11-12) | 16,364 | 233 | daily 6.1–7.4 |
 
-**Measurement noise in the denominator (#735, deployed 2026-11-11):** 20 sessions (2.8% of 702) landed on `/admin/ops/` (19 Direct, 1 Organic Search; 60% bounce), and 20 more sit on landing `(not set)` (15 Organic Search, 95% bounce, 0.0 pages/session). The #735 fix merged 2026-11-11 02:38Z, so this window still contains the admin traffic; the 28-day effect is pending (scoreable from 2026-12-12, already posted on #735).
+| GA4, this window | sessions |
+|---|---:|
+| all, 10-16 → 11-12 | 686 |
+| first 14 days (10-16 → 10-29) | 300 |
+| 10-30 → 11-11 (13 days, 11-12 not delivered) | 387 |
+| Organic Search | 384 (56%) |
+| Direct | 285 (42%) |
+| AI Assistant | 11 |
+| Unassigned | 5 |
 
-## 3. Scores — issues closed in the last 45 days that carried a `thesis:` and a `metric:`
+- The daily average position stayed in a 6.1–8.1 band all window while impressions rose about 3.3×, from 404 on 10-16 to 1,343 on 11-12. More pages ranked and more queries surfaced (722 query keys vs 196). The mean did not improve.
+- GA4 has no prior-window export in this run, so **there is no GA4 week-on-week comparison**. Sessions are quoted only inside this window.
 
-Rule applied: a window is clean when it starts on or after the deploy date. This window starts 2026-10-15.
+**Confounds on the site-level rise (named, not resolved):**
+- Seasonality: Diwali fell on 2026-11-08, inside the window. Festival and muhurat traffic is seasonal, and this run has no prior-year data to separate the calendar from the work.
+- Concurrent ships: `git log` is not usable here because the checkout is shallow (1 commit). Merged PRs read via `gh` show dozens of learn, matching and muhurat changes in the window (e.g. #680, #754, #690, #696, #940, #1005, #1009, #1011, #960), so no rise is attributable to any single one.
+- Page reachability: `/health` returned HTTP 200 from the runner this run. Individual pages were not probed.
+- Measurement contamination: GA4 holds **18 sessions landing on `/admin/ops`, 1 on `/admin/activity` and 20 on `(not set)`**, 39 of 686 (5.7%) that are not visitor traffic or cannot be attributed. #735 was closed 2026-11-11, and the window includes days before that. I cannot tell from these files how many of the 39 post-date the fix.
 
-### Posted this run (once each)
+## 2. The 6–20 position band against OBJECTIVE.md
 
-| issue | deploy | verdict | predicted | actual (2026-10-15 → 11-11) | where |
-|---|---|---|---|---|---|
-| **#276** Rahu–Ketu antardasha `/dasha` CTA | PR #342, 2026-10-14 02:02Z | **BAR MET, not attributable** | ≥ 1.20 pages/session on ≥ 20 organic sessions | **1.42 on 55 organic sessions** (all channels 1.33 on 69) | comment on #276 |
-| **#329** Manglik checker link | PR #344, 2026-10-14 16:07Z | **UNSCOREABLE at this traffic: 3 vs 10** | ≥ 1.30 pages/session on ≥ 10 organic sessions | 3 organic sessions at 1.00; 7 all channels | comment on #329 |
+Objective (OBJECTIVE.md): *move the 6–20 band into the top 5 on the ten highest-impression queries.*
 
-Caveat on the #276 hit, stated as plainly as the pass: the page's 1.42 pages/session is **below** the 1.58 of all other `/learn/*` organic landings combined (251 sessions), so the data does not show this CTA outperforming the routes #518 added elsewhere. A second tool route landed on the same article on 2026-11-02 (PR #680) and the link text changed on 2026-11-09 (PR #830). The one direct `cta_click` read for the page (from `/tmp/ga4-events.json`, partial history from 2026-11-03) is **1** event to `/dasha`.
+**Band, page mode, 10-16 → 11-12:** 101 pages, 19,408 impressions, 235 clicks, **CTR 1.21%** (impressions-weighted). 68 of the 101 pages had zero clicks, covering 1,456 impressions (7.5% of the band's).
 
-### Already posted on an earlier run — NOT re-posted
+Top 10 by `band_opportunity`:
 
-| issue | state | earlier verdict (posted once) | does this run's number move it? |
-|---|---|---|---|
-| **#311** four-page title/meta rewrite | clean since 2026-10-14 | **MISS** (posted 2026-11-13, window 2026-10-14 → 11-10): 0.937% vs bar ≥ 1.5% | No. This window (10-15 → 11-11): 53 clicks / 5,558 impressions = **0.954%**, position 6.58 impressions-weighted. Bar still not met; change 0.017 points, not material. Nothing posted. |
+| # | page | impressions | clicks | CTR | avg position | prior-window impressions / position |
+|---:|---|---:|---:|---:|---:|---|
+| 1 | /learn/rahu-mahadasha-ketu-antardasha/ | 3,839 | 60 | 1.56% | 6.5 | 1,873 / 7.5 |
+| 2 | /learn/debilitated-sun-career/ | 2,602 | 16 | 0.61% | 6.6 | 1,058 / 6.1 |
+| 3 | /learn/sade-sati/ | 2,041 | 12 | 0.59% | 6.6 | 981 / 6.2 |
+| 4 | /learn/jupiter-in-10th-house-career/ | 1,743 | 16 | 0.92% | 6.9 | 363 / 6.8 |
+| 5 | /learn/7th-lord-placement-marriage-guide/ | 1,420 | 15 | 1.06% | 7.3 | 218 / 7.9 |
+| 6 | /learn/planets-in-7th-house-marriage/ | 1,000 | 10 | 1.00% | 6.4 | 547 / 5.9 |
+| 7 | /learn/panch-mahapurush-yoga/ | 918 | 14 | 1.53% | 6.8 | 385 / 6.9 |
+| 8 | /learn/manglik-dosh/ | 510 | 4 | 0.78% | 6.8 | 462 / 7.3 |
+| 9 | /learn/mangal-mars-in-vedic-astrology/ | 438 | 2 | 0.46% | 7.5 | 120 / 7.9 |
+| 10 | /learn/10th-lord-in-6th-house-career/ | 683 | 19 | 2.78% | 6.6 | 188 / 7.1 |
 
-#311 pages, this window (GSC page mode): career-problems 991 impr / 22 clicks / 2.22% / pos 5.9; debilitated-sun 2,469 / 14 / 0.57% / 6.6; manglik-dosh 489 / 3 / 0.61% / 6.8; jupiter-in-10th 1,609 / 14 / 0.87% / 6.9. Three of four are under 0.9% CTR at 6.6–6.9; the one page above 2% also moved to position 5.9 (bar's "unchanged position" condition not held).
+Together these ten are 15,194 impressions (78% of the band) and 168 clicks. All ten sit at position 6.4–7.5. **None is at average position ≤ 5.0.**
 
-### Pending — pending notes already posted, nothing posted this run
+**Top-5 test on queries.** Query mode covers 14% of impressions, so this is a partial read. Of the ten highest-impression queries in `gsc-trend-query.json`:
 
-| issue | deploy | scoreable from | note on this run's data |
-|---|---|---|---|
-| #685 sade-sati title | PR #690, 2026-11-03 | 2026-12-04 | window contains the deploy; not a score. `/learn/sade-sati/` now 1,923 impr / 13 clicks / 0.68% / 6.6 (previous 945 / 9 / 6.2). The bar (≥ 1.2% on ≥ 1,200 impressions, position within ±1 of 6.4) is not met on this mixed window. |
-| #508 /matching title/meta | PR #696, 2026-11-03 | 2026-12-04 | see decay finding below |
-| #553 panch-mahapurush CTA | PR #615, 2026-10-31 | 2026-12-01 | 9 organic sessions at 1.00 pages/session in this mixed window; floor is 10. |
-| #426 sade-sati date correction (guard) | PR #673, 2026-11-02 | 2026-12-03 | window mixed; position 6.2 → 6.6 (within ±1), impressions up, not down. |
-| #518 learn tool routes (five slices) | last slice PR #754, 2026-11-06 | 2026-12-07 | `/learn/*` organic landings: 306 sessions, 1.55 pages/session, bounce 45.4% (window mixes pre and post). Issue's secondary target was ≥ 2.0. |
-| #835 debilitated-sun answer-first lede | PR #940, 2026-11-13 | 2026-12-14 | deployed after the end of this window; the numbers here are its **baseline** (see query table). |
-| #528 /ask question out of URL | PR #801, 2026-11-09 | 2026-12-10 | window mixed. |
-| #735 admin pages off GA4 | PR #877, 2026-11-11 | 2026-12-12 | 20 `/admin/ops/` sessions in this window (above). |
-| #570 / #782 cta_click event and export | PR #688 (2026-11-03) | partial history until 2026-12-01 | see event table. |
+| query | impressions | clicks | position |
+|---|---:|---:|---:|
+| rahu mahadasha ketu antardasha | 404 | 12 | 7.1 |
+| sun debilitated in which sign | 253 | 0 | 8.0 |
+| sun is debilitated in which sign | 116 | 0 | 7.2 |
+| jupiter in 10th house | 96 | 0 | 10.3 |
+| 10th lord in 6th house | 89 | 2 | 8.5 |
+| sun debilitated sign | 74 | 0 | 6.2 |
+| yes | 71 | 0 | 3.6 |
+| guru in 10th house | 69 | 0 | 8.8 |
+| rahu mahadasha and ketu antardasha | 64 | 0 | 7.5 |
+| sun debilitated | 63 | 0 | 8.7 |
 
-Closed with a thesis but a correctness metric rather than a traffic one (not scoreable from GSC/GA4, reported only): #959, #896, #885, #843 (self-described unscoreable at 14 sessions in 28 days), #978, #980, #966, #972, #397.
+- **1 of 10 is at position ≤ 5, and it is `yes` (3.6), a query nobody targets.** None of the nine real ones is in the top 5. The quarter's objective is unmet on the measured 14% of query impressions. The other 86% is unreadable.
+- `sun debilitated in which sign` and `sun is debilitated in which sign` are new this window (0 impressions in the prior window) at 253 and 116 impressions. This is the query family #835 targets (merged 2026-11-13 00:29Z, so the page change is after this window ends).
 
-## 4. Confounds, named before any delta
+**CTR outliers.** Compared with the band's own impressions-weighted rate of 1.21%: six pages with ≥ 500 impressions and position ≤ 7.5 sit below it.
 
-| confound | detail |
-|---|---|
-| Concurrent ships on ranking pages | Merged PRs touching `/learn/*` or templates inside the window (from `gh pr list`): #521 (2026-10-25), #615 (10-31), #658 (11-01), #680 (11-02), #690 (11-03), #696 (11-03), #754 (11-06), #796 (11-09, seven learn meta descriptions shortened), #830 (11-09), #839 and #857 (11-10, Manglik copy), plus a mobile text-floor sweep across 14 templates on 11-12. Several pages took two or three changes, so no per-page delta here is attributable to one change. |
-| Seasonality | Diwali was 2026-11-08 and the window contains it. Impressions also stepped up around 2026-10-23 → 10-26, before Diwali. Seasonality is not determined for any page; the exports hold no prior-year data. |
-| Window mixing | The fetch reads one trailing window and cannot split a page at its deploy date (#490; `--page-daily` follow-up is #953, open). Every delta above is window vs window. |
-| Page reachability | The window ends 2026-11-11. This run did not probe production; no check that any page was broken during the window. #266 (intermittent Groq failures) affects LLM routes, not the `/learn` pages ranked here. |
-| Git history | The checkout is depth 1 (one commit visible), so `git log origin/main --since` cannot be used (#666, #974 open). The confound list is built from `gh pr list --state merged` instead. |
-| Sample size | 703 sessions and 293 clicks in 28 days. Per-page GA4 rows of 3–25 sessions cannot carry a conclusion. |
+| page | impressions | clicks | CTR | position |
+|---|---:|---:|---:|---:|
+| /learn/debilitated-sun-career/ | 2,602 | 16 | 0.61% | 6.6 |
+| /learn/sade-sati/ | 2,041 | 12 | 0.59% | 6.6 |
+| /learn/jupiter-in-10th-house-career/ | 1,743 | 16 | 0.92% | 6.9 |
+| /learn/7th-lord-placement-marriage-guide/ | 1,420 | 15 | 1.06% | 7.3 |
+| /learn/planets-in-7th-house-marriage/ | 1,000 | 10 | 1.00% | 6.4 |
+| /learn/manglik-dosh/ | 510 | 4 | 0.78% | 6.8 |
+| **six pages** | **9,316** | **73** | **0.78%** | |
 
-## 5. Decay and CTR outliers
+At the band rate the six would have taken ~113 clicks, a gap of **about 40 clicks per 28 days**. That is small. The bigger lever is position, and this run holds no CTR-by-position curve for this site, so I do not size it.
 
-Decay (pages with ≥ 100 impressions in the previous window; position worse by ≥ 1.5 or impressions down ≥ 30%):
+Two pages at the same positions beat the band: `10th-lord-in-6th-house-career` (2.78% at 6.6) and `rahu-mahadasha-career-problems` (2.17% at 5.8). Their query mix was not examined.
 
-| page | impressions prev → now | position prev → now | clicks prev → now | confound |
+## 3. Decay
+
+| page | impressions now / prior | clicks now / prior | position now / prior | read |
 |---|---|---|---|---|
-| **/matching** | 320 → **97** (−69.7%) | **4.2 → 8.2** | 0 → 2 | title and meta rewritten 2026-11-03 under #508 (PR #696); `/matching` also changed by #750, #871/#888, #889/#892 chart changes. Page earned its rank only recently (the #508 issue records impressions 9 → 336, position 14.7 → 4.3), so 4.2 may have been a spike. The window cannot split at the deploy. **Not attributable.** |
-| /learn/the-9-grahas-overview/ | 100 → 30 (−70%) | 7.9 → 9.4 | 0 → 0 | small base (100 impressions) |
-| /learn/ashwini-nakshatra/ | 100 → 92 (−8%) | 5.7 → 7.7 | 1 → 1 | small base |
-| /festivals | 239 → 290 | 29.8 → 32.5 | 0 → 0 | position 30+, not in the band |
+| **/matching** | **106 / 321** (−67%) | 3 / 0 | **7.8 / 4.2** | the only material decay on a page that had ranked well. See below |
+| /learn/griha-pravesh-muhurat-2026-2027/ | **0 / 38** (`is_gone`) | 0 / 0 | – / 7.3 | GA4 contradicts it. See below |
+| /learn/the-9-grahas-overview/ | 29 / 100 | 0 / 0 | 9.4 / 7.9 | small |
+| /learn/mars-remedies/ | 89 / 115 | 1 / 1 | 6.9 / 6.5 | small |
+| /learn/career-not-progressing/ | 0 / 20 (`is_gone`) | 0 / 0 | – / 7.9 | small |
+| /festivals | 294 / 243 | 0 / 0 | 33.5 / 28.8 | position far outside the band |
 
-Only `/matching` is a decay worth watching: a page that held 4.2 and now sits at 8.2 after its title was changed is exactly the shape #508 was written to test. **No new issue filed:** the verdict on #508 arrives 2026-12-04 from a clean window, and a title-only issue is held by the 2026-11-06 sync ruling quoted in #835 ("no new title-only issue until #685 is scored").
+**/matching (the one to watch).**
+- It fell from 321 impressions at position 4.2 to 106 at 7.8 between two adjacent windows. Position 7.8 is now **outside** the ±1.5-of-4.3 range that #508's metric requires, so that issue will read INCONCLUSIVE.
+- #696 (title/meta shortened, merged 2026-11-03 20:59Z) falls inside the later window. These two windows are adjacent, and this export cannot split a page at a date, so **I cannot tell whether the drop came before or after the title change.** A title change that lowered position is possible, and so is a ranking that had already slipped. I do not attribute it either way.
+- Concurrent `/matching` changes in this window (not title changes): #750 (2026-11-07), #870, #888 (2026-11-11), #892 (2026-11-12), #769. #696's own PR note asked that nothing else be bundled in the measurement window.
+- GA4: `/matching` had 19 sessions (16 Direct, 2 Organic, 1 AI Assistant), 84% bounce.
+- **Single measurement that settles it:** `uv run python scripts/fetch_gsc.py --by date --page-daily --pages /matching --days 56`. The `--page-daily` flag exists in `fetch_gsc.py` (#490 closed 2026-11-13). `agent-measure` does not write it to `/tmp`, so it was not available in this run, and I did not call the API myself.
 
-CTR outliers (compared with the band's own median of 0.87% on pages with ≥ 100 impressions):
+**/learn/griha-pravesh-muhurat-2026-2027/.**
+- GSC shows zero impressions in the window and the page is flagged gone, yet GA4 shows 12 sessions on that landing in the same window: 9 Organic Search, 2 Direct and 1 AI Assistant. The template exists in the tree.
+- `/muhurat/griha-pravesh` rose from 29 to 319 impressions (position 6.4 → 6.1) and has 23 organic sessions at 9% bounce. That may be a shift of ranking between the two pages, or the GA4 "Organic Search" sessions may come from non-Google engines. **Not determined.** The measurement is the same `--page-daily` export on both URLs plus GA4's `sessionSource` split for the landing.
 
-| page | impressions | CTR | position | read |
-|---|---:|---:|---:|---|
-| /learn/debilitated-sun-career/ | 2,469 | 0.57% | 6.6 | below band median; #835 deployed after this window, so this is its baseline |
-| /learn/sade-sati/ | 1,923 | 0.68% | 6.6 | below band median; #685 pending |
-| /learn/manglik-dosh/ | 489 | 0.61% | 6.8 | below band median; part of #311 |
-| /learn/planets-in-7th-house-marriage/ | 882 | 0.79% | 6.2 | below band median; no open scoring issue |
-| /learn/jupiter-in-10th-house-career/ | 1,609 | 0.87% | 6.9 | at band median |
-| /learn/rahu-mahadasha-career-problems/ | 991 | 2.22% | 5.9 | above median; also the one position-5.9 page in the top 10 |
-| /learn/10th-lord-in-6th-house-career/ | 632 | 2.53% | 6.6 | above median at unchanged-looking position |
-| /learn/mercury-remedies/, /learn/saturn-remedies/ | 176, 183 | 2.84%, 2.73% | 6.2, 7.1 | above median |
+## 4. Scores for closed issues carrying `thesis:` and `metric:`
 
-Risers worth stating: `/learn/gochar-2026-planetary-transits/` 16 → 1,147 impressions (position 6.9 → 6.2), `/learn/jupiter-in-10th-house-career/` 358 → 1,609, `/learn/7th-lord-placement-marriage-guide/` 222 → 1,305. These are queries and impressions growth, not clicks: 16, 14 and 13 clicks respectively.
+Rule applied: score once, when the window is clean (window start on or after deploy). Today's window starts 2026-10-16, so a deploy on or before 10-16 is clean. I read the existing comment thread on every issue first.
 
-## 6. Query view (partial: 14% of impressions)
+| issue | deploy (PR, merge) | window clean? | already posted | this run | verdict | action |
+|---|---|---|---|---|---|---|
+| **#311** four-page title/meta CTR test | #334, 2026-10-13 17:29Z | **yes** | MISS, clean window, 2026-11-13 (0.937% vs bar ≥ 1.5%) | combined CTR **0.99%** (58 / 5,870) vs bar ≥ 1.5%. Impressions floor met. Prior window 14 / 2,713 = 0.52% | **MISS, unchanged** | none: the number moved 0.937 → 0.99%, not material, same verdict |
+| **#276** /dasha CTA on Rahu–Ketu article | #342, 2026-10-14 02:02Z | **yes** | BAR MET, not attributable, 2026-11-14 (1.42 pages/session) | Organic Search: **54 sessions, 1.43 pages/session** (bar ≥ 1.20 on ≥ 20); all channels 68 sessions, 1.34 | **BAR MET, not attributable**, unchanged | none |
+| **#329** Manglik checker link | #344, 2026-10-14 16:07Z | **yes** | UNSCOREABLE 3 vs 10, 2026-11-14, scoring stopped | Organic Search **3** sessions, 1.00 pages/session. All channels 7 | unscoreable at this traffic | none: scoring on this issue stays stopped |
+| #508 /matching title/meta | #696, 2026-11-03 20:59Z | no, first clean window starts 11-04 | pending, scoreable from 2026-12-04 | not scored. Reference only: page decay above | pending | none |
+| #685 /learn/sade-sati title | #690, 2026-11-03 10:58Z | no | pending, scoreable from 2026-12-04 | reference: 2,041 impressions, 12 clicks, 0.59%, position 6.6. Prior window 981 / 10 / position 6.2. **Mixed window, not a score** | pending | none |
+| #426 sade-sati date correction (guard) | #673, 2026-11-02 12:18Z | no | pending, scoreable from 2026-12-03 | reference: position 6.6 vs 6.2, impressions up 981 → 2,041 | pending | none |
+| #553 panch-mahapurush link | #615, 2026-10-31 02:26Z | no | pending, scoreable from 2026-12-01 | reference: 9 Organic sessions, 1.00 pages/session. The bar needs ≥ 10 sessions, so it is likely unscoreable at ≥ 10. Re-check on the clean window | pending | none |
+| #518 learn → tool routes (5 slices) | last slice #754, 2026-11-06 | no | pending, scoreable from 2026-12-07 | not scored | pending | none |
+| #835 debilitated-sun lede/FAQ | #940, 2026-11-13 00:29Z | no | pending, scoreable from 2026-12-14 | not scored. The deploy post-dates the window | pending | none |
+| #570 `cta_click` event | #688, 2026-11-03 04:42Z | no | pending, scoreable from 2026-12-04 | **the events export now exists in this run.** `cta_click` 12 events, 10-16 → 11-12, partial history (starts 11-03). Not a score | pending | none |
+| #514, #523 rashifal | 2026-11-01 / 2026-10-25 | – | unscoreable at this traffic, posted 2026-11-09 | not re-scored | stopped | none |
 
-| query (2026-10-15 → 11-11) | impressions | impressions prev | clicks | position | position prev |
-|---|---:|---:|---:|---:|---:|
-| rahu mahadasha ketu antardasha | 383 | 248 | 11 | 7.3 | 9.6 |
-| sun debilitated in which sign | 231 | 0 | 0 | 8.3 | none |
-| sun is debilitated in which sign | 109 | 0 | 0 | 7.6 | none |
-| jupiter in 10th house | 90 | 0 | 0 | 10.1 | none |
-| 10th lord in 6th house | 85 | 0 | 2 | 8.4 | none |
-| sun debilitated sign | 72 | 2 | 0 | 6.3 | 3.0 |
-| rahu mahadasha and ketu antardasha | 65 | 42 | 0 | 7.5 | 9.5 |
+Nothing was posted to any issue this run. Every issue has its one note, and the three clean-window verdicts did not move materially.
 
-The two "which sign" queries total 340 impressions and 0 clicks in this window; that is the baseline for #835. `sun debilitated sign` moved from position 3.0 to 6.3, but on a base of 2 previous impressions, which cannot carry a conclusion.
+### The misses, as plainly as the hits
 
-## 7. Funnel and events (2026-10-15 → 11-11, `/tmp/ga4-events.json`, 4,725 events, 703 sessions)
-
-| event | count | note |
-|---|---:|---|
-| page_view | 1,215 | 1.73 per session in the channel table |
-| session_start | 700 | |
-| feature_view | 698 | |
-| form_start | 140 | |
-| ask_answered | 133 | |
-| kundli_generated | 55 | 39% of `form_start`; `form_start` is not split by form, so this ratio mixes /kundli, /matching and /numerology |
-| cta_click | 12 | from 2026-11-03 only; 8 of 12 have `(not set)` for both from and to path |
-| subscribe_completed | 1 | |
-| form_submit | 1 | |
-| feedback_sent | 2 | |
-
-`cta_click` rows with a path (window, partial history): `/learn/career-during-sade-sati/` → `/` 1; `/learn/kaal-sarp-dosh/` → `/kaal-sarp-check` 1; `/learn/name-numerology-explained/` → `/numerology` 1; `/learn/rahu-mahadasha-ketu-antardasha/` → `/dasha` 1. **Eight clicks carry no path**, so the split is unreadable for two thirds of the event; the total of 12 stands.
-
-Funnel step by landing (organic, GA4): `/muhurat/griha-pravesh/` 23 sessions at 9% bounce and 2.26 pages/session is the strongest landing for onward use; `/learn/*` as a whole is 430 of 703 sessions and the 1.55 pages/session figure above. Not determinable: where kundli, matching and numerology users drop between landing, form and result, because `form_start` and `kundli_generated` are not split by feature in the export. The single measurement that would settle it is `fetch_ga4.py --events` broken down by the `feature` parameter on `form_start`.
-
-## 8. Actions taken this run
-
-| action | target |
+| result | what it says |
 |---|---|
-| comment posted (score, once) | #276 |
-| comment posted (unscoreable, once), then corrected in place for one misplaced PR number | #329 |
-| comments not posted (unchanged verdict) | #311 (MISS stands, 0.954% vs 0.937%) |
-| comments not posted (pending note already exists) | #685, #508, #553, #426, #518, #835, #528, #735, #570 |
-| issues filed | none: no finding needs action that is not already owned by an open issue or held by the sync ruling on title-only tests |
+| **#311 MISS** (0.99% vs ≥ 1.5%) | A title/meta rewrite on four band pages did not reach the bar. Three of the four are still below 1% CTR at position 6.6–6.9 (debilitated-sun 0.61%, jupiter-10th 0.92%, manglik 0.78%). The page that cleared 2% (`rahu-mahadasha-career-problems`, 2.17%) also moved from position 7.2 to 5.8, so that gain is not attributable to the title. |
+| **#329 unscoreable** (3 organic sessions vs floor 10) | The page ranks (489 impressions at position 6.8 per the earlier note; 510 / 4 clicks / 6.8 in this run's band file), but yields 3 organic sessions in 28 days. A link on it cannot be measured at that traffic. |
+| **#276 bar met, not attributable** (1.43 vs ≥ 1.20) | Positive number, but the page also took #518's first-screen tool link, and the metric has no pre-deploy comparison. Not credited to the CTA. |
+| **#508 will not pass as written** | The pass condition needs position within ±1.5 of 4.3; `/matching` is at 7.8. The page moved before anyone can score the title. |
 
-## 9. What I could not determine, and the one measurement that would settle each
+## 5. Funnel
 
-| question | why not | settling measurement |
-|---|---|---|
-| Whether the page-level lifts after a ship are the ship | the fetch cannot split at the deploy date | `fetch_gsc.py --page-daily` committed per night (#953) |
-| Why `/matching` fell from 4.2 to 8.2 | window mixes the #508 title change with other changes and a recent rank spike | `/matching` daily position from #953 across 2026-11-03 |
-| What drove the 11-06 (59) and 11-10 (43) session spikes | daily export has no channel | `ga4-daily` split by `sessionDefaultChannelGroup` |
-| Whether Direct (296 sessions, 75% bounce) is people | exports show no source or hostname | GA4 `sessionSource` and `hostname` split for Direct |
-| Whether any top-10 page can reach position ≤ 5 | position is a page average across queries; query view is 14% of impressions | per-query positions for the top-10 pages (needs `--by query` with a page filter) |
-| Seasonal effect of Diwali on the 10-26 → 11-11 plateau | no prior-year window in the exports | the same window one year on (not available before 2027-11) |
+`ga4-events.json`, 10-16 → 11-12, GA4 event counts (events, not sessions or users; no per-form split):
+
+| event | count |
+|---|---:|
+| page_view | 1,192 |
+| user_identified | 701 |
+| feature_view | 683 |
+| session_start | 683 |
+| first_visit | 556 |
+| user_engagement | 296 |
+| scroll | 174 |
+| form_start | 137 |
+| ask_answered | 130 |
+| kundli_generated | 55 |
+| cta_click | 12 |
+| form_submit | 1 |
+| subscribe_completed | 1 |
+| feedback_sent | 2 |
+
+- `cta_click` counts only 12 events over ~10 days of history. Of those, **8 carry `(not set)` for both `from_path` and `to_path`**, so the split is readable for 4: learn → `/` (1), `/learn/kaal-sarp-dosh/` → `/kaal-sarp-check` (1), `/learn/name-numerology-explained/` → `/numerology` (1), `/learn/rahu-mahadasha-ketu-antardasha/` → `/dasha` (1). Coverage note, verbatim: *"a window starting before 2026-12-01 holds partial history"*.
+- **I cannot compute a step-through rate.** `form_start` (137) and `kundli_generated` (55) are event totals across several forms with no per-form or per-session split, so 55 / 137 is not a step-through rate. `form_submit` is 1, which looks like an instrumentation gap rather than 1 submission; not determined.
+
+Landing mix (GA4 sessions, folded landings, 10-16 → 11-12):
+
+| landing group | sessions | read |
+|---|---:|---|
+| any `/learn/*` | 423 (of which Organic Search 301) | 62% of 686 sessions. Learn is the front door |
+| `/` | 78 | 4.22 pages/session, 38% bounce |
+| tool and calculator landings (`/kundli`, `/matching`, `/numerology`, `/muhurat/*`, `/rashifal/*` and similar) | 127 | |
+
+| landing (all channels) | sessions | Organic | bounce | pages/session |
+|---|---:|---:|---:|---:|
+| /learn/rahu-mahadasha-ketu-antardasha | 68 | 54 | 0.46 | 1.34 |
+| /learn/gochar-2026-planetary-transits | 32 | 19 | 0.69 | 1.10 |
+| /learn/7th-lord-placement-marriage-guide | 24 | 20 | 0.50 | 1.08 |
+| /learn/rahu-mahadasha-career-problems | 24 | 24 | 0.42 | 2.08 |
+| /numerology | 24 | 9 | 0.75 | 1.12 |
+| /kundli | 23 | 7 | 0.65 | 1.65 |
+| /muhurat/griha-pravesh | 23 | 23 | 0.09 | 2.26 |
+| /matching | 19 | 2 | 0.84 | 1.58 |
+
+- Learn landings mostly end after one page (1.0–1.3 pages/session) against 4.22 on the homepage. The two pages with 2+ pages/session (`rahu-mahadasha-career-problems` 2.08, `muhurat/griha-pravesh` 2.26) are the exceptions.
+- The unmeasured step is learn → tool. Only `cta_click`, 12 events from 11-03, instruments it, and 8 of those 12 have no path split. This is the largest gap in the funnel read.
+
+## 6. What I could not determine, and the measurement that settles each
+
+| gap | single measurement |
+|---|---|
+| Whether `/matching` lost position before or after the 2026-11-03 title change | `fetch_gsc.py --by date --page-daily --pages /matching --days 56` (flag exists; not in this run's exports) |
+| Whether `griha-pravesh-muhurat-2026-2027` lost its Google ranking or GA4's 9 "Organic" sessions came from other engines | the same `--page-daily` export for both griha-pravesh URLs, plus GA4 `sessionSource` for that landing |
+| Whether the 2026-10-16 → 11-12 rise (impressions ×2.4, clicks ×3.2) is work or Diwali | the same windows a year earlier, or the post-festival window, not before ~2026-12-04. Not determinable now |
+| Query-level top-5 progress on the other 86% of impressions | not recoverable; Google withholds the queries |
+| Learn → tool step-through | `cta_click` with a populated `from_path`/`to_path` over a window starting on or after 2026-12-01. 8 of the 12 events so far have no split, so check why |
+| Site-level GA4 trend | add a prior-window GA4 export; none was in this run |
+| Which of the 39 non-visitor sessions pre-date #735's fix | a GA4 landing × day export for `/admin/*` and `(not set)` |
+
+## 7. Issues filed
+
+**None.** No finding needs an action I can state from this run's data. The `/matching` decay and the griha-pravesh discrepancy are each answered by one export (section 6) rather than by an engineering change, and #508 and the pending scores already carry their notes. I filed nothing rather than file an issue without an Evidence Block.
