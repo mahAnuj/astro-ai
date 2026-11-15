@@ -23,6 +23,11 @@ FLAT_PHRASES = (
     "produce guru-figures",
     "the karma-dharma path stalls",
     "the karma-dharma path becomes more difficult",
+    # QA round 1 on #1054: the page intro and the opening of the 'depends on dignity' section said the same thing flat
+    "the karma path stalls",
+    "moralistic advice-giving without institutional traction",
+    "often struggles to convert that respect",
+    "produces a person who is respected for wisdom",
 )
 
 LABEL = "not a rule the texts state"
@@ -97,3 +102,22 @@ def test_guru_chandala_bullet_is_labelled_practitioner_reading(client):
     # the named classical yoga stays stated as held, and is still not called difficult or scandal-prone
     assert "real, named classical yoga" in low
     assert "scandal" not in low
+
+
+def test_every_page_sentence_naming_a_stall_or_struggle_is_labelled(client):
+    """Catches a reworded flat claim: any rendered sentence about the weak/afflicted outcome carries the label.
+
+    A sentence is 'about the outcome' if it says stall/struggle/harder/slower together with Jupiter's weakness words.
+    The label may sit in the same sentence or in the one right after it ("...; that is a reading, ...").
+    """
+    text = _plain(_page(client))
+    sents = re.split(r"(?<=[.!?])\s+", text)
+    outcome = re.compile(r"\b(stalls?|struggles?|harder|slower|slow to)\b", re.I)
+    weak = re.compile(r"\b(debilitated|afflicted|weak|combust|malefic-conjunct)\b", re.I)
+    unlabelled = []
+    for i, s in enumerate(sents):
+        if outcome.search(s) and weak.search(s):
+            window = (s + " " + (sents[i + 1] if i + 1 < len(sents) else "")).lower()
+            if LABEL not in window and "practitioner" not in s.lower():
+                unlabelled.append(s[:160])
+    assert not unlabelled, unlabelled
