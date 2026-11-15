@@ -225,11 +225,18 @@ _OWNED_BRANCH = re.compile(r"^(?:issue|partial|fix)/(\d+)-")
 
 
 def _mergeable_passed_pr(gh: Runner, repo: str, issue: int) -> int | None:
-    """An open PR for `issue` that carries `qa-pass` and that GitHub reports
-    `mergeable: true`, or None. Any read failure answers None (start the cycle)."""
+    """An open PR for `issue` that carries `qa-pass`, whose `QA: PASS` names its
+    CURRENT head, and that GitHub reports `mergeable: true`, or None. Any read
+    failure answers None (start the cycle).
+
+    The head check is 2026-11-15: PR #1058 held `qa-pass` from 274e42f while its
+    head was 98f14fb with `gates` red. red_gates.py queued `issue=1027` to fix
+    it, and this function dropped the entry twice as "waiting to merge" --
+    agent-merge refuses a stale pass (#823), so nothing was waiting and the red
+    PR had no remaining route to green."""
     try:
         raw = gh(["api", f"repos/{repo}/pulls?state=open&per_page=100",
-                  "--jq", ".[] | {number, ref: .head.ref, labels: [.labels[].name]}"])
+                  "--jq", ".[] | {number, ref: .head.ref, sha: .head.sha, labels: [.labels[].name]}"])
     except RuntimeError:
         return None
     for line in raw.splitlines():
@@ -245,7 +252,14 @@ def _mergeable_passed_pr(gh: Runner, repo: str, issue: int) -> int | None:
         except RuntimeError:
             continue
         if mergeable == "true":
-            return pr["number"]
+            try:
+                pass_lines = gh(["api", "--paginate", f"repos/{repo}/issues/{pr['number']}/comments?per_page=100",
+                                 "--jq", '.[] | select(.body | startswith("QA: PASS")) '
+                                         '| "\\(.user.login)\\t\\(.body | split("\\n")[0])"'])
+            except RuntimeError:
+                continue
+            if pr.get("sha") and _pass_names_head(pass_lines, repo, pr["sha"]):
+                return pr["number"]
     return None
 
 
