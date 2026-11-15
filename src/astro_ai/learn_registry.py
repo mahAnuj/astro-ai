@@ -1456,7 +1456,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="jupiter-in-10th-house-career",
         title="Jupiter in the 10th House: Career, Hamsa Yoga, and the Dharmic Path",
-        summary="Jupiter in the 10th house is a natural karaka in the karma house — wisdom applied to profession. When Jupiter sits here in Cancer, Sagittarius, or Pisces, he forms Hamsa Yoga — one of the five Panch Mahapurush yogas — producing a lifelong gift of scholarly authority. When debilitated in Capricorn or afflicted, the karma-dharma path stalls. This guide covers the Hamsa Yoga configuration, the debilitated pattern, per-ascendant variations, the career fields Jupiter actually supports, and honestly what this placement does NOT automatically produce.",
+        summary="Jupiter in the 10th house is a natural karaka in the karma house — wisdom applied to profession. When Jupiter sits here in Cancer, Sagittarius, or Pisces, he forms Hamsa Yoga — one of the five Panch Mahapurush yogas — which the sources we hold list with wisdom, respect, dharma, and scholarly fame. When debilitated in Capricorn or afflicted, the karma-dharma path stalls. This guide covers the Hamsa Yoga configuration, the debilitated pattern, per-ascendant variations, the career fields Jupiter actually supports, and honestly what this placement does NOT automatically produce.",
         seo_title="Jupiter in 10th House: Hamsa Yoga or a Stalled Career?",
         seo_description="Does Jupiter in the 10th house mean wealth and fame? Not automatically. When it forms Hamsa Yoga, when it stalls, and what it does not guarantee.",
         category="Life Questions",
@@ -1467,11 +1467,11 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is Jupiter in the 10th house always good?",
-                "a": "Not automatically. Jupiter in the 10th is one of the most fortunate career placements when Jupiter is dignified — in Sagittarius, Pisces, or exalted in Cancer — where it forms Hamsa Yoga (a Panch Mahapurush yoga). When debilitated in Capricorn (Aries ascendant), combust by Sun, or conjoined with Rahu (Guru Chandala Yoga), the placement's benefits diminish significantly. Jupiter is a 10th house karaka but does NOT get digbala (directional strength) in the 10th — his digbala is in the Lagna. So Jupiter in the 10th needs additional dignity to produce the fullest results. Generate your free Janma Kundli on Shubh Bhagya to check Jupiter's exact configuration in your chart.",
+                "a": "Not automatically. Practitioners read Jupiter in the 10th as one of the most favourable career placements when Jupiter is dignified — in Sagittarius, Pisces, or exalted in Cancer — where it forms Hamsa Yoga (a Panch Mahapurush yoga). When debilitated in Capricorn (Aries ascendant), combust by Sun, or conjoined with Rahu (Guru Chandala Yoga), the placement's benefits diminish significantly. Jupiter is a 10th house karaka but does NOT get digbala (directional strength) in the 10th — his digbala is in the Lagna. So Jupiter in the 10th needs additional dignity to produce the fullest results. Generate your free Janma Kundli on Shubh Bhagya to check Jupiter's exact configuration in your chart.",
             },
             {
                 "q": "What is Hamsa Yoga and does Jupiter in the 10th create it?",
-                "a": "Hamsa Yoga is one of the five Panch Mahapurush (great person) yogas — the Jupiter version. It forms when Jupiter is in his own sign (Sagittarius or Pisces) or exalted (Cancer) AND in a kendra (1st, 4th, 7th, or 10th house) from the Lagna. Jupiter in the 10th qualifies for Hamsa Yoga specifically for three ascendants: Libra (Jupiter exalted in Cancer 10th — the strongest configuration), Gemini (Jupiter in own sign Pisces 10th), and Pisces (Jupiter in own sign Sagittarius 10th). The sources we hold list Hamsa Yoga with wisdom, respect, dharma, and scholarly fame. The 10th house version is especially career-active — teaching, judiciary, advisory, spiritual leadership, and publishing are common signatures.",
+                "a": "Hamsa Yoga is one of the five Panch Mahapurush (great person) yogas — the Jupiter version. It forms when Jupiter is in his own sign (Sagittarius or Pisces) or exalted (Cancer) AND in a kendra (1st, 4th, 7th, or 10th house) from the Lagna. Jupiter in the 10th qualifies for Hamsa Yoga specifically for three ascendants: Libra (Jupiter exalted in Cancer 10th — the strongest configuration), Gemini (Jupiter in own sign Pisces 10th), and Pisces (Jupiter in own sign Sagittarius 10th). The sources we hold list Hamsa Yoga with wisdom, respect, dharma, and scholarly fame. Practitioners read the 10th house version as especially career-active, with teaching, judiciary, advisory, spiritual leadership, and publishing as the usual expression; that is a reading of the yoga's themes, not a rule the texts state.",
             },
             {
                 "q": "Which professions are best for Jupiter in the 10th house?",
@@ -1495,10 +1495,10 @@ ARTICLES: tuple[Article, ...] = (
             '• Jupiter in 10th = natural karaka in karma house (Jupiter is a 10th house karaka)\n'
             '• BUT: Jupiter does NOT have digbala in 10th — his digbala is in Lagna. Needs additional dignity to shine\n'
             '• Hamsa Yoga forms if Jupiter is in Cancer/Sagittarius/Pisces in 10th (Panch Mahapurush yoga)\n'
-            '• Best-fit careers: teaching, judiciary, law, medicine, finance/wealth advisory, publishing, religion, non-profit\n'
+            '• Careers practitioners read as best-fit (not held text): teaching, judiciary, law, medicine, finance/wealth advisory, publishing, religion, non-profit\n'
             '• Debilitated in Capricorn (Aries ascendant): capable but institutional recognition stalls; check Neechabhanga\n'
             '• Guru Chandala Yoga (Jupiter+Rahu): a named classical yoga, real and worth explaining; do not call it difficult or predict scandal from it\n'
-            '• Jupiter Mahadasha (16 years) is peak activation — recognition, wealth via dharma, marriage often triggers\n'
+            '• Jupiter Mahadasha (16 years) is peak activation — recognition, wealth via dharma; some practitioners also read marriage here (not in the held sources)\n'
             '• Does NOT auto-produce wealth — check Dhana Yogas (2+11+5 house connections) separately'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
