@@ -63,7 +63,11 @@ jobs:
       # verifies each by its recorded line count and exits 1 only for a WRONG
       # file, so a missing book never fails the run -- the next step reports it.
       - name: Download the free books
-        run: uv run python scripts/fetch_corpus.py --fetch | tail -3
+        # pipefail: the default `bash -e` would let `| tail` hide fetch_corpus's
+        # exit 1 for a WRONG (different-edition) book (QA on #1063).
+        run: |
+          set -o pipefail
+          uv run python scripts/fetch_corpus.py --fetch | tail -3
 
       # Read-only service account (rashifal-generate.yml: "that service account
       # is READ-ONLY today"). Credentials are NOT exported to the job env, are

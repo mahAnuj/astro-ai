@@ -40,6 +40,18 @@ from typing import Callable
 
 Runner = Callable[[list[str]], str]
 LABEL = "skill:knowledge-integrator"
+#: Only issues FILED by this repository's own identities reach the research
+#: agent, which may Write knowledge/*.md and holds Bash and WebFetch. QA on
+#: #1063: an outsider's issue saying `corpus: [UNSOURCED]` was queued as item 1
+#: with its title verbatim -- the #361 shape. The same closed set as
+#: AGENT_AUTHORS in agent-merge.yml (owner taken from the repo slug);
+#: tests/test_research_queue.py pins the two together.
+BOT_AUTHORS = ("claude[bot]", "github-actions[bot]", "shubhagya-publisher[bot]")
+
+
+def trusted(issue: dict, repo: str) -> bool:
+    login = (issue.get("user") or {}).get("login", "")
+    return login in BOT_AUTHORS or login == repo.split("/")[0]
 CAP = 8
 _PRIORITY = {"priority:high": 0, "priority:medium": 1, "priority:low": 3}
 
@@ -83,7 +95,7 @@ def rank(issue: dict, why: str) -> tuple:
 
 
 def build(gh: Runner, repo: str, only: list[int] | None = None, cap: int = CAP) -> list[tuple[dict, str]]:
-    issues = open_issues(gh, repo)
+    issues = [i for i in open_issues(gh, repo) if trusted(i, repo)]
     if only:
         by_num = {i["number"]: i for i in issues}
         return [(by_num[n], "pinned by the dispatch") for n in only if n in by_num]
