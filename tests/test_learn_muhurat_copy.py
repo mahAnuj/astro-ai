@@ -75,23 +75,39 @@ def test_no_source_the_corpus_does_not_hold_is_credited(client, slug):
         assert needle not in _registry_text(slug), needle
 
 
+# A source-shaped word the held books do not back. Broader than the named list above on purpose: a rewrite that
+# swaps Padma Purana for Vishnu Purana, or 'Brihat Parashara', must still fail. Raman and Rao are the only
+# authors these two articles may name.
+_SOURCE_SHAPED = ("purana", "samhita", "sutra", "parashara", "shastra", "chintamani", "scripture")
+
+
+@pytest.mark.parametrize("slug", SLUGS)
+def test_no_source_shaped_word_appears_at_all(client, slug):
+    body = _text(client, slug).lower()
+    reg = _registry_text(slug)
+    for w in _SOURCE_SHAPED:
+        assert w not in body, w
+        assert w not in reg, w
+
+
 @pytest.mark.parametrize("slug", SLUGS)
 def test_the_sources_callout_says_what_is_checked_and_what_is_not(client, slug):
     html = _html(client, slug)
     assert html.count("What this guide checks, and what it does not") == 1
     assert "Classical sources cited" not in html
     t = _text(client, slug)
-    assert "Muhurta Chintamani" in t and "is not a book this site holds" in t
+    assert "we could not trace the dagdha pairings to any source" in t.lower()
+    assert "Chintamani" not in t  # no attribution the finder itself does not make (muhurat.py _DAGDHA comment)
     assert "B.V. Raman, Muhurtha (1948)" in t
 
 
 def test_vivah_labels_each_unsourced_rule_as_a_convention_in_its_own_section(client):
     html = _html(client, "vivah-muhurat-2027")
     for heading, label in (
-        ("3. No Kharmas", "none of the books this site holds gives a Kharmas rule"),
-        ("4. Chaturmas restriction", "none of the books this site holds gives a Chaturmas rule"),
-        ("6. Favourable tithis + no Dagdha yoga", "a book this site does not hold, so they cannot be checked here"),
-        ("8. No eclipse days", "the books this site holds do not give an eclipse-day rule"),
+        ("3. No Kharmas", "we have not found a Kharmas rule in the books this site holds"),
+        ("4. Chaturmas restriction", "we have not found a Chaturmas rule in the books this site holds"),
+        ("6. Favourable tithis + no Dagdha yoga", "we could not trace them to a source"),
+        ("8. No eclipse days", "we have not found an eclipse-day rule or the one-day margin in the books this site holds"),
     ):
         start = html.index(heading)
         nxt = html.find("<h3>", start + 10)
@@ -101,7 +117,7 @@ def test_vivah_labels_each_unsourced_rule_as_a_convention_in_its_own_section(cli
 def test_vivah_intro_separates_raman_from_convention(client):
     t = _text(client, "vivah-muhurat-2027")
     assert "Panchak and the tithi rule are checked against B.V. Raman" in t
-    assert "widely followed conventions that our finder applies but that the books this site holds do not give" in t
+    assert "widely followed conventions that our finder applies and that we have not found in the books this site holds" in t
 
 
 def test_griha_pravesh_labels_the_four_unsourced_criteria(client):
@@ -109,7 +125,7 @@ def test_griha_pravesh_labels_the_four_unsourced_criteria(client):
     assert html.count("A widely followed convention that our finder applies, not a rule from the books this site holds") == 3
     assert "a widely followed convention of &quot;burnt&quot; tithi-weekday pairings" in html or \
         "a widely followed convention of \"burnt\" tithi-weekday pairings" in html
-    assert "(a book this site does not hold, so it cannot be checked here)" in html
+    assert "we could not trace them to a source" in html
 
 
 def test_registry_summaries_carry_the_same_split():
