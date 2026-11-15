@@ -209,3 +209,59 @@ def test_referrer_carrying_q_is_sent_without_it(tmp_path):
 def test_referrer_without_q_is_left_alone(tmp_path, ref):
     out = _run(tmp_path, "/kundli", referrer=ref)
     assert "page_referrer" not in _config(out["initial"])
+
+
+# ─── #1066: the saved birth place, via /panchang?city= ───────────────────────
+# /panchang pre-fills its GET place box with `saved.birth_place`, so pressing
+# Update (even untouched) navigates to /panchang?city=<birth place>. The same
+# sanitiser as `q` must apply, and nothing else may be dropped with it.
+
+CITY = "Varanasi%2C+Uttar+Pradesh%2C+India"
+
+
+def test_panchang_city_never_reaches_gtag_config(tmp_path):
+    out = _run(tmp_path, f"/panchang?city={CITY}")
+    cfg = _config(out["initial"])
+    assert cfg["page_location"] == f"{ORIGIN}/panchang"
+    blob = json.dumps(out["initial"])
+    assert "Varanasi" not in blob and "city=" not in blob
+
+
+def test_city_is_stripped_but_other_params_survive(tmp_path):
+    out = _run(tmp_path, f"/panchang?city={CITY}&c=love&utm_source=x")
+    loc = _config(out["initial"])["page_location"]
+    assert "city" not in loc and "Varanasi" not in loc
+    assert "c=love" in loc and "utm_source=x" in loc
+
+
+def test_city_and_q_are_both_removed_from_one_url(tmp_path):
+    out = _run(tmp_path, "/x?city=Pune&q=a+private+thing&c=love")
+    assert _config(out["initial"])["page_location"] == f"{ORIGIN}/x?c=love"
+
+
+def test_a_boosted_panchang_update_keeps_the_city_out_of_the_event(tmp_path):
+    """Update is an hx-boost GET: the script is NOT re-run, htmx pushes
+    /panchang?city=..., and the next event must not carry the raw URL."""
+    out = _run(tmp_path, "/panchang", navigateTo=f"/panchang?city={CITY}",
+               trackAfterNav=True)
+    assert "page_location" not in _config(out["initial"])
+    assert _loc_before_event(out["afterTrack"], "ask_answered") == f"{ORIGIN}/panchang"
+    assert "Varanasi" not in json.dumps(out["afterTrack"])
+
+
+def test_manual_page_view_carries_no_city(tmp_path):
+    out = _run(tmp_path, f"/panchang?city={CITY}", pageView=True)
+    ev = [c for c in out["afterPageView"] if c[0] == "event" and c[1] == "page_view"]
+    assert len(ev) == 1 and ev[0][2]["page_location"] == f"{ORIGIN}/panchang"
+    assert "Varanasi" not in json.dumps(ev)
+
+
+def test_referrer_carrying_city_is_sent_without_it(tmp_path):
+    out = _run(tmp_path, "/kundli", referrer=f"{ORIGIN}/panchang?city={CITY}")
+    assert _config(out["initial"])["page_referrer"] == f"{ORIGIN}/panchang"
+    assert "Varanasi" not in json.dumps(out["initial"])
+
+
+@pytest.mark.parametrize("path", ["/panchang", "/panchang?c=love", "/panchang/2026-11-20"])
+def test_panchang_urls_without_city_get_no_override(tmp_path, path):
+    assert "page_location" not in _config(_run(tmp_path, path)["initial"])
