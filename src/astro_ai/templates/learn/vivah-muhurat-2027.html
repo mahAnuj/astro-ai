@@ -4,16 +4,16 @@
 
 <div class="callout callout-insight">
   <div class="callout-label">In short</div>
-  <p>A Vivah Muhurat (wedding muhurat) is not just a "good day" from a calendar — it's a specific window where eight classical criteria align: Guru (Jupiter) and Shukra (Venus) both visible above the horizon and uncombust, no Adhik Maas (Malamas), no Kharmas, no Chaturmas, a favourable nakshatra, a favourable tithi clear of Dagdha yoga, no Panchak, and no eclipse within a day either side. This guide walks the classical rules for 2027 wedding dates, seasonal patterns, and how personal chart-matching intersects with the calendar. For personalised date selection matching your specific chart, use our free <a href="/muhurat/vivah">Vivah Muhurat Finder</a>.</p>
+  <p>A Vivah Muhurat (wedding muhurat) is not just a "good day" from a calendar — it's a specific window where eight criteria align: Guru (Jupiter) and Shukra (Venus) both visible above the horizon and uncombust, no Adhik Maas (Malamas), no Kharmas, no Chaturmas, a favourable nakshatra, a favourable tithi clear of Dagdha yoga, no Panchak, and no eclipse within a day either side. This guide walks the rules for 2027 wedding dates, saying for each whether B.V. Raman&rsquo;s <em>Muhurtha</em> gives it or it is a widely followed convention our finder applies, seasonal patterns, and how personal chart-matching intersects with the calendar. For personalised date selection matching your specific chart, use our free <a href="/muhurat/vivah">Vivah Muhurat Finder</a>.</p>
 </div>
 
 <h2>What makes a Vivah Muhurat "auspicious"</h2>
 
-<p>Classical Vedic tradition applies eight primary rules for wedding date selection:</p>
+<p>This guide uses eight criteria for wedding date selection. Panchak and the tithi rule are checked against B.V. Raman&rsquo;s <em>Muhurtha</em>. Several others are <strong>widely followed conventions that our finder applies and that we have not found in the books this site holds</strong>; each is labelled as such below.</p>
 
 <h3>1. Guru + Shukra visibility (both above the horizon, not combust)</h3>
 
-<p>Jupiter and Venus are the two karakas of marriage (Jupiter = husband, Venus = wife). Both must be visible in the sky — not combust (within 11° of the Sun for Guru, 10° for Shukra, per the classical orbs our finder applies) and above the horizon during the day. When either is combust, marriages are traditionally postponed to a period when they emerge.</p>
+<p>Jupiter and Venus are the two karakas of marriage (Jupiter = husband, Venus = wife). Both must be visible in the sky — not combust (within 11° of the Sun for Guru, 10° for Shukra, using the orbs our finder applies, which are from Raman&rsquo;s <em>Muhurtha</em>) and above the horizon during the day. Many families postpone a wedding while either is combust. That is a widely followed convention and our finder&rsquo;s own choice to treat as a hard exclusion; it is not among Raman&rsquo;s wedding criteria.</p>
 
 {# muhurat._combustion_flags(compute_chart("2027-01-01","12:00","Delhi"), midday IST)
    day-by-day scan of 2027 — Venus: combust 2027-07-07 through 2027-09-17.
@@ -38,7 +38,7 @@
 
 <h3>3. No Kharmas (Sun in Sagittarius or Pisces)</h3>
 
-<p>When the Sun transits Sagittarius (Dhanurmas) or Pisces (Meenmas), classical North Indian tradition halts weddings entirely. This is the "Kharmas" period — the Sun's Guru-sanchara (transit through Jupiter's own signs) is considered a time for teachership and introspection, not for householder ceremonies. This rule is often forgotten in modern date-picker tools but is a hard classical blocker.</p>
+<p>When the Sun transits Sagittarius (Dhanurmas) or Pisces (Meenmas), North Indian custom halts weddings entirely. This is the "Kharmas" period — the Sun's Guru-sanchara (transit through Jupiter's own signs) is considered a time for teachership and introspection, not for householder ceremonies. This is a widely followed convention that our finder applies; we have not found a Kharmas rule in the books this site holds.</p>
 
 <p>A rashi boundary falls at an instant, not at midnight, so a page has to say which moment it reads. <strong>This page — and our Muhurat Finder — takes the Sun's sidereal rashi at midday, New Delhi.</strong> A day whose ingress lands in the afternoon therefore still counts as the old month all through. On that convention, 2027 runs:</p>
 
@@ -51,12 +51,12 @@
   <li><strong>Mesha Sankranti</strong> — Wednesday, Apr 14, 2027. Meenmas ends: the ingress into Aries is at 15:28 IST, after the midday reading, so the 14th still counts as Meenmas and the season reopens on the 15th.</li>
 </ul>
 
-{# muhurat.find_candidates("vivah","Delhi",date(2027,4,12),10) run 2026-08-08 -> 12-14 Apr avoid (Meenmas), 15 Apr avoid (Ashlesha), 16 Apr excellent #}
-<p>Our own Muhurat Finder shows the same edge at Mesha Sankranti, Apr 14, 2027: it rejects that day for Meenmas, drops the Kharmas block from the 15th, and rates the 16th the first excellent wedding day of the spring season. Traditions that reckon from the ingress instant itself, rather than from a fixed sampling time, treat the hours after the transit as already clear — a convention difference, not an error on either side.</p>
+{# muhurat.find_candidates("vivah","Delhi",date(2027,4,12),10) re-run 2026-11-15 (#1020) -> 12 and 14 Apr avoid (kharmas), 13/15/16 Apr avoid (nitya_yoga_block), 17 Apr avoid (avoid_nakshatra), 18 Apr Sunday excellent (Uttara Phalguni, Trayodashi, sarvartha_siddhi + ravi_yoga), 19 Apr avoid (avoid_tithi); the old "16 Apr excellent" predated the Nitya Yoga block #}
+<p>Our own Muhurat Finder shows the same edge at Mesha Sankranti, Apr 14, 2027: it rejects that day for Meenmas, drops the Kharmas block from the 15th, and — because other rules still rule out the days straight after it — rates the 18th the first excellent wedding day of the spring season. Traditions that reckon from the ingress instant itself, rather than from a fixed sampling time, treat the hours after the transit as already clear — a convention difference, not an error on either side.</p>
 
 <h3>4. Chaturmas restriction (mid-Jul to mid-Nov)</h3>
 
-<p>The four months from Devshayani Ekadashi to Devuthani Ekadashi (Vishnu's sleeping period) are traditionally weddings-restricted. Modern practice varies — many regional traditions permit weddings during Chaturmas with specific compensating rituals, but classical tradition prescribes waiting until Vishnu wakes in mid-November.</p>
+<p>The four months from Devshayani Ekadashi to Devuthani Ekadashi (Vishnu's sleeping period) are traditionally weddings-restricted. Modern practice varies — many regional traditions permit weddings during Chaturmas with specific compensating rituals, while others wait until Vishnu wakes in mid-November. This is a widely followed convention that our finder applies; we have not found a Chaturmas rule in the books this site holds.</p>
 
 <p>The 2027 window is 119 days:</p>
 
@@ -69,13 +69,16 @@
 
 <h3>5. Favourable nakshatras</h3>
 
-<p>Classical wedding-auspicious nakshatras: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati. Nakshatras to avoid: Bharani, Krittika, Ardra, Ashlesha, Jyeshtha, Vishakha, Purva Phalguni, Purva Ashadha, Purva Bhadrapada, Chitra (partial). Check the specific nakshatra of the intended date via Panchang.</p>
+<p>The nakshatras our finder credits for weddings: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati. Nakshatras it avoids: Bharani, Krittika, Ardra, Ashlesha, Jyeshtha, Vishakha, Purva Phalguni, Purva Ashadha, Purva Bhadrapada, Chitra (partial). Check the specific nakshatra of the intended date via Panchang.</p>
 
 <h3>6. Favourable tithis + no Dagdha yoga</h3>
 
-<p>Auspicious tithis (lunar days) for weddings: 2, 3, 5, 7, 10, 11, 12, 13 (both bright and dark halves). Avoid: 4 (Chaturthi), 8 (Ashtami), 9 (Navami), 14 (Chaturdashi), 15 (Purnima/Amavasya) except in specific regional variants.</p>
+{# #1022: knowledge/vedic_reference.md section 29.9 (Raman, Muhurtha, marriage chapter, as paraphrased there) and knowledge/grahas.md Table 79 (Rao, Wedding row: 2, 3, 5, 7, 10, 11, 12, 13, 15) #}
+<p>Our finder credits these tithis (lunar days) for weddings: 2, 3, 5, 7, 10, 11 and 13. It avoids 4 (Chaturthi), 8 (Ashtami), 9 (Navami), 14 (Chaturdashi), Amavasya and Purnima, except in specific regional variants.</p>
 
-<p><strong>Dagdha ("burnt") tithi-weekday combinations</strong> — per Muhurta Chintamani, certain tithi-weekday pairings are "burnt" and unfit for shubh karya even if all other rules align: Sunday+Dwadashi (12), Monday+Ekadashi (11), Tuesday+Panchami (5), Wednesday+Tritiya (3), Thursday+Shashti (6), Friday+Ashtami (8), Saturday+Navami (9). Check for these before committing to a date.</p>
+<p>Two points where the sources differ from a simple &ldquo;both halves&rdquo; list. First, the waning (Krishna paksha) half: B.V. Raman&rsquo;s <em>Muhurtha</em> rejects the dark-half 11th through New Moon for marriage, so our finder excludes a wedding date on the 11th, 12th or 13th tithi of the waning half, while the same tithis in the waxing half still count. Second, the 12th (Dwadashi): Rao&rsquo;s wedding guideline table lists it and Raman&rsquo;s marriage chapter rejects it, so the finder gives the bright-half 12th no credit either way. For the waning-half 2nd to 10th the finder keeps its own list; we have not found a ruling on those for marriage in the sources we hold.</p>
+
+<p><strong>Dagdha ("burnt") tithi-weekday combinations</strong> — a widely followed convention holds that certain tithi-weekday pairings are "burnt" and unfit for shubh karya even if all other rules align. None of the books this site holds gives these seven pairings, and we could not trace them to a source: Sunday+Dwadashi (12), Monday+Ekadashi (11), Tuesday+Panchami (5), Wednesday+Tritiya (3), Thursday+Shashti (6), Friday+Ashtami (8), Saturday+Navami (9). Check for these before committing to a date.</p>
 
 <h3>7. No Panchak days</h3>
 
@@ -83,7 +86,7 @@
 
 <h3>8. No eclipse days (±1 day)</h3>
 
-<p>Solar and lunar eclipses are absolute wedding blockers. The classical restriction extends to the day before and the day after — the atmosphere is considered energetically unsettled even after grahana sutak formally ends.</p>
+<p>Custom treats solar and lunar eclipses as wedding blockers, and our finder extends the restriction to the day before and the day after. This is a widely followed convention that our finder applies; we have not found an eclipse-day rule or the one-day margin in the books this site holds.</p>
 
 <h2>Abujha Muhurats — universally auspicious days that override calculation</h2>
 
@@ -109,8 +112,8 @@
 <p>Given the rules above, 2027 wedding dates cluster in specific windows:</p>
 
 <ul>
-  {# muhurat.find_candidates("vivah","Delhi",date(2027,1,13),14) run 2026-08-08 -> 13-15 Jan Panchak, 16 Jan Ashtami, 17-18 Jan avoid-nakshatra, 19 Jan acceptable, 20 Jan excellent #}
-  <li><strong>Winter window, mid-January into February</strong> — Kharmas ends at Makar Sankranti, Friday, Jan 15, 2027, but Panchak runs through that day and the next few carry avoid tithis and nakshatras, so our finder's first usable dates are Jan 19-20.</li>
+  {# muhurat.find_candidates("vivah","Delhi",date(2027,1,13),14) run 2026-08-08 -> 13-15 Jan Panchak, 16 Jan Ashtami, 17 Jan avoid-nakshatra, 18 Jan Dagdha (Monday + Ekadashi, noon reading #1020), 19 Jan Tuesday avoid (#1021; was acceptable), 20 Jan excellent #}
+  <li><strong>Winter window, mid-January into February</strong> — Kharmas ends at Makar Sankranti, Friday, Jan 15, 2027, but Panchak runs through that day and the next few carry avoid tithis and nakshatras, so our finder's first usable date is the Wednesday of Jan 19-20 (the Tuesday of that pair is excluded: Raman rejects Tuesday for a wedding).</li>
   {# sankranti.sankranti_instant(2027,"Mesha") -> 2027-04-14 15:28 IST; combustion scan above: Venus combust from 2027-07-07 #}
   <li><strong>Spring and summer window, mid-April to early July</strong> — opens the day after Mesha Sankranti on Apr 14, 2027 and closes in the first week of July, when Shukra goes combust a week ahead of Chaturmas. Most popular season in North India.</li>
   {# festival_registry devuthani-ekadashi 2027 = 2027-11-10 #}
@@ -168,16 +171,16 @@
   <li><strong>Ignoring Chaturmas</strong> to fit venue availability — modern practice varies but traditional weddings during Chaturmas are said to lack full blessing</li>
   <li><strong>Not doing individual chart check</strong> — the "universally good" date may be personally difficult</li>
   <li><strong>Trusting online random-date calculators</strong> that ignore combustion, Panchak, or personal chart factors</li>
-  <li><strong>Choosing an eclipse day</strong> or the day immediately after — huge inauspicious classical marker</li>
+  <li><strong>Choosing an eclipse day</strong> or the day immediately after — widely avoided in custom</li>
 </ul>
 
 <h2>Reading Vivah Muhurat 2027 honestly</h2>
 
-<p>The calendar gives the outer window; your chart gives the inner window. Both must align. Combine the classical calendar rules above with personal chart analysis for a truly auspicious wedding date. For related depth: <a href="/learn/marriage-timing-kundli/">Marriage Timing in Your Kundli</a>, <a href="/learn/manglik-dosh/">Manglik Dosh</a>, and <a href="/learn/kundali-matching-ashtakoot-guna-milan/">Kundali Matching (Ashtakoot)</a>.</p>
+<p>The calendar gives the outer window; your chart gives the inner window. Both must align. Combine the calendar rules above with personal chart analysis for a truly auspicious wedding date. For related depth: <a href="/learn/marriage-timing-kundli/">Marriage Timing in Your Kundli</a>, <a href="/learn/manglik-dosh/">Manglik Dosh</a>, and <a href="/learn/kundali-matching-ashtakoot-guna-milan/">Kundali Matching (Ashtakoot)</a>.</p>
 
 <div class="callout callout-classic" style="margin-top: 2rem;">
-  <div class="callout-label">Classical sources cited</div>
-  <p>Muhurtha Chintamani (Ramacharya, c.1600), Brihat Parashara Hora Shastra §Kalanidhi, Vasishtha Samhita. Panchak rules from Ashvalayana Grihya Sutra. Chaturmas from Padma Purana.</p>
+  <div class="callout-label">What this guide checks, and what it does not</div>
+  <p>Checked against books this site holds: B.V. Raman, <em>Muhurtha</em> (1948) for Panchak, the nitya-yogas it condemns, the tithi and weekday judgements and the combustion orbs, and K.N. Rao&rsquo;s <em>Vedic Astrology: An Integrated Approach</em> (Table 79) for the wedding tithis. Not checked: Kharmas, Chaturmas, Dagdha pairings and the eclipse-day margin are widely followed conventions that our finder applies; we have not found them in those books, and we could not trace the Dagdha pairings to any source.</p>
   <p class="text-xs text-bhagya-muted mt-2">For a chart-specific interpretation grounded in your actual placements, <a href="/">generate your free Janma Kundli on Shubh Bhagya</a>. For deeper practice, consult a qualified traditional astrologer or family priest.</p>
 </div>
 

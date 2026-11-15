@@ -545,7 +545,7 @@ def gate_4_muhurat_agrees(chart) -> list[str]:
     matching the almanac users read.
 
     Checks both blocker inputs, since those are what actually gate a muhurat:
-    the nitya-yoga NAME (Vyatipata/Vaidhriti block) and Bhadra detection
+    the nitya-yoga NAME (Atiganda/Shula/Ganda/Vyatipata/Vaidhriti block, #1023) and Bhadra detection
     (Vishti). A spelling drift in either would silently stop a blocker firing.
     """
     from datetime import datetime, timedelta
@@ -573,7 +573,7 @@ def gate_4_muhurat_agrees(chart) -> list[str]:
                 f"{when:%Y-%m-%d %H:%M}Z nitya yoga: muhurat says "
                 f"{muhurat_yoga!r}, chart.py says {chart_yoga!r}"
             )
-        if blocks != (chart_yoga in {"Vyatipata", "Vaidhriti"}):
+        if blocks != (chart_yoga in {"Atiganda", "Shula", "Ganda", "Vyatipata", "Vaidhriti"}):
             failures.append(
                 f"{when:%Y-%m-%d %H:%M}Z blocking flag disagrees with the "
                 f"name it was derived from ({chart_yoga!r} -> {blocks})"
@@ -585,10 +585,10 @@ def gate_4_muhurat_agrees(chart) -> list[str]:
             )
 
     # A gate that never sees a blocker fire proves nothing about blockers.
-    if not {"Vyatipata", "Vaidhriti"} & yoga_seen:
+    if not {"Atiganda", "Shula", "Ganda", "Vyatipata", "Vaidhriti"} <= yoga_seen:
         failures.append(
-            "sample window contained no blocking nitya yoga — the blocker "
-            "comparison above was never exercised; widen the window"
+            "sample window did not contain all five blocking nitya yogas — the "
+            "blocker comparison above was not fully exercised; widen the window"
         )
     if "Vishti" not in karana_seen:
         failures.append(

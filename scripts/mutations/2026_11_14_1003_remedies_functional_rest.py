@@ -1,0 +1,80 @@
+"""#1003: the Mars, Mercury, Venus, Moon and Sun remedies guides stop asserting functional verdicts by Ascendant.
+
+Follow-up to 2026_11_14_998_remedies_functional.py. Each row restores one defect and names the test that must go red."""
+
+_D = "src/astro_ai/templates/learn/"
+_MARS = _D + "mars-remedies.html"
+_MER = _D + "mercury-remedies.html"
+_VEN = _D + "venus-remedies.html"
+_MOON = _D + "chandra-moon-remedies.html"
+_SUN = _D + "surya-sun-remedies.html"
+_R = "src/astro_ai/learn_registry.py"
+
+MUTATIONS = [
+    ("#1003: Mars page lists Taurus, Gemini, Virgo as functionally malefic again",
+     _MARS,
+     "<strong>Every other Ascendant:</strong> Mars rules two houses",
+     "<strong>Taurus, Gemini, Virgo Ascendants:</strong> Mars becomes functionally malefic. Mars rules two houses",
+     "test_mars_page_asserts_no_verdict_by_ascendant"),
+    ("#1003: Mercury page lists Aries and Scorpio as dusthana-lord verdicts again",
+     _MER,
+     "<strong>Every other Ascendant:</strong> Mercury rules two houses",
+     "<strong>Aries and Scorpio Ascendants:</strong> Mercury rules dusthanas. Mercury rules two houses",
+     "test_mercury_page_asserts_no_verdict_by_ascendant"),
+    ("#1003: Venus page calls Venus a Yogakaraka for Capricorn and Aquarius again",
+     _VEN,
+     "<strong>Taurus and Libra Ascendants:</strong> Venus is the Ascendant lord",
+     "<strong>Capricorn and Aquarius Ascendants:</strong> Venus is a Yogakaraka. "
+     "<strong>Taurus and Libra Ascendants:</strong> Venus is the Ascendant lord",
+     "test_venus_page_asserts_no_verdict_by_ascendant"),
+    ("#1003: Moon page lists compatible Ascendants for pearl again",
+     _MOON,
+     "and does not list Ascendants that pearl suits or does not suit.",
+     "Compatible: <strong>Cancer</strong> (Moon's own sign).",
+     "test_moon_page_asserts_no_verdict_by_ascendant"),
+    ("#1003: Sun page names Aquarius and Pisces as functional-malefic Ascendants again",
+     _SUN,
+     "so this page lists no Ascendants.",
+     "Never wear ruby when Sun is a functional malefic for your Ascendant (Aquarius, Pisces).",
+     "test_sun_page_asserts_no_verdict_by_ascendant"),
+    ("#1003: Moon registry FAQ says Cancer, Scorpio, Pisces are most compatible for pearl again",
+     _R,
+     "Chart placement matters too: the Moon is debilitated in Scorpio and exalted in Taurus. Consult",
+     "Cancer, Scorpio, Pisces most compatible. Consult",
+     "test_registry_faqs_assert_no_verdict_by_ascendant"),
+    ("#1003: Mercury page loses its no-consultation warning",
+     _MER,
+     "<strong>Do not buy emerald without consultation.</strong>",
+     "<strong>Skip it.</strong>",
+     "test_consult_a_chart_warning_survives"),
+    ("#1003: Venus page loses its have-your-chart-read-first warning",
+     _VEN,
+     "Do not wear diamond on the strength of a house count or a web list; have your chart read first.",
+     "Wear it.",
+     "test_consult_a_chart_warning_survives"),
+    ("#1003: Mars page states the 12th and 7th from Taurus wrongly",
+     _MARS,
+     "the 12th and 7th from Taurus",
+     "the 11th and 7th from Taurus",
+     "test_house_lordships_stated_are_the_true_ones"),
+    ("#1003: Venus page states the 5th and 10th from Capricorn wrongly",
+     _VEN,
+     "the 5th and 10th from Capricorn",
+     "the 6th and 10th from Capricorn",
+     "test_house_lordships_stated_are_the_true_ones"),
+    ("#1003: Moon page states the 2nd from Gemini wrongly",
+     _MOON,
+     "the 2nd from Gemini, the 12th from Leo",
+     "the 3rd from Gemini, the 12th from Leo",
+     "test_house_lordships_stated_are_the_true_ones"),
+    ("#1003: Venus page asks whether Venus is a Yogakaraka for Capricorn / Aquarius again (unsourced)",
+     _VEN,
+     "(5) Which houses does Venus rule from your Ascendant (count signs from your rising sign to Taurus and to Libra)?",
+     "(5) Is Venus a Yogakaraka for your Ascendant (Capricorn / Aquarius)?",
+     "test_mars_yogakaraka_statement_is_the_sourced_one"),
+    ("#1003: Mercury page states his debilitation sign wrongly (true: Pisces)",
+     _MER,
+     "Mercury is debilitated in Pisces",
+     "Mercury is debilitated in Virgo",
+     "test_moon_dignities_are_the_sourced_ones"),
+]

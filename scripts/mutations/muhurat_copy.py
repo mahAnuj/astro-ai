@@ -1,0 +1,58 @@
+"""#1024: muhurat copy may not call an unsourced rule "classical" (Chaturmas, Kharmas, Dagdha,
+eclipse +/-1 day, Choghadiya, the Amrit/Sarvartha/Ravi boosters, Abujha) or cite Grihya Sutras.
+tests/test_muhurat_classical_copy.py."""
+
+_F = "src/astro_ai/templates/muhurat_finder.html"
+_L = "src/astro_ai/templates/muhurat_landing.html"
+_M = "src/astro_ai/muhurat.py"
+
+MUTATIONS = [
+    ("#1024: the finder's 'Criteria applied' goes back to 'Classical criteria applied'",
+     _F, "<strong>Criteria applied:</strong>", "<strong>Classical criteria applied:</strong>",
+     "test_the_issue_repro_classical_criteria_applied_is_gone"),
+    ("#1024: the finder meta_description calls Chaturmas/Kharmas/Dagdha classical again",
+     _F, "and also applies widely followed conventions it labels as its own: Chaturmas",
+     "Applies classical Panchang rules: Chaturmas",
+     "test_no_finder_sentence_calls_an_unsourced_rule_classical"),
+    ("#1024: the 'no results' notice says every day was classically excluded by Chaturmas",
+     _F, "every day was excluded (usually by Chaturmas",
+     "every day was classically excluded (usually by Chaturmas",
+     "test_no_retired_phrase_survives_in_any_muhurat_surface"),
+    ("#1024: the conventions paragraph is folded back into the sourced list",
+     _F, "<strong>Widely followed conventions this finder applies:</strong>",
+     "<strong>Also applied:</strong>",
+     "test_the_finder_labels_its_own_conventions_and_names_the_sourced_ones"),
+    ("#1024: the Vivah intro says classical tradition requires no Chaturmas again",
+     _M, "It also applies widely followed conventions that are this finder's own choices, not rules from the books this site holds: that Guru (Jupiter) and Shukra (Venus) are not combust (Raman's wedding criteria do not list combustion), no Chaturmas (Devshayani",
+     "It also applies the classical rules: that Guru (Jupiter) and Shukra (Venus) are not combust (Raman's wedding criteria do not list combustion), no Chaturmas (Devshayani",
+     "test_no_landing_string_calls_an_unsourced_rule_classical"),
+    ("#1024: Namkaran goes back to 'classically observed ... per Grihya Sutras'",
+     _M, "is commonly held around the 11th day after birth, though modern families choose within the first 3-4 weeks; the day is custom, not a rule this finder sources to a book.",
+     "is classically observed on the 11th day after birth per Grihya Sutras, though modern families choose within the first 3-4 weeks.",
+     "test_no_retired_phrase_survives_in_any_muhurat_surface"),
+    ("#1024: the Griha Pravesh Chaturmas line loses its convention label",
+     _M, '"No Chaturmas (mid-July to mid-November) — widely followed convention this finder applies"',
+     '"No Chaturmas (mid-July to mid-November)"',
+     "test_landing_rules_label_each_unsourced_rule_as_a_convention"),
+    ("#1024: the landing heading goes back to 'Classical criteria checked'",
+     _L, ">Criteria checked</h2>", ">Classical criteria checked</h2>",
+     "test_no_retired_phrase_survives_in_any_muhurat_surface"),
+    ("#1024: about.html credits Grihya Sutras for Muhurat rules again",
+     "src/astro_ai/templates/about.html",
+     "Referenced for special ascendant and Bhava considerations.</li>\n",
+     "Referenced for special ascendant and Bhava considerations.</li>\n"
+     "      <li><strong>Grihya Sutras</strong> — for Muhurat rules including Namkaran and Vidyarambh timings.</li>\n",
+     "test_no_retired_phrase_survives_in_any_muhurat_surface"),
+    ("#1024: a booster is described as universal auspiciousness again, with 'classical' beside it",
+     _F, "These weekday-nakshatra booster tables are this finder&rsquo;s own convention",
+     "These classical Sarvartha Siddhi tables are universal auspiciousness",
+     "test_no_finder_sentence_calls_an_unsourced_rule_classical"),
+    ("#1024 QA: the Vivah intro puts the Guru/Shukra combustion check back beside Raman's Panchak",
+     _M, "This tool checks that the tithi and nakshatra are favourable and that the day is clear of Panchak, a rule B.V. Raman's Muhurtha records.",
+     "This tool checks that Guru (Jupiter) and Shukra (Venus) are not combust, that the tithi and nakshatra are favourable, and that the day is clear of Panchak, a rule B.V. Raman's Muhurtha records.",
+     "test_the_vivah_combustion_veto_is_labelled_a_convention_not_a_sourced_rule"),
+    ("#1024 QA: the finder's Criteria applied lists combustion among the Raman-sourced hard exclusions again",
+     _F, "Vyatipata and Vaidhriti nitya-yogas. Panchak and those five yogas",
+     "Vyatipata and Vaidhriti nitya-yogas, and Guru + Shukra + Budh combustion per event karaka (orbs below). Panchak and those five yogas",
+     "test_the_vivah_combustion_veto_is_labelled_a_convention_not_a_sourced_rule"),
+]

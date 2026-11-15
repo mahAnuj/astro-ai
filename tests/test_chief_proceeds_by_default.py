@@ -297,10 +297,10 @@ def test_every_dispatch_form_chief_offers_is_one_the_carrier_parses():
     and refuses anything else, so a form invented in a prompt would be written,
     refused, and reported as a dispatch that happened."""
     carrier = (ROOT / "scripts" / "dispatch_cycle.sh").read_text(encoding="utf-8")
-    m = re.search(r"grep -oE '\^\(([a-z|]+)\)=\[0-9\]\+\$'", carrier)
+    m = re.search(r"grep -oE '\^\(([a-z_|]+)\)=\[0-9\]\+\$'", carrier)
     assert m, "the carrier's ruling pattern is no longer recognisable"
     accepted = set(m.group(1).split("|"))
-    offered = set(re.findall(r"`([a-z]+)=<n>`", SRC))
+    offered = set(re.findall(r"`([a-z_]+)=<n>`", SRC))
     assert offered == accepted, (
         f"chief offers {sorted(offered)}, the carrier accepts {sorted(accepted)}"
     )

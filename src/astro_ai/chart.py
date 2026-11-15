@@ -3909,10 +3909,11 @@ _TITHI_SIGNIFICANCE: dict[str, str] = {
 # different concept that happens to share the word.
 #
 # Formula: (Sun_longitude + Moon_longitude) mod 360, divided into 27 equal
-# parts of 13°20'. Per the classical muhurta tradition (Muhurta Chintamani),
-# Vyatipata (17th) and Vaidhriti (27th) are hard exclusions for shubh karya.
-# muhurat.py carries its own copy of this list for its blocker check; the
-# two must stay in the same ORDER (spelling variants are cosmetic).
+# parts of 13°20'. Raman (Muhurtha, Panchanga Suddhi, lines 1343-1346;
+# knowledge/vedic_reference.md section 29.9) names five as harming whatever is
+# started under them: Atiganda (6th), Shula (9th), Ganda (10th), Vyatipata (17th)
+# and Vaidhriti (27th). muhurat.py's blocker set keys on these spellings (#1023);
+# tests/test_muhurat_nitya_blockers.py pins each name to its position here.
 _NITYA_YOGA_NAMES: tuple[str, ...] = (
     "Vishkambha", "Priti",   "Ayushman", "Saubhagya", "Shobhana",
     "Atiganda",   "Sukarma", "Dhriti",   "Shula",     "Ganda",

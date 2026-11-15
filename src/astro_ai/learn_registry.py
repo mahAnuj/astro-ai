@@ -164,7 +164,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Sun mean?",
-                "a": "Sun debilitated in Libra weakens the sense of self and authority. It can show up as self-doubt, difficulty holding boundaries, complicated father-relationship, uneven physical vitality. Libra is Venus's sign — Sun there gets 'pulled toward relationships and pleasing others' rather than being centred in itself. Cancellation exists (Neechabhanga Raja Yoga) when the Sun's lord Venus is well-placed — debilitated Sun with strong Venus can actually flip into a powerful yoga.",
+                "a": "Sun debilitated in Libra weakens the sense of self and authority. It can show up as self-doubt, difficulty holding boundaries, complicated father-relationship, uneven physical vitality. Libra is Venus's sign — Sun there gets 'pulled toward relationships and pleasing others' rather than being centred in itself. Cancellation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether the Sun is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's Sun's relationship with the father?",
@@ -253,7 +253,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Jupiter mean?",
-                "a": "Jupiter debilitated in Capricorn loses its natural expansiveness — the sign belongs to Saturn (limits, structure), and Jupiter's optimism gets compressed. Common manifestations: struggles with children or fertility, difficulty finding good teachers, tendency toward pessimism, and material scarcity despite hard work. Cancellation exists — if the Capricorn lord Saturn is well-placed, Neechabhanga Raja Yoga forms and the debilitation flips into strength.",
+                "a": "Jupiter debilitated in Capricorn loses its natural expansiveness — the sign belongs to Saturn (limits, structure), and Jupiter's optimism gets compressed. Common manifestations: struggles with children or fertility, difficulty finding good teachers, tendency toward pessimism, and material scarcity despite hard work. Cancellation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Jupiter is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's the best remedy for a weak Jupiter?",
@@ -296,7 +296,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Mars mean?",
-                "a": "Mars debilitated in Cancer loses much of its drive — the fiery planet in the watery, emotional sign becomes indecisive, easily upset, and less able to hold ground under pressure. Interestingly, a debilitated Mars in a Manglik house actually cancels the Manglik dosha under a commonly repeated rule (not every source gives it) — the weakened Mars lacks the strength to disturb marriage. Cancellation of debilitation (Neechabhanga) exists when the Cancer lord Moon is well-placed.",
+                "a": "Mars debilitated in Cancer loses much of its drive — the fiery planet in the watery, emotional sign becomes indecisive, easily upset, and less able to hold ground under pressure. Interestingly, a debilitated Mars in a Manglik house actually cancels the Manglik dosha under a commonly repeated rule (not every source gives it) — the weakened Mars lacks the strength to disturb marriage. Cancellation of debilitation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Mars is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's the best remedy for a difficult Mars?",
@@ -339,7 +339,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Venus mean?",
-                "a": "Venus debilitated in Virgo (Mercury's analytical, service-oriented sign) loses its natural warmth and grace. Common manifestations: difficulty in romantic relationships (over-analysis of partners), tendency toward criticism in love, delayed marriage, or discomfort with sensual pleasure and material luxury. Cancellation exists — if Mercury (the Virgo lord) is strong, Neechabhanga Raja Yoga forms.",
+                "a": "Venus debilitated in Virgo (Mercury's analytical, service-oriented sign) loses its natural warmth and grace. Common manifestations: difficulty in romantic relationships (over-analysis of partners), tendency toward criticism in love, delayed marriage, or discomfort with sensual pleasure and material luxury. Cancellation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Venus is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's the best remedy for a weak Venus?",
@@ -382,7 +382,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Mercury mean?",
-                "a": "Mercury debilitated in Pisces loses precision — the analytical planet in the mystical, boundless sign struggles with concrete thinking. Common manifestations: scattered focus, difficulty with numbers or details, tendency toward dreaminess over action. Interestingly, debilitated Mercury can be excellent for spiritual pursuits, poetry, and intuitive work — it's specifically the linear-analytical function that suffers. Cancellation exists when Jupiter (Pisces lord) is strong.",
+                "a": "Mercury debilitated in Pisces loses precision — the analytical planet in the mystical, boundless sign struggles with concrete thinking. Common manifestations: scattered focus, difficulty with numbers or details, tendency toward dreaminess over action. Interestingly, debilitated Mercury can be excellent for spiritual pursuits, poetry, and intuitive work — it's specifically the linear-analytical function that suffers. Cancellation (Neechabhanga) exists: the one condition we can state from the sources we hold is the navamsha test, where a planet debilitated in the D-1 chart but exalted in the D-9 has the debilitation cancelled, so check whether Mercury is exalted in the D-9. The fuller set of conditions is a matter for a chart reading.",
             },
             {
                 "q": "What's the best remedy for a weak Mercury?",
@@ -425,7 +425,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does Rahu Mahadasha bring?",
-                "a": "Rahu Mahadasha runs 18 years — the second-longest after Venus. It typically brings dramatic life transformation — foreign travel or settlement, obsessive pursuits, sudden career shifts, addiction risk, and boom-and-bust cycles. Where Rahu sits in your natal chart shapes which life area gets the transformation. See our detailed Rahu-Ketu antardasha guide for the classic mid-Mahadasha inflection point.",
+                "a": "Rahu Mahadasha runs 18 years — the third-longest of the nine, after Venus (20) and Saturn (19). It typically brings dramatic life transformation — foreign travel or settlement, obsessive pursuits, sudden career shifts, addiction risk, and boom-and-bust cycles. Where Rahu sits in your natal chart shapes which life area gets the transformation. See our detailed Rahu-Ketu antardasha guide for the classic mid-Mahadasha inflection point.",
             },
             {
                 "q": "What's the best remedy for a difficult Rahu?",
@@ -437,7 +437,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Shadow planet — northern lunar node. No physical body, no ownership of signs\n'
             '• Karaka: ambition, foreign, technology, unconventional paths, obsession, sudden gains/losses, alcohol/drugs, deception\n'
             '• Considered exalted in Taurus (some texts) or Gemini (other texts); debilitated in Scorpio or Sagittarius\n'
-            '• Rahu Mahadasha (18 years) — the second-longest, and most disruptive\n'
+            '• Rahu Mahadasha (18 years) — the third-longest, and most disruptive\n'
             '• Strong Rahu: material success, foreign gains, entrepreneurial rise, technology mastery\n'
             '• Weak/afflicted Rahu: addictions, deception (self and others), scandal, confusion\n'
             '• Amplifies whichever house/planet it associates with — takes on that flavour\n'
@@ -944,7 +944,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is yellow sapphire safe to wear for anyone?",
-                "a": "Safer than blue sapphire, but still requires knowing your Ascendant. For Aries, Cancer, Leo, Scorpio, Sagittarius, and Pisces Ascendants, Jupiter is a functional benefic and yellow sapphire generally helps. For Taurus and Libra Ascendants, Jupiter is a functional malefic and yellow sapphire should be avoided. Even for indicated Ascendants, a 3-5 day test period is traditionally recommended before permanent wearing. Never buy an expensive Pukhraj without knowing your Ascendant first.",
+                "a": "Not by default. The sources we hold say gemstones of functional malefics for your chart should be avoided and gemstones of favourable planets speed up good results, and that telling which is which needs your Ascendant and the classification of Jupiter for that Ascendant. They give no table of functional benefics and malefics by Ascendant, so we issue no verdict by Ascendant here. What can be worked out is which houses Jupiter rules from your Ascendant: he owns Sagittarius and Pisces, so he rules the 9th and 12th from Aries and the 1st and 4th from Sagittarius, for example. That is arithmetic, not a ruling on whether the stone suits you. Never wear a planet's gemstone during that planet's maraka dasha, and never buy an expensive Pukhraj without a chart consultation. Even after one, a 3-5 day test period is traditionally recommended before permanent wearing.",
             },
             {
                 "q": "What is Jupiter's mantra?",
@@ -991,7 +991,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is emerald safe to wear for anyone?",
-                "a": "Emerald (Panna) is one of the safer major planetary gemstones — less risky than blue sapphire (Saturn) or red coral (Mars) — but still requires knowing your Ascendant. For Gemini and Virgo Ascendants (Mercury is the Ascendant lord), and for Taurus, Cancer, Libra, Capricorn, and Aquarius Ascendants (Mercury rules helpful houses), emerald is generally recommended. For Aries and Scorpio Ascendants, Mercury rules dusthanas and emerald can worsen nervous-system or communication patterns. For Leo, Sagittarius, and Pisces Ascendants, Mercury's status is mixed — best consulted case-by-case. If genuine emerald of adequate carat weight is beyond budget, classical substitutes include green tourmaline, peridot, or aventurine.",
+                "a": "Not by default. The sources we hold say gemstones of functional malefics for your chart should be avoided and gemstones of favourable planets speed up good results, and that telling which is which needs your Ascendant and the classification of Mercury for that Ascendant. They give no table of functional benefics and malefics by Ascendant, so we issue no verdict by Ascendant here. What can be worked out is which houses Mercury rules from your Ascendant: he owns Gemini and Virgo, so he is the Ascendant lord for Gemini and Virgo Ascendants (the 1st and 4th from Gemini, the 10th and 1st from Virgo), and he rules, for example, the 3rd and 6th from Aries, the 2nd and 5th from Taurus and the 6th and 9th from Capricorn. That is arithmetic, not a ruling on whether emerald suits you, so have your chart read first. If genuine emerald of adequate carat weight is beyond budget, classical substitutes include green tourmaline, peridot, or aventurine.",
             },
             {
                 "q": "What is Mercury's mantra?",
@@ -1038,7 +1038,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is diamond safe to wear for anyone?",
-                "a": "Diamond (Heera) is one of the safer major planetary gemstones — less risky than blue sapphire (Saturn) or red coral (Mars) — but still requires knowing your Ascendant. For Taurus and Libra Ascendants (Venus is the Ascendant lord) and for Capricorn and Aquarius Ascendants (Venus is a Yogakaraka), diamond is classically recommended and generally supports Venus's positive effects. For Aries and Scorpio Ascendants, Venus rules dusthanas and diamond can worsen relationship or health patterns. For Cancer, Leo, Sagittarius, and Pisces Ascendants, Venus's status is mixed — best consulted case-by-case. If genuine diamond of adequate carat weight is beyond budget, classical alternatives include white sapphire, white zircon, or white topaz.",
+                "a": "Not by default. The sources we hold say gemstones of functional malefics for your chart should be avoided and gemstones of favourable planets speed up good results, and that telling which is which needs your Ascendant and the classification of Venus for that Ascendant. They give no table of functional benefics and malefics by Ascendant, so we issue no verdict by Ascendant here. What can be worked out is which houses Venus rules from your Ascendant: he owns Taurus and Libra, so he is the Ascendant lord for Taurus and Libra Ascendants (the 1st and 6th from Taurus, the 8th and 1st from Libra), and he rules, for example, the 5th and 10th from Capricorn, the 4th and 9th from Aquarius and the 2nd and 7th from Aries. That is arithmetic, not a ruling on whether diamond suits you, so have your chart read first. If genuine diamond of adequate carat weight is beyond budget, classical alternatives include white sapphire, white zircon, or white topaz.",
             },
             {
                 "q": "What is Venus's mantra?",
@@ -1083,7 +1083,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is red coral safe to wear for anyone?",
-                "a": "Moderately safe for most, but still requires knowing your Ascendant. For Cancer, Leo, Scorpio, Sagittarius, and Pisces Ascendants, Mars is functionally benefic and red coral generally helps. For Taurus, Gemini, and Virgo Ascendants, Mars becomes functionally malefic and red coral can worsen anger, conflicts, or blood-related health issues. Also: if your Mars is already over-active (aggressive personality, chronic conflicts), you may need to calm Mars rather than strengthen it — in which case coral would be counterproductive.",
+                "a": "Not by default. The sources we hold say gemstones of functional malefics for your chart should be avoided and gemstones of favourable planets speed up good results, and that telling which is which needs your Ascendant and the classification of Mars for that Ascendant. They give no table of functional benefics and malefics by Ascendant, so we issue no verdict by Ascendant here. What can be worked out is which houses Mars rules from your Ascendant: he owns Aries and Scorpio, so he rules the 1st and 8th from Aries and the 6th and 1st from Scorpio, and the sources we hold name him the Yogakaraka for Cancer and Leo Ascendants (the 10th and 5th from Cancer, the 4th and 9th from Leo). For every other Ascendant he rules two houses by counting signs, for example the 12th and 7th from Taurus. That is arithmetic or classification, not a ruling on whether red coral suits you. Never wear a planet's gemstone during that planet's maraka dasha, and if your Mars is already over-active (aggressive personality, chronic conflicts), you may need to calm Mars rather than strengthen it, in which case coral would be counterproductive. Have your chart read first.",
             },
             {
                 "q": "Why is Hanuman worship considered the best Mars remedy?",
@@ -1127,7 +1127,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Should I wear blue sapphire for Saturn?",
-                "a": "Only after a proper chart consultation. Blue sapphire is Saturn's classical gemstone AND the single most dangerous gemstone in Vedic astrology when worn incorrectly. Rao (§34.2): wear a planet's gemstone only when that planet is a functional benefic in your chart. Saturn is a functional benefic mainly for Taurus and Libra ascendants (where Saturn is a Yogakaraka). For Aries, Cancer, Leo ascendants Saturn is a functional malefic and blue sapphire should be avoided. Even when indicated, classical tradition recommends a 3-5 day test period first — remove immediately if dreams disturb, sleep breaks, or health dips.",
+                "a": "Only after a proper chart consultation. Blue sapphire is Saturn's classical gemstone AND the single most dangerous gemstone in Vedic astrology when worn incorrectly. Gemstones of functional malefics for your chart should be avoided, and telling which is which needs your Ascendant and the classification of Saturn for that Ascendant. The sources we hold give no table of functional benefics and malefics by Ascendant, so we issue no verdict by Ascendant here. What can be worked out is which houses Saturn rules from your Ascendant: he is the Yogakaraka for Taurus and Libra (a kendra and a trikona) and the Ascendant lord for Capricorn and Aquarius, and he rules the 10th and 11th from Aries, for example. That is arithmetic, not a ruling on whether blue sapphire suits you, so have your chart read first. Even after that, classical tradition recommends a 3-5 day test period first — remove immediately if dreams disturb, sleep breaks, or health dips.",
             },
             {
                 "q": "What is the safest Saturn remedy that works for anyone?",
@@ -1325,7 +1325,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Can the effects of Saturn in the 10th house be cancelled?",
-                "a": "Not cancelled, but significantly moderated. Jupiter's aspect on Saturn or on the 10th house is the classical rescuer — it softens the harshness and adds ethical authority. A strong Sun elsewhere in the chart complements Saturn-10 (Sun provides visibility, Saturn provides structure). A well-placed 10th lord amplifies the good side. Debilitated Saturn in Aries can be partially rescued through Neechabhanga (cancellation of debility) if Moon or Mars are well-placed. Full cancellation is a marketing claim, not a classical concept.",
+                "a": "Not cancelled, but significantly moderated. Jupiter's aspect on Saturn or on the 10th house is the classical rescuer — it softens the harshness and adds ethical authority. A strong Sun elsewhere in the chart complements Saturn-10 (Sun provides visibility, Saturn provides structure). A well-placed 10th lord amplifies the good side. Debilitated Saturn in Aries may have its debility cancelled (Neechabhanga): the one condition we can state from the sources we hold is the navamsha test, so check whether Saturn is exalted in the D-9 chart; the fuller set of conditions is a matter for a chart reading. Full cancellation is a marketing claim, not a classical concept.",
             },
             {
                 "q": "What careers suit Saturn in the 10th house natives?",
@@ -1418,11 +1418,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Is a debilitated Sun always bad?",
-                "a": "No. Debilitated Sun (Sun in Libra) reshapes how authority operates in your life — from commanded to negotiated — but it does not remove capability. Many highly successful leaders across history and industry carry this placement, especially in fields where diplomatic authority matters more than dominant authority: judiciary, mediation, senior advisory, coalition politics, academic leadership. When Neecha Bhanga (debilitation cancellation) applies, the placement can even become a source of unusual strength called Neecha Bhanga Raja Yoga, a genuine classical yoga. The actual outcome depends on whether cancellation conditions are present, which house Sun sits in, and how well the career direction is matched to the placement.",
+                "a": "No. Debilitated Sun (Sun in Libra) reshapes how authority operates in your life — from commanded to negotiated — but it does not remove capability. Many highly successful leaders across history and industry carry this placement, especially in fields where diplomatic authority matters more than dominant authority: judiciary, mediation, senior advisory, coalition politics, academic leadership. When Neecha Bhanga (debilitation cancellation) applies, the debilitation is treated as removed. The actual outcome depends on whether cancellation conditions are present, which house Sun sits in, and how well the career direction is matched to the placement.",
             },
             {
-                "q": "What is Neecha Bhanga Raja Yoga for Sun?",
-                "a": "Neecha Bhanga is classical Vedic cancellation of a planet's debilitation, and when it applies, the placement can produce genuine strength. The four most commonly cited conditions for Sun's debilitation in Libra to cancel: (1) Venus (the lord of Libra) is in a kendra (1st/4th/7th/10th) from the Lagna or Moon; (2) Saturn (which is exalted in Libra) is in a kendra from the Lagna or Moon; (3) Mars (which rules Aries, Sun's exaltation sign) is in a kendra from the Lagna or Moon; (4) Sun is exalted in the navamsha (D-9) chart. If any of these are present, the debilitation is functionally cancelled and the person often produces late-blooming institutional recognition and respected leadership. Generate your free Kundli on Shubh Bhagya to see if any of these apply.",
+                "q": "What is Neecha Bhanga for Sun?",
+                "a": "Neecha Bhanga is classical Vedic cancellation of a planet's debilitation, and when it applies the debilitation is treated as removed. The one condition we can state from the sources we hold is the navamsha test: a planet debilitated in the D-1 chart but exalted in the D-9 has its debilitation cancelled, so for Sun in Libra, check whether the Sun is exalted in the navamsha (D-9) chart. The fuller set of cancellation conditions is a matter for a chart reading, not a checklist we can give here. Where the navamsha condition is present, the placement may read as strength rather than weakness. Generate your free Kundli on Shubh Bhagya to see your D-9 chart.",
             },
             {
                 "q": "Which careers suit debilitated Sun natives?",
@@ -1438,7 +1438,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Can debilitated Sun give success?",
-                "a": "Yes, and often significant success — but the arc is typically late-blooming rather than early-flashy. The common pattern: early career of over-performance without proportionate recognition, mid-career forced elevation into a leadership role the person did not overtly seek, and late-career unexpected authority earned through years of quiet respect. When Neecha Bhanga applies, the late-career recognition can be substantial (chief justice, senior advisor, coalition leader, respected academic head). The people who suffer most with this placement are those who fight it — trying to force themselves into dominance-forward careers that punish the diplomatic instinct. Those who work with the placement often produce the most respected version of leadership in their field.",
+                "a": "Yes, and often significant success — but the arc is typically late-blooming rather than early-flashy. The common pattern: early career of over-performance without proportionate recognition, mid-career forced elevation into a leadership role the person did not overtly seek, and late-career unexpected authority earned through years of quiet respect. The people who suffer most with this placement are those who fight it — trying to force themselves into dominance-forward careers that punish the diplomatic instinct. Those who work with the placement often produce the most respected version of leadership in their field.",
             },
         ),
         llm_summary=(
@@ -1447,8 +1447,8 @@ ARTICLES: tuple[Article, ...] = (
             '• Career pattern: over-perform without recognition early → forced-into-leadership mid → respected-authority late\n'
             '• Best-fit careers: negotiation-forward (judiciary, arbitration, advisory, diplomacy, consulting, academia)\n'
             '• Fights: dominance-forward (aggressive sales, competitive politics, alpha-founder roles)\n'
-            '• Neechabhanga Raja Yoga (cancellation): Venus/Saturn/Mars in kendra from Lagna/Moon, OR Sun exalted in D-9\n'
-            '• When cancelled, produces unusual late-career strength — chief-justice / senior-advisor patterns\n'
+            '• Neechabhanga (cancellation): the one condition we can state is Sun exalted in D-9; the fuller set is for a chart reading\n'
+            '• When cancelled, the placement can read as strength rather than weakness\n'
             '• Remedies: Sun-strengthening practices (water offering), honour father-figures, wheat/jaggery Sunday charity'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
@@ -1456,7 +1456,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="jupiter-in-10th-house-career",
         title="Jupiter in the 10th House: Career, Hamsa Yoga, and the Dharmic Path",
-        summary="Jupiter in the 10th house is a natural karaka in the karma house — wisdom applied to profession. When Jupiter sits here in Cancer, Sagittarius, or Pisces, he forms Hamsa Yoga — one of the five Panch Mahapurush yogas — producing a lifelong gift of scholarly authority. When debilitated in Capricorn or afflicted, the karma-dharma path stalls. This guide covers the Hamsa Yoga configuration, the debilitated pattern, per-ascendant variations, the career fields Jupiter actually supports, and honestly what this placement does NOT automatically produce.",
+        summary="Jupiter in the 10th house is a natural karaka in the karma house — wisdom applied to profession. When Jupiter sits here in Cancer, Sagittarius, or Pisces, he forms Hamsa Yoga — one of the five Panch Mahapurush yogas — which the sources we hold list with wisdom, respect, dharma, and scholarly fame. Practitioners read a debilitated or afflicted Jupiter here as a slower road; that is a reading, not a rule the texts state. This guide covers the Hamsa Yoga configuration, the debilitated pattern, per-ascendant variations, the career fields Jupiter actually supports, and honestly what this placement does NOT automatically produce.",
         seo_title="Jupiter in 10th House: Hamsa Yoga or a Stalled Career?",
         seo_description="Does Jupiter in the 10th house mean wealth and fame? Not automatically. When it forms Hamsa Yoga, when it stalls, and what it does not guarantee.",
         category="Life Questions",
@@ -1467,11 +1467,11 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is Jupiter in the 10th house always good?",
-                "a": "Not automatically. Jupiter in the 10th is one of the most fortunate career placements when Jupiter is dignified — in Sagittarius, Pisces, or exalted in Cancer — where it forms Hamsa Yoga (a Panch Mahapurush yoga). When debilitated in Capricorn (Aries ascendant), combust by Sun, retrograde without additional support, or conjoined with Rahu (Guru Chandala Yoga), the placement's benefits diminish significantly. Jupiter is a 10th house karaka but does NOT get digbala (directional strength) in the 10th — his digbala is in the Lagna. So Jupiter in the 10th needs additional dignity to produce the fullest classical outcomes. Generate your free Janma Kundli on Shubh Bhagya to check Jupiter's exact configuration in your chart.",
+                "a": "Not automatically. Practitioners read Jupiter in the 10th as one of the most favourable career placements when Jupiter is dignified — in Sagittarius, Pisces, or exalted in Cancer — where it forms Hamsa Yoga (a Panch Mahapurush yoga). When debilitated in Capricorn (Aries ascendant), combust by Sun, or conjoined with Rahu (Guru Chandala Yoga), practitioners read the placement's benefits as reduced; that is a reading, not a rule the texts state. Jupiter is a 10th house karaka but does NOT get digbala (directional strength) in the 10th — his digbala is in the Lagna. So Jupiter in the 10th needs additional dignity to produce the fullest results. Generate your free Janma Kundli on Shubh Bhagya to check Jupiter's exact configuration in your chart.",
             },
             {
                 "q": "What is Hamsa Yoga and does Jupiter in the 10th create it?",
-                "a": "Hamsa Yoga is one of the five Panch Mahapurush (great person) yogas — the Jupiter version. It forms when Jupiter is in his own sign (Sagittarius or Pisces) or exalted (Cancer) AND in a kendra (1st, 4th, 7th, or 10th house) from the Lagna. Jupiter in the 10th qualifies for Hamsa Yoga specifically for three ascendants: Libra (Jupiter exalted in Cancer 10th — the strongest configuration), Gemini (Jupiter in own sign Pisces 10th), and Pisces (Jupiter in own sign Sagittarius 10th). Classical texts describe Hamsa Yoga natives as dignified, ethical, respected for judgement, drawn toward dharmic professions, and long-lived. The 10th house version is especially career-active — teaching, judiciary, advisory, spiritual leadership, and publishing are common signatures.",
+                "a": "Hamsa Yoga is one of the five Panch Mahapurush (great person) yogas — the Jupiter version. It forms when Jupiter is in his own sign (Sagittarius or Pisces) or exalted (Cancer) AND in a kendra (1st, 4th, 7th, or 10th house) from the Lagna. Jupiter in the 10th qualifies for Hamsa Yoga specifically for three ascendants: Libra (Jupiter exalted in Cancer 10th — the strongest configuration), Gemini (Jupiter in own sign Pisces 10th), and Pisces (Jupiter in own sign Sagittarius 10th). The sources we hold list Hamsa Yoga with wisdom, respect, dharma, and scholarly fame. Practitioners read the 10th house version as especially career-active, with teaching, judiciary, advisory, spiritual leadership, and publishing as the usual expression; that is a reading of the yoga's themes, not a rule the texts state.",
             },
             {
                 "q": "Which professions are best for Jupiter in the 10th house?",
@@ -1479,11 +1479,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "When does Jupiter in the 10th house give career results?",
-                "a": "Three timing windows. First — Jupiter Mahadasha (16 years, second-longest Vimshottari period after Venus) is the peak career activation window; recognition, institutional elevation, and wealth accumulation through dharmic work cluster here. Second — Jupiter Antardasha within another Mahadasha (roughly 2 years 4 months to 2 years 10 months depending on the outer Mahadasha lord) produces smaller versions of the same signature. Third — Jupiter transits: Jupiter takes about 12 years to complete a zodiacal cycle, and when he transits over the natal 10th house or aspects it, career expansion opportunities cluster; Jupiter returns (approximately ages 12, 24, 36, 48, 60, 72) frequently mark career inflection points.",
+                "a": "Three timing windows. First — Jupiter Mahadasha (16 years, the fifth-longest of the nine Vimshottari periods) is the peak career activation window; recognition, institutional elevation, and wealth accumulation through dharmic work cluster here. Second — Jupiter Antardasha within another Mahadasha (16/120 of the outer Mahadasha: just under 10 months inside Sun Mahadasha, up to 2 years 8 months inside Venus Mahadasha) produces smaller versions of the same signature. Third — Jupiter transits: Jupiter takes about 12 years to complete a zodiacal cycle, and when he transits over the natal 10th house or aspects it, career expansion opportunities cluster; Jupiter returns (approximately ages 12, 24, 36, 48, 60, 72) frequently mark career inflection points.",
             },
             {
                 "q": "Does retrograde Jupiter in the 10th house give different results?",
-                "a": "Yes — retrograde Jupiter is not weaker, but inward. Retrograde Jupiter in the 10th often produces a career where the person's real work is done privately, refined internally, and only later recognised publicly. Scholars whose books arrive after decades of quiet research, researchers whose theories are appreciated years after publication, creators whose reputation grows posthumously or after a long lag — all common retrograde-Jupiter-in-10 patterns. The classical reading is neither straightforwardly beneficial nor harmful; it simply demands a different relationship to visibility. If you are early-career with retrograde Jupiter in the 10th and feeling the work is not being seen, the chart is often describing a delayed-recognition pattern rather than an unrecognised one.",
+                "a": "Yes. Vedic astrology reads retrograde planets as stronger, not weaker, and retrograde Jupiter as deep learning and an expansion of meaning. In our own practitioner-style reading, retrograde Jupiter in the 10th often produces a career where the person's real work is done privately, refined internally, and only later recognised publicly. Scholars whose books arrive after decades of quiet research, researchers whose theories are appreciated years after publication, creators whose reputation grows posthumously or after a long lag — all common retrograde-Jupiter-in-10 patterns. It asks for a different relationship to visibility. If you are early-career with retrograde Jupiter in the 10th and feeling the work is not being seen, the chart is often describing a delayed-recognition pattern rather than an unrecognised one.",
             },
             {
                 "q": "Does Jupiter in the 10th house automatically bring wealth?",
@@ -1495,10 +1495,10 @@ ARTICLES: tuple[Article, ...] = (
             '• Jupiter in 10th = natural karaka in karma house (Jupiter is a 10th house karaka)\n'
             '• BUT: Jupiter does NOT have digbala in 10th — his digbala is in Lagna. Needs additional dignity to shine\n'
             '• Hamsa Yoga forms if Jupiter is in Cancer/Sagittarius/Pisces in 10th (Panch Mahapurush yoga)\n'
-            '• Best-fit careers: teaching, judiciary, law, medicine, finance/wealth advisory, publishing, religion, non-profit\n'
-            '• Debilitated in Capricorn (Aries ascendant): capable but institutional recognition stalls; check Neechabhanga\n'
-            '• Guru Chandala Yoga (Jupiter+Rahu): scandal-prone wisdom; unorthodox teachings\n'
-            '• Jupiter Mahadasha (16 years) is peak activation — recognition, wealth via dharma, marriage often triggers\n'
+            '• Careers practitioners read as best-fit (not held text): teaching, judiciary, law, medicine, finance/wealth advisory, publishing, religion, non-profit\n'
+            '• Debilitated in Capricorn (Aries ascendant): practitioners read slower recognition (a reading, not a held rule); check Neechabhanga\n'
+            '• Guru Chandala Yoga (Jupiter+Rahu): a named classical yoga, real and worth explaining; do not call it difficult or predict scandal from it\n'
+            '• Jupiter Mahadasha (16 years) is peak activation — recognition, wealth via dharma; some practitioners also read marriage here (not in the held sources)\n'
             '• Does NOT auto-produce wealth — check Dhana Yogas (2+11+5 house connections) separately'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
@@ -1521,7 +1521,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What if Sun in the 10th house is combust or debilitated?",
-                "a": "Both configurations flip the natural authority pattern. Debilitated Sun in the 10th means Sun in Libra (Capricorn ascendant) — the capable person who cannot get promoted, authority that feels borrowed. However, Neecha Bhanga cancellation rules apply here and often cancel the debilitation, producing late-career elevation. A combust planet in the 10th (usually Mercury or Venus close to Sun) tends to burn the significations of that planet in career — Mercury combust here can indicate analytical skill that is never quite credited; Venus combust can dim creative or partnership recognition. Sun himself is not combust, but he can burn the 10th lord if that lord is close to him. In every case, the placement is workable — Neecha Bhanga, transit windows, and consciously choosing careers aligned to the actual configuration all shift the outcome.",
+                "a": "Both configurations flip the natural authority pattern. Debilitated Sun in the 10th means Sun in Libra (Capricorn ascendant) — the capable person who cannot get promoted, authority that feels borrowed. However, Neecha Bhanga can apply here (check whether the Sun is exalted in the D-9 navamsha chart), and where it does the debilitation is cancelled. A combust planet in the 10th (usually Mercury or Venus close to Sun) tends to burn the significations of that planet in career — Mercury combust here can indicate analytical skill that is never quite credited; Venus combust can dim creative or partnership recognition. Sun himself is not combust, but he can burn the 10th lord if that lord is close to him. In every case, the placement is workable — Neecha Bhanga, transit windows, and consciously choosing careers aligned to the actual configuration all shift the outcome.",
             },
             {
                 "q": "Which ascendants benefit most from Sun in the 10th?",
@@ -1863,7 +1863,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "How long does Rahu Mahadasha last?",
-                "a": "18 years — the second-longest of the nine Vimshottari Mahadashas (only Venus at 20 years is longer). The 18 years break into 9 Antardashas: Rahu (2 years 8 months 12 days), Jupiter (2 years 4 months 24 days), Saturn (2 years 10 months 6 days), Mercury (2 years 6 months 18 days), Ketu (1 year 0 months 18 days), Venus (3 years 0 months 0 days), Sun (0 years 10 months 24 days), Moon (1 year 6 months 0 days), Mars (1 year 0 months 18 days). Each sub-period has a very different flavour, so knowing which one you are in matters more than the outer Mahadasha alone.",
+                "a": "18 years — the third-longest of the nine Vimshottari Mahadashas (only Venus at 20 years and Saturn at 19 are longer). The 18 years break into 9 Antardashas: Rahu (2 years 8 months 12 days), Jupiter (2 years 4 months 24 days), Saturn (2 years 10 months 6 days), Mercury (2 years 6 months 18 days), Ketu (1 year 0 months 18 days), Venus (3 years 0 months 0 days), Sun (0 years 10 months 24 days), Moon (1 year 6 months 0 days), Mars (1 year 0 months 18 days). Each sub-period has a very different flavour, so knowing which one you are in matters more than the outer Mahadasha alone.",
             },
             {
                 "q": "What are the best remedies for career during Rahu Mahadasha?",
@@ -2203,7 +2203,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "How do I know if I have Moon in Swati nakshatra?",
-                "a": "Your Moon needs to sit between 6°40' and 20°00' of Libra in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position. Swati natives always have Rahu as their first Mahadasha (18 years, the longest first-Mahadasha of any nakshatra), producing a distinctive Rahu-shaped early life — unusual family circumstances, international influences, or early independence.",
+                "a": "Your Moon needs to sit between 6°40' and 20°00' of Libra in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position. Swati natives always have Rahu as their first Mahadasha (18 years, the third-longest Mahadasha after Venus and Saturn), producing a distinctive Rahu-shaped early life — unusual family circumstances, international influences, or early independence.",
             },
             {
                 "q": "Who is Vayu, the deity of Swati?",
@@ -2403,7 +2403,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "How do I know if I have Moon in Pushya nakshatra?",
-                "a": "Your Moon needs to sit between 3°20' and 16°40' of Cancer in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position and nakshatra. Pushya natives always have Saturn as their first Mahadasha — the longest of all Mahadashas at 19 years — which shapes their whole approach to life from childhood.",
+                "a": "Your Moon needs to sit between 3°20' and 16°40' of Cancer in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position and nakshatra. Pushya natives always have Saturn as their first Mahadasha — the second-longest of all Mahadashas at 19 years — which shapes their whole approach to life from childhood.",
             },
             {
                 "q": "Why is Pushya called the most auspicious nakshatra?",
@@ -2853,7 +2853,7 @@ ARTICLES: tuple[Article, ...] = (
         related=("surya-sun-in-vedic-astrology", "sun-mahadasha", "debilitated-sun-career", "sun-in-10th-house-career"),
         faqs=(
             {"q": "What is the classical good deed for the Sun?", "a": "Visit a temple, donate money to a temple, or help with the running of one. Shiva and Rama are the Sun's deities, so a Shiva or Rama temple is a natural choice. It is done as a devotional act for the Sun's sake, not as a bargain for an outcome."},
-            {"q": "Can I wear Ruby (Manik) without astrologer consultation?", "a": "No. Ruby is safer than hessonite or blue sapphire but STILL requires chart analysis. Never wear ruby when Sun is a functional malefic for your Ascendant (Aquarius, Pisces), combust, or in a dusthana. The practices above are safe universal remedies that don't need chart analysis."},
+            {"q": "Can I wear Ruby (Manik) without astrologer consultation?", "a": "No. Ruby is safer than hessonite or blue sapphire but STILL requires chart analysis. The sources we hold say gemstones of functional malefics for your chart should be avoided and gemstones of favourable planets speed up good results, and that telling which is which needs your Ascendant and the classification of the Sun for that Ascendant. They give no table of functional benefics and malefics by Ascendant, so we issue no verdict by Ascendant here. Never wear ruby when the Sun is a functional malefic for your chart, or when he is in a dusthana. The practices above are safe universal remedies that don't need chart analysis."},
             {"q": "What is the Aditya Hridaya Stotra?", "a": "A Sanskrit hymn in praise of the Sun, and a long-standing Sun devotion; devotional tradition links it to Rama's final battle with Ravana. Ideally learn the pronunciation from someone who knows it. Recite once daily at sunrise (~8 minutes), three times on Sundays."},
             {"q": "How do Sun remedies help with father-relationship?", "a": "Sun is father-karaka. Classical practice: if father is living, serve consciously (touch feet, seek blessings, listen); if deceased, perform annual shraddha. Sun rewards those who honor the father archetype — this often produces healing in the actual relationship over months."},
         ),
@@ -2873,7 +2873,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Are Moon remedies enough for depression or anxiety?", "a": "No. Moon remedies support mental peace but are NOT a substitute for professional mental healthcare. If you have symptoms of depression, anxiety disorder, bipolar, PTSD, or any other diagnosed condition, please consult a mental health professional. Remedies work best as adjunct to treatment."},
             {"q": "Which deity should I worship for a Moon remedy?", "a": "The deities classically linked with the Moon are Gauri, Lalita, Saraswati and Krishna; Shiva is the Sun's deity. A Monday temple visit + 108 recitations of the Chandra Beej mantra (or your deity's mantra) + 10 minutes of quiet sitting is a simple, safe Moon practice."},
             {"q": "What is Solah Somvar vrat?", "a": "16 consecutive Monday fasts (partial: one meal only, no rice, no lentils). Traditionally observed by unmarried women seeking a good spouse, or by anyone with severe emotional difficulty. Peak during Shravana month (July-August). Not for those with medical conditions or pregnancy."},
-            {"q": "Can I wear Pearl (Moti) as Moon remedy?", "a": "Pearl is safer than most gemstones but still requires Ascendant verification. Cancer, Scorpio, Pisces most compatible. Consult a qualified astrologer before wearing. The Monday practices + silver items are safe universal remedies."},
+            {"q": "Can I wear Pearl (Moti) as Moon remedy?", "a": "Only after a chart review. The sources we hold say gemstones of functional malefics for your chart should be avoided and gemstones of favourable planets speed up good results, and that telling which is which needs your Ascendant and the classification of the Moon for that Ascendant. They give no table of functional benefics and malefics by Ascendant, so we issue no verdict by Ascendant here. What can be worked out is that the Moon owns only Cancer, so he is the Ascendant lord for a Cancer Ascendant and otherwise rules one house by counting signs, for example the 2nd from Gemini and the 12th from Leo. That is arithmetic, not a ruling on whether pearl suits you. Chart placement matters too: the Moon is debilitated in Scorpio and exalted in Taurus. Consult a qualified astrologer before wearing. The Monday practices + silver items are safe universal remedies."},
         ),
         llm_summary=(
             'Keypoints:\n• Moon = karaka of mind (manas), emotion, mother, mental peace\n• Moon remedies matter MORE than other planet remedies for mental wellbeing\n• Classical: (1) Monday Gauri/Krishna worship, (2) Somvar vrat / Solah Somvar, (3) Chandra Beej mantra "Om Shraam Shreem Shraum Sah Chandramase Namah" 108x, (4) silver items (glass, ring), (5) Monday charity (rice, milk, white clothes), (6) serving mother, (7) Nadi Shodhana + Brahmi + sleep hygiene as modern complements\n• Day: Monday\n• Pearl (Moti) — safer than most but verify Ascendant\n• CRITICAL: complement — do not replace — professional mental healthcare'
@@ -2974,40 +2974,40 @@ ARTICLES: tuple[Article, ...] = (
     ),
     # ─── Muhurat cluster (#94, #95, #103, #104) ───────────────────────
     Article(
-        slug="vivah-muhurat-2027", title="Vivah Muhurat 2027 — Classical Rules for Auspicious Wedding Dates",
-        summary="A Vivah Muhurat is not just a 'good day' — it's a specific window where eight classical criteria align: Guru + Shukra visibility, no Malamas (Adhik Maas), no Kharmas, no Chaturmas, favourable nakshatra, favourable tithi with no Dagdha yoga, no Panchak, no eclipse. This guide walks the 2027 rules, seasonal patterns, personal chart intersections, and honest guidance beyond the calendar.",
-        seo_title="Vivah Muhurat 2027 — Classical Rules for Wedding Dates",
-        seo_description="Vivah Muhurat 2027 — 8 classical criteria for auspicious wedding dates. Seasonal windows Jan-Feb, mid-Apr to Jun, mid-Nov onwards. Personal chart matters too.",
+        slug="vivah-muhurat-2027", title="Vivah Muhurat 2027 — Rules for Auspicious Wedding Dates",
+        summary="A Vivah Muhurat is not just a 'good day' — it's a specific window where eight criteria align: Guru + Shukra visibility, no Malamas (Adhik Maas), no Kharmas, no Chaturmas, favourable nakshatra, favourable tithi with no Dagdha yoga, no Panchak, no eclipse. Panchak and the tithi rule are checked against B.V. Raman's Muhurtha; the others are widely followed conventions our finder applies, labelled as such. This guide walks the 2027 rules, seasonal patterns, personal chart intersections, and honest guidance beyond the calendar.",
+        seo_title="Vivah Muhurat 2027 — Rules for Wedding Dates",
+        seo_description="Vivah Muhurat 2027 — 8 criteria for wedding dates, sourced rules marked apart from convention. Windows: Jan-Feb, mid-Apr to Jun, mid-Nov onwards.",
         category="Life Questions", hero_image="/static/learn/vivah-muhurat-2027/hero.svg", read_time="8 min", last_updated="2026-07",
         related=("marriage-timing-kundli", "kundali-matching-ashtakoot-guna-milan", "manglik-dosh", "griha-pravesh-muhurat-2026-2027"),
         faqs=(
             {"q": "Which months in 2027 are best for marriage?", "a": "Jan-Feb 2027 (winter window), mid-Apr to Jun 2027 (spring/summer, most popular — Kharmas/Meenmas runs mid-March to mid-April, so the spring window opens mid-April), and mid-Nov 2027 onwards (post-Chaturmas resumption). Chaturmas (mid-Jul to mid-Nov) is traditionally weddings-restricted. There is no Adhik Maas in 2027, so no intercalary-month blackout applies."},
             {"q": "What is Deva Uthani Ekadashi and why does it matter?", "a": "Deva Uthani Ekadashi marks the end of Chaturmas — Vishnu 'awakens' from his four-month sleep. This day resumes auspicious ceremonies including weddings. Typically falls in mid-November. Post-Deva-Uthani through spring is the year's densest wedding season."},
-            {"q": "Can I get married during Chaturmas?", "a": "Classical tradition says no; modern practice varies by region and family. If you must marry during Chaturmas, consult a priest for compensating rituals. The tradition's rationale: Vishnu (protector of dharmic bonds) is sleeping, so ceremonies lack full blessing."},
-            {"q": "What is Panchak and why avoid it?", "a": "5-day period when Moon transits the last 5 nakshatras (Dhanishta latter half through Revati). Classical tradition considers Panchak inauspicious for many ceremonies including weddings. Some specific classes of Panchak (Mrityu Panchak on Saturday, Roga Panchak on Tuesday) are particularly cautioned."},
+            {"q": "Can I get married during Chaturmas?", "a": "Custom says no; modern practice varies by region and family. If you must marry during Chaturmas, consult a priest for compensating rituals. The tradition's rationale: Vishnu (protector of dharmic bonds) is sleeping, so ceremonies lack full blessing."},
+            {"q": "What is Panchak and why avoid it?", "a": "5-day period when Moon transits the last 5 nakshatras (Dhanishta latter half through Revati). Panchak is widely considered inauspicious for many ceremonies including weddings, and B.V. Raman's Muhurtha treats the Moon's passage through it as one to avoid. Almanacs also name sub-types (Mrityu Panchak on Saturday, Roga Panchak on Tuesday) that carry extra caution in popular practice; we have not checked those against the books this site holds."},
             {"q": "How do I match a wedding date to my kundli specifically?", "a": "Use our free /manglik-check + /sade-sati-check tools for both partners. Then generate full kundlis via /kundli. Check nakshatra harmony with the intended date's nakshatra, avoid Rahu-Rahu or Ketu-Ketu antardashas, and confirm no severe Sade Sati Peak. We're building a personalised Muhurat Finder tool."},
         ),
         llm_summary=(
-            'Keypoints:\n• Vivah Muhurat = wedding date meeting 8 classical criteria\n• (1) Guru + Shukra visible above horizon uncombust, (2) not Malamas/Adhik Maas, (3) not Kharmas (Sun in Sagittarius or Pisces), (4) not Chaturmas (mid-Jul to mid-Nov), (5) favourable nakshatra, (6) favourable tithi with no Dagdha yoga, (7) no Panchak, (8) no eclipse\n• 2027 windows: Jan-Feb (winter), mid-Apr to Jun (spring/summer), mid-Nov onwards (post-Chaturmas peak); no Adhik Maas in 2027\n• Auspicious nakshatras: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati\n• Personal factors matter: Sade Sati Peak caution, Rahu antardasha caution, Manglik-Manglik matching preferred\n• Personalised date computation deferred to Muhurat Finder tool (#108)'
+            'Keypoints:\n• Vivah Muhurat = wedding date meeting 8 criteria (Panchak and tithi checked against Raman Muhurtha; Kharmas, Chaturmas, Dagdha and the eclipse margin are widely followed conventions, not rules from the books this site holds)\n• (1) Guru + Shukra visible above horizon uncombust, (2) not Malamas/Adhik Maas, (3) not Kharmas (Sun in Sagittarius or Pisces), (4) not Chaturmas (mid-Jul to mid-Nov), (5) favourable nakshatra, (6) favourable tithi with no Dagdha yoga, (7) no Panchak, (8) no eclipse\n• 2027 windows: Jan-Feb (winter), mid-Apr to Jun (spring/summer), mid-Nov onwards (post-Chaturmas peak); no Adhik Maas in 2027\n• Nakshatras the finder credits: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati\n• Personal factors matter: Sade Sati Peak caution, Rahu antardasha caution, Manglik-Manglik matching preferred\n• Personalised date computation deferred to Muhurat Finder tool (#108)'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="griha-pravesh-muhurat-2026-2027", title="Griha Pravesh Muhurat 2026-27 — Auspicious House-Warming Dates",
-        summary="Griha Pravesh (house-warming) marks entry into a new home. Classical tradition names three types (Apoorva, Sapoorva, Dwandwa) and nine criteria for auspicious dates. Dates cluster around Nov 2026 (post-Diwali) through May 2027 (pre-Chaturmas). Personal chart matters — this guide walks the criteria, personal factors, and honest guidance on modern practical constraints like builder handover dates.",
+        summary="Griha Pravesh (house-warming) marks entry into a new home. Three kinds of entry are commonly distinguished (Apoorva, Sapoorva, Dwandwa), and this guide uses nine criteria for auspicious dates, labelling which are widely followed conventions rather than rules from the books this site holds. Dates cluster around Nov 2026 (post-Diwali) through May 2027 (pre-Chaturmas). Personal chart matters — this guide walks the criteria, personal factors, and honest guidance on modern practical constraints like builder handover dates.",
         seo_title="Griha Pravesh Muhurat 2026-27 — Auspicious House-Warming Dates",
-        seo_description="Griha Pravesh Muhurat 2026-27 — 9 classical criteria, three types (Apoorva/Sapoorva/Dwandwa), personal factors, guidance on developer handover conflicts.",
+        seo_description="Griha Pravesh Muhurat 2026-27 — 9 criteria, three types (Apoorva/Sapoorva/Dwandwa), personal factors, guidance on developer handover conflicts.",
         category="Life Questions", hero_image="/static/learn/griha-pravesh-muhurat-2026-2027/hero.svg", read_time="7 min", last_updated="2026-07",
         related=("vivah-muhurat-2027", "gochar-2026-planetary-transits", "kaal-sarp-dosh", "sade-sati"),
         faqs=(
-            {"q": "What is the best month for Griha Pravesh in 2027?", "a": "Given the 9 classical criteria, prime windows are late Nov 2026 (Dev Uthani onwards, peak season), Dec 2026-Feb 2027 (winter window, minus the Kharmas break from mid-December to mid-January), and mid-Apr to Jun 2027 (spring/summer — Kharmas/Meenmas runs mid-March to mid-April, so the spring window opens mid-April). Chaturmas (mid-Jul to mid-Nov) is traditionally avoided. There is no Adhik Maas in 2027, so no intercalary-month blackout applies."},
+            {"q": "What is the best month for Griha Pravesh in 2027?", "a": "Given the 9 criteria, prime windows are late Nov 2026 (Dev Uthani onwards, peak season), Dec 2026-Feb 2027 (winter window, minus the Kharmas break from mid-December to mid-January), and mid-Apr to Jun 2027 (spring/summer — Kharmas/Meenmas runs mid-March to mid-April, so the spring window opens mid-April). Chaturmas (mid-Jul to mid-Nov) is traditionally avoided. There is no Adhik Maas in 2027, so no intercalary-month blackout applies."},
             {"q": "Can I do Griha Pravesh during Chaturmas?", "a": "Traditional practice: no. Modern flexibility varies. If forced (developer handover): do a symbolic entry (bring water, diya, small idol) on an auspicious muhurat, delay full ceremony to next window, or perform compensating ritual via a priest."},
             {"q": "Does my personal chart matter for Griha Pravesh?", "a": "Yes. A universally-good date can be personally difficult if your moon nakshatra clashes with the date's nakshatra, you're in a Rahu-Rahu antardasha, or currently in Sade Sati Peak. Use our free /sade-sati-check + /kundli tools for personal factors."},
             {"q": "What if the builder's possession date isn't auspicious?", "a": "Common modern conflict. Options: (1) perform symbolic entry on auspicious muhurat before moving, (2) do provisional entry on handover date and full ceremony later, (3) consult priest for compensating ritual. Never let a bad date force a bad ceremony — always check with an astrologer."},
             {"q": "Do I need a priest?", "a": "For full traditional Griha Pravesh, yes — the ceremony involves specific mantras + fire ritual + specific offerings a householder cannot easily do alone. For simpler observance: bring water, milk, honey, diya into the new home while chanting Gayatri or Vishnu Sahasranama, distribute prasad, and follow up with full ceremony later."},
         ),
         llm_summary=(
-            'Keypoints:\n• Griha Pravesh = house-warming ceremony, 3 types (Apoorva new, Sapoorva returning, Dwandwa inherited)\n• 9 criteria: Guru visible + favourable nakshatra + favourable tithi + no Chaturmas + no Kharmas (Sun in Sagittarius or Pisces) + no Dagdha yoga + no eclipse + no Panchak + auspicious weekday (Mon/Wed/Thu/Fri best)\n• 2026-27 windows: late Nov 2026 (Dev Uthani onwards, peak), Dec-Feb (winter, minus mid-Dec to mid-Jan Kharmas), mid-Apr to Jun 2027 (spring)\n• Personal factors: moon nakshatra harmony, Sade Sati Peak caution, Rahu antardasha caution\n• Builder handover conflict: symbolic entry on auspicious muhurat + full ceremony later'
+            'Keypoints:\n• Griha Pravesh = house-warming ceremony, 3 types (Apoorva new, Sapoorva returning, Dwandwa inherited)\n• 9 criteria (Chaturmas, Kharmas, Dagdha and eclipse are widely followed conventions, not rules from the books this site holds): Guru visible + favourable nakshatra + favourable tithi + no Chaturmas + no Kharmas (Sun in Sagittarius or Pisces) + no Dagdha yoga + no eclipse + no Panchak + auspicious weekday (Mon/Wed/Thu/Fri best)\n• 2026-27 windows: late Nov 2026 (Dev Uthani onwards, peak), Dec-Feb (winter, minus mid-Dec to mid-Jan Kharmas), mid-Apr to Jun 2027 (spring)\n• Personal factors: moon nakshatra harmony, Sade Sati Peak caution, Rahu antardasha caution\n• Builder handover conflict: symbolic entry on auspicious muhurat + full ceremony later'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
