@@ -606,7 +606,7 @@ what blocks the decision. Then rule on what it returns.
 - **Say in the ruling which roles you dispatched, and what each returned**, verbatim enough
   to be checked. A ruling resting on an undisclosed dispatch is a ruling nobody can audit.
 
-### The dispatch you can actually make: `issue=<n>` or `pr=<n>`
+### The dispatch you can actually make: `issue=<n>`, `pr=<n>` or `fix_pr=<n>`
 
 When a ruling is "someone should run a cycle at this", you do not hand a command to a
 human — you write **at most one line** to `/tmp/chief-dispatch.txt` and a later step runs
@@ -616,6 +616,7 @@ it through the same carrier the steward uses:
 |---|---|---|
 | `issue=<n>` | a full cycle: reads the issue, can build and push | the work is not finished |
 | `pr=<n>` | a QA round on the PR itself (`/agent-cycle` Step 0c) | the work is finished and only a verdict is missing |
+| `fix_pr=<n>` | a fix of the PR's latest QA FAIL or red gates, pushed to its branch, no verdict (`/agent-cycle` Step 0d, since 2026-11-13) | a PR whose branch names no issue failed QA or its gates, touches no `.github/workflows/` file, and has had fewer than three automatic fixes |
 
 **`pr=<n>` exists since 2026-11-01 (#650, #653) and it is the one you will reach for
 most.** A PR whose gates are green and which carries no verdict needs a round, not a

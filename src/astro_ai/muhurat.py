@@ -26,10 +26,12 @@ it (vedic_reference.md 2A, 29.9, 29.10) or that its source is not held.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, timedelta, datetime
+from datetime import date, time, timedelta, timezone, datetime
 from functools import lru_cache
 from typing import Any
 from zoneinfo import ZoneInfo
+
+import swisseph as swe
 
 from astro_ai import lunar_dates
 from astro_ai.adhik_maas import adhik_maas_flag
@@ -38,6 +40,7 @@ from astro_ai.chart import (
     Chart, compute_chart, compute_panchang, compute_transit_snapshot,
     compute_sade_sati_details, compute_dasha_state,
     ChartError, NAKSHATRAS, RASHIS,
+    _tithi_at, julian_day_utc,
 )
 
 
@@ -212,6 +215,10 @@ class MuhuratCandidate:
     # Phase B additions — sub-day precision
     bhadra_window: str = ""   # "" if Bhadra not present; else "Bhadra active 09:00-16:00..."
     choghadiya: tuple[dict, ...] = ()   # 8 day-windows with name/start/end/auspiciousness; () if no daylight span
+    # Display-only (#1025): the minutes in which the Abhijit window lies inside Rahu Kaal or
+    # Bhadra, e.g. "Abhijit and Rahu Kaal overlap 11:45-12:06". () when it overlaps neither.
+    # No rating reads it: the finder holds no source that ranks one window above the other.
+    abhijit_overlaps: tuple[str, ...] = ()
 
 
 # ─── Chaturmas (Devshayani Ekadashi → Devuthani Ekadashi) ────────────
@@ -456,10 +463,20 @@ def _ravi_yoga_flag(weekday: str, nakshatra: str) -> str:
     return ""
 
 
-# ─── Vaidhriti + Vyatipata Nitya Yogas — universal BLOCKERS ──────────
-# Two of the 27 nitya yogas are classical hard-exclusions for shubh karya.
+# ─── Atiganda, Shula, Ganda, Vyatipata, Vaidhriti — universal BLOCKERS ─
+# Five of the 27 nitya yogas are hard exclusions (#1023). Raman, Muhurtha (1948),
+# Panchanga Suddhi, lines 1343-1346 (knowledge/vedic_reference.md section 29.9):
+# "the 16th (Atiganda) the 9th (Sula) 10th (Ganda) 17th (Vyathipatha) and 27th
+# (Vaidhruti) have deleterious effects upon events which are started or commenced
+# under them." ("16th" is an OCR slip for 6th: Atiganda is 6th in his own list.)
+# Until #1023 only the last two blocked, so a day under Atiganda or Ganda could rate
+# 'excellent'. His longer marriage-only list (lines 3757-3759) is NOT applied here: it
+# names "Mrityu", which is not one of the 27, and needs its own check first.
 # Nitya yoga is computed as (Sun_longitude + Moon_longitude) / 13.333°.
-# Positions:
+# Positions in the 27:
+#    6 = Atiganda
+#    9 = Shula (Raman: "Sula")
+#   10 = Ganda
 #   17 = Vyatipata — "great transgression"
 #   27 = Vaidhriti — "no support"
 # The 27 nitya-yoga names used to be duplicated here, with two spellings that
@@ -470,10 +487,10 @@ def _ravi_yoga_flag(weekday: str, nakshatra: str) -> str:
 # not a guarantee. chart.py's spellings win because /panchang is the almanac
 # users read and chart.py is where the anga functions live.
 #
-# The blocking set is safe to key on names because "Vyatipata" and "Vaidhriti"
-# were spelled identically in both copies — the divergence was elsewhere in
-# the tuple.
-_BLOCKING_NITYA_YOGAS = {"Vyatipata", "Vaidhriti"}
+# The blocking set is keyed on chart.py's spellings ("Shula", not Raman's "Sula"):
+# `tests/test_muhurat_nitya_blockers.py` pins each name to its index in
+# chart._NITYA_YOGA_NAMES, so a spelling drift cannot silently stop a blocker.
+_BLOCKING_NITYA_YOGAS = {"Atiganda", "Shula", "Ganda", "Vyatipata", "Vaidhriti"}
 
 
 def _nitya_yoga_flag(chart: Chart, when: datetime) -> tuple[str, bool]:
@@ -481,7 +498,9 @@ def _nitya_yoga_flag(chart: Chart, when: datetime) -> tuple[str, bool]:
 
     Reads the same `_nitya_yoga_at` that /panchang renders, so the Muhurat
     Finder's blocker path and the almanac can no longer disagree about the
-    same instant (#148). `chart` is unused now that the computation needs
+    same instant (#148). They are still read at DIFFERENT instants: /panchang
+    at sunrise, the finder at `MUHURTA_INSTANT_HOUR`, so the two columns differ
+    on a day the yoga changes in between (98 of 365 days, #1020). `chart` is unused now that the computation needs
     only the moment; it stays in the signature because callers pass it
     positionally and the natal chart is what identifies whose muhurat this is.
     """
@@ -499,26 +518,28 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
     "vivah": {
         "slug": "vivah",
         "hero_title": "Vivah Muhurat — Auspicious Wedding Dates",
-        "hero_subtitle": "Classical Panchang rules + your chart, not calendar guesswork.",
+        "hero_subtitle": "Panchang rules + your chart, not calendar guesswork.",
         "seo_title": "Vivah Muhurat Finder — Wedding Dates with Bride+Groom Pair Scoring",
-        "seo_desc": "Free Vivah Muhurat finder: tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana, Nitya Yogas (Vaidhriti/Vyatipata avoided), Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga boosters, plus Guru+Shukra combustion checks. Bride+groom two-chart scoring (Tara Bala + Chandra Bala + Manglik + Sade Sati per partner).",
+        "seo_desc": "Free Vivah Muhurat finder: tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana, Nitya Yogas (Atiganda, Shula, Ganda, Vyatipata and Vaidhriti avoided), Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga boosters, plus Guru+Shukra combustion checks. Bride+groom two-chart scoring (Tara Bala + Chandra Bala + Manglik + Sade Sati per partner).",
         "intro_paragraphs": [
-            "A Vivah Muhurat is not merely an 'auspicious day' from a calendar. Classical tradition applies six specific criteria that must all align: Guru (Jupiter) and Shukra (Venus) visible above the horizon and uncombust, favourable tithi and nakshatra, no Panchak, no Chaturmas (Devshayani → Devuthani Ekadashi), no Kharmas (Sun in Sagittarius or Pisces), and no eclipse days. This tool checks all of these plus Dagdha tithi-weekday combinations and calls out Abujha muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya) that override normal scoring.",
+            "A Vivah Muhurat is not merely an 'auspicious day' from a calendar. This tool checks that the tithi and nakshatra are favourable and that the day is clear of Panchak, a rule B.V. Raman's Muhurtha records. It also applies widely followed conventions that are this finder's own choices, not rules from the books this site holds: that Guru (Jupiter) and Shukra (Venus) are not combust (Raman's wedding criteria do not list combustion), no Chaturmas (Devshayani → Devuthani Ekadashi), no Kharmas (Sun in Sagittarius or Pisces), no Dagdha tithi-weekday combinations and no eclipse days. It calls out Abujha muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya), another convention of this finder, that override normal scoring.",
             "For a fully personalised recommendation, sign in first — the tool will then overlay Tara Bala (star strength between your natal Moon nakshatra and the transit day) and Chandra Bala (Moon-strength from your natal Moon) on every candidate, plus surface chart-level cautions from Sade Sati phase or active Rahu/Ketu Mahadasha.",
         ],
         "rules_summary": [
-            "Guru (Jupiter) uncombust — marriage karaka must be visible",
-            "Shukra (Venus) uncombust — marriage karaka must be visible",
-            "Favourable tithi: 2, 3, 5, 7, 10, 11, 12, 13 (avoid 4, 8, 9, 14, Amavasya, Purnima)",
+            "Guru (Jupiter) uncombust — this finder's own convention, not in Raman's wedding criteria",
+            "Shukra (Venus) uncombust — this finder's own convention, not in Raman's wedding criteria",
+            "Favourable tithi: 2, 3, 5, 7, 10, 11, 13 (avoid 4, 8, 9, 14, Amavasya, Purnima); the 11th-13th are excluded in the waning half, below",
+            "Wedding dates on the 11th, 12th or 13th tithi of the waning (Krishna paksha) half are excluded, following B.V. Raman's Muhurtha, which rejects the dark-half 11th through New Moon for marriage",
+            "The bright-half 12th is not credited: Rao's wedding guideline table lists it, Raman's rejects it, so the finder gives it no credit either way",
             "Favourable nakshatra: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati",
             "No Panchak (Moon in Dhanishta latter half through Revati)",
-            "No Chaturmas (Devshayani → Devuthani Ekadashi ≈ mid-July to mid-November)",
-            "No Kharmas (Sun in Sagittarius ≈ mid-Dec to mid-Jan; Sun in Pisces ≈ mid-Mar to mid-Apr)",
-            "No Dagdha yoga (Sun+Dwadashi, Mon+Ekadashi, Tue+Panchami, Wed+Tritiya, Thu+Shashti, Fri+Ashtami, Sat+Navami)",
-            "No eclipse days (day of or ±1 day)",
+            "No Chaturmas (Devshayani → Devuthani Ekadashi ≈ mid-July to mid-November) — widely followed convention this finder applies",
+            "No Kharmas (Sun in Sagittarius ≈ mid-Dec to mid-Jan; Sun in Pisces ≈ mid-Mar to mid-Apr) — widely followed convention this finder applies",
+            "No Dagdha yoga (Sun+Dwadashi, Mon+Ekadashi, Tue+Panchami, Wed+Tritiya, Thu+Shashti, Fri+Ashtami, Sat+Navami) — widely followed convention this finder applies",
+            "No eclipse days (day of or ±1 day) — widely followed convention this finder applies",
         ],
         "related_articles": [
-            ("/learn/vivah-muhurat-2027/", "Vivah Muhurat 2027 — full classical guide"),
+            ("/learn/vivah-muhurat-2027/", "Vivah Muhurat 2027 — full guide"),
             ("/learn/kundali-matching-ashtakoot-guna-milan/", "Kundali Matching (Ashtakoot) — check compatibility"),
             ("/learn/manglik-dosh/", "Manglik Dosh — verify before choosing a date"),
             ("/learn/marriage-timing-kundli/", "Marriage timing in your Kundli"),
@@ -531,27 +552,27 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
     "griha_pravesh": {
         "slug": "griha-pravesh",
         "hero_title": "Griha Pravesh Muhurat — Auspicious House-Warming Dates",
-        "hero_subtitle": "Classical seven criteria + your chart, not developer-handover convenience.",
+        "hero_subtitle": "Seven criteria + your chart, not developer-handover convenience.",
         "seo_title": "Griha Pravesh Muhurat Finder — Housewarming Date Calculator",
         "seo_desc": "Free Griha Pravesh Muhurat finder: Jupiter visibility, tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana avoidance, plus Choghadiya sub-day windows and Amrit Siddhi / Sarvartha Siddhi boosters. Covers Apoorva / Sapoorva / Dwandwa entry types.",
         "intro_paragraphs": [
-            "Griha Pravesh (house-warming) is the ceremony marking entry into a new home. Classical tradition names three types: Apoorva (brand-new home), Sapoorva (re-entry after long absence or renovation), and Dwandwa (entry into a home you own but haven't lived in). Each still requires the same classical timing rules.",
-            "The seven classical criteria: Guru (Jupiter) uncombust and visible; favourable moon nakshatra; favourable tithi; no Chaturmas; no eclipse; no Panchak; weekday preference (Monday/Wednesday/Thursday/Friday best, Tuesday/Saturday avoided). This tool applies all of these plus Kharmas (Sun in Sagittarius/Pisces) and Dagdha tithi-weekday exclusions.",
+            "Griha Pravesh (house-warming) is the ceremony marking entry into a new home. Three kinds of entry are commonly distinguished: Apoorva (brand-new home), Sapoorva (re-entry after long absence or renovation), and Dwandwa (entry into a home you own but haven't lived in). This finder applies the same timing rules to each.",
+            "What this finder checks: Guru (Jupiter) not combust; favourable moon nakshatra; favourable tithi; no Panchak; weekday preference (Monday/Wednesday/Thursday/Friday best; Tuesday excluded outright, Saturday scored one point lower because Raman's chapters disagree about it). It also applies widely followed conventions that are this finder's own choices, not rules from the books this site holds: no Chaturmas, no eclipse days, no Kharmas (Sun in Sagittarius/Pisces) and no Dagdha tithi-weekday combinations.",
         ],
         "rules_summary": [
             "Guru (Jupiter) uncombust — must be visible during ceremony hours",
             "Favourable nakshatra: Rohini, Mrigashira, Uttara Phalguni, Hasta, Chitra, Anuradha, Uttara Ashadha, Revati",
             "Favourable tithi: 2, 3, 5, 7, 10, 11, 13",
-            "Weekday: Mon, Wed, Thu, Fri preferred; Tue, Sat avoided",
-            "No Chaturmas (mid-July to mid-November)",
-            "No Kharmas (Sun in Sagittarius/Pisces)",
+            "Weekday: Mon, Wed, Thu, Fri preferred; Tuesday excluded (Raman); Saturday scores one point lower (Raman's chapters disagree)",
+            "No Chaturmas (mid-July to mid-November) — widely followed convention this finder applies",
+            "No Kharmas (Sun in Sagittarius/Pisces) — widely followed convention this finder applies",
             "No Panchak days",
-            "No Dagdha yoga combinations",
-            "No eclipse days",
+            "No Dagdha yoga combinations — widely followed convention this finder applies",
+            "No eclipse days — widely followed convention this finder applies",
         ],
         "related_articles": [
             ("/learn/griha-pravesh-muhurat-2026-2027/", "Griha Pravesh Muhurat 2026-27 — full guide"),
-            ("/learn/vivah-muhurat-2027/", "Vivah Muhurat 2027 — sister classical guide"),
+            ("/learn/vivah-muhurat-2027/", "Vivah Muhurat 2027 — sister guide"),
         ],
         "related_tools": [
             ("/kundli", "Free Janma Kundli", "Check personal factors for the chosen date"),
@@ -563,17 +584,17 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "hero_title": "Namkaran Muhurat — Auspicious Baby Naming Ceremony Dates",
         "hero_subtitle": "Traditional 11th-day timing + soft nakshatra selection for a newborn.",
         "seo_title": "Namkaran Muhurat + Baby First-Letter Nakshatra Table Calculator",
-        "seo_desc": "Free Namkaran Muhurat finder with the classical 108-syllable first-letter table (27 nakshatras × 4 padas) — enter baby's birth details and get the traditional Sanskrit starting-letters for the name, plus soft-nakshatra day picks, favourable tithi, Bhadra avoidance, Choghadiya sub-day windows, and no-Panchak checks per Grihya Sutras.",
+        "seo_desc": "Free Namkaran Muhurat finder with the traditional 108-syllable first-letter table (27 nakshatras × 4 padas) — enter baby's birth details and get the traditional Sanskrit starting-letters for the name, plus soft-nakshatra day picks, favourable tithi, Bhadra avoidance, Choghadiya sub-day windows, and no-Panchak checks.",
         "intro_paragraphs": [
-            "Namkaran (naming ceremony) is classically observed on the 11th day after birth per Grihya Sutras, though modern families choose within the first 3-4 weeks. The muhurat rules apply to whichever day is chosen. Because this is a child-driven ceremony, some rules that apply to adult-planned events (Chaturmas, Kharmas, Dagdha, Guru combustion) do NOT block Namkaran — the ceremony must happen close to the birth regardless.",
+            "Namkaran (naming ceremony) is commonly held around the 11th day after birth, though modern families choose within the first 3-4 weeks; the day is custom, not a rule this finder sources to a book. The muhurat rules apply to whichever day is chosen. Because this is a child-driven ceremony, some rules that apply to adult-planned events (Chaturmas, Kharmas, Dagdha, Guru combustion) do NOT block Namkaran — the ceremony must happen close to the birth regardless.",
             "What we do check: soft/friendly nakshatras (Ashwini, Rohini, Mrigashira, Punarvasu, Pushya, Hasta, Chitra, Swati, Anuradha, Shravana, Revati), favourable tithi, weekday preference (Mon/Wed/Thu/Fri best), no Panchak, no eclipse. Harsh nakshatras (Bharani, Krittika, Ardra, Ashlesha, Magha, Jyeshtha, Mula) are avoided for infants.",
         ],
         "rules_summary": [
             "Soft/friendly nakshatra required (mridu, laghu, dhruva, chara classifications)",
             "Favourable tithi (2, 3, 5, 7, 10, 11, 12, 13)",
-            "Weekday: Mon, Wed, Thu, Fri preferred; Tue, Sat avoided",
+            "Weekday: Mon, Wed, Thu, Fri preferred; Tuesday excluded (Raman allows it on the child's 10th, 12th or 16th day; this tool has no birth date to apply that); Saturday scores one point lower",
             "No Panchak",
-            "No eclipse days",
+            "No eclipse days — widely followed convention this finder applies",
             "Chaturmas, Kharmas, Dagdha, combustion checks NOT applied (child-driven timing)",
         ],
         "related_articles": [
@@ -588,7 +609,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "hero_title": "Vidyarambh Muhurat — Auspicious Education-Starting Dates",
         "hero_subtitle": "Guru's day + Guru's uncombust position + soft nakshatras.",
         "seo_title": "Vidyarambh Muhurat Finder — Aksharabhyasa / Study-Start Calculator",
-        "seo_desc": "Free Vidyarambh (education-start) Muhurat finder: Thursday peak-day, Jupiter uncombust, soft nakshatras, Choghadiya sub-day windows, Amrit Siddhi / Sarvartha Siddhi boosters, Basant Panchami / Saraswati Puja Abujha auto-favourable. Classical Aksharabhyasa timing rules.",
+        "seo_desc": "Free Vidyarambh (education-start) Muhurat finder: Thursday peak-day, Jupiter uncombust, soft nakshatras, Choghadiya sub-day windows, Amrit Siddhi / Sarvartha Siddhi boosters, Basant Panchami / Saraswati Puja Abujha auto-favourable. Aksharabhyasa start-of-learning timing.",
         "intro_paragraphs": [
             "Vidyarambh (starting education / Aksharabhyasa) is one of the classical samskaras — the child's first formal introduction to letters and learning. Jupiter (Guru) is the karaka of knowledge, so this muhurat centres on Jupiter: his day (Thursday) is peak, his uncombust visibility is required, and Vasant Panchami (Saraswati puja day) is the annual universal Abujha muhurat.",
             "Peak days: Thursday (Jupiter's day, +1 bonus in scoring), Wednesday (Mercury — intellect), Friday (Venus — arts). Soft nakshatras favoured. Chaturmas doesn't block Vidyarambh (education is ongoing), but Jupiter combustion does (karaka must be visible).",
@@ -599,9 +620,9 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
             "Soft nakshatras (Ashwini, Rohini, Mrigashira, Punarvasu, Pushya, Hasta, Chitra, Swati, Anuradha, Shravana, Revati)",
             "Favourable tithi (2, 3, 5, 10, 11, 12)",
             "No Panchak",
-            "No Dagdha yoga",
-            "No eclipse days",
-            "Basant Panchami (Vasant Panchami / Saraswati Puja) auto-excellent — Abujha Muhurat",
+            "No Dagdha yoga — widely followed convention this finder applies",
+            "No eclipse days — widely followed convention this finder applies",
+            "Basant Panchami (Vasant Panchami / Saraswati Puja) auto-excellent — Abujha Muhurat — widely followed convention this finder applies",
         ],
         "related_articles": [
             ("/learn/guru-jupiter-brihaspati-in-vedic-astrology/", "Guru (Jupiter) — the karaka of learning"),
@@ -618,8 +639,8 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "seo_title": "Business Start Muhurat Finder — Shop Opening Date Calculator",
         "seo_desc": "Free business start Muhurat finder: Wednesday peak-day, Mercury uncombust, Kharmas exclusion, wealth-favourable tithis, Choghadiya sub-day opening windows (Labh, Amrit, Shubh), Bhadra Karana avoidance, plus Amrit Siddhi and Sarvartha Siddhi boosters. Ideal for shop openings, new ventures, and product launches.",
         "intro_paragraphs": [
-            "Starting a business, opening a shop, or launching a venture is classically treated similarly to any shubh karya — the day must align with tithi, nakshatra, weekday, and no-eclipse rules. Mercury (Budha) is the karaka of commerce and communication, so his day (Wednesday) is peak and his uncombust visibility is required.",
-            "Peak days: Wednesday (Mercury's day, +1 bonus), Thursday (Jupiter — wisdom in decisions), Friday (Venus — wealth), Sunday (Sun — authority) acceptable. Kharmas blocks new ventures (Sun in Sagittarius or Pisces = periods of turning inward, not launching). Abujha muhurats like Devuthani Ekadashi and Akshaya Tritiya are auto-excellent for business.",
+            "Starting a business, opening a shop, or launching a venture is treated here like any shubh karya: the day must align with tithi, nakshatra and weekday, and clear this finder's no-eclipse convention. Mercury (Budha) is the karaka of commerce and communication, so his day (Wednesday) is peak and his uncombust visibility is required.",
+            "Peak days: Wednesday (Mercury's day, +1 bonus), Thursday (Jupiter — wisdom in decisions), Friday (Venus — wealth), Sunday (Sun — authority) acceptable. Kharmas blocks new ventures here (Sun in Sagittarius or Pisces = periods of turning inward, not launching), and Abujha muhurats like Devuthani Ekadashi and Akshaya Tritiya are auto-excellent for business; both are widely followed conventions this finder applies, not rules from the books this site holds.",
         ],
         "rules_summary": [
             "Wednesday peak-day (Budha's day + extra bonus)",
@@ -627,10 +648,10 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
             "Favourable nakshatra: Ashwini, Pushya, Uttara Phalguni, Hasta, Chitra, Anuradha, Uttara Ashadha, Shravana, Revati",
             "Favourable tithi (2, 3, 5, 7, 10, 11, 13)",
             "No Panchak",
-            "No Kharmas (no new ventures during Sun in Sagittarius/Pisces)",
-            "No Dagdha yoga",
-            "No eclipse days",
-            "Devuthani Ekadashi, Akshaya Tritiya, Basant Panchami auto-excellent",
+            "No Kharmas (no new ventures during Sun in Sagittarius/Pisces) — widely followed convention this finder applies",
+            "No Dagdha yoga — widely followed convention this finder applies",
+            "No eclipse days — widely followed convention this finder applies",
+            "Devuthani Ekadashi, Akshaya Tritiya, Basant Panchami auto-excellent — widely followed convention this finder applies",
         ],
         "related_articles": [
             ("/learn/budha-mercury-in-vedic-astrology/", "Budha (Mercury) — karaka of commerce"),
@@ -647,17 +668,26 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
 EVENT_RULES: dict[str, dict[str, Any]] = {
     "vivah": {
         "label": "Vivah (Wedding)",
+        # No Dwadashi (#1022): Rao's Table 79 Wedding row lists the 12th but Raman's marriage
+        # chapter rejects it, so it is contested and gets no credit (and no exclusion) here.
         "good_tithis": {"Dwitiya", "Tritiya", "Panchami", "Saptami", "Dashami",
-                         "Ekadashi", "Dwadashi", "Trayodashi"},
+                         "Ekadashi", "Trayodashi"},
         "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",
                           "Amavasya", "Purnima"},
+        # Krishna-paksha only (#1022): Raman's marriage chapter, as knowledge/vedic_reference.md
+        # section 29.9 paraphrases it, rejects "the 11th of the dark half through New Moon"
+        # and names the bright-half 11th and 13th among the best. Read by score_event via
+        # .get(), so no other event has this key and none changes.
+        "avoid_krishna_tithis": {"Ekadashi", "Dwadashi", "Trayodashi"},
         "good_nakshatras": {"Rohini", "Mrigashira", "Magha", "Uttara Phalguni",
                              "Hasta", "Swati", "Anuradha", "Mula",
                              "Uttara Ashadha", "Uttara Bhadrapada", "Revati"},
         "avoid_nakshatras": {"Bharani", "Krittika", "Ardra", "Ashlesha",
                               "Jyeshtha", "Vishakha", "Purva Phalguni",
                               "Purva Ashadha", "Purva Bhadrapada"},
-        "good_days":  {"Monday", "Wednesday", "Thursday", "Friday", "Sunday"},
+        # No Sunday (#1021): Raman's marriage chapter calls Sunday middling and Rao's
+        # Table 79 Wedding row lists Mon, Wed, Thu, Fri; neither held source calls it good.
+        "good_days":  {"Monday", "Wednesday", "Thursday", "Friday"},
         "avoid_days": {"Tuesday", "Saturday"},
         "check_panchak": True,
         "check_chaturmas": True,
@@ -839,36 +869,74 @@ def _kharmas_flag(chart: Chart, when: datetime) -> tuple[bool, str]:
 
 
 # ─── Eclipse days (Grahana) — universal BLOCKER for all shubh karya ──
-# Classical rule: eclipse day + 1 day before + 1 day after are all inauspicious.
-# Even after grahana sutak ends, the atmosphere is considered energetically
-# unsettled. Dates sourced from NASA eclipse tables + Drik Panchang.
-# Update annually. Applies to ALL event types (universal, not per-event).
-_ECLIPSE_DATES: dict[int, list[tuple[date, str]]] = {
-    2026: [
-        (date(2026, 2, 17), "Annular Solar Eclipse"),
-        (date(2026, 3, 3),  "Total Lunar Eclipse"),
-        (date(2026, 8, 12), "Total Solar Eclipse"),
-        (date(2026, 8, 28), "Partial Lunar Eclipse"),
-    ],
-    2027: [
-        (date(2027, 2, 6),  "Annular Solar Eclipse"),
-        (date(2027, 2, 20), "Penumbral Lunar Eclipse"),
-        (date(2027, 7, 18), "Penumbral Lunar Eclipse"),
-        (date(2027, 8, 2),  "Total Solar Eclipse"),
-    ],
-    2028: [
-        (date(2028, 1, 26), "Annular Solar Eclipse"),
-        (date(2028, 2, 12), "Total Lunar Eclipse"),
-        (date(2028, 7, 22), "Total Solar Eclipse"),
-        (date(2028, 8, 6),  "Partial Lunar Eclipse"),
-    ],
-}
+# Convention: eclipse day + 1 day before + 1 day after are all inauspicious. This
+# ±1-day rule is a widely-followed convention and is UNSOURCED: knowledge/*.md holds
+# no eclipse muhurta rule (the only eclipse lines are aspects.md:214, grahas.md:454,
+# vedic_reference.md:1279, none of them a muhurta rule), so neither the margin nor
+# "a penumbral or not-visible-in-India eclipse blocks too" is traced to a book.
+# Applies to ALL event types (universal, not per-event).
+#
+# The DATES are computed from Swiss Ephemeris, not typed (#1018). The hand-typed table
+# listed two 2028 lunar eclipses that do not exist (Feb 12, Aug 6 -- the real Jan 12
+# and Jul 6 shifted a month, the #141/#146 signature), omitted four real ones, and
+# was empty from 2029. Cross-checked against NASA GSFC, Lunar Eclipses 2021-2030 and
+# Solar Eclipses 2021-2030 (eclipse.gsfc.nasa.gov). Inclusion set is unchanged: every
+# GLOBAL eclipse of either kind and any type, whether or not India sees it.
+# The date is the IST calendar date of the maximum, because every other date here is
+# an Indian civil date; NASA lists UT, so 2027-02-21 04:42 IST is NASA's "Feb 20".
+_IST_OFFSET_DAYS = 5.5 / 24
+
+
+def _solar_eclipse_name(ret: int) -> str:
+    # Order matters: swe sets CENTRAL/NONCENTRAL beside the type, and a hybrid is its own
+    # flag, so test the type bits most-specific first.
+    if ret & swe.ECL_ANNULAR_TOTAL:
+        return "Hybrid Solar Eclipse"
+    if ret & swe.ECL_TOTAL:
+        return "Total Solar Eclipse"
+    if ret & swe.ECL_ANNULAR:
+        return "Annular Solar Eclipse"
+    return "Partial Solar Eclipse"
+
+
+def _lunar_eclipse_name(ret: int) -> str:
+    if ret & swe.ECL_TOTAL:
+        return "Total Lunar Eclipse"
+    if ret & swe.ECL_PARTIAL:
+        return "Partial Lunar Eclipse"
+    return "Penumbral Lunar Eclipse"
+
+
+@lru_cache(maxsize=64)
+def _eclipses_in_year(year: int) -> tuple[tuple[date, str], ...]:
+    """Every global solar and lunar eclipse whose maximum falls on IST calendar `year`.
+
+    Computed once per year (memoised), so it covers any year and costs nothing after
+    the first call. The search starts two days early and stops two days late because an
+    eclipse maximum near a year boundary changes calendar year when UT becomes IST.
+    """
+    start = swe.julday(year, 1, 1, 0.0) - 2
+    stop = swe.julday(year + 1, 1, 1, 0.0) + 2
+    found: list[tuple[date, str]] = []
+    for search, namer in ((swe.sol_eclipse_when_glob, _solar_eclipse_name),
+                          (swe.lun_eclipse_when, _lunar_eclipse_name)):
+        jd = start
+        while True:
+            ret, tret = search(jd)
+            if tret[0] > stop:
+                break
+            y, m, dd, _ = swe.revjul(tret[0] + _IST_OFFSET_DAYS)
+            if y == year:
+                found.append((date(y, m, dd), namer(ret)))
+            # Eclipses of one kind are at least ~29 days apart (lunar) or ~14 (solar).
+            jd = tret[0] + 10
+    return tuple(sorted(found))
 
 
 def _eclipse_flag(d: date) -> tuple[bool, str]:
-    """True if d is within 1 day of a known eclipse. Applies to ALL events."""
+    """True if d is within 1 day of a computed eclipse. Applies to ALL events."""
     for year in (d.year, d.year - 1, d.year + 1):  # handles Jan/Dec boundary
-        for edate, ename in _ECLIPSE_DATES.get(year, []):
+        for edate, ename in _eclipses_in_year(year):
             gap = abs((d - edate).days)
             if gap == 0:
                 return True, f"{ename} on this date — universal muhurat blocker"
@@ -926,31 +994,135 @@ def _bhadra_active_at(chart: Chart, when: datetime) -> bool:
     return _karana_at(chart, when) == "Vishti"
 
 
-def _bhadra_window_for_day(chart: Chart, day_start: datetime) -> str:
-    """Return a short string describing Bhadra's presence during the day.
+# A karana is 6 degrees of Sun-Moon elongation. The Moon gains 10-15 degrees a
+# day on the Sun, so one karana lasts 9.4-14.2 hours and Vishti cannot begin and
+# end between two samples 3 hours apart, nor can the gap between two Vishti
+# spans. So a 3-hour grid sees every span and every edge lies in exactly one
+# grid interval; the edge is then found by bisection (#1019). It used to be
+# *reported* as the first sampled hour, up to 3 hours after Vishti began.
+_BHADRA_GRID = timedelta(hours=3)
+_BHADRA_EDGE_RESOLUTION = timedelta(seconds=1)
 
-    Samples 6 points across the day (every 4 hours) — accurate enough
-    for user-facing "morning / afternoon" guidance without doing full
-    half-tithi boundary computation.
+
+def _bhadra_edge(chart: Chart, before: datetime, after: datetime) -> datetime:
+    """First instant in (before, after] at which Vishti's on/off state differs
+    from its state at `before`. The two ends must differ and bracket one edge."""
+    was_active = _bhadra_active_at(chart, before)
+    while after - before > _BHADRA_EDGE_RESOLUTION:
+        mid = before + (after - before) / 2
+        if _bhadra_active_at(chart, mid) == was_active:
+            before = mid
+        else:
+            after = mid
+    return after
+
+
+def _bhadra_spans_for_day(
+    chart: Chart, day_start: datetime,
+) -> tuple[datetime, datetime, list[tuple[datetime, datetime]]]:
+    """(day_begin, day_end, spans): the local civil day containing `day_start`
+    and every interval inside it in which Vishti is active, as UTC instants.
+
+    A span that was already running at the day's first instant starts at
+    `day_begin`; one still running at its last ends at `day_end`. The day is
+    midnight to midnight in the datetime's own zone, stepped in UTC so a
+    23- or 25-hour DST day is measured as it is.
     """
-    from datetime import timedelta as _td
-    hours_active: list[int] = []
-    for h in range(0, 24, 3):
-        when = day_start.replace(hour=h, minute=0, second=0)
-        if _bhadra_active_at(chart, when):
-            hours_active.append(h)
-    if not hours_active:
+    zone = day_start.tzinfo
+    day = day_start.date()
+    begin = datetime.combine(day, time.min, tzinfo=zone).astimezone(timezone.utc)
+    end = datetime.combine(day + timedelta(days=1), time.min,
+                           tzinfo=zone).astimezone(timezone.utc)
+    points = [begin]
+    while points[-1] + _BHADRA_GRID < end:
+        points.append(points[-1] + _BHADRA_GRID)
+    points.append(end)
+    states = [_bhadra_active_at(chart, p) for p in points]
+
+    spans: list[tuple[datetime, datetime]] = []
+    opened = begin if states[0] else None
+    for i in range(1, len(points)):
+        if states[i] == states[i - 1]:
+            continue
+        edge = _bhadra_edge(chart, points[i - 1], points[i])
+        if states[i]:
+            opened = edge
+        else:
+            spans.append((opened, edge))
+            opened = None
+    if opened is not None:
+        spans.append((opened, end))
+    return begin, end, spans
+
+
+def _bhadra_window_for_day(
+    chart: Chart, day_start: datetime,
+    daylight: tuple[datetime, datetime] | None = None,
+    *, _spans=None,
+) -> str:
+    """Return a short string giving when Bhadra (Vishti) is active that day,
+    to the minute, or "" when it is not active at any point of the day.
+
+    The boundaries are the true karana boundaries (the function /panchang uses),
+    rounded outward -- the start down and the end up to a whole minute -- so the
+    stated window never omits a Vishti minute. A span that began the day before
+    reads "until HH:MM" and one that runs past midnight reads "from HH:MM".
+    `daylight` is (sunrise, sunset); when one span covers all of it the text
+    says so, because the day then has no Bhadra-free daylight at all.
+    """
+    begin, end, spans = _spans if _spans is not None else _bhadra_spans_for_day(chart, day_start)
+    if not spans:
         return ""
-    # Compress into a period description.
-    start_h = min(hours_active)
-    end_h = max(hours_active) + 3
-    if end_h > 23:
-        end_h = 23
-    period = "morning" if start_h < 12 and end_h < 15 else \
-             "afternoon" if start_h >= 12 and start_h < 17 else \
-             "evening" if start_h >= 17 else \
-             "most of day"
-    return f"Bhadra active ~{start_h:02d}:00-{end_h:02d}:00 ({period}) — avoid ceremonies in that window"
+    zone = day_start.tzinfo
+    parts: list[str] = []
+    for s, e in spans:
+        s_local = s.astimezone(zone)
+        e_local = (e + timedelta(seconds=59, microseconds=999999)).astimezone(zone)
+        e_local = e_local.replace(second=0, microsecond=0)
+        from_prev, into_next = s == begin, e == end
+        if from_prev and into_next:
+            parts.append("Bhadra active all day")
+        elif from_prev:
+            parts.append(f"Bhadra active until {e_local:%H:%M}")
+        elif into_next:
+            parts.append(f"Bhadra active from {s_local.replace(second=0, microsecond=0):%H:%M}"
+                         " (continues into the next day)")
+        else:
+            parts.append(f"Bhadra active {s_local.replace(second=0, microsecond=0):%H:%M}"
+                         f"-{e_local:%H:%M}")
+    text = " and ".join(parts)
+    if daylight is not None:
+        rise, sset = (t.astimezone(timezone.utc) for t in daylight)
+        if any(s <= rise and e >= sset for s, e in spans):
+            text += " (covers sunrise to sunset)"
+    return f"{text} — avoid ceremonies in that window"
+
+
+def _abhijit_overlaps(abhijit: tuple[datetime, datetime],
+                      rahu_kaal: tuple[datetime, datetime],
+                      bhadra_spans: list[tuple[datetime, datetime]],
+                      zone) -> tuple[str, ...]:
+    """Notes naming the minutes in which Abhijit lies inside Rahu Kaal or Bhadra (#1025).
+
+    Rahu Kaal is a weekday-indexed eighth of daylight, so on every Wednesday and Friday
+    half of Abhijit (a fifteenth, around noon) falls inside it; Vishti overlaps it on some
+    other days. The row used to mark the same minutes both "✓ Abhijit" and "✗ Rahu Kaal".
+    This states the overlap and picks no winner: knowledge/ holds no line ranking Abhijit
+    against either, only Raman's rejection of Vishti. A sub-minute touch is not reported.
+    """
+    def _inside(window: tuple[datetime, datetime]) -> str:
+        lo, hi = max(abhijit[0], window[0]), min(abhijit[1], window[1])
+        if (hi - lo).total_seconds() < 60:
+            return ""
+        return f"{lo.astimezone(zone):%H:%M}-{hi.astimezone(zone):%H:%M}"
+
+    notes: list[str] = []
+    if span := _inside(rahu_kaal):
+        notes.append(f"Abhijit and Rahu Kaal overlap {span}")
+    for s, e in bhadra_spans:
+        if span := _inside((s, e)):
+            notes.append(f"Abhijit and Bhadra (Vishti) overlap {span}")
+    return tuple(notes)
 
 
 # ─── Choghadiya — 8 sub-day windows per weekday ──────────────────────
@@ -1310,6 +1482,44 @@ def _combustion_flags(chart: Chart, when: datetime) -> dict[str, bool]:
     }
 
 
+# Tuesday is a HARD exclusion for every event (#1021). Raman, Muhurtha (1948),
+# knowledge/vedic_reference.md section 29.9: line 790 "Tuesday and Saturday should be
+# invariably avoided for all good and auspicious work"; the marriage chapter (lines
+# 3734-3746) rejects Tuesday outright (the knowledge file's paraphrase, not a quote); Rao Table 79 (knowledge/grahas.md) lists
+# Mon, Wed, Thu, Fri for a wedding. A one-point penalty let a good tithi + nakshatra
+# still rate Tuesday 'acceptable', and a booster then lifted it to 'excellent'.
+# Saturday is deliberately NOT here: Raman's Ch. II (avoid) and his marriage chapter
+# (middling) disagree, so it stays a one-point penalty in `avoid_days`.
+_HARD_AVOID_WEEKDAYS = frozenset({"Tuesday"})
+
+# User-facing reason. The Amrit Siddhi sentence is a disclosure, not a rule: Raman's
+# Amrita Siddha list pairs Tuesday with Ashwini and his text does not say whether that
+# overrides line 790 (vedic_reference.md section 29.9), so this finder picks "no" and says so.
+_HARD_AVOID_WEEKDAY_REASON = (
+    "Tuesday is avoided for all auspicious work (Raman, Muhurtha: 'invariably avoided'; "
+    "his marriage chapter rejects Tuesday outright for a wedding). Amrit Siddhi's Tuesday + Ashwini pairing does "
+    "not override this in this finder; the source is silent on that case."
+)
+# Raman's one sourced exception (line 1331) is for the child's own days, which this
+# finder cannot apply: it has no birth date. So it is disclosed, not computed.
+_NAMKARAN_TUESDAY_EXCEPTION = (
+    " Raman allows a Tuesday for the naming on the child's 10th, 12th or 16th day after "
+    "birth; this finder has no birth date, so it cannot apply that exception."
+)
+
+# Vivah only (#1022). User-facing reason for a Krishna-paksha tithi in
+# EVENT_RULES['vivah']['avoid_krishna_tithis']. It names Raman and the dark half and claims
+# nothing about the other waning-half tithis: the knowledge file records Raman's marriage
+# chapter as rejecting the dark-half 11th "through New Moon" and calling the bright-half
+# 2nd, 3rd, 5th, 7th, 10th, 11th and 13th best, and it records nothing for the dark-half
+# 2nd-10th, which keep the finder's own credit. Not worded as a quote: it is a paraphrase.
+_VIVAH_KRISHNA_TITHI_REASON = (
+    "Krishna-paksha (dark half, waning Moon) {tithi}: B.V. Raman's Muhurtha, marriage "
+    "chapter, rejects the dark-half 11th through New Moon for a wedding. The bright-half "
+    "{tithi} is not excluded."
+)
+
+
 def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
                 is_panchak: bool, is_chaturmas: bool,
                 kharmas_reason: str, eclipse_reason: str,
@@ -1323,9 +1533,10 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
       1. Adhik Maas — universal blocker for all shubh karya
       2. Eclipse day / ±1 day — universal
       3. Panchak, Chaturmas, Kharmas, Dagdha (per-event flag)
-      4. Vaidhriti / Vyatipata Nitya Yogas — universal
+      4. Atiganda / Shula / Ganda / Vyatipata / Vaidhriti Nitya Yogas — universal
       5. Combust karaka (per-event flag)
-      6. Avoid-nakshatra, avoid-tithi
+      6. Avoid-nakshatra, avoid-tithi, and the paksha-aware avoid_krishna_tithis (Vivah, #1022)
+      7. Tuesday (_HARD_AVOID_WEEKDAYS) — Raman, see the constant
 
     UNIVERSAL BOOSTERS override caution/acceptable → excellent:
       - Amrit Siddhi Yoga (nakshatra+weekday)
@@ -1333,8 +1544,9 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
       - Ravi Yoga (Sun-based)
 
     SOFT scoring: +2 favourable tithi, +2 favourable nakshatra, +1 favourable
-    weekday. Peak-day (e.g. Thu for Vidyarambh) adds an extra +1. Avoid-weekday
-    subtracts 1. Final rating: >=5 excellent, 4 good, 3 acceptable, else caution.
+    weekday. Peak-day (e.g. Thu for Vidyarambh) adds an extra +1. A Saturday
+    subtracts 1 (it is the only avoid-weekday that reaches here: Tuesday is a hard
+    exclusion above, Saturday is contested within Raman). Final rating: >=5 excellent, 4 good, 3 acceptable, else caution.
     """
     rules = EVENT_RULES.get(event_type)
     if rules is None:
@@ -1352,10 +1564,11 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
     if eclipse_reason:
         flags.append("eclipse")
         return "avoid", eclipse_reason, tuple(flags)
-    # Vaidhriti / Vyatipata nitya yogas — universal blockers.
+    # Atiganda / Shula / Ganda / Vyatipata / Vaidhriti nitya yogas — universal blockers.
     if nitya_blocks:
         flags.append("nitya_yoga_block")
-        return "avoid", f"{nitya_yoga} Nitya Yoga — universally inauspicious for shubh karya", tuple(flags)
+        return "avoid", (f"{nitya_yoga} Nitya Yoga — Raman names it among the five yogas that harm "
+                         "whatever is started under them"), tuple(flags)
     if rules["check_panchak"] and is_panchak:
         flags.append("panchak")
         return "avoid", f"Panchak day ({nakshatra}) — inauspicious", tuple(flags)
@@ -1385,6 +1598,21 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
     if panchang.tithi_name in rules["avoid_tithis"]:
         flags.append("avoid_tithi")
         return "avoid", f"Avoid tithi ({panchang.tithi_name})", tuple(flags)
+    # Paksha-aware tithi exclusion (#1022). `avoid_tithis` is keyed on the NAME alone, so
+    # it cannot say "dark half only". The event key is read with .get() and the paksha is
+    # read only after the name matches, so every other event (no key) is unaffected.
+    if (panchang.tithi_name in rules.get("avoid_krishna_tithis", ())
+            and panchang.tithi_paksha == "Krishna"):
+        flags.append("avoid_krishna_tithi")
+        return "avoid", _VIVAH_KRISHNA_TITHI_REASON.format(tithi=panchang.tithi_name), tuple(flags)
+    # Last of the hard exclusions, and still ahead of the boosters below: they only
+    # lift soft scores, so an Amrit/Sarvartha Siddhi Tuesday cannot reach them.
+    if weekday_name in _HARD_AVOID_WEEKDAYS:
+        flags.append("avoid_weekday")
+        reason = _HARD_AVOID_WEEKDAY_REASON
+        if event_type == "namkaran":
+            reason += _NAMKARAN_TUESDAY_EXCEPTION
+        return "avoid", reason, tuple(flags)
 
     # ─── Soft scoring ───────────────────────────────────────────────
     score = 0
@@ -1432,6 +1660,22 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
             reasons.insert(0, booster_names)
 
     return rating, "; ".join(reasons) or "neutral factors", tuple(flags)
+
+
+@dataclass(frozen=True)
+class _MuhurtaInstant:
+    """The tithi at the one instant a day is judged at; what `score_event` reads of its
+    `panchang` argument (#1020)."""
+    tithi_name: str
+    tithi_paksha: str
+
+
+# Every anga of a day's verdict is read at this local clock time. `find_candidates` judges a
+# whole day, so it needs one representative instant, and the sourced constraint is only that it
+# is the SAME for every anga (knowledge/vedic_reference.md 29.7, Rao: the nakshatra "at the time
+# of a muhurta"; the angas of the muhurta are chosen together). Which instant is this
+# finder's own choice; the page footnote says it.
+MUHURTA_INSTANT_HOUR = 12
 
 
 def find_candidates(event_type: str, city: str, start: date,
@@ -1496,8 +1740,14 @@ def find_candidates(event_type: str, city: str, start: date,
     for i in range(days):
         d = start + timedelta(days=i)
         try:
-            when = datetime.combine(d, datetime.min.time().replace(hour=12), tzinfo=tz)
+            when = datetime.combine(
+                d, datetime.min.time().replace(hour=MUHURTA_INSTANT_HOUR), tzinfo=tz)
             p = compute_panchang(base_chart, when)
+            # Tithi at the SAME instant as nakshatra, yoga and combustion below, not
+            # compute_panchang's sunrise tithi: one verdict judged a sunrise tithi beside a
+            # noon nakshatra on days where the two never coexist (#1020).
+            _t_idx, t_name, t_paksha, _t_sig = _tithi_at(julian_day_utc(when))
+            at_instant = _MuhurtaInstant(t_name, t_paksha)
             nakshatra, moon_pada = _moon_nakshatra_for(base_chart, when)
             is_panchak = _is_panchak(nakshatra, moon_pada)
             is_chaturmas = _in_chaturmas(d)
@@ -1543,7 +1793,18 @@ def find_candidates(event_type: str, city: str, start: date,
             else:
                 rk_str = ab_str = ""
             # Phase B — Bhadra / Vishti karana window + Choghadiya table
-            bhadra_window = _bhadra_window_for_day(base_chart, when)
+            bhadra_spans = _bhadra_spans_for_day(base_chart, when)
+            bhadra_window = _bhadra_window_for_day(
+                base_chart, when,
+                (p.sunrise, p.sunset) if p.daylight_ordinary else None,
+                _spans=bhadra_spans,
+            )
+            abhijit_overlaps = (
+                _abhijit_overlaps((p.abhijit_start, p.abhijit_end),
+                                  (p.rahu_kaal_start, p.rahu_kaal_end),
+                                  bhadra_spans[2], tz)
+                if p.daylight_ordinary else ()
+            )
             choghadiya = (
                 tuple(_choghadiya_windows(p.weekday, p.sunrise, p.sunset))
                 if p.daylight_ordinary else ()
@@ -1573,7 +1834,7 @@ def find_candidates(event_type: str, city: str, start: date,
         if abujha_name:
             candidates.append(MuhuratCandidate(
                 d=d, weekday=p.weekday,
-                tithi=p.tithi_name, tithi_paksha=p.tithi_paksha,
+                tithi=t_name, tithi_paksha=t_paksha,
                 nakshatra=nakshatra,
                 rating="excellent",
                 reason=f"Abujha Muhurat — {abujha_name} (universally auspicious)",
@@ -1582,11 +1843,12 @@ def find_candidates(event_type: str, city: str, start: date,
                 rahu_kaal=rk_str, abhijit_muhurta=ab_str,
                 nitya_yoga=nitya_yoga, boosters=boosters,
                 bhadra_window=bhadra_window, choghadiya=choghadiya,
+                abhijit_overlaps=abhijit_overlaps,
             ))
             continue
 
         rating, reason, flags = score_event(
-            event_type, p, p.weekday, nakshatra,
+            event_type, at_instant, p.weekday, nakshatra,
             is_panchak, is_chaturmas, kharmas_reason, eclipse_reason, combust,
             adhik_reason=adhik_reason,
             nitya_yoga=nitya_yoga, nitya_blocks=nitya_blocks,
@@ -1594,13 +1856,14 @@ def find_candidates(event_type: str, city: str, start: date,
         )
         candidates.append(MuhuratCandidate(
             d=d, weekday=p.weekday,
-            tithi=p.tithi_name, tithi_paksha=p.tithi_paksha,
+            tithi=t_name, tithi_paksha=t_paksha,
             nakshatra=nakshatra,
             rating=rating, reason=reason, flags=flags,
             personal=personal, couple=couple,
             rahu_kaal=rk_str, abhijit_muhurta=ab_str,
             nitya_yoga=nitya_yoga, boosters=boosters,
             bhadra_window=bhadra_window, choghadiya=choghadiya,
+            abhijit_overlaps=abhijit_overlaps,
         ))
 
     tier_order = {"excellent": 0, "good": 1, "acceptable": 2, "caution": 3, "avoid": 4}

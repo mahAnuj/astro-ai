@@ -56,7 +56,7 @@ def _step(name: str) -> dict:
 COMPOSE = _step("Compose the cycle arguments")
 
 
-def _compose(tmp_path: Path, issue=None, pr=None) -> tuple[int, str, str]:
+def _compose(tmp_path: Path, issue=None, pr=None, fix_pr=None) -> tuple[int, str, str]:
     """Run the REAL step. `None` means the variable is not set at all, which is
     what a `schedule` fire produces once the empty expression is substituted."""
     out = tmp_path / "out"
@@ -70,6 +70,8 @@ def _compose(tmp_path: Path, issue=None, pr=None) -> tuple[int, str, str]:
         env["ISSUE"] = issue
     if pr is not None:
         env["PR"] = pr
+    if fix_pr is not None:
+        env["FIX_PR"] = fix_pr
     p = subprocess.run(["bash", "-c", COMPOSE["run"]],
                        capture_output=True, text=True, env=env)
     args = ""
@@ -117,6 +119,24 @@ def test_a_pr_dispatch_becomes_a_qa_round(tmp_path):
 
 
 # --- 2. it refuses rather than choosing -------------------------------------
+
+def test_a_fix_run_composes_the_fix_pr_mode(tmp_path):
+    """2026-11-13: `fix_pr` is agent-cycle.md Step 0d, a fix pushed to the PR."""
+    rc, args, log = _compose(tmp_path, fix_pr="951")
+    assert rc == 0, log
+    assert args == "--fix-pr 951"
+
+
+def test_a_fix_run_combined_with_anything_else_is_refused(tmp_path):
+    for other in ({"issue": "536"}, {"pr": "639"}):
+        rc, args, log = _compose(tmp_path, fix_pr="951", **other)
+        assert rc != 0, f"fix_pr with {other} was accepted and composed {args!r}"
+
+
+def test_a_non_numeric_fix_pr_is_refused(tmp_path):
+    rc, args, _ = _compose(tmp_path, fix_pr="951; rm -rf /")
+    assert rc != 0 and args == ""
+
 
 def test_both_inputs_at_once_is_refused_not_resolved(tmp_path):
     """A dispatcher that sends both has a bug. Picking one hides it behind a
@@ -167,8 +187,8 @@ def test_the_slash_command_is_first_on_its_prompt_line():
 
 def test_both_inputs_are_declared_so_a_dispatch_can_name_either():
     inputs = ON["workflow_dispatch"]["inputs"]
-    assert set(inputs) == {"issue", "pr"}, sorted(inputs)
-    for name in ("issue", "pr"):
+    assert set(inputs) == {"issue", "pr", "fix_pr"}, sorted(inputs)
+    for name in ("issue", "pr", "fix_pr"):
         assert inputs[name].get("required") is False, (
             f"`{name}` must stay optional; a required input breaks the cron"
         )
@@ -179,7 +199,7 @@ def test_the_composing_step_takes_its_values_as_env_vars():
     `verify_workflows.py` fails the build on one. Stated here too, because this
     step is the first in this file to read a dispatch input in shell."""
     assert "${{" not in COMPOSE["run"], COMPOSE["run"]
-    assert set(COMPOSE["env"]) == {"ISSUE", "PR"}, COMPOSE["env"]
+    assert set(COMPOSE["env"]) == {"ISSUE", "PR", "FIX_PR"}, COMPOSE["env"]
 
 
 def test_the_step_runs_before_the_agent_does():

@@ -29,6 +29,8 @@
 # The ruling file's first line is EXACTLY ONE of:
 #   issue=<digits>   work this issue -- a full delivery cycle
 #   pr=<digits>      run ONE QA round on this pull request
+#   fix_pr=<digits>  FIX this pull request's QA FAIL or red gates and push to
+#                    its own branch (agent-cycle.md Step 0d, since 2026-11-13)
 #
 # The second form exists because a QA ROUND NEEDS A PR, NOT AN ISSUE. See the
 # parse below for the two PRs that proved it and for why the target is never
@@ -93,7 +95,10 @@ fi
 # one token that matches neither anchored pattern. Exactly one key, exactly
 # digits, or refused.
 line=$(head -1 "$FILE" | tr -d '[:space:]')
-match=$(printf '%s' "$line" | grep -oE '^(issue|pr)=[0-9]+$' || true)
+# A third form since 2026-11-13: `fix_pr=<n>`, a FIX on a PR whose branch
+# names no issue (owner: "let the loop fix session PRs too"). It pushes, so
+# it runs in the build lane below, and it is checked as a PR, not an issue.
+match=$(printf '%s' "$line" | grep -oE '^(issue|pr|fix_pr)=[0-9]+$' || true)
 kind=$(printf '%s' "$match" | cut -d= -f1)
 target=$(printf '%s' "$match" | cut -d= -f2)
 if [ -z "$target" ]; then
@@ -122,7 +127,7 @@ case "$kind" in
         echo "::error::Issues and PRs share one number space. Rule \`pr=$target\` if a round was meant."
         exit 1 ;;
     esac ;;
-  pr)
+  pr|fix_pr)
     state=$(gh pr view "$target" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)
     ;;
 esac

@@ -108,8 +108,15 @@ That is `USER AUTHORISED PUSH` one level up. So:
    that later opens the thread re-reads them on every turn.
 3. **File ONE issue per distinct root cause**, with the Evidence Block the loop
    requires and an executable `repro:`. Several stalls with one cause get one issue.
-4. **Record a cycle dispatch** — write **one** line, exactly `issue=<n>` **or** `pr=<n>`, to
-   `/tmp/steward-dispatch.txt` — when the repair is ordinary delivery work.
+4. **Record a cycle dispatch** — write **one** line, exactly `issue=<n>`, `pr=<n>` **or**
+   `fix_pr=<n>`, to `/tmp/steward-dispatch.txt` — when the repair is ordinary delivery work.
+
+   **`fix_pr=<n>` since 2026-11-13** (owner: *"let the loop fix session PRs too"*): a `qa-fail`
+   PR whose branch names no issue, whose FAIL names its current head, and whose diff touches no
+   `.github/workflows/` file. It runs `/agent-cycle --fix-pr <n>` (Step 0d), which fixes exactly
+   the findings and pushes to the PR's branch. Normally `scripts/pr_fix_after_qa.py` has already
+   sent it right after the round; write it only when that PR has no
+   `qa-on-green: fix dispatched at <head>` comment, and never past three such comments.
 
    **`pr=<n>` since 2026-11-01 (#650, #653), and it is the form that unsticks most PRs.**
    `issue=<n>` aims a full cycle at an issue and is the richer dispatch: the cycle reads the

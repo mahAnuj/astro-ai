@@ -533,6 +533,7 @@ def _prompt_line(p):
 
 @pytest.mark.parametrize("prompt,kind", [
     ("/agent-cycle --qa-pr 679", "qa-round"),
+    ("/agent-cycle --fix-pr 951", "fix-pr"),
     ("/agent-cycle 675", "issue"),
     ("/agent-cycle ", "ranked"),
     ("/agent-cycle", "ranked"),

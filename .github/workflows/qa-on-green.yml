@@ -437,8 +437,10 @@ jobs:
       # could fix. `consider` exits on red by design; detect_stalls.py has no
       # red-gates kind; an empty commit to re-trigger CI is forbidden. So:
       # scripts/red_gates.py decides rerun (flake, first attempt only) / fix (one
-      # build cycle per head, on a branch naming its issue, never a workflows diff)
-      # / notify (one comment per head) / none. Deterministic: no Claude here.
+      # build cycle per head, never a workflows diff: `issue=<n>` on a branch
+      # naming its issue, `fix_pr=<pr>` on any other -- a session's PR, since
+      # 2026-11-13, at most 3 per PR) / notify (one comment per head) / none.
+      # Deterministic: no Claude here.
 
       - id: decide
         name: What should happen to this red PR?
@@ -483,11 +485,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          ISSUE: ${{ steps.decide.outputs.issue }}
+          # `issue=<n>` or `fix_pr=<pr>`, as red_gates.py decided; the carrier
+          # parses it strictly and refuses anything else.
+          RULING: ${{ steps.decide.outputs.target }}
           QUEUE_ON: ${{ steps.decide.outputs.pr }}
           LOOP_PAUSED: ${{ vars.LOOP_PAUSED }}   # #903: a red-gates fix is queued too while paused
         run: |
-          printf 'issue=%s\n' "$ISSUE" > /tmp/red-gates-dispatch.txt
+          printf '%s\n' "$RULING" > /tmp/red-gates-dispatch.txt
           bash scripts/dispatch_cycle.sh /tmp/red-gates-dispatch.txt qa-on-green
 
       - name: Say what failed, once per head
@@ -501,4 +505,4 @@ jobs:
         run: |
           gh pr comment "$PR" --repo "$GH_REPO" --body "qa-on-green: red gates noted at $HEAD_SHA
 
-          \`$JOBS\` failed on this head, and no cycle can fix this branch (it names no issue, or it touches .github/workflows/, which the cycle token cannot push). A session has to push the fix (#912)."
+          \`$JOBS\` failed on this head, and no cycle will fix it: either the diff touches .github/workflows/, which the cycle token cannot push, or this PR has already had its 3 automatic fixes. A session has to push the fix (#912)."

@@ -2400,8 +2400,8 @@ MUTATIONS = [
     # ---- #442: the steward can dispatch, and a merge is not a refix ---------
     ("#442: the carrier stops refusing a lenient dispatch line",
      "scripts/dispatch_cycle.sh",
-     "grep -oE '^(issue|pr)=[0-9]+$'",
-     "grep -oE '(issue|pr)=[0-9]+'",
+     "grep -oE '^(issue|pr|fix_pr)=[0-9]+$'",
+     "grep -oE '(issue|pr|fix_pr)=[0-9]+'",
      "test_anything_but_issue_equals_digits_is_refused"),
     ("#442: the carrier stops treating an unreadable concurrency check as busy",
      "scripts/dispatch_cycle.sh",
@@ -4643,8 +4643,8 @@ MUTATIONS = [
 
     ("no-op loop: the steward's ruling line forgets the pr= form again",
      '.claude/agents/steward.md',
-     'write **one** line, exactly `issue=<n>` **or** `pr=<n>`, to',
-     'write **one** line, exactly `issue=<n>`, to',
+     'write **one** line, exactly `issue=<n>`, `pr=<n>` **or**',
+     'write **one** line, exactly `issue=<n>` **or**',
      'test_the_steward_can_dispatch_a_pr_scoped_round'),
 
     ('no-op loop: chief rules twice on the same head again',
