@@ -2912,7 +2912,7 @@ elsewhere (L7318) and is not part of the house-entry passage.
 | good days Mon, Wed, Thu, Fri | **CORRECT** | both books |
 | avoid Saturday | **CONTESTED** | Raman: "recommended by some", with a theft risk; Rao does not list it. The code follows the stricter reading |
 | lunar-month list (Vaisakha, Jyeshtha, Magha, Phalguna) | **NOT IMPLEMENTED** | the code has no month-level credit |
-| `check_kharmas` blocks Sun in Dhanu and Meena | **UNSOURCED** | The Kharmas names are absent (§29.10, #1028), but Raman's own Uttarayana rule bears on it: he puts the northern course "between Capricorn and Gemini" (Upanayana, L2580–2581). Dhanu is outside that span, so his rule does exclude it, and also Karka to Vrischika, which the code allows. Meena is inside the span, so Raman gives no ground for blocking it |
+| `check_kharmas` blocks Sun in Dhanu and Meena | **UNSOURCED** | The Kharmas names are absent (§29.10, #1028), but Raman's own Uttarayana rule bears on it: he puts the northern course "between Capricorn and Gemini" (Upanayana, L2580–2581). Dhanu is outside that span, so his rule points away from it, and from Karka to Vrischika too, which the code allows; but two lines on he rates the lunar months Karthika and Margasira (which overlap Sun in Vrischika or Dhanu) "neutral or middling" (L4971–4974), so the book does not settle it either way. Meena is inside the span, so Raman gives no ground for blocking it |
 | `check_jupiter_combust` | **CONTESTED** | Raman says Jupiter and Venus "strongly disposed", not "not combust"; the code ignores Venus |
 
 #### Vidyarambh (Aksharabhyasa) — Raman Ch. XI "Commencing Education", L4207–4300 (printed pp. 114–117); Rao Table 79 row "Teaching alphabet"
