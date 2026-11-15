@@ -40,6 +40,7 @@ from astro_ai.chart import (
     Chart, compute_chart, compute_panchang, compute_transit_snapshot,
     compute_sade_sati_details, compute_dasha_state,
     ChartError, NAKSHATRAS, RASHIS,
+    _tithi_at, julian_day_utc,
 )
 
 
@@ -214,6 +215,10 @@ class MuhuratCandidate:
     # Phase B additions — sub-day precision
     bhadra_window: str = ""   # "" if Bhadra not present; else "Bhadra active 09:00-16:00..."
     choghadiya: tuple[dict, ...] = ()   # 8 day-windows with name/start/end/auspiciousness; () if no daylight span
+    # Display-only (#1025): the minutes in which the Abhijit window lies inside Rahu Kaal or
+    # Bhadra, e.g. "Abhijit and Rahu Kaal overlap 11:45-12:06". () when it overlaps neither.
+    # No rating reads it: the finder holds no source that ranks one window above the other.
+    abhijit_overlaps: tuple[str, ...] = ()
 
 
 # ─── Chaturmas (Devshayani Ekadashi → Devuthani Ekadashi) ────────────
@@ -493,7 +498,9 @@ def _nitya_yoga_flag(chart: Chart, when: datetime) -> tuple[str, bool]:
 
     Reads the same `_nitya_yoga_at` that /panchang renders, so the Muhurat
     Finder's blocker path and the almanac can no longer disagree about the
-    same instant (#148). `chart` is unused now that the computation needs
+    same instant (#148). They are still read at DIFFERENT instants: /panchang
+    at sunrise, the finder at `MUHURTA_INSTANT_HOUR`, so the two columns differ
+    on a day the yoga changes in between (98 of 365 days, #1020). `chart` is unused now that the computation needs
     only the moment; it stays in the signature because callers pass it
     positionally and the natal chart is what identifies whose muhurat this is.
     """
@@ -1051,6 +1058,7 @@ def _bhadra_spans_for_day(
 def _bhadra_window_for_day(
     chart: Chart, day_start: datetime,
     daylight: tuple[datetime, datetime] | None = None,
+    *, _spans=None,
 ) -> str:
     """Return a short string giving when Bhadra (Vishti) is active that day,
     to the minute, or "" when it is not active at any point of the day.
@@ -1062,7 +1070,7 @@ def _bhadra_window_for_day(
     `daylight` is (sunrise, sunset); when one span covers all of it the text
     says so, because the day then has no Bhadra-free daylight at all.
     """
-    begin, end, spans = _bhadra_spans_for_day(chart, day_start)
+    begin, end, spans = _spans if _spans is not None else _bhadra_spans_for_day(chart, day_start)
     if not spans:
         return ""
     zone = day_start.tzinfo
@@ -1088,6 +1096,33 @@ def _bhadra_window_for_day(
         if any(s <= rise and e >= sset for s, e in spans):
             text += " (covers sunrise to sunset)"
     return f"{text} — avoid ceremonies in that window"
+
+
+def _abhijit_overlaps(abhijit: tuple[datetime, datetime],
+                      rahu_kaal: tuple[datetime, datetime],
+                      bhadra_spans: list[tuple[datetime, datetime]],
+                      zone) -> tuple[str, ...]:
+    """Notes naming the minutes in which Abhijit lies inside Rahu Kaal or Bhadra (#1025).
+
+    Rahu Kaal is a weekday-indexed eighth of daylight, so on every Wednesday and Friday
+    half of Abhijit (a fifteenth, around noon) falls inside it; Vishti overlaps it on some
+    other days. The row used to mark the same minutes both "✓ Abhijit" and "✗ Rahu Kaal".
+    This states the overlap and picks no winner: knowledge/ holds no line ranking Abhijit
+    against either, only Raman's rejection of Vishti. A sub-minute touch is not reported.
+    """
+    def _inside(window: tuple[datetime, datetime]) -> str:
+        lo, hi = max(abhijit[0], window[0]), min(abhijit[1], window[1])
+        if (hi - lo).total_seconds() < 60:
+            return ""
+        return f"{lo.astimezone(zone):%H:%M}-{hi.astimezone(zone):%H:%M}"
+
+    notes: list[str] = []
+    if span := _inside(rahu_kaal):
+        notes.append(f"Abhijit and Rahu Kaal overlap {span}")
+    for s, e in bhadra_spans:
+        if span := _inside((s, e)):
+            notes.append(f"Abhijit and Bhadra (Vishti) overlap {span}")
+    return tuple(notes)
 
 
 # ─── Choghadiya — 8 sub-day windows per weekday ──────────────────────
@@ -1627,6 +1662,22 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
     return rating, "; ".join(reasons) or "neutral factors", tuple(flags)
 
 
+@dataclass(frozen=True)
+class _MuhurtaInstant:
+    """The tithi at the one instant a day is judged at; what `score_event` reads of its
+    `panchang` argument (#1020)."""
+    tithi_name: str
+    tithi_paksha: str
+
+
+# Every anga of a day's verdict is read at this local clock time. `find_candidates` judges a
+# whole day, so it needs one representative instant, and the sourced constraint is only that it
+# is the SAME for every anga (knowledge/vedic_reference.md 29.7, Rao: the nakshatra "at the time
+# of a muhurta"; the angas of the muhurta are chosen together). Which instant is this
+# finder's own choice; the page footnote says it.
+MUHURTA_INSTANT_HOUR = 12
+
+
 def find_candidates(event_type: str, city: str, start: date,
                     days: int = 90,
                     personal_chart: Chart | None = None,
@@ -1689,8 +1740,14 @@ def find_candidates(event_type: str, city: str, start: date,
     for i in range(days):
         d = start + timedelta(days=i)
         try:
-            when = datetime.combine(d, datetime.min.time().replace(hour=12), tzinfo=tz)
+            when = datetime.combine(
+                d, datetime.min.time().replace(hour=MUHURTA_INSTANT_HOUR), tzinfo=tz)
             p = compute_panchang(base_chart, when)
+            # Tithi at the SAME instant as nakshatra, yoga and combustion below, not
+            # compute_panchang's sunrise tithi: one verdict judged a sunrise tithi beside a
+            # noon nakshatra on days where the two never coexist (#1020).
+            _t_idx, t_name, t_paksha, _t_sig = _tithi_at(julian_day_utc(when))
+            at_instant = _MuhurtaInstant(t_name, t_paksha)
             nakshatra, moon_pada = _moon_nakshatra_for(base_chart, when)
             is_panchak = _is_panchak(nakshatra, moon_pada)
             is_chaturmas = _in_chaturmas(d)
@@ -1736,9 +1793,17 @@ def find_candidates(event_type: str, city: str, start: date,
             else:
                 rk_str = ab_str = ""
             # Phase B — Bhadra / Vishti karana window + Choghadiya table
+            bhadra_spans = _bhadra_spans_for_day(base_chart, when)
             bhadra_window = _bhadra_window_for_day(
                 base_chart, when,
                 (p.sunrise, p.sunset) if p.daylight_ordinary else None,
+                _spans=bhadra_spans,
+            )
+            abhijit_overlaps = (
+                _abhijit_overlaps((p.abhijit_start, p.abhijit_end),
+                                  (p.rahu_kaal_start, p.rahu_kaal_end),
+                                  bhadra_spans[2], tz)
+                if p.daylight_ordinary else ()
             )
             choghadiya = (
                 tuple(_choghadiya_windows(p.weekday, p.sunrise, p.sunset))
@@ -1769,7 +1834,7 @@ def find_candidates(event_type: str, city: str, start: date,
         if abujha_name:
             candidates.append(MuhuratCandidate(
                 d=d, weekday=p.weekday,
-                tithi=p.tithi_name, tithi_paksha=p.tithi_paksha,
+                tithi=t_name, tithi_paksha=t_paksha,
                 nakshatra=nakshatra,
                 rating="excellent",
                 reason=f"Abujha Muhurat — {abujha_name} (universally auspicious)",
@@ -1778,11 +1843,12 @@ def find_candidates(event_type: str, city: str, start: date,
                 rahu_kaal=rk_str, abhijit_muhurta=ab_str,
                 nitya_yoga=nitya_yoga, boosters=boosters,
                 bhadra_window=bhadra_window, choghadiya=choghadiya,
+                abhijit_overlaps=abhijit_overlaps,
             ))
             continue
 
         rating, reason, flags = score_event(
-            event_type, p, p.weekday, nakshatra,
+            event_type, at_instant, p.weekday, nakshatra,
             is_panchak, is_chaturmas, kharmas_reason, eclipse_reason, combust,
             adhik_reason=adhik_reason,
             nitya_yoga=nitya_yoga, nitya_blocks=nitya_blocks,
@@ -1790,13 +1856,14 @@ def find_candidates(event_type: str, city: str, start: date,
         )
         candidates.append(MuhuratCandidate(
             d=d, weekday=p.weekday,
-            tithi=p.tithi_name, tithi_paksha=p.tithi_paksha,
+            tithi=t_name, tithi_paksha=t_paksha,
             nakshatra=nakshatra,
             rating=rating, reason=reason, flags=flags,
             personal=personal, couple=couple,
             rahu_kaal=rk_str, abhijit_muhurta=ab_str,
             nitya_yoga=nitya_yoga, boosters=boosters,
             bhadra_window=bhadra_window, choghadiya=choghadiya,
+            abhijit_overlaps=abhijit_overlaps,
         ))
 
     tier_order = {"excellent": 0, "good": 1, "acceptable": 2, "caution": 3, "avoid": 4}

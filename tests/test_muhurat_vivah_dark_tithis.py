@@ -41,12 +41,12 @@ def _score(event, tithi, paksha, weekday="Thursday", nakshatra="Rohini", booster
 
 def test_the_issue_repro_dark_half_11th_to_13th_are_avoid_with_the_flag():
     cands = _by_date("vivah", date(2026, 12, 1), 120)
-    # 12-04 Ekadashi, 12-05 Dwadashi (was 'excellent'); 2027-03-04/05/06 Ekadashi,
-    # Dwadashi, Trayodashi (was 'excellent', 'excellent', 'caution').
+    # The tithi is the one at the finder's single judging instant (noon, #1020), not at
+    # sunrise: 12-04 Ekadashi, 12-05 Dwadashi (was 'excellent'); 2027-03-04/05 Dwadashi,
+    # Trayodashi (the same two dates read Ekadashi/Dwadashi on the old sunrise tithi).
     got = [(date(2026, 12, 4), "Ekadashi"), (date(2026, 12, 5), "Dwadashi")]
-    cands.update(_by_date("vivah", date(2027, 3, 4), 3))
-    got += [(date(2027, 3, 4), "Ekadashi"), (date(2027, 3, 5), "Dwadashi"),
-            (date(2027, 3, 6), "Trayodashi")]
+    cands.update(_by_date("vivah", date(2027, 3, 4), 2))
+    got += [(date(2027, 3, 4), "Dwadashi"), (date(2027, 3, 5), "Trayodashi")]
     for d, tithi in got:
         c = cands[d]
         assert (c.tithi_paksha, c.tithi) == ("Krishna", tithi), (d, c.tithi_paksha, c.tithi)
