@@ -554,7 +554,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         ],
         "rules_summary": [
             "Guru (Jupiter) uncombust — must be visible during ceremony hours",
-            "Favourable nakshatra: Rohini, Mrigashira, Uttara Phalguni, Hasta, Chitra, Anuradha, Uttara Ashadha, Revati",
+            "Favourable nakshatra: Rohini, Mrigashira, Uttara Phalguni, Chitra, Anuradha, Uttara Ashadha, Uttara Bhadrapada, Revati",
             "Favourable tithi: 2, 3, 5, 7, 10, 11, 13",
             "Weekday: Mon, Wed, Thu, Fri preferred; Tuesday excluded (Raman); Saturday scores one point lower (Raman's chapters disagree)",
             "No Chaturmas (mid-July to mid-November)",
@@ -610,7 +610,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "rules_summary": [
             "Thursday peak-day (Guru's day + extra bonus)",
             "Jupiter (Guru) uncombust — learning karaka must be visible",
-            "Soft nakshatras (Ashwini, Rohini, Mrigashira, Punarvasu, Pushya, Hasta, Chitra, Swati, Anuradha, Shravana, Revati)",
+            "Favourable nakshatras (Ashwini, Rohini, Mrigashira, Ardra, Punarvasu, Pushya, Hasta, Chitra, Swati, Anuradha, Shravana, Dhanishta, Shatabhisha, Revati)",
             "Favourable tithi (2, 3, 5, 10, 11, 12)",
             "No Panchak",
             "No Dagdha yoga",

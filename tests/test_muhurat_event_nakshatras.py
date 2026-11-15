@@ -70,3 +70,25 @@ def test_vidyarambh_thursday_peak_is_labelled_as_this_finders_convention():
     src = open(m.__file__, encoding="utf-8").read()
     i = src.index('"peak_day":   "Thursday"')
     assert "FINDER'S CONVENTION" in src[max(0, i - 700):i]
+
+
+def _summary_nakshatras(event):
+    line = next(s for s in m.EVENT_LANDING[event]["rules_summary"] if "nakshatra" in s.lower())
+    return {n.strip().rstrip(")") for n in line.split("(")[-1].split(":")[-1].split(",")}
+
+
+def test_landing_page_rules_summary_lists_exactly_the_credited_nakshatras():
+    # QA round 1 on #1064 found the /muhurat/griha-pravesh summary still listing Hasta after the
+    # set dropped it. The summary line is user-facing, so it is pinned to the set it describes.
+    for ev in ("griha_pravesh", "vidyarambh"):
+        listed = _summary_nakshatras(ev)
+        assert listed == m.EVENT_RULES[ev]["good_nakshatras"], (ev, listed ^ m.EVENT_RULES[ev]["good_nakshatras"])
+
+
+def test_griha_pravesh_learn_article_does_not_credit_hasta_or_cite_a_hasta_excellent_date():
+    from pathlib import Path
+    html = (Path(m.__file__).parent / "templates/learn/griha-pravesh-muhurat-2026-2027.html").read_text(encoding="utf-8")
+    import re
+    visible = re.sub(r"\{#.*?#\}", "", html, flags=re.S)   # Jinja comments record provenance, not copy
+    assert "Hasta" not in visible
+    assert "Uttara Bhadrapada" in html
