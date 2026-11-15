@@ -2841,9 +2841,177 @@ of blocking yogas, `panchang.html`'s "the two most inauspicious", the dead
 here and filed, not applied. A rule change needs the fix loop, a verification
 gate and QA.
 
+### 29.13 Griha Pravesh, Vidyarambh, Namkaran and business — what the two muhurta books hold (#1027)
+
+**Added 2026-11-15 for #1027** (parent #1017). `muhurat.py`'s `EVENT_RULES` carries
+tithi, nakshatra and weekday lists for four events, and nothing in `knowledge/`
+stated them. This section extracts what the two muhurta books say for each event
+and records, rule by rule, whether the code agrees. **It changes no behaviour.**
+Every mismatch is filed as its own issue (listed at the end); a rule change needs
+the fix loop, a verification gate and QA.
+
+**Books present when this was written: 2 muhurta books of the corpus.**
+`data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt` (Raman,
+*Muhurtha or Electional Astrology*, 1948; OCR, `[VERIFIED]` 9,158 lines, fetched
+with `scripts/fetch_corpus.py --fetch`) and `data/vedic_astro_textbook.pdf`
+(Rao, *Vedic Astrology: An Integrated Approach*). `fetch_corpus.py` reported
+`corpus completeness: 1/10 usable` on this runner, because `pdftotext` is not
+installed and Rao's PDF is therefore `[UNREADABLE]` to it. **Rao's Table 79 was
+read with `pypdf` in layout mode** (PDF pp. 485–486, printed pp. 473–474), so the
+Rao citations below are *table, row and printed page*, not line numbers; the older
+line references elsewhere in this file (15966–16051) come from a `pdftotext`
+extraction this runner cannot reproduce. Raman's line numbers are for the djvu
+text above. **Not present, so every absence below is an absence against these two
+books only:** Raman's *Astrology for Beginners*, Johari, Goodwin, Cheiro, Kumar,
+Vasudev, Rao's *Lessons*, and *Muhurta Chintamani* (#914). `data/matching/` held
+only the Raman file.
+
+#### Griha Pravesh — Raman, "Entering a New House", Ch. XII, L4879–5018 (printed pp. 133–136); Rao Table 79 row "Entering a new house"
+
+| Anga | Raman | Rao Table 79 |
+|---|---|---|
+| Tithi | "1st of the dark fortnight, 2nd, 3rd, 5th, 7th, 10th and 11th and 13th of the bright half" most auspicious (L4971–4976). His general rule rejects the 4th, 6th, 8th, 12th, 14th, full and new moon (L1327–1330; Ch. II L802). | 2, 3, 5, 7, 10, 11, 13, 15 |
+| Nakshatra | "Rohini, Mrigasira, Uttara, Uttarashadha, Chitta and Uttarabhadra are the best… Anuradha and Revati are also permissible. The other constellations should be rejected." (L4978–4991, across a page break; "Uttara" with the two named Uttaras beside it is Uttara Phalguni) | Rohini, Mrigasira, Uttaraphalguni, Chitra, Anuradha, Uttarashadha, Dhanishtha, Satabhisha, Uttarabhadra, Revati |
+| Weekday | Mon, Wed, Thu, Fri auspicious; "Saturday is also recommended by some Muhurtha writers, but there is risk of frequent thefts" (L4993–4996) | Mon, Wed, Thu, Fri |
+| Lagna | fixed sign; common ordinary; movable "scrupulously avoided" unless the navamsa lagna is Taurus; 8th house vacant; malefics in upachayas; rising sign preferably Jupiter's or Venus's (L4998–5008) | Taurus, Gemini, Leo, Virgo, Scorpio, Sagittarius, Aquarius, Pisces; 8th empty, 4th strong |
+| Month and season | Sun in Uttarayana, "Jupiter and Venus are strongly disposed" (L4926–4928); Vaisakha, Jyeshtha, Magha, Phalguna best, Karthika and Margasira neutral (L4971–4974) | — |
+| Other | not in advanced pregnancy (above 6 months) (L5016–5018); own Janma Rasi, Nakshatra or Lagna "highly beneficial" (L5012–5015) | — |
+
+**Raman names no Chaturmas, Kharmas, Dagdha, Panchak or Rahu Kaal rule here** (the
+season rule is Uttarayana and the lunar-month list above). Those are §29.10's
+UNSOURCED items and #1028's job.
+
+**Code vs books (`EVENT_RULES["griha_pravesh"]`, `muhurat.py` ~L693):**
+
+| Rule in code | Verdict | Why |
+|---|---|---|
+| good tithis 2, 3, 5, 7, 10, 11, 13 | **CORRECT** | each is on both lists; Rao's 15 is left out on purpose (Raman rejects full moon) |
+| avoid 4, 8, 14, Amavasya, Purnima | **CORRECT** | Raman L1327–1330 and L802 |
+| avoid Navami (9) | **UNSOURCED** | neither book rejects the 9th for house entry; it is the Rikta group (§29.8), which Rao's table never recommends |
+| good nakshatras Rohini, Mrigashira, Uttara Phalguni, Chitra, Anuradha, Uttara Ashadha, Revati | **CORRECT** | all on both lists |
+| good nakshatra **Hasta** | **WRONG** | in neither book: Raman's "other constellations should be rejected", and Rao's row omits it |
+| **Uttara Bhadrapada** missing from good | **WRONG (omission)** | on both lists; Raman names it among the best |
+| **Dhanishtha, Satabhisha** missing from good | **CONTESTED** | Rao lists both, Raman does not |
+| avoid nakshatras Bharani, Krittika, Ardra, Ashlesha, Magha, Jyeshtha, Mula | **CORRECT** | none is on either list |
+| good days Mon, Wed, Thu, Fri | **CORRECT** | both books |
+| avoid Saturday | **CONTESTED** | Raman: "recommended by some", with a theft risk; Rao does not list it. The code follows the stricter reading |
+| lunar-month list (Vaisakha, Jyeshtha, Magha, Phalguna) | **NOT IMPLEMENTED** | the code has no month-level credit |
+| `check_kharmas` blocks Sun in Dhanu and Meena | **UNSOURCED** | Raman asks only for Uttarayana; Meena falls inside it (#1028) |
+| `check_jupiter_combust` | **CONTESTED** | Raman says Jupiter and Venus "strongly disposed", not "not combust"; the code ignores Venus |
+
+#### Vidyarambh (Aksharabhyasa) — Raman Ch. XI "Commencing Education", L4207–4300 (printed pp. 114–117); Rao Table 79 row "Teaching alphabet"
+
+Raman's index lists "Alphabet (Aksharabhyasa)" and sends "Education, commencing"
+to the same pages (L7499–7504, L7913). He also says the Janma Nakshatra is
+"favourable without exception" for "learning the alphabet" (L1085).
+
+| Anga | Raman | Rao Table 79 |
+|---|---|---|
+| Tithi | highly auspicious: 1st (dark half), 2nd, 3rd, 5th, 6th, 10th, 11th. Avoid "the 4th, 9th, 8th, 14th and New and Full Moon days" (L4243–4247) | 2, 3, 5, 7, 10, 11, 12 |
+| Nakshatra | "most beneficial": Mrigasira, Ardra, Punarvasu, Pushya, Hasta, Chitta, Swati, Sravana, Dhanishta, Satabhisha; Aswini "held by some writers to be one of the best"; Rohini, Uttara, Uttarashadha, Revati neutral; "the remaining ones are to be rejected" (L4233–4240) | Aswini, Punarvasu, Hasta, Chitra, Swati, Anuradha, Sravanam, Revati; in brackets Mrigasira, Ardra, Dhanishtha, Satabhisha |
+| Weekday | "Tuesday and Saturday should invariably be avoided as also Sunday" (L4242–4244); "Wednesday morning would be the best provided the election chart is otherwise well-disposed" (L4309–4311) | Mon, Wed, Thu, Fri |
+| Lagna | "should not be a fixed sign. Common signs are the best and the moveable ones ordinary" (L4249–4251) | Gemini, Virgo, Sagittarius, Pisces; 8th empty; Uttarayana better |
+| Other | forenoon and noon best; malefics in 3rd, 6th, 11th; 8th clean and empty (L4305–4308). **Saraswati Yoga** (Wednesday with Hasta and Gemini or Virgo rising, or Mercury exalted, or Jupiter exalted in lagna) and **Vidya Yoga** (Friday with Pisces rising and Venus in its 27th degree; Jupiter exalted with Cancer rising on Thursday; the Sun in its own hora) (L4265–4291) | — |
+| Subject-specific | Vedas and Sastras: Pushyami, Dhanishta, Sravana, "Let Jupiter be as strong as possible" (L4313–4315); grammar, logic, medicine, music have their own lists (L4317–4355) | — |
+
+**Code vs books (`EVENT_RULES["vidyarambh"]`, `muhurat.py` ~L744):**
+
+| Rule in code | Verdict | Why |
+|---|---|---|
+| good tithis 2, 3, 5, 10, 11 | **CORRECT** | both books |
+| good tithi 12 (Dwadashi) | **CONTESTED** | Rao lists it; Raman's Ch. II list rejects the 12th (L802) and his education tithis stop at the 11th |
+| avoid 4, 8, 9, 14, Amavasya | **CORRECT** | Raman L4245–4247 |
+| **Purnima not avoided** | **WRONG (omission)** | Raman: "New and Full Moon days should be avoided"; Rao's row has no 15 |
+| good nakshatras Mrigashira, Punarvasu, Pushya, Hasta, Chitra, Swati, Shravana | **CORRECT** | Raman's best list (Rao omits Pushya and Mrigasira is bracketed) |
+| good Ashwini | **CORRECT** | Raman "by some"; Rao lists it |
+| good **Rohini, Revati** | **CONTESTED** | Raman calls both neutral, not good; Rao lists Revati only |
+| good **Anuradha** | **CONTESTED** | Rao lists it; Raman rejects it (not in his best or neutral set) |
+| **Ardra in the avoid set** | **WRONG** | Raman names Ardra among the most beneficial and Rao brackets it as acceptable. Contradicted by both books |
+| **Dhanishtha, Satabhisha** missing from good | **WRONG (omission)** | Raman best list; Rao brackets both |
+| avoid Tuesday, Saturday, Sunday | **CORRECT** | Raman L4242–4244 (Rao omits Tue, Sat, Sun from its good list) |
+| good days Mon, Wed, Thu, Fri | **CORRECT** | Rao exact; Raman rejects only Tue, Sat, Sun |
+| **`peak_day: Thursday`** and the page copy "Thursday (Jupiter's day)… peak" | **CONTESTED** | Raman's one explicit best day is Wednesday morning; Thursday appears only in a conditional Vidya Yoga. Nothing held ranks Thursday above Wednesday |
+| `check_jupiter_combust` | **UNSOURCED** | Raman asks for a strong Jupiter only for Vedas and Sastras; he never states a combustion veto for the alphabet |
+
+#### Namkaran (Namakarana) — Raman Ch. VIII "Post-Natal Ceremonies", L2431–2476 (printed pp. 58–59); Rao Table 79 row "Naming a child"
+
+| Anga | Raman | Rao Table 79 |
+|---|---|---|
+| Day | "the 10th, 12th or 16th day of the child's birth. If this is not possible, then an auspicious day must be fixed" (L2431–2435) | — |
+| Tithi | avoid "the 4th, 6th, 8th, [9th], 12th, 14th lunar days and Full Moon and New Moon" (L2442–2444; the fourth figure is OCR-damaged as ",6th") | 2, 3, 5, 7, 10, 11, 13 |
+| Nakshatra | "Anuradha, Punarvasu, Makha, Uttara, Uttarashadha, Uttarabhadra, Satabhisha, Swati, Dhanishta, Sravana, Rohini, Aswini, Mrigasira, Revati, Hasta and Pushya are auspicious" (L2437–2440) | Aswini, Rohini, Mrigasira, Punarvasu, Pushyami, Uttaraphalguni, Hasta, Chitra, Swati, Anuradha, Uttarashadha, Sravanam, Dhanishtha, Satabhisha, Uttarabhadra, Revati |
+| Weekday | "Monday, Wednesday, Thursday and Friday are good. Other week days are not good." (L2446–2447) | Sun, Mon, Wed, Thu, Sat |
+| Lagna | lagna strong, 8th unoccupied; fixed signs preferable, common signs good when occupied by benefics; Jupiter in a kendra or trikona with a malefic in the 11th "very auspicious" (L2447–2449, L2459–2467) | benefic-planet-owned; 8th empty |
+| Name | male name an even number of letters, female an odd number; "appropriate to the ruling star" (L2469–2475) | — |
+| Combustion | **not mentioned** for Namakarana. He waives it for Seemantha (L2424) and Annaprasana (L2511), which are separate ceremonies | — |
+
+**Code vs books (`EVENT_RULES["namkaran"]`, `muhurat.py` ~L714):**
+
+| Rule in code | Verdict | Why |
+|---|---|---|
+| good tithis 2, 3, 5, 7, 10, 11, 13 | **CORRECT** | Rao's row; Raman gives only an avoid list and these are not on it |
+| good tithi **12 (Dwadashi)** | **WRONG** | Raman rejects the 12th; Rao's row omits it |
+| avoid 4, 8, 14, Amavasya | **CORRECT** | Raman |
+| **Purnima and Shashthi (6) not avoided** | **WRONG (omission)** | Raman's list carries the 6th and Full Moon; Rao has neither |
+| avoid Navami (9) | **CONTESTED** | the printed figure is OCR-damaged; read as 9th it agrees, and Rao omits the 9th |
+| **Magha in the avoid set** | **CONTESTED** | Raman lists Makha as auspicious for naming; Rao's row omits it. The two books disagree |
+| good **Chitra** | **CONTESTED** | Rao lists it; Raman does not |
+| **Dhanishtha, Satabhisha** missing from good | **WRONG (omission)** | on both lists |
+| good days Mon, Wed, Thu, Fri; avoid Tue, Sat | **CONTESTED** | Raman agrees exactly; Rao lists Sun and Sat and omits Fri |
+| `check_jupiter_combust: False` | **UNSOURCED** | Raman is silent on combustion for Namakarana; the waiver is by analogy (the code comment says so) |
+| copy: "classically observed on the 11th day after birth per Grihya Sutras" | **WRONG** | Raman gives the 10th, 12th or 16th day; no held book names the 11th or the Grihya Sutras (#1024, #1056 relabel the copy) |
+
+#### The Namkaran first-letter table — Raman, Appendix "Nama Nakshatra, Finding", L6969–7110 (printed pp. 105–106; the OCR headers read "195" and "IOG")
+
+**Raman holds the table.** It is 27 lines of four syllables, one per nakshatra pada,
+introduced as: "Each constellation has been given four letters to be taken as 1st,
+2nd, 3rd, and 4th quarters" (L6969–6975); the nakshatra of a person "is known from
+the first letter of the name" (L7093). The code comment in `muhurat.py` (~L1140)
+that says "no book in the corpus carries this table" is therefore out of date.
+
+Raman's spelling is a different transliteration scheme (`Lay` for *Le*, `Chay` for
+*Che*, `Shaw` for *Sha*, `Th` standing for a dental stop). Compared after allowing
+for that:
+
+| Result | Nakshatras |
+|---|---|
+| **Same syllables** | Ashwini, Bharani, Rohini, Mrigashira, Punarvasu, Pushya, Ashlesha, Magha, Purva Phalguni, Uttara Phalguni, Chitra, Anuradha, Jyeshtha, Uttara Ashadha, Dhanishta, Shatabhisha, Purva Bhadrapada, Revati (18 of 27) |
+| **Different syllables** | **Shravana.** Raman: Ju, Jay, Jo, Gha. Code: Khi, Khu, Khe, Kho. Both sets circulate in practice; the book holds the first |
+| **Different or unreadable** | **Ardra** pada 3 (Raman "Jna", code "Ang"); **Uttara Bhadrapada** (Raman's pada 2 is OCR-garbled as "Syatn", pada 3 reads "Cha" where the code has "Jha") |
+| **Transliteration cannot settle it** | **Krittika** (Raman "Aa, Ec, U, A", code "A, I, U, E"); **Hasta** pada 4 (Raman "Dha", code "Tha"); **Swati** pada 4 (Raman "Tha", code "Ta"); **Vishakha** (Raman "Thi, Thu, Thay, Tho", code "Ti, Tu, Te, To"); **Mula** pada 3–4 (Raman "Ba, Bi", code "Bha, Bhi"); **Purva Ashadha** pada 1 and 3 (Raman "Bu … Bha", code "Bhu … Pha") |
+
+So the table is **SOURCED, not UNSOURCED**, and 18 of 27 rows agree with it.
+Raman's own table carries OCR damage and an unstated scheme, so the code should not
+be changed from the OCR alone: the Shravana row is a real disagreement, and the
+other rows need a printed Devanagari source or a second book before anyone edits.
+
+#### Business start / shop opening — UNSOURCED
+
+Neither book has a rule for **starting a business or opening a shop**. Table 79 has
+no such row. The nearest Raman material is for neighbouring acts:
+
+- **Buying for business** (L4117–4122, printed p. 112): "Thursday, the 10th lunar day and the constellation of Pushyami are the best. Tuesday should be completely rejected. Saturday is passable. Mercury, the 2nd lord and the 2nd house should all be fortified."
+- **Selling for profit** (L4135–4143): "Monday, Wednesday and Thursday are the best. While Friday is unpropitious, Saturday is middling. … Tuesday should be avoided."
+- **Pecuniary gain** (L4160–4167): "let there be Tarabala and Chandrabala and let the ascendant be fortified"; Moon and ascendant in fixed signs; Jupiter or Venus in an angle.
+- **Learning a trade** (L4361–4400): the planet that rules the vocation well placed; "Tuesday must be avoided".
+
+The code's business lists are therefore **UNSOURCED** — good tithis, good and avoid
+nakshatras, `good_days` including **Sunday**, `peak_day: Wednesday`, and the Kharmas
+and Mercury-combustion checks. Raman's closest weekday evidence points at Thursday
+for buying and Monday, Wednesday, Thursday for selling, and says nothing for Sunday.
+Tuesday is rejected in every one of these passages that names weekdays (buying,
+selling, learning a trade), which is the one point the code shares. Whether to keep an unsourced business finder, source it elsewhere or label
+it as this finder's convention is a product decision; #1024 and #1056 carry the
+disclosure.
+
+#### Issues filed from this section
+
+The WRONG and CONTESTED rows above are filed per event, each linked to #1017:
+see the list on #1027. Nothing here is applied.
+
 ---
 
-*Section 29 last updated: 2026-08-26. Books present in `data/` when written:
+*Section 29 last updated: 2026-11-15 (§29.13, #1027); the rest 2026-08-26. Books present in `data/` when written:
 `vedic_astro_textbook.pdf`, `book1-for-CD.pdf`,
 `Astrology-e-book-compressed.pdf`, and
 `matching/raman-muhurtha-1948-electional-astrology_djvu.txt`, which appeared
