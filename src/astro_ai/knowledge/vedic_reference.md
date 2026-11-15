@@ -2846,10 +2846,18 @@ gate and QA.
 **Added 2026-11-15 for #1027** (parent #1017). `muhurat.py`'s `EVENT_RULES` carries
 tithi, nakshatra and weekday lists for four events, and nothing in `knowledge/`
 stated them. This section extracts what the two muhurta books say for each event
-and records, rule by rule, whether the code agrees. **It changes no behaviour.**
-The mismatches are filed as four per-event issues, #1059 to #1062 (listed at the end);
-a rule change needs the fix loop, a verification gate and QA. Code is cited by symbol,
-not line number, because line numbers in `muhurat.py` move with every edit.
+and records, rule by rule, whether the code agrees. **This section changes no
+behaviour.** The mismatches were filed as four per-event issues, #1059 to #1062
+(listed at the end); a rule change needs the fix loop, a verification gate and QA.
+Code is cited by symbol, not line number, because line numbers in `muhurat.py` move
+with every edit.
+
+**Which code the verdicts describe.** The comparison was made against `muhurat.py` at
+`87e6b3c`. Since then #1064 (`694ea28`) changed `EVENT_RULES["griha_pravesh"]` and
+`EVENT_RULES["vidyarambh"]` to follow these two books, so the rows it fixed below read
+**FIXED by #1064**, with the original verdict kept in the row so the reasoning stays
+checkable. Every other row still describes the code as it stands. `EVENT_RULES["namkaran"]`,
+the business entry and `_NAMKARAN_LETTERS` were not touched by #1064.
 
 **Books present when this was written: 2 muhurta books of the corpus.**
 `data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt` (Raman,
@@ -2906,8 +2914,8 @@ elsewhere (L7318) and is not part of the house-entry passage.
 | avoid 4, 8, 14, Amavasya, Purnima | **CORRECT** | Raman L1327–1330 and L802 |
 | avoid Navami (9) | **UNSOURCED** | neither book rejects the 9th for house entry; it is the Rikta group (§29.8), which Rao's table never recommends |
 | good nakshatras Rohini, Mrigashira, Uttara Phalguni, Chitra, Anuradha, Uttara Ashadha, Revati | **CORRECT** | all on both lists |
-| good nakshatra **Hasta** | **WRONG** | in neither book: Raman's "other constellations should be rejected", and Rao's row omits it |
-| **Uttara Bhadrapada** missing from good | **WRONG (omission)** | on both lists; Raman names it among the best |
+| good nakshatra **Hasta** (as of `87e6b3c`) | **WRONG, FIXED by #1064** | in neither book: Raman's "other constellations should be rejected", and Rao's row omits it. Removed from `good_nakshatras`; it was not added to the avoid set, because neither book names Hasta as a bad one for this event, it is simply not on their lists |
+| **Uttara Bhadrapada** missing from good (as of `87e6b3c`) | **WRONG (omission), FIXED by #1064** | on both lists; Raman names it among the best. Now in `good_nakshatras` |
 | **Dhanishtha, Satabhisha** missing from good | **CONTESTED** | Rao lists both, Raman does not |
 | avoid nakshatras Bharani, Krittika, Ardra, Ashlesha, Magha, Jyeshtha, Mula | **CORRECT** | none is on either list |
 | good days Mon, Wed, Thu, Fri | **CORRECT** | both books |
@@ -2943,16 +2951,16 @@ Rao's row is specific to the alphabet. Raman also says the Janma Nakshatra is
 | **Shashthi (6) and Saptami (7) missing from good** | **CONTESTED (omission)** | Raman calls the 6th "highly auspicious" for commencing education (L4245); Rao lists the 7th. Each is on one book only |
 | good tithi 12 (Dwadashi) | **CONTESTED** | Rao lists it; Raman's Ch. II list rejects the 12th (L802) and his education tithis stop at the 11th |
 | avoid 4, 8, 9, 14, Amavasya | **CORRECT** | Raman L4245–4247 |
-| **Purnima not avoided** | **WRONG (omission)** | Raman: "New and Full Moon days should be avoided"; Rao's row has no 15 |
+| **Purnima not avoided** (as of `87e6b3c`) | **WRONG (omission), FIXED by #1064** | Raman: "New and Full Moon days should be avoided"; Rao's row has no 15. Now in `avoid_tithis` |
 | good nakshatras Mrigashira, Punarvasu, Pushya, Hasta, Chitra, Swati, Shravana | **CORRECT** | Raman's best list (Rao omits Pushya and Mrigasira is bracketed) |
 | good Ashwini | **CORRECT** | Raman "by some"; Rao lists it |
 | good **Rohini, Revati** | **CONTESTED** | Raman calls both neutral, not good; Rao lists Revati only |
 | good **Anuradha** | **CONTESTED** | Rao lists it; Raman rejects it (not in his best or neutral set) |
-| **Ardra in the avoid set** | **WRONG** | Raman names Ardra among the most beneficial and Rao brackets it as acceptable. Contradicted by both books |
-| **Dhanishtha, Satabhisha** missing from good | **WRONG (omission)** | Raman best list; Rao brackets both |
+| **Ardra in the avoid set** (as of `87e6b3c`) | **WRONG, FIXED by #1064** | Raman names Ardra among the most beneficial and Rao brackets it as acceptable. Contradicted by both books; now in `good_nakshatras` and out of the avoid set |
+| **Dhanishtha, Satabhisha** missing from good (as of `87e6b3c`) | **WRONG (omission), FIXED by #1064** | Raman best list; Rao brackets both. Now in `good_nakshatras` |
 | avoid Tuesday, Saturday, Sunday | **CORRECT** | Raman L4242–4244 (Rao omits Tue, Sat, Sun from its good list) |
 | good days Mon, Wed, Thu, Fri | **CORRECT** | Rao exact; Raman rejects only Tue, Sat, Sun |
-| **`peak_day: Thursday`** and the page copy "Thursday (Jupiter's day)… peak" | **CONTESTED** | Raman's one explicit best day is Wednesday morning; Thursday appears only in a conditional Vidya Yoga. Nothing held ranks Thursday above Wednesday |
+| **`peak_day: Thursday`** and the page copy "Thursday (Jupiter's day)… peak" | **CONTESTED** | Raman's one explicit best day is Wednesday morning; Thursday appears only in a conditional Vidya Yoga. Nothing held ranks Thursday above Wednesday. #1064 kept Thursday and relabelled the code comment as "this finder's convention", not a sourced rule; the verdict stays CONTESTED because the page copy still reads "Thursday peak-day" |
 | `check_jupiter_combust` | **UNSOURCED** | Raman asks for a strong Jupiter only for Vedas and Sastras; he never states a combustion veto for the alphabet |
 
 #### Namkaran (Namakarana) — Raman Ch. VIII "Post-Natal Ceremonies", L2431–2476 (printed pp. 58–59); Rao Table 79 row "Naming a child"
@@ -3031,9 +3039,12 @@ disclosure.
 
 #### Issues filed from this section
 
-The WRONG and CONTESTED rows above are filed as one issue per event, each linked to
+The WRONG and CONTESTED rows above were filed as one issue per event, each linked to
 #1017: #1059 (Vidyarambh), #1060 (Namkaran), #1061 (Griha Pravesh) and #1062 (the
-first-letter table). Nothing here is applied.
+first-letter table). **#1059 and #1061 are closed:** #1064 applied their WRONG rows
+(Hasta, Uttara Bhadrapada, Ardra, Dhanishtha, Satabhisha, Purnima), and the CONTESTED
+rows it left alone stay as the rows above state them. **#1060 (Namkaran) and #1062 (the
+letter table) are open and nothing in them is applied.** This section itself edits no rule.
 
 ---
 
