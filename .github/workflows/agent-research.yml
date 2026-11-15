@@ -20,6 +20,9 @@ on:
       domain:
         description: "astrology | numerology | both (default both)"
         required: false
+      issues:
+        description: "optional: comma-separated issue numbers to work instead of the built queue"
+        required: false
 
 concurrency:
   group: agent-research
@@ -53,9 +56,63 @@ jobs:
 
       - run: uv sync --all-groups
 
+      # #1030: the books are FETCHED, not committed. The repo is public, so no
+      # book may enter git; data/ stays gitignored. The free, author-distributed
+      # ones download from their URLs; everything else is read from the private
+      # bucket's corpus/ prefix, which the owner uploads once. fetch_corpus.py
+      # verifies each by its recorded line count and exits 1 only for a WRONG
+      # file, so a missing book never fails the run -- the next step reports it.
+      - name: Download the free books
+        # pipefail: the default `bash -e` would let `| tail` hide fetch_corpus's
+        # exit 1 for a WRONG (different-edition) book (QA on #1063).
+        run: |
+          set -o pipefail
+          uv run python scripts/fetch_corpus.py --fetch | tail -3
+
+      # Read-only service account (rashifal-generate.yml: "that service account
+      # is READ-ONLY today"). Credentials are NOT exported to the job env, are
+      # handed only to the one step that needs them, and are deleted before the
+      # agent runs, so nothing the agent executes can reach the bucket.
+      - id: gcp
+        uses: google-github-actions/auth@v2
+        continue-on-error: true
+        with:
+          workload_identity_provider: projects/89117619584/locations/global/workloadIdentityPools/github/providers/astro-ai
+          service_account: agent-analytics@bhagya-500701.iam.gserviceaccount.com
+          export_environment_variables: false
+
+      - name: Pull the remaining books from the private bucket
+        if: steps.gcp.outcome == 'success'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.gcp.outputs.credentials_file_path }}
+          BHAGYA_STORAGE_BUCKET: shubhagya-cache-us
+        run: uv run python scripts/fetch_corpus.py --from-bucket | grep -E "bucket:|completeness" || true
+
+      - name: Remove the bucket credentials before any agent runs
+        if: always()
+        env:
+          CREDS: ${{ steps.gcp.outputs.credentials_file_path }}
+        run: |
+          [ -n "$CREDS" ] && rm -f "$CREDS"
+          rm -f gha-creds-*.json
+          ls gha-creds-*.json 2>/dev/null && { echo "::error::credentials still on disk"; exit 1; } || true
+
       # data/ is gitignored, so a CI checkout holds ONE of the eight registered
       # books. An absence measured against a partial corpus is worthless, which
       # is why the agent is told to state which books it actually had.
+      # #1030: WHAT to look up in the books is read from the issues each run,
+      # not typed into this file. An issue joins the queue by carrying
+      # `skill:knowledge-integrator` or by its Evidence Block saying
+      # `corpus: [UNSOURCED]`; see scripts/research_queue.py for the order.
+      - name: Build the research queue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ONLY: ${{ inputs.issues }}
+        run: |
+          uv run python scripts/research_queue.py --repo "${{ github.repository }}" --only "$ONLY" \
+            | tee /tmp/research-queue.md
+          cat /tmp/research-queue.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Which books are present
         run: |
           {
@@ -101,8 +158,16 @@ jobs:
             - numerology.py uses Johari's all-digits reduction (see its header),
               not Goodwin's. Goodwin stays contrast-only.
 
-            Standing queue: #177/#178 (Ashtakoota has no source in the repo at
-            all), #175, #209, #211, #219, #163, #201, #200, #191, #230.
+            YOUR WORK LIST IS /tmp/research-queue.md, built this run from open
+            issues (labelled skill:knowledge-integrator, or corpus: [UNSOURCED]).
+            Work it top-down. For each issue: extract what the books say into
+            knowledge/*.md with line ranges, or state the absence naming the
+            books present, and COMMENT the result on that issue. The code fixes
+            are Engineering's. When you find a new rule that needs a source, file
+            an issue with corpus: [UNSOURCED] -- that is how the next run gets it.
+            Only if the list is empty, use the standing queue below.
+            Standing queue (fallback): #177/#178 (Ashtakoota has no source in the
+            repo at all), #175, #209, #211, #219, #163, #201, #200, #191, #230.
 
             Classify every finding WRONG / UNSOURCED / CONTESTED / CORRECT.
             Cite as `file §section ← data/<book> L<start>-<end>`. A citation with

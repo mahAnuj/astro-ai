@@ -100,8 +100,32 @@ arrived yet. State the exact window on every number you report.
    Report the misses as plainly as the hits. A ship that moved nothing is the most useful thing you
    will produce all cycle, because it stops the same idea being filed again next quarter.
 
-5. **Funnel.** Where kundli, matching and numerology users drop out. Landing → form → result →
+5. **Funnel.** Where kundli, matching and numerology users drop out (#1070 instruments them). Landing → form → result →
    second page. A step losing most of its traffic outranks a keyword opportunity.
+
+## Levers — report every one, every run (owner, 2026-11-15)
+
+The owner's words: *"the objective is to increase the user-base on the website, the things I am
+asking manually are important levers"*. On 2026-11-15 they had to ask, by hand, for each item
+below. None of them was in this file, so no run produced one. A lever you cannot measure is
+still reported: as a gap, with the one measurement that would settle it.
+
+| # | Lever | Read from | Report |
+|---|---|---|---|
+| 1 | **Growth** | `ga4-daily.json`, `gsc-daily.json`, `gsc-trend-page.json`, `ga4-anomalies.json`, `gsc-discover.json` | users, sessions, impressions and clicks against the previous window; which page groups drive the change; seasonal vs structural. **Every spike day gets its source named** from `ga4-anomalies.json` (source, landing, browser, engagement), checked against Discover and search clicks for that date. A spike of automated traffic is reported as such, never as growth |
+| 2 | **Where time is spent** | `verify-first.json`, `ga4.json` (`engaged_sessions`, `engagement_seconds`) | top pages by engaged sessions and average engagement time; the tool funnels you can see |
+| 3 | **Errors** | `llm-usage.json`, `gh run list --workflow verify-production.yml`, open issues | every route with errors or fallbacks, with counts, and whether an issue tracks it |
+| 4 | **Search demand** | `gsc-all.json`, `gsc-trend-query.json` (partial: state its coverage) | themes with impressions at 5–20 or low CTR, and queries with **no page**. Name the existing page if there is one; never propose a page that would cannibalise one that ranks |
+| 5 | **Content opportunities** | `festivals.py` / `festival_registry.py` for every date | time-bound demand in the next 6–8 weeks, and annual pages whose year is ending |
+| 6 | **Index status** | `index-status.json` when it exists (#1065) | pages not indexed, or changed after Google's last crawl, ranked by value |
+| 7 | **Measurement gaps** | your own last three `measurements/<date>.md` reports | anything you could not measure this run. **If the same gap is in all three and no open issue covers it, file one issue.** A gap repeated every night and never filed is how engagement time went unmeasured for weeks |
+
+Write levers 4 and 5 under the headings **"Search demand"** and **"Content opportunities"**.
+`agent-discover` reads them from `measurements/latest.md` as its inbox. You still do not propose
+features: you name the demand and the existing page, and product-manager decides what to build.
+
+`verify-first.json` (`scripts/busiest_pages.py`) is also read by the Research team's queue, so the
+busiest pages get re-audited automatically. You never need to ask for it.
 
 ## Confounds you are required to name
 

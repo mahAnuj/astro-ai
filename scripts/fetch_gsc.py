@@ -225,6 +225,27 @@ def page_daily(args, start: str, end: str, url: str, bearer: str) -> int:
     return 0
 
 
+def discover(url: str, bearer: str, start: str, end: str) -> int:
+    """Discover traffic by date, and its top pages. A property that has never
+    appeared in Discover answers with no rows: that is reported as zero, which
+    is a measurement, not an error."""
+    by_date = post(url, {"startDate": start, "endDate": end, "type": "discover",
+                         "dimensions": ["date"], "rowLimit": 400}, bearer)
+    by_page = post(url, {"startDate": start, "endDate": end, "type": "discover",
+                         "dimensions": ["page"], "rowLimit": 50}, bearer)
+    days = [{"date": r["keys"][0], "clicks": r.get("clicks", 0),
+             "impressions": r.get("impressions", 0)} for r in by_date.get("rows", [])]
+    pages = [{"page": r["keys"][0], "clicks": r.get("clicks", 0),
+              "impressions": r.get("impressions", 0)} for r in by_page.get("rows", [])]
+    print(json.dumps({"source": "gsc", "type": "discover", "window": [start, end],
+                      "note": "Discover is not in the search report; GA4 counts its visits "
+                              "as google / organic",
+                      "total_clicks": sum(d["clicks"] for d in days),
+                      "total_impressions": sum(d["impressions"] for d in days),
+                      "days": days, "top_pages": pages}, indent=2))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=28)
@@ -245,7 +266,15 @@ def main() -> int:
     ap.add_argument("--pages", default=None,
                     help="with --page-daily: comma-separated URL substrings to keep, "
                          "e.g. /learn/sade-sati/,/festivals")
+    ap.add_argument("--discover", action="store_true",
+                    help="Google Discover clicks/impressions per day (a separate GSC report; "
+                         "GA4 labels this traffic google/organic, so a GA4 spike with flat "
+                         "search clicks is usually here)")
     args = ap.parse_args()
+    if args.discover:
+        start, end = window(args.days)
+        return discover(API.format(site=urllib.parse.quote(args.site, safe="")),
+                        token(), start, end)
     if args.page_daily and (args.trend or args.band or args.by is not None):
         sys.exit("--page-daily is its own page x date series; it cannot be combined "
                  "with --trend, --band or --by")
