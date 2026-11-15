@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block title %}Muhurat Finder — Vivah, Griha Pravesh, Namkaran Auspicious Dates{% endblock %}
-{% block meta_description %}Free Muhurat Finder for Vivah (wedding), Griha Pravesh (house-warming), Namkaran (baby naming), Vidyarambh (education-start) and Business openings. Applies classical Panchang rules — tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Bhadra, Nitya Yogas, Choghadiya, Amrit Siddhi and Sarvartha Siddhi boosters. Bride+groom pair scoring for Vivah, first-letter Nakshatra table for Namkaran.{% endblock %}
+{% block meta_description %}Free Muhurat Finder for Vivah (wedding), Griha Pravesh (house-warming), Namkaran (baby naming), Vidyarambh (education-start) and Business openings. Checks tithi, nakshatra, Panchak, Bhadra and the Nitya Yogas as B.V. Raman's Muhurtha gives them, and also applies widely followed conventions it labels as its own: Chaturmas, Kharmas, Dagdha, eclipse days, Choghadiya windows, Amrit Siddhi and Sarvartha Siddhi boosters. Bride+groom pair scoring for Vivah, first-letter Nakshatra table for Namkaran.{% endblock %}
 
 {% block content %}
 {% set active_page = "" %}
 {% set breadcrumbs = [('Home', '/'), ('Muhurat Finder', '/muhurat')] %}
 {% include "_breadcrumb_schema.html" %}
 {% set tool_name = "Muhurat Finder" %}
-{% set tool_desc = "Free Muhurat Finder covering Vivah, Griha Pravesh, Namkaran, Vidyarambh and Business dates. Applies classical Panchang rules — tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana, Nitya Yogas (Atiganda, Shula, Ganda, Vyatipata and Vaidhriti avoided), Choghadiya sub-day windows, Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga boosters, plus combustion checks for Guru and Shukra. Bride+groom two-chart scoring for Vivah; baby-first-letter Nakshatra table for Namkaran." %}
+{% set tool_desc = "Free Muhurat Finder covering Vivah, Griha Pravesh, Namkaran, Vidyarambh and Business dates. Applies tithi, nakshatra, Panchak, Bhadra Karana and Nitya Yoga rules (Atiganda, Shula, Ganda, Vyatipata and Vaidhriti avoided) as B.V. Raman's Muhurtha gives them. Also applies widely followed conventions this finder labels as its own, not rules from the books it holds: Chaturmas, Kharmas, Dagdha, Adhik Maas, eclipse days, Choghadiya sub-day windows, Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga boosters, and Guru and Shukra combustion as a Vivah veto. Bride+groom two-chart scoring for Vivah; baby-first-letter Nakshatra table for Namkaran." %}
 {% set tool_url = "/muhurat" %}
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
@@ -18,7 +18,7 @@
   <header class="text-center">
     <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink mb-3">Muhurat Finder</h1>
     <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
-      Personalised auspicious dates using classical Panchang rules — tithi, nakshatra, weekday, Panchak, Chaturmas, and karaka-planet combustion. 5 event types. Abujha Muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya) auto-detected. Free, no sign-up.
+      Personalised auspicious dates from tithi, nakshatra, weekday, Panchak and karaka-planet combustion, plus widely followed conventions such as Chaturmas that this page labels as its own. 5 event types. Abujha Muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya) auto-detected. Free, no sign-up.
     </p>
   </header>
 
@@ -193,7 +193,7 @@
       <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Namkaran first-letter suggestion</div>
       <div class="flex items-baseline gap-3 mb-2">
         <span class="font-marcellus text-4xl text-bhagya-sindoor">{{ child_first_letter }}</span>
-        <span class="text-sm text-bhagya-muted">is the classical starting syllable</span>
+        <span class="text-sm text-bhagya-muted">is the traditional starting syllable</span>
       </div>
       <p class="text-sm text-bhagya-ink-soft">Your child was born under nakshatra <strong>{{ child_nakshatra }}</strong>, pada <strong>{{ child_pada }}</strong>. Per Muhurta Chintamani, that pada's assigned syllable is <strong>{{ child_first_letter }}</strong>. Some families prefer to choose from the full nakshatra rather than pada-strict — the four syllables for {{ child_nakshatra }} are: <strong>{{ child_all_letters | join(' · ') }}</strong>.</p>
       <p class="text-xs text-bhagya-muted mt-2 italic">Traditional practice: name should start with this syllable, or contain it as the first phoneme. Modern practice often uses it as inspiration rather than a hard rule.</p>
@@ -213,7 +213,7 @@
 
     {% if not good_candidates %}
     <div class="p-4 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-900">
-      No auspicious dates found in this window — every day was classically excluded (usually by Chaturmas, Kharmas, Panchak, Dagdha, or eclipse rules). Try a longer range or move the start date past the next classical restriction period. Details in the "restricted dates" section below.
+      No auspicious dates found in this window — every day was excluded (usually by Chaturmas, Kharmas, Panchak, Dagdha, or eclipse rules). Try a longer range or move the start date past the next restriction period. Details in the "restricted dates" section below.
     </div>
     {% else %}
     <table class="w-full text-sm mu-cards">
@@ -221,8 +221,8 @@
         <tr class="text-left text-xs uppercase text-bhagya-muted border-b border-bhagya-line">
           <th class="pb-1.5 pr-3">Date</th>
           <th class="pb-1.5 pr-3">Day</th>
-          <th class="pb-1.5 pr-3">Tithi</th>
-          <th class="pb-1.5 pr-3">Nakshatra</th>
+          <th class="pb-1.5 pr-3" title="Tithi, nakshatra and yoga are all read at {{ '%02d:00' % muhurta_instant_hour() }} local time on the date">Tithi</th>
+          <th class="pb-1.5 pr-3" title="Tithi, nakshatra and yoga are all read at {{ '%02d:00' % muhurta_instant_hour() }} local time on the date">Nakshatra</th>
           <th class="pb-1.5 pr-3">Rating</th>
           {% if personal_active %}<th class="pb-1.5 pr-3">Personal</th>{% endif %}
           {% if couple_active %}<th class="pb-1.5 pr-3">Couple</th>{% endif %}
@@ -316,6 +316,7 @@
             {% if c.abhijit_muhurta or c.rahu_kaal %}
             <div title="Abhijit Muhurta — the 8th of 15 equal parts of daylight, around solar noon. Its length follows the day: ~48 min on a 12-hour day, but 16 min to 84 min across a year at high latitude."><span class="text-emerald-800">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
             <div title="Rahu Kaal — avoid for launches"><span class="text-rose-600">✗</span> Rahu Kaal {{ c.rahu_kaal }}</div>
+            {% for note in c.abhijit_overlaps %}<div class="text-amber-800 text-xs whitespace-normal max-w-[220px] leading-tight">{{ note }}</div>{% endfor %}
             {%- else %}
             <div class="text-amber-800 text-xs whitespace-normal max-w-[220px] leading-tight"
                  title="Abhijit, Rahu Kaal and Choghadiya are each a fixed fraction of the sunrise-to-sunset period">
@@ -352,7 +353,10 @@
       </tbody>
     </table>
     <p class="text-xs text-bhagya-muted mt-2 italic">
-      <span class="text-emerald-800">✓</span> Abhijit Muhurta = the most auspicious window, a fifteenth of daylight around solar noon. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Days under Atiganda, Shula, Ganda, Vyatipata or Vaidhriti are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present (universal auspiciousness).
+      <span class="text-emerald-800">✓</span> Abhijit Muhurta = the most auspicious window, a fifteenth of daylight around solar noon. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Days under Atiganda, Shula, Ganda, Vyatipata or Vaidhriti are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present. These weekday-nakshatra booster tables are this finder&rsquo;s own convention: Raman&rsquo;s <em>Muhurtha</em> has a similar Siddha Yoga list, but these are not the same tables.
+    </p>
+    <p class="text-xs text-bhagya-muted mt-1 italic">
+      One verdict, one moment: tithi, nakshatra, yoga, Panchak, Dagdha and combustion are all read at {{ '%02d:00' % muhurta_instant_hour() }} local time on the date, so each rating judges stars and tithis that hold together. The <a href="/panchang" class="underline">Panchang</a> page names a day by its tithi at sunrise, so the two can show a different tithi or yoga for the same date when one changes in between. Where Abhijit falls inside Rahu Kaal or Bhadra the row says so and the minutes are shown as they are; this finder does not rank one window above the other.
     </p>
     {% endif %}
 
@@ -385,10 +389,12 @@
     {% endif %}
 
     <div class="text-xs text-bhagya-muted mt-4 space-y-1">
-      <p><strong>Classical criteria applied:</strong> tithi + nakshatra + weekday scoring; hard exclusions for Panchak, Chaturmas (Devshayani → Devuthani), Kharmas / Malmas (Sun in Sagittarius/Pisces), Adhik Maas (computed from the ephemeris for each date searched, not read from a fixed table), Dagdha tithi-weekday combinations, the Atiganda, Shula, Ganda, Vyatipata and Vaidhriti nitya-yogas, Guru + Shukra + Budh combustion per event karaka, and eclipse days (±1 day universal blocker). Bhadra / Vishti Karana sub-day windows are computed and shown on each day so you can plan the ceremony around them.</p>
+      <p><strong>Criteria applied:</strong> tithi + nakshatra + weekday scoring; hard exclusions for Panchak, the Atiganda, Shula, Ganda, Vyatipata and Vaidhriti nitya-yogas. Panchak and those five yogas are from B.V. Raman&rsquo;s <em>Muhurtha</em>. Bhadra / Vishti Karana sub-day windows are computed and shown on each day so you can plan the ceremony around them; Raman&rsquo;s <em>Muhurtha</em> is the held source for Vishti. Combustion checks (orbs below) are also applied; that they rule a date out is this finder&rsquo;s own convention, said there.</p>
+      {#- #1024: the rules below are NOT in the books this site holds (knowledge/vedic_reference.md 29.10: chaturmas, kharmas, dagdha, choghadiya absent; Siddha Yoga tables differ; Ravi Yoga and the eclipse day rule unsourced). Said as the finder's own conventions, in the style of the Tara "both partners" and Business Budh disclosures; never as classical. -#}
+      <p><strong>Widely followed conventions this finder applies:</strong> these are not rules from the books this site holds, and are this finder&rsquo;s own choices. Hard exclusions for Chaturmas (Devshayani → Devuthani), Kharmas / Malmas (Sun in Sagittarius/Pisces), Adhik Maas (computed from the ephemeris for each date searched, not read from a fixed table), Dagdha tithi-weekday combinations, and eclipse days (±1 day blocker); the Choghadiya sub-day windows; the Amrit Siddhi, Sarvartha Siddhi and Ravi Yoga boosters; and the Abujha days that override normal scoring.</p>
       {#- #219: states only what muhurat.py does and the orbs knowledge/grahas.md 12.1 holds
          (Raman, Muhurtha, Appendix). No claim about any other text's method. -#}
-      <p><strong>Combustion (asta):</strong> this finder calls a planet combust when, at noon on the date, it is within a fixed number of degrees of the Sun: Guru 11°, Shukra 10° (9° when retrograde), Budh 14° (13° when retrograde). Those orbs are from B.V. Raman's <em>Muhurtha</em>. A combust planet marks the date "avoid" outright, but only for the events that check it: Guru for Vivah, Griha Pravesh and Vidyarambh; Shukra for Vivah; Budh for Business. Namkaran checks none of them. The finder does not count days around a planet's rising or setting in the sky, and it knows only "combust" or "not combust". For Business, Budh combustion blocks every weekday, not only Wednesday; that is this finder's own extension, not a rule we source.</p>
+      <p><strong>Combustion (asta):</strong> this finder calls a planet combust when, at noon on the date, it is within a fixed number of degrees of the Sun: Guru 11°, Shukra 10° (9° when retrograde), Budh 14° (13° when retrograde). Those orbs are from B.V. Raman's <em>Muhurtha</em>. Applying Guru and Shukra combustion as a hard "avoid" for Vivah is this finder's own convention: Raman's wedding criteria and Rao's Table 79 wedding guidelines do not list combustion (Raman applies Guru and Shukra combustion to other ceremonies, such as Chowlam, but not to marriage). A combust planet marks the date "avoid" outright, but only for the events that check it: Guru for Vivah, Griha Pravesh and Vidyarambh; Shukra for Vivah; Budh for Business. Namkaran checks none of them. The finder does not count days around a planet's rising or setting in the sky, and it knows only "combust" or "not combust". For Business, Budh combustion blocks every weekday, not only Wednesday; that is this finder's own extension, not a rule we source.</p>
       {% if personal_active %}
       <p><strong>Personal matching:</strong> Tara Bala counts transit-day nakshatra from your natal Moon nakshatra (mod 9); positions Sampat, Kshema, Sadhana, Mitra, Parama Mitra are auspicious; Vipat, Pratyak, Naidhana are avoided. Chandra Bala checks the transit Moon's house from your natal Moon (see below). Sade Sati and Rahu/Ketu Mahadasha surface as chart-level cautions above.</p>
       {% endif %}
@@ -423,7 +429,7 @@
     <div class="space-y-3">
       <a href="/learn/vivah-muhurat-2027/" class="block p-3 bg-white rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">
         <div class="font-semibold text-bhagya-sindoor text-sm">Vivah Muhurat 2027 guide →</div>
-        <div class="text-xs text-bhagya-muted">The classical rules behind wedding dates</div>
+        <div class="text-xs text-bhagya-muted">The rules behind wedding dates, and where each comes from</div>
       </a>
       <a href="/matching" class="block p-3 bg-white rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">
         <div class="font-semibold text-bhagya-sindoor text-sm">Kundali Matching (Ashtakoot) →</div>
