@@ -539,7 +539,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
             "No eclipse days (day of or ±1 day)",
         ],
         "related_articles": [
-            ("/learn/vivah-muhurat-2027/", "Vivah Muhurat 2027 — full classical guide"),
+            ("/learn/vivah-muhurat-2027/", "Vivah Muhurat 2027 — full guide"),
             ("/learn/kundali-matching-ashtakoot-guna-milan/", "Kundali Matching (Ashtakoot) — check compatibility"),
             ("/learn/manglik-dosh/", "Manglik Dosh — verify before choosing a date"),
             ("/learn/marriage-timing-kundli/", "Marriage timing in your Kundli"),
@@ -572,7 +572,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         ],
         "related_articles": [
             ("/learn/griha-pravesh-muhurat-2026-2027/", "Griha Pravesh Muhurat 2026-27 — full guide"),
-            ("/learn/vivah-muhurat-2027/", "Vivah Muhurat 2027 — sister classical guide"),
+            ("/learn/vivah-muhurat-2027/", "Vivah Muhurat 2027 — sister guide"),
         ],
         "related_tools": [
             ("/kundli", "Free Janma Kundli", "Check personal factors for the chosen date"),
