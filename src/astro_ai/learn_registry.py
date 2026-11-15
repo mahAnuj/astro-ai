@@ -618,19 +618,19 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="sade-sati",
         title="Sade Sati: The 7.5-Year Saturn Lesson, Without the Fear",
-        summary="Saturn's transit across your Janma Rashi over 7.5 years — the most-feared transit in Vedic astrology and the most misunderstood. The three phases, what each really teaches, classical remedies, and why most lives are better on the other side.",
+        summary="Saturn's transit across your Janma Rashi over 7.5 years — the most-feared transit in Vedic astrology and the most misunderstood. The three phases, what each really teaches, remedies, and why most lives are better on the other side.",
         # #685, written 2026-11-03: these two strings name the signs in Sade Sati AT THIS
         # MOMENT, so unlike the evergreen pair they replaced they have a shelf life. They
         # become FALSE when Saturn enters Aries on 2027-06-03 (sidereal/Lahiri, per FAQ #1
         # below and the template's "currently in Pisces" paragraph): from then Aries is the
         # peak, Pisces moves to setting and Aquarius drops out. Saturn then slips back into
-        # Pisces ~2027-10-21 and re-enters Aries ~2028-02-24 (FAQ #1), so it flips again.
+        # Pisces ~2027-10-20 and re-enters Aries ~2028-02-23 (FAQ #1), so it flips again.
         # Whoever touches this page on or after 2027-06-03 must revisit both strings, FAQ #1
         # and the template's "currently in Pisces" paragraph together.
         # Phase names are position words (setting/peak/rising), never Arambha/Madhya/Uttara:
         # SOURCES.md:530 records those as UNSOURCED. Pinned by tests/test_learn_sade_sati_seo.py.
         seo_title="Sade Sati Now: Aquarius, Pisces and Aries Moon Signs",
-        seo_description="Sade Sati now: Aquarius Moons are in the setting phase, Pisces the peak, Aries the rising phase. What each phase teaches, plus classical remedies.",
+        seo_description="Sade Sati now: Aquarius Moons are in the setting phase, Pisces the peak, Aries the rising phase. What each phase teaches, plus remedies.",
         category="Doshas",
         hero_image="/static/learn/sade-sati/hero.svg",
         read_time="8 min",
@@ -646,11 +646,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Is Sade Sati always bad?",
-                "a": "No. People with strong natal Saturn (in own sign, exalted, or in a kendra) often experience Sade Sati as a period of major achievement — slow and hard-won, but real. The transit's difficulty depends entirely on how Saturn sits in your natal chart and how willingly you accept its discipline.",
+                "a": "No. The classical tradition singles out one case: if Saturn is the lagna lord (Capricorn or Aquarius rising) or the yogakaraka (Taurus or Libra rising) in your chart, it is said to hardly trouble the person even during a Sade Sati, and many people in that position experience it as a period of achievement — slow and hard-won, but real. How willingly you accept Saturn's discipline matters too.",
             },
             {
                 "q": "How many times does Sade Sati happen in a lifetime?",
-                "a": "2 to 3 times — typically around ages 27-35 (first), 56-64 (second), and 86-94 (third, if you live to see it). Saturn takes ~30 years to circle the zodiac, so the cycle repeats roughly every 29-30 years.",
+                "a": "2 to 3 times. The first begins somewhere between birth and about age 23, depending on how far Saturn sits from your Moon sign when you are born — Saturn needs at most about 23 years to reach the sign before your Moon, so it cannot start later — and for some people it is already under way at birth. Saturn takes ~30 years to circle the zodiac, so each later one begins roughly 29-30 years after the previous.",
             },
             {
                 "q": "What's the single best remedy for Sade Sati?",
@@ -664,7 +664,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Peak phase (~2.5y in 1st) → health, identity, self-doubt themes\n"
             "• Setting phase (~2.5y in 2nd) → family, speech, financial recovery themes\n"
             "• Not universally bad — forces maturity, discipline, long-term foundation\n"
-            "• Safe remedies: Vishnu worship, serve elderly, donate sesame / mustard oil\n"
+            "• Safe remedies: Vishnu worship, serve elderly, donate sesame\n"
             "• Do NOT blame all life difficulty on Sade Sati — check Dasha + transit context first"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
