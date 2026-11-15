@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-15T14:47:54Z",
+  "generated_at": "2026-11-15T16:26:02Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 137,
-  "with_ask": 46,
+  "open": 135,
+  "with_ask": 44,
   "by_area": {
     "UNCLASSIFIED": 50,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "CORPUS": 6,
     "OPS": 6,
+    "CORPUS": 5,
     "LEARN": 4,
     "SEO": 4,
     "ANALYTICS": 4,
@@ -23,7 +23,6 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "PRIVACY": 1,
     "KUNDLI": 1,
     "SADE-SATI": 1,
     "GOCHAR-2026": 1,
@@ -36,39 +35,20 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 37,
+    "bug": 36,
     "untyped": 33,
     "enhancement": 32,
     "chore": 19,
-    "correctness": 12,
+    "correctness": 11,
     "design": 4
   },
   "by_priority": {
-    "unset": 100,
+    "unset": 99,
     "medium": 20,
-    "high": 17
+    "high": 16
   },
   "blocked": 7,
   "rows": [
-    {
-      "number": 1093,
-      "title": "privacy: /unsubscribe?email=&token= sends the subscriber's address to GA4 in page_location",
-      "ask": "Add 'email' and 'token' to PII_PARAMS in static/analytics.js (one line), add a Node-driven test next to the #1066 ones in tests/test_analytics_ask_location.py",
-      "area": "PRIVACY",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "severity:high",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-15T10:58:04Z",
-      "updated": "2026-11-15T14:47:08Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
     {
       "number": 1089,
       "title": "numerology: a mixed-script name (\"Anuj महाजन\") is silently scored on its Latin words only and shown as the whole-name reading",
@@ -545,28 +525,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1027,
-      "title": "corpus: source Griha Pravesh, Vidyarambh, Business and Namkaran muhurat rules from Raman's Muhurtha (1948) and Rao Table 79 — the finder's top pages cite nothing",
-      "ask": "Extract each event's tithi, nakshatra, weekday, lagna and month rules from Raman 1948 and from Rao's Table 79, into a new vedic_reference.md section with line ranges.",
-      "area": "CORPUS",
-      "type": "correctness",
-      "priority": "high",
-      "labels": [
-        "priority:high",
-        "skill:knowledge-integrator",
-        "layer:data",
-        "astrology-correctness",
-        "chore",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-14T13:51:30Z",
-      "updated": "2026-11-15T11:18:53Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1026,
       "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
       "ask": "",
@@ -776,7 +734,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-12T02:05:41Z",
-      "updated": "2026-11-13T15:34:28Z",
+      "updated": "2026-11-15T16:09:03Z",
       "blocked": false,
       "needs_evidence": false
     },
