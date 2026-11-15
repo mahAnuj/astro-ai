@@ -53,6 +53,43 @@ jobs:
 
       - run: uv sync --all-groups
 
+      # #1030: the books are FETCHED, not committed. The repo is public, so no
+      # book may enter git; data/ stays gitignored. The free, author-distributed
+      # ones download from their URLs; everything else is read from the private
+      # bucket's corpus/ prefix, which the owner uploads once. fetch_corpus.py
+      # verifies each by its recorded line count and exits 1 only for a WRONG
+      # file, so a missing book never fails the run -- the next step reports it.
+      - name: Download the free books
+        run: uv run python scripts/fetch_corpus.py --fetch | tail -3
+
+      # Read-only service account (rashifal-generate.yml: "that service account
+      # is READ-ONLY today"). Credentials are NOT exported to the job env, are
+      # handed only to the one step that needs them, and are deleted before the
+      # agent runs, so nothing the agent executes can reach the bucket.
+      - id: gcp
+        uses: google-github-actions/auth@v2
+        continue-on-error: true
+        with:
+          workload_identity_provider: projects/89117619584/locations/global/workloadIdentityPools/github/providers/astro-ai
+          service_account: agent-analytics@bhagya-500701.iam.gserviceaccount.com
+          export_environment_variables: false
+
+      - name: Pull the remaining books from the private bucket
+        if: steps.gcp.outcome == 'success'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.gcp.outputs.credentials_file_path }}
+          BHAGYA_STORAGE_BUCKET: shubhagya-cache-us
+        run: uv run python scripts/fetch_corpus.py --from-bucket | grep -E "bucket:|completeness" || true
+
+      - name: Remove the bucket credentials before any agent runs
+        if: always()
+        env:
+          CREDS: ${{ steps.gcp.outputs.credentials_file_path }}
+        run: |
+          [ -n "$CREDS" ] && rm -f "$CREDS"
+          rm -f gha-creds-*.json
+          ls gha-creds-*.json 2>/dev/null && { echo "::error::credentials still on disk"; exit 1; } || true
+
       # data/ is gitignored, so a CI checkout holds ONE of the eight registered
       # books. An absence measured against a partial corpus is worthless, which
       # is why the agent is told to state which books it actually had.
