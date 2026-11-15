@@ -45,6 +45,22 @@ closed (and a red run there is the owner's, never chief's), and a separate check
 required anywhere. These steps need nothing beyond the job's `contents: read`; the report goes to
 the job summary and a `prompt-eval` artifact, not a PR comment.
 
+**A run that did not complete blocks, and says it is not a verdict (QA FAIL on this PR, fixed
+2026-11-15).** Measured on the pinned `prompteval-delta==0.3.0`: `prompteval run` exits 0 when
+examples error, and `compare` drops errored examples and judges the survivors. Driven end to end
+through the real binary with a stub `claude` on `PATH` (no tokens), 6 of 8 head readings failing
+as a 429 produced *"no prompt got worse"* and exit 0, and so did 1 of 8. `eval_prompts.py` now
+reads `.prompteval/runs/<tag>.json` and the saved judgement back, and any errored chart, missing
+chart or unreadable judge reply blocks as **"could not evaluate (blocked, failing closed)"**.
+Zero errors tolerated: at 8 charts one is 12.5% of the sample, and errors cluster on a 429 or an
+exhausted window, so the survivors are not a fair sample. **"Worse"** now needs compare's own
+`GATE FAILED:` line; a judge crash used to print "makes readings measurably worse".
+
+**On every event, not only `pull_request`.** The steps were gated on `pull_request`, so a #322
+`workflow_dispatch` run (agent-work's rescue net) skipped them and `gates` went green, which
+`agent-merge` counts whatever the event. The clause is gone, and the scope step treats any prompt
+that differs from `main` as code, so a dispatch whose last commit was docs-only still evaluates.
+
 ## Cost, measured
 
 Claude Code calls took 17 to 49 s each (2026-11-13, Haiku). One prompt: 16 generations at

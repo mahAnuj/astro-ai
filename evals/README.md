@@ -3,7 +3,9 @@
 On a PR that changes `src/astro_ai/prompts/`, `pr-gates` runs the old and new version of each
 changed prompt on the same 8 fixture charts and has a judge compare the readings
 ([prompteval](https://github.com/mahAnuj/prompteval), pairwise, both orders). The `gates` check
-fails when the new version is measurably worse. Why and what it costs:
+fails when the new version is measurably worse, and also, reported separately as "could not
+evaluate", when any chart errored or the judge did not return a verdict for every chart: a
+partial run fails closed. It runs on a `workflow_dispatch` of `pr-gates` too. Why and what it costs:
 `docs/decisions/2026-11-13-prompt-eval-on-every-prompt-change.md`.
 
 | file | what it is |

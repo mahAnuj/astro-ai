@@ -1,0 +1,72 @@
+{
+  "baseline": "natal-base",
+  "candidate": "natal-head",
+  "judged_at": "2026-11-15T10:51:04+00:00",
+  "model": "claude-sonnet-5-5",
+  "scores": {
+    "anuj": 0.5,
+    "priya": 0.5,
+    "arjun": 0.5,
+    "meera": 0.5,
+    "rohan": 0.5,
+    "kavya": 0.5,
+    "vikram": 0.5,
+    "sara": 0.5
+  },
+  "judged": 8,
+  "order_disagreements": 0,
+  "unreadable": 16,
+  "cost": 0.0,
+  "shown": "your --judge-context",
+  "judged_by": "your criteria (evals/criteria/astro-reading.md)",
+  "details": {
+    "arjun": {
+      "first_order": "tie",
+      "second_order": "tie",
+      "reason_first_order": "maybe",
+      "reason_second_order": "maybe"
+    },
+    "priya": {
+      "first_order": "tie",
+      "second_order": "tie",
+      "reason_first_order": "maybe",
+      "reason_second_order": "maybe"
+    },
+    "anuj": {
+      "first_order": "tie",
+      "second_order": "tie",
+      "reason_first_order": "maybe",
+      "reason_second_order": "maybe"
+    },
+    "rohan": {
+      "first_order": "tie",
+      "second_order": "tie",
+      "reason_first_order": "maybe",
+      "reason_second_order": "maybe"
+    },
+    "meera": {
+      "first_order": "tie",
+      "second_order": "tie",
+      "reason_first_order": "maybe",
+      "reason_second_order": "maybe"
+    },
+    "vikram": {
+      "first_order": "tie",
+      "second_order": "tie",
+      "reason_first_order": "maybe",
+      "reason_second_order": "maybe"
+    },
+    "kavya": {
+      "first_order": "tie",
+      "second_order": "tie",
+      "reason_first_order": "maybe",
+      "reason_second_order": "maybe"
+    },
+    "sara": {
+      "first_order": "tie",
+      "second_order": "tie",
+      "reason_first_order": "maybe",
+      "reason_second_order": "maybe"
+    }
+  }
+}

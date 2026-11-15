@@ -84,6 +84,10 @@ def _run_scope(tmp_path, event: str, ref: str) -> str:
         (repo / "README.md").write_text(str(i))
         subprocess.run([*g, "add", "."], check=True)
         subprocess.run([*g, "commit", "-qm", str(i)], check=True)
+    # The job's checkout is fetch-depth 0, so origin/main always exists there.
+    # Without it the scope step's prompt-diff check cannot compute a diff and
+    # deliberately fails closed to code=true (PR #1000), which is not this test.
+    subprocess.run([*g, "update-ref", "refs/remotes/origin/main", "HEAD~1"], check=True)
     subprocess.run(["bash", "-e", "-c", _scope_script()], cwd=repo, env=env, check=True,
                    capture_output=True)
     return out.read_text()

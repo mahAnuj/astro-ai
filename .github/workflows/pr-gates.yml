@@ -212,6 +212,19 @@ jobs:
             echo "-> $EVENT_NAME sweep of main: running the full gates"
             exit 0
           fi
+          # A prompt that differs from main must reach PROMPT EVALUATION, which
+          # hangs off code=true. A #322 dispatch scopes by HEAD~1 below, so a
+          # branch whose last commit was docs-only would otherwise read
+          # code=false and skip the eval while gates went green (QA FAIL on
+          # PR #1000). Written as if/else so a diff that cannot be computed
+          # lands in the else -- full gates -- rather than in a skip.
+          if git diff --quiet origin/main...HEAD -- src/astro_ai/prompts/; then
+            :
+          else
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "-> a prompt differs from main: running the full gates and prompt evaluation"
+            exit 0
+          fi
           base="${{ github.event.pull_request.base.sha }}"
           [ -n "$base" ] || base=$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)
           changed=$(git diff --name-only "$base" HEAD || echo "")
@@ -327,9 +340,20 @@ jobs:
       # need nothing beyond this job's `contents: read`. The datasets are
       # re-captured at THIS commit from the real routes, so a PR that also
       # changes a message builder is evaluated on what it would send.
+      #
+      # ON EVERY EVENT, not only `pull_request` (QA FAIL on PR #1000). This
+      # step was gated on `github.event_name == 'pull_request'`, so a #322
+      # `workflow_dispatch` run -- agent-work's rescue net, for a PR opened
+      # with GITHUB_TOKEN -- skipped the eval silently and `gates` went green;
+      # agent-merge reads the latest `gates` check per head SHA whatever its
+      # event, so that green counted. The clause bought nothing: on a push to
+      # or a schedule of `main` the diff below is empty anyway. A dispatch
+      # checks out the branch itself, so `origin/main...HEAD` is that branch's
+      # whole prompt diff. A diff that cannot be computed reads as changed,
+      # and eval_prompts.py then exits 2 on the missing merge base: closed.
       - name: Prompts changed?
         id: prompts
-        if: steps.scope.outputs.code == 'true' && github.event_name == 'pull_request'
+        if: steps.scope.outputs.code == 'true'
         run: |
           if git diff --quiet origin/main...HEAD -- src/astro_ai/prompts/; then
             echo "changed=false" >> "$GITHUB_OUTPUT"; echo "no prompt changed"
