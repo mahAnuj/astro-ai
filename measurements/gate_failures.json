@@ -1,10 +1,8 @@
 {
-  "generated_at": "2026-11-15T18:25:34Z",
+  "generated_at": "2026-11-15T20:23:58Z",
   "open_prs": 2,
-  "red_prs": [
-    1063
-  ],
+  "red_prs": [],
   "logs_fetched": 0,
-  "fetch_failed": 1,
+  "fetch_failed": 0,
   "by_test": []
 }
