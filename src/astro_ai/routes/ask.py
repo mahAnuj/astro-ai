@@ -112,6 +112,12 @@ async def ask_form(request: Request, q: str | None = None,
             # the prompt became role-aware and the copy did not.
             "seeker_role": seeker_role,
             "answer": answer,
+            # #1087: a q= that finds nothing in the cache used to render the
+            # question echoed back with no answer and no word of why. The cache
+            # is per-instance /tmp, so a redeploy, a cold start or a second
+            # Cloud Run instance all look like this. Say so; the form below is
+            # the way to re-ask.
+            "answer_expired": bool(q) and answer is None,
             "remaining_today": _ask_quota_remaining(request),
         },
     )
