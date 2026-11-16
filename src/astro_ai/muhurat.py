@@ -1193,9 +1193,16 @@ def _choghadiya_windows(weekday: str, sunrise: datetime, sunset: datetime) -> li
 # Classical 108-syllable naming table (27 nakshatras × 4 padas). The
 # baby's Moon nakshatra pada at BIRTH determines auspicious first
 # letters for the name. Real Namkaran astrologers consult this table.
-# Source not held: no book in the corpus carries this table, and the two texts
-# it was credited to before #716 are not held. The note that it was
-# consolidated per Drik Panchang / Namkaran manuals is unverified.
+# NOT taken from any held book (#1062). Raman's Muhurtha (1948), Appendix "Nama
+# Nakshatra, Finding" (djvu L6969-7110, printed pp. 105-106) prints a 27 x 4 table
+# in his own transliteration. Compared with this one: 18 of 27 rows agree after
+# allowing for that spelling, Shravana differs (his Ju, Jay, Jo, Gha; the
+# alternate below), Ardra pada 3 and Uttara Bhadrapada differ or are unreadable in
+# the OCR, and six more cannot be settled from OCR alone. Those rows are left as
+# they were: a printed Devanagari source or a second book must settle them, not
+# the OCR. The texts it was credited to before #716 are not held, and the note
+# that it was consolidated per Drik Panchang / Namkaran manuals is unverified.
+# knowledge/vedic_reference.md 29.13 has the row-by-row comparison.
 _NAMKARAN_LETTERS: dict[str, tuple[str, str, str, str]] = {
     "Ashwini":         ("Chu", "Che", "Cho", "La"),
     "Bharani":         ("Li",  "Lu",  "Le",  "Lo"),
@@ -1225,6 +1232,22 @@ _NAMKARAN_LETTERS: dict[str, tuple[str, str, str, str]] = {
     "Uttara Bhadrapada":("Du", "Tha", "Jha", "Nya"),
     "Revati":          ("De",  "Do",  "Cha", "Chi"),
 }
+
+
+# Shravana is the one row where Raman's printed list is a different set of
+# syllables, not a different spelling of ours (#1062). The finder keeps its own
+# row as the primary and shows this one beside it. Raman prints "Ju, Jay, Jo, Gha";
+# his "ay" is our "e" (his "Chay", "Day", "Tay" are our Che, De, Te), and he works
+# the example "James" to Shravana pada 2 (L7096-7105).
+_NAMKARAN_ALTERNATE_LETTERS: dict[str, tuple[str, str, str, str]] = {
+    "Shravana": ("Ju", "Je", "Jo", "Gha"),
+}
+
+
+def _namkaran_alternate_letters(child_moon_nakshatra: str) -> tuple[str, ...]:
+    """The second circulating pada set for a nakshatra, or () where the finder
+    has only one."""
+    return _NAMKARAN_ALTERNATE_LETTERS.get(child_moon_nakshatra, ())
 
 
 def _namkaran_first_letters(child_moon_nakshatra: str, child_moon_pada: int) -> tuple[str, tuple[str, ...]]:

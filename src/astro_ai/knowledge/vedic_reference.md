@@ -2997,7 +2997,8 @@ Rao's row is specific to the alphabet. Raman also says the Janma Nakshatra is
 introduced as: "Each constellation has been given four letters to be taken as 1st,
 2nd, 3rd, and 4th quarters" (L6969–6975); the nakshatra of a person "is known from
 the first letter of the name" (L7093). The comment above `_NAMKARAN_LETTERS` in `muhurat.py`
-that says "no book in the corpus carries this table" is therefore out of date.
+used to say "no book in the corpus carries this table"; **FIXED by #1062**, which replaced
+it with this citation.
 
 Raman's spelling is a different transliteration scheme (`Lay` for *Le*, `Chay` for
 *Che*, `Shaw` for *Sha*, `Th` standing for a dental stop). Compared after allowing
@@ -3014,6 +3015,15 @@ So the table is **SOURCED, not UNSOURCED**, and 18 of 27 rows agree with it.
 Raman's own table carries OCR damage and an unstated scheme, so the code should not
 be changed from the OCR alone: the Shravana row is a real disagreement, and the
 other rows need a printed Devanagari source or a second book before anyone edits.
+
+**FIXED by #1062 (citation and Shravana only).** The code comment now cites this
+appendix instead of denying it. Shravana keeps the finder's row (Khi, Khu, Khe, Kho)
+as the primary and `_NAMKARAN_ALTERNATE_LETTERS` adds Raman's set, Ju · Je · Jo · Gha
+(his "Jay" is *Je*: his "Chay", "Day", "Tay" are *Che*, *De*, *Te*, and his worked
+example "James" is Shravana pada 2, L7096–7105). `/muhurat` shows both for a Shravana
+child and says two sets circulate. The finder page no longer credits the syllable to
+Muhurta Chintamani, whose naming table is not held. No other row was edited. The 27
+Raman rows and these verdicts are pinned in `tests/test_namkaran_letter_table.py`.
 
 #### Business start / shop opening — UNSOURCED
 

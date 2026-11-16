@@ -195,7 +195,10 @@
         <span class="font-marcellus text-4xl text-bhagya-sindoor">{{ child_first_letter }}</span>
         <span class="text-sm text-bhagya-muted">is the traditional starting syllable</span>
       </div>
-      <p class="text-sm text-bhagya-ink-soft">Your child was born under nakshatra <strong>{{ child_nakshatra }}</strong>, pada <strong>{{ child_pada }}</strong>. Per Muhurta Chintamani, that pada's assigned syllable is <strong>{{ child_first_letter }}</strong>. Some families prefer to choose from the full nakshatra rather than pada-strict — the four syllables for {{ child_nakshatra }} are: <strong>{{ child_all_letters | join(' · ') }}</strong>.</p>
+      <p class="text-sm text-bhagya-ink-soft">Your child was born under nakshatra <strong>{{ child_nakshatra }}</strong>, pada <strong>{{ child_pada }}</strong>. This finder's list gives <strong>{{ child_first_letter }}</strong> for that pada. It is the commonly circulated 27-nakshatra &times; 4-pada list; B.V. Raman's <em>Muhurtha</em> (1948) prints a list in his own spelling that agrees with it on most nakshatras. Some families prefer to choose from the full nakshatra rather than pada-strict — the four syllables for {{ child_nakshatra }} are: <strong>{{ child_all_letters | join(' · ') }}</strong>.</p>
+      {% if child_alternate_letters %}
+      <p class="text-sm text-bhagya-ink-soft mt-2">Two sets of syllables circulate for {{ child_nakshatra }}. The finder uses the first; Raman's <em>Muhurtha</em> has the second: <strong>{{ child_alternate_letters | join(' · ') }}</strong>.</p>
+      {% endif %}
       <p class="text-xs text-bhagya-muted mt-2 italic">Traditional practice: name should start with this syllable, or contain it as the first phoneme. Modern practice often uses it as inspiration rather than a hard rule.</p>
     </div>
     {% endif %}
