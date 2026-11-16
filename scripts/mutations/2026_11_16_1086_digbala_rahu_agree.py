@@ -44,8 +44,8 @@ MUTATIONS = [
     (
         "#1086: saturn-in-10th intro calls the 10th Saturn's digbala again",
         'src/astro_ai/templates/learn/saturn-in-10th-house-career.html',
-        'But <strong>the 10th is not a house where Saturn is weak by default</strong>: the sources we hold give Saturn his <em>digbala</em> (directional strength) in the 7th house, not the 10th, so this page does not call the 10th his strong house.',
-        'But <strong>Saturn in the 10th is also his <em>digbala</em> — his directional strength</strong> —',
+        'But <strong>the 10th is not a house where Saturn is weak by default</strong>: the sources we hold give Saturn his <em>digbala</em> (directional strength) in the 7th house, not the 10th, so this page does not call the 10th his strong house. Practitioners commonly read Saturn in the 10th as delay-then-elevation rather than permanent blockage — a reading from practice, not a rule those sources state.',
+        'But <strong>Saturn in the 10th is also his <em>digbala</em> — his directional strength</strong> — and classical Vedic tradition places this among the most enduring career placements. The pattern is delay-then-elevation, not permanent blockage.',
         'test_no_learn_template_ties_saturn_digbala_to_the_10th',
     ),
     (
@@ -58,15 +58,15 @@ MUTATIONS = [
     (
         '#1086: career-not-progressing calls Saturn in the 10th (Digbala) again',
         'src/astro_ai/templates/learn/career-not-progressing.html',
-        'Saturn in the 10th is commonly read as good for career in the long run',
-        'Saturn in the 10th (Digbala) is actually good for career',
+        "Saturn in the 10th is commonly read as good for career in the long run — durable, structured, often institutional careers that build over decades (a reading from practice; Saturn's own directional strength, digbala, is in the 7th house, not the 10th).",
+        'Saturn in the 10th (Digbala) is actually good for career — it gives durable, structured, often institutional careers that build over decades.',
         'test_no_learn_template_ties_saturn_digbala_to_the_10th',
     ),
     (
         '#1086: registry career FAQ calls Saturn in the 10th (Digbala) again',
         'src/astro_ai/learn_registry.py',
-        'Saturn in the 10th house is commonly read as good for career in the long run',
-        'Saturn in the 10th house (Digbala) is actually good for career',
+        "Saturn in the 10th house is commonly read as good for career in the long run — durable, structured, institutional careers that build over decades (a reading from practice; Saturn's directional strength, digbala, is in the 7th house, not the 10th).",
+        'Saturn in the 10th house (Digbala) is actually good for career — it gives durable, structured, institutional careers that build over decades.',
         'test_no_registry_field_ties_saturn_digbala_to_the_10th',
     ),
     (
