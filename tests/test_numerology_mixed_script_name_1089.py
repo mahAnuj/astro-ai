@@ -11,6 +11,7 @@ values for the 26 Latin letters only, so a dropped word cannot be "scored as zer
 from __future__ import annotations
 
 import re
+import unicodedata
 
 import pytest
 
@@ -76,3 +77,35 @@ def test_compatibility_refuses_a_mixed_script_name_on_either_side(client):
 def test_unscored_letters_ignores_spaces_hyphens_and_accents():
     assert n.unscored_letters("José Núñez-Smith O'Neil") == []
     assert n.unscored_letters("Anuj महाजन") == ["म", "ह", "ा", "ज", "न"]
+
+
+# The same names as above written with the accent as a separate code point (macOS input,
+# copied IAST text). Main scores these; the first version of the fix refused them because
+# a lone combining mark cleans to nothing on its own.
+_NFD_NAMES = [
+    "Jose\u0301 Nun\u0303ez",
+    unicodedata.normalize("NFD", "Śrī Rāma"),
+    unicodedata.normalize("NFD", "José Núñez"),
+    "Anuj Mahajan\u0301",
+    "q\u0301 Rao",  # no precomposed form exists for this one
+]
+
+
+@pytest.mark.parametrize("name", _NFD_NAMES)
+def test_a_latin_name_typed_with_combining_marks_is_still_scored(client, name):
+    assert n.unscored_letters(name) == [], repr(name)
+    r = _post(client, name)
+    assert r.status_code == 200, (repr(name), r.status_code)
+    assert _READING.search(r.text)
+
+
+def test_a_combining_mark_after_a_non_latin_letter_is_still_reported():
+    # Not an accent on a Latin base: the base is dropped, so the mark is too.
+    assert n.unscored_letters("Anuj \u0141\u0301") == ["\u0141", "\u0301"]
+
+
+def test_compatibility_scores_an_nfd_name(client):
+    r = client.post("/numerology/compatibility", data={
+        "name_a": "Jose\u0301 Rao", "birth_date_a": "1990-08-15",
+        "name_b": "Asha Rao", "birth_date_b": "1992-03-04"})
+    assert r.status_code == 200
