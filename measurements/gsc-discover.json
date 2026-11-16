@@ -1,0 +1,154 @@
+{
+  "source": "gsc",
+  "type": "discover",
+  "window": [
+    "2026-10-17",
+    "2026-11-13"
+  ],
+  "note": "Discover is not in the search report; GA4 counts its visits as google / organic",
+  "total_clicks": 0,
+  "total_impressions": 0,
+  "days": [
+    {
+      "date": "2026-10-17",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-18",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-19",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-20",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-21",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-22",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-23",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-24",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-25",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-26",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-27",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-28",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-29",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-30",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-10-31",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-01",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-02",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-03",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-04",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-05",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-06",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-07",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-08",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-09",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-10",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-11",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-12",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-13",
+      "clicks": 0,
+      "impressions": 0
+    }
+  ],
+  "top_pages": []
+}

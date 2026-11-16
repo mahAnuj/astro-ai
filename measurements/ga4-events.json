@@ -2,66 +2,70 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-16",
-    "2026-11-12"
+    "2026-10-17",
+    "2026-11-13"
   ],
   "dimensions": [
     "eventName"
   ],
   "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
-  "row_count": 16,
+  "row_count": 17,
   "truncated": false,
   "rows": [
     {
       "event": "page_view",
-      "count": 1192
+      "count": 1231
     },
     {
       "event": "user_identified",
-      "count": 701
-    },
-    {
-      "event": "feature_view",
-      "count": 683
+      "count": 724
     },
     {
       "event": "session_start",
-      "count": 683
+      "count": 709
+    },
+    {
+      "event": "feature_view",
+      "count": 707
     },
     {
       "event": "first_visit",
-      "count": 556
+      "count": 582
     },
     {
       "event": "user_engagement",
-      "count": 296
+      "count": 301
     },
     {
       "event": "scroll",
-      "count": 174
+      "count": 186
     },
     {
       "event": "form_start",
-      "count": 137
+      "count": 140
     },
     {
       "event": "ask_answered",
-      "count": 130
+      "count": 132
     },
     {
       "event": "kundli_generated",
-      "count": 55
+      "count": 53
     },
     {
       "event": "cta_click",
-      "count": 12
+      "count": 15
     },
     {
       "event": "view_search_results",
-      "count": 6
+      "count": 5
     },
     {
       "event": "click",
+      "count": 2
+    },
+    {
+      "event": "dasha_deep_dive_viewed",
       "count": 2
     },
     {
@@ -77,10 +81,10 @@
       "count": 1
     }
   ],
-  "events_total": 4631,
-  "coverage_note": "cta_click: 12 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "events_total": 4793,
+  "coverage_note": "cta_click: 15 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
-    "count": 12,
+    "count": 15,
     "split_available": true,
     "rows": [
       {
@@ -91,11 +95,16 @@
       {
         "from_path": "/learn/career-during-sade-sati/",
         "to_path": "/",
-        "count": 1
+        "count": 2
       },
       {
         "from_path": "/learn/kaal-sarp-dosh/",
         "to_path": "/kaal-sarp-check",
+        "count": 1
+      },
+      {
+        "from_path": "/learn/krittika-nakshatra/",
+        "to_path": "/",
         "count": 1
       },
       {
@@ -106,6 +115,11 @@
       {
         "from_path": "/learn/rahu-mahadasha-ketu-antardasha/",
         "to_path": "/dasha",
+        "count": 1
+      },
+      {
+        "from_path": "/learn/saturn-in-10th-house-career/",
+        "to_path": "/kundli",
         "count": 1
       }
     ]
