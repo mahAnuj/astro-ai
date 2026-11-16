@@ -1273,7 +1273,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Saturn always block career?",
-                "a": "No — Saturn is the teacher of patience, not the villain online astrology makes him out to be. Saturn in the 10th house (Digbala) is actually good for career — it gives durable, structured, institutional careers that build over decades. Saturn's 'blockages' usually correspond to the classical Vedic idea of karma phal: the work-fruit that comes when you've done enough foundation work. Saturn insists you do the unglamorous foundation before receiving the result. Those who skip steps find Saturn blocking them; those who do the work often find Saturn eventually opening doors.",
+                "a": "No — Saturn is the teacher of patience, not the villain online astrology makes him out to be. Saturn in the 10th house is commonly read as good for career in the long run — durable, structured, institutional careers that build over decades (a reading from practice; Saturn's directional strength, digbala, is in the 7th house, not the 10th). Saturn's 'blockages' usually correspond to the classical Vedic idea of karma phal: the work-fruit that comes when you've done enough foundation work. Saturn insists you do the unglamorous foundation before receiving the result. Those who skip steps find Saturn blocking them; those who do the work often find Saturn eventually opening doors.",
             },
             {
                 "q": "How does the current Dasha affect my career?",
@@ -1302,7 +1302,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="saturn-in-10th-house-career",
         title="Saturn in the 10th House: Career Effects, Timing, and Remedies",
-        summary="Saturn in the 10th house is one of the most misread placements in Vedic astrology. It is his digbala — his strongest directional placement. The pattern is delay-then-elevation, not blockage. Here is what Saturn-in-10 actually does, when it manifests, and how to work with it.",
+        summary="Saturn in the 10th house is one of the most misread placements in Vedic astrology. It is not his digbala house (the sources we hold give Saturn that strength in the 7th), and practitioners commonly read the pattern as delay-then-elevation, not blockage. Here is what Saturn-in-10 actually does, when it manifests, and how to work with it.",
         seo_title="Saturn in 10th House: Career Effects & Remedies",
         seo_description="Saturn in the 10th house — the delay-then-elevation career pattern. Effects, sign variations, Dasha timing, and classical remedies, explained honestly.",
         category="Life Questions",
@@ -1313,7 +1313,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is Saturn in the 10th house good or bad for career?",
-                "a": "Classical Vedic tradition considers Saturn in the 10th house one of the stronger career placements — it is Saturn's digbala (directional strength). But the pattern is delay-then-elevation, not smooth early success. The waiting years (roughly ages 22–35) often feel harder than peers'; the elevation phase (roughly ages 36–56) tends to be where Saturn-10 careers peak. Whether the pattern manifests as growth or as chronic frustration depends on Saturn's sign, aspects, the 10th lord's condition, and the current Dasha. Generate your free Janma Kundli on Shubh Bhagya to see the exact configuration.",
+                "a": "Practitioners commonly read Saturn in the 10th house as a strong long-run career placement. It is not Saturn's digbala house, though: the sources we hold give Saturn his directional strength in the 7th, and the 10th to the Sun and Mars. The commonly described pattern is delay-then-elevation, not smooth early success. The waiting years (roughly ages 22–35) often feel harder than peers'; the elevation phase (roughly ages 36–56) tends to be where Saturn-10 careers peak. Whether the pattern manifests as growth or as chronic frustration depends on Saturn's sign, aspects, the 10th lord's condition, and the current Dasha. Generate your free Janma Kundli on Shubh Bhagya to see the exact configuration.",
             },
             {
                 "q": "Does Saturn in the 10th house always give a government job?",
@@ -1338,7 +1338,7 @@ ARTICLES: tuple[Article, ...] = (
         ),
         llm_summary=(
             "Keypoints:\n"
-            "• Saturn in 10th = Saturn's digbala (directional strength) — one of the STRONGEST classical career placements\n"
+            "• Saturn in 10th = NOT his digbala house (Saturn's directional strength is in the 7th); commonly read as delay-then-elevation, a reading from practice rather than a classical rule\n"
             "• Delay-then-elevation pattern:\n"
             "    - Slow early career (~ages 22-35): hard work, under-recognition\n"
             "    - Turning point at Saturn return (~29-30)\n"
