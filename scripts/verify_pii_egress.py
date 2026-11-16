@@ -625,7 +625,10 @@ def _email_reading(c, e):
 @scenario("llm-exhausted", signed_in=True, chart=True, llm_mode="exhausted",
           expects={"llm": (2, None), "telegram": (2, None)})
 def _exhausted(c, e):
-    assert c.get("/kundli").status_code in (502, 503)
+    # #1088: /kundli no longer withholds the computed chart when generation
+    # fails -- it renders it with a notice (200). The failure is still logged
+    # and alerted, which is what this scenario's `expects` count.
+    assert c.get("/kundli").status_code == 200
     r = c.post("/ask", data={"question": QUESTION, "category": "general", "context": "chart"},
                follow_redirects=True)
     assert r.status_code in (502, 503), r.status_code
