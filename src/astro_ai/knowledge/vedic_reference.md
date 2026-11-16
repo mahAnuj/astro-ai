@@ -2980,16 +2980,16 @@ Rao's row is specific to the alphabet. Raman also says the Janma Nakshatra is
 | Rule in code | Verdict | Why |
 |---|---|---|
 | good tithis 2, 3, 5, 7, 10, 11, 13 | **CORRECT** | Rao's row; Raman gives only an avoid list and these are not on it |
-| good tithi **12 (Dwadashi)** | **WRONG** | Raman rejects the 12th; Rao's row omits it |
+| good tithi **12 (Dwadashi)** | **WRONG — FIXED by #1060** | Raman rejects the 12th; Rao's row omits it. Dwadashi moved from `good_tithis` to `avoid_tithis` |
 | avoid 4, 8, 14, Amavasya | **CORRECT** | Raman |
-| **Purnima and Shashthi (6) not avoided** | **WRONG (omission)** | Raman's list carries the 6th and Full Moon; Rao has neither |
+| **Purnima and Shashthi (6) not avoided** | **WRONG (omission) — FIXED by #1060** | Raman's list carries the 6th and Full Moon; Rao has neither. Both are in `avoid_tithis` now |
 | avoid Navami (9) | **CONTESTED** | the printed figure is OCR-damaged; read as 9th it agrees, and Rao omits the 9th |
-| **Magha in the avoid set** | **CONTESTED** | Raman lists Makha as auspicious for naming; Rao's row omits it. The two books disagree |
+| **Magha in the avoid set** | **CONTESTED — unchanged by #1060** | Raman lists Makha as auspicious for naming; Rao's row omits it. The two books disagree; the finder keeps the avoid reading and the landing copy says so |
 | good **Chitra** | **CONTESTED** | Rao lists it; Raman does not |
-| **Dhanishtha, Satabhisha** missing from good | **WRONG (omission)** | on both lists |
+| **Dhanishtha, Satabhisha** missing from good | **WRONG (omission) — FIXED by #1060** | on both lists. Both credited now (Panchak still applies to them) |
 | good days Mon, Wed, Thu, Fri; avoid Tue, Sat | **CONTESTED** | Raman agrees exactly; Rao lists Sun and Sat and omits Fri |
 | `check_jupiter_combust: False` | **UNSOURCED** | Raman is silent on combustion for Namakarana; the waiver is by analogy (the code comment says so) |
-| The 11th-day claim: the code comment above `EVENT_RULES["namkaran"]` still says "classically done on the 11th day post-birth". The page copy was already reworded by #1024/#1055 to "commonly held around the 11th day ... custom, not a rule this finder sources" | **UNSOURCED** (comment: **WRONG** as "classical") | Raman gives the 10th, 12th or 16th day (L2431–2476); no held book names the 11th or the Grihya Sutras. The shipped page copy no longer claims otherwise; only the code comment does |
+| The 11th-day claim: the code comment above `EVENT_RULES["namkaran"]` still says "classically done on the 11th day post-birth". The page copy was already reworded by #1024/#1055 to "commonly held around the 11th day ... custom, not a rule this finder sources" | **UNSOURCED** (comment: **WRONG** as "classical"); **FIXED by #1060**: comment and landing copy now give Raman's 10th, 12th or 16th day | Raman gives the 10th, 12th or 16th day (L2431–2476); no held book names the 11th or the Grihya Sutras. The shipped page copy no longer claims otherwise; only the code comment does |
 
 #### The Namkaran first-letter table — Raman, Appendix "Nama Nakshatra, Finding", L6969–7110 (printed pp. 105–106; the OCR headers read "195" and "IOG")
 
@@ -3043,8 +3043,10 @@ The WRONG and CONTESTED rows above were filed as one issue per event, each linke
 #1017: #1059 (Vidyarambh), #1060 (Namkaran), #1061 (Griha Pravesh) and #1062 (the
 first-letter table). **#1059 and #1061 are closed:** #1064 applied their WRONG rows
 (Hasta, Uttara Bhadrapada, Ardra, Dhanishtha, Satabhisha, Purnima), and the CONTESTED
-rows it left alone stay as the rows above state them. **#1060 (Namkaran) and #1062 (the
-letter table) are open and nothing in them is applied.** This section itself edits no rule.
+rows it left alone stay as the rows above state them. **#1060 (Namkaran) applied its WRONG rows
+(2026-11-16): Dwadashi out of the good tithis, Purnima, Shashthi and Dwadashi avoided, Dhanishtha and Satabhisha
+credited, the 10th, 12th or 16th day in place of the 11th; Magha, Chitra, Navami and the weekday sets stay as the
+rows above state them. #1062 (the letter table) is open and nothing in it is applied.** This section itself edits no rule.
 
 ---
 
