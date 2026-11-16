@@ -1,31 +1,32 @@
 {
-  "generated_at": "2026-11-15T20:22:48Z",
+  "generated_at": "2026-11-16T00:27:41Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 135,
-  "with_ask": 44,
+  "open": 138,
+  "with_ask": 46,
   "by_area": {
     "UNCLASSIFIED": 50,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
     "OPS": 6,
+    "SEO": 5,
     "CORPUS": 5,
     "LEARN": 4,
-    "SEO": 4,
     "ANALYTICS": 4,
     "NUMEROLOGY": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "SECURITY": 2,
     "ASK": 2,
     "MEASURE": 2,
     "MATCHING": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "PRIVACY": 1,
     "GOCHAR-2026": 1,
     "KUNDLI": 1,
-    "SADE-SATI": 1,
     "KNOWLEDGE": 1,
     "MUHURAT": 1,
     "AGENT-MEASURE": 1,
@@ -35,8 +36,8 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 36,
-    "untyped": 33,
+    "bug": 38,
+    "untyped": 34,
     "enhancement": 32,
     "chore": 19,
     "correctness": 11,
@@ -44,11 +45,83 @@
   },
   "by_priority": {
     "unset": 100,
-    "medium": 20,
-    "high": 15
+    "medium": 22,
+    "high": 16
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1107,
+      "title": "seo: tool pages link to no article, 10 articles have no in-body inbound link, slash variants 307, nav links four 303s, 55 descriptions over 160 chars",
+      "ask": "",
+      "area": "SEO",
+      "type": "untyped",
+      "priority": "medium",
+      "labels": [
+        "seo",
+        "category:technical",
+        "priority:medium",
+        "effort:m"
+      ],
+      "created": "2026-11-15T20:41:37Z",
+      "updated": "2026-11-15T20:48:12Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1106,
+      "title": "security: sessions never expire server-side and sign-out cannot revoke them; /auth/google has no CSRF check",
+      "ask": "",
+      "area": "SECURITY",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "effort:s",
+        "risk:medium"
+      ],
+      "created": "2026-11-15T20:41:26Z",
+      "updated": "2026-11-15T20:47:07Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1105,
+      "title": "privacy: no code path deletes personal data — add account deletion, delete a chart's readings, and enforce retention in the bucket",
+      "ask": "Add a signed-in \"delete my account\" action on /account.",
+      "area": "PRIVACY",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "effort:m",
+        "risk:medium"
+      ],
+      "created": "2026-11-15T20:41:18Z",
+      "updated": "2026-11-15T20:46:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1104,
+      "title": "security: fail closed when ADMIN_PASSWORD or ASTRO_AI_COOKIE_SECRET is unset — the dev fallbacks are public",
+      "ask": "When running on Cloud Run (K_REVISION is set), refuse to start, or return 503 on admin and session routes, if any of the three is unset or equal to a dev fallback.",
+      "area": "SECURITY",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "effort:s",
+        "risk:high"
+      ],
+      "created": "2026-11-15T20:41:08Z",
+      "updated": "2026-11-15T20:46:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1100,
       "title": "gochar-2026: six QA hand-mutations survive the new gate, and five per-rashi lines have no source (follow-up to #1079)",
@@ -154,10 +227,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T10:25:50Z",
-      "updated": "2026-11-15T10:25:50Z",
+      "updated": "2026-11-16T00:27:00Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -190,26 +266,6 @@
       ],
       "created": "2026-11-15T10:25:49Z",
       "updated": "2026-11-15T10:25:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1081,
-      "title": "sade-sati: first Sade Sati \"typically at ages 27-35\" is impossible (always starts before ~23); Phaladeepika/BPHS citations to books not held",
-      "ask": "",
-      "area": "SADE-SATI",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-15T10:25:48Z",
-      "updated": "2026-11-15T20:22:10Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -337,7 +393,7 @@
         "priority:high"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-15T10:38:16Z",
+      "updated": "2026-11-15T20:42:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -483,10 +539,12 @@
       "labels": [
         "priority:high",
         "layer:data",
-        "chore"
+        "chore",
+        "qa-pass",
+        "qa:independent"
       ],
       "created": "2026-11-14T13:51:32Z",
-      "updated": "2026-11-14T13:51:32Z",
+      "updated": "2026-11-15T21:52:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -786,7 +844,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-11T21:48:17Z",
-      "updated": "2026-11-12T02:08:43Z",
+      "updated": "2026-11-15T20:42:07Z",
       "blocked": false,
       "needs_evidence": false
     },
