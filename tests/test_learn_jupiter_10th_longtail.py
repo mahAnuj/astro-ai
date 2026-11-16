@@ -56,6 +56,8 @@ def test_the_aspect_h2_exists_and_names_the_2nd_4th_6th(client):
     for house in ("2nd", "4th", "6th"):
         assert house in body, house
     assert "5th, 7th and 9th" in body
+    # the conclusion, not just the list items above it
+    assert "aspects the 2nd, 4th and 6th houses" in body
     # the 7th and 10th are NOT aspected from the 10th
     assert "does not aspect the 7th house" in body
 
