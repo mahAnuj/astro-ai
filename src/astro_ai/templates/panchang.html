@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Today's Panchang — {{ today_pretty }} · Tithi, Nakshatra, Rahu Kaal, Choghadiya{% endblock %}
-{% block meta_description %}Today's Panchang for {{ city_display }} — tithi (lunar day), nakshatra (moon's constellation), weekday lord, yoga, karana, sunrise/sunset, Rahu Kaal, Abhijit Muhurta, and full Choghadiya day-window breakdown. Classical Vedic sidereal Lahiri.{% endblock %}
+{#- A dated URL must not call itself "Today's" (#1074), and its description carries
+    the computed values -- built once in the route (_answer_snippet) so the
+    snippet, the sentence under the H1 and the cards cannot disagree. /panchang
+    (today) keeps its original title and description verbatim. #}
+{% block title %}{% if is_today %}Today's Panchang — {{ today_pretty }} · Tithi, Nakshatra, Rahu Kaal, Choghadiya{% else %}Panchang {{ today_pretty }} — Tithi, Nakshatra, Rahu Kaal ({{ city_short }}){% endif %}{% endblock %}
+{% block meta_description %}{% if not is_today %}{{ dated_description }}{% else %}Today's Panchang for {{ city_display }} — tithi (lunar day), nakshatra (moon's constellation), weekday lord, yoga, karana, sunrise/sunset, Rahu Kaal, Abhijit Muhurta, and full Choghadiya day-window breakdown. Classical Vedic sidereal Lahiri.{% endif %}{% endblock %}
 
 {% block content %}
 {% set active_page = "" %}
@@ -21,6 +25,7 @@
       {% if is_today %}Today's Panchang{% else %}Panchang{% endif %} — <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </h1>
     <p class="text-bhagya-muted">Computed for <strong>{{ city_display }}</strong> · sunrise + Rahu Kaal shift by location.</p>
+    {% if answer_sentence %}<p class="text-bhagya-ink" data-answer-sentence>{{ answer_sentence }}</p>{% endif %}
     {# States the convention (#593): the civil day in the city's own timezone,
        the same one the home strip uses -- not a sunrise-to-sunrise day. #}
     <p class="text-xs text-bhagya-muted" data-day-convention>{{ t(lang, 'panchang_day_convention', city=city_display) }}</p>
