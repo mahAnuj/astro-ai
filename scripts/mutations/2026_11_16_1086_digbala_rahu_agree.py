@@ -108,7 +108,7 @@ MUTATIONS = [
         '#1086 QA: a learn page says Rahu is exalted in Taurus with no hedge again',
         'src/astro_ai/templates/learn/rahu-mahadasha-career-problems.html',
         'His exaltation is Gemini (some say Taurus) — the texts disagree on this, so treat it as contested.',
-        'His exaltation is Taurus.',
+        'Rahu is exalted in Taurus.',
         'test_no_page_or_registry_field_states_rahu_exalted_in_taurus_unhedged',
     ),
 ]
