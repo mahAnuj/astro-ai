@@ -4,7 +4,7 @@ losing side.
 Saturn's directional strength is in the 7th house (Rao, Integrated Approach §3.2.15: "Saturn is strong in the west
 (7th house)"; grahas.md Directions and §9, houses.md 7th-house section). houses.md used to say "Saturn in 10th
 (Digbala)" and five learn pages / registry fields repeated it (10th is the Sun's and Mars's). Rahu's exaltation is
-Gemini in Rao's Table 6 with the Taurus reckoning a competing one; rashis.md said Taurus first, grahas.md Gemini first,
+Gemini in Rao's Table 6 and Taurus in Raman's Astrology for Beginners (two held books disagree); rashis.md said Taurus first, grahas.md Gemini first,
 and two pages disagreed with each other. Both now lead with Gemini and mark the entry CONTESTED.
 
 The page tests read the rendered route or the registry fields the route renders, so JSON-LD and page cannot disagree.
@@ -95,11 +95,13 @@ def test_rahu_and_ketu_exaltation_rows_agree_across_grahas_and_rashis():
     assert "CONTESTED" in _row(r, "Ketu") and "CONTESTED" in _row(g, "Ketu")
 
 
-def test_grahas_records_that_the_taurus_reckoning_is_not_in_a_held_book():
+def test_grahas_records_that_two_held_books_disagree_on_rahu_and_ketu():
     g = _plain((KNOW / "grahas.md").read_text(encoding="utf-8"))
-    assert "Rahu/Ketu dignity is CONTESTED" in g
-    assert "states no alternative" in g
-    assert "not a sourced one" in g
+    assert "Rahu/Ketu dignity is CONTESTED between two held books" in g
+    # Rao's Table 6 (Gemini/Sagittarius) against Raman's Astrology for Beginners (Taurus 20 / Scorpio 20).
+    assert "Rao's Table 6" in g and "states no alternative" in g
+    assert "Raman's *Astrology for Beginners*" in g and "Taurus 20° and Scorpio 20°" in g
+    assert "not a sourced one" not in g  # the false 'no held book gives Taurus' claim, retired
 
 
 # ---- no page repeats the losing side ------------------------------------------------------------

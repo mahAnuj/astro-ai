@@ -35,11 +35,11 @@ MUTATIONS = [
         'test_rahu_and_ketu_exaltation_rows_agree_across_grahas_and_rashis',
     ),
     (
-        '#1086: grahas.md drops the statement that no held book gives the Taurus reckoning',
+        "#1086: grahas.md drops Raman's Taurus 20 / Scorpio 20 reckoning and calls the Taurus side unsourced again",
         'src/astro_ai/knowledge/grahas.md',
-        'states no alternative.',
-        'states an alternative.',
-        'test_grahas_records_that_the_taurus_reckoning_is_not_in_a_held_book',
+        'respectively" and puts debilitation 180° opposite',
+        'respectively" and not a sourced one; debilitation 180° opposite',
+        'test_grahas_records_that_two_held_books_disagree_on_rahu_and_ketu',
     ),
     (
         "#1086: saturn-in-10th intro calls the 10th Saturn's digbala again",
