@@ -152,7 +152,7 @@ def test_page_keeps_its_headings_and_pullquote(client):
         "The interaction: why this specific pair hits hardest",
         "What if Ketu is in the 11th house with Saturn?",
         "How long does this last?",
-        "Remedies for surviving Rahu Mahadasha + Ketu Antardasha",
+        "Remedies for Rahu Mahadasha + Ketu Antardasha",
         "What to actually do",
     ):
         assert f"<h2>{h}</h2>" in r.text, h
@@ -194,3 +194,93 @@ def test_title_is_untouched_and_no_seo_override_was_added():
     assert a.title == "Rahu Mahadasha + Ketu Antardasha: Surviving the Nodal Axis Flip"
     assert not getattr(a, "seo_title", "")
     assert not getattr(a, "seo_description", "")
+
+
+# --- #1075: the 'effects' and 'remedies' intents are named in headings, with no new claim ---
+
+_EFFECTS_H2 = "Effects of Rahu Mahadasha + Ketu Antardasha: what happens, at a glance"
+
+
+def _effects_block(html: str) -> str:
+    start = html.index(f"<h2>{_EFFECTS_H2}</h2>")
+    end = html.index("<h2>The Rahu–Ketu axis: why this transition is special</h2>")
+    return html[start:end]
+
+
+def test_an_effects_heading_names_the_intent_and_sits_near_the_top(client):
+    """The issue's own repro: an h2 containing 'effects' (was 0). It follows the disclosure and precedes the first section."""
+    html = client.get(f"/learn/{SLUG}/").text
+    assert len(re.findall(r"<h[23][^>]*>[^<]*effects", html, flags=re.I)) >= 1
+    assert "what happens" in _EFFECTS_H2.lower()
+    assert html.index("In short") < html.index("What is sourced and what is practice") < html.index(f"<h2>{_EFFECTS_H2}</h2>")
+    assert html.index(f"<h2>{_EFFECTS_H2}</h2>") < html.index("<h2>The Rahu–Ketu axis: why this transition is special</h2>")
+
+
+def test_effects_block_is_labelled_practitioner_reading_and_adds_no_source_claim(client):
+    block = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", _effects_block(client.get(f"/learn/{SLUG}/").text)))
+    assert "how practitioners commonly describe the period, not something the sources we hold state" in block
+    assert "(a practitioner reading)" in block
+    low = block.lower()
+    assert "classical" not in low
+    assert not re.search(r"\btexts\b", low)
+    for remedy_word in ("remed", "cat's eye", "gem", "mantra", "ganesh", "donat", "fast ", "tarpan", "puja", "meditat", "wear "):
+        assert remedy_word not in low.replace("the remedies heading further down", ""), remedy_word
+
+
+_EFFECT_PAIRS = (  # (as worded in the effects block, as the page already words it below), lower-cased
+    ("projects can collapse", "projects can collapse"),
+    ("money may become erratic", "money may become erratic"),
+    ("ketu tends to loosen the grip on accumulation", "ketu tends to loosen the grip on accumulation"),
+    ("loss of wealth", "loss of wealth"),
+    ("relationships may end", "relationships may end"),
+    ("separation", "separation"),
+    ("identities loosen", "identities loosen"),
+    ("foreign environments can turn unwelcoming", "foreign environments can turn unwelcoming"),
+    ("sudden direction changes", "sudden direction changes"),
+    ("strange dreams, sleep disturbance and psychological intensity", "strange dreams, sleep disturbance, psychological intensity"),
+    ("deep doubt", "deep doubt, then deep clarity"),
+    ("old addictions sometimes tighten before they are forced to break", "old addictions sometimes tighten before they're forced to break"),
+    ("expansion", "sudden expansion"),
+    ("foreign travel", "foreign travel"),
+    ("obsessive interests", "obsessive interests"),
+    ("boom-and-bust cycles", "boom-and-bust cycles"),
+)
+
+
+def test_every_effects_line_restates_a_sentence_the_page_already_makes(client):
+    """The block summarises; it does not extend. Each reading it gathers must be in the block AND in the sections below it."""
+    html = client.get(f"/learn/{SLUG}/").text
+    flat = lambda h: re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", h)).lower()
+    block = flat(_effects_block(html))
+    below = flat(html[html.index("<h2>The Rahu–Ketu axis"):])
+    for in_block, in_page in _EFFECT_PAIRS:
+        assert in_block in block, in_block
+        assert in_page in below, in_page
+
+
+def test_effects_block_carries_exactly_the_seven_areas_and_no_other_bullet(client):
+    """Adding an eighth claim must be a deliberate edit of this test, which is where the 'already on the page' check lives."""
+    block = _effects_block(client.get(f"/learn/{SLUG}/").text)
+    labels = re.findall(r"<li><strong>([^<]+)</strong>", block)
+    assert labels == [
+        "Work and money:", "Relationships:", "Place:", "Mind and sleep:", "Habits:", "The Rahu backdrop:", "How long:",
+    ]
+    assert block.count("<li>") == 7
+
+
+def test_remedies_heading_uses_the_searchers_words_and_the_sourced_split_is_intact(client):
+    html = client.get(f"/learn/{SLUG}/").text
+    assert "<h2>Remedies for Rahu Mahadasha + Ketu Antardasha</h2>" in html
+    assert "Remedies for surviving" not in html
+    t = _body(client)
+    assert "Ganesha, meditation and the cat's eye caution below are in the sources we hold; the Saturday donation, the fast and Pitr Tarpan are common practice, not sourced" in t
+
+
+def test_head_query_surfaces_are_untouched_and_no_section_was_cut(client):
+    """Title, H1 source, meta and the opening callout stay; the effects block adds a section and removes none."""
+    a = _article()
+    assert a.title == "Rahu Mahadasha + Ketu Antardasha: Surviving the Nodal Axis Flip"
+    assert not getattr(a, "seo_title", "") and not getattr(a, "seo_description", "")
+    assert "the nodal axis flip" in _text(client).lower()
+    html = client.get(f"/learn/{SLUG}/").text
+    assert html.count("<h2>") == 9  # 8 article sections before; the block adds one and cuts none
