@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-16T17:47:21Z",
+  "generated_at": "2026-11-16T19:40:51Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 130,
@@ -162,10 +162,12 @@
         "skill:knowledge-integrator",
         "astrology-correctness",
         "chore",
-        "provenance:trusted"
+        "qa-fail",
+        "provenance:trusted",
+        "qa:independent"
       ],
       "created": "2026-11-15T10:27:01Z",
-      "updated": "2026-11-16T17:40:28Z",
+      "updated": "2026-11-16T18:44:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -613,7 +615,7 @@
         "chore"
       ],
       "created": "2026-11-12T17:43:39Z",
-      "updated": "2026-11-16T03:07:43Z",
+      "updated": "2026-11-16T18:37:40Z",
       "blocked": false,
       "needs_evidence": false
     },
