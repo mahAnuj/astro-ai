@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-16T03:08:52Z",
+ "generated_at": "2026-11-16T11:21:22Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -876,10 +876,24 @@
     "themes": [
      "grounding"
     ]
+   },
+   {
+    "number": 1128,
+    "at": "2026-11-16T07:21:46Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1128#issuecomment-6910109917",
+    "summary": "QA: FAIL \u2014 verified at `c7bbd9adfdf3e8ec57729c685847978588b96285` NFD-form Latin names (e.g. name='Jose\u0301 Nun\u0303ez', also NFD \u015ar\u012b R\u0101ma) are refused 400 on /numerology and /numerology/compatibility; main scores them. unscored_letters tests each character alone, so a lone combining mark (category M) clea",
+    "themes": [
+     "regression"
+    ]
    }
   ],
   "reverts": [],
   "verify_production_failed": [
+   {
+    "run": 43797263108,
+    "at": "2026-11-16T03:17:12Z",
+    "sha": "b8ac181"
+   },
    {
     "run": 43532716485,
     "at": "2026-11-14T00:13:31Z",
@@ -913,19 +927,12 @@
     "title": "agent-prioritise.yml: last run failed",
     "detail": "The schedule verdict is fine, so `agents.json` raised no alert, but the most recent run of each loop named here was red. A weekly loop is not re-run before its next slot, so nothing else will notice. Check whether a fix has landed since; if one has, dispatch the workflow.",
     "where": "/admin/ops"
-   },
-   {
-    "kind": "loop-starved",
-    "level": "amber",
-    "title": "3 of the last 4 build cycles built nothing",
-    "detail": "Empty cycles started 2026-11-16T01:05, 2026-11-16T01:07, 2026-11-16T01:09. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
-    "where": "/admin/ops"
    }
   ]
  },
  "error_themes": {
   "grounding": 25,
-  "regression": 22,
+  "regression": 23,
   "tests": 21,
   "copy": 20,
   "tokens": 18,
@@ -1122,10 +1129,10 @@
  ],
  "outcome_counts": {
   "PASS": 5,
-  "HIT": 1,
   "OTHER": 1,
   "MISS": 1,
   "UNSCOREABLE": 7,
+  "HIT": 1,
   "PARTIAL": 1,
   "PENDING": 9
  },
