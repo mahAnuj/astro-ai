@@ -145,6 +145,21 @@ def test_rahu_pages_lead_with_gemini_and_say_the_texts_disagree(client):
     assert "though some texts say Taurus" in k
 
 
+# a flat 'Rahu is exalted in Taurus' (or Ketu in Scorpio/Taurus-reckoned) with no hedge in the same sentence
+_FLAT_RAHU_TAURUS = re.compile(r"rahu[^.]{0,60}exalt[^.]{0,60}taurus|exalt[^.]{0,60}taurus[^.]{0,60}rahu", re.I)
+_HEDGE = re.compile(r"some|contested|disagree|dispute|reckoning", re.I)
+
+
+def _flat_rahu_taurus(text: str) -> list[str]:
+    return [s for s in _sentences(text) if _FLAT_RAHU_TAURUS.search(s) and not _HEDGE.search(s)]
+
+
+def test_no_page_or_registry_field_states_rahu_exalted_in_taurus_unhedged():
+    bad = {p.name: _flat_rahu_taurus(p.read_text(encoding="utf-8")) for p in sorted(LEARN.glob("*.html"))}
+    assert {k: v for k, v in bad.items() if v} == {}
+    assert _flat_rahu_taurus(_registry_text()) == []
+
+
 def test_no_learn_template_leads_rahu_exaltation_with_taurus():
     leading_taurus = re.compile(r"exalted in:?\s*(</strong>)?\s*Taurus \(some say Gemini\)", re.I)
     for p in sorted(LEARN.glob("*.html")):

@@ -44,7 +44,7 @@ MUTATIONS = [
     (
         "#1086: saturn-in-10th intro calls the 10th Saturn's digbala again",
         'src/astro_ai/templates/learn/saturn-in-10th-house-career.html',
-        'But <strong>the 10th is not a house where Saturn is weak by default</strong>: the sources we hold give Saturn his <em>digbala</em> (directional strength) in the 7th house, not the 10th, so this page does not call the 10th his strong house. Practitioners commonly read Saturn in the 10th as delay-then-elevation rather than permanent blockage — a reading from practice, not a rule those sources state.',
+        "But <strong>the sources we hold do not put Saturn's <em>digbala</em> (directional strength) in the 10th</strong>: they give it to the 7th house, so this page does not call the 10th his strong house. Practitioners commonly read Saturn in the 10th as delay-then-elevation rather than permanent blockage — a reading from practice, not a rule those sources state.",
         'But <strong>Saturn in the 10th is also his <em>digbala</em> — his directional strength</strong> — and classical Vedic tradition places this among the most enduring career placements. The pattern is delay-then-elevation, not permanent blockage.',
         'test_no_learn_template_ties_saturn_digbala_to_the_10th',
     ),
@@ -103,5 +103,12 @@ MUTATIONS = [
         'Gemini, its exaltation sign on the reckoning we follow, though some texts say Taurus)',
         'Gemini, its exaltation sign, or Taurus on some reckonings)',
         'test_rahu_pages_lead_with_gemini_and_say_the_texts_disagree',
+    ),
+    (
+        '#1086 QA: a learn page says Rahu is exalted in Taurus with no hedge again',
+        'src/astro_ai/templates/learn/rahu-mahadasha-career-problems.html',
+        'His exaltation is Gemini (some say Taurus) — the texts disagree on this, so treat it as contested.',
+        'His exaltation is Taurus.',
+        'test_no_page_or_registry_field_states_rahu_exalted_in_taurus_unhedged',
     ),
 ]
