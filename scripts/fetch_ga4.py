@@ -151,9 +151,21 @@ def explain(by_source: list[dict], by_tech: list[dict]) -> str:
     src = top.get("sessionSourceMedium", "?")
     parts = [f"top source {src} ({top['sessions']} sessions) landing on "
              f"{top.get('landingPagePlusQueryString', '?')}"]
+    # Judge per SEGMENT, not on the blend (2026-11-16): the 11-06 spike averaged
+    # 37% engaged and was called "real readers", while its tech breakdown held 19
+    # US desktop/mobile sessions -- browser "(not set)" among them -- with exactly
+    # zero engagement. Averaging let the bots hide inside the readers.
+    tech_total = sum(r["sessions"] for r in by_tech) or 0
+    dead = [r for r in by_tech if not r["engaged_rate"] and not r["avg_engagement_seconds"]]
+    dead_n = sum(r["sessions"] for r in dead)
     if engaged < 0.15 and secs < 3:
         parts.append(f"engaged rate {engaged:.0%} and {secs:.1f}s average engagement: "
                      "looks automated, not readers")
+    elif tech_total and dead_n / tech_total >= 0.3:
+        who = ", ".join(f"{r.get('browser', '?')}/{r.get('deviceCategory', '?')}/"
+                        f"{r.get('country', '?')} {r['sessions']}" for r in dead[:3])
+        parts.append(f"MIXED: {dead_n} of {tech_total} sessions had zero engagement ({who}) "
+                     "and look automated; the rest look like real readers")
     else:
         parts.append(f"engaged rate {engaged:.0%}, {secs:.1f}s average: looks like real readers")
     if src.startswith("google / organic"):
