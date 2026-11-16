@@ -1403,7 +1403,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="debilitated-sun-career",
         title="Debilitated Sun in Your Kundli: Why Authority Feels Off and How to Fix It",
-        summary="Sun debilitated in Libra is one of the most common 'why do I struggle with authority' chart signatures. It does not remove capability — it reshapes leadership into negotiation-forward, coalition-holding, advisory forms. Here is what the placement actually does, the Neecha Bhanga cancellations most explanations miss, which careers suit debilitated Sun natives, and honest classical remedies.",
+        summary="Sun debilitated in Libra is one of the most common 'why do I struggle with authority' chart signatures. It does not remove capability — it reshapes leadership into negotiation-forward, coalition-holding, advisory forms. Here is what the placement actually does, the Neecha Bhanga cancellations most explanations miss, which careers suit debilitated Sun natives, and the remedies split into what the classical sources we hold give and what is common practice.",
         seo_title="Debilitated Sun: Why Authority at Work Feels Borrowed",
         seo_description="Why authority feels borrowed, not owned, with Sun debilitated in Libra. The career pattern, Neecha Bhanga cancellation rules, fitting careers, honest remedies.",
         category="Life Questions",
@@ -1430,11 +1430,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "How to strengthen a debilitated Sun?",
-                "a": "Safe universal classical practices: offer arghya (water offering) to the rising Sun at dawn, especially on Sundays; recite the Aditya Hridayam (12 or 108 times on Sundays); visit a temple, donate to one, or help with its running (the Sun's classical good deed); slow long-term chanting of the Sun beej mantra Om Hraam Hreem Hraum Sah Suryaya Namah; donate wheat, jaggery, red cloth, or copper vessels on Sundays; and consciously honour the father and elders in your life (Sun is the karaka of the father — repairing that relationship is often the deepest remedy). Never wear a ruby or Sun-related gemstone without a proper chart consultation — for a functional malefic Sun, ruby can amplify difficulty rather than help. Pattern-alignment remedies (matching career to placement) matter more than physical remedies.",
+                "a": "Sourced in the classical remedies tables we hold: donate wheat, particularly on the Sun's weekday; visit a temple, donate money to it, or help with its administration (the Sun's good deed); chant the Sun beej mantra Om Hraam Hreem Hraum Sah Suryaya Namah, for which the tables give a count of 6,000 repetitions; and honour the father and elders in your life (Sun is the karaka of the father). The Aditya Hridayam is named there as a Sun stotra to learn from a competent teacher. Common practice, not in those sources: offer arghya (water offering) to the rising Sun at dawn; recite the Aditya Hridayam on Sundays, 12 or 108 times; donate jaggery, red cloth, or copper vessels; and fast on Sundays. The sources we hold give fasting on the weekday ruled by the rajyapada lord (the 10th house pattern) for career troubles, not a Sunday fast for a weak Sun. Never wear a ruby or Sun-related gemstone without a proper chart consultation — for a functional malefic Sun, ruby can amplify difficulty rather than help. Pattern-alignment remedies (matching career to placement) matter more than physical remedies.",
             },
             {
                 "q": "Does Sun in Libra mean no government job?",
-                "a": "No, this is a common misreading. Sun rules government and authority, so weak Sun sometimes reduces natural pull toward pure command-and-control government roles, but the placement can succeed excellently in government contexts that reward negotiation and judgement — judiciary, senior civil service in policy and diplomatic roles, arbitral bodies, election commissions, coalition ministerial roles. Many senior judges, diplomats, and civil servants carry this placement. What often does not fit: hard-charging populist political roles requiring dominant personal branding. What often does fit: institutional government roles where longevity, fairness, and judgement compound into respected authority.",
+                "a": "No, this is a common misreading. Sun rules government and authority, so weak Sun sometimes reduces natural pull toward pure command-and-control government roles, but the placement can succeed excellently in government contexts that reward negotiation and judgement — judiciary, senior civil service in policy and diplomatic roles, arbitral bodies, election commissions, coalition ministerial roles. What often does not fit: hard-charging populist political roles requiring dominant personal branding. What often does fit: institutional government roles where longevity, fairness, and judgement compound into respected authority.",
             },
             {
                 "q": "Can debilitated Sun give success?",
@@ -1449,7 +1449,8 @@ ARTICLES: tuple[Article, ...] = (
             '• Fights: dominance-forward (aggressive sales, competitive politics, alpha-founder roles)\n'
             '• Neechabhanga (cancellation): the one condition we can state is Sun exalted in D-9; the fuller set is for a chart reading\n'
             '• When cancelled, the placement can read as strength rather than weakness\n'
-            '• Remedies: Sun-strengthening practices (water offering), honour father-figures, wheat/jaggery Sunday charity'
+            '• Debilitation weakens the Sun, but the 10th is the Sun\'s digbala house; the sources do not say which prevails\n'
+            '• Remedies, sourced: wheat, temple good deed, Sun bija mantra (6,000 count), honour father. Common practice, not in the sources: arghya, jaggery/red cloth/copper, Sunday fast'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
