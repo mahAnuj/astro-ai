@@ -149,3 +149,22 @@ def test_measure_fetches_spikes_and_discover_and_hands_them_to_the_analyst():
     assert "fetch_gsc.py --days 28 --discover > /tmp/gsc-discover.json" in text
     assert "/tmp/ga4-anomalies.json /tmp/gsc-discover.json /tmp/measure/" in text
     assert "ga4-anomalies.json" in (ROOT / ".claude/agents/analyst.md").read_text()
+
+
+def test_bots_inside_a_mostly_human_spike_are_called_out_not_averaged_away():
+    """The measured 11-06 breakdown: 37% engaged overall, but 19 of 41 tech-row
+    sessions with zero engagement, '(not set)' browser among them."""
+    fg = _load("fetch_ga4")
+    src = [{"sessionSourceMedium": "(direct) / (none)", "landingPagePlusQueryString": "/rashifal/aries",
+            "sessions": 20, "new_users": 20, "engaged_rate": 0.37, "avg_engagement_seconds": 59.0}]
+    tech = [{"browser": "(not set)", "deviceCategory": "desktop", "country": "United States",
+             "sessions": 10, "new_users": 10, "engaged_rate": 0.0, "avg_engagement_seconds": 0.0},
+            {"browser": "Safari", "deviceCategory": "mobile", "country": "United States",
+             "sessions": 10, "new_users": 10, "engaged_rate": 0.4, "avg_engagement_seconds": 49.1},
+            {"browser": "Chrome", "deviceCategory": "mobile", "country": "India",
+             "sessions": 8, "new_users": 7, "engaged_rate": 0.62, "avg_engagement_seconds": 85.9},
+            {"browser": "Chrome", "deviceCategory": "desktop", "country": "United States",
+             "sessions": 6, "new_users": 6, "engaged_rate": 0.0, "avg_engagement_seconds": 0.0}]
+    out = fg.explain(src, tech)
+    assert "MIXED: 16 of 34 sessions had zero engagement" in out
+    assert "(not set)/desktop/United States 10" in out
