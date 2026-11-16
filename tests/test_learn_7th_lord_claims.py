@@ -134,3 +134,24 @@ def test_title_and_seo_title_are_untouched():
     a = _article()
     assert a.title == "7th Lord Placement Guide: How Your Marriage Life Reads From the Ruler of Partnership"
     assert a.seo_title == "7th Lord Placement Guide: Marriage Reading Across 12 Houses"
+
+
+# #1085: own sign is not the top of the dignity ladder (grahas.md 8.1 puts exaltation above it as
+# "peak positive expression"), and no knowledge/*.md line says the 7th lord is strongest in the 7th.
+# Phrase test: it catches the wording it names, not every possible rewording.
+_OVERCLAIMS = ["strongest possible placement", "full dignity"]
+
+
+def test_page_says_a_strong_placement_not_the_strongest_or_full_dignity(client):
+    t = _text(client)
+    assert "is a strong placement, because own sign and a kendra" in t
+    assert "exaltation sits above it" in t
+    for phrase in _OVERCLAIMS:
+        assert phrase not in t.lower(), phrase
+
+
+def test_registry_faq_says_a_strong_placement_not_the_strongest_or_full_dignity():
+    t = _registry_text()
+    assert "is a strong placement, because own sign and a kendra" in t
+    for phrase in _OVERCLAIMS:
+        assert phrase not in t, phrase
