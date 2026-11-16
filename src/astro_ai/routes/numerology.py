@@ -84,14 +84,26 @@ async def numerology_calculate(
     # different numbers, so we would be presenting an arbitrary pick as fact.
     # Reuses _clean_name so this test can never drift from the cleaning the
     # calculation itself does; the length-2 floor mirrors the check above.
-    if len(_num._clean_name(name)) < 2:
+    #
+    # A name that MIXES scripts is refused for the same reason (#1089): the
+    # non-Latin words were dropped and the numbers for what was left were shown
+    # under the full name as typed. The message names the characters that cannot
+    # be scored, so the seeker sees which part of the name the calculator would
+    # have ignored.
+    _dropped = _num.unscored_letters(name)
+    if len(_num._clean_name(name)) < 2 or _dropped:
+        _msg = ("Please enter your name in English letters — the Chaldean letter values are "
+                "defined over the Latin alphabet, so a name written in Devanagari or another "
+                "script can't be scored.")
+        if _dropped:
+            _msg += f" These characters can't be scored: {' '.join(_dropped[:6])}"
         return templates.TemplateResponse(
             request, "numerology.html",
             {
                 "page_title": "Free Numerology Calculator",
                 "page_meta": "Free numerology calculator using the Chaldean system.",
                 "reading": None,
-                "error": "Please enter your name in English letters — the Chaldean letter values are defined over the Latin alphabet, so a name written in Devanagari or another script can't be scored.",
+                "error": _msg,
                 "lang": _lang(request),
             },
             status_code=400,
@@ -204,7 +216,7 @@ async def numerology_compat_compute(
     # name the offending side instead of scoring around it.
     _unscoreable = [
         label for label, value in (("the first name", name_a), ("the second name", name_b))
-        if len(_num._clean_name(value)) < 2
+        if len(_num._clean_name(value)) < 2 or _num.unscored_letters(value)
     ]
     if _unscoreable:
         _which = "both names" if len(_unscoreable) == 2 else _unscoreable[0]
