@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-16T00:27:41Z",
+  "generated_at": "2026-11-16T00:45:19Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 138,
+  "open": 139,
   "with_ask": 46,
   "by_area": {
     "UNCLASSIFIED": 50,
@@ -10,10 +10,10 @@
     "REDESIGN": 10,
     "FEATURE": 7,
     "OPS": 6,
+    "ANALYTICS": 5,
     "SEO": 5,
     "CORPUS": 5,
     "LEARN": 4,
-    "ANALYTICS": 4,
     "NUMEROLOGY": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
@@ -37,19 +37,32 @@
   },
   "by_type": {
     "bug": 38,
-    "untyped": 34,
+    "untyped": 35,
     "enhancement": 32,
     "chore": 19,
     "correctness": 11,
     "design": 4
   },
   "by_priority": {
-    "unset": 100,
+    "unset": 101,
     "medium": 22,
     "high": 16
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1115,
+      "title": "analytics: add a GA4 previous-window export (fetch_ga4.py --trend) — three reports in a row could not compare sessions with the last window",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-16T00:42:51Z",
+      "updated": "2026-11-16T00:42:51Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1107,
       "title": "seo: tool pages link to no article, 10 articles have no in-body inbound link, slash variants 307, nav links four 303s, 55 descriptions over 160 chars",
@@ -262,10 +275,11 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "provenance:trusted"
       ],
       "created": "2026-11-15T10:25:49Z",
-      "updated": "2026-11-15T10:25:49Z",
+      "updated": "2026-11-16T00:30:54Z",
       "blocked": false,
       "needs_evidence": false
     },

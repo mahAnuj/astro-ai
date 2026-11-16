@@ -2,22 +2,16 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-16",
-    "2026-11-12"
+    "2026-10-17",
+    "2026-11-13"
   ],
   "dimensions": [
     "date"
   ],
   "note": "window excludes the last 3 days - GA4 standard reports lag 24-48h. A day absent from the API is emitted as 0 with no_data=true, so a gap in collection is visible rather than drawn as a flat line.",
   "days": 28,
-  "days_with_traffic": 27,
+  "days_with_traffic": 28,
   "rows": [
-    {
-      "date": "2026-10-16",
-      "active_users": 38,
-      "sessions": 42,
-      "new_users": 35
-    },
     {
       "date": "2026-10-17",
       "active_users": 14,
@@ -176,10 +170,15 @@
     },
     {
       "date": "2026-11-12",
-      "active_users": 0,
-      "sessions": 0,
-      "new_users": 0,
-      "no_data": true
+      "active_users": 34,
+      "sessions": 37,
+      "new_users": 32
+    },
+    {
+      "date": "2026-11-13",
+      "active_users": 30,
+      "sessions": 30,
+      "new_users": 29
     }
   ]
 }
