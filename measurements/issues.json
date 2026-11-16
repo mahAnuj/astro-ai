@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-16T00:45:19Z",
+  "generated_at": "2026-11-16T03:07:41Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 139,
+  "open": 138,
   "with_ask": 46,
   "by_area": {
-    "UNCLASSIFIED": 50,
+    "UNCLASSIFIED": 49,
     "INFRA": 14,
     "REDESIGN": 10,
     "FEATURE": 7,
@@ -36,7 +36,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 38,
+    "bug": 37,
     "untyped": 35,
     "enhancement": 32,
     "chore": 19,
@@ -44,7 +44,7 @@
     "design": 4
   },
   "by_priority": {
-    "unset": 101,
+    "unset": 100,
     "medium": 22,
     "high": 16
   },
@@ -246,7 +246,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T10:25:50Z",
-      "updated": "2026-11-16T00:27:00Z",
+      "updated": "2026-11-16T01:05:00Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -267,23 +267,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1082,
-      "title": "career-during-sade-sati: \"Classical tradition explicitly notes\" own/exalted/kendra Saturn, but the source's condition is lagna lord or yogakaraka",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-15T10:25:49Z",
-      "updated": "2026-11-16T00:30:54Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1080,
       "title": "debilitated-sun-career: calls Sun in the 10th \"most classically difficult\" though the corpus gives Sun digbala there; remedies labelled classical are unsourced",
       "ask": "",
@@ -292,10 +275,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T10:25:47Z",
-      "updated": "2026-11-15T10:25:47Z",
+      "updated": "2026-11-16T03:06:54Z",
       "blocked": false,
       "needs_evidence": false
     },
