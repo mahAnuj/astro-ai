@@ -82,3 +82,30 @@ def test_registry_no_longer_calls_the_remedies_classical():
     assert "honest classical remedies" not in blob
     assert "Safe universal classical practices" not in blob
     assert "classical Vedic signature for careers" not in blob
+
+
+def _all_prose(client) -> str:
+    from astro_ai.learn_registry import ARTICLES
+
+    art = next(a for a in ARTICLES if a.slug == SLUG)
+    page = _plain(client.get(f"/learn/{SLUG}/").text)
+    return page + " " + art.summary + " " + " ".join(f["a"] for f in art.faqs) + " " + art.llm_summary
+
+
+def test_no_planet_in_a_friends_sign_is_called_own_sign_or_exalted(client):
+    """QA round 1 on #1121: 'Mars in Sagittarius' was listed under 'exalted or in own sign' (FAQ) and 'well-placed in
+    itself' (page). Mars rules Aries/Scorpio and is exalted in Capricorn (grahas.md L197); Sagittarius is Jupiter's."""
+    prose = _all_prose(client)
+    assert "well-placed in itself" not in prose
+    own = {p: {SIGNS[i] for i, lord in enumerate(RASHI_LORDS) if lord == p} for p in EXALTED}
+    checked = 0
+    for sentence in re.split(r"(?<=[.;])\s", prose):
+        if not re.search(r"\bown[- ]sign\b|\bexalted or in own\b|\bin itself\b", sentence):
+            continue
+        for m in re.finditer(r"\b(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn) in (" + "|".join(SIGNS) + r")\b", sentence):
+            checked += 1
+            planet, sign = m.groups()
+            assert sign in own[planet] or sign == EXALTED[planet], (planet, sign, sentence[:200])
+    assert "Mars in Sagittarius" in prose
+    for m in re.finditer(r"[^.]*Mars in (?:a friend's sign \()?Sagittarius[^.]*\.", prose):
+        assert "friend" in m.group(0), m.group(0)
