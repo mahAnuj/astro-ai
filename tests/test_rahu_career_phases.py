@@ -82,6 +82,7 @@ def test_unsourced_classical_attributions_are_labelled_as_practice(client):
     assert "not a rule found in the classical texts" in t
     assert "not a classical rule" in t
     assert "the classical career-launch placement" not in t
+    assert "upachaya" in t  # the 3/6/10/11 rule is houses.md's natal upachaya rule, not the Moon-counted Gochara table
 
 
 def test_registry_has_no_unsourced_best_subperiods_and_no_blue_cloth():
@@ -91,4 +92,4 @@ def test_registry_has_no_unsourced_best_subperiods_and_no_blue_cloth():
     blob = art.llm_summary + " " + " ".join(f["a"] for f in art.faqs)
     assert "Best sub-periods for major decisions" not in blob
     assert "blue cloth" not in blob
-    assert "3rd, 6th or 11th house" in blob and "3rd, 6th, 10th" not in blob
+    assert "3rd, 6th, 10th or 11th house — the upachaya houses where a malefic becomes useful with time" in blob

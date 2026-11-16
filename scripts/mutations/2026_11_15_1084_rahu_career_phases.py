@@ -36,7 +36,7 @@ MUTATIONS = [
      "test_rahu_is_never_called_combust_and_sagittarius_is_not_an_exaltation"),
     ("#1084: 'the classical career-launch placement' for Rahu in the 10th is back",
      _T,
-     "in practice often read as a career-visibility placement (the classical texts we draw on give no separate rule for it).",
+     "the 10th is an upachaya house, where a malefic such as Rahu tends to become useful with time, so it is often read as a career-visibility placement (the texts we draw on give no separate rule for Rahu here).",
      "the classical career-launch placement.",
      "test_unsourced_classical_attributions_are_labelled_as_practice"),
     ("#1084: the registry summary again names 'Best sub-periods for major decisions: Rahu-Jupiter and Rahu-Mercury'",
