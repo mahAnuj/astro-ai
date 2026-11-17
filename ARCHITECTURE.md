@@ -30,7 +30,7 @@ trust the number.
 |---|---|---|
 | Python | measured | `find src -name '*.py' \| xargs cat \| wc -l` |
 | top-level modules | measured | `ls src/astro_ai/*.py \| wc -l` |
-| route handlers | 69 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
+| route handlers | 70 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 25 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
 | top-level templates | measured | `ls src/astro_ai/templates/*.html \| wc -l` |
 | `/learn` articles | measured | `ls src/astro_ai/templates/learn/*.html \| wc -l` |

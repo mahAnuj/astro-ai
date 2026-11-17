@@ -16,12 +16,16 @@ Absolute imports only.
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import RedirectResponse
 
 from astro_ai import users
 from astro_ai.routes.deps import _safe_redirect_target, _save_collection_synced
 from astro_ai.session import clear_collection, load_collection, load_user
+
+log = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -48,6 +52,15 @@ async def delete_chart(
     """Remove a saved chart; if it was active, activate whatever remains first."""
     collection = load_collection(request).remove(chart_id)
     response = RedirectResponse("/", status_code=303)
+    # A reading is personal data about that chart's birth details; removing
+    # the chart must not leave its readings behind in users.json (#1105).
+    # Best-effort: the redirect and cookie handling below never depend on it.
+    signed_in = load_user(request)
+    if signed_in is not None:
+        try:
+            users.delete_readings_for_chart(signed_in.sub, chart_id)
+        except Exception:
+            log.warning("delete-chart: could not remove readings for the chart")
     if not collection.charts:
         clear_collection(response)
         # Also clear the persisted charts for signed-in users so their

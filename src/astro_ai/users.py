@@ -391,3 +391,50 @@ def find_reading(sub: str, reading_id: str) -> Optional[Reading]:
         if r.id == reading_id:
             return r
     return None
+
+
+# ─── Deletion (#1105) ───────────────────────────────────────────────────────
+# One record per user holds identity, charts and readings, so removing the
+# record removes all three. Both helpers return False ONLY when storage could
+# not be updated: a user that is already absent is a success, so a retry after
+# a partial failure is safe.
+
+
+def delete_user(sub: str) -> bool:
+    """Remove a user's whole record (identity, charts, readings). Idempotent."""
+    if not sub:
+        return False
+
+    def _drop(current):
+        data = current or {"users": []}
+        data["users"] = [u for u in data.get("users", []) if u.get("sub") != sub]
+        return data
+
+    result = storage.update_json(USERS_KEY, _drop, default={"users": []})
+    if result is None:
+        log.warning("users.delete_user: storage unavailable — record not removed")
+        return False
+    return True
+
+
+def delete_readings_for_chart(sub: str, chart_id: str) -> bool:
+    """Drop one user's readings about `chart_id`; keep the rest and the record."""
+    if not sub or not chart_id:
+        return False
+
+    def _drop(current):
+        data = current or {"users": []}
+        for existing in data.get("users", []):
+            if existing.get("sub") == sub:
+                existing["readings"] = [
+                    r for r in existing.get("readings", [])
+                    if r.get("chart_id") != chart_id
+                ]
+                return data
+        return data  # user absent: nothing to drop
+
+    result = storage.update_json(USERS_KEY, _drop, default={"users": []})
+    if result is None:
+        log.warning("users.delete_readings_for_chart: storage unavailable")
+        return False
+    return True
