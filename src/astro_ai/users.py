@@ -220,21 +220,32 @@ def save_charts(sub: str, collection: ChartCollection) -> bool:
     if not sub:
         return False
 
+    found = {"user": False}
+
     def _add(current):
+        found["user"] = False  # the mutator re-runs on a CAS conflict
         data = current or {"users": []}
         for existing in data["users"]:
             if existing.get("sub") == sub:
                 existing["charts"] = [asdict(c) for c in collection.charts]
                 existing["active_id"] = collection.active_id
+                found["user"] = True
                 return data
         # User not in users.json — skip. upsert_user creates the record;
-        # sync should only happen after that. If we hit this, it's a race
-        # or an anonymous user; either way, do nothing.
-        return None
+        # sync should only happen after that. If we hit this, it's a race,
+        # an anonymous user, or a second device still signed in after the
+        # account was deleted (#1105); either way, change nothing. Return
+        # the data UNCHANGED: update_json writes whatever the mutator
+        # returns, and None is written as the JSON text `null`, which the
+        # next writer rebuilds as an empty user list -- every user lost.
+        return data
 
     result = storage.update_json(USERS_KEY, _add, default={"users": []})
     if result is None:
-        log.warning("users.save_charts: storage unavailable or user %s not found", sub)
+        log.warning("users.save_charts: storage unavailable")
+        return False
+    if not found["user"]:
+        log.warning("users.save_charts: user %s not found", sub)
         return False
     return True
 
@@ -341,7 +352,10 @@ def save_reading(sub: str, kind: str, chart_id: str, title: str,
         "meta": meta or {},
     }
 
+    found = {"user": False}
+
     def _add(current):
+        found["user"] = False  # the mutator re-runs on a CAS conflict
         data = current or {"users": []}
         for existing in data["users"]:
             if existing.get("sub") == sub:
@@ -351,12 +365,18 @@ def save_reading(sub: str, kind: str, chart_id: str, title: str,
                 if len(readings) > MAX_READINGS_PER_USER:
                     readings = readings[:MAX_READINGS_PER_USER]
                 existing["readings"] = readings
+                found["user"] = True
                 return data
-        return None  # user not found — skip silently
+        # User not found — change nothing. Return the data UNCHANGED, never
+        # None: update_json would write `null` over users.json (#1105).
+        return data
 
     result = storage.update_json(USERS_KEY, _add, default={"users": []})
     if result is None:
-        log.warning("users.save_reading: storage unavailable or user %s not found", sub)
+        log.warning("users.save_reading: storage unavailable")
+        return False
+    if not found["user"]:
+        log.warning("users.save_reading: user %s not found", sub)
         return False
     return True
 

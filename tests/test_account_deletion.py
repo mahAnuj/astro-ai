@@ -5,14 +5,16 @@ Covers `storage.delete`, `users.delete_user`, `users.delete_readings_for_chart`,
 
 The fake below stands in for GCS at the `storage.get_json` / `storage.update_json`
 seam, which is where users.py and subscribers.py read and write. It keeps the real
-contract that matters here: `update_json` returns None when storage is down, and
-callers must treat that as "not deleted".
+contract that matters here: `update_json` returns None when storage is down (callers
+must treat that as "not deleted"), and it persists exactly what the mutator returns, so
+a mutator returning None writes `null` over the whole file.
 
 Mutation rows: scripts/mutations/account_deletion.py.
 """
 from __future__ import annotations
 
 import copy
+import json
 
 import pytest
 from fastapi.testclient import TestClient
@@ -57,7 +59,10 @@ def fake_store(monkeypatch):
         if key in down:
             return None
         new = mutator(copy.deepcopy(blobs.get(key, default)))
-        blobs[key] = new
+        # The real update_json writes json.dumps(<whatever the mutator returned>):
+        # a None becomes the text `null` and the next writer rebuilds an empty
+        # user list. Round-trip here so a mutator that returns None is visible.
+        blobs[key] = json.loads(json.dumps(new))
         return copy.deepcopy(new)
 
     monkeypatch.setattr(storage, "get_json", get_json)
@@ -215,6 +220,44 @@ def test_delete_chart_still_redirects_when_reading_cleanup_raises(signed_in, fak
     resp = signed_in.post("/delete-chart", data={"chart_id": CHART_A["id"]},
                           follow_redirects=False)
     assert resp.status_code == 303 and resp.headers["location"] == "/"
+
+
+# -- a second device still signed in after the account is gone ----------------
+# Session cookies are stateless (1 year), so deleting on device 1 leaves device 2
+# signed in. Its next chart removal / reading save finds no record for the sub.
+# That must change NOTHING: before the fix the mutators returned None, the real
+# update_json wrote `null`, and the next write rebuilt users.json as empty
+# (QA on PR #1173: Bob's record gone).
+def _delete_alice_on_device_one(client, fake_store):
+    client.cookies.set(S.COOKIE_NAME, _cookie())
+    resp = client.post("/account/delete", data={"confirm": "DELETE"},
+                       follow_redirects=False)
+    assert resp.status_code == 303
+    assert _subs_of(fake_store) == [BOB["sub"]]
+
+
+def test_stale_device_delete_chart_after_account_delete_keeps_other_users(client, fake_store):
+    _delete_alice_on_device_one(client, fake_store)
+    before = copy.deepcopy(fake_store.blobs[users.USERS_KEY])
+    client.cookies.set(S.COOKIE_NAME, _cookie())  # device 2: same cookie, never cleared
+    resp = client.post("/delete-chart", data={"chart_id": CHART_A2["id"]},
+                       follow_redirects=False)
+    assert resp.status_code == 303
+    assert fake_store.blobs[users.USERS_KEY] == before
+    assert users.find_by_sub(BOB["sub"]) is not None
+
+
+def test_save_charts_and_save_reading_for_a_missing_user_change_nothing(fake_store):
+    assert users.delete_user(ALICE["sub"]) is True
+    before = copy.deepcopy(fake_store.blobs[users.USERS_KEY])
+    coll = users.ChartCollection(charts=(), active_id=None)
+    assert users.save_charts(ALICE["sub"], coll) is False
+    assert users.save_reading(ALICE["sub"], "natal", CHART_A["id"], "t", "body") is False
+    assert fake_store.blobs[users.USERS_KEY] == before
+    assert [u["sub"] for u in fake_store.blobs[users.USERS_KEY]["users"]] == [BOB["sub"]]
+    # and a present user still saves and reports True
+    assert users.save_reading(BOB["sub"], "natal", CHART_A["id"], "t", "body") is True
+    assert users.save_charts(BOB["sub"], coll) is True
 
 
 # -- storage.delete -----------------------------------------------------------
