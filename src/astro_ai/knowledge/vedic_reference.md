@@ -2300,9 +2300,10 @@ damage rather than transliteration, but it is a normalised comparison and an
 earlier draft described it as exact. Likewise **13** byte-identical in all
 three holds only after the repair; raw it is **9**. The transliterations are cosmetic; **the ordinal
 positions are what the code indexes and what is sourced.** `muhurat.py` keys its
-blocker set on `Vyatipata` and `Vaidhriti`, which are positions 17 and 27 in
-both. **The sequence and the indices are doubly sourced. The blocking is sourced
-only by Raman, and he condemns five yogas rather than two — see §29.9.**
+blocker set on Atiganda, Shula, Ganda, `Vyatipata` and `Vaidhriti` (positions 6,
+9, 10, 17 and 27 in both). **The sequence and the indices are doubly sourced. The
+blocking is sourced only by Raman, who condemns exactly these five (it was two in
+the code until #1023 — see §29.9).**
 
 Also sourced, and useful: Rao's gloss for Vriddhi is "growth", and he uses it
 approvingly of his own writing muhurta (line 16152).
@@ -2556,11 +2557,14 @@ With those caveats, it independently confirms and materially extends §29.
   Atiganda, Vyaghata, and Parigha" — note "Mrityu" is **not** one of the 27,
   so that list needs its own check before use.
 
-  So `muhurat.py:397 _BLOCKING_NITYA_YOGAS = {"Vyatipata", "Vaidhriti"}` is now
-  **sourced but narrower than its source**, and `panchang.html`'s "Vaidhriti
-  and Vyatipata are the two most inauspicious yogas" is **not what Raman
-  says** — he names five as deleterious and singles out none as "the two
-  most". Reported, not changed.
+  **Fixed in #1023 (PR #1040).** `muhurat.py` `_BLOCKING_NITYA_YOGAS` was
+  `{"Vyatipata", "Vaidhriti"}`, **two names where Raman lists five**, and
+  `panchang.html` said "Vaidhriti and Vyatipata are the two most inauspicious
+  yogas", which is **not what Raman says**: he names five as deleterious and
+  singles out none as "the two most". The set is now Raman's five (Atiganda,
+  Shula, Ganda, Vyatipata, Vaidhriti) and `panchang.html` says so in those
+  words. His marriage-only list of ten (above) is **still not applied**, and
+  "Mrityu" in it still needs its own check.
 - **Bhadra is a karana, and it is the one to reject.** Line 1351: "Bhadra is
   unfit for any good work but is eminently suitable for violent and cruel
   deeds." Line 3761: "Vishtikarana must invariably be discarded." Raman's own
@@ -2834,12 +2838,14 @@ computation reproduces a published almanac; this section proves the tables and
 the index conventions are Rao's — and, since §29.9, Raman's too. Neither
 substitutes for the other.
 
-**Nothing in §29 has changed any behaviour.** Where the extraction and the code
+**Writing §29 changed no behaviour.** Where the extraction and the code
 disagree — Amrit Siddhi's Monday, Taitila's and Shakuni's characters, the count
 of blocking yogas, `panchang.html`'s "the two most inauspicious", the dead
-`"Amrita"` key, Sarvartha Siddhi's missing tithi leg — the finding is recorded
+`"Amrita"` key, Sarvartha Siddhi's missing tithi leg — the finding was recorded
 here and filed, not applied. A rule change needs the fix loop, a verification
-gate and QA.
+gate and QA. **One has since gone through that loop: the count of blocking
+yogas and `panchang.html`'s "the two most inauspicious" were fixed in #1023
+(PR #1040), see §29.9.** This note does not re-check the others.
 
 ### 29.13 Griha Pravesh, Vidyarambh, Namkaran and business — what the two muhurta books hold (#1027)
 
