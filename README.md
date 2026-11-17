@@ -116,7 +116,7 @@ Opens at <http://127.0.0.1:8000>. Dev server auto-reloads on file edits.
 | `OPENAI_API_KEY` | yes | — | LLM bearer token. Used as-is for any provider. |
 | `ASTRO_AI_API_BASE` | no | OpenAI's URL | Point at any OpenAI-compatible endpoint (Groq, Together, vLLM, Ollama, ...) |
 | `ASTRO_AI_MODEL` | no | `gpt-4o-mini` | Override the model name |
-| `ASTRO_AI_COOKIE_SECRET` | no for dev | a hardcoded dev secret | Set a long random string before deploying to prod |
+| `ASTRO_AI_COOKIE_SECRET` | no for dev | a hardcoded dev secret | Set a long random string before deploying to prod. On Cloud Run the app refuses to start if this or `ADMIN_PASSWORD` is unset, blank or a dev placeholder (#1104) |
 
 ## Routes
 
