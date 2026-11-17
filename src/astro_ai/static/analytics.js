@@ -30,6 +30,20 @@
  *                                    below, not by templates — see TOOL_ROOTS)
  *
  * Add a new event by adding a method here — keep templates dumb.
+ *
+ * Firing an event from a TEMPLATE (#1067) -- declare it, never call it:
+ *   {% from "_analytics_event.html" import analytics_event %}
+ *   {{ analytics_event('kundli_generated', {'lang': lang}) }}
+ * renders `<div hidden data-analytics-event="kundli_generated"
+ * data-analytics-params='{"lang":"en"}'>`, and this file fires it. Never put
+ * `Analytics.*(` in an inline top-level <script>: this file loads with `defer`,
+ * so the inline call runs first and throws "Analytics is not defined" on every
+ * full page load (that is how kundli_generated, ask_answered and
+ * dasha_deep_dive_viewed were lost). tests/test_analytics_declared_events.py
+ * fails on such a call. Declared events are fired once each, on DOMContentLoaded
+ * and after every htmx swap, then stamped `data-analytics-fired`. Params: only
+ * fixed-vocabulary scalars (a language code, a planet name, a category), never
+ * free text or anything a visitor typed -- see PII_PARAMS below.
  */
 (function () {
   var cfg = window.BHAGYA_ANALYTICS_CONFIG || {};
@@ -200,6 +214,53 @@
       window.Analytics.ctaClick({ from_path: location.pathname, to_path: url.pathname });
     } catch (err) { /* analytics must never break a click */ }
   });
+
+  // ── Declared events: <div hidden data-analytics-event=... data-analytics-params=...> ──
+  // Templates cannot call `Analytics.*` inline (this file is deferred, so the call
+  // runs first and throws), so a template declares an event as inert markup and
+  // this scan fires it. An element is stamped BEFORE it is tracked: a track() that
+  // throws must not leave it unfired to be retried by every later swap, and a
+  // payload that cannot be parsed must not block the next element. Nothing here
+  // may throw into page code.
+  //
+  // Params: JSON.parse, then only string/number/boolean members are kept, so a
+  // nested object or array a template slips in never reaches GA4. A malformed
+  // payload fires the event WITHOUT params: the conversion still counts, and
+  // nothing unparsed leaves the page.
+  function fireDeclared(el) {
+    try {
+      el.setAttribute('data-analytics-fired', '');
+      var name = el.getAttribute('data-analytics-event');
+      if (!name) return;
+      var params = {};
+      try {
+        var parsed = JSON.parse(el.getAttribute('data-analytics-params') || '{}');
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          Object.keys(parsed).forEach(function (k) {
+            var t = typeof parsed[k];
+            if (t === 'string' || t === 'number' || t === 'boolean') params[k] = parsed[k];
+          });
+        }
+      } catch (err) { params = {}; }
+      track(name, params);
+    } catch (err) { /* analytics must never break the page */ }
+  }
+
+  function scanDeclared() {
+    try {
+      var nodes = document.querySelectorAll('[data-analytics-event]:not([data-analytics-fired])');
+      for (var i = 0; i < nodes.length; i++) fireDeclared(nodes[i]);
+    } catch (err) { /* analytics must never break the page */ }
+  }
+
+  // A deferred script runs with readyState 'interactive', after the parser has
+  // finished, so the declared elements exist already: scan now. The
+  // DOMContentLoaded listener covers a script that runs earlier, and
+  // htmx:afterSettle covers hx-boost swaps, which replace <body>'s children
+  // without reloading this file.
+  document.addEventListener('DOMContentLoaded', scanDeclared);
+  document.addEventListener('htmx:afterSettle', scanDeclared);
+  if (document.readyState !== 'loading') scanDeclared();
 
   // ── Public surface ───────────────────────────────────────────────────
   window.Analytics = {

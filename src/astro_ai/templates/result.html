@@ -1125,5 +1125,7 @@
 
   </div>
 </main>
-<script>Analytics.kundliGenerated({ lang: '{{ lang }}' });</script>
+{# #1067: declared, fired by analytics.js (an inline Analytics call runs before the deferred script and throws). #}
+{% from "_analytics_event.html" import analytics_event %}
+{{ analytics_event('kundli_generated', {'lang': lang}) }}
 {% endblock %}
