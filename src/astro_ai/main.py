@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import contextlib
 import logging
+import os
 import time
 
 import uvicorn
@@ -140,6 +141,22 @@ def _warm_process_globals() -> None:
 @contextlib.asynccontextmanager
 async def _lifespan(_app: FastAPI):
     """Warm before serving. Blocking on purpose — see _warm_process_globals."""
+    # Refuse to START, not to answer (#1104). A Cloud Run revision whose container
+    # fails to start never receives traffic, so if production ever lost a secret
+    # (a --set-env-vars slip wipes the whole environment) the previous revision keeps
+    # serving and the deploy just fails. A per-route 503 would instead break live
+    # pages on a revision that already took traffic. K_REVISION is set only on Cloud
+    # Run, so local dev and TestClient keep the dev fallbacks. Names only in the
+    # message: the values are secrets, and the placeholders are public anyway.
+    if os.environ.get("K_REVISION"):
+        from astro_ai.routes.deps import insecure_secrets
+
+        bad = insecure_secrets()
+        if bad:
+            log.error("refusing to start: unset, blank or placeholder secret(s): %s", ", ".join(bad))
+            raise RuntimeError(
+                "refusing to start on Cloud Run: set a real value for " + ", ".join(bad)
+            )
     _warm_process_globals()
     yield
 
