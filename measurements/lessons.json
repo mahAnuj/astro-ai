@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-17T03:31:07Z",
+ "generated_at": "2026-11-17T06:08:41Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -903,6 +903,17 @@
     "themes": [
      "grounding"
     ]
+   },
+   {
+    "number": 1150,
+    "at": "2026-11-17T06:00:17Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1150#issuecomment-6940131215",
+    "summary": "QA: FAIL \u2014 verified at `6df4052b2dda16af0b3f3961343937a51e73d5e4` One defect, D1: ARCHITECTURE.md:1042 says the two dasha lords are passed to Analytics.track in dasha_deep_dive.html; that file now declares the event via analytics_event(...). FIX: reword that phrase, leave the bullet otherwise alone.",
+    "themes": [
+     "grounding",
+     "i18n",
+     "security"
+    ]
    }
   ],
   "reverts": [],
@@ -941,13 +952,13 @@
   "ops_findings": []
  },
  "error_themes": {
-  "grounding": 27,
+  "grounding": 28,
   "regression": 23,
   "tests": 21,
   "copy": 20,
   "tokens": 18,
-  "security": 10,
-  "i18n": 9,
+  "security": 11,
+  "i18n": 10,
   "performance": 8
  },
  "repeated_themes": [

@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-17T03:29:49Z",
+  "generated_at": "2026-11-17T06:07:00Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 131,
+  "open": 129,
   "with_ask": 46,
   "by_area": {
     "UNCLASSIFIED": 47,
@@ -23,9 +23,7 @@
     "DESIGN": 2,
     "BUG": 2,
     "MAIN-RED": 1,
-    "TESTS": 1,
     "PRIVACY": 1,
-    "LEARN": 1,
     "KNOWLEDGE": 1,
     "MUHURAT": 1,
     "AGENT-MEASURE": 1,
@@ -37,14 +35,14 @@
   },
   "by_type": {
     "untyped": 35,
-    "bug": 33,
-    "enhancement": 28,
+    "bug": 32,
+    "enhancement": 27,
     "chore": 19,
     "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 94,
+    "unset": 92,
     "medium": 22,
     "high": 15
   },
@@ -62,21 +60,6 @@
       ],
       "created": "2026-11-17T03:24:15Z",
       "updated": "2026-11-17T03:24:15Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1141,
-      "title": "tests: test_ops_day_picker freezes TODAY at import; gates go red across UTC midnight",
-      "ask": "",
-      "area": "TESTS",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-11-17T00:14:02Z",
-      "updated": "2026-11-17T00:14:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -259,23 +242,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1071,
-      "title": "learn: write gochar-2027-planetary-transits before January — the 2026 sibling has 1,627 impressions at position 5.7 (swisseph-computed dates)",
-      "ask": "",
-      "area": "LEARN",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "content",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-15T10:19:13Z",
-      "updated": "2026-11-17T03:19:55Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1070,
       "title": "analytics: instrument the core funnels",
       "ask": "",
@@ -332,10 +298,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "severity:medium"
+        "severity:medium",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T10:14:08Z",
-      "updated": "2026-11-15T10:14:08Z",
+      "updated": "2026-11-17T06:06:02Z",
       "blocked": false,
       "needs_evidence": false
     },
