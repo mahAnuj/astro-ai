@@ -17,6 +17,11 @@ from astro_ai import events, llm_stats, ops_data
 
 @pytest.fixture(autouse=True)
 def _isolated(monkeypatch):
+    # TODAY is re-read for every test, not once at import: the code under test calls
+    # date.today() at run time, and a gates run that collects before 00:00 UTC and runs
+    # after it would otherwise compare against yesterday (#1141).
+    global TODAY
+    TODAY = date.today()
     monkeypatch.setattr(ops_data, "LIVE_ISSUES", False)
     monkeypatch.setattr(ops_data, "LIVE_TODAY", False)
     ops_data._app_cache.clear()
@@ -24,7 +29,7 @@ def _isolated(monkeypatch):
     ops_data._app_cache.clear()
 
 
-TODAY = date.today()
+TODAY: date  # assigned by _isolated() before every test, never at import
 
 
 # --- which days are read ------------------------------------------------------
@@ -73,10 +78,15 @@ def test_picking_a_day_writes_nothing(monkeypatch):
 
 # --- what the page accepts ----------------------------------------------------
 
+# The two relative days are offsets resolved INSIDE the test: a parametrize list is
+# evaluated at collection, which is the same import-time freeze #1141 removed.
 @pytest.mark.parametrize("value", ["", "abc", "2026-13-01", "2026-11-10; drop",
-                                   (TODAY + timedelta(days=1)).isoformat(),
-                                   (TODAY - timedelta(days=ops_data.PICK_DAYS)).isoformat()])
+                                   "tomorrow", "past-the-window"])
 def test_a_bad_or_out_of_range_day_is_refused_not_clamped(value):
+    if value == "tomorrow":
+        value = (TODAY + timedelta(days=1)).isoformat()
+    elif value == "past-the-window":
+        value = (TODAY - timedelta(days=ops_data.PICK_DAYS)).isoformat()
     assert ops_data.pick_day(value) is None
 
 
