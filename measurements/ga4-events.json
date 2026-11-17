@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-17",
-    "2026-11-13"
+    "2026-10-18",
+    "2026-11-14"
   ],
   "dimensions": [
     "eventName"
@@ -14,43 +14,43 @@
   "rows": [
     {
       "event": "page_view",
-      "count": 1231
+      "count": 1301
     },
     {
       "event": "user_identified",
-      "count": 724
-    },
-    {
-      "event": "session_start",
-      "count": 709
+      "count": 763
     },
     {
       "event": "feature_view",
-      "count": 707
+      "count": 746
+    },
+    {
+      "event": "session_start",
+      "count": 740
     },
     {
       "event": "first_visit",
-      "count": 582
+      "count": 603
     },
     {
       "event": "user_engagement",
-      "count": 301
+      "count": 314
     },
     {
       "event": "scroll",
-      "count": 186
+      "count": 195
     },
     {
       "event": "form_start",
-      "count": 140
+      "count": 145
     },
     {
       "event": "ask_answered",
-      "count": 132
+      "count": 133
     },
     {
       "event": "kundli_generated",
-      "count": 53
+      "count": 52
     },
     {
       "event": "cta_click",
@@ -62,7 +62,7 @@
     },
     {
       "event": "click",
-      "count": 2
+      "count": 4
     },
     {
       "event": "dasha_deep_dive_viewed",
@@ -81,7 +81,7 @@
       "count": 1
     }
   ],
-  "events_total": 4793,
+  "events_total": 5022,
   "coverage_note": "cta_click: 15 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
     "count": 15,

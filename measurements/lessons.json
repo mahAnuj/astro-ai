@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-17T02:57:59Z",
+ "generated_at": "2026-11-17T03:31:07Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1121,15 +1121,57 @@
    "headline": "pending \u2014 scoreable from 2026-12-14",
    "at": "2026-11-13T01:40:49Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/835#issuecomment-6841267939"
+  },
+  {
+   "number": 843,
+   "verdict": "UNSCOREABLE",
+   "headline": "not scoreable from GA4/GSC",
+   "at": "2026-11-17T03:27:10Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/843#issuecomment-6937202562"
+  },
+  {
+   "number": 1066,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-16; the metric needs an export that does not exist",
+   "at": "2026-11-17T03:27:08Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1066#issuecomment-6937201708"
+  },
+  {
+   "number": 1073,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-17",
+   "at": "2026-11-17T03:27:00Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1073#issuecomment-6937199116"
+  },
+  {
+   "number": 1074,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-17; floor at risk",
+   "at": "2026-11-17T03:27:06Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1074#issuecomment-6937201154"
+  },
+  {
+   "number": 1075,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-17",
+   "at": "2026-11-17T03:27:07Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1075#issuecomment-6937201420"
+  },
+  {
+   "number": 1093,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-16; the metric needs an export that does not exist",
+   "at": "2026-11-17T03:27:09Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1093#issuecomment-6937202015"
   }
  ],
  "outcome_counts": {
   "PASS": 5,
   "MISS": 1,
   "OTHER": 1,
-  "UNSCOREABLE": 6,
+  "UNSCOREABLE": 7,
   "PARTIAL": 1,
-  "PENDING": 9
+  "PENDING": 14
  },
  "competitor_patterns": [
   {
