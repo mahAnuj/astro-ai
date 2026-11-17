@@ -119,6 +119,10 @@ Any of those failing: say which on the PR, and stop.
   how a passed defect reappears as a new one.
 - **Run Step 3's engineer and the checks the findings name** (the failing test, the gate that was
   red), plus the PR's own tests. Commit with a message that quotes the finding it fixes.
+- **Then `uv run python scripts/pre_qa_check.py`, and push only on its PASS.** The push is what
+  earns the next QA round, so this is the same rule as Step 3's: no round spent on what a script
+  could see. A failure in your own fix: fix and re-run. A failure outside the findings: name it in
+  the PR comment and push anyway, because widening the fix is the worse defect.
 - **Push to the PR's branch**: `git push origin HEAD:<headRefName>`. Never to `main`, never
   `--force`.
 - **Comment on the PR**: the commit SHA, each finding and what changed for it, and what you ran.
@@ -380,11 +384,13 @@ Then:
 
   - **Head OLDER than the verdict — nobody fixed it.** Fix the findings. Address **every** one it
     names, or say in your comment which you are not fixing and why; a round that fixes four of
-    six and reports success is how the next round rediscovers the other two. Then QA.
+    six and reports success is how the next round rediscovers the other two. Then
+    `scripts/pre_qa_check.py` (Step 3), and QA only on its PASS.
   - **Head NEWER than the verdict — a fix already landed and no round has seen it.** Do not
     re-fix: re-reading a verdict whose defects are gone produces a second guess at an answer that
     already exists, and that is the shape in which three consecutive rounds on #419 each found
-    the previous round's *fix* was the defect. Go straight to QA.
+    the previous round's *fix* was the defect. Go straight to `scripts/pre_qa_check.py` (Step 3),
+    then QA on its PASS.
 
   **Dispatch the QA round with the verdict's findings in its brief and the diff since that
   verdict**, not "review this PR". A round asked to re-establish a whole PR re-reads everything
@@ -456,6 +462,13 @@ Follow `/bug` or `/feature` internals exactly, whichever fits. In particular:
 - **`qa` as a separate dispatch, always.** Verification by the reasoning that produced the change is
   not verification. This project has run fifteen QA passes and *every one failed its first
   submission*, twice on defects the fix itself introduced. Budget two or three rounds.
+- **Run the cheap gates before EVERY `qa` dispatch, a re-QA after a fix included.** Commit, then
+  `uv run python scripts/pre_qa_check.py`. It runs the pr-gates checks that need no network, LLM
+  or server, plus the tests the diff touches. FAIL: fix and re-run. Exit 2: it did not run, which
+  is not a pass. **Dispatch `qa` only on PASS.** Run 44020807802 (#1067) spent three rounds, and
+  rounds 1 and 2 each failed only on a stale `ARCHITECTURE.md` count that
+  `verify_architecture_counts.py` reports in seconds. A PASS here is not a verdict; it only means
+  the round will not be spent on what a script could see.
 
 ### Dispatch in the FOREGROUND and wait. This is not a style preference.
 
