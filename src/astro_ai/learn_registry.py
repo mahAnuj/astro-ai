@@ -131,6 +131,10 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Depends on how the planet is placed in your chart. A well-placed Jupiter Mahadasha (Jupiter in own sign / exalted / in a kendra) is often materially and spiritually rewarding. A well-placed Venus Mahadasha (20 years) frequently coincides with marriage and prosperity. But an afflicted Jupiter or Venus can be difficult. The Mahadasha's flavour comes from natal placement, not the planet itself.",
             },
             {
+                "q": "Which Mahadasha is best for career?",
+                "a": "None is best for everyone. A dasha helps your career according to how strong its lord is in your birth chart, which houses it rules and which house it sits in; a lord tied to the 10th house is the first to check. Practitioners commonly link the Sun with career and authority, Mercury with business and Saturn with sustained hard work, as reading habits rather than guarantees. The nine dashas are not ranked for career. Your own timeline is at /dasha.",
+            },
+            {
                 "q": "Can Vimshottari Dasha predict specific events like marriage or job change?",
                 "a": "It can indicate timing windows, not exact dates. A marriage typically fires during the Dasha or Antardasha of Venus (marriage karaka), Jupiter (dharma karaka), the 7th lord, or a planet sitting in / aspecting the 7th house. When multiple such signals cluster in the same window, marriage becomes probable. Transits (gochara) refine the timing further. Prediction is probabilistic — 'a window is more likely', not 'you will marry in March 2027'.",
             },
