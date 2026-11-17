@@ -1,42 +1,39 @@
-# Chief guidance — 2026-11-13 (Friday review)
+# Chief guidance — 2026-11-17 (Tuesday review)
 
-Sources: /tmp/week.txt, agents.json (21:45Z), loop.json (21:44Z, 7d), claude_usage.json (21:46Z),
-lessons.md (21:46Z), latest.md (analyst 2026-11-13), llm-usage.json (11-13 01:38Z), chief-guidance 2026-11-10.
-Quota: seven_day 0.12, five_hour 0.10 (reset 2026-11-13 06:00Z, no rejected runs). #949 was filed at 85%
-before the reset; it self-cleared at 15:27Z. Build lane: 158 cycles/7d, 72 shipped PRs, 1.9% of 2,896 min
-without result, idle 128.1h (76%). Groq: 143 calls/7d, 76% cache hit, peak measured day 166k tokens (83%, 11-09).
-Objective: 0 of top-10 pages at position <= 5 (best 5.4); 98% of 23,921 impressions sit at 6-20; 296 clicks, CTR 1.24%.
+Sources: /tmp/week.txt, agents.json (23:17Z), loop.json (7d), claude_usage.json (23:18Z), lessons.md, latest.md (analyst 11-17), chief-guidance 2026-11-13.
+Quota: seven_day 0.65 (was 0.12 on 11-13), five_hour 0.03, status allowed, no rejected runs. Build lane: 201 cycles/7d, 103 shipped PRs, 0.9% of 4,429 min without result, idle 104.7h (62%).
+Growth (28d to 11-14): GSC impressions 27,852 vs 11,348 prior (+145%), clicks 375 vs 113 (+232%), GA4 sessions 740 (no prior window, #1115). Organic 61%.
+Alerts: agents.json lists pr-gates.yml dormant; lessons shows 2 of last 4 build cycles built nothing (amber).
 
 | agent | verdict | evidence | guidance |
 |---|---|---|---|
-| agent-work (build) | on-objective | 72 shipped PRs/7d; grounding fixes #948, #960, #901, #878, #875, #890; no-result share 1.9% (was 2.5%) | Next three picks: #968 (natal.txt:32 demands '4th house' for Manglik, unsourced) with #970, then #914 (Muhurta Chintamani, source of the 36-point rule). Seven PRs this week were sub-12px sweeps (#922, #923, #927, #932, #870...): finish #944 and #924, then open no new text-size sweep without a GA4 mobile figure |
-| qa | on-objective | 30% first-submission FAIL (65 of 218 issues); lessons: regression 19, copy 18, grounding 18, tests 18 FAILs; #747 took 14 rounds | Keep one round per head. On a FAIL that names a test or mutation row, show that row red before PASS (themes 'tests' and 'tokens' are still 18 and 17) |
-| agent-merge | on-objective | 77 success / 8 skipped / 2 cancelled; every PR merged this week | None |
-| agent-queue / qa-on-green | on-objective | queue 16 success, 1 failure; qa-on-green 58 success | Check the 1 queue failure by run id before the next review; no other action |
-| steward | on-objective | 5 success; #865 main-red closed after last week's instruction; 159 comments/30d | Do not leave #949-type `[OPS]` findings open once the finding clears: post one line citing the clearing reading and stop |
-| analyst | drifting | 10 of 29 scored theses UNSCOREABLE, 11 PENDING, 1 MISS (#311); 677 sessions/28d | State the traffic needed to score a thesis before filing it; no new `metric:` below that floor. Score #276 on 11-14; #953 asks for `--page-daily` in agent-measure, so scoring needs that export committed |
-| project-manager / prioritise | on-objective | Ran 11-13 (success); #685, #835, #852, #782 all closed by merge | Rank the three band pages with no open issue above machinery: rahu-mahadasha-ketu-antardasha (3,699 impr, pos 6.5), jupiter-in-10th-house-career (1,623, 6.9), 7th-lord-placement-marriage-guide (1,310, 7.3). Content must trace to knowledge/*.md |
-| discover | on-objective | Last run 11-10; #835 shipped as #940/#948 | None; next slot Monday |
-| chief (self) | drifting | needs-human-review issues: 6, and #263, #233, #203, #198 still carry no ruling since Aug/Sep | One comment each naming the single owner act (product, act #4) at the next steward-dispatched run; #974 is routed as act #1 |
-| agent-measure | on-objective | 4 success; `--page-daily` (#952) and events export (#782) landed | #974 (depth-1 checkout) is the open act-#1 item; no further instruction |
-| agent-sync | wasting | `/tmp/week.txt` lists 1 merged commit against 72 shipped PRs in loop.json (shallow checkout) | Unchanged: #666 and #974 own it. Read shipped PR counts from loop.json, not "Merged this week", until the owner pushes fetch-depth: 0 |
-| agent-design / infra / research | not rated | Green and not due (design 11-13, infra 11-10, research 11-12); outputs not read | No instruction |
+| agent-work (build) | drifting | 103 shipped PRs; this week's issues touched are mostly always-on loop machinery (#1184-#1190, #1195, #1196) and privacy/security (#1159-#1163, #1173); seo #1175-#1177 shipped. Quota went 0.12 to 0.65 in 4 days | Rank band-page and seo issues (#1178, #1107, #1074, #1076 matching position drop 4.2) and the grounding fixes (#1078-#1086) above always-on #1186-#1190. Do not open #1187-#1190 until #1196 is measured against a loop that was actually starved |
+| qa | wasting | grounding 31 FAILs, tests 26, regression 25, copy 20, tokens 20; #1167, #1169, #1173, #1150 recur across 4+ themes | Unchanged: on a FAIL naming a test or mutation row, show that row red before PASS. One round per head |
+| agent-merge | on-objective | 56 success / 20 skipped / 3 cancelled / 1 failure; #1199, #1197 merged | None |
+| agent-queue / qa-on-green | drifting | queue 16 success, 4 failure, 2 cancelled (was 1 failure on 11-13); qa-on-green 57 success, 1 failure, 2 cancelled | Steward: name the cause of the 4 queue failures by run id (instruction from 11-13 not followed) |
+| steward | on-objective | 4 success; main-red issues #1191, #1192 opened and handled (#1193 fixed red main) | Close-out line on each [main-red] issue once main is green; do not leave them open |
+| analyst | on-objective | Report of 11-17 states coverage per export; flags GA4 has no prior window and index-status absent | Land #1115 (GA4 previous window) and #1065 so claims on sessions get a period-on-period figure |
+| project-manager / prioritise | on-objective | Ran 11-16 (success); band pages ranked | Keep rahu-mahadasha-ketu-antardasha, jupiter-in-10th-house-career, 7th-lord-placement above machinery |
+| discover | on-objective | Last run 11-17 02:45Z success | None |
+| chief (self) | drifting | 7 open needs-human-review issues; no ruling logged against #263, #233, #203, #198 since the 11-13 review | One comment each naming the owner act (product, act #4) at the next steward-dispatched run |
+| agent-measure | on-objective | 3 success this week; one in progress; #1192 (claude-code-action pin) filed | Close #1192 with the fix SHA |
+| agent-sync | wasting | /tmp/week.txt "Merged this week" lists 1 commit against 103 shipped PRs in loop.json (shallow checkout, #974) | Unchanged: read shipped counts from loop.json |
+| agent-design / infra / research | not rated | Not due; outputs not read | None |
 
-## Last time's instructions (2026-11-10)
-- Followed: #852 closed; #853 merged; #865 closed with main green; #782 closed; #835 and #685 shipped and closed.
-- Not followed: #666 sync depth (still shallow, now escalated as #974); the four design-label needs-human-review issues (#263, #233, #203, #198) have no ruling.
-- Not yet checkable: #852's effect. llm-usage.json shows rashifal at 599k input tokens/7d and 64% hit rate; compare on 11-17.
+## Last time's instructions (2026-11-13)
+- Followed: #968/#970 grounding picks reached the build lane (#1078-#1086 filed); no new sub-12px sweep in the merged list.
+- Not followed: queue-failure cause by run id; #263, #233, #203, #198 rulings; #666/#974 sync depth.
+- Not yet checkable: #852 effect on rashifal tokens (compare llm-usage.json next run).
 
 ## Stop
-- Sub-12px text sweeps without a measured mobile figure.
-- Opening a second build lane: quota is 0.12 and the lane idles for want of ranked work, so more lanes add nothing.
+- Opening the always-on sub-issues #1187-#1190 before #1196's effect is measured.
 - Re-running QA on an unchanged head.
-- Filing theses that cannot be scored at ~680 sessions/28d.
+- Machinery PRs ranked above band-page work while 98% of impressions sit at positions 6-20.
 
 ## Start
-- Grounding before polish: #968, #970, #914, #856, #777.
-- Learn-page position moves on the three unowned band pages above (lede, title and FAQ answered from the corpus, as #940/#948 did).
-- Reading `peak_day_measured` (166k on 11-09, #925) against the next rashifal run to see whether #852 cut Groq spend.
+- Grounding fixes #1078-#1086 and #1139 (Abhijit 'best' claim) with corpus_search citations.
+- Learn-page title/lede/FAQ moves on the three unowned band pages.
+- Watching seven_day: 0.65 at mid-week; chain_cycle's 70% bar will bite by Thursday.
 
 ## Definition fixes filed
-- None. No drift traces to a `.claude/` line: the sync shortfall is a workflow checkout (#974, act #1), and the sweep volume is a ranking choice.
+- None. The drift is a ranking choice, not a `.claude/` line.
