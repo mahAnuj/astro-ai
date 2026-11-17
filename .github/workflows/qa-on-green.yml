@@ -51,10 +51,20 @@ on:
     workflows: ["PR gates", "verify-build"]
     types: [completed]
 
-# One at a time. Two pushes in quick succession fire two of these, and the
-# second would read the state the first is still acting on.
+# One at a time PER PR BRANCH AND GATE WORKFLOW. Two pushes in quick succession
+# on one branch fire two of these, and the second would read the state the
+# first is still acting on, so those stay serialised.
+#
+# NOT one global group (2026-11-17). GitHub keeps at most ONE pending run per
+# concurrency group and silently CANCELS the older pending one when a third
+# arrives -- cancel-in-progress: false does not prevent that. When several PRs'
+# gates finished within a minute, their decisions were dropped with no error:
+# run 44059296498 (PR #1165's green PR gates, 09:50:42Z) was cancelled, so
+# #1165 sat green with no QA round and no marker. Different PRs touch different
+# state, so they need not wait on each other; the per-head marker comment still
+# guards against a double dispatch on one PR.
 concurrency:
-  group: qa-on-green
+  group: qa-on-green-${{ github.event.workflow_run.head_branch }}-${{ github.event.workflow_run.name }}
   cancel-in-progress: false
 
 permissions:

@@ -1,21 +1,20 @@
 {
-  "generated_at": "2026-11-17T17:19:02Z",
+  "generated_at": "2026-11-17T18:38:33Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 127,
-  "with_ask": 44,
+  "open": 133,
+  "with_ask": 48,
   "by_area": {
-    "UNCLASSIFIED": 46,
+    "UNCLASSIFIED": 53,
     "INFRA": 14,
     "REDESIGN": 10,
-    "SEO": 7,
     "OPS": 7,
     "FEATURE": 7,
+    "SEO": 6,
     "CORPUS": 4,
     "ANALYTICS": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
-    "SECURITY": 2,
     "ASK": 2,
     "PRIVACY": 2,
     "MEASURE": 2,
@@ -24,6 +23,8 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "MAIN-RED": 1,
+    "SECURITY": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
     "UI": 1,
@@ -31,21 +32,168 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 35,
-    "bug": 30,
-    "enhancement": 28,
+    "untyped": 36,
+    "enhancement": 35,
+    "bug": 28,
     "chore": 18,
     "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 88,
+    "unset": 92,
     "medium": 22,
-    "high": 16,
+    "high": 18,
     "low": 1
   },
-  "blocked": 7,
+  "blocked": 8,
   "rows": [
+    {
+      "number": 1192,
+      "title": "main is red: agent-measure.yml:420 uses claude-code-action@v1 unpinned (#1169 x #1174 semantic conflict)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "needs-human-review"
+      ],
+      "created": "2026-11-17T18:25:06Z",
+      "updated": "2026-11-17T18:25:06Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 1191,
+      "title": "[main-red] pr-gates did not pass on main at be026a3",
+      "ask": "",
+      "area": "MAIN-RED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-17T18:12:30Z",
+      "updated": "2026-11-17T18:12:48Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1190,
+      "title": "always-on 6/6 permissions: credential proxy design spike",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "architecture"
+      ],
+      "created": "2026-11-17T18:01:38Z",
+      "updated": "2026-11-17T18:01:38Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1189,
+      "title": "always-on 5/6 memory: index-then-load agent definitions and one in-place progress comment per issue",
+      "ask": "Definitions use index-then-load.",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "category:technical"
+      ],
+      "created": "2026-11-17T18:01:37Z",
+      "updated": "2026-11-17T18:01:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1188,
+      "title": "always-on 4/6 outbox: one deduped, capped, logged posting path with noise evals on /admin/ops",
+      "ask": "A ledger in measurements/outbox.json, with counts only.",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "category:technical"
+      ],
+      "created": "2026-11-17T18:01:37Z",
+      "updated": "2026-11-17T18:01:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1187,
+      "title": "always-on 3/6 timers: agent-set follow-ups and schedules, fired into the inbox by a no-AI poller",
+      "ask": "The timer store is hidden comments: <!-- agent-timer: key=… due=<ISO> kind=followup|schedule every=<dur> target=… action=… -->.",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "category:technical"
+      ],
+      "created": "2026-11-17T18:01:36Z",
+      "updated": "2026-11-17T18:01:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1186,
+      "title": "always-on 2/6 liveness: hourly backstop drain + inbox-stale / ready-unmerged / red-unhandled findings",
+      "ask": "Backstop drain: an hourly, no-AI agent-queue run, so a cancelled wake strands nothing for more than an hour.",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-11-17T18:01:35Z",
+      "updated": "2026-11-17T18:01:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1185,
+      "title": "always-on 1/6 inbox: every trigger appends to a durable inbox first; one worker per lane; fold pending events per target",
+      "ask": "Handlers only append.",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-11-17T18:01:34Z",
+      "updated": "2026-11-17T18:01:34Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1184,
+      "title": "always-on loop: inbox, timers, memory, permissions, outbox on Anthropic's five primitives — GitHub-native first (design)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "priority:high",
+        "architecture"
+      ],
+      "created": "2026-11-17T18:01:33Z",
+      "updated": "2026-11-17T18:01:56Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1178,
       "title": "seo: effective meta descriptions over 160 chars, enforced by verify_seo_copy (#1107 criterion 5)",
@@ -60,25 +208,6 @@
       ],
       "created": "2026-11-17T12:12:59Z",
       "updated": "2026-11-17T12:13:17Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1177,
-      "title": "seo: no-chart nav links (/today /monthly /yearly /ask) must not 303 (#1107 criterion 4)",
-      "ask": "",
-      "area": "SEO",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "seo",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-17T12:12:58Z",
-      "updated": "2026-11-17T17:18:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -100,23 +229,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1172,
-      "title": "security: every claude-code-action step runs in auto mode, so --allowedTools lists are advisory; pass --permission-mode default",
-      "ask": "Add --permission-mode default to every claude-code-action step.",
-      "area": "SECURITY",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:high"
-      ],
-      "created": "2026-11-17T11:09:17Z",
-      "updated": "2026-11-17T11:32:51Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1167,
       "title": "ask: audit saved /ask answers weekly for astrological correctness (grounded in knowledge/, prompt contract, safety) without publishing user questions",
       "ask": "Collector step, no model (in agent-measure's GCS-credentialed job, like collect_llm_usage.py).",
@@ -133,7 +245,7 @@
         "qa:independent"
       ],
       "created": "2026-11-17T09:46:07Z",
-      "updated": "2026-11-17T11:48:42Z",
+      "updated": "2026-11-17T18:34:42Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -221,7 +333,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T20:41:26Z",
-      "updated": "2026-11-17T10:04:37Z",
+      "updated": "2026-11-17T18:37:18Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -239,10 +351,10 @@
         "risk:medium",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-11-15T20:41:18Z",
-      "updated": "2026-11-17T14:22:45Z",
+      "updated": "2026-11-17T17:41:48Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -261,7 +373,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T10:25:50Z",
-      "updated": "2026-11-17T12:55:21Z",
+      "updated": "2026-11-17T18:25:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -348,25 +460,6 @@
       ],
       "created": "2026-11-15T10:10:28Z",
       "updated": "2026-11-15T10:10:28Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1062,
-      "title": "Namkaran first-letter table: Raman's Appendix holds it, the code says no book does, and Shravana differs (#1027)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-15T09:04:12Z",
-      "updated": "2026-11-16T21:31:38Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -669,7 +762,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-11T21:59:55Z",
-      "updated": "2026-11-17T12:57:06Z",
+      "updated": "2026-11-17T17:45:29Z",
       "blocked": false,
       "needs_evidence": false
     },

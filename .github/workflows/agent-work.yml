@@ -342,7 +342,7 @@ jobs:
           echo "args=$args" >> "$GITHUB_OUTPUT"
           echo "cycle arguments: \`/agent-cycle $args\`" >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # THIS IS THE REMAINING HALF OF #335, and the schedule above depends
@@ -401,6 +401,10 @@ jobs:
           # runner rather than by an agent remembering it — which is the failure
           # this repo has twice.
           claude_args: |
+            # #1172: strict tool list. claude-code-action made auto mode the default
+            # on 2026-11-12 (its #2004); there a safety review can pass a call no
+            # --allowedTools rule covers. `default` restores the boundary.
+            --permission-mode default
             --max-turns 150
             --effort high
             # Broad Bash, because enumerating verbs left the first nightly

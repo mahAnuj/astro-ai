@@ -26,6 +26,9 @@ THE RULES THAT KEEP IT FROM BECOMING NOISE
   a measurement dipping under a threshold for one run is not "fixed".
 * `unreadable` sources are not filed: the detector already counts them, and an
   issue saying "could not read a file" is the stale-measurement finding's job.
+* Every issue and comment goes through `scripts/outbox.py` (#1188), which adds a
+  dedupe key, a per-issue daily cap, retry on 5xx and a ledger marker. A post the
+  outbox refuses is counted as `suppressed`; one it could not deliver is exit 1.
 
 Issues filed by `github-actions[bot]` are TRUSTED by `resolve_provenance.py`
 (SELF_APPS, 2026-11-02), so a cycle can work them.
@@ -37,11 +40,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
 from datetime import datetime, timezone
 from typing import Callable
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import outbox  # noqa: E402  -- the one posting path (#1188)
 
 WRITER = "github-actions[bot]"
 MARK = "ops-finding"
@@ -170,12 +177,31 @@ def in_scope(kind: str, scope: str) -> bool:
     return (kind in LIVENESS_KINDS) == (scope == "liveness")
 
 
+#: Outbox kinds (scripts/outbox.py KINDS). The change and the cleared comments share
+#: one kind with `dedupe: last`, so "A, cleared, A again" is still said.
+KIND_ISSUE, KIND_COMMENT = "ops-finding-issue", "ops-finding"
+
+
+def _send(o: "outbox.Outcome", stats: dict, counted: str) -> None:
+    """A failed post stays exit 1, as before the outbox. A deduped or capped one is
+    counted as `suppressed`, never folded into `counted`."""
+    if o.outcome == "failed":
+        raise RuntimeError(f"outbox {o.kind} on {o.target}: {o.error}")
+    stats[counted if o.outcome == "sent" else "suppressed"] += 1
+
+
 def carry(gh: Runner, repo: str, findings: list[dict], now: str,
-          keep_prefix: str | None = None, scope: str = "ops") -> dict:
+          keep_prefix: str | None = None, scope: str = "ops",
+          box: "outbox.Outbox | None" = None) -> dict:
     """`keep_prefix`: kinds that were NOT read this run (the app watcher could not
     reach the bucket). Their open issues are left untouched rather than told
-    'cleared' -- an unreadable source is not a clean one."""
-    stats = {"filed": 0, "updated": 0, "unchanged": 0, "cleared": 0}
+    'cleared' -- an unreadable source is not a clean one.
+
+    Every post goes through `box` (scripts/outbox.py, #1188): dedupe, a daily cap,
+    retry, a ledger line. This file's own rules -- one issue per kind, a comment
+    only on a change -- still decide WHETHER to speak; the outbox is the second line."""
+    box = box or outbox.Outbox(gh, repo)
+    stats = {"filed": 0, "updated": 0, "unchanged": 0, "cleared": 0, "suppressed": 0}
     existing = open_findings(gh, repo)
     seen = set()
     for f in findings:
@@ -185,13 +211,11 @@ def carry(gh: Runner, repo: str, findings: list[dict], now: str,
         seen.add(kind)
         cur = existing.get(kind)
         if cur is None:
-            args = ["api", "-X", "POST", f"repos/{repo}/issues",
-                    "-f", f"title=[OPS] {f['title']}", "-f", f"body={body_for(f, now, scope)}",
-                    "-f", f"labels[]={LABEL}"]
+            labels = [LABEL]
             if PRIORITY.get(f["level"]):
-                args += ["-f", f"labels[]={PRIORITY[f['level']]}"]
-            gh(args)
-            stats["filed"] += 1
+                labels.append(PRIORITY[f["level"]])
+            _send(box.create_issue(KIND_ISSUE, f"[OPS] {f['title']}", body_for(f, now, scope), labels),
+                  stats, "filed")
             continue
         last, cleared = last_comment_state(gh, repo, cur["number"])
         prev = last or cur["state"]
@@ -200,10 +224,9 @@ def carry(gh: Runner, repo: str, findings: list[dict], now: str,
             continue
         if not prev or prev.split("|", 1)[0] != f["level"]:
             _set_priority(gh, repo, cur["number"], f["level"])
-        gh(["api", "-X", "POST", f"repos/{repo}/issues/{cur['number']}/comments",
-            "-f", f"body=<!-- ops-state: {_state(f)} -->\n**Now {f['level'].upper()}: "
-                  f"{f['title']}** ({now})\n\n{f['detail']}"])
-        stats["updated"] += 1
+        _send(box.post(cur["number"], KIND_COMMENT,
+                       f"<!-- ops-state: {_state(f)} -->\n**Now {f['level'].upper()}: "
+                       f"{f['title']}** ({now})\n\n{f['detail']}"), stats, "updated")
     for kind, cur in existing.items():
         if kind in seen or not in_scope(kind, scope):
             continue
@@ -212,11 +235,10 @@ def carry(gh: Runner, repo: str, findings: list[dict], now: str,
         _, cleared = last_comment_state(gh, repo, cur["number"])
         if cleared:
             continue
-        gh(["api", "-X", "POST", f"repos/{repo}/issues/{cur['number']}/comments",
-            "-f", f"body={CLEARED}\nThe `{kind}` finding did not fire at {now}. Left open: one "
-                  f"clean reading is not a fix, and closing belongs to the mechanisms CLAUDE.md "
-                  f"names. It is commented on again if the finding returns."])
-        stats["cleared"] += 1
+        _send(box.post(cur["number"], KIND_COMMENT,
+                       f"{CLEARED}\nThe `{kind}` finding did not fire at {now}. Left open: one "
+                       f"clean reading is not a fix, and closing belongs to the mechanisms CLAUDE.md "
+                       f"names. It is commented on again if the finding returns."), stats, "cleared")
     return stats
 
 
@@ -248,7 +270,7 @@ def main(argv: list[str], gh: Runner = run_gh, now: datetime | None = None) -> i
     stamp = (now or datetime.now(timezone.utc)).strftime("%Y-%m-%dT%H:%MZ")
     try:
         stats = carry(gh, a.repo, findings, stamp, keep_prefix=keep, scope=a.scope)
-    except (RuntimeError, json.JSONDecodeError) as exc:
+    except (RuntimeError, ValueError) as exc:
         print(f"::error::ops findings could not be filed: {exc}")
         return 1
     print(f"ops findings: {stats}")

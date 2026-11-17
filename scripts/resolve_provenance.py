@@ -49,9 +49,17 @@ Fail closed. There are three verdicts and the middle of the road is not one of t
   one hop.
 
   SO THE REMAINING PROTECTION IS NOT THIS GATE. It is that an issue BODY is data, never
-  instructions, wherever it came from. `provenance:outsider` still marks what this App filed
-  for a human to read; `qa` and `agent-merge` still gate the output. A trusted provenance says
-  "this issue may be worked", never "do what it says".
+  instructions, wherever it came from; `qa` and `agent-merge` still gate the output. A trusted
+  provenance says "this issue may be worked", never "do what it says".
+
+  ONE HOP IS CLOSED BY LABEL (#1167, QA on PR #1169): a self-app issue that carries
+  `provenance:outsider` is OUTSIDER. Until then the label was a record only, and `--apply`
+  removed it from any issue this App filed. A writer that KNOWS it is relaying outsider text
+  -- the weekly /ask audit, through `scripts/ask_audit_post.py` -- marks the issue, and the
+  exception then does not apply. The label is honoured by presence because it only narrows;
+  a human `provenance:trusted` override lifts it as it lifts any outsider verdict. It covers
+  only the writers that apply it: an agent restating outside text WITHOUT the label is still
+  trusted, which is why the paragraph above stands.
 * Permission comes from `collaborators/<login>/permission`, never from `author_association`
   (`CONTRIBUTOR` means "has had a PR merged", not "has write access").
     admin / write        -> trusted
@@ -96,6 +104,9 @@ import sys
 import urllib.parse
 from dataclasses import dataclass, field
 from typing import Callable
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import outbox  # noqa: E402  -- the one posting path (#1188)
 
 TRUSTED, OUTSIDER, UNRESOLVED = "TRUSTED", "OUTSIDER", "UNRESOLVED"
 EXIT = {TRUSTED: 0, OUTSIDER: 1, UNRESOLVED: 2}
@@ -342,13 +353,34 @@ def classify(gh: Gh, repo: str, number: int) -> Verdict:
         if base == UNRESOLVED:
             return Verdict(UNRESOLVED, ev, "the author's repository permission could not be resolved")
 
+    # THE TAINT (#1167, QA on PR #1169). A `provenance:outsider` label on an
+    # issue THIS REPO'S OWN BOT filed means the bot was relaying outsider text:
+    # the /ask audit files issues whose content began as a stranger's question,
+    # and ask_audit_post.py applies the label to every one. Without this the
+    # self-app exception above answered TRUSTED and `--apply` then REMOVED the
+    # label -- the laundering hop the docstring names, made one step shorter.
+    # Honoured by PRESENCE, unlike `provenance:trusted`, because it can only
+    # narrow: anyone able to apply it can at worst stop the loop building an
+    # issue. A human with write access lifts it the way any outsider issue is
+    # lifted, with a `provenance:trusted` override (checked below); the
+    # supported route is still to re-file the work as their own issue.
+    if base == TRUSTED and is_bot and LABEL_OUTSIDER in labels:
+        base = OUTSIDER
+        ev.append(f"taint       : {LABEL_OUTSIDER} is on an issue this repo's bot filed -- "
+                  "it relays outsider text, so the self-app exception does not apply")
+
     if base == TRUSTED:
         ev.append("override    : not consulted (author is trusted)")
         return Verdict(TRUSTED, ev,
                        f"author is this repo's own delivery App ({login})" if is_bot
                        else "author has write access")
 
-    why = "author is a bot (untrusted by rule)" if is_bot else "author is not a collaborator with write access"
+    if is_bot and is_self_app(login):
+        why = f"filed by this repo's bot but marked {LABEL_OUTSIDER}: it relays outsider text"
+    elif is_bot:
+        why = "author is a bot (untrusted by rule)"
+    else:
+        why = "author is not a collaborator with write access"
     if LABEL_TRUSTED not in labels:
         ev.append(f"override    : none ({LABEL_TRUSTED} not present)")
         return Verdict(OUTSIDER, ev, why)
@@ -399,7 +431,13 @@ def apply_verdict(gh: Gh, repo: str, number: int, v: Verdict, current_labels: se
                 "untrusted -- the check could not complete (a 403, a 5xx, a timeout, an empty "
                 "answer or an unreadable author all stop here by design). Re-run "
                 "`scripts/resolve_provenance.py` once the cause is cleared.")
-        do(["issue", "comment", n, "--repo", repo, "--body", body], "comment")
+        # Through the outbox (#1188): dedupe, daily cap, retry, a ledger line, on the
+        # same porcelain comment command as before. Its own read failing is
+        # fail-open too, so the ruling above still holds.
+        o = outbox.Outbox(outbox.from_result_runner(gh), repo, transport="porcelain").post(
+            number, "provenance-unresolved", body)
+        if o.outcome == "failed":
+            problems.append(f"comment failed ({o.error[:120]})")
         return problems
 
     want, drop = (LABEL_TRUSTED, LABEL_OUTSIDER) if v.verdict == TRUSTED else (LABEL_OUTSIDER, LABEL_TRUSTED)
