@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-17T17:20:58Z",
+ "generated_at": "2026-11-17T23:18:49Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -985,10 +985,22 @@
      "tokens",
      "tests"
     ]
+   },
+   {
+    "number": 1199,
+    "at": "2026-11-17T23:11:55Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1199#issuecomment-6963740043",
+    "summary": "QA: FAIL \u2014 verified at `9fa6a80f0dc6019abbebe96b189ca6794e0240a2` Fix works in every executed check (ordering test red on main/green on branch; 3 mutation rows each killed by the new test only; real-server new-address 1555 ms on main vs 55 ms on branch, equal to existing; body identical; 6 concurren",
+    "themes": []
    }
   ],
   "reverts": [],
   "verify_production_failed": [
+   {
+    "run": 44145312520,
+    "at": "2026-11-17T18:12:27Z",
+    "sha": "ae4de62"
+   },
    {
     "run": 44092951700,
     "at": "2026-11-17T13:27:45Z",
@@ -1030,7 +1042,22 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": []
+  "ops_findings": [
+   {
+    "kind": "loop-broken",
+    "level": "red",
+    "title": "pr-gates.yml is dormant",
+    "detail": "`collect_agent_performance.py` flagged this loop. A loop that does not run produces nothing, and nothing is indistinguishable from a quiet day on every other tile.",
+    "where": "/admin/ops"
+   },
+   {
+    "kind": "loop-starved",
+    "level": "amber",
+    "title": "2 of the last 4 build cycles built nothing",
+    "detail": "Empty cycles started 2026-11-17T20:20, 2026-11-17T20:28. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
+    "where": "/admin/ops"
+   }
+  ]
  },
  "error_themes": {
   "grounding": 31,

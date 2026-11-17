@@ -23,10 +23,10 @@ GATED = {"today", "monthly", "yearly", "ask"}
 NAV_LABELS = {"Main", "Quick navigation"}
 
 # Nav hrefs that are NOT #1177's, excluded by name. The nav spells it `/learn/`
-# (200), so `/learn` (307) is not in it today; the 307 slash-redirect class is
+# (200), so `/learn` (308) is not in it today; the slash-redirect class is
 # #1176's scope and this test must not start failing on it if a nav link ever
 # regresses to that spelling. Add a path here only with the issue that owns it.
-OTHER_ISSUES_REDIRECTS = {"/learn"}  # #1176: trailing-slash 307s
+OTHER_ISSUES_REDIRECTS = {"/learn"}  # #1176: trailing-slash 308s
 
 
 class _NavHrefs(HTMLParser):

@@ -114,8 +114,8 @@ MUTATIONS = [
      "test_the_audit_posts_only_through_the_post_script"),
     ("#1169: the audit runs in auto mode, where the allow list is not a boundary",
      ".github/workflows/agent-measure.yml",
-     # Anchored on the line above too: #1174 put the same flag on the analyst
-     # step, so the bare line matched twice and the pre-flight refused the row.
+     # Anchored on the line before it: #1174 added the same flag to the
+     # analyst step, so the bare line now matches twice.
      "            --effort high\n            --permission-mode default\n",
      "            --effort high\n",
      "test_no_allowed_command_can_print_the_environment"),

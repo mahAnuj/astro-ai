@@ -992,6 +992,50 @@ a{color:#1f5fae} a:hover{color:#174a88}
     {% endif %}
   </section>
 
+  {# ── How noisy the loop's own comments are. measurements/outbox.json
+     (scripts/collect_outbox.py, #1188). Computed from EVERY comment by the loop's
+     identities, outbox or not, so a quiet number is real quiet and not just "the
+     migrated scripts are quiet". Duplicate = same normalised text (SHAs, times and
+     run ids replaced) already posted by the loop on the same thread in the window.
+     Deduped / capped / failed are the tallies the outbox writes on its own markers. #}
+  {% set O = ops.outbox %}
+  <section class="panel" id="outbox">
+    <h2>Loop comment noise <span class="lbl">last {{ O.days if O else 7 }} days{% if O %} · {{ O.age.text }}{% endif %}</span></h2>
+    {% if O and not O.empty %}
+    <div class="waste-grid">
+      <div><span class="lab">comments per PR</span>
+        <span class="n">{{ O.per_pr if O.per_pr is not none else '—' }}
+          {% if O.per_pr_change is not none %}<span class="lbl">({{ '+' if O.per_pr_change > 0 }}{{ O.per_pr_change }}% vs the {{ O.days }}d before)</span>{% endif %}</span>
+        <span class="lbl">{{ O.prs }} PRs</span></div>
+      <div><span class="lab">comments per issue</span>
+        <span class="n">{{ O.per_issue if O.per_issue is not none else '—' }}</span>
+        <span class="lbl">{{ O.issues }} issues</span></div>
+      <div><span class="lab">duplicate rate</span>
+        <span class="n">{{ O.dup_pct if O.dup_pct is not none else '—' }}{% if O.dup_pct is not none %}%{% endif %}</span>
+        <span class="lbl">{{ O.duplicates }} of {{ O.loop_comments }}{% if O.dup_prev_pct is not none %} · was {{ O.dup_prev_pct }}%{% endif %}</span></div>
+      <div><span class="lab">outbox refused</span>
+        <span class="n">{{ O.deduped if O.deduped is not none else '—' }} / {{ O.capped if O.capped is not none else '—' }}</span>
+        <span class="lbl">deduped / capped{% if O.failed %} · {{ O.failed }} failed{% endif %}</span></div>
+      <div><span class="lab">PRs the owner commented on</span>
+        <span class="n">{{ O.owner_pct if O.owner_pct is not none else '—' }}{% if O.owner_pct is not none %}%{% endif %}</span>
+        <span class="lbl">{{ O.owner_commented }} of {{ O.owner_prs }}</span></div>
+    </div>
+    <p class="sub" style="margin-top:10px">
+      {{ O.via_outbox }} of {{ O.loop_comments }} went through <code>scripts/outbox.py</code>{% if O.sent_by_kind %}:
+      {% for k, v in O.sent_by_kind.items() %}{{ k }} {{ v }}{% if not loop.last %} · {% endif %}{% endfor %}{% endif %}
+      {% if O.top %} · busiest: {% for t in O.top %}#{{ t.number }} ({{ t.comments }}){% if not loop.last %}, {% endif %}{% endfor %}{% endif %}
+    </p>
+    <p class="sub">"Owner commented" counts PR conversation comments only — review comments and
+      commits are not read here (commits and merges are in Delivery's "you helped").</p>
+    {% elif O %}
+    <p class="none">No comments by the loop's identities in the last {{ O.days }} days.</p>
+    {% else %}
+    <p class="none"><code>measurements/outbox.json</code> is not there yet — the next
+      <code>agent-measure</code> run writes it (<code>collect_lessons.py</code> calls
+      <code>collect_outbox.py</code>).</p>
+    {% endif %}
+  </section>
+
   {# ── Token budget ──────────────────────────────────────────────────────
      FULL WIDTH, AND ABOVE THE FOLD, ON PURPOSE. This lived inside App health,
      which sits in the 1fr column of a `1.25fr 1fr` grid — so the one table on

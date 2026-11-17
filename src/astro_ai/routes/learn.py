@@ -5,7 +5,7 @@ Owns:
     GET /learn/{slug}/  one hand-written article template plus its related links
 
 The TRAILING SLASH on both paths is load-bearing: the canonical URLs indexed by
-Search Console end in a slash, and dropping it would turn every hit into a 307.
+Search Console end in a slash, and dropping it would turn every hit into a 308 (a 307 before #1176).
 
 Moved verbatim; only the decorator prefix changed (``@app.`` → ``@router.``).
 Absolute imports only.
