@@ -19,8 +19,8 @@ WHAT IS ASSERTED, and where each fake sits:
   into a pool worker, so a ContextVar set by the route would read as unset in
   every one of the twelve. Real `generate_rashifal`, `providers.chat` captured;
 * the interactive entry points -- the on-demand `/rashifal/{rashi}` card, and
-  the welcome email, which runs inside the subscriber's own request -- pass NO
-  budget;
+  the welcome email, which is sent after the subscriber's response (#1163) --
+  pass NO budget;
 * the budget changes what chat() does: with the same saturated bucket, the
   default skips to the next provider and the job budget waits.
 

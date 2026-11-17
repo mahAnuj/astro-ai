@@ -1368,8 +1368,8 @@ def generate_rashifal(
     default. The batch callers -- /admin/warm-rashifal and
     /admin/send-daily-rashifal, where nobody is waiting -- pass one; the
     send-daily job passes the SAME one for both languages, which is what bounds
-    its 24 calls. The welcome email runs inside the subscriber's own request and
-    passes none.
+    its 24 calls. The welcome email is sent after the subscriber's response
+    (#1163), where nobody waits on it either, and passes none.
     """
     day_signals = _build_rashifal_day_signals(transit, today_iso, lang, panchang, festival)
     day_signals_block = "\n".join(f"- {s}" for s in day_signals)
