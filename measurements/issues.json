@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-16T21:22:59Z",
+  "generated_at": "2026-11-16T23:58:08Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 130,
+  "open": 131,
   "with_ask": 46,
   "by_area": {
-    "UNCLASSIFIED": 47,
+    "UNCLASSIFIED": 48,
     "INFRA": 14,
     "REDESIGN": 10,
     "OPS": 7,
@@ -38,16 +38,31 @@
     "bug": 31,
     "enhancement": 29,
     "chore": 19,
-    "correctness": 11,
+    "correctness": 12,
     "design": 5
   },
   "by_priority": {
-    "unset": 94,
+    "unset": 95,
     "medium": 22,
     "high": 14
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1139,
+      "title": "Abhijit is called 'best' / 'most auspicious' on /panchang, today, trivia and the rashifal prompt; no knowledge/ line says so (follow-up to #1025)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-11-16T23:57:18Z",
+      "updated": "2026-11-16T23:57:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1133,
       "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) — umbrella",
@@ -354,7 +369,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T09:04:12Z",
-      "updated": "2026-11-16T21:22:17Z",
+      "updated": "2026-11-16T21:31:38Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -490,10 +505,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-14T13:15:47Z",
-      "updated": "2026-11-14T13:15:47Z",
+      "updated": "2026-11-16T23:57:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -618,7 +636,7 @@
         "chore"
       ],
       "created": "2026-11-12T17:43:39Z",
-      "updated": "2026-11-16T18:37:40Z",
+      "updated": "2026-11-16T21:23:09Z",
       "blocked": false,
       "needs_evidence": false
     },
