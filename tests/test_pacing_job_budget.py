@@ -208,7 +208,8 @@ def test_send_daily_shares_ONE_deadline_across_both_languages(
 
 def test_the_welcome_email_is_interactive_and_passes_no_deadline(
         monkeypatch, captured_generate):
-    """It runs inside the subscriber's own POST, so it keeps the short default."""
+    """It is sent right after the subscriber's own POST answers (#1163), so it
+    keeps the short default."""
     from astro_ai.routes import subscribe
 
     monkeypatch.setattr(subscribe.email_sender, "send", lambda *a, **k: True)
