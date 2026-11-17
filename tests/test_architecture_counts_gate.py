@@ -28,17 +28,17 @@ gate = importlib.util.module_from_spec(_spec)
 sys.modules["verify_architecture_counts"] = gate
 _spec.loader.exec_module(gate)
 
-# (label, count cell, command). Six valued rows, four report-only; every command
+# (label, count cell, command). Three valued rows, seven report-only; every command
 # is distinct and prints a number > 0 so the clean doc passes.
 CLEAN = [
     ("Python", "measured", "echo 101"),
     ("top-level modules", "measured", "echo 102"),
     ("route handlers", "3", "echo 3"),
     ("modules declaring a router", "4", "echo 4"),
-    ("top-level templates", "5", "echo 5"),
-    ("`/learn` articles", "6", "echo 6"),
+    ("top-level templates", "measured", "echo 5"),
+    ("`/learn` articles", "measured", "echo 6"),
     ("LLM prompt templates", "7", "echo 7"),
-    ("knowledge files", "2 files, 90 lines", "echo 2; echo 90"),
+    ("knowledge files", "measured", "echo 2; echo 90"),
     ("verification gates", "measured", "echo 103"),
     ("behaviour suite", "measured", "echo 104"),
 ]
