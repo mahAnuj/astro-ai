@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-17T20:20:12Z",
+  "generated_at": "2026-11-17T23:17:13Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 131,
+  "open": 129,
   "with_ask": 47,
   "by_area": {
-    "UNCLASSIFIED": 52,
+    "UNCLASSIFIED": 51,
     "INFRA": 14,
     "REDESIGN": 10,
     "OPS": 7,
     "FEATURE": 7,
-    "SEO": 6,
+    "SEO": 5,
     "CORPUS": 4,
     "ANALYTICS": 3,
     "RETRIEVAL": 3,
@@ -31,36 +31,21 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 36,
+    "untyped": 35,
     "enhancement": 34,
-    "bug": 27,
+    "bug": 26,
     "chore": 18,
     "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 90,
+    "unset": 88,
     "medium": 22,
     "high": 18,
     "low": 1
   },
-  "blocked": 8,
+  "blocked": 7,
   "rows": [
-    {
-      "number": 1192,
-      "title": "main is red: agent-measure.yml:420 uses claude-code-action@v1 unpinned (#1169 x #1174 semantic conflict)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "needs-human-review"
-      ],
-      "created": "2026-11-17T18:25:06Z",
-      "updated": "2026-11-17T18:25:06Z",
-      "blocked": true,
-      "needs_evidence": false
-    },
     {
       "number": 1190,
       "title": "always-on 6/6 permissions: credential proxy design spike",
@@ -180,25 +165,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1176,
-      "title": "seo: slash-variant redirects return 308, not 307 (#1107 criterion 3)",
-      "ask": "",
-      "area": "SEO",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "seo",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-17T12:12:56Z",
-      "updated": "2026-11-17T20:19:32Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1167,
       "title": "ask: audit saved /ask answers weekly for astrological correctness (grounded in knowledge/, prompt contract, safety) without publishing user questions",
       "ask": "Collector step, no model (in agent-measure's GCS-credentialed job, like collect_llm_usage.py).",
@@ -228,10 +194,13 @@
       "priority": "low",
       "labels": [
         "bug",
-        "priority:low"
+        "priority:low",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-17T09:03:13Z",
-      "updated": "2026-11-17T09:03:13Z",
+      "updated": "2026-11-17T23:16:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -303,7 +272,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T20:41:26Z",
-      "updated": "2026-11-17T18:37:18Z",
+      "updated": "2026-11-17T20:28:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -643,7 +612,7 @@
         "chore"
       ],
       "created": "2026-11-12T17:43:39Z",
-      "updated": "2026-11-17T06:07:00Z",
+      "updated": "2026-11-17T20:20:16Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -803,7 +772,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-16T17:47:16Z",
+      "updated": "2026-11-17T20:20:17Z",
       "blocked": false,
       "needs_evidence": false
     },
