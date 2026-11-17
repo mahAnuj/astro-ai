@@ -375,10 +375,11 @@ def test_saturn_faq_dates_match_the_ephemeris():
     pisces_2027 = next(t for t, s in ing if s == 11 and t.year == 2027)
     aries_2028 = next(t for t, s in ing if s == 0 and t.year == 2028)
     faq = {f["q"]: f["a"] for f in _article().faqs}["How long is Saturn in Pisces?"]
-    m = re.search(r"entered Pisces on (\d{1,2} \w+ 2025) .*? Pisces on (\d{1,2} \w+ 2027) .*? Aries on "
-                  r"(\d{1,2} \w+ 2028)", faq)
+    aries_2027 = next(t for t, s in ing if s == 0 and t.year == 2027)
+    m = re.search(r"entered Pisces on (\d{1,2} \w+ 2025) and moves into Aries on (\d{1,2} \w+ 2027) .*? "
+                  r"Pisces on (\d{1,2} \w+ 2027) .*? Aries on (\d{1,2} \w+ 2028)", faq)
     assert m, "Saturn FAQ not in the expected shape"
-    for got, want in zip(m.groups(), (pisces_2025, pisces_2027, aries_2028)):
+    for got, want in zip(m.groups(), (pisces_2025, aries_2027, pisces_2027, aries_2028)):
         assert _within_a_day(datetime.strptime(got, "%d %B %Y").replace(tzinfo=IST), want), (got, want)
 
 
@@ -525,3 +526,215 @@ def test_the_sourced_facts_stay(client):
     assert "its exaltation sign, Cancer" in text
     assert "Jupiter — Guru, the Great Benefic" in text
     assert "Mars is debilitated in Cancer" in text
+
+
+# --------------------------------------------------------------------------- #1100: every dated claim
+
+_MONTHS = ("January|February|March|April|May|June|July|August|September|October|November|December")
+_DATE_RX = re.compile(rf"\b(\d{{1,2}}) ({_MONTHS})(?: (\d{{4}}))?")
+
+
+@functools.cache
+def _all_event_days() -> tuple:
+    """Every ingress and station the page's dates may name, as IST dates (#1100)."""
+    events = []
+    for body, y0, y1 in ((swe.JUPITER, 2026, 2029), (swe.SATURN, 2025, 2029), (swe.MARS, 2026, 2028),
+                         (swe.TRUE_NODE, 2026, 2029), (swe.MEAN_NODE, 2026, 2029)):
+        events += [t.date() for t, _ in _ingresses(body, y0, y1)]
+    for body, y0, y1 in ((swe.MERCURY, 2026, 2028), (swe.JUPITER, 2026, 2029)):
+        events += [t.date() for t, _ in _stations(body, y0, y1)]
+    return tuple(events)
+
+
+def _unmatched_dates(text: str) -> list[str]:
+    """Dates in `text` that no ephemeris event falls within a day of (a year-less date is read in 2026 or 2027)."""
+    events = _all_event_days()
+    bad = []
+    for m in _DATE_RX.finditer(text):
+        day, month, year = int(m.group(1)), m.group(2), m.group(3)
+        mo = datetime.strptime(month, "%B").month
+
+        def close(ev):
+            if year is not None:
+                return abs((datetime(int(year), mo, day).date() - ev).days) <= 1
+            # Year-less dates sit in the article's own span (2026, or the 2027 tail of a stretch).
+            return ev.year in (2026, 2027) and abs((datetime(ev.year, mo, day).date() - ev).days) <= 1
+
+        if not any(close(ev) for ev in events):
+            bad.append(m.group(0))
+    return bad
+
+
+def test_every_dated_claim_on_the_page_and_registry_is_an_ephemeris_event(client):
+    """A date anywhere on the page, in its FAQs or in sade-sati's Saturn dates names a real ingress/station.
+
+    The Key-dates and prose tests pin the dates they name; this one catches the rest (a per-rashi
+    'Ketu until 25 November', a 'direct again' tail, a FAQ's Saturn-into-Aries date) (#1100 A).
+    """
+    for label, text in (
+        ("page", _text(_page(client))),
+        ("registry", _registry_text()),
+        ("sade-sati page", _text(_html(client, "/learn/sade-sati/"))),
+        ("sade-sati registry", _registry_text("sade-sati")),
+    ):
+        assert _DATE_RX.search(text), label
+        assert not _unmatched_dates(text), f"{label}: dates no ephemeris event supports: {_unmatched_dates(text)}"
+
+
+def test_the_date_check_itself_catches_a_moved_date():
+    assert _unmatched_dates("Ketu until 25 December") == ["25 December"]
+    assert _unmatched_dates("Ketu until 25 November") == []
+    assert _unmatched_dates("Saturn moves into Aries on 5 June 2027") == ["5 June 2027"]
+
+
+def test_mercury_direct_dates_in_key_dates_are_the_station_after_each_retrograde(client):
+    ev = _computed_2026()
+    stations = _stations(swe.MERCURY, 2026, 2027)
+    directs = [t for t, k in stations if k == "direct"]
+    retros = [t for t, k in stations if k == "retro"]
+    after = [min(d for d in directs if d > r) for r in retros]
+    page = _page(client)
+    items = _key_dates(page)
+    got = []
+    for d, desc in items:
+        m = re.search(r"Mercury turns retrograde \(.*?direct again (\d{1,2} \w+)", desc)
+        if m:
+            got.append(_parse_dm(m.group(1)))
+    assert len(got) == 2, f"expected 'direct again' on Mercury's 2nd and 3rd retrogrades, found {len(got)}"
+    for page_date, computed in zip(got, after[1:]):
+        assert _within_a_day(page_date, computed), (page_date, computed)
+    assert len(ev["mercury_retro"]) == 3
+
+
+def test_every_rahu_and_ketu_date_in_the_rashi_sections_is_the_shift(client):
+    ev = _computed_2026()
+    for moon, section in _rashi_sections(_page(client)).items():
+        for sentence in re.split(r"(?<=[.!?]) ", section):
+            if not re.search(r"\b(Rahu|Ketu)\b", sentence):
+                continue
+            for m in _DATE_RX.finditer(sentence):
+                d = _parse_dm(f"{m.group(1)} {m.group(2)}", int(m.group(3) or 2026))
+                assert _within_a_day(d, ev["rahu_capricorn"]), (
+                    f"{moon}: a Rahu/Ketu date that is not the Capricorn-Cancer shift: {sentence!r}")
+
+
+def test_cancer_section_jupiter_dates_are_the_four_ephemeris_ingresses(client):
+    ing = [(t, s) for t, s in _ingresses(swe.JUPITER, 2026, 2029) if s in (CANCER, 4) and t >= _START_2026][:4]
+    assert [s for _, s in ing] == [CANCER, 4, CANCER, 4]
+    sec = _rashi_sections(_page(client))["Cancer"]
+    m = re.search(r"exaltation in your rashi on (\d{1,2} \w+ 2026), moves on to Leo on (\d{1,2} \w+), and "
+                  r"returns to Cancer from (\d{1,2} \w+) to (\d{1,2} \w+ 2027)", sec)
+    assert m, "Cancer section lost its four Jupiter dates"
+    years = (2026, 2026, 2027, 2027)
+    for got, year, (want, _) in zip(m.groups(), years, ing):
+        d = _parse_dm(got, year) if not got[-4:].isdigit() else \
+            datetime.strptime(got, "%d %B %Y").replace(tzinfo=IST)
+        assert _within_a_day(d, want), (got, want)
+
+
+# --------------------------------------------------------------------------- #1100: wording the table cannot back
+
+PISCES = 11
+
+# Wording that reads as a harm. A sentence the table calls FAVOURABLE must carry none of it.
+_HARM_STEMS = ("bad", "harm", "hurt", "damag", "ruin", "worst", "poor", "difficult", "trouble",
+               "adverse", "inauspicious", "unlucky", "misfortune", "obstacle", "suffer", "weaken")
+# Wording that reads as a promise or a superlative. A sentence the table calls UNFAVOURABLE must carry none of it.
+_PROMISE_STEMS = ("excellent", "best", "strongest", "blesses")
+
+_UNSOURCED_RASHI_PHRASES = [
+    "one of the best",
+    "one of the strongest",
+    "excellent for",
+    "possible for you",
+    "your Lagna lord",
+    "Health improves",
+    "dusthana",
+    "Long-planned pilgrimages",
+    "impacts you more than average",
+]
+
+
+def _sentence_with(section: str, pattern: str) -> str:
+    m = re.search(rf"[^.]*{pattern}[^.]*\.", section)
+    assert m, f"no sentence matching {pattern!r} in: {section[:90]}"
+    return m.group(0)
+
+
+def _verdict_words(sentence: str) -> tuple[bool, bool]:
+    low = sentence.lower()
+    unfav = "unfavourable" in low
+    fav = re.search(r"\bfavourable\b", low) is not None
+    return fav, unfav
+
+
+def test_jupiter_sentence_is_positive_only_where_the_table_is_and_never_the_reverse(client):
+    """Favourable house: says 'favourable', no harm wording. Unfavourable: says so, no promise wording (#1100 A)."""
+    for moon, section in _rashi_sections(_page(client)).items():
+        house, sentence = _jupiter_sentence(section)
+        low = sentence.lower()
+        fav, unfav = _verdict_words(sentence)
+        if house in JUPITER_FAVOURABLE:
+            assert fav and not unfav, f"{moon}: favourable house {house} lacks the table's verdict: {sentence!r}"
+            for stem in _HARM_STEMS:
+                assert not re.search(rf"\b{stem}", low), (
+                    f"{moon}: favourable house {house} reads as a harm ({stem!r}): {sentence!r}")
+        else:
+            assert unfav, f"{moon}: unfavourable house {house} lacks the table's verdict: {sentence!r}"
+            for stem in _PROMISE_STEMS:
+                assert not re.search(rf"\b{stem}", low), (
+                    f"{moon}: unfavourable house {house} reads as a promise ({stem!r}): {sentence!r}")
+
+
+def test_saturn_sentences_follow_the_table_for_the_sections_that_name_saturns_house(client):
+    saturn_favourable = {3, 6, 11}
+    sections = _rashi_sections(_page(client))
+    for moon in ("Libra", "Scorpio", "Capricorn"):
+        sentence = _sentence_with(sections[moon], r"\bSaturn\b[^.]*?\b\d+(?:st|nd|rd|th) from you")
+        stated = int(re.search(r"(\d+)(?:st|nd|rd|th) from you", sentence).group(1))
+        house = _house_from(moon, PISCES)
+        assert stated == house, f"{moon}: page says Saturn is {stated}th from you, it is {house}th: {sentence!r}"
+        fav, unfav = _verdict_words(sentence)
+        if house in saturn_favourable:
+            assert fav and not unfav, f"{moon}: Saturn house {house} is favourable in the table: {sentence!r}"
+            assert not any(re.search(rf"\b{s}", sentence.lower()) for s in _HARM_STEMS), sentence
+        else:
+            assert unfav, f"{moon}: Saturn house {house} is unfavourable in the table: {sentence!r}"
+
+
+def test_saturn_favourable_set_is_the_codes(client):
+    from astro_ai.chart import _GOCHARA_BENEFIC_FROM_MOON
+
+    assert set(_GOCHARA_BENEFIC_FROM_MOON["Saturn"]) == {3, 6, 11}
+
+
+def test_virgo_rahu_is_dated_and_follows_the_table_on_both_sides_of_the_shift(client):
+    """Rahu is in Aquarius (6th from Virgo) only until 25 November; after it, Capricorn (5th) (#1100 B)."""
+    sec = _rashi_sections(_page(client))["Virgo"]
+    assert _house_from("Virgo", AQUARIUS) == 6 and 6 in RAHU_FAVOURABLE
+    assert _house_from("Virgo", CAPRICORN) == 5 and 5 not in RAHU_FAVOURABLE
+    before = _sentence_with(sec, r"Rahu in Aquarius \(6th from you\)")
+    assert "until 25 November" in before, f"Rahu in Aquarius carries no end date: {before!r}"
+    fav, unfav = _verdict_words(before)
+    assert fav and not unfav, before
+    after = _sentence_with(sec, r"Rahu moves into Capricorn \(5th from you\)")
+    assert "On 25 November" in after
+    assert _verdict_words(after) == (False, True), after
+
+
+def test_no_section_puts_rahu_in_aquarius_without_the_date_it_leaves(client):
+    for moon, section in _rashi_sections(_page(client)).items():
+        if re.search(r"Rahu in Aquarius", section):
+            assert "25 November" in section, f"{moon}: Rahu is in Aquarius only until 25 November"
+
+
+def test_per_rashi_sections_carry_no_unsourced_superlative_or_lagna_wording(client):
+    sections = _rashi_sections(_page(client))
+    for moon, section in sections.items():
+        for phrase in _UNSOURCED_RASHI_PHRASES:
+            assert phrase not in section, f"{moon}: unsourced wording back: {phrase!r}"
+        assert "Lagna" not in section, f"{moon}: this page reads by Moon sign, not Lagna: {section[:80]!r}"
+        assert not re.search(r"\b(best|strongest|excellent)\b", section, re.I), f"{moon}: superlative"
+    text = _text(_page(client))
+    for phrase in _UNSOURCED_RASHI_PHRASES:
+        assert phrase not in text, f"unsourced wording back on the page: {phrase!r}"

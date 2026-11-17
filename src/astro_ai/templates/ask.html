@@ -150,6 +150,13 @@
 
     {% if error %}
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
+    {% elif answer_expired %}
+    {# #1087: the link carried a question but the saved answer is gone (answers
+       are kept briefly and are cleared when the site updates). Not an error
+       and not a 4xx, so neutral styling; the question is already in the box. #}
+    <div role="status" data-ask-expired class="mb-4 p-3 bg-bhagya-cream-2 border border-bhagya-line rounded-md text-sm text-bhagya-ink-soft">
+      That answer is no longer saved, so it can't be shown again. Your question is below &mdash; press &ldquo;Get my answer&rdquo; to ask it again. Asking again may use one of today's free questions.
+    </div>
     {% endif %}
 
     <form method="post" action="/ask" class="space-y-4">
@@ -204,14 +211,10 @@
 
 </main>
 
-<script>
-  // Track ask submissions in GA4 — useful for understanding which categories
-  // get asked most + total usage volume per session.
-  {% if answer %}
-  Analytics.track('ask_answered', {
-    category: '{{ current_category }}',
-    lang: '{{ lang }}',
-  });
-  {% endif %}
-</script>
+{# Track ask submissions in GA4 -- which categories get asked most + usage volume.
+   #1067: declared, fired by analytics.js; an inline Analytics call runs before the deferred script. #}
+{% if answer and fire_ask_answered %}
+{% from "_analytics_event.html" import analytics_event %}
+{{ analytics_event('ask_answered', {'category': current_category, 'lang': lang}) }}
+{% endif %}
 {% endblock %}

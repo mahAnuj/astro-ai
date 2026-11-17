@@ -248,7 +248,14 @@ def _mergeable_passed_pr(gh: Runner, repo: str, issue: int) -> int | None:
         if not m or int(m.group(1)) != issue or "qa-pass" not in pr.get("labels", []):
             continue
         try:
-            mergeable = gh(["api", f"repos/{repo}/pulls/{pr['number']}", "--jq", ".mergeable"]).strip()
+            # mergeable_state, not mergeable (2026-11-17): `mergeable: true` means
+            # only "no conflict" and ignores checks. #1121, #1127, #1136 and #1138
+            # each had a QA PASS on their head, then went red on that SAME head,
+            # and their red-gates fix was dropped as "waiting to merge" while
+            # GitHub reported them `blocked`. Only `clean` (or `has_hooks`) is
+            # actually waiting to merge; anything else starts the cycle.
+            state = gh(["api", f"repos/{repo}/pulls/{pr['number']}", "--jq", ".mergeable_state"]).strip()
+            mergeable = "true" if state in ("clean", "has_hooks") else state
         except RuntimeError:
             continue
         if mergeable == "true":

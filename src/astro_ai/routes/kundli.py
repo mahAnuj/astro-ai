@@ -49,18 +49,26 @@ from astro_ai.chart import (
     symbol_for_rashi_label,
 )
 from astro_ai.llm import BirthDetails, generate_reading, parse_sectioned_reading
-from astro_ai.providers import AllProvidersExhausted
+from astro_ai.i18n import translate as t
+from astro_ai.providers import AllProvidersExhausted, RequestTooLarge
 from astro_ai.reading_quality import banned_by_kind, check_natal_reading
 from astro_ai.routes.deps import (
     PROMPT_PATH,
     _ask_cta_ctx,
     _lang,
+    _no_cdn_cache,
     _save_collection_synced,
     _site_url,
     templates,
 )
-from astro_ai.routes.llm_support import _cached, _fire_error_alert, _llm_error_friendly
-from astro_ai.session import load_collection, load_user
+from astro_ai.routes.llm_support import _cached, _fire_error_alert
+from astro_ai.session import (
+    clear_event_flag,
+    event_flag_present,
+    load_collection,
+    load_user,
+    set_event_flag,
+)
 
 log = logging.getLogger(__name__)
 
@@ -145,6 +153,9 @@ async def reading(
         )
     response = RedirectResponse("/kundli", status_code=303)
     _save_collection_synced(response, collection, request)
+    # #1068: kundli_generated counts THIS completion, not every render of
+    # result.html. Set last, after the collection write (see session.set_event_flag).
+    set_event_flag(request, response, "kundli_generated")
     # notify.kundli_generated fires from _render_natal_for after the LLM
     # succeeds — that way the notification includes the model that actually
     # served the request. Firing here would fire on form submit, before the
@@ -184,6 +195,24 @@ async def kundli(request: Request) -> HTMLResponse:
             {"lang": _lang(request)},
         )
     return await _render_natal_for(request, saved.to_birth_details(), chart_id=saved.id)
+
+
+def _natal_reading_unavailable(err: Exception, lang: str) -> dict:
+    """The notice shown in place of the written reading when generation fails.
+
+    Three outcomes, mirroring `_llm_error_friendly` so the distinction between a
+    transient quota window and a structural 413 survives to the page: only the
+    first two invite a retry, because re-requesting a too-large chart builds the
+    same request.
+    """
+    if isinstance(err, RequestTooLarge):
+        return {"title": t(lang, "natal_unavailable_title"),
+                "message": t(lang, "natal_unavailable_msg_large"), "retry": False}
+    if isinstance(err, AllProvidersExhausted):
+        return {"title": t(lang, "natal_unavailable_title"),
+                "message": t(lang, "natal_unavailable_msg_busy"), "retry": True}
+    return {"title": t(lang, "natal_unavailable_title"),
+            "message": t(lang, "natal_unavailable_msg_error"), "retry": True}
 
 
 async def _render_natal_for(request: Request, details: BirthDetails,
@@ -244,6 +273,12 @@ async def _render_natal_for(request: Request, details: BirthDetails,
         finally:
             _generated["secs"] = time.monotonic() - started
 
+    # #1088: the chart, dasha, doshas and yogas below are all computed above and
+    # need no LLM. When generation fails, the page still renders them with an
+    # honest notice where the written reading would sit, instead of withholding
+    # a finished chart behind an error page. `_cached` raised, so nothing was
+    # stored and the next GET /kundli retries generation.
+    reading_unavailable = None
     try:
         reading_text = _cached(
             cache_key, route="natal", lang=lang, ttl_days=None,
@@ -253,18 +288,13 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     except Exception as err:
         log.exception("natal LLM generation failed")
         _fire_error_alert(request, err, "natal")
-        _title, _msg = _llm_error_friendly(err)
-        return templates.TemplateResponse(
-            request,
-            "error.html",
-            {
-                "title": _title,
-                "message": _msg,
-            },
-            status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
-        )
-    was_cached = not _generated["fired"]
-    sections = parse_sectioned_reading(reading_text)
+        reading_text = ""
+        reading_unavailable = _natal_reading_unavailable(err, lang)
+    # A failed generation is neither a fresh reading nor a re-view: it must not
+    # fire the owner alert or the `form_kundli` event, and there is no text to
+    # check or to save to the seeker's history.
+    was_cached = not _generated["fired"] or reading_unavailable is not None
+    sections = parse_sectioned_reading(reading_text) if reading_text else []
     sade_sati = compute_sade_sati_details(chart)
     # One DashaState for both template variables — the strip and the
     # active-pair detail line must agree, and passing the same object is how
@@ -346,7 +376,7 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     # Persist to signed-in user's reading history so they can revisit it
     # from any device. Best-effort — never fails the render.
     _signed_in = load_user(request)
-    if _signed_in and _signed_in.sub:
+    if _signed_in and _signed_in.sub and reading_text:
         _title = f"{details.name}'s Kundli reading" if details.name else "Kundli reading"
         try:
             users.save_reading(
@@ -376,12 +406,16 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     # Zodiac glyphs for the three summary chips (Lagna, Moon, Sun).
     moon_plt = next(p for p in chart.planets if p.name == "Moon")
     sun_plt  = next(p for p in chart.planets if p.name == "Sun")
-    return templates.TemplateResponse(
+    # #1068: true only on the GET that follows a successful POST /reading.
+    fire_kundli_generated = event_flag_present(request, "kundli_generated")
+    response = templates.TemplateResponse(
         request,
         "result.html",
         {
+            "fire_kundli_generated": fire_kundli_generated,
             "details": details,
             "reading": reading_text,
+            "reading_unavailable": reading_unavailable,
             "sections": sections,
             "chart": chart,
             "flags": flags,
@@ -409,6 +443,15 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             "sade_sati_remaining_years": ss_remaining_years,
         },
     )
+    if fire_kundli_generated:
+        # Consumed whether or not the reading generated: a failed generation
+        # still rendered the page the seeker was sent to.
+        clear_event_flag(request, response, "kundli_generated")
+    if reading_unavailable is not None:
+        # A degraded page must never be pinned by a shared cache: the seeker's
+        # retry has to reach the app and regenerate.
+        _no_cdn_cache(response)
+    return response
 
 
 _EMAIL_KUNDLI_LAST_SENT: dict[str, float] = {}

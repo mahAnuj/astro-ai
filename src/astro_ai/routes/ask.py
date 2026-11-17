@@ -42,7 +42,14 @@ from astro_ai.routes.deps import (
 )
 from astro_ai.matching import MATCHING_RULES_VERSION, compute_guna_milan
 from astro_ai.routes.llm_support import _cached, _fire_error_alert, _llm_error_friendly
-from astro_ai.session import load_collection, load_last_matching, load_user
+from astro_ai.session import (
+    clear_event_flag,
+    event_flag_present,
+    load_collection,
+    load_last_matching,
+    load_user,
+    set_event_flag,
+)
 
 log = logging.getLogger(__name__)
 
@@ -94,9 +101,13 @@ async def ask_form(request: Request, q: str | None = None,
         answer = _ask_lookup(saved, q, c or "general", lang,
                              context=effective_ctx, pair_fp=pair_fp,
                              role=seeker_role)
-    return templates.TemplateResponse(
+    # #1068: ask_answered counts the POST that produced an answer, not every
+    # render of one (reload, language switch, back navigation).
+    fire_ask_answered = bool(answer) and event_flag_present(request, "ask_answered")
+    response = templates.TemplateResponse(
         request, "ask.html",
         {
+            "fire_ask_answered": fire_ask_answered,
             "lang": lang,
             "active_chart": saved,
             "current_question": q or "",
@@ -112,9 +123,18 @@ async def ask_form(request: Request, q: str | None = None,
             # the prompt became role-aware and the copy did not.
             "seeker_role": seeker_role,
             "answer": answer,
+            # #1087: a q= that finds nothing in the cache used to render the
+            # question echoed back with no answer and no word of why. The cache
+            # is per-instance /tmp, so a redeploy, a cold start or a second
+            # Cloud Run instance all look like this. Say so; the form below is
+            # the way to re-ask.
+            "answer_expired": bool(q) and answer is None,
             "remaining_today": _ask_quota_remaining(request),
         },
     )
+    if fire_ask_answered:
+        clear_event_flag(request, response, "ask_answered")
+    return response
 
 
 _ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
@@ -632,4 +652,7 @@ async def ask_submit(
     )
     if not was_cached:
         _ask_quota_bump(request, response)
+    # After the quota write, which re-reads the request cookie; the flag write
+    # starts from that header and replaces it, so there is still one Set-Cookie.
+    set_event_flag(request, response, "ask_answered")
     return response

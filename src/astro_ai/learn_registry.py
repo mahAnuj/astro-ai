@@ -131,6 +131,10 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Depends on how the planet is placed in your chart. A well-placed Jupiter Mahadasha (Jupiter in own sign / exalted / in a kendra) is often materially and spiritually rewarding. A well-placed Venus Mahadasha (20 years) frequently coincides with marriage and prosperity. But an afflicted Jupiter or Venus can be difficult. The Mahadasha's flavour comes from natal placement, not the planet itself.",
             },
             {
+                "q": "Which Mahadasha is best for career?",
+                "a": "None is best for everyone. A dasha helps your career according to how strong its lord is in your birth chart, which houses it rules and which house it sits in; a lord tied to the 10th house is the first to check. Practitioners commonly link the Sun with career and authority, Mercury with business and Saturn with sustained hard work, as reading habits rather than guarantees. The nine dashas are not ranked for career. Your own timeline is at /dasha.",
+            },
+            {
                 "q": "Can Vimshottari Dasha predict specific events like marriage or job change?",
                 "a": "It can indicate timing windows, not exact dates. A marriage typically fires during the Dasha or Antardasha of Venus (marriage karaka), Jupiter (dharma karaka), the 7th lord, or a planet sitting in / aspecting the 7th house. When multiple such signals cluster in the same window, marriage becomes probable. Transits (gochara) refine the timing further. Prediction is probabilistic — 'a window is more likely', not 'you will marry in March 2027'.",
             },
@@ -152,7 +156,7 @@ ARTICLES: tuple[Article, ...] = (
         category="Grahas",
         hero_image="/static/learn/surya-sun-in-vedic-astrology/hero.svg",
         read_time="10 min",
-        related=("the-9-grahas-overview", "chandra-moon-in-vedic-astrology", "sun-mahadasha"),
+        related=("the-9-grahas-overview", "chandra-moon-in-vedic-astrology", "sun-mahadasha", "surya-sun-remedies"),
         faqs=(
             {
                 "q": "What does Sun signify in Vedic astrology?",
@@ -366,7 +370,7 @@ ARTICLES: tuple[Article, ...] = (
         category="Grahas",
         hero_image="/static/learn/budha-mercury-in-vedic-astrology/hero.svg",
         read_time="10 min",
-        related=("the-9-grahas-overview", "surya-sun-in-vedic-astrology", "guru-jupiter-in-vedic-astrology"),
+        related=("the-9-grahas-overview", "surya-sun-in-vedic-astrology", "guru-jupiter-in-vedic-astrology", "mercury-remedies"),
         faqs=(
             {
                 "q": "What does Mercury signify in Vedic astrology?",
@@ -531,6 +535,40 @@ ARTICLES: tuple[Article, ...] = (
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
+        slug="gochar-2027-planetary-transits",
+        title="Gochar 2027: The Year's Major Planetary Transits and What They Mean for Your Moon Sign",
+        summary="Jupiter enters Cancer on 25 January 2027, Saturn crosses from Pisces into Aries on 3 June, and Rahu and Ketu stay put all year. Every date is computed on the Lahiri sidereal reckoning, with a house-by-house reading for each Moon sign from the classical Gochara table.",
+        seo_title="Gochar 2027: Jupiter, Saturn and Rahu Transits by Moon Sign",
+        seo_description="Gochar 2027 dates on the Lahiri reckoning: Jupiter into Cancer 25 Jan, Saturn into Aries 3 Jun, Rahu-Ketu unchanged. Your Moon sign, house by house.",
+        category="Concepts",
+        hero_image="/static/learn/gochar-2027-planetary-transits/hero.svg",
+        read_time="11 min",
+        related=("gochar-2026-planetary-transits", "sade-sati", "guru-jupiter-in-vedic-astrology", "shani-saturn"),
+        last_updated="2026-11",
+        faqs=(
+            {
+                "q": "What are the major planetary transits in 2027?",
+                "a": "Jupiter is in Leo until 25 January 2027, in Cancer from 25 January to 26 June, in Leo again from 26 June to 26 November and in Virgo from 26 November. Saturn moves from Pisces into Aries on 3 June 2027 and back into Pisces on 20 October. Rahu and Ketu stay in Capricorn and Cancer all year. All dates are on the Lahiri (sidereal) reckoning in Indian Standard Time, and a Panchang can differ by a day when an ingress falls near midnight.",
+            },
+            {
+                "q": "When does Saturn enter Aries in 2027?",
+                "a": "Saturn enters Aries on 3 June 2027, turns retrograde there on 9 August, slips back into Pisces on 20 October and turns direct in Pisces on 24 December. It re-enters Aries on 23 February 2028. Counted from the Moon, Sade Sati's rising phase begins for Taurus Moons on 3 June, Aries Moons are in the peak phase and Pisces Moons in the setting phase; Aquarius Moons leave Sade Sati on 3 June and return to it on 20 October.",
+            },
+            {
+                "q": "Where is Jupiter in 2027?",
+                "a": "Jupiter is in Leo until 25 January 2027 and in Cancer, its exaltation sign, from 25 January to 26 June. It turns direct in Cancer on 13 April, returns to Leo on 26 June and enters Virgo on 26 November. The classical Gochara table counts Jupiter as favourable in the 2nd, 5th, 7th, 9th and 11th houses from your Moon sign and unfavourable in the other seven, whatever Jupiter's own strength in that sign, so the same stretch can suit one Moon sign and not another.",
+            },
+            {
+                "q": "Do Rahu and Ketu change sign in 2027?",
+                "a": "No. Rahu entered Capricorn and Ketu entered Cancer on 25 November 2026 (true node, the convention this site's charts use; almanacs that use the mean node give 5 December 2026). The next change is Rahu into Sagittarius and Ketu into Gemini on 24 May 2028, so the axis stays where it is for the whole of 2027.",
+            },
+            {
+                "q": "How do I know which transits affect my Moon sign?",
+                "a": "Gochar is counted as a house from your Janma Rashi (Moon sign), not from your Lagna or Sun sign. Generate your free Kundli on Shubh Bhagya to find your Moon sign, then read that section for the house in which Saturn, Jupiter, Rahu and Ketu fall and the verdict the classical Gochara table gives for it. It is a first approximation, so weigh it with your dasha and natal chart.",
+            },
+        ),
+    ),
+    Article(
         slug="kundali-matching-ashtakoot-guna-milan",
         title="Kundali Matching: The 36-Guna Compatibility System Explained",
         summary="Before Indian marriages, families traditionally match Kundlis to check compatibility. The Ashtakoot Guna Milan system scores compatibility on 36 points across 8 factors. Here's what each of the 8 factors measures, what the total score really means, and why it's not the whole story.",
@@ -580,7 +618,7 @@ ARTICLES: tuple[Article, ...] = (
         category="Dasha",
         hero_image="/static/learn/sun-mahadasha/hero.svg",
         read_time="9 min",
-        related=("vimshottari-dasha-explained", "surya-sun-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha"),
+        related=("vimshottari-dasha-explained", "surya-sun-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha", "surya-sun-remedies"),
         faqs=(
             {
                 "q": "How long is Sun Mahadasha and when does it typically arrive?",
@@ -860,7 +898,7 @@ ARTICLES: tuple[Article, ...] = (
         category="Nakshatras",
         hero_image="/static/learn/bharani-nakshatra/hero.svg",
         read_time="7 min",
-        related=("ashwini-nakshatra", "shukra-venus-in-vedic-astrology", "kundali-matching-ashtakoot-guna-milan"),
+        related=("ashwini-nakshatra", "shukra-venus-in-vedic-astrology", "kundali-matching-ashtakoot-guna-milan", "krittika-nakshatra"),
         faqs=(
             {
                 "q": "How do I know if I have Moon in Bharani nakshatra?",
@@ -1273,7 +1311,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Saturn always block career?",
-                "a": "No — Saturn is the teacher of patience, not the villain online astrology makes him out to be. Saturn in the 10th house (Digbala) is actually good for career — it gives durable, structured, institutional careers that build over decades. Saturn's 'blockages' usually correspond to the classical Vedic idea of karma phal: the work-fruit that comes when you've done enough foundation work. Saturn insists you do the unglamorous foundation before receiving the result. Those who skip steps find Saturn blocking them; those who do the work often find Saturn eventually opening doors.",
+                "a": "No — Saturn is the teacher of patience, not the villain online astrology makes him out to be. Saturn in the 10th house is commonly read as good for career in the long run — durable, structured, institutional careers that build over decades (a reading from practice; Saturn's directional strength, digbala, is in the 7th house, not the 10th). Saturn's 'blockages' usually correspond to the classical Vedic idea of karma phal: the work-fruit that comes when you've done enough foundation work. Saturn insists you do the unglamorous foundation before receiving the result. Those who skip steps find Saturn blocking them; those who do the work often find Saturn eventually opening doors.",
             },
             {
                 "q": "How does the current Dasha affect my career?",
@@ -1302,7 +1340,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="saturn-in-10th-house-career",
         title="Saturn in the 10th House: Career Effects, Timing, and Remedies",
-        summary="Saturn in the 10th house is one of the most misread placements in Vedic astrology. It is his digbala — his strongest directional placement. The pattern is delay-then-elevation, not blockage. Here is what Saturn-in-10 actually does, when it manifests, and how to work with it.",
+        summary="Saturn in the 10th house is one of the most misread placements in Vedic astrology. It is not his digbala house (the sources we hold give Saturn that strength in the 7th), and practitioners commonly read the pattern as delay-then-elevation, not blockage. Here is what Saturn-in-10 actually does, when it manifests, and how to work with it.",
         seo_title="Saturn in 10th House: Career Effects & Remedies",
         seo_description="Saturn in the 10th house — the delay-then-elevation career pattern. Effects, sign variations, Dasha timing, and classical remedies, explained honestly.",
         category="Life Questions",
@@ -1313,7 +1351,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is Saturn in the 10th house good or bad for career?",
-                "a": "Classical Vedic tradition considers Saturn in the 10th house one of the stronger career placements — it is Saturn's digbala (directional strength). But the pattern is delay-then-elevation, not smooth early success. The waiting years (roughly ages 22–35) often feel harder than peers'; the elevation phase (roughly ages 36–56) tends to be where Saturn-10 careers peak. Whether the pattern manifests as growth or as chronic frustration depends on Saturn's sign, aspects, the 10th lord's condition, and the current Dasha. Generate your free Janma Kundli on Shubh Bhagya to see the exact configuration.",
+                "a": "Practitioners commonly read Saturn in the 10th house as a strong long-run career placement. It is not Saturn's digbala house, though: the sources we hold give Saturn his directional strength in the 7th, and the 10th to the Sun and Mars. The commonly described pattern is delay-then-elevation, not smooth early success. The waiting years (roughly ages 22–35) often feel harder than peers'; the elevation phase (roughly ages 36–56) tends to be where Saturn-10 careers peak. Whether the pattern manifests as growth or as chronic frustration depends on Saturn's sign, aspects, the 10th lord's condition, and the current Dasha. Generate your free Janma Kundli on Shubh Bhagya to see the exact configuration.",
             },
             {
                 "q": "Does Saturn in the 10th house always give a government job?",
@@ -1338,7 +1376,7 @@ ARTICLES: tuple[Article, ...] = (
         ),
         llm_summary=(
             "Keypoints:\n"
-            "• Saturn in 10th = Saturn's digbala (directional strength) — one of the STRONGEST classical career placements\n"
+            "• Saturn in 10th = NOT his digbala house (Saturn's directional strength is in the 7th); commonly read as delay-then-elevation, a reading from practice rather than a classical rule\n"
             "• Delay-then-elevation pattern:\n"
             "    - Slow early career (~ages 22-35): hard work, under-recognition\n"
             "    - Turning point at Saturn return (~29-30)\n"
@@ -2731,7 +2769,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What if 7th lord is in own house (7th)?",
-                "a": "The 7th lord in its own house (swakshetra) is the strongest possible placement for the 7th lord and one of the most commonly praised marriage signatures. Marriage becomes central to life as an organising structure; timing is read as on-schedule (the Dasha or Antardasha of the 7th lord is one of the periods in which the sources we hold say marriage typically happens, and here it is the planet in its own house); the partnership is usually read as stable and long-tenure, though we have no divorce statistics for this placement. The one caveat: if the 7th lord in the 7th is combust, retrograde, or heavily afflicted, the strength converts to intensity — the marriage is still central, but central as all-consuming or dramatically difficult rather than serenely stable.",
+                "a": "The 7th lord in its own house (swakshetra) is a strong placement, because own sign and a kendra (the 7th is one) both read as strength; exaltation, elsewhere in the chart, ranks above own sign. It is one of the most commonly praised marriage signatures in practice, though that praise is practitioners' habit, not a rule the sources we hold state. Marriage becomes central to life as an organising structure; timing is read as on-schedule (the Dasha or Antardasha of the 7th lord is one of the periods in which the sources we hold say marriage typically happens, and here it is the planet in its own house); the partnership is usually read as stable and long-tenure, though we have no divorce statistics for this placement. The one caveat: if the 7th lord in the 7th is combust, retrograde, or heavily afflicted, the strength converts to intensity — the marriage is still central, but central as all-consuming or dramatically difficult rather than serenely stable.",
             },
             {
                 "q": "Does 7th lord in 12th house mean foreign spouse?",

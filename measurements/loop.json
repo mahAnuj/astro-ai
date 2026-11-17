@@ -1,8 +1,1296 @@
 {
-  "generated_at": "2026-11-16T03:07:26Z",
+  "generated_at": "2026-11-17T17:18:33Z",
   "rows": [
     {
       "owner_helped": null,
+      "run": 44128302969,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T16:39:46Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 38.6,
+      "issue": 1177,
+      "pr": 1182,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 146,
+      "tokens_output": 43497,
+      "tokens_cache_read": 3633860,
+      "tokens_cache_write": 298630,
+      "cost_list_usd": 1.6668,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
+    },
+    {
+      "owner_helped": null,
+      "run": 44098709067,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T14:01:55Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 3.1,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 22,
+      "tokens_output": 3949,
+      "tokens_cache_read": 658767,
+      "tokens_cache_write": 51304,
+      "cost_list_usd": 0.3106,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
+    },
+    {
+      "owner_helped": null,
+      "run": 44097953603,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T13:57:34Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 25.6,
+      "issue": 1105,
+      "pr": 1173,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "issue",
+      "tokens_input": 100,
+      "tokens_output": 28705,
+      "tokens_cache_read": 3179442,
+      "tokens_cache_write": 129133,
+      "cost_list_usd": 1.0527,
+      "model": "claude-sonnet-5-5",
+      "turns": 31
+    },
+    {
+      "owner_helped": null,
+      "run": 44095526222,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T13:43:07Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 18.6,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 28,
+      "tokens_output": 6048,
+      "tokens_cache_read": 898932,
+      "tokens_cache_write": 57272,
+      "cost_list_usd": 0.3795,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
+    },
+    {
+      "owner_helped": null,
+      "run": 44095089963,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T13:40:30Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 2.5,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 25,
+      "tokens_output": 5974,
+      "tokens_cache_read": 773906,
+      "tokens_cache_write": 61364,
+      "cost_list_usd": 0.3826,
+      "model": "claude-sonnet-5-5",
+      "turns": 14
+    },
+    {
+      "owner_helped": null,
+      "run": 44093360528,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T13:30:16Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 10.0,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 23,
+      "tokens_output": 6477,
+      "tokens_cache_read": 682993,
+      "tokens_cache_write": 54809,
+      "cost_list_usd": 0.3524,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
+    },
+    {
+      "owner_helped": null,
+      "run": 44088452354,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T13:00:28Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 14.7,
+      "issue": 1105,
+      "pr": 1173,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "issue",
+      "tokens_input": 61,
+      "tokens_output": 19165,
+      "tokens_cache_read": 1465626,
+      "tokens_cache_write": 99564,
+      "cost_list_usd": 0.6653,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
+    },
+    {
+      "owner_helped": true,
+      "run": 44087825162,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T12:56:24Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 3.8,
+      "issue": 1041,
+      "pr": 1164,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "issue",
+      "tokens_input": 37,
+      "tokens_output": 10657,
+      "tokens_cache_read": 1025041,
+      "tokens_cache_write": 87541,
+      "cost_list_usd": 0.5151,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
+    },
+    {
+      "owner_helped": null,
+      "run": 44087395954,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T12:53:36Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 1.8,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "nothing",
+      "attribution": "receipt",
+      "kind": "issue",
+      "tokens_input": 21,
+      "tokens_output": 5144,
+      "tokens_cache_read": 586859,
+      "tokens_cache_write": 51499,
+      "cost_list_usd": 0.3162,
+      "model": "claude-sonnet-5-5",
+      "turns": 12
+    },
+    {
+      "owner_helped": null,
+      "run": 44079887334,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T12:05:28Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 3.9,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 32,
+      "tokens_output": 7561,
+      "tokens_cache_read": 996137,
+      "tokens_cache_write": 57601,
+      "cost_list_usd": 0.4057,
+      "model": "claude-sonnet-5-5",
+      "turns": 18
+    },
+    {
+      "owner_helped": false,
+      "run": 44075422963,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T11:35:38Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 77.6,
+      "issue": 1175,
+      "pr": 1179,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 22,
+      "tokens_input": 274,
+      "tokens_output": 90523,
+      "tokens_cache_read": 8682598,
+      "tokens_cache_write": 579013,
+      "cost_list_usd": 3.3629,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": null,
+      "run": 44073246678,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T11:21:14Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 11.9,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 37,
+      "tokens_output": 12282,
+      "tokens_cache_read": 1423406,
+      "tokens_cache_write": 83637,
+      "cost_list_usd": 0.5998,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
+    },
+    {
+      "owner_helped": null,
+      "run": 44072558588,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T11:16:43Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 4.1,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 30,
+      "tokens_output": 5938,
+      "tokens_cache_read": 919701,
+      "tokens_cache_write": 52680,
+      "cost_list_usd": 0.3621,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
+    },
+    {
+      "owner_helped": null,
+      "run": 44070072992,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T11:00:46Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 15.7,
+      "issue": 1060,
+      "pr": 1127,
+      "pr_merged": false,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 32,
+      "tokens_output": 7504,
+      "tokens_cache_read": 1058139,
+      "tokens_cache_write": 62681,
+      "cost_list_usd": 0.4316,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
+    },
+    {
+      "owner_helped": null,
+      "run": 44068915395,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T10:53:06Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 71.9,
+      "issue": 1105,
+      "pr": 1173,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 27,
+      "tokens_input": 235,
+      "tokens_output": 72986,
+      "tokens_cache_read": 8308207,
+      "tokens_cache_write": 610844,
+      "cost_list_usd": 3.2361,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": null,
+      "run": 44064089450,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T10:21:34Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 14.2,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 95,
+      "tokens_output": 45818,
+      "tokens_cache_read": 3570915,
+      "tokens_cache_write": 182348,
+      "cost_list_usd": 1.3717,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
+    },
+    {
+      "owner_helped": null,
+      "run": 44062928475,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T10:14:12Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 5.6,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 25,
+      "tokens_output": 5527,
+      "tokens_cache_read": 700470,
+      "tokens_cache_write": 48951,
+      "cost_list_usd": 0.3212,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
+    },
+    {
+      "owner_helped": null,
+      "run": 44060961645,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T10:01:37Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 51.2,
+      "issue": 1167,
+      "pr": 1170,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 25,
+      "tokens_input": 219,
+      "tokens_output": 68963,
+      "tokens_cache_read": 7232337,
+      "tokens_cache_write": 413111,
+      "cost_list_usd": 2.5958,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": null,
+      "run": 44060601982,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T09:59:21Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 14.6,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 30,
+      "tokens_output": 5624,
+      "tokens_cache_read": 882784,
+      "tokens_cache_write": 50018,
+      "cost_list_usd": 0.3447,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
+    },
+    {
+      "owner_helped": null,
+      "run": 44059751340,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T09:53:43Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 5.3,
+      "issue": 1060,
+      "pr": 1127,
+      "pr_merged": false,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 21,
+      "tokens_output": 4799,
+      "tokens_cache_read": 613632,
+      "tokens_cache_write": 52636,
+      "cost_list_usd": 0.3199,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
+    },
+    {
+      "owner_helped": null,
+      "run": 44059223258,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T09:50:15Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 3.2,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 27,
+      "tokens_output": 5071,
+      "tokens_cache_read": 777348,
+      "tokens_cache_write": 51135,
+      "cost_list_usd": 0.333,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
+    },
+    {
+      "owner_helped": null,
+      "run": 44054007037,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T09:16:05Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 45.1,
+      "issue": 1106,
+      "pr": 1168,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 22,
+      "tokens_input": 238,
+      "tokens_output": 113814,
+      "tokens_cache_read": 8772162,
+      "tokens_cache_write": 437501,
+      "cost_list_usd": 3.2598,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": true,
+      "run": 44052519976,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T09:06:33Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 9.3,
+      "issue": 1041,
+      "pr": 1164,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 23,
+      "tokens_input": 77,
+      "tokens_output": 24906,
+      "tokens_cache_read": 2380953,
+      "tokens_cache_write": 182362,
+      "cost_list_usd": 1.064,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": false,
+      "run": 44047430376,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T08:31:14Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 34.9,
+      "issue": 1159,
+      "pr": 1162,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 188,
+      "tokens_output": 64651,
+      "tokens_cache_read": 6565760,
+      "tokens_cache_write": 363234,
+      "cost_list_usd": 2.3704,
+      "model": "claude-sonnet-5-5",
+      "turns": 32
+    },
+    {
+      "owner_helped": null,
+      "run": 44043961731,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T08:06:50Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 3.5,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 21,
+      "tokens_output": 6284,
+      "tokens_cache_read": 583834,
+      "tokens_cache_write": 50061,
+      "cost_list_usd": 0.3215,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
+    },
+    {
+      "owner_helped": false,
+      "run": 44041420072,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T07:47:32Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 43.4,
+      "issue": 1160,
+      "pr": 1161,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 165,
+      "tokens_output": 49169,
+      "tokens_cache_read": 5506231,
+      "tokens_cache_write": 314675,
+      "cost_list_usd": 1.9708,
+      "model": "claude-sonnet-5-5",
+      "turns": 29
+    },
+    {
+      "owner_helped": null,
+      "run": 44040073419,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T07:36:56Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 17.7,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 43,
+      "tokens_output": 9194,
+      "tokens_cache_read": 1532444,
+      "tokens_cache_write": 69846,
+      "cost_list_usd": 0.5247,
+      "model": "claude-sonnet-5-5",
+      "turns": 26
+    },
+    {
+      "owner_helped": null,
+      "run": 44038880968,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T07:27:41Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 7.5,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 29,
+      "tokens_output": 6277,
+      "tokens_cache_read": 871724,
+      "tokens_cache_write": 56264,
+      "cost_list_usd": 0.3751,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
+    },
+    {
+      "owner_helped": null,
+      "run": 44037666735,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T07:18:21Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 9.1,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 28,
+      "tokens_output": 14557,
+      "tokens_cache_read": 1269243,
+      "tokens_cache_write": 90616,
+      "cost_list_usd": 0.635,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
+    },
+    {
+      "owner_helped": false,
+      "run": 44035519931,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T07:01:31Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 45.5,
+      "issue": 1068,
+      "pr": 1157,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 250,
+      "tokens_output": 74489,
+      "tokens_cache_read": 10968653,
+      "tokens_cache_write": 586136,
+      "cost_list_usd": 3.4866,
+      "model": "claude-sonnet-5-5",
+      "turns": 32
+    },
+    {
+      "owner_helped": false,
+      "run": 44028808398,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T06:06:50Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 54.4,
+      "issue": 1104,
+      "pr": 1153,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 192,
+      "tokens_output": 56458,
+      "tokens_cache_read": 6846572,
+      "tokens_cache_write": 411770,
+      "cost_list_usd": 2.4343,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
+    },
+    {
+      "owner_helped": false,
+      "run": 44020807802,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T04:58:33Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 67.8,
+      "issue": 1067,
+      "pr": 1150,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 26,
+      "tokens_input": 305,
+      "tokens_output": 103720,
+      "tokens_cache_read": 13174859,
+      "tokens_cache_write": 542749,
+      "cost_list_usd": 3.8793,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": false,
+      "run": 44019520177,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T04:46:49Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 33.0,
+      "issue": 1141,
+      "pr": 1149,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 104,
+      "tokens_output": 25461,
+      "tokens_cache_read": 3420733,
+      "tokens_cache_write": 322509,
+      "cost_list_usd": 1.5308,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
+    },
+    {
+      "owner_helped": false,
+      "run": 44016404733,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T04:19:42Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 26.9,
+      "issue": 1071,
+      "pr": 1148,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "issue",
+      "tokens_input": 129,
+      "tokens_output": 34157,
+      "tokens_cache_read": 4788791,
+      "tokens_cache_write": 225149,
+      "cost_list_usd": 1.5173,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
+    },
+    {
+      "owner_helped": false,
+      "run": 44008797657,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T03:14:38Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 64.9,
+      "issue": 1071,
+      "pr": 1148,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 296,
+      "tokens_output": 160636,
+      "tokens_cache_read": 19406639,
+      "tokens_cache_write": 862460,
+      "cost_list_usd": 5.8656,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
+    },
+    {
+      "owner_helped": false,
+      "run": 44006555060,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T02:56:07Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 18.3,
+      "issue": 1072,
+      "pr": 1145,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 94,
+      "tokens_output": 28713,
+      "tokens_cache_read": 3850703,
+      "tokens_cache_write": 241208,
+      "cost_list_usd": 1.4274,
+      "model": "claude-sonnet-5-5",
+      "turns": 33
+    },
+    {
+      "owner_helped": false,
+      "run": 44002163099,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T02:19:49Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 36.0,
+      "issue": 1139,
+      "pr": 1142,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 224,
+      "tokens_output": 72601,
+      "tokens_cache_read": 10525365,
+      "tokens_cache_write": 396752,
+      "cost_list_usd": 2.9884,
+      "model": "claude-sonnet-5-5",
+      "turns": 52
+    },
+    {
+      "owner_helped": null,
+      "run": 43986617477,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T00:18:56Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 14.8,
+      "issue": 1086,
+      "pr": 1132,
+      "pr_merged": false,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 34,
+      "tokens_output": 7253,
+      "tokens_cache_read": 1481726,
+      "tokens_cache_write": 83204,
+      "cost_list_usd": 0.5536,
+      "model": "claude-sonnet-5-5",
+      "turns": 18
+    },
+    {
+      "owner_helped": true,
+      "run": 43985605037,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T00:11:31Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 3.0,
+      "issue": 1025,
+      "pr": 1138,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "issue",
+      "turns": 17,
+      "tokens_input": 32,
+      "tokens_output": 9705,
+      "tokens_cache_read": 1282077,
+      "tokens_cache_write": 74203,
+      "cost_list_usd": 0.5221,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": true,
+      "run": 43984097501,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T00:00:47Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 10.5,
+      "issue": 1086,
+      "pr": 1132,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "issue",
+      "turns": 15,
+      "tokens_input": 25,
+      "tokens_output": 7298,
+      "tokens_cache_read": 1023640,
+      "tokens_cache_write": 79918,
+      "cost_list_usd": 0.4951,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": true,
+      "run": 43980385529,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T23:34:03Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 23.6,
+      "issue": 1025,
+      "pr": 1138,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 35,
+      "tokens_input": 132,
+      "tokens_output": 43922,
+      "tokens_cache_read": 5868527,
+      "tokens_cache_write": 302166,
+      "cost_list_usd": 1.9676,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": null,
+      "run": 43953857930,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T20:50:07Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 32.5,
+      "issue": 1062,
+      "pr": 1136,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 27,
+      "tokens_input": 189,
+      "tokens_output": 68759,
+      "tokens_cache_read": 7348201,
+      "tokens_cache_write": 379155,
+      "cost_list_usd": 2.546,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": true,
+      "run": 43931674236,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T18:42:37Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 1.8,
+      "issue": 1086,
+      "pr": 1132,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "issue",
+      "turns": 11,
+      "tokens_input": 19,
+      "tokens_output": 3792,
+      "tokens_cache_read": 686939,
+      "tokens_cache_write": 65115,
+      "cost_list_usd": 0.3671,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": true,
+      "run": 43922011366,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T17:47:15Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 39.2,
+      "issue": 1086,
+      "pr": 1132,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "issue",
+      "turns": 28,
+      "tokens_input": 153,
+      "tokens_output": 38352,
+      "tokens_cache_read": 5563989,
+      "tokens_cache_write": 339279,
+      "cost_list_usd": 1.9356,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": true,
+      "run": 43910751458,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T16:44:06Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 62.7,
+      "issue": 1086,
+      "pr": 1132,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 59,
+      "tokens_input": 219,
+      "tokens_output": 79392,
+      "tokens_cache_read": 11054704,
+      "tokens_cache_write": 412470,
+      "cost_list_usd": 3.1697,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": false,
+      "run": 43852199912,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T10:49:00Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 29.9,
+      "issue": 1074,
+      "pr": 1130,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 211,
+      "tokens_output": 70791,
+      "tokens_cache_read": 8898338,
+      "tokens_cache_write": 414547,
+      "cost_list_usd": 2.7952,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
+    },
+    {
+      "owner_helped": null,
+      "run": 43825045166,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T07:36:33Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 3.8,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 29,
+      "tokens_output": 5606,
+      "tokens_cache_read": 1089761,
+      "tokens_cache_write": 70551,
+      "cost_list_usd": 0.4473,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
+    },
+    {
+      "owner_helped": false,
+      "run": 43821882554,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T07:10:10Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 17.0,
+      "issue": 1089,
+      "pr": 1128,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 146,
+      "tokens_output": 45321,
+      "tokens_cache_read": 6165869,
+      "tokens_cache_write": 292578,
+      "cost_list_usd": 1.9763,
+      "model": "claude-sonnet-5-5",
+      "turns": 44
+    },
+    {
+      "owner_helped": true,
+      "run": 43815955639,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T06:19:23Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 50.5,
+      "issue": 1060,
+      "pr": 1127,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 67,
+      "tokens_input": 179,
+      "tokens_output": 46307,
+      "tokens_cache_read": 9618082,
+      "tokens_cache_write": 293713,
+      "cost_list_usd": 2.3692,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": false,
+      "run": 43811828849,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T05:41:00Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 38.1,
+      "issue": 1073,
+      "pr": 1126,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 164,
+      "tokens_output": 58320,
+      "tokens_cache_read": 6214157,
+      "tokens_cache_write": 590458,
+      "cost_list_usd": 2.834,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
+    },
+    {
+      "owner_helped": false,
+      "run": 43806685265,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T04:52:35Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 48.0,
+      "issue": 1100,
+      "pr": 1125,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 230,
+      "tokens_output": 97389,
+      "tokens_cache_read": 13635803,
+      "tokens_cache_write": 400803,
+      "cost_list_usd": 3.5955,
+      "model": "claude-sonnet-5-5",
+      "turns": 56
+    },
+    {
+      "owner_helped": false,
+      "run": 43804730194,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T04:32:33Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 19.8,
+      "issue": 1087,
+      "pr": 1124,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 144,
+      "tokens_output": 38535,
+      "tokens_cache_read": 6343557,
+      "tokens_cache_write": 279947,
+      "cost_list_usd": 1.8871,
+      "model": "claude-sonnet-5-5",
+      "turns": 41
+    },
+    {
+      "owner_helped": false,
+      "run": 43802260385,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T04:08:38Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 23.6,
+      "issue": 1088,
+      "pr": 1123,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 153,
+      "tokens_output": 49323,
+      "tokens_cache_read": 9102768,
+      "tokens_cache_write": 300803,
+      "cost_list_usd": 2.4016,
+      "model": "claude-sonnet-5-5",
+      "turns": 62
+    },
+    {
+      "owner_helped": false,
+      "run": 43800702674,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T03:52:26Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 15.9,
+      "issue": 1075,
+      "pr": 1122,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 98,
+      "tokens_output": 36747,
+      "tokens_cache_read": 4417320,
+      "tokens_cache_write": 258421,
+      "cost_list_usd": 1.646,
+      "model": "claude-sonnet-5-5",
+      "turns": 33
+    },
+    {
+      "owner_helped": null,
+      "run": 43798115781,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T03:25:33Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 26.4,
+      "issue": 1083,
+      "pr": 1121,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "turns": 44,
+      "tokens_input": 116,
+      "tokens_output": 41080,
+      "tokens_cache_read": 5550091,
+      "tokens_cache_write": 247593,
+      "cost_list_usd": 1.7851,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "owner_helped": false,
+      "run": 43796251109,
+      "workflow": "agent-work",
+      "date": "2026-11-16",
+      "started": "2026-11-16T03:07:36Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 17.7,
+      "issue": 1085,
+      "pr": 1120,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 96,
+      "tokens_output": 29934,
+      "tokens_cache_read": 3036083,
+      "tokens_cache_write": 339200,
+      "cost_list_usd": 1.6083,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
+    },
+    {
+      "owner_helped": false,
       "run": 43793217120,
       "workflow": "agent-work",
       "date": "2026-11-16",
@@ -12,10 +1300,17 @@
       "minutes": 30.6,
       "issue": 1080,
       "pr": 1118,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 177,
+      "tokens_output": 57960,
+      "tokens_cache_read": 7111332,
+      "tokens_cache_write": 382159,
+      "cost_list_usd": 2.3975,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": null,
@@ -31,7 +1326,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 10,
+      "tokens_output": 1959,
+      "tokens_cache_read": 297041,
+      "tokens_cache_write": 57159,
+      "cost_list_usd": 0.278,
+      "model": "claude-sonnet-5-5",
+      "turns": 6
     },
     {
       "owner_helped": null,
@@ -47,7 +1349,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 10,
+      "tokens_output": 2247,
+      "tokens_cache_read": 298311,
+      "tokens_cache_write": 57975,
+      "cost_list_usd": 0.2842,
+      "model": "claude-sonnet-5-5",
+      "turns": 7
     },
     {
       "owner_helped": null,
@@ -63,7 +1372,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 8,
+      "tokens_output": 1500,
+      "tokens_cache_read": 225165,
+      "tokens_cache_write": 56856,
+      "cost_list_usd": 0.265,
+      "model": "claude-sonnet-5-5",
+      "turns": 4
     },
     {
       "owner_helped": null,
@@ -79,7 +1395,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 57,
+      "tokens_output": 13385,
+      "tokens_cache_read": 1868471,
+      "tokens_cache_write": 129213,
+      "cost_list_usd": 0.7442,
+      "model": "claude-sonnet-5-5",
+      "turns": 14
     },
     {
       "owner_helped": false,
@@ -95,7 +1418,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 170,
+      "tokens_output": 49380,
+      "tokens_cache_read": 6523666,
+      "tokens_cache_write": 345668,
+      "cost_list_usd": 2.1598,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": null,
@@ -111,10 +1441,17 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 12,
+      "tokens_output": 2089,
+      "tokens_cache_read": 367661,
+      "tokens_cache_write": 57960,
+      "cost_list_usd": 0.2895,
+      "model": "claude-sonnet-5-5",
+      "turns": 7
     },
     {
-      "owner_helped": null,
+      "owner_helped": false,
       "run": 43774161786,
       "workflow": "agent-work",
       "date": "2026-11-15",
@@ -124,10 +1461,17 @@
       "minutes": 68.0,
       "issue": 1084,
       "pr": 1113,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 132,
+      "tokens_output": 48103,
+      "tokens_cache_read": 5556122,
+      "tokens_cache_write": 477173,
+      "cost_list_usd": 2.4092,
+      "model": "claude-sonnet-5-5",
+      "turns": 36
     },
     {
       "owner_helped": null,
@@ -143,7 +1487,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 23,
+      "tokens_output": 5298,
+      "tokens_cache_read": 854768,
+      "tokens_cache_write": 70416,
+      "cost_list_usd": 0.4202,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
     },
     {
       "owner_helped": null,
@@ -159,7 +1510,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 27,
+      "tokens_output": 8208,
+      "tokens_cache_read": 1076366,
+      "tokens_cache_write": 80494,
+      "cost_list_usd": 0.5117,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
     },
     {
       "owner_helped": false,
@@ -175,7 +1533,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 110,
+      "tokens_output": 52860,
+      "tokens_cache_read": 5622168,
+      "tokens_cache_write": 282407,
+      "cost_list_usd": 2.0162,
+      "model": "claude-sonnet-5-5",
+      "turns": 43
     },
     {
       "owner_helped": false,
@@ -191,7 +1556,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 235,
+      "tokens_output": 142593,
+      "tokens_cache_read": 11932021,
+      "tokens_cache_write": 528214,
+      "cost_list_usd": 4.174,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": null,
@@ -207,7 +1579,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 30,
+      "tokens_output": 5597,
+      "tokens_cache_read": 1177993,
+      "tokens_cache_write": 70754,
+      "cost_list_usd": 0.4568,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
     },
     {
       "owner_helped": true,
@@ -223,7 +1602,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 43,
+      "tokens_output": 13011,
+      "tokens_cache_read": 1557600,
+      "tokens_cache_write": 138795,
+      "cost_list_usd": 0.7665,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": false,
@@ -239,7 +1625,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 96,
+      "tokens_output": 26742,
+      "tokens_cache_read": 3702120,
+      "tokens_cache_write": 252361,
+      "cost_list_usd": 1.4222,
+      "model": "claude-sonnet-5-5",
+      "turns": 28
     },
     {
       "owner_helped": null,
@@ -255,7 +1648,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 76,
+      "tokens_output": 13040,
+      "tokens_cache_read": 3730763,
+      "tokens_cache_write": 98424,
+      "cost_list_usd": 0.8973,
+      "model": "claude-sonnet-5-5",
+      "turns": 50
     },
     {
       "owner_helped": true,
@@ -271,7 +1671,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 36,
+      "tokens_output": 12401,
+      "tokens_cache_read": 1277127,
+      "tokens_cache_write": 121384,
+      "cost_list_usd": 0.6685,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": null,
@@ -287,7 +1694,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 34,
+      "tokens_output": 8041,
+      "tokens_cache_read": 1460785,
+      "tokens_cache_write": 84041,
+      "cost_list_usd": 0.5627,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
     },
     {
       "owner_helped": null,
@@ -303,7 +1717,14 @@
       "pr_merged": true,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 23,
+      "tokens_output": 5066,
+      "tokens_cache_read": 856570,
+      "tokens_cache_write": 68226,
+      "cost_list_usd": 0.4093,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
     },
     {
       "owner_helped": null,
@@ -319,7 +1740,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 41,
+      "tokens_output": 12877,
+      "tokens_cache_read": 1909677,
+      "tokens_cache_write": 97772,
+      "cost_list_usd": 0.7109,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": false,
@@ -335,7 +1763,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 111,
+      "tokens_output": 42446,
+      "tokens_cache_read": 4451974,
+      "tokens_cache_write": 263447,
+      "cost_list_usd": 1.6963,
+      "model": "claude-sonnet-5-5",
+      "turns": 29
     },
     {
       "owner_helped": false,
@@ -351,7 +1786,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 65,
+      "tokens_output": 21866,
+      "tokens_cache_read": 2358812,
+      "tokens_cache_write": 206234,
+      "cost_list_usd": 1.1133,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": false,
@@ -367,7 +1809,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 236,
+      "tokens_output": 84002,
+      "tokens_cache_read": 13585587,
+      "tokens_cache_write": 448402,
+      "cost_list_usd": 3.5928,
+      "model": "claude-sonnet-5-5",
+      "turns": 73
     },
     {
       "owner_helped": null,
@@ -383,7 +1832,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 38,
+      "tokens_output": 7007,
+      "tokens_cache_read": 1536237,
+      "tokens_cache_write": 75735,
+      "cost_list_usd": 0.5267,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": true,
@@ -399,7 +1855,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 199,
+      "tokens_output": 58432,
+      "tokens_cache_read": 9344562,
+      "tokens_cache_write": 359832,
+      "cost_list_usd": 2.6217,
+      "model": "claude-sonnet-5-5",
+      "turns": 56
     },
     {
       "owner_helped": null,
@@ -415,7 +1878,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 21,
+      "tokens_output": 4516,
+      "tokens_cache_read": 783606,
+      "tokens_cache_write": 69512,
+      "cost_list_usd": 0.4016,
+      "model": "claude-sonnet-5-5",
+      "turns": 12
     },
     {
       "owner_helped": true,
@@ -431,7 +1901,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 232,
+      "tokens_output": 116334,
+      "tokens_cache_read": 12461091,
+      "tokens_cache_write": 477754,
+      "cost_list_usd": 3.8922,
+      "model": "claude-sonnet-5-5",
+      "turns": 52
     },
     {
       "owner_helped": null,
@@ -447,7 +1924,14 @@
       "pr_merged": true,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 63,
+      "tokens_output": 16283,
+      "tokens_cache_read": 1995997,
+      "tokens_cache_write": 194455,
+      "cost_list_usd": 0.9562,
+      "model": "claude-sonnet-5-5",
+      "turns": 9
     },
     {
       "owner_helped": true,
@@ -463,7 +1947,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 91,
+      "tokens_output": 23508,
+      "tokens_cache_read": 3217454,
+      "tokens_cache_write": 225741,
+      "cost_list_usd": 1.2403,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": true,
@@ -479,7 +1970,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 314,
+      "tokens_output": 101259,
+      "tokens_cache_read": 19809910,
+      "tokens_cache_write": 489173,
+      "cost_list_usd": 4.5254,
+      "model": "claude-sonnet-5-5",
+      "turns": 101
     },
     {
       "owner_helped": true,
@@ -495,7 +1993,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 90,
+      "tokens_output": 19966,
+      "tokens_cache_read": 3297950,
+      "tokens_cache_write": 161610,
+      "cost_list_usd": 1.0587,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
     },
     {
       "owner_helped": true,
@@ -511,7 +2016,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 299,
+      "tokens_output": 95570,
+      "tokens_cache_read": 12970175,
+      "tokens_cache_write": 730271,
+      "cost_list_usd": 4.2284,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": false,
@@ -527,7 +2039,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 119,
+      "tokens_output": 42913,
+      "tokens_cache_read": 4817940,
+      "tokens_cache_write": 296785,
+      "cost_list_usd": 1.8259,
+      "model": "claude-sonnet-5-5",
+      "turns": 37
     },
     {
       "owner_helped": false,
@@ -543,7 +2062,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 204,
+      "tokens_output": 69109,
+      "tokens_cache_read": 6910509,
+      "tokens_cache_write": 407284,
+      "cost_list_usd": 2.5544,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
     },
     {
       "owner_helped": false,
@@ -559,7 +2085,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 214,
+      "tokens_output": 85332,
+      "tokens_cache_read": 11103978,
+      "tokens_cache_write": 347516,
+      "cost_list_usd": 3.0602,
+      "model": "claude-sonnet-5-5",
+      "turns": 58
     },
     {
       "owner_helped": false,
@@ -575,7 +2108,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 109,
+      "tokens_output": 36697,
+      "tokens_cache_read": 3602426,
+      "tokens_cache_write": 305985,
+      "cost_list_usd": 1.626,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": false,
@@ -591,7 +2131,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 116,
+      "tokens_output": 47526,
+      "tokens_cache_read": 5253499,
+      "tokens_cache_write": 284475,
+      "cost_list_usd": 1.8861,
+      "model": "claude-sonnet-5-5",
+      "turns": 37
     },
     {
       "owner_helped": false,
@@ -607,7 +2154,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 252,
+      "tokens_output": 87892,
+      "tokens_cache_read": 10347304,
+      "tokens_cache_write": 499553,
+      "cost_list_usd": 3.3264,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": false,
@@ -623,7 +2177,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 120,
+      "tokens_output": 39910,
+      "tokens_cache_read": 5048273,
+      "tokens_cache_write": 262116,
+      "cost_list_usd": 1.7253,
+      "model": "claude-sonnet-5-5",
+      "turns": 36
     },
     {
       "owner_helped": false,
@@ -639,7 +2200,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 152,
+      "tokens_output": 52526,
+      "tokens_cache_read": 7651435,
+      "tokens_cache_write": 332780,
+      "cost_list_usd": 2.333,
+      "model": "claude-sonnet-5-5",
+      "turns": 51
     },
     {
       "owner_helped": false,
@@ -655,7 +2223,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 207,
+      "tokens_output": 66211,
+      "tokens_cache_read": 8411867,
+      "tokens_cache_write": 489154,
+      "cost_list_usd": 2.9008,
+      "model": "claude-sonnet-5-5",
+      "turns": 28
     },
     {
       "owner_helped": false,
@@ -671,7 +2246,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 68,
+      "tokens_output": 23284,
+      "tokens_cache_read": 2494339,
+      "tokens_cache_write": 216376,
+      "cost_list_usd": 1.1652,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": false,
@@ -687,7 +2269,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 73,
+      "tokens_output": 20695,
+      "tokens_cache_read": 2794375,
+      "tokens_cache_write": 230920,
+      "cost_list_usd": 1.1998,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": false,
@@ -703,7 +2292,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 120,
+      "tokens_output": 46005,
+      "tokens_cache_read": 4466391,
+      "tokens_cache_write": 337956,
+      "cost_list_usd": 1.9207,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": false,
@@ -719,7 +2315,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 87,
+      "tokens_output": 26419,
+      "tokens_cache_read": 3397171,
+      "tokens_cache_write": 244912,
+      "cost_list_usd": 1.3869,
+      "model": "claude-sonnet-5-5",
+      "turns": 28
     },
     {
       "owner_helped": false,
@@ -735,7 +2338,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 54,
+      "tokens_output": 14740,
+      "tokens_cache_read": 1863313,
+      "tokens_cache_write": 129549,
+      "cost_list_usd": 0.7741,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
     },
     {
       "owner_helped": null,
@@ -751,7 +2361,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 33,
+      "tokens_output": 4490,
+      "tokens_cache_read": 1188064,
+      "tokens_cache_write": 70198,
+      "cost_list_usd": 0.4446,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": false,
@@ -767,7 +2384,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 243,
+      "tokens_output": 72321,
+      "tokens_cache_read": 10437809,
+      "tokens_cache_write": 375044,
+      "cost_list_usd": 2.8908,
+      "model": "claude-sonnet-5-5",
+      "turns": 45
     },
     {
       "owner_helped": null,
@@ -783,7 +2407,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 29,
+      "tokens_output": 9575,
+      "tokens_cache_read": 1277562,
+      "tokens_cache_write": 89430,
+      "cost_list_usd": 0.5813,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": null,
@@ -799,7 +2430,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 45,
+      "tokens_output": 12244,
+      "tokens_cache_read": 1280439,
+      "tokens_cache_write": 117717,
+      "cost_list_usd": 0.6496,
+      "model": "claude-sonnet-5-5",
+      "turns": 8
     },
     {
       "owner_helped": false,
@@ -815,7 +2453,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 160,
+      "tokens_output": 53210,
+      "tokens_cache_read": 5987146,
+      "tokens_cache_write": 442407,
+      "cost_list_usd": 2.4066,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": null,
@@ -831,7 +2476,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 39,
+      "tokens_output": 7633,
+      "tokens_cache_read": 1602633,
+      "tokens_cache_write": 76046,
+      "cost_list_usd": 0.5409,
+      "model": "claude-sonnet-5-5",
+      "turns": 26
     },
     {
       "owner_helped": false,
@@ -847,7 +2499,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 201,
+      "tokens_output": 68840,
+      "tokens_cache_read": 8710962,
+      "tokens_cache_write": 385635,
+      "cost_list_usd": 2.6659,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": null,
@@ -863,7 +2522,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 27,
+      "tokens_output": 11714,
+      "tokens_cache_read": 1150330,
+      "tokens_cache_write": 93124,
+      "cost_list_usd": 0.6047,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
     },
     {
       "owner_helped": null,
@@ -879,7 +2545,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 28,
+      "tokens_output": 10376,
+      "tokens_cache_read": 1247341,
+      "tokens_cache_write": 86935,
+      "cost_list_usd": 0.5763,
+      "model": "claude-sonnet-5-5",
+      "turns": 18
     },
     {
       "owner_helped": false,
@@ -895,7 +2568,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 180,
+      "tokens_output": 62654,
+      "tokens_cache_read": 6857210,
+      "tokens_cache_write": 369638,
+      "cost_list_usd": 2.3761,
+      "model": "claude-sonnet-5-5",
+      "turns": 18
     },
     {
       "owner_helped": false,
@@ -911,7 +2591,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 203,
+      "tokens_output": 70515,
+      "tokens_cache_read": 8694071,
+      "tokens_cache_write": 539391,
+      "cost_list_usd": 3.1113,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": false,
@@ -927,7 +2614,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 81,
+      "tokens_output": 28622,
+      "tokens_cache_read": 3792286,
+      "tokens_cache_write": 183400,
+      "cost_list_usd": 1.2986,
+      "model": "claude-sonnet-5-5",
+      "turns": 32
     },
     {
       "owner_helped": false,
@@ -943,7 +2637,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 171,
+      "tokens_output": 64657,
+      "tokens_cache_read": 6591834,
+      "tokens_cache_write": 381714,
+      "cost_list_usd": 2.4283,
+      "model": "claude-sonnet-5-5",
+      "turns": 26
     },
     {
       "owner_helped": false,
@@ -959,7 +2660,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 171,
+      "tokens_output": 63256,
+      "tokens_cache_read": 6130192,
+      "tokens_cache_write": 362309,
+      "cost_list_usd": 2.3292,
+      "model": "claude-sonnet-5-5",
+      "turns": 30
     },
     {
       "owner_helped": false,
@@ -975,7 +2683,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 235,
+      "tokens_output": 92329,
+      "tokens_cache_read": 11004802,
+      "tokens_cache_write": 429382,
+      "cost_list_usd": 3.2276,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": false,
@@ -991,7 +2706,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 150,
+      "tokens_output": 59687,
+      "tokens_cache_read": 6193340,
+      "tokens_cache_write": 376209,
+      "cost_list_usd": 2.2899,
+      "model": "claude-sonnet-5-5",
+      "turns": 18
     },
     {
       "owner_helped": false,
@@ -1007,7 +2729,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 140,
+      "tokens_output": 48483,
+      "tokens_cache_read": 6167860,
+      "tokens_cache_write": 321569,
+      "cost_list_usd": 2.1039,
+      "model": "claude-sonnet-5-5",
+      "turns": 39
     },
     {
       "owner_helped": false,
@@ -1023,7 +2752,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 180,
+      "tokens_output": 53521,
+      "tokens_cache_read": 6560742,
+      "tokens_cache_write": 406539,
+      "cost_list_usd": 2.3633,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": false,
@@ -1039,7 +2775,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 168,
+      "tokens_output": 72812,
+      "tokens_cache_read": 7077057,
+      "tokens_cache_write": 423001,
+      "cost_list_usd": 2.6571,
+      "model": "claude-sonnet-5-5",
+      "turns": 26
     },
     {
       "owner_helped": false,
@@ -1055,7 +2798,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 158,
+      "tokens_output": 45372,
+      "tokens_cache_read": 5454941,
+      "tokens_cache_write": 340754,
+      "cost_list_usd": 1.9913,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": true,
@@ -1071,7 +2821,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 194,
+      "tokens_output": 59522,
+      "tokens_cache_read": 8551105,
+      "tokens_cache_write": 348589,
+      "cost_list_usd": 2.5137,
+      "model": "claude-sonnet-5-5",
+      "turns": 46
     },
     {
       "owner_helped": false,
@@ -1087,7 +2844,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 144,
+      "tokens_output": 40580,
+      "tokens_cache_read": 6622933,
+      "tokens_cache_write": 266939,
+      "cost_list_usd": 1.9237,
+      "model": "claude-sonnet-5-5",
+      "turns": 48
     },
     {
       "owner_helped": null,
@@ -1103,7 +2867,14 @@
       "pr_merged": true,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 32,
+      "tokens_output": 7658,
+      "tokens_cache_read": 1271711,
+      "tokens_cache_write": 72695,
+      "cost_list_usd": 0.4946,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": false,
@@ -1119,7 +2890,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 251,
+      "tokens_output": 106822,
+      "tokens_cache_read": 10151320,
+      "tokens_cache_write": 571129,
+      "cost_list_usd": 3.6801,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": null,
@@ -1135,7 +2913,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 10,
+      "tokens_output": 1813,
+      "tokens_cache_read": 290326,
+      "tokens_cache_write": 56941,
+      "cost_list_usd": 0.2749,
+      "model": "claude-sonnet-5-5",
+      "turns": 6
     },
     {
       "owner_helped": false,
@@ -1151,7 +2936,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 119,
+      "tokens_output": 35046,
+      "tokens_cache_read": 5534194,
+      "tokens_cache_write": 261921,
+      "cost_list_usd": 1.6826,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": false,
@@ -1167,7 +2959,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 192,
+      "tokens_output": 68508,
+      "tokens_cache_read": 7513982,
+      "tokens_cache_write": 481496,
+      "cost_list_usd": 2.7695,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": false,
@@ -1183,7 +2982,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 182,
+      "tokens_output": 71769,
+      "tokens_cache_read": 7443301,
+      "tokens_cache_write": 452970,
+      "cost_list_usd": 2.7667,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": false,
@@ -1199,7 +3005,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 174,
+      "tokens_output": 69716,
+      "tokens_cache_read": 6750572,
+      "tokens_cache_write": 406763,
+      "cost_list_usd": 2.5633,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": null,
@@ -1215,7 +3028,14 @@
       "pr_merged": false,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 39,
+      "tokens_output": 8056,
+      "tokens_cache_read": 1101490,
+      "tokens_cache_write": 116566,
+      "cost_list_usd": 0.5784,
+      "model": "claude-sonnet-5-5",
+      "turns": 10
     },
     {
       "owner_helped": false,
@@ -1231,7 +3051,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 310,
+      "tokens_output": 104544,
+      "tokens_cache_read": 14044299,
+      "tokens_cache_write": 527758,
+      "cost_list_usd": 3.9432,
+      "model": "claude-sonnet-5-5",
+      "turns": 32
     },
     {
       "owner_helped": null,
@@ -1247,7 +3074,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 79,
+      "tokens_output": 35990,
+      "tokens_cache_read": 3674074,
+      "tokens_cache_write": 222070,
+      "cost_list_usd": 1.42,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": false,
@@ -1263,7 +3097,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 142,
+      "tokens_output": 45405,
+      "tokens_cache_read": 4882906,
+      "tokens_cache_write": 317810,
+      "cost_list_usd": 1.8705,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": true,
@@ -1279,7 +3120,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 102,
+      "tokens_output": 34325,
+      "tokens_cache_read": 3935991,
+      "tokens_cache_write": 236499,
+      "cost_list_usd": 1.4736,
+      "model": "claude-sonnet-5-5",
+      "turns": 34
     },
     {
       "owner_helped": false,
@@ -1295,7 +3143,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 151,
+      "tokens_output": 59201,
+      "tokens_cache_read": 5908506,
+      "tokens_cache_write": 353757,
+      "cost_list_usd": 2.2017,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": null,
@@ -1311,7 +3166,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 25,
+      "tokens_output": 4052,
+      "tokens_cache_read": 885093,
+      "tokens_cache_write": 65259,
+      "cost_list_usd": 0.3901,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": null,
@@ -1327,7 +3189,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 45,
+      "tokens_output": 8508,
+      "tokens_cache_read": 2074448,
+      "tokens_cache_write": 92437,
+      "cost_list_usd": 0.6624,
+      "model": "claude-sonnet-5-5",
+      "turns": 31
     },
     {
       "owner_helped": false,
@@ -1343,7 +3212,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 56,
+      "tokens_output": 13185,
+      "tokens_cache_read": 2060511,
+      "tokens_cache_write": 130768,
+      "cost_list_usd": 0.7862,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": null,
@@ -1359,7 +3235,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 43,
+      "tokens_output": 9000,
+      "tokens_cache_read": 1843127,
+      "tokens_cache_write": 83114,
+      "cost_list_usd": 0.6069,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": null,
@@ -1375,7 +3258,14 @@
       "pr_merged": true,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 19,
+      "tokens_output": 4068,
+      "tokens_cache_read": 649661,
+      "tokens_cache_write": 60408,
+      "cost_list_usd": 0.3473,
+      "model": "claude-sonnet-5-5",
+      "turns": 10
     },
     {
       "owner_helped": false,
@@ -1391,7 +3281,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 141,
+      "tokens_output": 46546,
+      "tokens_cache_read": 4508538,
+      "tokens_cache_write": 344670,
+      "cost_list_usd": 1.9193,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": null,
@@ -1407,7 +3304,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 81,
+      "tokens_output": 32897,
+      "tokens_cache_read": 3786087,
+      "tokens_cache_write": 218558,
+      "cost_list_usd": 1.3869,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": false,
@@ -1423,7 +3327,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 99,
+      "tokens_output": 32138,
+      "tokens_cache_read": 3854424,
+      "tokens_cache_write": 247889,
+      "cost_list_usd": 1.4747,
+      "model": "claude-sonnet-5-5",
+      "turns": 29
     },
     {
       "owner_helped": null,
@@ -1439,7 +3350,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 27,
+      "tokens_output": 8756,
+      "tokens_cache_read": 1039626,
+      "tokens_cache_write": 78661,
+      "cost_list_usd": 0.5062,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": null,
@@ -1455,7 +3373,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 40,
+      "tokens_output": 10232,
+      "tokens_cache_read": 1697927,
+      "tokens_cache_write": 85759,
+      "cost_list_usd": 0.6152,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": false,
@@ -1471,7 +3396,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 206,
+      "tokens_output": 61821,
+      "tokens_cache_read": 7289022,
+      "tokens_cache_write": 354375,
+      "cost_list_usd": 2.3793,
+      "model": "claude-sonnet-5-5",
+      "turns": 18
     },
     {
       "owner_helped": null,
@@ -1487,7 +3419,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 19,
+      "tokens_output": 5877,
+      "tokens_cache_read": 684798,
+      "tokens_cache_write": 66651,
+      "cost_list_usd": 0.3939,
+      "model": "claude-sonnet-5-5",
+      "turns": 11
     },
     {
       "owner_helped": null,
@@ -1503,7 +3442,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 23,
+      "tokens_output": 4002,
+      "tokens_cache_read": 826441,
+      "tokens_cache_write": 65584,
+      "cost_list_usd": 0.385,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
     },
     {
       "owner_helped": false,
@@ -1519,7 +3465,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 160,
+      "tokens_output": 43882,
+      "tokens_cache_read": 4992371,
+      "tokens_cache_write": 306800,
+      "cost_list_usd": 1.8365,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": null,
@@ -1535,7 +3488,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 33,
+      "tokens_output": 7004,
+      "tokens_cache_read": 1376491,
+      "tokens_cache_write": 76895,
+      "cost_list_usd": 0.5153,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": false,
@@ -1551,7 +3511,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 214,
+      "tokens_output": 56785,
+      "tokens_cache_read": 7051540,
+      "tokens_cache_write": 338040,
+      "cost_list_usd": 2.2471,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": null,
@@ -1567,7 +3534,14 @@
       "pr_merged": true,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 34,
+      "tokens_output": 7046,
+      "tokens_cache_read": 1299178,
+      "tokens_cache_write": 70746,
+      "cost_list_usd": 0.4834,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": false,
@@ -1583,7 +3557,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 162,
+      "tokens_output": 38731,
+      "tokens_cache_read": 6128128,
+      "tokens_cache_write": 324846,
+      "cost_list_usd": 1.966,
+      "model": "claude-sonnet-5-5",
+      "turns": 36
     },
     {
       "owner_helped": false,
@@ -1599,7 +3580,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 405,
+      "tokens_output": 116848,
+      "tokens_cache_read": 16629995,
+      "tokens_cache_write": 597937,
+      "cost_list_usd": 4.5017,
+      "model": "claude-sonnet-5-5",
+      "turns": 33
     },
     {
       "owner_helped": null,
@@ -1615,7 +3603,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 32,
+      "tokens_output": 12616,
+      "tokens_cache_read": 1368786,
+      "tokens_cache_write": 84415,
+      "cost_list_usd": 0.6008,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": null,
@@ -1631,7 +3626,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 31,
+      "tokens_output": 5977,
+      "tokens_cache_read": 1187524,
+      "tokens_cache_write": 71518,
+      "cost_list_usd": 0.4647,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
     },
     {
       "owner_helped": null,
@@ -1647,7 +3649,14 @@
       "pr_merged": false,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 21,
+      "tokens_output": 5182,
+      "tokens_cache_read": 748380,
+      "tokens_cache_write": 67384,
+      "cost_list_usd": 0.3962,
+      "model": "claude-sonnet-5-5",
+      "turns": 14
     },
     {
       "owner_helped": true,
@@ -1663,7 +3672,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 216,
+      "tokens_output": 59141,
+      "tokens_cache_read": 8974068,
+      "tokens_cache_write": 387527,
+      "cost_list_usd": 2.6397,
+      "model": "claude-sonnet-5-5",
+      "turns": 39
     },
     {
       "owner_helped": false,
@@ -1679,7 +3695,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 160,
+      "tokens_output": 57030,
+      "tokens_cache_read": 5578720,
+      "tokens_cache_write": 342455,
+      "cost_list_usd": 2.1315,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": null,
@@ -1695,7 +3718,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 29,
+      "tokens_output": 7470,
+      "tokens_cache_read": 1143409,
+      "tokens_cache_write": 83608,
+      "cost_list_usd": 0.5235,
+      "model": "claude-sonnet-5-5",
+      "turns": 18
     },
     {
       "owner_helped": true,
@@ -1711,7 +3741,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 100,
+      "tokens_output": 38647,
+      "tokens_cache_read": 4216896,
+      "tokens_cache_write": 267236,
+      "cost_list_usd": 1.6366,
+      "model": "claude-sonnet-5-5",
+      "turns": 33
     },
     {
       "owner_helped": false,
@@ -1727,7 +3764,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 83,
+      "tokens_output": 19372,
+      "tokens_cache_read": 2942272,
+      "tokens_cache_write": 154413,
+      "cost_list_usd": 1.0039,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": false,
@@ -1743,7 +3787,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 154,
+      "tokens_output": 62932,
+      "tokens_cache_read": 7050122,
+      "tokens_cache_write": 352335,
+      "cost_list_usd": 2.4143,
+      "model": "claude-sonnet-5-5",
+      "turns": 45
     },
     {
       "owner_helped": false,
@@ -1759,7 +3810,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 121,
+      "tokens_output": 32129,
+      "tokens_cache_read": 4281383,
+      "tokens_cache_write": 239708,
+      "cost_list_usd": 1.4743,
+      "model": "claude-sonnet-5-5",
+      "turns": 31
     },
     {
       "owner_helped": true,
@@ -1775,7 +3833,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 352,
+      "tokens_output": 132150,
+      "tokens_cache_read": 17606984,
+      "tokens_cache_write": 533784,
+      "cost_list_usd": 4.5938,
+      "model": "claude-sonnet-5-5",
+      "turns": 27
     },
     {
       "owner_helped": null,
@@ -1791,7 +3856,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 43,
+      "tokens_output": 11549,
+      "tokens_cache_read": 1852958,
+      "tokens_cache_write": 78964,
+      "cost_list_usd": 0.6167,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": false,
@@ -1807,7 +3879,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 69,
+      "tokens_output": 19310,
+      "tokens_cache_read": 2181420,
+      "tokens_cache_write": 132031,
+      "cost_list_usd": 0.8486,
+      "model": "claude-sonnet-5-5",
+      "turns": 12
     },
     {
       "owner_helped": null,
@@ -1823,7 +3902,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 25,
+      "tokens_output": 3443,
+      "tokens_cache_read": 870985,
+      "tokens_cache_write": 60205,
+      "cost_list_usd": 0.3624,
+      "model": "claude-sonnet-5-5",
+      "turns": 14
     },
     {
       "owner_helped": null,
@@ -1839,7 +3925,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 19,
+      "tokens_output": 3400,
+      "tokens_cache_read": 649240,
+      "tokens_cache_write": 59297,
+      "cost_list_usd": 0.3362,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
     },
     {
       "owner_helped": false,
@@ -1855,7 +3948,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 311,
+      "tokens_output": 119189,
+      "tokens_cache_read": 12804007,
+      "tokens_cache_write": 672282,
+      "cost_list_usd": 4.3427,
+      "model": "claude-sonnet-5-5",
+      "turns": 40
     },
     {
       "owner_helped": false,
@@ -1871,7 +3971,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 145,
+      "tokens_output": 48627,
+      "tokens_cache_read": 5650553,
+      "tokens_cache_write": 412102,
+      "cost_list_usd": 2.2616,
+      "model": "claude-sonnet-5-5",
+      "turns": 40
     },
     {
       "owner_helped": null,
@@ -1887,7 +3994,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 38,
+      "tokens_output": 7079,
+      "tokens_cache_read": 1420812,
+      "tokens_cache_write": 66091,
+      "cost_list_usd": 0.4773,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": false,
@@ -1903,7 +4017,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 196,
+      "tokens_output": 59625,
+      "tokens_cache_read": 8751071,
+      "tokens_cache_write": 286574,
+      "cost_list_usd": 2.3607,
+      "model": "claude-sonnet-5-5",
+      "turns": 52
     },
     {
       "owner_helped": false,
@@ -1919,7 +4040,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 114,
+      "tokens_output": 27174,
+      "tokens_cache_read": 4480725,
+      "tokens_cache_write": 169755,
+      "cost_list_usd": 1.305,
+      "model": "claude-sonnet-5-5",
+      "turns": 32
     },
     {
       "owner_helped": true,
@@ -1935,7 +4063,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 169,
+      "tokens_output": 58543,
+      "tokens_cache_read": 7465306,
+      "tokens_cache_write": 334368,
+      "cost_list_usd": 2.3681,
+      "model": "claude-sonnet-5-5",
+      "turns": 46
     },
     {
       "owner_helped": true,
@@ -1951,7 +4086,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 135,
+      "tokens_output": 35188,
+      "tokens_cache_read": 4032541,
+      "tokens_cache_write": 268680,
+      "cost_list_usd": 1.5527,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": null,
@@ -1967,7 +4109,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 59,
+      "tokens_output": 13871,
+      "tokens_cache_read": 1726487,
+      "tokens_cache_write": 142469,
+      "cost_list_usd": 0.7715,
+      "model": "claude-sonnet-5-5",
+      "turns": 9
     },
     {
       "owner_helped": true,
@@ -1983,7 +4132,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 127,
+      "tokens_output": 32566,
+      "tokens_cache_read": 5629227,
+      "tokens_cache_write": 175227,
+      "cost_list_usd": 1.499,
+      "model": "claude-sonnet-5-5",
+      "turns": 42
     },
     {
       "owner_helped": false,
@@ -1999,7 +4155,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 421,
+      "tokens_output": 153194,
+      "tokens_cache_read": 20340711,
+      "tokens_cache_write": 769205,
+      "cost_list_usd": 5.7063,
+      "model": "claude-sonnet-5-5",
+      "turns": 43
     },
     {
       "owner_helped": false,
@@ -2015,7 +4178,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 136,
+      "tokens_output": 35345,
+      "tokens_cache_read": 5531264,
+      "tokens_cache_write": 252808,
+      "cost_list_usd": 1.6998,
+      "model": "claude-sonnet-5-5",
+      "turns": 40
     },
     {
       "owner_helped": null,
@@ -2031,7 +4201,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 19,
+      "tokens_output": 3446,
+      "tokens_cache_read": 658071,
+      "tokens_cache_write": 60205,
+      "cost_list_usd": 0.3411,
+      "model": "claude-sonnet-5-5",
+      "turns": 11
     },
     {
       "owner_helped": false,
@@ -2047,7 +4224,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 297,
+      "tokens_output": 105649,
+      "tokens_cache_read": 12659854,
+      "tokens_cache_write": 569731,
+      "cost_list_usd": 3.9366,
+      "model": "claude-sonnet-5-5",
+      "turns": 28
     },
     {
       "owner_helped": false,
@@ -2063,7 +4247,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 193,
+      "tokens_output": 58341,
+      "tokens_cache_read": 8821874,
+      "tokens_cache_write": 359808,
+      "cost_list_usd": 2.567,
+      "model": "claude-sonnet-5-5",
+      "turns": 46
     },
     {
       "owner_helped": false,
@@ -2079,7 +4270,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 257,
+      "tokens_output": 113914,
+      "tokens_cache_read": 11366889,
+      "tokens_cache_write": 489109,
+      "cost_list_usd": 3.6639,
+      "model": "claude-sonnet-5-5",
+      "turns": 33
     },
     {
       "owner_helped": null,
@@ -2095,7 +4293,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 29,
+      "tokens_output": 5329,
+      "tokens_cache_read": 1061226,
+      "tokens_cache_write": 66989,
+      "cost_list_usd": 0.4274,
+      "model": "claude-sonnet-5-5",
+      "turns": 18
     },
     {
       "owner_helped": false,
@@ -2111,7 +4316,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 95,
+      "tokens_output": 23761,
+      "tokens_cache_read": 3255919,
+      "tokens_cache_write": 221142,
+      "cost_list_usd": 1.246,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": false,
@@ -2127,7 +4339,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 150,
+      "tokens_output": 48750,
+      "tokens_cache_read": 5104982,
+      "tokens_cache_write": 405804,
+      "cost_list_usd": 2.178,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": false,
@@ -2143,7 +4362,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 74,
+      "tokens_output": 25891,
+      "tokens_cache_read": 2770098,
+      "tokens_cache_write": 237370,
+      "cost_list_usd": 1.2738,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": false,
@@ -2159,7 +4385,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 204,
+      "tokens_output": 56218,
+      "tokens_cache_read": 6522536,
+      "tokens_cache_write": 406456,
+      "cost_list_usd": 2.373,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": false,
@@ -2175,7 +4408,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 188,
+      "tokens_output": 62513,
+      "tokens_cache_read": 6569170,
+      "tokens_cache_write": 415146,
+      "cost_list_usd": 2.4533,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": null,
@@ -2191,7 +4431,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 17,
+      "tokens_output": 3322,
+      "tokens_cache_read": 586468,
+      "tokens_cache_write": 62358,
+      "cost_list_usd": 0.3413,
+      "model": "claude-sonnet-5-5",
+      "turns": 10
     },
     {
       "owner_helped": false,
@@ -2207,7 +4454,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 161,
+      "tokens_output": 52290,
+      "tokens_cache_read": 5860205,
+      "tokens_cache_write": 348198,
+      "cost_list_usd": 2.1517,
+      "model": "claude-sonnet-5-5",
+      "turns": 37
     },
     {
       "owner_helped": false,
@@ -2223,7 +4477,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 243,
+      "tokens_output": 77688,
+      "tokens_cache_read": 8785521,
+      "tokens_cache_write": 547896,
+      "cost_list_usd": 3.1892,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": false,
@@ -2239,7 +4500,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 182,
+      "tokens_output": 56780,
+      "tokens_cache_read": 6686475,
+      "tokens_cache_write": 460798,
+      "cost_list_usd": 2.5408,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": null,
@@ -2255,7 +4523,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 34,
+      "tokens_output": 8554,
+      "tokens_cache_read": 1420584,
+      "tokens_cache_write": 80851,
+      "cost_list_usd": 0.5511,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": null,
@@ -2271,7 +4546,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 85,
+      "tokens_output": 23227,
+      "tokens_cache_read": 3076402,
+      "tokens_cache_write": 160205,
+      "cost_list_usd": 1.0435,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
     },
     {
       "owner_helped": null,
@@ -2287,7 +4569,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 40,
+      "tokens_output": 7375,
+      "tokens_cache_read": 1581656,
+      "tokens_cache_write": 81563,
+      "cost_list_usd": 0.5582,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": null,
@@ -2303,7 +4592,14 @@
       "pr_merged": true,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 47,
+      "tokens_output": 9820,
+      "tokens_cache_read": 1916773,
+      "tokens_cache_write": 75748,
+      "cost_list_usd": 0.593,
+      "model": "claude-sonnet-5-5",
+      "turns": 29
     },
     {
       "owner_helped": null,
@@ -2319,7 +4615,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 39,
+      "tokens_output": 16310,
+      "tokens_cache_read": 1186920,
+      "tokens_cache_write": 139773,
+      "cost_list_usd": 0.7448,
+      "model": "claude-sonnet-5-5",
+      "turns": 12
     },
     {
       "owner_helped": false,
@@ -2335,7 +4638,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 97,
+      "tokens_output": 34706,
+      "tokens_cache_read": 3723743,
+      "tokens_cache_write": 247596,
+      "cost_list_usd": 1.4853,
+      "model": "claude-sonnet-5-5",
+      "turns": 27
     },
     {
       "owner_helped": null,
@@ -2351,7 +4661,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 27,
+      "tokens_output": 8895,
+      "tokens_cache_read": 988041,
+      "tokens_cache_write": 76389,
+      "cost_list_usd": 0.4934,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": true,
@@ -2367,7 +4684,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 162,
+      "tokens_output": 54307,
+      "tokens_cache_read": 5469222,
+      "tokens_cache_write": 591868,
+      "cost_list_usd": 2.718,
+      "model": "claude-sonnet-5-5",
+      "turns": 18
     },
     {
       "owner_helped": null,
@@ -2383,7 +4707,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 26,
+      "tokens_output": 6350,
+      "tokens_cache_read": 1048151,
+      "tokens_cache_write": 77143,
+      "cost_list_usd": 0.4769,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": null,
@@ -2399,7 +4730,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 34,
+      "tokens_output": 9256,
+      "tokens_cache_read": 1439822,
+      "tokens_cache_write": 80545,
+      "cost_list_usd": 0.5588,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": false,
@@ -2415,7 +4753,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 227,
+      "tokens_output": 76528,
+      "tokens_cache_read": 9391780,
+      "tokens_cache_write": 440669,
+      "cost_list_usd": 2.9736,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": false,
@@ -2431,7 +4776,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 136,
+      "tokens_output": 44497,
+      "tokens_cache_read": 5261459,
+      "tokens_cache_write": 373480,
+      "cost_list_usd": 2.069,
+      "model": "claude-sonnet-5-5",
+      "turns": 37
     },
     {
       "owner_helped": null,
@@ -2447,7 +4799,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 50,
+      "tokens_output": 26960,
+      "tokens_cache_read": 2615094,
+      "tokens_cache_write": 115397,
+      "cost_list_usd": 0.9928,
+      "model": "claude-sonnet-5-5",
+      "turns": 33
     },
     {
       "owner_helped": null,
@@ -2463,7 +4822,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 69,
+      "tokens_output": 30273,
+      "tokens_cache_read": 3156644,
+      "tokens_cache_write": 214519,
+      "cost_list_usd": 1.2792,
+      "model": "claude-sonnet-5-5",
+      "turns": 12
     },
     {
       "owner_helped": false,
@@ -2479,7 +4845,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 204,
+      "tokens_output": 64907,
+      "tokens_cache_read": 8121148,
+      "tokens_cache_write": 405908,
+      "cost_list_usd": 2.6572,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": null,
@@ -2495,7 +4868,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 51,
+      "tokens_output": 16513,
+      "tokens_cache_read": 1765450,
+      "tokens_cache_write": 164419,
+      "cost_list_usd": 0.8716,
+      "model": "claude-sonnet-5-5",
+      "turns": 11
     },
     {
       "owner_helped": false,
@@ -2511,7 +4891,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 117,
+      "tokens_output": 44777,
+      "tokens_cache_read": 4870875,
+      "tokens_cache_write": 336899,
+      "cost_list_usd": 1.9488,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": null,
@@ -2527,7 +4914,14 @@
       "pr_merged": false,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 37,
+      "tokens_output": 11878,
+      "tokens_cache_read": 1115952,
+      "tokens_cache_write": 119111,
+      "cost_list_usd": 0.6304,
+      "model": "claude-sonnet-5-5",
+      "turns": 10
     },
     {
       "owner_helped": false,
@@ -2543,7 +4937,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 285,
+      "tokens_output": 92053,
+      "tokens_cache_read": 11735269,
+      "tokens_cache_write": 518498,
+      "cost_list_usd": 3.6045,
+      "model": "claude-sonnet-5-5",
+      "turns": 48
     },
     {
       "owner_helped": null,
@@ -2559,7 +4960,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 6,
+      "tokens_output": 1474,
+      "tokens_cache_read": 151341,
+      "tokens_cache_write": 55350,
+      "cost_list_usd": 0.2513,
+      "model": "claude-sonnet-5-5",
+      "turns": 3
     },
     {
       "owner_helped": false,
@@ -2575,7 +4983,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 37,
+      "tokens_output": 9793,
+      "tokens_cache_read": 1146136,
+      "tokens_cache_write": 127748,
+      "cost_list_usd": 0.6483,
+      "model": "claude-sonnet-5-5",
+      "turns": 12
     },
     {
       "owner_helped": null,
@@ -2591,7 +5006,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 36,
+      "tokens_output": 8284,
+      "tokens_cache_read": 1522208,
+      "tokens_cache_write": 78731,
+      "cost_list_usd": 0.5501,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
     },
     {
       "owner_helped": false,
@@ -2607,7 +5029,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 104,
+      "tokens_output": 26163,
+      "tokens_cache_read": 4442098,
+      "tokens_cache_write": 194348,
+      "cost_list_usd": 1.3378,
+      "model": "claude-sonnet-5-5",
+      "turns": 34
     },
     {
       "owner_helped": false,
@@ -2623,7 +5052,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 203,
+      "tokens_output": 61180,
+      "tokens_cache_read": 7387521,
+      "tokens_cache_write": 472027,
+      "cost_list_usd": 2.6851,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": false,
@@ -2639,7 +5075,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 272,
+      "tokens_output": 98695,
+      "tokens_cache_read": 10865797,
+      "tokens_cache_write": 589064,
+      "cost_list_usd": 3.6858,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": null,
@@ -2655,7 +5098,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 27,
+      "tokens_output": 6581,
+      "tokens_cache_read": 1084752,
+      "tokens_cache_write": 80049,
+      "cost_list_usd": 0.4945,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": null,
@@ -2671,7 +5121,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 49,
+      "tokens_output": 14618,
+      "tokens_cache_read": 1740946,
+      "tokens_cache_write": 157665,
+      "cost_list_usd": 0.8387,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
     },
     {
       "owner_helped": null,
@@ -2687,7 +5144,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 23,
+      "tokens_output": 10158,
+      "tokens_cache_read": 891931,
+      "tokens_cache_write": 79744,
+      "cost_list_usd": 0.5098,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": null,
@@ -2703,7 +5167,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 60,
+      "tokens_output": 17685,
+      "tokens_cache_read": 2271108,
+      "tokens_cache_write": 169737,
+      "cost_list_usd": 0.9609,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
     },
     {
       "owner_helped": true,
@@ -2719,7 +5190,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 63,
+      "tokens_output": 21506,
+      "tokens_cache_read": 2107226,
+      "tokens_cache_write": 141055,
+      "cost_list_usd": 0.8805,
+      "model": "claude-sonnet-5-5",
+      "turns": 11
     },
     {
       "owner_helped": null,
@@ -2735,7 +5213,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 42,
+      "tokens_output": 7950,
+      "tokens_cache_read": 1610993,
+      "tokens_cache_write": 74579,
+      "cost_list_usd": 0.539,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": null,
@@ -2751,7 +5236,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 28,
+      "tokens_output": 6567,
+      "tokens_cache_read": 1120933,
+      "tokens_cache_write": 75980,
+      "cost_list_usd": 0.4817,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
     },
     {
       "owner_helped": null,
@@ -2767,7 +5259,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 41,
+      "tokens_output": 10502,
+      "tokens_cache_read": 1746394,
+      "tokens_cache_write": 78235,
+      "cost_list_usd": 0.5927,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": false,
@@ -2783,7 +5282,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 76,
+      "tokens_output": 24253,
+      "tokens_cache_read": 3003737,
+      "tokens_cache_write": 150067,
+      "cost_list_usd": 1.0558,
+      "model": "claude-sonnet-5-5",
+      "turns": 30
     },
     {
       "owner_helped": null,
@@ -2799,7 +5305,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 31,
+      "tokens_output": 7471,
+      "tokens_cache_read": 1278893,
+      "tokens_cache_write": 74429,
+      "cost_list_usd": 0.5004,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": null,
@@ -2815,7 +5328,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 38,
+      "tokens_output": 9142,
+      "tokens_cache_read": 1759554,
+      "tokens_cache_write": 93835,
+      "cost_list_usd": 0.6428,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": null,
@@ -2831,7 +5351,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 85,
+      "tokens_output": 20107,
+      "tokens_cache_read": 3240089,
+      "tokens_cache_write": 156998,
+      "cost_list_usd": 1.0205,
+      "model": "claude-sonnet-5-5",
+      "turns": 12
     },
     {
       "owner_helped": null,
@@ -2847,7 +5374,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 30,
+      "tokens_output": 7138,
+      "tokens_cache_read": 1219185,
+      "tokens_cache_write": 77234,
+      "cost_list_usd": 0.5023,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
     },
     {
       "owner_helped": null,
@@ -2863,7 +5397,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 31,
+      "tokens_output": 11470,
+      "tokens_cache_read": 1207950,
+      "tokens_cache_write": 78441,
+      "cost_list_usd": 0.5493,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
     },
     {
       "owner_helped": false,
@@ -2879,7 +5420,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 406,
+      "tokens_output": 233328,
+      "tokens_cache_read": 28271869,
+      "tokens_cache_write": 824307,
+      "cost_list_usd": 7.3608,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
     },
     {
       "owner_helped": false,
@@ -2895,7 +5443,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 106,
+      "tokens_output": 33045,
+      "tokens_cache_read": 3899271,
+      "tokens_cache_write": 245015,
+      "cost_list_usd": 1.4849,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": null,
@@ -2911,7 +5466,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 70,
+      "tokens_output": 20636,
+      "tokens_cache_read": 3610192,
+      "tokens_cache_write": 109984,
+      "cost_list_usd": 1.0075,
+      "model": "claude-sonnet-5-5",
+      "turns": 41
     },
     {
       "owner_helped": false,
@@ -2927,7 +5489,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 52,
+      "tokens_output": 9729,
+      "tokens_cache_read": 1619327,
+      "tokens_cache_write": 117833,
+      "cost_list_usd": 0.6502,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
     },
     {
       "owner_helped": null,
@@ -2943,7 +5512,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 34,
+      "tokens_output": 10977,
+      "tokens_cache_read": 1492500,
+      "tokens_cache_write": 92173,
+      "cost_list_usd": 0.6278,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": null,
@@ -2959,7 +5535,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 35,
+      "tokens_output": 7861,
+      "tokens_cache_read": 1382732,
+      "tokens_cache_write": 69805,
+      "cost_list_usd": 0.4962,
+      "model": "claude-sonnet-5-5",
+      "turns": 28
     },
     {
       "owner_helped": false,
@@ -2975,7 +5558,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 43,
+      "tokens_output": 9544,
+      "tokens_cache_read": 1300059,
+      "tokens_cache_write": 112996,
+      "cost_list_usd": 0.6056,
+      "model": "claude-sonnet-5-5",
+      "turns": 12
     },
     {
       "owner_helped": true,
@@ -2991,7 +5581,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 496,
+      "tokens_output": 211399,
+      "tokens_cache_read": 22216886,
+      "tokens_cache_write": 1085036,
+      "cost_list_usd": 7.2889,
+      "model": "claude-sonnet-5-5",
+      "turns": 49
     },
     {
       "owner_helped": false,
@@ -3007,7 +5604,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 84,
+      "tokens_output": 16983,
+      "tokens_cache_read": 2610492,
+      "tokens_cache_write": 151184,
+      "cost_list_usd": 0.9175,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": false,
@@ -3023,7 +5627,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 141,
+      "tokens_output": 59164,
+      "tokens_cache_read": 5801618,
+      "tokens_cache_write": 318653,
+      "cost_list_usd": 2.1459,
+      "model": "claude-sonnet-5-5",
+      "turns": 43
     },
     {
       "owner_helped": false,
@@ -3039,7 +5650,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 149,
+      "tokens_output": 39019,
+      "tokens_cache_read": 5014359,
+      "tokens_cache_write": 312352,
+      "cost_list_usd": 1.8137,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": false,
@@ -3055,7 +5673,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 178,
+      "tokens_output": 50547,
+      "tokens_cache_read": 9105769,
+      "tokens_cache_write": 299282,
+      "cost_list_usd": 2.3818,
+      "model": "claude-sonnet-5-5",
+      "turns": 66
     },
     {
       "owner_helped": false,
@@ -3071,7 +5696,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 157,
+      "tokens_output": 46766,
+      "tokens_cache_read": 5901743,
+      "tokens_cache_write": 276685,
+      "cost_list_usd": 1.9048,
+      "model": "claude-sonnet-5-5",
+      "turns": 26
     },
     {
       "owner_helped": false,
@@ -3087,7 +5719,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 247,
+      "tokens_output": 87938,
+      "tokens_cache_read": 10383275,
+      "tokens_cache_write": 499980,
+      "cost_list_usd": 3.3069,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": null,
@@ -3135,7 +5774,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 28,
+      "tokens_output": 8206,
+      "tokens_cache_read": 1216421,
+      "tokens_cache_write": 86662,
+      "cost_list_usd": 0.5504,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": null,
@@ -3151,7 +5797,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 27,
+      "tokens_output": 4505,
+      "tokens_cache_read": 966167,
+      "tokens_cache_write": 64485,
+      "cost_list_usd": 0.3997,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": null,
@@ -3167,7 +5820,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 26,
+      "tokens_output": 5827,
+      "tokens_cache_read": 1039085,
+      "tokens_cache_write": 71221,
+      "cost_list_usd": 0.4471,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
     },
     {
       "owner_helped": null,
@@ -3183,7 +5843,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 32,
+      "tokens_output": 8347,
+      "tokens_cache_read": 1256508,
+      "tokens_cache_write": 73084,
+      "cost_list_usd": 0.5015,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": null,
@@ -3199,7 +5866,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 24,
+      "tokens_output": 8646,
+      "tokens_cache_read": 934528,
+      "tokens_cache_write": 76528,
+      "cost_list_usd": 0.4861,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": null,
@@ -3215,7 +5889,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 14,
+      "tokens_output": 3145,
+      "tokens_cache_read": 422008,
+      "tokens_cache_write": 58533,
+      "cost_list_usd": 0.3078,
+      "model": "claude-sonnet-5-5",
+      "turns": 9
     },
     {
       "owner_helped": null,
@@ -3231,7 +5912,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 42,
+      "tokens_output": 6457,
+      "tokens_cache_read": 1738088,
+      "tokens_cache_write": 75813,
+      "cost_list_usd": 0.5417,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": null,
@@ -3247,7 +5935,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 14,
+      "tokens_output": 2554,
+      "tokens_cache_read": 419565,
+      "tokens_cache_write": 55816,
+      "cost_list_usd": 0.2908,
+      "model": "claude-sonnet-5-5",
+      "turns": 7
     },
     {
       "owner_helped": null,
@@ -3263,7 +5958,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 41,
+      "tokens_output": 7239,
+      "tokens_cache_read": 1586266,
+      "tokens_cache_write": 77124,
+      "cost_list_usd": 0.5396,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": null,
@@ -3279,7 +5981,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 22,
+      "tokens_output": 3566,
+      "tokens_cache_read": 710185,
+      "tokens_cache_write": 59648,
+      "cost_list_usd": 0.3453,
+      "model": "claude-sonnet-5-5",
+      "turns": 14
     },
     {
       "owner_helped": null,
@@ -3295,7 +6004,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 49,
+      "tokens_output": 5907,
+      "tokens_cache_read": 2075476,
+      "tokens_cache_write": 77344,
+      "cost_list_usd": 0.5761,
+      "model": "claude-sonnet-5-5",
+      "turns": 27
     },
     {
       "owner_helped": false,
@@ -3311,7 +6027,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 183,
+      "tokens_output": 58100,
+      "tokens_cache_read": 6368093,
+      "tokens_cache_write": 338421,
+      "cost_list_usd": 2.2291,
+      "model": "claude-sonnet-5-5",
+      "turns": 33
     },
     {
       "owner_helped": false,
@@ -3327,7 +6050,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 128,
+      "tokens_output": 42455,
+      "tokens_cache_read": 5048089,
+      "tokens_cache_write": 266935,
+      "cost_list_usd": 1.7429,
+      "model": "claude-sonnet-5-5",
+      "turns": 30
     },
     {
       "owner_helped": false,
@@ -3343,7 +6073,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 120,
+      "tokens_output": 34878,
+      "tokens_cache_read": 4688162,
+      "tokens_cache_write": 244817,
+      "cost_list_usd": 1.5802,
+      "model": "claude-sonnet-5-5",
+      "turns": 32
     },
     {
       "owner_helped": false,
@@ -3359,7 +6096,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 151,
+      "tokens_output": 65908,
+      "tokens_cache_read": 6786141,
+      "tokens_cache_write": 323058,
+      "cost_list_usd": 2.3163,
+      "model": "claude-sonnet-5-5",
+      "turns": 37
     },
     {
       "owner_helped": true,
@@ -3375,7 +6119,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 128,
+      "tokens_output": 44023,
+      "tokens_cache_read": 5379533,
+      "tokens_cache_write": 279434,
+      "cost_list_usd": 1.8359,
+      "model": "claude-sonnet-5-5",
+      "turns": 32
     },
     {
       "owner_helped": null,
@@ -3391,7 +6142,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 47,
+      "tokens_output": 14496,
+      "tokens_cache_read": 1438941,
+      "tokens_cache_write": 139347,
+      "cost_list_usd": 0.7598,
+      "model": "claude-sonnet-5-5",
+      "turns": 11
     },
     {
       "owner_helped": false,
@@ -3407,7 +6165,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 145,
+      "tokens_output": 43585,
+      "tokens_cache_read": 5986867,
+      "tokens_cache_write": 271252,
+      "cost_list_usd": 1.8657,
+      "model": "claude-sonnet-5-5",
+      "turns": 34
     },
     {
       "owner_helped": false,
@@ -3423,7 +6188,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 183,
+      "tokens_output": 58385,
+      "tokens_cache_read": 6231433,
+      "tokens_cache_write": 340494,
+      "cost_list_usd": 2.2241,
+      "model": "claude-sonnet-5-5",
+      "turns": 28
     },
     {
       "owner_helped": false,
@@ -3439,7 +6211,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 43,
+      "tokens_output": 10281,
+      "tokens_cache_read": 1350713,
+      "tokens_cache_write": 119084,
+      "cost_list_usd": 0.6531,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": false,
@@ -3455,7 +6234,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 184,
+      "tokens_output": 70630,
+      "tokens_cache_read": 6573374,
+      "tokens_cache_write": 472608,
+      "cost_list_usd": 2.6968,
+      "model": "claude-sonnet-5-5",
+      "turns": 34
     },
     {
       "owner_helped": null,
@@ -3471,7 +6257,14 @@
       "pr_merged": false,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 49,
+      "tokens_output": 9429,
+      "tokens_cache_read": 1379175,
+      "tokens_cache_write": 126838,
+      "cost_list_usd": 0.6543,
+      "model": "claude-sonnet-5-5",
+      "turns": 10
     },
     {
       "owner_helped": false,
@@ -3487,7 +6280,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 48,
+      "tokens_output": 10544,
+      "tokens_cache_read": 1568544,
+      "tokens_cache_write": 168750,
+      "cost_list_usd": 0.8033,
+      "model": "claude-sonnet-5-5",
+      "turns": 17
     },
     {
       "owner_helped": false,
@@ -3503,7 +6303,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 180,
+      "tokens_output": 63929,
+      "tokens_cache_read": 9042639,
+      "tokens_cache_write": 354730,
+      "cost_list_usd": 2.6402,
+      "model": "claude-sonnet-5-5",
+      "turns": 44
     },
     {
       "owner_helped": false,
@@ -3519,7 +6326,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 124,
+      "tokens_output": 34818,
+      "tokens_cache_read": 4562215,
+      "tokens_cache_write": 230463,
+      "cost_list_usd": 1.5295,
+      "model": "claude-sonnet-5-5",
+      "turns": 40
     },
     {
       "owner_helped": null,
@@ -3535,7 +6349,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 77,
+      "tokens_output": 19788,
+      "tokens_cache_read": 2370311,
+      "tokens_cache_write": 140515,
+      "cost_list_usd": 0.8998,
+      "model": "claude-sonnet-5-5",
+      "turns": 10
     },
     {
       "owner_helped": false,
@@ -3551,7 +6372,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 246,
+      "tokens_output": 75621,
+      "tokens_cache_read": 10113903,
+      "tokens_cache_write": 402288,
+      "cost_list_usd": 2.9204,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": false,
@@ -3567,7 +6395,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 103,
+      "tokens_output": 33938,
+      "tokens_cache_read": 3636837,
+      "tokens_cache_write": 247829,
+      "cost_list_usd": 1.4611,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": null,
@@ -3583,7 +6418,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 84,
+      "tokens_output": 22226,
+      "tokens_cache_read": 2932853,
+      "tokens_cache_write": 160872,
+      "cost_list_usd": 1.0308,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
     },
     {
       "owner_helped": null,
@@ -3599,7 +6441,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 35,
+      "tokens_output": 7651,
+      "tokens_cache_read": 1446677,
+      "tokens_cache_write": 77219,
+      "cost_list_usd": 0.5301,
+      "model": "claude-sonnet-5-5",
+      "turns": 26
     },
     {
       "owner_helped": false,
@@ -3615,7 +6464,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 203,
+      "tokens_output": 61965,
+      "tokens_cache_read": 8226959,
+      "tokens_cache_write": 318719,
+      "cost_list_usd": 2.4268,
+      "model": "claude-sonnet-5-5",
+      "turns": 49
     },
     {
       "owner_helped": false,
@@ -3631,7 +6487,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 254,
+      "tokens_output": 74130,
+      "tokens_cache_read": 11598894,
+      "tokens_cache_write": 328961,
+      "cost_list_usd": 2.9164,
+      "model": "claude-sonnet-5-5",
+      "turns": 58
     },
     {
       "owner_helped": null,
@@ -3647,7 +6510,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 17,
+      "tokens_output": 5219,
+      "tokens_cache_read": 561055,
+      "tokens_cache_write": 60683,
+      "cost_list_usd": 0.3511,
+      "model": "claude-sonnet-5-5",
+      "turns": 11
     },
     {
       "owner_helped": false,
@@ -3663,7 +6533,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 212,
+      "tokens_output": 67469,
+      "tokens_cache_read": 8921993,
+      "tokens_cache_write": 624543,
+      "cost_list_usd": 3.2835,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": false,
@@ -3679,7 +6556,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 177,
+      "tokens_output": 49533,
+      "tokens_cache_read": 5539570,
+      "tokens_cache_write": 383000,
+      "cost_list_usd": 2.1285,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": true,
@@ -3695,7 +6579,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 68,
+      "tokens_output": 15314,
+      "tokens_cache_read": 2000625,
+      "tokens_cache_write": 178659,
+      "cost_list_usd": 0.9155,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": null,
@@ -3711,7 +6602,14 @@
       "pr_merged": true,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 49,
+      "tokens_output": 10704,
+      "tokens_cache_read": 1368618,
+      "tokens_cache_write": 107687,
+      "cost_list_usd": 0.608,
+      "model": "claude-sonnet-5-5",
+      "turns": 11
     },
     {
       "owner_helped": false,
@@ -3727,7 +6625,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 258,
+      "tokens_output": 76218,
+      "tokens_cache_read": 11355807,
+      "tokens_cache_write": 473806,
+      "cost_list_usd": 3.2464,
+      "model": "claude-sonnet-5-5",
+      "turns": 27
     },
     {
       "owner_helped": null,
@@ -3743,7 +6648,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 66,
+      "tokens_output": 15548,
+      "tokens_cache_read": 3209891,
+      "tokens_cache_write": 99328,
+      "cost_list_usd": 0.8739,
+      "model": "claude-sonnet-5-5",
+      "turns": 38
     },
     {
       "owner_helped": null,
@@ -3759,7 +6671,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 42,
+      "tokens_output": 9937,
+      "tokens_cache_read": 1665818,
+      "tokens_cache_write": 75428,
+      "cost_list_usd": 0.5677,
+      "model": "claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": null,
@@ -3775,7 +6694,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 87,
+      "tokens_output": 33479,
+      "tokens_cache_read": 3221691,
+      "tokens_cache_write": 155941,
+      "cost_list_usd": 1.1468,
+      "model": "claude-sonnet-5-5",
+      "turns": 14
     },
     {
       "owner_helped": false,
@@ -3791,7 +6717,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 152,
+      "tokens_output": 71233,
+      "tokens_cache_read": 5768256,
+      "tokens_cache_write": 379588,
+      "cost_list_usd": 2.4073,
+      "model": "claude-sonnet-5-5",
+      "turns": 25
     },
     {
       "owner_helped": null,
@@ -3807,7 +6740,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 79,
+      "tokens_output": 19158,
+      "tokens_cache_read": 2512800,
+      "tokens_cache_write": 149992,
+      "cost_list_usd": 0.9242,
+      "model": "claude-sonnet-5-5",
+      "turns": 12
     },
     {
       "owner_helped": null,
@@ -3823,7 +6763,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 43,
+      "tokens_output": 11342,
+      "tokens_cache_read": 1166256,
+      "tokens_cache_write": 156435,
+      "cost_list_usd": 0.7276,
+      "model": "claude-sonnet-5-5",
+      "turns": 11
     },
     {
       "owner_helped": true,
@@ -3839,7 +6786,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 178,
+      "tokens_output": 52770,
+      "tokens_cache_read": 6436108,
+      "tokens_cache_write": 553132,
+      "cost_list_usd": 2.7212,
+      "model": "claude-sonnet-5-5",
+      "turns": 21
     },
     {
       "owner_helped": null,
@@ -3855,7 +6809,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 87,
+      "tokens_output": 28188,
+      "tokens_cache_read": 3022176,
+      "tokens_cache_write": 251474,
+      "cost_list_usd": 1.3184,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
     },
     {
       "owner_helped": null,
@@ -3871,7 +6832,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 35,
+      "tokens_output": 7774,
+      "tokens_cache_read": 1305867,
+      "tokens_cache_write": 70227,
+      "cost_list_usd": 0.4893,
+      "model": "claude-sonnet-5-5",
+      "turns": 23
     },
     {
       "owner_helped": null,
@@ -3887,7 +6855,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 19,
+      "tokens_output": 4178,
+      "tokens_cache_read": 649511,
+      "tokens_cache_write": 62836,
+      "cost_list_usd": 0.3581,
+      "model": "claude-sonnet-5-5",
+      "turns": 11
     },
     {
       "owner_helped": null,
@@ -3903,7 +6878,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 45,
+      "tokens_output": 14097,
+      "tokens_cache_read": 2018016,
+      "tokens_cache_write": 91682,
+      "cost_list_usd": 0.7096,
+      "model": "claude-sonnet-5-5",
+      "turns": 30
     },
     {
       "owner_helped": null,
@@ -3919,7 +6901,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 26,
+      "tokens_output": 6668,
+      "tokens_cache_read": 918460,
+      "tokens_cache_write": 62794,
+      "cost_list_usd": 0.4098,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
     },
     {
       "owner_helped": null,
@@ -3935,7 +6924,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 23,
+      "tokens_output": 6228,
+      "tokens_cache_read": 814524,
+      "tokens_cache_write": 67371,
+      "cost_list_usd": 0.4133,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": null,
@@ -3951,7 +6947,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 99,
+      "tokens_output": 25214,
+      "tokens_cache_read": 3782267,
+      "tokens_cache_write": 178173,
+      "cost_list_usd": 1.1907,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": null,
@@ -3967,7 +6970,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 43,
+      "tokens_output": 13473,
+      "tokens_cache_read": 1269360,
+      "tokens_cache_write": 135673,
+      "cost_list_usd": 0.7033,
+      "model": "claude-sonnet-5-5",
+      "turns": 10
     },
     {
       "owner_helped": null,
@@ -3983,7 +6993,14 @@
       "pr_merged": true,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 47,
+      "tokens_output": 11949,
+      "tokens_cache_read": 1307035,
+      "tokens_cache_write": 107182,
+      "cost_list_usd": 0.6155,
+      "model": "claude-sonnet-5-5",
+      "turns": 10
     },
     {
       "owner_helped": false,
@@ -3999,7 +7016,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 347,
+      "tokens_output": 95174,
+      "tokens_cache_read": 11090628,
+      "tokens_cache_write": 484902,
+      "cost_list_usd": 3.4235,
+      "model": "claude-sonnet-5-5",
+      "turns": 26
     },
     {
       "owner_helped": false,
@@ -4015,7 +7039,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 110,
+      "tokens_output": 28090,
+      "tokens_cache_read": 3681040,
+      "tokens_cache_write": 214658,
+      "cost_list_usd": 1.3183,
+      "model": "claude-sonnet-5-5",
+      "turns": 31
     },
     {
       "owner_helped": false,
@@ -4031,7 +7062,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 175,
+      "tokens_output": 51228,
+      "tokens_cache_read": 7358276,
+      "tokens_cache_write": 285073,
+      "cost_list_usd": 2.146,
+      "model": "claude-sonnet-5-5",
+      "turns": 64
     },
     {
       "owner_helped": null,
@@ -4047,7 +7085,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 33,
+      "tokens_output": 13222,
+      "tokens_cache_read": 917603,
+      "tokens_cache_write": 138821,
+      "cost_list_usd": 0.6612,
+      "model": "claude-sonnet-5-5",
+      "turns": 10
     },
     {
       "owner_helped": false,
@@ -4063,7 +7108,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 251360,
+      "tokens_output": 113750,
+      "tokens_cache_read": 11811998,
+      "tokens_cache_write": 584023,
+      "cost_list_usd": 3.9038,
+      "model": "claude-haiku-5-5+claude-sonnet-5-5",
+      "turns": 24
     },
     {
       "owner_helped": null,
@@ -4079,7 +7131,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 54,
+      "tokens_output": 12833,
+      "tokens_cache_read": 2240960,
+      "tokens_cache_write": 77998,
+      "cost_list_usd": 0.6645,
+      "model": "claude-sonnet-5-5",
+      "turns": 32
     },
     {
       "owner_helped": null,
@@ -4095,7 +7154,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 64,
+      "tokens_output": 19857,
+      "tokens_cache_read": 1907521,
+      "tokens_cache_write": 134253,
+      "cost_list_usd": 0.8224,
+      "model": "claude-sonnet-5-5",
+      "turns": 8
     },
     {
       "owner_helped": false,
@@ -4111,7 +7177,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 128,
+      "tokens_output": 39262,
+      "tokens_cache_read": 3766288,
+      "tokens_cache_write": 287741,
+      "cost_list_usd": 1.6191,
+      "model": "claude-sonnet-5-5",
+      "turns": 19
     },
     {
       "owner_helped": null,
@@ -4127,7 +7200,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 31,
+      "tokens_output": 10665,
+      "tokens_cache_read": 1309799,
+      "tokens_cache_write": 80702,
+      "cost_list_usd": 0.5605,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
     },
     {
       "owner_helped": null,
@@ -4143,7 +7223,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 65,
+      "tokens_output": 18951,
+      "tokens_cache_read": 2350769,
+      "tokens_cache_write": 170158,
+      "cost_list_usd": 0.9849,
+      "model": "claude-sonnet-5-5",
+      "turns": 18
     },
     {
       "owner_helped": false,
@@ -4159,7 +7246,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 25135,
+      "tokens_output": 53662,
+      "tokens_cache_read": 6435360,
+      "tokens_cache_write": 284812,
+      "cost_list_usd": 2.0121,
+      "model": "claude-haiku-5-5+claude-sonnet-5-5",
+      "turns": 35
     },
     {
       "owner_helped": true,
@@ -4175,7 +7269,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 83,
+      "tokens_output": 18442,
+      "tokens_cache_read": 2604932,
+      "tokens_cache_write": 208464,
+      "cost_list_usd": 1.0633,
+      "model": "claude-sonnet-5-5",
+      "turns": 22
     },
     {
       "owner_helped": true,
@@ -4191,7 +7292,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 476,
+      "tokens_output": 179207,
+      "tokens_cache_read": 24181294,
+      "tokens_cache_write": 840319,
+      "cost_list_usd": 6.4864,
+      "model": "claude-sonnet-5-5",
+      "turns": 50
     },
     {
       "owner_helped": false,
@@ -4207,7 +7315,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 72,
+      "tokens_output": 23304,
+      "tokens_cache_read": 2702480,
+      "tokens_cache_write": 159681,
+      "cost_list_usd": 1.0343,
+      "model": "claude-sonnet-5-5",
+      "turns": 30
     },
     {
       "owner_helped": false,
@@ -4223,7 +7338,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 174,
+      "tokens_output": 67081,
+      "tokens_cache_read": 6291241,
+      "tokens_cache_write": 367036,
+      "cost_list_usd": 2.3642,
+      "model": "claude-sonnet-5-5",
+      "turns": 20
     },
     {
       "owner_helped": null,
@@ -4239,7 +7361,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 87,
+      "tokens_output": 29609,
+      "tokens_cache_read": 3106865,
+      "tokens_cache_write": 185622,
+      "cost_list_usd": 1.1942,
+      "model": "claude-sonnet-5-5",
+      "turns": 15
     },
     {
       "owner_helped": true,
@@ -4255,7 +7384,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 55,
+      "tokens_output": 13259,
+      "tokens_cache_read": 1617130,
+      "tokens_cache_write": 130666,
+      "cost_list_usd": 0.7169,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
     },
     {
       "owner_helped": true,
@@ -4271,7 +7407,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 493,
+      "tokens_output": 219742,
+      "tokens_cache_read": 26723283,
+      "tokens_cache_write": 974847,
+      "cost_list_usd": 7.4959,
+      "model": "claude-sonnet-5-5",
+      "turns": 33
     },
     {
       "owner_helped": null,
@@ -4287,7 +7430,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 89,
+      "tokens_output": 22224,
+      "tokens_cache_read": 2680489,
+      "tokens_cache_write": 371857,
+      "cost_list_usd": 1.511,
+      "model": "claude-sonnet-5-5",
+      "turns": 13
     },
     {
       "owner_helped": null,
@@ -4303,7 +7453,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 71,
+      "tokens_output": 16413,
+      "tokens_cache_read": 2057854,
+      "tokens_cache_write": 137304,
+      "cost_list_usd": 0.8088,
+      "model": "claude-sonnet-5-5",
+      "turns": 11
     },
     {
       "owner_helped": false,
@@ -4319,7 +7476,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 146,
+      "tokens_output": 43459,
+      "tokens_cache_read": 6346785,
+      "tokens_cache_write": 272379,
+      "cost_list_usd": 1.9466,
+      "model": "claude-sonnet-5-5",
+      "turns": 44
     },
     {
       "owner_helped": false,
@@ -4335,7 +7499,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 243,
+      "tokens_output": 77817,
+      "tokens_cache_read": 8012694,
+      "tokens_cache_write": 478204,
+      "cost_list_usd": 2.9451,
+      "model": "claude-sonnet-5-5",
+      "turns": 35
     },
     {
       "owner_helped": false,
@@ -4351,7 +7522,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 120,
+      "tokens_output": 32739,
+      "tokens_cache_read": 4066238,
+      "tokens_cache_write": 215939,
+      "cost_list_usd": 1.4097,
+      "model": "claude-sonnet-5-5",
+      "turns": 31
     },
     {
       "owner_helped": null,
@@ -4367,7 +7545,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 14,
+      "tokens_output": 1812,
+      "tokens_cache_read": 389042,
+      "tokens_cache_write": 52723,
+      "cost_list_usd": 0.2679,
+      "model": "claude-sonnet-5-5",
+      "turns": 7
     },
     {
       "owner_helped": null,
@@ -4383,7 +7568,14 @@
       "pr_merged": null,
       "outcome": "nothing",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 10,
+      "tokens_output": 2680,
+      "tokens_cache_read": 273190,
+      "tokens_cache_write": 53268,
+      "cost_list_usd": 0.2672,
+      "model": "claude-sonnet-5-5",
+      "turns": 6
     },
     {
       "owner_helped": false,
@@ -4399,7 +7591,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 198,
+      "tokens_output": 82616,
+      "tokens_cache_read": 7144456,
+      "tokens_cache_write": 531770,
+      "cost_list_usd": 3.0402,
+      "model": "claude-sonnet-5-5",
+      "turns": 27
     },
     {
       "owner_helped": null,
@@ -4415,7 +7614,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 64,
+      "tokens_output": 13783,
+      "tokens_cache_read": 2679160,
+      "tokens_cache_write": 87498,
+      "cost_list_usd": 0.7559,
+      "model": "claude-sonnet-5-5",
+      "turns": 35
     },
     {
       "owner_helped": false,
@@ -4431,7 +7637,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "issue"
+      "kind": "issue",
+      "tokens_input": 156,
+      "tokens_output": 45252,
+      "tokens_cache_read": 4874758,
+      "tokens_cache_write": 251583,
+      "cost_list_usd": 1.7031,
+      "model": "claude-sonnet-5-5",
+      "turns": 31
     },
     {
       "owner_helped": false,
@@ -4447,7 +7660,14 @@
       "pr_merged": true,
       "outcome": "shipped",
       "attribution": "receipt",
-      "kind": "ranked"
+      "kind": "ranked",
+      "tokens_input": 153,
+      "tokens_output": 43598,
+      "tokens_cache_read": 6101920,
+      "tokens_cache_write": 253584,
+      "cost_list_usd": 1.8399,
+      "model": "claude-sonnet-5-5",
+      "turns": 58
     },
     {
       "owner_helped": null,
@@ -4463,7 +7683,14 @@
       "pr_merged": null,
       "outcome": "judged",
       "attribution": "receipt",
-      "kind": "qa-round"
+      "kind": "qa-round",
+      "tokens_input": 58,
+      "tokens_output": 15032,
+      "tokens_cache_read": 2572950,
+      "tokens_cache_write": 97330,
+      "cost_list_usd": 0.7971,
+      "model": "claude-sonnet-5-5",
+      "turns": 36
     },
     {
       "owner_helped": null,
@@ -6740,20 +9967,66 @@
   ],
   "waste": {
     "days": 7,
-    "cycles": 177,
+    "cycles": 200,
     "minutes_by_outcome": {
-      "shipped": 3112.6,
-      "pr open": 98.6,
-      "judged": 419.5,
-      "nothing": 60.1,
+      "shipped": 3748.9,
+      "pr open": 306.0,
+      "judged": 479.0,
+      "nothing": 28.9,
       "failed": 0.0,
       "unknown": 0.0
     },
-    "minutes_total": 3690.8,
-    "minutes_without_result": 60.1,
-    "share_without_result": 0.016,
-    "shipped_prs": 93,
-    "build_idle_hours": 115.4,
-    "build_idle_share": 0.687
+    "minutes_total": 4562.8,
+    "minutes_without_result": 28.9,
+    "share_without_result": 0.006,
+    "shipped_prs": 106,
+    "build_idle_hours": 102.7,
+    "build_idle_share": 0.611
+  },
+  "tokens": {
+    "days": 7,
+    "runs": 200,
+    "measured": 200,
+    "total": {
+      "tokens": 1027813999,
+      "input": 23492,
+      "output": 7794191,
+      "cache_read": 969250591,
+      "cache_write": 50745725,
+      "cost_list_usd": 330.18
+    },
+    "median_by_outcome": {
+      "shipped": {
+        "runs": 120,
+        "tokens": 6592657,
+        "cost_list_usd": 2.25
+      },
+      "pr open": {
+        "runs": 8,
+        "tokens": 6776755,
+        "cost_list_usd": 2.17
+      },
+      "judged": {
+        "runs": 64,
+        "tokens": 1244445,
+        "cost_list_usd": 0.48
+      },
+      "nothing": {
+        "runs": 8,
+        "tokens": 535622,
+        "cost_list_usd": 0.3
+      }
+    },
+    "median_cycle": 6487395,
+    "median_qa_round": 1244445,
+    "merged_prs": 106,
+    "per_merged_pr": 9696358,
+    "cost_list_usd_per_merged_pr": 3.11,
+    "previous": {
+      "runs": 131,
+      "measured": 129,
+      "merged_prs": 51,
+      "per_merged_pr": 11525239
+    }
   }
 }

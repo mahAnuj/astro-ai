@@ -106,8 +106,8 @@ optional in modern practice.
 | Jupiter | Cancer | Capricorn |
 | Venus | Pisces | Virgo |
 | Saturn | Libra | Aries |
-| Rahu | Taurus (some say Gemini) | Scorpio (some say Sagittarius) |
-| Ketu | Scorpio (some say Sagittarius) | Taurus (some say Gemini) |
+| Rahu | Gemini (CONTESTED: some say Taurus) | Sagittarius (CONTESTED: some say Scorpio) |
+| Ketu | Sagittarius (CONTESTED: some say Scorpio) | Gemini (CONTESTED: some say Taurus) |
 
 A planet in its exaltation sign gives peak positive results; in
 debilitation, the opposite. **Neechabhanga** (debility cancellation)

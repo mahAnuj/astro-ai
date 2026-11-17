@@ -21,6 +21,14 @@
 #}
 {# Current signed-in user (may be None). Cheap — just cookie deserialisation. #}
 {% set current_user = load_current_user(request) %}
+{# #1177: /today, /monthly, /yearly and /ask answer 303 -> /?needs_chart=<key> for a
+   visitor with no saved chart, so a crawler (and that visitor) met four redirecting
+   links on every page. has_chart() is the redirects' own predicate (same session
+   cookie, no GCS read); without a chart the link goes straight to where the 303
+   would have landed. `active_page` highlighting compares the DIRECT key, never
+   the rewritten href. #}
+{% set _has_chart = has_chart(request) %}
+{% set _chart_gated = {'/today': 'today', '/monthly': 'monthly', '/yearly': 'yearly', '/ask': 'ask'} %}
 <nav aria-label="Main" class="border-b border-bhagya-gold/25 bg-bhagya-night/95 backdrop-blur sticky top-0 z-10 no-print">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center gap-y-2 md:gap-x-4">
 
@@ -65,13 +73,13 @@
           <span class="text-bhagya-cream font-semibold border-l-2 md:border-l-0 md:border-b-2
                        border-bhagya-saffron pl-2 md:pl-0 md:pb-0.5 py-2.5 md:py-0">{{ label }}</span>
         {%- else -%}
-          <a href="{{ href }}" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron py-2.5 md:py-0">{{ label }}</a>
+          <a href="{{ '/?needs_chart=' ~ _chart_gated[href] if (not _has_chart and href in _chart_gated) else href }}" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron py-2.5 md:py-0">{{ label }}</a>
         {%- endif %}
       {%- endmacro %}
 
       {# Shared dlink macro used by both Tools and More dropdowns. #}
       {% macro dlink(href, label, page_key) -%}
-        <a href="{{ href }}"
+        <a href="{{ '/?needs_chart=' ~ _chart_gated[href] if (not _has_chart and href in _chart_gated) else href }}"
            class="text-sm py-2.5 md:py-2 md:px-4 transition-colors
                   {% if active_page == page_key %}text-bhagya-sindoor font-semibold md:bg-bhagya-cream-2{% else %}text-bhagya-ink-soft hover:text-bhagya-sindoor md:hover:bg-bhagya-cream-2{% endif %}">
           {{ label }}

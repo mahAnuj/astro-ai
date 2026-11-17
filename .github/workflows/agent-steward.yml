@@ -221,7 +221,7 @@ jobs:
                echo "::warning::detector exited $code, unexpected — waking the steward" ;;
           esac
 
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278
         if: steps.detect.outputs.stalled == 'true'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -331,6 +331,10 @@ jobs:
             If every finding turns out to be normal operation, say so and
             produce nothing. A quiet run is a correct run.
           claude_args: |
+            # #1172: strict tool list. claude-code-action made auto mode the default
+            # on 2026-11-12 (its #2004); there a safety review can pass a call no
+            # --allowedTools rule covers. `default` restores the boundary.
+            --permission-mode default
             --max-turns 60
             --effort high
             --allowedTools "Agent,Read,Write,Edit,Glob,Grep,Skill,WebFetch,WebSearch,TodoWrite,Bash"
@@ -493,7 +497,7 @@ jobs:
       # action. That is a Shape B decision: the options are known, the choice
       # is not the steward's to park, and nothing else in this system can
       # notice the watcher failed.
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278
         if: steps.acted.outputs.ok == 'false'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -584,6 +588,10 @@ jobs:
             started when that cycle completes (scripts/cycle_queue.py), so a
             busy loop is no reason to hold back a dispatch.
           claude_args: |
+            # #1172: strict tool list. claude-code-action made auto mode the default
+            # on 2026-11-12 (its #2004); there a safety review can pass a call no
+            # --allowedTools rule covers. `default` restores the boundary.
+            --permission-mode default
             --max-turns 50
             --effort high
             --allowedTools "Agent,Read,Glob,Grep,Bash,WebFetch,TodoWrite"

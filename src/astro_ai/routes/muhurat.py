@@ -170,6 +170,7 @@ async def muhurat_finder_compute(
     # Namkaran — child's birth chart to derive first-letter suggestions.
     child_first_letter = ""
     child_all_letters: tuple[str, ...] = ()
+    child_alternate_letters: tuple[str, ...] = ()
     child_nakshatra = ""
     child_pada = 0
     if event_type == "namkaran" and child_dob and child_time and child_place:
@@ -177,6 +178,7 @@ async def muhurat_finder_compute(
             child_chart = compute_chart(child_dob, child_time, child_place)
             child_nakshatra, child_pada = _muhurat._child_moon_pada(child_chart)
             child_first_letter, child_all_letters = _muhurat._namkaran_first_letters(child_nakshatra, child_pada)
+            child_alternate_letters = _muhurat._namkaran_alternate_letters(child_nakshatra)
         except Exception:
             pass
 
@@ -225,6 +227,7 @@ async def muhurat_finder_compute(
          "prefill_child_place": child_place,
          "child_first_letter": child_first_letter,
          "child_all_letters": child_all_letters,
+         "child_alternate_letters": child_alternate_letters,
          "child_nakshatra": child_nakshatra,
          "child_pada": child_pada,
          "lang": _lang(request)},

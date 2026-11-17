@@ -1749,6 +1749,36 @@ def _clean_name(name: str) -> str:
     return re.sub(r"[^A-Z]", "", ascii_only.upper())
 
 
+def unscored_letters(name: str) -> list[str]:
+    """Letters of ``name`` that ``_clean_name`` throws away, first seen first (#1089).
+
+    The Chaldean values (knowledge/numerology.md §3.2) are defined over the 26 Latin
+    letters only. ``_clean_name`` keeps those and drops everything else, which is right
+    for spaces, hyphens and apostrophes but silent for a *letter*: ``Anuj महाजन`` was
+    scored as ``ANUJ`` while the page headed the reading with the full name.
+
+    A letter is any character in Unicode category L or M (so a Devanagari consonant and
+    its vowel sign both count) that cleans to nothing. The name is read in NFD form, the
+    way ``_clean_name`` reads it, so ``é`` and ``e`` + U+0301 are the same thing: the
+    accent follows a Latin base and is not reported. ``ß`` and ``ø`` have no
+    decomposition and are.
+    """
+    import unicodedata
+    out: list[str] = []
+    after_latin = False  # the previous character was a scored Latin letter
+    for ch in unicodedata.normalize("NFD", name or ""):
+        cat = unicodedata.category(ch)[0]
+        if _clean_name(ch):
+            after_latin = True
+            continue
+        if cat == "M" and after_latin:
+            continue  # an accent on a Latin base; the base is what gets scored
+        after_latin = False
+        if cat in ("L", "M") and ch not in out:
+            out.append(ch)
+    return out
+
+
 def _reduce(n: int, *, preserve_masters: bool) -> int:
     """Reduce to a single digit, optionally stopping at 11, 22 or 33.
 

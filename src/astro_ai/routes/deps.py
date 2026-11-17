@@ -49,6 +49,7 @@ from astro_ai import cache, daily_cache, email_sender, events, feedback, festiva
 
 
 from astro_ai.session import (
+    _DEV_SECRET,
     SUPPORTED_LANGS,
     ChartCollection,
     SavedMatching,
@@ -346,6 +347,22 @@ templates.env.globals["google_client_id"] = os.environ.get("GOOGLE_CLIENT_ID", "
 templates.env.globals["load_current_user"] = load_user
 
 
+def _has_chart(request: Request) -> bool:
+    """Template helper — does this visitor have a saved chart? (#1177)
+
+    EXACTLY the predicate the chart-gated routes redirect on (`/today`,
+    `/monthly`, `/yearly`, `/ask` each 303 to `/?needs_chart=<key>` when
+    `load_collection(request).active is None`), read from the same signed session
+    cookie. No GCS read and no network, so it is safe in the nav of every page.
+    _nav.html and _tab_bar.html use it to point a no-chart visitor straight at the
+    page those redirects land on, instead of at a link that answers 303.
+    """
+    return load_collection(request).active is not None
+
+
+templates.env.globals["has_chart"] = _has_chart
+
+
 def _is_subscribed(email: str | None) -> bool:
     """Template helper — does this email have an active Rashifal subscription?
 
@@ -540,12 +557,32 @@ _basic_auth = HTTPBasic(realm="Bhagya admin")
 _ADMIN_DEV_FALLBACK = "bhagya-dev-only-CHANGE-ME"
 
 
+def insecure_secrets() -> list[str]:
+    """Names of the secrets that are unset, blank, or a committed dev placeholder (#1104).
+
+    The repo is public, so both placeholders below are known to everyone. A value
+    equal to EITHER is rejected for BOTH secrets: the unsubscribe key used to share
+    the admin string, and a deploy that pasted the wrong placeholder into the wrong
+    variable is still a public secret. Read from the environment on every call, not
+    at import, so a test (or a changed env) is seen. Returns names only, never values.
+    """
+    placeholders = {_ADMIN_DEV_FALLBACK, _DEV_SECRET}
+    bad = []
+    for name in ("ADMIN_PASSWORD", "ASTRO_AI_COOKIE_SECRET"):
+        value = os.environ.get(name, "").strip()
+        if not value or value in placeholders:
+            bad.append(name)
+    return bad
+
+
 def require_admin(creds: HTTPBasicCredentials = Depends(_basic_auth)) -> None:
     """HTTP Basic Auth gate for admin routes.
 
     Username must be 'admin'; password comes from the ADMIN_PASSWORD env var.
     If unset, falls back to a clearly-flagged dev placeholder so local
-    development still works — but the var MUST be set before any deploy.
+    development still works. On Cloud Run (K_REVISION set) that fallback is never
+    reachable: `main._lifespan` refuses to start the revision when ADMIN_PASSWORD
+    is unset, blank or a placeholder (`insecure_secrets`, #1104).
     `secrets.compare_digest` is used on both sides to dodge timing attacks.
     """
     expected_password = os.environ.get("ADMIN_PASSWORD", _ADMIN_DEV_FALLBACK)

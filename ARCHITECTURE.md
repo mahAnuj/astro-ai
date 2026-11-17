@@ -30,16 +30,16 @@ trust the number.
 |---|---|---|
 | Python | measured | `find src -name '*.py' \| xargs cat \| wc -l` |
 | top-level modules | measured | `ls src/astro_ai/*.py \| wc -l` |
-| route handlers | 69 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
+| route handlers | 70 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 25 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
-| top-level templates | 58 | `ls src/astro_ai/templates/*.html \| wc -l` |
-| `/learn` articles | 76 | `ls src/astro_ai/templates/learn/*.html \| wc -l` |
+| top-level templates | measured | `ls src/astro_ai/templates/*.html \| wc -l` |
+| `/learn` articles | measured | `ls src/astro_ai/templates/learn/*.html \| wc -l` |
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
-| knowledge files | 11 files, 9961 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
+| knowledge files | measured | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
 | verification gates | measured | `ls scripts/verify_*.py \| wc -l` |
 | behaviour suite | measured | `uv run pytest --collect-only -p no:warnings \| grep -oE '[0-9]+ tests? collected' \| awk '{print $1}'` |
 
-The four rows reading `measured` are report-only (#405): a number hand-edited into a shared file
+The rows reading `measured` are report-only (#405; knowledge files, top-level templates and `/learn` articles joined them 2026-11-17 after their shared numbers turned #1058, #1127, #1136 and #1164 red or conflicting within two days): a number hand-edited into a shared file
 is what made PRs that added a test or a gate conflict. Measured on main@50a9c42 over the last 100
 commits (`git log -100`: 99 non-merge commits and one merge, 4f66d50), commits whose diff changed
 a row's own line in this table: Python 10, top-level modules 4, verification gates 7, behaviour
@@ -1039,7 +1039,7 @@ Dated, with the evidence. **Check here before proposing a change.**
   `account.py`'s `log.exception("chart sync on sign-in failed for %s", user.email)` is not driven,
   only a successful sign-in. The Google profile name is empty by construction, so the sign-in
   alert's name (disclosed in `privacy.html`) is not exercised. The two dasha lords passed to
-  `Analytics.track` in `dasha_deep_dive.html` are allowed as a planet name, one of nine, at the grain of the rashi
+  `analytics_event('dasha_deep_dive_viewed', …)` in `dasha_deep_dive.html` are allowed as a planet name, one of nine, at the grain of the rashi
   triple Telegram already carries; that is a judgement `privacy.html` does not spell out. The
   subscriber's city reaches Telegram as `source=` by design and carries no sentinel in the sweep.
   Email in operational logs is pinned as allowed, not endorsed.

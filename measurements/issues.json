@@ -1,34 +1,29 @@
 {
-  "generated_at": "2026-11-16T03:07:41Z",
+  "generated_at": "2026-11-17T17:19:02Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 138,
-  "with_ask": 46,
+  "open": 127,
+  "with_ask": 44,
   "by_area": {
-    "UNCLASSIFIED": 49,
+    "UNCLASSIFIED": 46,
     "INFRA": 14,
     "REDESIGN": 10,
+    "SEO": 7,
+    "OPS": 7,
     "FEATURE": 7,
-    "OPS": 6,
-    "ANALYTICS": 5,
-    "SEO": 5,
-    "CORPUS": 5,
-    "LEARN": 4,
-    "NUMEROLOGY": 3,
+    "CORPUS": 4,
+    "ANALYTICS": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "SECURITY": 2,
     "ASK": 2,
+    "PRIVACY": 2,
     "MEASURE": 2,
     "MATCHING": 2,
+    "NUMEROLOGY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "PRIVACY": 1,
-    "GOCHAR-2026": 1,
-    "KUNDLI": 1,
-    "KNOWLEDGE": 1,
-    "MUHURAT": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
     "UI": 1,
@@ -36,20 +31,147 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 37,
     "untyped": 35,
-    "enhancement": 32,
-    "chore": 19,
+    "bug": 30,
+    "enhancement": 28,
+    "chore": 18,
     "correctness": 11,
-    "design": 4
+    "design": 5
   },
   "by_priority": {
-    "unset": 100,
+    "unset": 88,
     "medium": 22,
-    "high": 16
+    "high": 16,
+    "low": 1
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1178,
+      "title": "seo: effective meta descriptions over 160 chars, enforced by verify_seo_copy (#1107 criterion 5)",
+      "ask": "",
+      "area": "SEO",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-17T12:12:59Z",
+      "updated": "2026-11-17T12:13:17Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1177,
+      "title": "seo: no-chart nav links (/today /monthly /yearly /ask) must not 303 (#1107 criterion 4)",
+      "ask": "",
+      "area": "SEO",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "seo",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-17T12:12:58Z",
+      "updated": "2026-11-17T17:18:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1176,
+      "title": "seo: slash-variant redirects return 308, not 307 (#1107 criterion 3)",
+      "ask": "",
+      "area": "SEO",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "seo",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-17T12:12:56Z",
+      "updated": "2026-11-17T12:12:56Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1172,
+      "title": "security: every claude-code-action step runs in auto mode, so --allowedTools lists are advisory; pass --permission-mode default",
+      "ask": "Add --permission-mode default to every claude-code-action step.",
+      "area": "SECURITY",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-11-17T11:09:17Z",
+      "updated": "2026-11-17T11:32:51Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1167,
+      "title": "ask: audit saved /ask answers weekly for astrological correctness (grounded in knowledge/, prompt contract, safety) without publishing user questions",
+      "ask": "Collector step, no model (in agent-measure's GCS-credentialed job, like collect_llm_usage.py).",
+      "area": "ASK",
+      "type": "correctness",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "priority:high",
+        "astrology-correctness",
+        "qa-fail",
+        "provenance:trusted",
+        "qa:independent"
+      ],
+      "created": "2026-11-17T09:46:07Z",
+      "updated": "2026-11-17T11:48:42Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1163,
+      "title": "privacy: /subscribe response time tells an anonymous caller whether an email is subscribed (follow-up to #1159)",
+      "ask": "",
+      "area": "PRIVACY",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low"
+      ],
+      "created": "2026-11-17T09:03:13Z",
+      "updated": "2026-11-17T09:03:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1133,
+      "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) — umbrella",
+      "ask": "",
+      "area": "OPS",
+      "type": "design",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "priority:high",
+        "ui",
+        "design-proposal"
+      ],
+      "created": "2026-11-16T17:33:22Z",
+      "updated": "2026-11-17T03:27:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1115,
       "title": "analytics: add a GA4 previous-window export (fetch_ga4.py --trend) — three reports in a row could not compare sessions with the last window",
@@ -74,10 +196,11 @@
         "seo",
         "category:technical",
         "priority:medium",
-        "effort:m"
+        "effort:m",
+        "provenance:trusted"
       ],
       "created": "2026-11-15T20:41:37Z",
-      "updated": "2026-11-15T20:48:12Z",
+      "updated": "2026-11-17T12:13:11Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -92,10 +215,13 @@
         "bug",
         "priority:medium",
         "effort:s",
-        "risk:medium"
+        "risk:medium",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T20:41:26Z",
-      "updated": "2026-11-15T20:47:07Z",
+      "updated": "2026-11-17T10:04:37Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -110,143 +236,13 @@
         "bug",
         "priority:high",
         "effort:m",
-        "risk:medium"
-      ],
-      "created": "2026-11-15T20:41:18Z",
-      "updated": "2026-11-15T20:46:45Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1104,
-      "title": "security: fail closed when ADMIN_PASSWORD or ASTRO_AI_COOKIE_SECRET is unset — the dev fallbacks are public",
-      "ask": "When running on Cloud Run (K_REVISION is set), refuse to start, or return 503 on admin and session routes, if any of the three is unset or equal to a dev fallback.",
-      "area": "SECURITY",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "effort:s",
-        "risk:high"
-      ],
-      "created": "2026-11-15T20:41:08Z",
-      "updated": "2026-11-15T20:46:25Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1100,
-      "title": "gochar-2026: six QA hand-mutations survive the new gate, and five per-rashi lines have no source (follow-up to #1079)",
-      "ask": "",
-      "area": "GOCHAR-2026",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness"
-      ],
-      "created": "2026-11-15T18:23:23Z",
-      "updated": "2026-11-15T18:23:23Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1089,
-      "title": "numerology: a mixed-script name (\"Anuj महाजन\") is silently scored on its Latin words only and shown as the whole-name reading",
-      "ask": "",
-      "area": "NUMEROLOGY",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-11-15T10:31:11Z",
-      "updated": "2026-11-15T10:31:11Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1088,
-      "title": "kundli: an LLM failure withholds the whole computed chart; /kundli returns a 503 error page with no lagna, planets, dasha or doshas",
-      "ask": "",
-      "area": "KUNDLI",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high"
-      ],
-      "created": "2026-11-15T10:31:10Z",
-      "updated": "2026-11-15T10:31:54Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1087,
-      "title": "ask: /ask?q= renders a silent blank page (question echoed, no answer, no notice) whenever the answer is not in that instance's SQLite: second instance, any deploy, or a bookmarked/shared link",
-      "ask": "",
-      "area": "ASK",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high"
-      ],
-      "created": "2026-11-15T10:31:09Z",
-      "updated": "2026-11-15T10:31:55Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1086,
-      "title": "corpus: knowledge/ contradicts itself on Rahu's exaltation (Taurus vs Gemini) and Saturn's dig bala (10th vs 7th)",
-      "ask": "Find each rule in the held books (Rao, Integrated Approach and Lessons; Raman; Vasudev) and cite line ranges.",
-      "area": "CORPUS",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "skill:knowledge-integrator",
-        "astrology-correctness",
-        "chore"
-      ],
-      "created": "2026-11-15T10:27:01Z",
-      "updated": "2026-11-15T10:27:01Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1085,
-      "title": "7th-lord-placement: \"own house is the strongest possible placement\" contradicts the dignity ladder (exaltation is peak)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness"
-      ],
-      "created": "2026-11-15T10:25:51Z",
-      "updated": "2026-11-15T10:25:51Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1084,
-      "title": "rahu-mahadasha-career-problems: phase lengths 8y/5y should be 9.45y/3.45y; Rahu \"combust\" and \"Sagittarius exaltation\" contradict the corpus",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
+        "risk:medium",
         "qa-pass",
         "provenance:trusted",
         "qa:in-cycle"
       ],
-      "created": "2026-11-15T10:25:50Z",
-      "updated": "2026-11-16T01:05:00Z",
+      "created": "2026-11-15T20:41:18Z",
+      "updated": "2026-11-17T14:22:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -259,10 +255,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T10:25:50Z",
-      "updated": "2026-11-15T10:25:50Z",
+      "updated": "2026-11-17T12:55:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -281,7 +280,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T10:25:47Z",
-      "updated": "2026-11-16T03:06:54Z",
+      "updated": "2026-11-16T03:17:09Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -298,86 +297,6 @@
       ],
       "created": "2026-11-15T10:19:17Z",
       "updated": "2026-11-15T10:19:17Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1075,
-      "title": "learn: rahu-mahadasha-ketu-antardasha — surface the 'effects' and 'remedies' intents (171 query impr at pos 8.9) on the top page without touching what ranks",
-      "ask": "",
-      "area": "LEARN",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "content"
-      ],
-      "created": "2026-11-15T10:19:16Z",
-      "updated": "2026-11-15T10:19:16Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1074,
-      "title": "seo: /panchang/{date} titles say \"Today's Panchang\" on every non-today date and the description carries no values — put the computed tithi/nakshatra/Rahu Kaal in the snippet",
-      "ask": "",
-      "area": "SEO",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "seo"
-      ],
-      "created": "2026-11-15T10:19:15Z",
-      "updated": "2026-11-15T10:19:15Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1073,
-      "title": "learn: jupiter-in-10th-house-career lacks Jupiter-in-Pisces/Sagittarius, aspect and marriage-timing answers for its long tail (280 query impr at pos 9.2) — content, not title",
-      "ask": "",
-      "area": "LEARN",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "content"
-      ],
-      "created": "2026-11-15T10:19:14Z",
-      "updated": "2026-11-15T10:19:14Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1072,
-      "title": "learn: answer 'which mahadasha is best for career' (33 impr, pos 9.2-9.8) as a section of vimshottari-dasha-explained, not a new article",
-      "ask": "",
-      "area": "LEARN",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "content"
-      ],
-      "created": "2026-11-15T10:19:14Z",
-      "updated": "2026-11-15T10:19:14Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1071,
-      "title": "learn: write gochar-2027-planetary-transits before January — the 2026 sibling has 1,627 impressions at position 5.7 (swisseph-computed dates)",
-      "ask": "",
-      "area": "LEARN",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "content"
-      ],
-      "created": "2026-11-15T10:19:13Z",
-      "updated": "2026-11-15T10:19:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -406,42 +325,11 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "severity:low"
+        "severity:low",
+        "provenance:trusted"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-15T10:14:10Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1068,
-      "title": "analytics: kundli_generated and ask_answered fire on every re-render (/kundli revisit, /r/ snapshot, /ask?q= reload), not on completion",
-      "ask": "Keep the event names, so the history stays comparable, and record the semantic change date in docs/decisions/.",
-      "area": "ANALYTICS",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "severity:medium"
-      ],
-      "created": "2026-11-15T10:14:09Z",
-      "updated": "2026-11-15T10:14:09Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1067,
-      "title": "analytics: kundli_generated, ask_answered and dasha_deep_dive_viewed throw 'Analytics is not defined' on full page loads (inline script runs before deferred analytics.js)",
-      "ask": "Template: <div hidden data-analytics-event=\"kundli_generated\" data-analytics-params='{\"lang\":\"en\"}'></div>.",
-      "area": "ANALYTICS",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "severity:medium"
-      ],
-      "created": "2026-11-15T10:14:08Z",
-      "updated": "2026-11-15T10:14:08Z",
+      "updated": "2026-11-17T07:05:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -472,27 +360,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T09:04:12Z",
-      "updated": "2026-11-15T09:04:36Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1060,
-      "title": "Namkaran rules: Dwadashi credited though Raman rejects it, Dhanishtha/Satabhisha missing, and the '11th day per Grihya Sutras' copy has no source (#1027)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-15T09:04:10Z",
-      "updated": "2026-11-15T10:10:04Z",
+      "updated": "2026-11-16T21:31:38Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -511,21 +385,6 @@
       ],
       "created": "2026-11-15T07:17:29Z",
       "updated": "2026-11-15T10:39:19Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1041,
-      "title": "knowledge: vedic_reference.md 29.9 and the 29 closing note still say the nitya-yoga blocker is 'narrower than its source' (stale after #1023)",
-      "ask": "",
-      "area": "KNOWLEDGE",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "chore"
-      ],
-      "created": "2026-11-14T23:30:53Z",
-      "updated": "2026-11-14T23:30:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -597,22 +456,6 @@
       ],
       "created": "2026-11-14T13:15:49Z",
       "updated": "2026-11-14T13:15:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1025,
-      "title": "muhurat: Abhijit marked best while half inside Rahu Kaal every Wed/Fri, and inside Bhadra on some days — precedence UNSOURCED",
-      "ask": "",
-      "area": "MUHURAT",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness"
-      ],
-      "created": "2026-11-14T13:15:47Z",
-      "updated": "2026-11-14T13:15:47Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -737,7 +580,7 @@
         "chore"
       ],
       "created": "2026-11-12T17:43:39Z",
-      "updated": "2026-11-13T19:42:24Z",
+      "updated": "2026-11-17T06:07:00Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -781,7 +624,7 @@
         "chore"
       ],
       "created": "2026-11-12T03:59:29Z",
-      "updated": "2026-11-12T03:59:29Z",
+      "updated": "2026-11-16T03:07:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -826,7 +669,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-11T21:59:55Z",
-      "updated": "2026-11-13T15:34:27Z",
+      "updated": "2026-11-17T12:57:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -844,7 +687,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-11T21:48:17Z",
-      "updated": "2026-11-15T20:42:07Z",
+      "updated": "2026-11-17T07:54:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -897,7 +740,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-10T16:49:54Z",
+      "updated": "2026-11-16T17:47:16Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1436,7 +1279,7 @@
         "needs-evidence"
       ],
       "created": "2026-10-20T08:48:15Z",
-      "updated": "2026-11-13T15:35:10Z",
+      "updated": "2026-11-17T12:20:20Z",
       "blocked": false,
       "needs_evidence": true
     },

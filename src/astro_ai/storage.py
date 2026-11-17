@@ -146,6 +146,34 @@ def put(key: str, value: str, *, content_type: str = "text/plain; charset=utf-8"
         return False
 
 
+def delete(key: str) -> bool:
+    """Delete the blob at `key`. True when it is gone afterwards, else False.
+
+    Idempotent: a 404 means the blob is already absent, which is the state the
+    caller asked for, so it counts as success. False means "could not confirm
+    it is gone" (no bucket configured, client unavailable, or the call failed)
+    -- callers deleting personal data must surface that, not swallow it (#1105).
+    """
+    blob = _blob(key)
+    if blob is None:
+        return False
+    try:
+        from google.api_core import exceptions as gapi_exc  # type: ignore
+        not_found = gapi_exc.NotFound
+    except Exception:
+        not_found = ()
+    try:
+        blob.delete()
+        return True
+    except not_found:
+        return True
+    except Exception as err:
+        if getattr(err, "code", None) == 404:
+            return True
+        log.warning("storage.delete(%s) failed: %s", key, err)
+        return False
+
+
 def get_json(key: str) -> Any | None:
     """Read `key` and parse as JSON. None if missing or malformed."""
     raw = get(key)
