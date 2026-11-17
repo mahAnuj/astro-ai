@@ -49,9 +49,11 @@
                class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm
                       focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
 
-        {# "Welcome back" banner — appears when /subscribe/lookup finds an
-           existing subscription. Prevents the silent-reset bug where a
-           returning user's rashi/lang would revert to defaults. #}
+        {# "Welcome back" banner — appears when /subscribe/lookup answers, which
+           it does only for the signed-in user's OWN subscribed email (#1159);
+           anonymous visitors never see it. Anonymous returning subscribers are
+           protected from the silent reset server-side instead: /subscribe keeps
+           an existing address's stored prefs unless the caller is signed in as it. #}
         <div id="subscribe-welcome-back"
              class="hidden bg-bhagya-cream-2 border border-bhagya-line text-emerald-800 text-xs rounded-md px-3 py-2">
           {% if lang == 'hi' %}स्वागत है! हमने आपकी मौजूदा पसंद लोड की है — बदलाव करके सहेजें।{% else %}Welcome back — loaded your existing preferences. Change any field and Subscribe to update.{% endif %}
@@ -216,9 +218,10 @@
     // --------------------------------------------------------------------
     // Prefill lang / city / rashi for returning subscribers.
     // On email input (debounced 500ms), POST /subscribe/lookup and, if the
-    // email is already subscribed, load the stored preferences into the form
-    // + show the "welcome back" banner. Prevents the silent-reset bug where
-    // a returning user's rashi/lang gets reverted to defaults.
+    // signed-in user typed THEIR OWN subscribed email, load the stored
+    // preferences into the form + show the "welcome back" banner. Everyone
+    // else gets the same default body, so this is a no-op for them (#1159);
+    // the server keeps their stored prefs on a re-subscribe.
     // --------------------------------------------------------------------
     var emailInput = form.querySelector('input[name="email"]');
     var cityInput  = form.querySelector('input[name="city"]');
