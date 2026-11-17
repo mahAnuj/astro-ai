@@ -60,7 +60,9 @@
   ] %}
   {% for href, label, glyph in _tabs %}
   {% set _on = _path == href or _path.startswith(href ~ '/') %}
-  <a href="{{ href }}"
+  {# #1177: no saved chart -> /ask would 303 to /?needs_chart=ask; link there
+     directly. `_on` above is computed from the DIRECT href, never this one. #}
+  <a href="{{ '/?needs_chart=ask' if (href == '/ask' and not has_chart(request)) else href }}"
      class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-2
             {% if _on %}text-bhagya-saffron{% else %}text-bhagya-cream/[.62] hover:text-bhagya-saffron{% endif %}
             transition-colors"
