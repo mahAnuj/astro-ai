@@ -11,7 +11,7 @@ Gate 4 (#193) closed that hole, and those two rows catch like the others now.
 
     uv run python scripts/mutate_learn_article_dates.py   # exit 1 if any escapes
 
-THE EXPECTED STATE IS 7/7 (4/4 before Gate 5, #1071). Every row below is a corruption the shipped gate
+THE EXPECTED STATE IS 8/8 (4/4 before Gate 5, #1071; the May row was added after QA found Gate 5 blind to May). Every row below is a corruption the shipped gate
 catches today, so a miss is a REGRESSION in `verify_learn_article_dates.py` and
 never a known gap. 2/4 was the pre-Gate-4 reading and stopped being acceptable
 the day Gate 4 landed.
@@ -76,6 +76,10 @@ MUTATIONS = [
     ("gochar-2027: a year-less per-sign date moved a month",
      GOCHAR27, 113, "speech; 25 January–26 June", "speech; 25 February–26 June",
      "Gate 5 — a year-less date is read in the article's own year"),
+
+    ("gochar-2027: Rahu into Sagittarius moved from 24 May to 18 May 2028 (the three-letter month)",
+     GOCHAR27, 201, "on 24 May 2028", "on 18 May 2028",
+     "Gate 5 — `May` is a full month name; a `len(m) > 3` filter dropped it and no May date was read"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

@@ -1339,7 +1339,10 @@ def gate_4_corroboration(claims: list[Claim], bare: list[BareDate]) -> list[str]
 # --------------------------------------------------------------------------
 
 _IST = timezone(timedelta(hours=5, minutes=30))
-_CAP_MONTHS = {m.capitalize(): n for m, n in _MONTHS.items() if len(m) > 3}
+# Full month names only, not abbreviations ("Jan", "Sep"). `len(m) > 3` was the first draft and it
+# dropped "May" - the one full name of three letters - so no May date was ever matched, checked or
+# reported, while the coverage line counted it as checked (QA FAIL on #1148, 24 May 2028 -> 18 May).
+_CAP_MONTHS = {m.capitalize(): n for m, n in _MONTHS.items() if len(m) > 3 or m == "may"}
 _TRANSIT_DATE_RE = re.compile(
     rf"(?:\b(?P<day_a>\d{{1,2}}){_ORDINAL}\s+(?P<month_a>{'|'.join(_CAP_MONTHS)})\b"
     rf"|\b(?P<month_b>{'|'.join(_CAP_MONTHS)})\s+(?P<day_b>\d{{1,2}}){_ORDINAL}(?!\d))"
