@@ -87,7 +87,8 @@ STORAGE_FAILURE_MSG = "Couldn't save your subscription right now. Please try aga
 
 
 def subscribe(email: str, lang: str = "en", city: str = "",
-              rashi: str = "all") -> tuple[bool, bool, str]:
+              rashi: str = "all", *,
+              overwrite_prefs: bool = True) -> tuple[bool, bool, str]:
     """Add a subscriber. Returns (ok, is_new, message).
 
     `is_new` is True only when this email wasn't in the list before; callers
@@ -104,6 +105,12 @@ def subscribe(email: str, lang: str = "en", city: str = "",
 
     Idempotent: re-subscribing the same email keeps the original timestamp
     but updates `lang` / `city` / `rashi` if the user changed any of them.
+
+    `overwrite_prefs=False` leaves an EXISTING record's lang / city / rashi
+    untouched (still `is_new=False`, still ok). The /subscribe route passes
+    False unless the caller is signed in as that address (#1159): the posted
+    values are otherwise an unauthenticated claim about someone else's record.
+    A new address is always created from the posted values.
     """
     email = _normalize(email)
     if not _EMAIL_RE.match(email):
@@ -121,10 +128,11 @@ def subscribe(email: str, lang: str = "en", city: str = "",
         data = current or {"subscribers": []}
         for existing in data["subscribers"]:
             if existing["email"] == email:
-                existing["lang"] = lang
-                if city:
-                    existing["city"] = city
-                existing["rashi"] = rashi
+                if overwrite_prefs:
+                    existing["lang"] = lang
+                    if city:
+                        existing["city"] = city
+                    existing["rashi"] = rashi
                 state["was_new"] = False
                 return data
         entry = {
@@ -170,10 +178,10 @@ def list_subscribers() -> list[dict]:
 def find_by_email(email: str) -> dict | None:
     """Return the subscriber record for `email`, or None if not subscribed.
 
-    Powers the /subscribe/lookup endpoint so the modal can prefill lang / city /
-    rashi with a returning subscriber's existing choices — avoids the silent
-    reset that happens when a user re-submits the form with default field
-    values (see `subscribe()` docstring for the update semantics).
+    Behind /subscribe/lookup, which calls it only for the signed-in user's own
+    address (#1159) so the modal's "Edit preferences" form can prefill their
+    stored lang / city / rashi. It is not an existence check for arbitrary
+    callers: an unauthenticated route must not expose it.
     """
     email_norm = _normalize(email)
     if not _EMAIL_RE.match(email_norm):
