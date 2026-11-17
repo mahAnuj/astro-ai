@@ -347,6 +347,22 @@ templates.env.globals["google_client_id"] = os.environ.get("GOOGLE_CLIENT_ID", "
 templates.env.globals["load_current_user"] = load_user
 
 
+def _has_chart(request: Request) -> bool:
+    """Template helper — does this visitor have a saved chart? (#1177)
+
+    EXACTLY the predicate the chart-gated routes redirect on (`/today`,
+    `/monthly`, `/yearly`, `/ask` each 303 to `/?needs_chart=<key>` when
+    `load_collection(request).active is None`), read from the same signed session
+    cookie. No GCS read and no network, so it is safe in the nav of every page.
+    _nav.html and _tab_bar.html use it to point a no-chart visitor straight at the
+    page those redirects land on, instead of at a link that answers 303.
+    """
+    return load_collection(request).active is not None
+
+
+templates.env.globals["has_chart"] = _has_chart
+
+
 def _is_subscribed(email: str | None) -> bool:
     """Template helper — does this email have an active Rashifal subscription?
 
