@@ -143,6 +143,12 @@ def _expressions(chunk: str) -> list[str]:
     """Jinja expressions inside `chunk`; a block tag (`{% if %}`) counts as one,
     spelt with its braces, because control flow inside an argument list could
     include data conditionally and is never in the allow-list."""
+    if chunk.startswith("analytics_event("):
+        # #1067: the declared form. The call IS one Jinja expression, so its
+        # arguments are the dict VALUES: `{'category': current_category, ...}`.
+        # A string literal is not an expression; a bare name or attribute path is.
+        return [v.strip() for v in re.findall(r"['\"]\w+['\"]\s*:\s*([^,}]+)", chunk)
+                if not re.fullmatch(r"\s*['\"][^'\"]*['\"]\s*", v)]
     return [m.group(1) if m.group(1) is not None else m.group(0) for m in _JINJA.finditer(chunk)]
 
 
@@ -185,5 +191,13 @@ def test_the_static_scan_reads_a_planted_leak():
     exprs = [x for call in pii.analytics_call_args(planted) for x in _expressions(call)]
     assert exprs == ["details.name", "lang"]
     assert "details.name" not in ALLOWED_CALL_EXPRESSIONS
+    declared = "{{ analytics_event('probe', {'who': details.name, 'lang': lang, 'k': 'lit'}) }}"
+    exprs = [x for call in pii.analytics_call_args(declared) for x in _expressions(call)]
+    assert exprs == ["details.name", "lang"], exprs
+    assert "details.name" not in ALLOWED_CALL_EXPRESSIONS
+    macro_def = "{% macro analytics_event(name, params) -%}<div data-analytics-event=\"{{ name }}\"></div>"
+    assert pii.analytics_call_args(macro_def) == [], "the macro definition is not a call"
+    rendered = '<div hidden data-analytics-event="x" data-analytics-params=\'{&#34;who&#34;:&#34;Asha&#34;}\'></div>'
+    assert "Asha" in "".join(pii.analytics_call_args(rendered)), "rendered payload not scanned"
     block = "{% if answer %}x{% endif %}"
     assert _expressions(block)[0] not in ALLOWED_CALL_EXPRESSIONS
