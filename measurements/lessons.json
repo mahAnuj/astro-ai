@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-16T11:21:22Z",
+ "generated_at": "2026-11-16T23:59:41Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -885,6 +885,24 @@
     "themes": [
      "regression"
     ]
+   },
+   {
+    "number": 1086,
+    "at": "2026-11-16T18:41:39Z",
+    "url": "https://github.com/mahAnuj/astro-ai/issues/1086#issuecomment-6925628605",
+    "summary": "QA: FAIL \u2014 verified at `dc9e5eaf5ba99a3c8fe804b69550bff1add4965b`  qa:independent round. FAIL because one of the two sources the Rahu/Ketu CONTESTED note rests on could not be checked. The Saturn half and the Rao half are verified. I did not treat the earlier `qa:in-cycle` PASS as evidence.  **Head ",
+    "themes": [
+     "grounding"
+    ]
+   },
+   {
+    "number": 1132,
+    "at": "2026-11-16T18:41:35Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1132#issuecomment-6925626901",
+    "summary": "QA: FAIL \u2014 verified at `dc9e5eaf5ba99a3c8fe804b69550bff1add4965b`  qa:independent round. FAIL because one of the two sources the Rahu/Ketu CONTESTED note rests on could not be checked. The Saturn half and the Rao half are verified. I did not treat the earlier `qa:in-cycle` PASS as evidence.  **Head ",
+    "themes": [
+     "grounding"
+    ]
    }
   ],
   "reverts": [],
@@ -931,7 +949,7 @@
   ]
  },
  "error_themes": {
-  "grounding": 25,
+  "grounding": 27,
   "regression": 23,
   "tests": 21,
   "copy": 20,
@@ -994,13 +1012,6 @@
    "url": "https://github.com/mahAnuj/astro-ai/issues/373#issuecomment-6353962512"
   },
   {
-   "number": 374,
-   "verdict": "UNSCOREABLE",
-   "headline": "UNSCORED (not determinable this run)",
-   "at": "2026-10-17T22:53:28Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/374#issuecomment-6242618584"
-  },
-  {
    "number": 396,
    "verdict": "PASS",
    "headline": "PASS on the first clause only",
@@ -1013,13 +1024,6 @@
    "headline": "PASS on the countable clause; the behavioural clause was not checked",
    "at": "2026-10-22T23:55:46Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/397#issuecomment-6353962033"
-  },
-  {
-   "number": 400,
-   "verdict": "HIT",
-   "headline": "HIT (partial read) \u2014 ceiling gate present and green",
-   "at": "2026-10-17T22:53:26Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/400#issuecomment-6242618012"
   },
   {
    "number": 426,
@@ -1129,10 +1133,9 @@
  ],
  "outcome_counts": {
   "PASS": 5,
-  "OTHER": 1,
   "MISS": 1,
-  "UNSCOREABLE": 7,
-  "HIT": 1,
+  "OTHER": 1,
+  "UNSCOREABLE": 6,
   "PARTIAL": 1,
   "PENDING": 9
  },

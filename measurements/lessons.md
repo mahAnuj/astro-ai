@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-16T11:21:22Z)
+# Lessons — last 30 days (generated 2026-11-16T23:59:41Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -11,7 +11,7 @@ deterministic, no LLM.
 ## Repeated error themes: act on these
 
 - **copy** — 20 QA FAIL(s): #536, #544, #550, #564, #649, #654, #675, #691, #815, #833, #841, #884, #960, #1000, #1077
-- **grounding** — 25 QA FAIL(s): #524, #536, #635, #701, #706, #713, #747, #772, #815, #833, #841, #845, #859, #875, #1011, #1027, #1057, #1058, #1063, #1077
+- **grounding** — 27 QA FAIL(s): #524, #536, #635, #701, #706, #713, #747, #772, #815, #833, #841, #845, #859, #875, #1011, #1027, #1057, #1058, #1063, #1077, #1086, #1132
 - **i18n** — 9 QA FAIL(s): #448, #524, #564, #737, #815, #875, #1057
 - **performance** — 8 QA FAIL(s): #524, #536, #565, #675, #747, #815
 - **regression** — 23 QA FAIL(s): #536, #544, #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747, #815, #841, #884, #1000, #1002, #1128
@@ -21,7 +21,7 @@ deterministic, no LLM.
 
 ## Our errors
 
-- QA FAIL verdicts: 97
+- QA FAIL verdicts: 99
 - reverted commits on main: 0
 - failed verify-production runs: 6
 - ops findings now: 1
@@ -29,17 +29,15 @@ deterministic, no LLM.
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 1, MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 9, UNSCOREABLE 7
+counts: MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 9, UNSCOREABLE 6
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: OTHER — BAR MET, not attributable to the CTA
 - #311: MISS — MISS
 - #329: UNSCOREABLE — UNSCOREABLE at this traffic: 3 vs 10
 - #338: PASS — PASS
 - #373: PARTIAL — PARTIAL
-- #374: UNSCOREABLE — UNSCORED (not determinable this run)
 - #396: PASS — PASS on the first clause only
 - #397: PASS — PASS on the countable clause; the behavioural clause was not checked
-- #400: HIT — HIT (partial read) — ceiling gate present and green
 - #426: PENDING — pending — scoreable from 2026-12-03
 - #493: UNSCOREABLE — UNSCORED — the measured event has not happened yet
 - #508: PENDING — pending — scoreable from 2026-12-04
