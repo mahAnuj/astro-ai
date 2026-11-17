@@ -174,7 +174,7 @@ This is the most misunderstood part of the system. Layers, outermost first:
 
 | layer | scope | survives | used for |
 |---|---|---|---|
-| `hot_cache` | in-process, TTL + stale-while-revalidate | no | homepage trust bar |
+| `hot_cache` | in-process, TTL + stale-while-revalidate | no | homepage trust bar; the sign-out revocation map (`session:revoked`, 300 s) |
 | `lru_cache` (stdlib) | in-process, per-function | no | geocode, lunar dates, sankranti |
 | `_PANCHANG_CACHE`, `_PANCHANG_STRIP_CACHE` | in-process dicts | no | panchang by (date, coarse lat/lon) and by (date, city) |
 | `daily_cache` | **file** on the instance | no | per-rashi readings, keyed `(namespace, slug-lang, date)` |
@@ -184,6 +184,29 @@ This is the most misunderstood part of the system. Layers, outermost first:
 **Every layer except GCS is per-instance and dies with the container.** `minScale=0`
 means containers come and go constantly. If two requests must share a result, GCS is the
 only thing that gets them there — this is why `/admin/warm-rashifal` works at all.
+
+### The `__session` cookie is bounded and revocable on the server (#1106)
+
+`session._decode` is the one place a cookie is parsed. Writes sign with
+`URLSafeTimedSerializer` under the salt `birth-details-v2` and every write re-stamps
+it; a read never writes (privacy.html promises a read-only visit does not extend the
+cookie). A cookie older than `COOKIE_MAX_AGE` (365 d, the same constant as the
+browser's Max-Age) plus 60 s of clock skew loads as signed out. Age is compared by
+hand, not `loads(max_age=)`, because itsdangerous treats a negative age as expired and
+two Cloud Run instances' clocks differ. Cookies written before this carry no
+timestamp and are read by the old serializer until `LEGACY_COOKIE_CUTOFF`
+(2027-11-17 UTC, a literal), then as `{}`.
+
+Identity has its own bounds, both read off `user.since`: 90 days fixed (`SIGNIN_MAX_AGE`),
+and `revocation.revoked_before(sub)`, written by `/auth/logout` into the small blob
+`session_revocations.json` and read through `hot_cache.get_or_refresh` (0 GCS reads when
+warm; at most one read per 300 s per instance; never blocks the loop). Sign-out
+therefore ends every cookie that user holds that was issued before it. Another
+instance learns of it within about one TTL. **It fails open**: `storage.get` cannot
+tell "missing" from "unavailable", so failing closed would sign everyone out on a GCS
+blip. `POST /auth/google` refuses a cross-site post through `origin_guard`
+(`Sec-Fetch-Site` / `Origin`; not a `g_csrf_token`, which Google never sets in the
+callback mode `base.html` uses).
 
 ### Things that will bite you
 

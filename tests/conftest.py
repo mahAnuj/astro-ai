@@ -104,6 +104,31 @@ def _clear_durable_miss_cache():
 
 
 @pytest.fixture(autouse=True)
+def _clear_session_revocations():
+    """Empty the sign-out revocation state around EVERY test (#1106).
+
+    `revocation._LOCAL` is process-global and a revocation voids every cookie
+    whose `since` is at or before it. A test that signed a user out would
+    otherwise void the cookie of any later test that reuses the same `sub` with
+    an older `since`, and the failure would depend on test order.
+    """
+    from astro_ai import hot_cache, revocation
+
+    def _empty():
+        revocation._LOCAL.clear()
+        # Only this key: hot_cache.clear() would also drop every other test's
+        # warmed entries, which some of them rely on.
+        with hot_cache._LOCK:
+            hot_cache._CACHE.pop(revocation.CACHE_KEY, None)
+            hot_cache._RETRY_AFTER.pop(revocation.CACHE_KEY, None)
+            hot_cache._INFLIGHT.discard(revocation.CACHE_KEY)
+
+    _empty()
+    yield
+    _empty()
+
+
+@pytest.fixture(autouse=True)
 def _token_bucket_off_and_empty(monkeypatch):
     """Switch the per-model token bucket OFF and empty its registry, every test.
 

@@ -9,6 +9,9 @@ The cookie holds a combined payload:
 
 `itsdangerous` HMAC-signs the JSON payload with `ASTRO_AI_COOKIE_SECRET`;
 any tampering invalidates the signature and we treat the visitor as fresh.
+The signature is timed (#1106): every write stamps it, and the server refuses a
+cookie older than COOKIE_MAX_AGE, so a copied cookie does not outlive the
+browser's own Max-Age. See `_decode`.
 
 Capped at MAX_CHARTS so the cookie can't grow unbounded — at ~150 bytes per
 SavedChart, 10 fits comfortably inside the 4 KB browser cookie limit.
@@ -29,16 +32,27 @@ import os
 import secrets
 import time
 from dataclasses import asdict, dataclass, replace
+from datetime import datetime, timezone
 from typing import Final
 
 from fastapi import Request, Response
-from itsdangerous import BadSignature, URLSafeSerializer
+from itsdangerous import BadData, BadSignature, URLSafeSerializer, URLSafeTimedSerializer
 
 from astro_ai.llm import BirthDetails
 
 # Must be exactly "__session" — see module docstring for why.
 COOKIE_NAME: Final[str] = "__session"
 COOKIE_MAX_AGE: Final[int] = 60 * 60 * 24 * 365  # 1 year
+# One constant drives both the browser's Max-Age and the server-side bound in
+# `_decode`, so the two cannot drift apart.
+CLOCK_SKEW_S: Final[int] = 60  # Cloud Run instances' clocks are not identical
+SIGNIN_MAX_AGE: Final[int] = 60 * 60 * 24 * 90  # 90 days, FIXED from `user.since`
+# Cookies written before #1106 carry no timestamp, so their age is unknowable and
+# a relative bound would honour them forever. They are accepted until this
+# instant: 2027-11-17 00:00:00 UTC = the merge date + 365 days, the longest a
+# browser can still hold a cookie written the day this shipped (Max-Age is 1 year
+# and every write re-stamps it). After it, a legacy cookie is `{}`.
+LEGACY_COOKIE_CUTOFF: Final[int] = 1826409600
 MAX_CHARTS: Final[int] = 10
 DEFAULT_LANG: Final[str] = "en"
 SUPPORTED_LANGS: Final[frozenset[str]] = frozenset({"en", "hi"})
@@ -154,8 +168,51 @@ def cookie_secret() -> str:
     return os.environ.get("ASTRO_AI_COOKIE_SECRET") or _DEV_SECRET
 
 
-def _serializer() -> URLSafeSerializer:
+def _serializer() -> URLSafeTimedSerializer:
+    """The serializer every WRITE uses. A new salt, not the old one on a timed
+    class: a v2 token fed to the legacy untimed serializer raises `BadPayload`,
+    which is not a `BadSignature`, and the old `except BadSignature` turned that
+    into a 500 (#1106)."""
+    return URLSafeTimedSerializer(cookie_secret(), salt="birth-details-v2")
+
+
+def _legacy_serializer() -> URLSafeSerializer:
     return URLSafeSerializer(cookie_secret(), salt="birth-details")
+
+
+def _decode(raw: str) -> dict:
+    """Verify and decode a `__session` value, or `{}`. The only place a cookie
+    is parsed: `_load_session` and `_pending_session` both come here, and a
+    second parse site would silently disagree with the first about what a valid
+    cookie is.
+
+    Age is compared by hand, NOT with `loads(max_age=)`: itsdangerous treats a
+    negative age (stamp ahead of this instance's clock) as expired, so clock skew
+    between two Cloud Run instances would sign people out. A stamp up to
+    CLOCK_SKEW_S in the future is accepted.
+
+    READS NEVER WRITE. A legacy cookie is not upgraded here, because privacy.html
+    promises a visit that only reads does not extend the cookie; it is re-signed
+    by the next ordinary write.
+    """
+    try:
+        data, stamp = _serializer().loads(raw, return_timestamp=True)
+    except BadSignature:
+        data = None
+    except BadData:
+        return {}
+    else:
+        age = time.time() - stamp.timestamp()
+        if age > COOKIE_MAX_AGE + CLOCK_SKEW_S or age < -CLOCK_SKEW_S:
+            return {}
+        return data if isinstance(data, dict) else {}
+    if time.time() >= LEGACY_COOKIE_CUTOFF:
+        return {}
+    try:
+        data = _legacy_serializer().loads(raw)
+    except BadData:  # BadPayload is not a BadSignature
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 def _load_session(request: Request) -> dict:
@@ -164,11 +221,7 @@ def _load_session(request: Request) -> dict:
     raw = request.cookies.get(COOKIE_NAME)
     if raw is None:
         return {}
-    try:
-        data = _serializer().loads(raw)
-    except BadSignature:
-        return {}
-    return data if isinstance(data, dict) else {}
+    return _decode(raw)
 
 
 def _write_session(response: Response, data: dict) -> None:
@@ -231,11 +284,7 @@ def _pending_session(request: Request, response: Response) -> dict:
     for key, value in response.raw_headers:
         if key == b"set-cookie" and value.startswith(prefix):
             raw = value[len(prefix):].split(b";", 1)[0].decode("latin-1")
-            try:
-                data = _serializer().loads(raw)
-            except BadSignature:
-                break
-            return data if isinstance(data, dict) else {}
+            return _decode(raw)
     return _load_session(request)
 
 
@@ -414,13 +463,31 @@ class SessionUser:
     since: str     # ISO timestamp of when this session was authenticated
 
 
+def _since_epoch(since: str) -> int | None:
+    """`user.since` as epoch seconds, or None when empty/unparsable. A naive
+    stamp (a date only) is read as UTC."""
+    try:
+        parsed = datetime.fromisoformat(since)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return int(parsed.timestamp())
+
+
 def load_user(request: Request) -> SessionUser | None:
-    """Return the signed-in user for this request, or None if not signed in."""
+    """Return the signed-in user for this request, or None if not signed in.
+
+    Two server-side bounds beyond the cookie signature (#1106), both read off
+    `since`, which every signed-in cookie already carries (legacy included):
+    SIGNIN_MAX_AGE, fixed and not sliding, and a per-user `revoked_before`
+    written by sign-out. Both treat an unusable `since` as signed out.
+    """
     data = _load_session(request).get("user")
     if not isinstance(data, dict):
         return None
     try:
-        return SessionUser(
+        user = SessionUser(
             email=str(data["email"]),
             name=str(data.get("name", "")),
             sub=str(data["sub"]),
@@ -428,6 +495,16 @@ def load_user(request: Request) -> SessionUser | None:
         )
     except (KeyError, TypeError, ValueError):
         return None
+    issued = _since_epoch(user.since)
+    if issued is None or time.time() - issued > SIGNIN_MAX_AGE:
+        return None
+    # Imported here: revocation -> storage/hot_cache, and `users` imports this
+    # module, so a module-level import would be a cycle waiting for a refactor.
+    from astro_ai import revocation
+
+    if issued <= revocation.revoked_before(user.sub):
+        return None
+    return user
 
 
 def save_user(response: Response, request: Request, user: SessionUser) -> None:

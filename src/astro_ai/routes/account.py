@@ -19,8 +19,10 @@ import os
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from starlette.concurrency import run_in_threadpool
 
-from astro_ai import notify, users
+from astro_ai import notify, revocation, users
+from astro_ai.origin_guard import same_origin_or_403
 from astro_ai.routes.deps import _lang, _safe_redirect_target, templates
 from astro_ai.routes.llm_support import _fire_error_alert
 from astro_ai.session import (
@@ -84,7 +86,13 @@ async def auth_google(
     We validate it against Google's public keys with the expected audience
     (our GOOGLE_CLIENT_ID). On success we store {email, name, sub, since}
     in the session cookie. The client then reloads / navigates as needed.
+
+    The origin check comes first, before the credential is read or Google is
+    contacted: see `origin_guard` for what it admits and why not g_csrf_token.
     """
+    refused = same_origin_or_403(request)
+    if refused is not None:
+        return refused
     from datetime import datetime, timezone
     from google.oauth2 import id_token as google_id_token
     from google.auth.transport import requests as google_requests
@@ -164,8 +172,16 @@ async def auth_google(
 
 @router.post("/auth/logout")
 async def auth_logout(request: Request) -> JSONResponse:
-    """Sign the user out — clears the user portion of the session cookie."""
+    """Sign the user out — clears the user portion of the session cookie, and
+    revokes every cookie this user holds that was issued up to now (#1106)."""
     response = JSONResponse({"ok": True})
+    user = load_user(request)
+    if user is not None:
+        try:
+            # In a thread: update_json is blocking GCS I/O (#144).
+            await run_in_threadpool(revocation.revoke, user.sub)
+        except Exception:  # noqa: BLE001 - the device's own cookie must still clear
+            log.exception("revocation failed for %s", user.email)
     clear_user(response, request)
     return response
 
