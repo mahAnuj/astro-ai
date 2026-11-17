@@ -150,7 +150,7 @@ def test_the_page_shows_the_gulika_card_on_an_ordinary_day(client, monkeypatch):
     assert window in html, f"the Gulika window {window} is not on the page"
     # The card sits beside Rahu Kaal's, not somewhere that survives the polar guard.
     assert html.index("Rahu Kaal (avoid)") < html.index("Gulika Kaal (avoid)") < html.index(
-        "Abhijit Muhurat (best)")
+        "Abhijit Muhurat (midday)")
     # The subtitle states the inference and attributes no prohibition to Rao.
     assert "inferred from Rao and confirmed against a published almanac" in html
     assert "some almanacs differ" not in html

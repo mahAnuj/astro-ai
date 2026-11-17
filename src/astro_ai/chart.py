@@ -3979,8 +3979,9 @@ class DailyPanchang:
     windows derived from them — differ by lat/lon).
 
     All time fields are tz-aware local datetimes at the natal birthplace.
-    Rahu Kaal is the inauspicious window; Abhijit Muhurta is the most
-    auspicious window (centered on solar noon).
+    Rahu Kaal is the inauspicious window; Abhijit Muhurta is the midday
+    muhurta (centred on solar noon). No source we hold ranks it as the most
+    auspicious window (#1139).
     """
 
     weekday: str              # "Friday" — universal
@@ -4372,7 +4373,7 @@ def format_panchang_for_prompt(panchang: DailyPanchang) -> str:
         f"- Sunset: {panchang.sunset.strftime('%H:%M')} local\n"
         f"- Rahu Kaal (inauspicious — avoid starting anything new, signing, big decisions): "
         f"{panchang.rahu_kaal_start.strftime('%H:%M')}–{panchang.rahu_kaal_end.strftime('%H:%M')} local\n"
-        f"- Abhijit Muhurta (most auspicious — favourable for important actions): "
+        f"- Abhijit Muhurta (the midday muhurta, centred on solar noon): "
         f"{panchang.abhijit_start.strftime('%H:%M')}–{panchang.abhijit_end.strftime('%H:%M')} local"
     )
 

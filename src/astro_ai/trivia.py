@@ -80,8 +80,8 @@ DID_YOU_KNOW: list[dict[str, str]] = [
         "hi": "राहु काल — दैनिक लगभग 90 मिनट — नये कार्य आरम्भ करने के लिए अशुभ माना जाता है। इसका समय सूर्योदय और वार के अनुसार बदलता है।",
     },
     {
-        "en": "Abhijit Muhurta is the most auspicious 48-minute window of the day, centred on local solar noon. Good for signing, starting, deciding.",
-        "hi": "अभिजित मुहूर्त दिन की सबसे शुभ 48 मिनट की अवधि है, जो स्थानीय सौर मध्याह्न पर केंद्रित होती है। हस्ताक्षर, आरम्भ, निर्णय के लिए श्रेष्ठ।",
+        "en": "Abhijit Muhurta is the midday muhurta: a fifteenth of the daylight (about 48 minutes on a 12-hour day), centred on local solar noon.",
+        "hi": "अभिजित मुहूर्त मध्याह्न का मुहूर्त है: दिन के उजाले का पंद्रहवाँ भाग (12 घंटे के दिन में लगभग 48 मिनट), जो स्थानीय सौर मध्याह्न पर केंद्रित होता है।",
     },
     {
         "en": "Vedic astrology uses the sidereal zodiac (fixed to stars), while Western uses tropical (fixed to seasons). The difference is ~24° — why your Western 'Sun sign' is often one rashi later.",
