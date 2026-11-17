@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-17T13:00:16Z",
+ "generated_at": "2026-11-17T17:20:58Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -878,6 +878,16 @@
     ]
    },
    {
+    "number": 1105,
+    "at": "2026-11-17T13:56:36Z",
+    "url": "https://github.com/mahAnuj/astro-ai/issues/1105#issuecomment-6950113387",
+    "summary": "QA: FAIL \u2014 verified at 17676aa97e176292aaf17f8f8f68b8987eabbfe2  Independent round (qa:independent). Head SHA re-checked equal before and after. `resolve_provenance.py 1105` exit 0 (TRUSTED), so no provenance block. The FAIL is one defect, and it destroys data.  ## The defect: after an account is de",
+    "themes": [
+     "tokens",
+     "tests"
+    ]
+   },
+   {
     "number": 1128,
     "at": "2026-11-16T07:21:46Z",
     "url": "https://github.com/mahAnuj/astro-ai/pull/1128#issuecomment-6910109917",
@@ -965,10 +975,25 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/1174#issuecomment-6947762185",
     "summary": "QA: FAIL at 4dd20744dd1c77dc6a790389a141228b09032017 (independent, cold read; head confirmed with `gh pr view`)  The workflow change itself is correct. The guard test has one hole that matches the exact risk this round was asked to check, so I am failing it for a one-test fix.  **What passed (all ex",
     "themes": []
+   },
+   {
+    "number": 1173,
+    "at": "2026-11-17T13:56:35Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1173#issuecomment-6950112864",
+    "summary": "QA: FAIL \u2014 verified at 17676aa97e176292aaf17f8f8f68b8987eabbfe2  Independent round (qa:independent). Head SHA re-checked equal before and after. `resolve_provenance.py 1105` exit 0 (TRUSTED), so no provenance block. The FAIL is one defect, and it destroys data.  ## The defect: after an account is de",
+    "themes": [
+     "tokens",
+     "tests"
+    ]
    }
   ],
   "reverts": [],
   "verify_production_failed": [
+   {
+    "run": 44092951700,
+    "at": "2026-11-17T13:27:45Z",
+    "sha": "6403af1"
+   },
    {
     "run": 44044451462,
     "at": "2026-11-17T08:10:17Z",
@@ -1009,10 +1034,10 @@
  },
  "error_themes": {
   "grounding": 31,
+  "tests": 26,
   "regression": 25,
-  "tests": 24,
+  "tokens": 20,
   "copy": 20,
-  "tokens": 18,
   "security": 15,
   "i18n": 10,
   "performance": 8

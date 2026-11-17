@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-11-17T12:58:43Z",
+  "generated_at": "2026-11-17T17:19:02Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 130,
+  "open": 127,
   "with_ask": 44,
   "by_area": {
-    "UNCLASSIFIED": 47,
+    "UNCLASSIFIED": 46,
     "INFRA": 14,
     "REDESIGN": 10,
-    "SEO": 8,
+    "SEO": 7,
     "OPS": 7,
     "FEATURE": 7,
     "CORPUS": 4,
@@ -24,7 +24,6 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "KNOWLEDGE": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
     "UI": 1,
@@ -33,14 +32,14 @@
   },
   "by_type": {
     "untyped": 35,
-    "bug": 31,
-    "enhancement": 29,
-    "chore": 19,
+    "bug": 30,
+    "enhancement": 28,
+    "chore": 18,
     "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 91,
+    "unset": 88,
     "medium": 22,
     "high": 16,
     "low": 1
@@ -74,10 +73,12 @@
       "labels": [
         "bug",
         "seo",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-17T12:12:58Z",
-      "updated": "2026-11-17T12:12:58Z",
+      "updated": "2026-11-17T17:18:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -95,26 +96,6 @@
       ],
       "created": "2026-11-17T12:12:56Z",
       "updated": "2026-11-17T12:12:56Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1175,
-      "title": "seo: tool pages link specific articles and every article has an in-body inbound link (#1107 criteria 1-2)",
-      "ask": "",
-      "area": "SEO",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "seo",
-        "category:technical",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-17T12:12:55Z",
-      "updated": "2026-11-17T12:52:50Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -256,10 +237,12 @@
         "priority:high",
         "effort:m",
         "risk:medium",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T20:41:18Z",
-      "updated": "2026-11-17T07:05:40Z",
+      "updated": "2026-11-17T14:22:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -388,25 +371,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1060,
-      "title": "Namkaran rules: Dwadashi credited though Raman rejects it, Dhanishtha/Satabhisha missing, and the '11th day per Grihya Sutras' copy has no source (#1027)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-15T09:04:10Z",
-      "updated": "2026-11-16T07:20:40Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1056,
       "title": "learn muhurat articles (vivah-muhurat-2027, griha-pravesh-muhurat-2026-2027) still call unsourced rules classical and credit Grihya Sutra / Padma Purana",
       "ask": "",
@@ -421,24 +385,6 @@
       ],
       "created": "2026-11-15T07:17:29Z",
       "updated": "2026-11-15T10:39:19Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1041,
-      "title": "knowledge: vedic_reference.md 29.9 and the 29 closing note still say the nitya-yoga blocker is 'narrower than its source' (stale after #1023)",
-      "ask": "",
-      "area": "KNOWLEDGE",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "chore",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-11-14T23:30:53Z",
-      "updated": "2026-11-17T12:58:11Z",
       "blocked": false,
       "needs_evidence": false
     },
