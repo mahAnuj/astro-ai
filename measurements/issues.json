@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-17T02:56:14Z",
+  "generated_at": "2026-11-17T03:29:49Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 132,
+  "open": 131,
   "with_ask": 46,
   "by_area": {
-    "UNCLASSIFIED": 48,
+    "UNCLASSIFIED": 47,
     "INFRA": 14,
     "REDESIGN": 10,
     "OPS": 7,
@@ -16,15 +16,16 @@
     "RETRIEVAL": 3,
     "CHORE": 3,
     "SECURITY": 2,
-    "LEARN": 2,
     "MEASURE": 2,
     "MATCHING": 2,
     "NUMEROLOGY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "MAIN-RED": 1,
     "TESTS": 1,
     "PRIVACY": 1,
+    "LEARN": 1,
     "KNOWLEDGE": 1,
     "MUHURAT": 1,
     "AGENT-MEASURE": 1,
@@ -36,19 +37,34 @@
   },
   "by_type": {
     "untyped": 35,
-    "bug": 32,
-    "enhancement": 29,
+    "bug": 33,
+    "enhancement": 28,
     "chore": 19,
-    "correctness": 12,
+    "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 96,
+    "unset": 94,
     "medium": 22,
-    "high": 14
+    "high": 15
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1146,
+      "title": "[main-red] pr-gates did not pass on main at 813c2e1",
+      "ask": "",
+      "area": "MAIN-RED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-17T03:24:15Z",
+      "updated": "2026-11-17T03:24:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1141,
       "title": "tests: test_ops_day_picker freezes TODAY at import; gates go red across UTC midnight",
@@ -65,38 +81,21 @@
       "needs_evidence": false
     },
     {
-      "number": 1139,
-      "title": "Abhijit is called 'best' / 'most auspicious' on /panchang, today, trivia and the rashifal prompt; no knowledge/ line says so (follow-up to #1025)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-16T23:57:18Z",
-      "updated": "2026-11-17T02:55:30Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1133,
       "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) — umbrella",
       "ask": "",
       "area": "OPS",
       "type": "design",
-      "priority": "unset",
+      "priority": "high",
       "labels": [
         "enhancement",
         "category:technical",
+        "priority:high",
         "ui",
         "design-proposal"
       ],
       "created": "2026-11-16T17:33:22Z",
-      "updated": "2026-11-17T01:49:33Z",
+      "updated": "2026-11-17T03:27:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -198,10 +197,10 @@
         "chore",
         "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-11-15T10:27:01Z",
-      "updated": "2026-11-17T00:33:17Z",
+      "updated": "2026-11-17T03:05:31Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -260,22 +259,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1072,
-      "title": "learn: answer 'which mahadasha is best for career' (33 impr, pos 9.2-9.8) as a section of vimshottari-dasha-explained, not a new article",
-      "ask": "",
-      "area": "LEARN",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "content"
-      ],
-      "created": "2026-11-15T10:19:14Z",
-      "updated": "2026-11-15T10:19:14Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1071,
       "title": "learn: write gochar-2027-planetary-transits before January — the 2026 sibling has 1,627 impressions at position 5.7 (swisseph-computed dates)",
       "ask": "",
@@ -284,10 +267,11 @@
       "priority": "unset",
       "labels": [
         "enhancement",
-        "content"
+        "content",
+        "provenance:trusted"
       ],
       "created": "2026-11-15T10:19:13Z",
-      "updated": "2026-11-15T10:19:13Z",
+      "updated": "2026-11-17T03:19:55Z",
       "blocked": false,
       "needs_evidence": false
     },
