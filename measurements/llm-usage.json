@@ -1,46 +1,66 @@
 {
- "generated_at": "2026-11-16T00:40:39Z",
+ "generated_at": "2026-11-17T03:22:21Z",
  "days": 7,
- "total_calls": 147,
- "cache_hits": 119,
- "cache_misses": 28,
- "hit_rate_pct": 80,
- "total_input_tokens": 323035,
- "total_output_tokens": 41388,
- "peak_day_tokens": 13804,
- "peak_day": "2026-11-10",
- "peak_day_measured_tokens": 141908,
- "peak_day_measured": "2026-11-10",
+ "total_calls": 153,
+ "cache_hits": 124,
+ "cache_misses": 29,
+ "hit_rate_pct": 81,
+ "total_input_tokens": 218160,
+ "total_output_tokens": 32187,
+ "peak_day_tokens": 12796,
+ "peak_day": "2026-11-11",
+ "peak_day_measured_tokens": 139799,
+ "peak_day_measured": "2026-11-11",
  "by_route": [
   {
    "route": "natal",
    "calls": 107,
-   "hits": 99,
-   "hit_rate_pct": 92,
-   "input_tokens": 53478,
-   "output_tokens": 9499,
-   "measured_calls": 8,
-   "tokens_per_call": 6684
+   "hits": 98,
+   "hit_rate_pct": 91,
+   "input_tokens": 59687,
+   "output_tokens": 10449,
+   "measured_calls": 9,
+   "tokens_per_call": 6631
   },
   {
    "route": "rashifal",
-   "calls": 24,
-   "hits": 20,
-   "hit_rate_pct": 83,
-   "input_tokens": 234684,
-   "output_tokens": 23812,
-   "measured_calls": 53,
-   "tokens_per_call": 4428
+   "calls": 28,
+   "hits": 26,
+   "hit_rate_pct": 92,
+   "input_tokens": 119593,
+   "output_tokens": 12209,
+   "measured_calls": 27,
+   "tokens_per_call": 4429
   },
   {
    "route": "ask",
    "calls": 13,
    "hits": 0,
    "hit_rate_pct": 0,
-   "input_tokens": 29464,
-   "output_tokens": 3963,
+   "input_tokens": 29515,
+   "output_tokens": 4043,
    "measured_calls": 13,
-   "tokens_per_call": 2266
+   "tokens_per_call": 2270
+  },
+  {
+   "route": "monthly",
+   "calls": 2,
+   "hits": 0,
+   "hit_rate_pct": 0,
+   "input_tokens": 4218,
+   "output_tokens": 1356,
+   "measured_calls": 2,
+   "tokens_per_call": 2109
+  },
+  {
+   "route": "today",
+   "calls": 1,
+   "hits": 0,
+   "hit_rate_pct": 0,
+   "input_tokens": 1881,
+   "output_tokens": 399,
+   "measured_calls": 1,
+   "tokens_per_call": 1881
   },
   {
    "route": "dasha_deep_dive",
@@ -51,16 +71,6 @@
    "output_tokens": 1413,
    "measured_calls": 1,
    "tokens_per_call": 1492
-  },
-  {
-   "route": "monthly",
-   "calls": 1,
-   "hits": 0,
-   "hit_rate_pct": 0,
-   "input_tokens": 2143,
-   "output_tokens": 673,
-   "measured_calls": 1,
-   "tokens_per_call": 2143
   },
   {
    "route": "matching",

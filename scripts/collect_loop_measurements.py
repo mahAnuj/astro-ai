@@ -69,6 +69,20 @@ not rows, when asking how many PRs landed.
 ROWS ARE FROZEN once settled. Only a row whose PR is still `pr open` (or whose
 PR lookup failed) is re-read, and then only the PR, never the log.
 
+CLAUDE TOKENS PER RUN (2026-11-17, owner: "Measure tokens per cycle")
+--------------------------------------------------------------------
+Read from the SAME job logs the receipt comes from -- no extra request per run.
+`parse_usage` states the rule; in short, the session total is the
+`model_usage_since_last_result` of claude-code-action's final `"type": "result"`
+object, summed over every result object in the run. Rows carry `turns`,
+`tokens_input`, `tokens_output`, `tokens_cache_read`, `tokens_cache_write`,
+`cost_list_usd` and `model`, each ABSENT (never 0) when the log has no readable
+result. `cost_list_usd` is list price: the Max subscription pays a flat fee, so it
+is a weight for comparing runs, not money spent; the weekly quota is what binds.
+The top-level `tokens` block (`token_summary`) holds the window totals, medians
+per outcome and tokens per merged PR. Rows settled before this existed are
+backfilled ONCE, on the first collection whose input has no `tokens` block.
+
 ENDPOINTS READ, AND THE GITHUB_TOKEN SCOPE EACH NEEDS
 -----------------------------------------------------
 `verify_workflows.py` cannot see `gh` calls made inside a script, so this table
@@ -132,6 +146,11 @@ LOOP_FIELDS = ("run", "workflow", "date", "started", "trigger", "conclusion", "m
 # when the loop did all of it; None when it could not be read, or the row did not ship.
 # Without it the "shipped" count credited the loop with PRs a human finished.
 LOOP_IDENTITIES = frozenset({"github-actions[bot]", "claude[bot]", "shubhagya-publisher[bot]"})
+# OPTIONAL per-row fields (2026-11-17): present only when the run's log held a
+# readable result object. `parse_usage` writes them; an old row without them is valid.
+USAGE_FIELDS = ("turns", "tokens_input", "tokens_output", "tokens_cache_read",
+                "tokens_cache_write", "cost_list_usd", "model")
+TOKEN_FIELDS = ("tokens_input", "tokens_output", "tokens_cache_read", "tokens_cache_write")
 # The action step's env listing prints the RESOLVED prompt (`PROMPT: /agent-cycle
 # --qa-pr 679`), never the template, so this cannot match a step's echoed source.
 PROMPT = re.compile(r"\bPROMPT: /agent-cycle(?: (--qa-pr |--fix-pr )?(\d+))?[ \t]*$", re.M)
@@ -220,6 +239,21 @@ def validate_loop(doc) -> list[str]:
         # `owner_helped` arrived 2026-11-09; older rows read as not-yet-known.
         if "owner_helped" not in r:
             r = {**r, "owner_helped": None}
+        usage = {k: r[k] for k in USAGE_FIELDS if k in r}
+        r = {k: v for k, v in r.items() if k not in USAGE_FIELDS}
+        if usage:
+            # All of a reading or none of it: a row with output tokens but no
+            # cache reads would read as a cheap run rather than a half-parsed one.
+            missing = [k for k in USAGE_FIELDS if k != "turns" and k not in usage]
+            if missing:
+                errs.append(f"{where} usage is partial, missing {missing}")
+            if any(not _is_int(usage[k]) or usage[k] < 0 for k in (*TOKEN_FIELDS, "turns") if k in usage):
+                errs.append(f"{where} a token count is not an int >= 0")
+            c = usage.get("cost_list_usd")
+            if c is not None and (isinstance(c, bool) or not isinstance(c, (int, float)) or c < 0):
+                errs.append(f"{where} cost_list_usd is not a number >= 0")
+            if "model" in usage and (not isinstance(usage["model"], str) or not usage["model"]):
+                errs.append(f"{where} model is not a non-empty string")
         if set(r) != set(LOOP_FIELDS):
             errs.append(f"{where} fields differ: missing {sorted(set(LOOP_FIELDS) - set(r))} "
                         f"extra {sorted(set(r) - set(LOOP_FIELDS))}")
@@ -269,6 +303,10 @@ def validate_loop(doc) -> list[str]:
             errs.append("waste.minutes_by_outcome does not cover every outcome")
         elif not (0 <= w.get("build_idle_share", -1) <= 1):
             errs.append("waste.build_idle_share out of range")
+    t = doc.get("tokens")
+    if t is not None and (not isinstance(t, dict) or not _is_int(t.get("measured"))
+                          or t["measured"] > (t.get("runs") or 0)):
+        errs.append("tokens block is malformed or measures more runs than it has")
     return errs
 
 
@@ -356,6 +394,156 @@ def kind_of(logs: list[str]) -> str:
     return "unknown"
 
 
+_TS = re.compile(r"^\d{4}-\d{2}-\d{2}T[\d:.]+Z ")
+_RESULT_TYPE = re.compile(r'^  "type": "result",?$')
+_TURNS = re.compile(r'^  "num_turns": (\d+),?$')
+_UUID = re.compile(r'^  "uuid": "([^"]+)",?$')
+_SINCE_LAST = "model_usage_since_last_result"
+_CUMULATIVE = "modelUsage"
+
+
+def _result_objects(log: str) -> list[list[str]]:
+    """Every top-level `"type": "result"` object, as timestamp-stripped lines.
+
+    claude-code-action pretty-prints each stream message as its own object, `{`
+    and `}` alone at column 0; nested braces are indented, so column 0 is a
+    top-level boundary. The type is matched at exactly two spaces, so a nested
+    `"type"` (a content block, an iteration) can never qualify an object."""
+    out, start = [], None
+    lines = [_TS.sub("", ln, count=1) for ln in log.splitlines()]
+    for i, ln in enumerate(lines):
+        if ln == "{":
+            start = i
+        elif ln == "}" and start is not None:
+            obj, start = lines[start:i + 1], None
+            if any(_RESULT_TYPE.match(x) for x in obj):
+                out.append(obj)
+    return out
+
+
+def _sub_object(obj: list[str], key: str):
+    """The top-level `key: {...}` of a pretty-printed object, cut out by indentation."""
+    head = f'  "{key}": {{'
+    if head not in obj:
+        return None
+    j = obj.index(head)
+    k = next((n for n in range(j + 1, len(obj)) if obj[n] in ("  }", "  },")), None)
+    if k is None:
+        return None
+    try:
+        return json.loads("{" + "\n".join(obj[j + 1:k]) + "}")
+    except ValueError:
+        return None
+
+
+def _read_result(obj: list[str]):
+    """(uuid, num_turns, since_last, cumulative) for one result object; any may be None.
+
+    The whole object is parsed when it can be. It cannot always: the runner rewrites
+    the log after serialisation -- a masked secret (`***`) eats a closing quote, and
+    a line the runner reads as a command (`##[endgroup]` inside a tool result)
+    replaces the line it sat on. Measured 2026-11-17: 12 non-result objects across
+    40 runs failed to parse for those two reasons. Free text in `result` or
+    `permission_denials` can carry either, so on failure each usage sub-object
+    alone is cut out by indentation -- it holds only model names and numbers."""
+    try:
+        o = json.loads("\n".join(obj))
+    except ValueError:
+        o = None
+    if isinstance(o, dict):
+        turns = o.get("num_turns")
+        since, cum = o.get(_SINCE_LAST), o.get(_CUMULATIVE)
+        return (o.get("uuid"), turns if _is_int(turns) else None,
+                since if isinstance(since, dict) else None, cum if isinstance(cum, dict) else None)
+    turns = next((int(m.group(1)) for m in map(_TURNS.match, obj) if m), None)
+    uuid = next((m.group(1) for m in map(_UUID.match, obj) if m), None)
+    return uuid, turns, _sub_object(obj, _SINCE_LAST), _sub_object(obj, _CUMULATIVE)
+
+
+def parse_usage(log: str) -> dict | None:
+    """The Claude session's token usage for one run, or None when it cannot be read.
+
+    THE RULE, verified against agent-work run 44020807802 (job 133837665489) and
+    39 more runs listed 2026-11-17:
+
+      * Only top-level `"type": "result"` objects count. The same log carries a
+        `usage` block on every `assistant` message (one API call each, main agent
+        only) and `usage.total_tokens` on every subagent `task_progress` (a running
+        count). Summing those double-counts; they are never read.
+      * Within a result object, `model_usage_since_last_result` is the session
+        total INCLUDING subagents. Measured on 44020807802: it reads 305 input /
+        103,720 output / 13,174,859 cache-read / 542,749 cache-write and $3.8793,
+        and that $3.8793 equals the object's `total_cost_usd`; the object's own
+        top-level `usage` (2,293,717 cache-read) is the main agent alone and is
+        NOT the total. In all 40 runs `modelUsage` equalled it and its costUSD
+        summed to `total_cost_usd`.
+      * A resumed session prints more than one result object, and the key's name
+        says each holds the usage SINCE THE PREVIOUS ONE, so they are SUMMED, per
+        model. Objects with the same `uuid` are one object printed twice and count
+        once. (No multi-result log exists in the 40 runs read, so this half is
+        built from the key's NAME, not observed. `num_turns` is
+        summed the same way and carries the same caveat.)
+      * An OLDER action printed only `modelUsage` (run 41574673500, 2026-11-03).
+        With exactly ONE result object it is used: that is the case where the two
+        keys were measured equal 40 times of 40. With several, `modelUsage` may be
+        cumulative or per-segment and nothing here can tell which, so: None.
+      * If ANY result object's usage is unreadable, the whole reading is None: a
+        partial sum would understate the run and look like a cheap one.
+
+    `cost_list_usd` is the action's own `costUSD` (`costBasis: "list"`)."""
+    seen, results = set(), []
+    for obj in _result_objects(log):
+        uuid, t, since, cum = _read_result(obj)
+        if uuid is not None:
+            if uuid in seen:
+                continue
+            seen.add(uuid)
+        results.append((t, since, cum))
+    if not results:
+        return None
+    if all(since is not None for _, since, _ in results):
+        parts = [(t, since) for t, since, _ in results]
+    elif len(results) == 1 and results[0][2] is not None:
+        parts = [(results[0][0], results[0][2])]
+    else:
+        return None
+    turns, by_model = 0, {}
+    for t, mu in parts:
+        turns = None if (turns is None or t is None) else turns + t
+        for model, u in mu.items():
+            if not isinstance(u, dict):
+                return None
+            acc = by_model.setdefault(model, {"in": 0, "out": 0, "cr": 0, "cw": 0, "usd": 0.0})
+            try:
+                acc["in"] += int(u.get("inputTokens", 0))
+                acc["out"] += int(u.get("outputTokens", 0))
+                acc["cr"] += int(u.get("cacheReadInputTokens", 0))
+                acc["cw"] += int(u.get("cacheCreationInputTokens", 0))
+                acc["usd"] += float(u.get("costUSD", 0))
+            except (TypeError, ValueError):
+                return None
+    if not by_model:
+        return None
+    out = {
+        "tokens_input": sum(a["in"] for a in by_model.values()),
+        "tokens_output": sum(a["out"] for a in by_model.values()),
+        "tokens_cache_read": sum(a["cr"] for a in by_model.values()),
+        "tokens_cache_write": sum(a["cw"] for a in by_model.values()),
+        "cost_list_usd": round(sum(a["usd"] for a in by_model.values()), 4),
+        "model": "+".join(sorted(by_model)),
+    }
+    if turns is not None:
+        out["turns"] = turns
+    return out
+
+
+def row_tokens(row: dict) -> int | None:
+    """Every token the run moved: input + output + cache read + cache write."""
+    if not all(_is_int(row.get(k)) for k in TOKEN_FIELDS):
+        return None
+    return sum(row[k] for k in TOKEN_FIELDS)
+
+
 def job_logs(src: Source, run_id: int) -> list[str]:
     """Every non-skipped job's log. An unreadable one raises ApiError."""
     out = []
@@ -382,6 +570,7 @@ def attribute(src: Source, run: dict, owner: str) -> dict:
     for a transient read failure so the caller can defer rather than freeze a guess."""
     logs = job_logs(src, run["id"])
     kind = kind_of(logs)
+    usage = parse_usage("\n".join(logs))
     for log in logs:
         got = parse_receipt(log)
         if got:
@@ -390,7 +579,7 @@ def attribute(src: Source, run: dict, owner: str) -> dict:
                 m = BRANCH_ISSUE.match(branch)
                 issue = int(m.group(1)) if m else None
             return {"issue": issue, "pr": pr, "attribution": "receipt", "no_pr_recorded": pr is None,
-                    "kind": kind}
+                    "kind": kind, "usage": usage}
     for log in logs:
         got = parse_net_line(log)
         if got:
@@ -398,9 +587,10 @@ def attribute(src: Source, run: dict, owner: str) -> dict:
             m = BRANCH_ISSUE.match(branch)
             issue = int(m.group(1)) if m else None     # "on 'main'": ended without a branch
             pr = None if (no_pr or not m) else pr_for_branch(src, owner, branch, ts(run["updated_at"]))
-            return {"issue": issue, "pr": pr, "attribution": "log", "no_pr_recorded": no_pr, "kind": kind}
+            return {"issue": issue, "pr": pr, "attribution": "log", "no_pr_recorded": no_pr, "kind": kind,
+                    "usage": usage}
     return {"issue": None, "pr": None, "attribution": "unattributed", "no_pr_recorded": False,
-            "kind": kind}
+            "kind": kind, "usage": usage}
 
 
 def outcome_of(conclusion: str, pr: int | None, merged: bool | None, state: str | None,
@@ -477,6 +667,7 @@ def make_row(run: dict, a: dict, state, merged) -> dict:
         "attribution": a["attribution"],
         "kind": a.get("kind", "unknown"),
         "owner_helped": None,
+        **(a.get("usage") or {}),
     })
 
 
@@ -496,22 +687,33 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
     stats = {"new": 0, "refreshed": 0, "frozen": 0, "deferred": 0, "pruned": 0, "pending": 0,
              "migrated": 0}
     merged_rows = dict(old)
+    # Token fields arrived 2026-11-17. A snapshot without the `tokens` block was
+    # written before them, so its listed rows get their logs read ONCE; after
+    # this collection writes the block, a row with no usage stays without it
+    # (its log had no readable result) instead of being re-read every run.
+    backfill_usage = existing is not None and "tokens" not in existing
     for run in list_runs(src, WORKFLOW_NAME, Window(now - LOOKBACK, now)):
         if run.get("status") != "completed":
             stats["pending"] += 1
             continue
         prev = old.get(run["id"])
         try:
-            if prev is not None and "kind" not in prev:
-                # A row settled before `kind` existed: read its log ONCE for the
-                # prompt, then it is frozen again like any other.
+            need_kind = prev is not None and "kind" not in prev
+            need_usage = (prev is not None and backfill_usage
+                          and not any(k in prev for k in USAGE_FIELDS))
+            if need_kind or need_usage:
+                # A row settled before `kind` (or the token fields) existed: read
+                # its log ONCE, then it is frozen again like any other.
                 try:
-                    k = kind_of(job_logs(src, run["id"]))
+                    logs = job_logs(src, run["id"])
                 except ApiError as e:
                     if e.status not in (404, 410):
                         raise
-                    k = "unknown"
-                prev = judged({**prev, "kind": k})
+                    logs = []
+                if need_kind:
+                    prev = judged({**prev, "kind": kind_of(logs)})
+                if need_usage:
+                    prev = {**prev, **(parse_usage("\n".join(logs)) or {})}
                 merged_rows[run["id"]] = prev
                 stats["migrated"] += 1
             if prev is not None and prev.get("outcome") == "shipped" and prev.get("owner_helped") is None:
@@ -525,7 +727,9 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
                 continue
             if prev is not None:      # only the PR can have moved
                 a = {"issue": prev["issue"], "pr": prev["pr"], "attribution": prev["attribution"],
-                     "no_pr_recorded": False, "kind": prev.get("kind", "unknown")}
+                     "no_pr_recorded": False, "kind": prev.get("kind", "unknown"),
+                     # The log is not re-read here, so the reading it gave is carried.
+                     "usage": {k: prev[k] for k in USAGE_FIELDS if k in prev}}
                 state, merged = read_pr(src, prev["pr"])
                 merged_rows[run["id"]] = _with_helped(src, make_row(run, a, state, merged))
                 stats["refreshed"] += 1
@@ -557,7 +761,8 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
             for k, v in merged_rows.items() if v["started"] >= floor}
     stats["pruned"] = len(merged_rows) - len(kept)
     rows = sorted(kept.values(), key=lambda r: r["started"], reverse=True)
-    return {"generated_at": iso(now), "rows": rows, "waste": waste(rows, now)}, stats
+    return {"generated_at": iso(now), "rows": rows, "waste": waste(rows, now),
+            "tokens": token_summary(rows, now)}, stats
 
 
 #: The span the waste figures cover. Short enough to show a change this week,
@@ -610,6 +815,68 @@ def waste(rows: list[dict], now: datetime, days: int = WASTE_DAYS) -> dict:
         "shipped_prs": len({r["pr"] for r in win if r["outcome"] == "shipped" and r["pr"]}),
         "build_idle_hours": round(idle_h, 1),
         "build_idle_share": round(idle_h / window_h, 3),
+    }
+
+
+def _median(xs: list) -> int | float | None:
+    if not xs:
+        return None
+    s = sorted(xs)
+    mid = len(s) // 2
+    return s[mid] if len(s) % 2 else (s[mid - 1] + s[mid]) / 2
+
+
+def _window_tokens(rows: list[dict], start: datetime, end: datetime) -> dict:
+    win = [r for r in rows if start <= ts(r["started"]) < end]
+    measured = [r for r in win if row_tokens(r) is not None]
+    tokens = sum(row_tokens(r) for r in measured)
+    usd = round(sum(float(r.get("cost_list_usd") or 0) for r in measured), 2)
+    merged = len({r["pr"] for r in win if r["outcome"] == "shipped" and r["pr"]})
+    return {"win": win, "measured": measured, "tokens": tokens, "usd": usd, "merged": merged,
+            "per_pr": round(tokens / merged) if merged else None,
+            "usd_per_pr": round(usd / merged, 2) if merged else None}
+
+
+def token_summary(rows: list[dict], now: datetime, days: int = WASTE_DAYS) -> dict:
+    """What the loop's Claude usage bought over the last `days` (the waste window).
+
+    `per_merged_pr` is EVERY measured run's tokens in the window -- QA rounds,
+    empty cycles and failures included -- divided by the distinct PRs that merged
+    in it. That is the end-to-end cost of a shipped fix, which is the owner's
+    question; dividing only the shipping rows' tokens would hide the waste that
+    earned them. It is a floor when `measured < runs`, so both are carried.
+    `previous` is the same figure for the window before, so a token-saving change
+    can be read as a before/after and `cycle-tokens` can compare the two.
+    Medians are over measured rows only and absent where no row was measured."""
+    cur = _window_tokens(rows, now - timedelta(days=days), now + timedelta(seconds=1))
+    prev = _window_tokens(rows, now - timedelta(days=2 * days), now - timedelta(days=days))
+    m = cur["measured"]
+
+    def med(rs):
+        x = _median([row_tokens(r) for r in rs])
+        return None if x is None else round(x)
+
+    by_outcome = {}
+    for o in OUTCOMES:
+        rs = [r for r in m if r["outcome"] == o]
+        if rs:
+            by_outcome[o] = {"runs": len(rs), "tokens": med(rs),
+                             "cost_list_usd": round(_median([float(r["cost_list_usd"]) for r in rs]), 2)}
+    return {
+        "days": days,
+        "runs": len(cur["win"]),
+        "measured": len(m),
+        "total": {"tokens": cur["tokens"],
+                  **{k.replace("tokens_", ""): sum(r[k] for r in m) for k in TOKEN_FIELDS},
+                  "cost_list_usd": cur["usd"]},
+        "median_by_outcome": by_outcome,
+        "median_cycle": med([r for r in m if r["kind"] != "qa-round"]),
+        "median_qa_round": med([r for r in m if r["kind"] == "qa-round"]),
+        "merged_prs": cur["merged"],
+        "per_merged_pr": cur["per_pr"],
+        "cost_list_usd_per_merged_pr": cur["usd_per_pr"],
+        "previous": {"runs": len(prev["win"]), "measured": len(prev["measured"]),
+                     "merged_prs": prev["merged"], "per_merged_pr": prev["per_pr"]},
     }
 
 

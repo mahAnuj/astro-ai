@@ -37,6 +37,46 @@ from astro_ai.session import load_collection
 
 router = APIRouter()
 
+# Appended to a dated description only when it still fits a ~160-char snippet.
+_DESCRIPTION_TAIL = " Classical Vedic sidereal Lahiri."
+
+
+def _answer_snippet(p, moon_info, city_display: str, pretty: str) -> dict:
+    """The one-sentence answer under the H1 and the dated page's meta
+    description, built ONCE from the values the page renders (#1074).
+
+    A dated URL's search snippet used to say "Today's Panchang" and carry no
+    value, though the answer (tithi, nakshatra, Rahu Kaal) sat in the first
+    screen. Building the sentence here -- not typing it in the template, and
+    not twice -- is what stops title, description and page from drifting.
+
+    Restates computed values only; no interpretive word, no new rule. Each
+    piece is omitted when the page omits it: Rahu Kaal when
+    ``daylight_ordinary`` is False (#227, polar -- the window would run
+    backwards), the Moon when ``moon_info`` is absent. ``p`` None (both
+    geocodes failed) yields no sentence and a values-free description that
+    still names the date. The tithi is the sunrise one -- the page's stated
+    convention -- and the Moon is the page's own "Moon Today" value.
+    """
+    if not p:
+        return {
+            "sentence": None,
+            "description": (
+                f"Panchang for {pretty} in {city_display} — tithi, nakshatra, "
+                "Rahu Kaal and Choghadiya." + _DESCRIPTION_TAIL),
+        }
+    parts = [f"{p.tithi_paksha} {p.tithi_name} at sunrise"]
+    if moon_info and moon_info.get("nakshatra"):
+        parts.append(f"Moon in {moon_info['nakshatra']}")
+    if p.daylight_ordinary:
+        parts.append(
+            f"Rahu Kaal {p.rahu_kaal_start:%H:%M}–{p.rahu_kaal_end:%H:%M}")
+    sentence = f"On {p.weekday}, {pretty} in {city_display}: {', '.join(parts)}."
+    description = sentence
+    if len(sentence) + len(_DESCRIPTION_TAIL) <= 160:
+        description += _DESCRIPTION_TAIL
+    return {"sentence": sentence, "description": description}
+
 
 def _render_panchang(request: Request, target_date, city: str = "") -> HTMLResponse:
     """Shared Panchang renderer — powers both /panchang (today) and
@@ -160,14 +200,20 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
     # keep the today URL clean).
     prev_day = (target_date - timedelta(days=1)).isoformat()
     next_day = (target_date + timedelta(days=1)).isoformat()
+    today_pretty = _pretty_date(target_iso, lang)
+    snippet = _answer_snippet(p, moon_info, resolved_city, today_pretty)
     return templates.TemplateResponse(
         request, "panchang.html",
         {
             "p": p,
+            "answer_sentence": snippet["sentence"],
+            "dated_description": snippet["description"],
+            # "Mumbai" from "Mumbai, India": keeps a dated <title> near 65 chars.
+            "city_short": resolved_city.split(",")[0].strip(),
             "city": city or resolved_city,
             "city_display": resolved_city,
             "today_date": target_iso,       # the rendered day (used by <time> element)
-            "today_pretty": _pretty_date(target_iso, lang),
+            "today_pretty": today_pretty,
             "is_today": is_today,
             "true_today_iso": today_iso,
             "prev_day": prev_day,

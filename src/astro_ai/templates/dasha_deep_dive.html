@@ -82,13 +82,8 @@
 
 </main>
 
-<script>
-  // Treat this as a meaningful conversion — the user dug deeper into their
-  // chart. Helps measure engagement beyond the first Kundli render.
-  Analytics.track('dasha_deep_dive_viewed', {
-    mahadasha: '{{ dasha.mahadasha.lord }}',
-    antardasha: '{{ dasha.antardasha.lord }}',
-    lang: '{{ lang }}',
-  });
-</script>
+{# A meaningful conversion -- the user dug deeper into their chart. Helps measure
+   engagement beyond the first Kundli render. #1067: declared, fired by analytics.js. #}
+{% from "_analytics_event.html" import analytics_event %}
+{{ analytics_event('dasha_deep_dive_viewed', {'mahadasha': dasha.mahadasha.lord, 'antardasha': dasha.antardasha.lord, 'lang': lang}) }}
 {% endblock %}

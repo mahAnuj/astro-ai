@@ -1,0 +1,186 @@
+2026-11-17T05:20:48.9000000Z ##[group]Run anthropics/claude-code-action@v1
+2026-11-17T05:20:48.9000001Z ##[endgroup]
+2026-11-17T05:20:49.0205301Z {
+2026-11-17T05:20:49.0205615Z   "type": "assistant",
+2026-11-17T05:20:49.0206108Z   "message": {
+2026-11-17T05:20:49.0206466Z     "model": "claude-sonnet-5-5",
+2026-11-17T05:20:49.0206791Z     "id": "msg_011Ch7wMv7H6AQHXgJGcoRwa",
+2026-11-17T05:20:49.0207098Z     "type": "message",
+2026-11-17T05:20:49.0207356Z     "role": "assistant",
+2026-11-17T05:20:49.0207612Z     "content": [
+2026-11-17T05:20:49.0207850Z       {
+2026-11-17T05:20:49.0208095Z         "type": "thinking",
+2026-11-17T05:20:49.0208374Z         "thinking": "",
+2026-11-17T05:20:49.0212832Z         "signature": "CAQS4AYK"
+2026-11-17T05:20:49.0216881Z       }
+2026-11-17T05:20:49.0217111Z     ],
+2026-11-17T05:20:49.0217348Z     "container": null,
+2026-11-17T05:20:49.0217609Z     "stop_reason": null,
+2026-11-17T05:20:49.0217874Z     "stop_sequence": null,
+2026-11-17T05:20:49.0218143Z     "stop_details": null,
+2026-11-17T05:20:49.0218403Z     "usage": {
+2026-11-17T05:20:49.0218651Z       "input_tokens": 2,
+2026-11-17T05:20:49.0219053Z       "cache_creation_input_tokens": 53969,
+2026-11-17T05:20:49.0219393Z       "cache_read_input_tokens": 14799,
+2026-11-17T05:20:49.0219691Z       "cache_creation": {
+2026-11-17T05:20:49.0219988Z         "ephemeral_5m_input_tokens": 0,
+2026-11-17T05:20:49.0220308Z         "ephemeral_1h_input_tokens": 53969
+2026-11-17T05:20:49.0220593Z       },
+2026-11-17T05:20:49.0220826Z       "output_tokens": 7,
+2026-11-17T05:20:49.0221086Z       "service_tier": "standard",
+2026-11-17T05:20:49.0221380Z       "inference_geo": "global",
+2026-11-17T05:20:49.0221666Z       "speed": "standard"
+2026-11-17T05:20:49.0221938Z     },
+2026-11-17T05:20:49.0222196Z     "input_transformations": [],
+2026-11-17T05:20:49.0222479Z     "diagnostics": null,
+2026-11-17T05:20:49.0222760Z     "context_management": null
+2026-11-17T05:20:49.0223026Z   },
+2026-11-17T05:20:49.0223272Z   "parent_tool_use_id": null,
+2026-11-17T05:20:49.0223604Z   "session_id": "c32afaf6-afa7-4546-a593-136e51e660fe",
+2026-11-17T05:20:49.0223968Z   "uuid": "05d5371d-4ecc-4ab0-8450-7f905e16b796",
+2026-11-17T05:20:49.0224326Z   "timestamp": "2026-11-17T05:20:49.018Z",
+2026-11-17T05:20:49.0224670Z   "request_id": "req_011Ch7wMumgsLphVu1MHMyik",
+2026-11-17T05:20:49.0225001Z   "thinking_duration_ms": 844,
+2026-11-17T05:20:49.0225293Z   "thinking_display": "updates"
+2026-11-17T05:20:49.0225556Z }
+2026-11-17T05:21:12.5525297Z {
+2026-11-17T05:21:12.5525638Z   "type": "system",
+2026-11-17T05:21:12.5526103Z   "subtype": "task_progress",
+2026-11-17T05:21:12.5526449Z   "task_id": "a59d3f7a79919c9f7",
+2026-11-17T05:21:12.5526763Z   "run_id": "0mwk8ve4p-3095e6b2",
+2026-11-17T05:21:12.5527101Z   "tool_use_id": "toolu_01JTsHavnwzWH9mSHp8jE2HP",
+2026-11-17T05:21:12.5527803Z   "description": "Running export GH_REPO=mahAnuj/astro-ai && git fetch -q o…",
+2026-11-17T05:21:12.5528257Z   "subagent_type": "project-manager",
+2026-11-17T05:21:12.5528561Z   "usage": {
+2026-11-17T05:21:12.5528833Z     "total_tokens": 40345,
+2026-11-17T05:21:12.5529164Z     "tool_uses": 1,
+2026-11-17T05:21:12.5529490Z     "duration_ms": 2595
+2026-11-17T05:21:12.5529834Z   },
+2026-11-17T05:21:12.5530159Z   "last_tool_name": "Bash",
+2026-11-17T05:21:12.5530598Z   "uuid": "2221901f-82d3-420b-967b-cd5283ece194",
+2026-11-17T05:21:12.5531137Z   "session_id": "c32afaf6-afa7-4546-a593-136e51e660fe"
+2026-11-17T05:21:12.5531564Z }
+2026-11-17T06:06:12.3359282Z {
+2026-11-17T06:06:12.3359661Z   "duration_api_ms": 849115,
+2026-11-17T06:06:12.3360053Z   "stop_reason": "end_turn",
+2026-11-17T06:06:12.3360485Z   "session_id": "c32afaf6-afa7-4546-a593-136e51e660fe",
+2026-11-17T06:06:12.3360960Z   "total_cost_usd": 3.8793418999999987,
+2026-11-17T06:06:12.3361328Z   "usage": {
+2026-11-17T06:06:12.3361781Z     "input_tokens": 43,
+2026-11-17T06:06:12.3362086Z     "cache_creation_input_tokens": 111449,
+2026-11-17T06:06:12.3362424Z     "cache_read_input_tokens": 2293717,
+2026-11-17T06:06:12.3362721Z     "output_tokens": 17613,
+2026-11-17T06:06:12.3363009Z     "output_tokens_details": {
+2026-11-17T06:06:12.3363288Z       "thinking_tokens": 2468
+2026-11-17T06:06:12.3363549Z     },
+2026-11-17T06:06:12.3363772Z     "server_tool_use": {
+2026-11-17T06:06:12.3364048Z       "web_search_requests": 0,
+2026-11-17T06:06:12.3364320Z       "web_fetch_requests": 0
+2026-11-17T06:06:12.3364575Z     },
+2026-11-17T06:06:12.3364826Z     "service_tier": "standard",
+2026-11-17T06:06:12.3365098Z     "cache_creation": {
+2026-11-17T06:06:12.3365380Z       "ephemeral_1h_input_tokens": 111449,
+2026-11-17T06:06:12.3365701Z       "ephemeral_5m_input_tokens": 0
+2026-11-17T06:06:12.3366150Z     },
+2026-11-17T06:06:12.3366430Z     "inference_geo": "global",
+2026-11-17T06:06:12.3366712Z     "iterations": [
+2026-11-17T06:06:12.3366967Z       {
+2026-11-17T06:06:12.3367240Z         "input_tokens": 2,
+2026-11-17T06:06:12.3367515Z         "output_tokens": 922,
+2026-11-17T06:06:12.3367814Z         "cache_read_input_tokens": 125385,
+2026-11-17T06:06:12.3368144Z         "cache_creation_input_tokens": 863,
+2026-11-17T06:06:12.3368449Z         "cache_creation": {
+2026-11-17T06:06:12.3368745Z           "ephemeral_5m_input_tokens": 0,
+2026-11-17T06:06:12.3369070Z           "ephemeral_1h_input_tokens": 863
+2026-11-17T06:06:12.3369357Z         },
+2026-11-17T06:06:12.3369599Z         "type": "message"
+2026-11-17T06:06:12.3369836Z       }
+2026-11-17T06:06:12.3370067Z     ],
+2026-11-17T06:06:12.3370294Z     "speed": "standard",
+2026-11-17T06:06:12.3370568Z     "fallback_credit": null
+2026-11-17T06:06:12.3370855Z   },
+2026-11-17T06:06:12.3371147Z   "modelUsage": {
+2026-11-17T06:06:12.3371456Z     "claude-sonnet-5-5": {
+2026-11-17T06:06:12.3371734Z       "inputTokens": 305,
+2026-11-17T06:06:12.3372009Z       "outputTokens": 103720,
+2026-11-17T06:06:12.3372314Z       "cacheReadInputTokens": 13174859,
+2026-11-17T06:06:12.3372644Z       "cacheCreationInputTokens": 542749,
+2026-11-17T06:06:12.3372942Z       "webSearchRequests": 0,
+2026-11-17T06:06:12.3373220Z       "costUSD": 3.8793418999999987,
+2026-11-17T06:06:12.3373531Z       "contextWindow": 1000000,
+2026-11-17T06:06:12.3373822Z       "maxOutputTokens": 128000,
+2026-11-17T06:06:12.3374118Z       "thinkingTokens": 27321,
+2026-11-17T06:06:12.3374470Z       "cacheCreationEphemeral5mInputTokens": 431300,
+2026-11-17T06:06:12.3374962Z       "cacheCreationEphemeral1hInputTokens": 111449,
+2026-11-17T06:06:12.3375343Z       "canonicalModel": "claude-sonnet-5-5",
+2026-11-17T06:06:12.3375673Z       "provider": "firstParty",
+2026-11-17T06:06:12.3376109Z       "costBasis": "list"
+2026-11-17T06:06:12.3376413Z     }
+2026-11-17T06:06:12.3376646Z   },
+2026-11-17T06:06:12.3376883Z   "permission_denials": [],
+2026-11-17T06:06:12.3386396Z   "terminal_reason": "completed",
+2026-11-17T06:06:12.3386689Z   "fast_mode_state": "off",
+2026-11-17T06:06:12.3387013Z   "fast_mode_disabled_reason": "sdk_opt_in_required",
+2026-11-17T06:06:12.3387342Z   "subagent_stats": {
+2026-11-17T06:06:12.3387600Z     "spawned": 5,
+2026-11-17T06:06:12.3387855Z     "requested": {
+2026-11-17T06:06:12.3388115Z       "background": 0,
+2026-11-17T06:06:12.3388372Z       "foreground": 5,
+2026-11-17T06:06:12.3388625Z       "unset": 0
+2026-11-17T06:06:12.3388863Z     },
+2026-11-17T06:06:12.3389127Z     "started_in_background": 0,
+2026-11-17T06:06:12.3389401Z     "max_depth": 1,
+2026-11-17T06:06:12.3389661Z     "spawned_by_subagents": 0,
+2026-11-17T06:06:12.3389922Z     "completed": 5,
+2026-11-17T06:06:12.3390166Z     "failed": 0,
+2026-11-17T06:06:12.3390407Z     "killed": {
+2026-11-17T06:06:12.3390654Z       "parent": 0,
+2026-11-17T06:06:12.3390903Z       "user": 0,
+2026-11-17T06:06:12.3391142Z       "system": 0
+2026-11-17T06:06:12.3391375Z     },
+2026-11-17T06:06:12.3391597Z     "refused": {
+2026-11-17T06:06:12.3391839Z       "depth_limit": 0,
+2026-11-17T06:06:12.3392095Z       "concurrency_limit": 0,
+2026-11-17T06:06:12.3392349Z       "budget": 0
+2026-11-17T06:06:12.3392579Z     },
+2026-11-17T06:06:12.3392798Z     "by_type": {
+2026-11-17T06:06:12.3393053Z       "project-manager": 1,
+2026-11-17T06:06:12.3393337Z       "frontend-engineer": 1,
+2026-11-17T06:06:12.3393608Z       "qa": 3
+2026-11-17T06:06:12.3393841Z     }
+2026-11-17T06:06:12.3394065Z   },
+2026-11-17T06:06:12.3394298Z   "safety_stops": 0,
+2026-11-17T06:06:12.3394557Z   "is_error": false,
+2026-11-17T06:06:12.3394793Z   "num_turns": 26,
+2026-11-17T06:06:12.3395037Z   "subtype": "success",
+2026-11-17T06:06:12.3395427Z   "api_error_status": null,
+2026-11-17T06:06:12.3401770Z   "result": "I picked #1067, the analytics bug where three conversion events were lost on full page loads. Its fix is on PR #1150 (trimmed for the fixture).",
+2026-11-17T06:06:12.3407385Z   "ttft_ms": 2725,
+2026-11-17T06:06:12.3407727Z   "type": "result",
+2026-11-17T06:06:12.3408041Z   "duration_ms": 2726039,
+2026-11-17T06:06:12.3408400Z   "uuid": "2108a0bf-b3be-4005-808f-ef80a69c8d73",
+2026-11-17T06:06:12.3408731Z   "ttft_stream_ms": 1880,
+2026-11-17T06:06:12.3409024Z   "time_to_request_ms": 214,
+2026-11-17T06:06:12.3409363Z   "first_content_frame_ms": 1880,
+2026-11-17T06:06:12.3409716Z   "queued_turn_count": 0,
+2026-11-17T06:06:12.3410013Z   "result_index": 0,
+2026-11-17T06:06:12.3410349Z   "model_usage_since_last_result": {
+2026-11-17T06:06:12.3410712Z     "claude-sonnet-5-5": {
+2026-11-17T06:06:12.3411019Z       "inputTokens": 305,
+2026-11-17T06:06:12.3411385Z       "outputTokens": 103720,
+2026-11-17T06:06:12.3411744Z       "cacheReadInputTokens": 13174859,
+2026-11-17T06:06:12.3412112Z       "cacheCreationInputTokens": 542749,
+2026-11-17T06:06:12.3412430Z       "webSearchRequests": 0,
+2026-11-17T06:06:12.3412727Z       "costUSD": 3.8793418999999987,
+2026-11-17T06:06:12.3413039Z       "contextWindow": 1000000,
+2026-11-17T06:06:12.3413342Z       "maxOutputTokens": 128000,
+2026-11-17T06:06:12.3413642Z       "thinkingTokens": 27321,
+2026-11-17T06:06:12.3413978Z       "cacheCreationEphemeral5mInputTokens": 431300,
+2026-11-17T06:06:12.3414361Z       "cacheCreationEphemeral1hInputTokens": 111449,
+2026-11-17T06:06:12.3414732Z       "canonicalModel": "claude-sonnet-5-5",
+2026-11-17T06:06:12.3415064Z       "provider": "firstParty",
+2026-11-17T06:06:12.3415354Z       "costBasis": "list"
+2026-11-17T06:06:12.3415615Z     }
+2026-11-17T06:06:12.3415848Z   }
+2026-11-17T06:06:12.3416238Z }
+2026-11-17T06:06:12.5045893Z Log saved to /home/runner/work/_temp/claude-execution-output.json

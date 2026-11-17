@@ -1,0 +1,22 @@
+{# Declare an analytics event; static/analytics.js fires it (#1067).
+
+   Templates must NOT call `Analytics.*` from an inline top-level <script>:
+   analytics.js loads with `defer`, so on a full page load the inline call runs
+   first and throws "Analytics is not defined" (kundli_generated, ask_answered
+   and dasha_deep_dive_viewed were all lost that way). This element is inert
+   data instead; analytics.js scans for it on DOMContentLoaded and after every
+   htmx swap, fires it once and stamps it `data-analytics-fired`.
+
+   Usage:   {% from "_analytics_event.html" import analytics_event %}
+            {{ analytics_event('kundli_generated', {'lang': lang}) }}
+
+   ESCAPING is the whole reason this is a macro. `|tojson` already escapes < > &
+   and ' (as < etc.); `|forceescape` then HTML-escapes the quotes, so the
+   value survives inside a single- OR double-quoted attribute and a param can
+   never break out of it. Never interpolate a value into JS or into the
+   attribute by hand. Params are only ever fixed-vocabulary fields (a language
+   code, a planet name, an ask category) -- never free text, a name or a date
+   of birth; the PII rules in analytics.js (#528/#1066/#1093) apply. #}
+{% macro analytics_event(name, params) -%}
+<div hidden data-analytics-event="{{ name }}" data-analytics-params='{{ (params or {}) | tojson | forceescape }}'></div>
+{%- endmacro %}

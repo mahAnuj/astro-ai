@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Today's Panchang — {{ today_pretty }} · Tithi, Nakshatra, Rahu Kaal, Choghadiya{% endblock %}
-{% block meta_description %}Today's Panchang for {{ city_display }} — tithi (lunar day), nakshatra (moon's constellation), weekday lord, yoga, karana, sunrise/sunset, Rahu Kaal, Abhijit Muhurta, and full Choghadiya day-window breakdown. Classical Vedic sidereal Lahiri.{% endblock %}
+{#- A dated URL must not call itself "Today's" (#1074), and its description carries
+    the computed values -- built once in the route (_answer_snippet) so the
+    snippet, the sentence under the H1 and the cards cannot disagree. /panchang
+    (today) keeps its original title and description verbatim. #}
+{% block title %}{% if is_today %}Today's Panchang — {{ today_pretty }} · Tithi, Nakshatra, Rahu Kaal, Choghadiya{% else %}Panchang {{ today_pretty }} — Tithi, Nakshatra, Rahu Kaal ({{ city_short }}){% endif %}{% endblock %}
+{% block meta_description %}{% if not is_today %}{{ dated_description }}{% else %}Today's Panchang for {{ city_display }} — tithi (lunar day), nakshatra (moon's constellation), weekday lord, yoga, karana, sunrise/sunset, Rahu Kaal, Abhijit Muhurta, and full Choghadiya day-window breakdown. Classical Vedic sidereal Lahiri.{% endif %}{% endblock %}
 
 {% block content %}
 {% set active_page = "" %}
@@ -21,6 +25,7 @@
       {% if is_today %}Today's Panchang{% else %}Panchang{% endif %} — <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </h1>
     <p class="text-bhagya-muted">Computed for <strong>{{ city_display }}</strong> · sunrise + Rahu Kaal shift by location.</p>
+    {% if answer_sentence %}<p class="text-bhagya-ink" data-answer-sentence>{{ answer_sentence }}</p>{% endif %}
     {# States the convention (#593): the civil day in the city's own timezone,
        the same one the home strip uses -- not a sunrise-to-sunrise day. #}
     <p class="text-xs text-bhagya-muted" data-day-convention>{{ t(lang, 'panchang_day_convention', city=city_display) }}</p>
@@ -148,11 +153,11 @@
       <div class="text-xs text-bhagya-muted">Saturn's 1/8 of daylight, inferred from Rao and confirmed against a published almanac</div>
     </div>
     <div class="bg-white border border-bhagya-line p-4">
-      <div class="text-xs uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Abhijit Muhurat (best)</div>
+      <div class="text-xs uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Abhijit Muhurat (midday)</div>
       <div class="text-lg font-marcellus text-emerald-800 tabular-nums">
         {{ p.abhijit_start.strftime('%H:%M') }} — {{ p.abhijit_end.strftime('%H:%M') }}
       </div>
-      <div class="text-xs text-bhagya-muted">Most auspicious ~48 min around solar noon</div>
+      <div class="text-xs text-bhagya-muted">The midday muhurta: a fifteenth of daylight, ~48 min on a 12-hour day, centred on solar noon</div>
     </div>
     {%- else %}
     <div class="sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 p-4">
@@ -289,7 +294,7 @@
         </p>
         <ul class="list-disc pl-5 space-y-2 text-sm sm:text-base text-bhagya-ink leading-relaxed">
           <li><strong>Rahu Kaal</strong> &mdash; a specific 1/8 slice of daylight considered inauspicious for beginnings. It shifts weekday-by-weekday and depends on your sunrise/sunset (which shifts by location). We compute it correctly for your city.</li>
-          <li><strong>Abhijit Muhurta</strong> &mdash; a ~48-minute window around solar noon, considered the most universally auspicious slot of the day. Perfect for signing important documents, starting a business call, or committing to any decision.</li>
+          <li><strong>Abhijit Muhurta</strong> &mdash; the midday muhurta: a fifteenth of daylight (about 48 minutes on a 12-hour day) centred on local solar noon, the muhurta Rao names Abhijit. This page shows where it falls and does not rank it above or below any other window.</li>
           <li><strong>Gulika Kaal</strong> &mdash; Saturn's 1/8 of daylight, on the same weekday-lord principle as Rahu Kaal: it moves one slot earlier each day, from the 7th eighth on Sunday to the 1st on Saturday. Narasimha Rao's table of the eight parts of the day gives Saturn's part for each weekday; reading that part as a window is our inference, and its times match the Gulikai Kalam printed by a published almanac. Shown above, from your city's sunrise and sunset.</li>
           <li><strong>Yamaganda and Brahma Muhurta</strong> &mdash; two more classical timings we do not show yet: the texts we hold do not state a rule we can compute them from, so they are deferred rather than guessed.</li>
           <li><strong>Choghadiya</strong> &mdash; 8 equal daytime windows named Amrit / Shubh / Labh (auspicious), Rog / Kaal (avoid), Udveg / Chal (neutral). Which name each window gets rotates with weekday. Useful for picking a specific shop-open time or product-launch minute.</li>

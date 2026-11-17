@@ -311,14 +311,16 @@ def _row(**kw):
 
 def test_a_frozen_row_is_not_re_fetched_at_all():
     src = Fake(runs_listing(run(1)))     # no jobs, no pulls: any fetch would be a 404 and show in calls
-    doc, stats = collect(src, {"rows": [_row()]})
+    # `tokens` present = a snapshot written after the token fields (2026-11-17);
+    # one without it gets its listed logs read once, see test_loop_tokens.py.
+    doc, stats = collect(src, {"rows": [_row()], "tokens": {}})
     assert stats["frozen"] == 1 and doc["rows"] == [_row()]
     assert src.calls == [c for c in src.calls if c.startswith("actions/workflows")]
 
 
 def test_a_pr_open_row_re_reads_the_pr_only_never_the_log():
     src = Fake({**runs_listing(run(1)), "pulls/42": pull(42, merged=True)})
-    doc, stats = collect(src, {"rows": [_row(outcome="pr open", pr_merged=False)]})
+    doc, stats = collect(src, {"rows": [_row(outcome="pr open", pr_merged=False)], "tokens": {}})
     assert stats["refreshed"] == 1
     assert (doc["rows"][0]["outcome"], doc["rows"][0]["pr_merged"]) == ("shipped", True)
     assert not any("/jobs" in c or "/logs" in c for c in src.calls)
@@ -689,5 +691,5 @@ def test_a_settled_shipped_row_without_the_field_is_read_once():
                 "pulls/42/commits?per_page=100": []})
     old = _row()
     del old["owner_helped"]
-    doc, stats = collect(src, {"rows": [old]})
+    doc, stats = collect(src, {"rows": [old], "tokens": {}})
     assert doc["rows"][0]["owner_helped"] is True and stats["migrated"] == 1

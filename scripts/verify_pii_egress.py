@@ -35,6 +35,7 @@ built). What it cannot see at all is listed in `ARCHITECTURE.md` section 11.
 """
 from __future__ import annotations
 
+import html as _html
 import json
 import re
 import subprocess
@@ -254,9 +255,25 @@ def page_surfaces(html: str) -> dict[str, str]:
 
 
 def analytics_call_args(text: str) -> list[str]:
-    """Each `Analytics.<fn>(...)` / `gtag(...)` call in `text`, parentheses and all."""
-    return [text[m.start():_matching_paren_end(text, m.end() - 1)]
-            for m in re.finditer(r"(?:Analytics\.\w+|gtag)\(", text)]
+    """Each `Analytics.<fn>(...)` / `gtag(...)` call in `text`, parentheses and all.
+
+    Also the declared form (#1067). The three conversion events moved out of
+    inline calls into `{{ analytics_event('name', {...}) }}` in the TEMPLATES and
+    `<div data-analytics-event=... data-analytics-params=...>` in the RENDERED
+    HTML; without both of these the sweep would have gone blind to exactly the
+    arguments it exists to judge. The macro's own definition (`{% macro
+    analytics_event(`) is not a call."""
+    calls = [text[m.start():_matching_paren_end(text, m.end() - 1)]
+             for m in re.finditer(r"(?:Analytics\.\w+|gtag)\(|(?<!macro )\banalytics_event\(",
+                                  text)]
+    # Rendered: the attribute values are HTML-escaped, so decode them first.
+    # The macro's own template text carries `{{ ... }}` inside the tag: that is
+    # the sink, judged through its call sites above, so only a tag with no
+    # Jinja in it (i.e. one that was rendered) is a payload.
+    for m in re.finditer(r"<[^>]*\bdata-analytics-event=[^>]*>", text):
+        if "{{" not in m.group(0):
+            calls.append(_html.unescape(m.group(0)))
+    return calls
 
 
 # ─── the recorder ──────────────────────────────────────────────────────────
