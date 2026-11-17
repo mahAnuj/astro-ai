@@ -2096,6 +2096,45 @@ def _waste_view(loop_doc: dict | None) -> dict | None:
             "idle_pct": round((w.get("build_idle_share") or 0) * 100)}
 
 
+def _mtok(n) -> str | None:
+    """13174859 -> '13.2M', 542749 -> '543k'. None stays None: unmeasured is not 0."""
+    if not isinstance(n, (int, float)) or isinstance(n, bool):
+        return None
+    if n >= 1_000_000:
+        return f"{n / 1_000_000:.1f}M"
+    if n >= 1_000:
+        return f"{round(n / 1_000)}k"
+    return str(int(n))
+
+
+def _tokens_view(loop_doc: dict | None) -> dict | None:
+    """`loop.json`'s `tokens` block (2026-11-17) with the counts made readable.
+
+    Written by scripts/collect_loop_measurements.py `token_summary()`: Claude
+    tokens per merged PR (every measured run in the window over the PRs that
+    merged in it), medians per cycle and per QA round, and the window total.
+    None when the block is absent -- an older snapshot -- so the panel says so
+    instead of rendering zeros."""
+    t = (loop_doc or {}).get("tokens")
+    if not isinstance(t, dict) or not isinstance(t.get("measured"), int):
+        return None
+    prev = t.get("previous") or {}
+    per, before = t.get("per_merged_pr"), prev.get("per_merged_pr")
+    return {**t,
+            "total": t.get("total") or {},
+            "median_by_outcome": t.get("median_by_outcome") or {},
+            "per_pr_text": _mtok(per),
+            "prev_per_pr_text": _mtok(before),
+            "change_pct": (round((per - before) / before * 100)
+                           if isinstance(per, (int, float)) and isinstance(before, (int, float)) and before
+                           else None),
+            "cycle_text": _mtok(t.get("median_cycle")),
+            "qa_text": _mtok(t.get("median_qa_round")),
+            "total_text": _mtok((t.get("total") or {}).get("tokens")),
+            "by_outcome_text": {o: _mtok(v.get("tokens"))
+                                for o, v in (t.get("median_by_outcome") or {}).items()}}
+
+
 def snapshot(now: datetime | None = None,
              app_days: int = DEFAULT_APP_DAYS, app_day: str = "") -> dict:
     """Everything /admin/ops renders, in one dict. Never raises.
@@ -2181,6 +2220,7 @@ def snapshot(now: datetime | None = None,
         "loop": loop,
         "claude": claude,
         "waste": _waste_view(loop_doc),
+        "tokens": _tokens_view(loop_doc),
         "issues": issues,
         "cost": cost,
         "traffic": traffic,
