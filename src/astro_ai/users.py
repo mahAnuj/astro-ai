@@ -220,21 +220,32 @@ def save_charts(sub: str, collection: ChartCollection) -> bool:
     if not sub:
         return False
 
+    found = {"user": False}
+
     def _add(current):
+        found["user"] = False  # the mutator re-runs on a CAS conflict
         data = current or {"users": []}
         for existing in data["users"]:
             if existing.get("sub") == sub:
                 existing["charts"] = [asdict(c) for c in collection.charts]
                 existing["active_id"] = collection.active_id
+                found["user"] = True
                 return data
         # User not in users.json — skip. upsert_user creates the record;
-        # sync should only happen after that. If we hit this, it's a race
-        # or an anonymous user; either way, do nothing.
-        return None
+        # sync should only happen after that. If we hit this, it's a race,
+        # an anonymous user, or a second device still signed in after the
+        # account was deleted (#1105); either way, change nothing. Return
+        # the data UNCHANGED: update_json writes whatever the mutator
+        # returns, and None is written as the JSON text `null`, which the
+        # next writer rebuilds as an empty user list -- every user lost.
+        return data
 
     result = storage.update_json(USERS_KEY, _add, default={"users": []})
     if result is None:
-        log.warning("users.save_charts: storage unavailable or user %s not found", sub)
+        log.warning("users.save_charts: storage unavailable")
+        return False
+    if not found["user"]:
+        log.warning("users.save_charts: user %s not found", sub)
         return False
     return True
 
@@ -341,7 +352,10 @@ def save_reading(sub: str, kind: str, chart_id: str, title: str,
         "meta": meta or {},
     }
 
+    found = {"user": False}
+
     def _add(current):
+        found["user"] = False  # the mutator re-runs on a CAS conflict
         data = current or {"users": []}
         for existing in data["users"]:
             if existing.get("sub") == sub:
@@ -351,12 +365,18 @@ def save_reading(sub: str, kind: str, chart_id: str, title: str,
                 if len(readings) > MAX_READINGS_PER_USER:
                     readings = readings[:MAX_READINGS_PER_USER]
                 existing["readings"] = readings
+                found["user"] = True
                 return data
-        return None  # user not found — skip silently
+        # User not found — change nothing. Return the data UNCHANGED, never
+        # None: update_json would write `null` over users.json (#1105).
+        return data
 
     result = storage.update_json(USERS_KEY, _add, default={"users": []})
     if result is None:
-        log.warning("users.save_reading: storage unavailable or user %s not found", sub)
+        log.warning("users.save_reading: storage unavailable")
+        return False
+    if not found["user"]:
+        log.warning("users.save_reading: user %s not found", sub)
         return False
     return True
 
@@ -391,3 +411,50 @@ def find_reading(sub: str, reading_id: str) -> Optional[Reading]:
         if r.id == reading_id:
             return r
     return None
+
+
+# ─── Deletion (#1105) ───────────────────────────────────────────────────────
+# One record per user holds identity, charts and readings, so removing the
+# record removes all three. Both helpers return False ONLY when storage could
+# not be updated: a user that is already absent is a success, so a retry after
+# a partial failure is safe.
+
+
+def delete_user(sub: str) -> bool:
+    """Remove a user's whole record (identity, charts, readings). Idempotent."""
+    if not sub:
+        return False
+
+    def _drop(current):
+        data = current or {"users": []}
+        data["users"] = [u for u in data.get("users", []) if u.get("sub") != sub]
+        return data
+
+    result = storage.update_json(USERS_KEY, _drop, default={"users": []})
+    if result is None:
+        log.warning("users.delete_user: storage unavailable — record not removed")
+        return False
+    return True
+
+
+def delete_readings_for_chart(sub: str, chart_id: str) -> bool:
+    """Drop one user's readings about `chart_id`; keep the rest and the record."""
+    if not sub or not chart_id:
+        return False
+
+    def _drop(current):
+        data = current or {"users": []}
+        for existing in data.get("users", []):
+            if existing.get("sub") == sub:
+                existing["readings"] = [
+                    r for r in existing.get("readings", [])
+                    if r.get("chart_id") != chart_id
+                ]
+                return data
+        return data  # user absent: nothing to drop
+
+    result = storage.update_json(USERS_KEY, _drop, default={"users": []})
+    if result is None:
+        log.warning("users.delete_readings_for_chart: storage unavailable")
+        return False
+    return True

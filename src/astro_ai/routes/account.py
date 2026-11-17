@@ -5,6 +5,7 @@ Owns:
     POST /auth/google   verify a Google Identity Services ID token, start a
                         signed-in session and merge cross-device charts
     POST /auth/logout   clear the user portion of the session cookie
+    POST /account/delete  erase the signed-in user's stored data (#1105)
     GET  /account       signed-in profile page
 
 Moved verbatim from ``main.py``; only the decorator prefix changed
@@ -18,16 +19,17 @@ import logging
 import os
 
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from starlette.concurrency import run_in_threadpool
 
-from astro_ai import notify, revocation, users
+from astro_ai import notify, revocation, subscribers, users
 from astro_ai.origin_guard import same_origin_or_403
 from astro_ai.routes.deps import _lang, _safe_redirect_target, templates
 from astro_ai.routes.llm_support import _fire_error_alert
 from astro_ai.session import (
     ChartCollection,
     SessionUser,
+    clear_collection,
     clear_user,
     load_collection,
     load_user,
@@ -215,3 +217,41 @@ async def account(request: Request) -> HTMLResponse:
             "lang": _lang(request),
         },
     )
+
+
+# ─── Account deletion (#1105) ───────────────────────────────────────────────
+
+
+@router.post("/account/delete")
+async def account_delete(
+    request: Request,
+    confirm: str = Form(default=""),
+) -> Response:
+    """Erase the signed-in user's record, readings and newsletter subscription.
+
+    The session cookie is cleared ONLY when both stores confirmed: clearing it
+    after a partial failure would sign the user out of the one place that can
+    retry, leaving data behind with no way to ask again. Both steps are
+    idempotent, so a retry is safe. Nothing here logs the email or name.
+    """
+    user = load_user(request)
+    if user is None:
+        return RedirectResponse("/", status_code=303)
+    if confirm != "DELETE":
+        return HTMLResponse(
+            "Type DELETE in the box to confirm. Nothing was deleted.",
+            status_code=400,
+        )
+    # Run both even if the first fails, so one outage does not leave the
+    # newsletter subscription behind for a retry that may never come.
+    removed_user = users.delete_user(user.sub)
+    removed_sub, _msg = subscribers.unsubscribe(user.email)
+    if not (removed_user and removed_sub):
+        return HTMLResponse(
+            "We could not finish deleting your account. You are still signed in; "
+            "please try again in a few minutes.",
+            status_code=503,
+        )
+    response = RedirectResponse("/", status_code=303)
+    clear_collection(response)  # drops the whole __session: user, charts, lang
+    return response

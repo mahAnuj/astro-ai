@@ -158,3 +158,41 @@ def test_the_vivah_article_names_the_first_excellent_spring_date_the_finder_give
     text = Path("src/astro_ai/templates/learn/vivah-muhurat-2027.html").read_text()
     assert "rates the 18th the first excellent wedding day of the spring season" in text
     assert "rates the 16th the first excellent" not in text
+
+
+def _finder_page(days=60):
+    from fastapi.testclient import TestClient
+
+    from astro_ai.main import app
+
+    page = TestClient(app).post("/muhurat", data={
+        "event_type": "griha_pravesh", "city": "New Delhi",
+        "start_date": "2026-11-14", "days": days})
+    assert page.status_code == 200
+    return html.unescape(page.text)
+
+
+def test_abhijit_carries_a_tick_only_where_it_clears_rahu_kaal_and_bhadra():
+    # #1025: the row used to print "✓ Abhijit 11:45-12:27" over minutes it also marked "✗ Rahu Kaal".
+    import re
+
+    body = _finder_page()
+    cells = re.findall(r'<span class="text-(?:emerald|amber)-800">([✓~])</span> Abhijit (\d\d:\d\d.\d\d:\d\d)</div>', body)
+    assert cells, "the finder rendered no Abhijit cell"
+    # a window string repeats across dates, so key it to the set of overlap states it has
+    states: dict[str, set[bool]] = {}
+    for c in m.find_candidates("griha_pravesh", "New Delhi", date(2026, 11, 14), 60):
+        if c.abhijit_muhurta:
+            states.setdefault(c.abhijit_muhurta.replace("–", "-"), set()).add(bool(c.abhijit_overlaps))
+    marks = {mark: 0 for mark in "✓~"}
+    for mark, window in cells:
+        marks[mark] += 1
+        assert (mark == "~") in states[window.replace("–", "-")], (mark, window)
+    assert marks["~"] and marks["✓"], marks
+    assert '<span class="text-amber-800">~</span> Abhijit 11:45' in body  # 2026-11-20, the issue's repro
+
+
+def test_the_finder_no_longer_calls_abhijit_the_most_auspicious_window():
+    body = _finder_page(days=14)
+    assert "most auspicious window, a fifteenth" not in body
+    assert "holds no source that calls Abhijit the most auspicious window" in body
