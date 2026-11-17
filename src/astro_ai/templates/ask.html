@@ -213,7 +213,7 @@
 
 {# Track ask submissions in GA4 -- which categories get asked most + usage volume.
    #1067: declared, fired by analytics.js; an inline Analytics call runs before the deferred script. #}
-{% if answer %}
+{% if answer and fire_ask_answered %}
 {% from "_analytics_event.html" import analytics_event %}
 {{ analytics_event('ask_answered', {'category': current_category, 'lang': lang}) }}
 {% endif %}

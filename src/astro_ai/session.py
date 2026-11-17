@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import os
 import secrets
+import time
 from dataclasses import asdict, dataclass, replace
 from typing import Final
 
@@ -186,6 +187,105 @@ def _write_session(response: Response, data: dict) -> None:
         # would stop the cookie round-tripping over http://127.0.0.1.
         secure=bool(os.environ.get("K_REVISION")),
     )
+
+
+# ---------------------------------------------------------------------------
+# One-shot "this GET follows a completed POST" flags (#1068)
+# ---------------------------------------------------------------------------
+# `kundli_generated` and `ask_answered` are declared by the template that renders
+# the RESULT, and that template also renders on every revisit (/kundli with a
+# saved chart, /r/<id>, a reload of /ask?q=), so a render cannot tell a
+# completion from a re-view. The POST's 303 sets the flag, the GET that follows
+# reads it and clears it.
+#
+# THE FLAG LIVES INSIDE `__session`, not in a cookie of its own. Firebase Hosting
+# forwards only `__session` (module docstring), so a `bhagya_ev_*` cookie would be
+# stored by the browser and stripped before Cloud Run saw it: the event would
+# never fire on shubhagya.com while every TestClient test stayed green.
+#
+# Shape: `ev = {name: expiry_epoch}`. `__session` lasts a year, so the 120s
+# lifetime is carried by the stamp, and a stale one is ignored. Names are a fixed
+# set so nothing a request carries can shape a key.
+#
+# Both writers below return the response with exactly ONE `__session`
+# Set-Cookie. Every other `save_*` here re-reads the REQUEST cookie, so two
+# writers on one response leave two headers and the browser keeps the last,
+# silently dropping the first writer's data (the bug `save_session_atomic`
+# documents). So a flag write starts from the cookie already pending on the
+# response, when there is one, and replaces that header. Call these AFTER the
+# route's other session write: a `save_*` made later would re-read the request
+# and drop the flag.
+EVENT_FLAG_NAMES: Final[frozenset[str]] = frozenset({"kundli_generated", "ask_answered"})
+EVENT_FLAG_TTL: Final[int] = 120  # seconds
+
+
+def _check_flag_name(name: str) -> None:
+    if name not in EVENT_FLAG_NAMES:
+        raise ValueError(f"unknown event flag {name!r}")
+
+
+def _pending_session(request: Request, response: Response) -> dict:
+    """The session as this response will leave it: the `__session` cookie an
+    earlier writer already put on `response`, else the one the request carried."""
+    prefix = (COOKIE_NAME + "=").encode("latin-1")
+    for key, value in response.raw_headers:
+        if key == b"set-cookie" and value.startswith(prefix):
+            raw = value[len(prefix):].split(b";", 1)[0].decode("latin-1")
+            try:
+                data = _serializer().loads(raw)
+            except BadSignature:
+                break
+            return data if isinstance(data, dict) else {}
+    return _load_session(request)
+
+
+def _replace_session(response: Response, data: dict) -> None:
+    """`_write_session`, but any `__session` header already on the response goes."""
+    prefix = (COOKIE_NAME + "=").encode("latin-1")
+    response.raw_headers[:] = [
+        (k, v) for k, v in response.raw_headers
+        if not (k == b"set-cookie" and v.startswith(prefix))
+    ]
+    _write_session(response, data)
+
+
+def _live_flags(data: dict) -> dict:
+    ev = data.get("ev")
+    if not isinstance(ev, dict):
+        return {}
+    now = time.time()
+    return {k: v for k, v in ev.items()
+            if k in EVENT_FLAG_NAMES and isinstance(v, (int, float)) and v > now}
+
+
+def set_event_flag(request: Request, response: Response, name: str) -> None:
+    """Mark that the next GET is the one that follows a completed `name`."""
+    _check_flag_name(name)
+    data = _pending_session(request, response)
+    flags = _live_flags(data)
+    flags[name] = int(time.time()) + EVENT_FLAG_TTL
+    data["ev"] = flags
+    _replace_session(response, data)
+
+
+def event_flag_present(request: Request, name: str) -> bool:
+    _check_flag_name(name)
+    return name in _live_flags(_load_session(request))
+
+
+def clear_event_flag(request: Request, response: Response, name: str) -> None:
+    """Consume the flag. Call only when `event_flag_present` was True: this
+    writes the year-long cookie, and a read-only GET must not (privacy.html
+    promises visits that only read it do not extend it)."""
+    _check_flag_name(name)
+    data = _pending_session(request, response)
+    flags = _live_flags(data)
+    flags.pop(name, None)
+    if flags:
+        data["ev"] = flags
+    else:
+        data.pop("ev", None)
+    _replace_session(response, data)
 
 
 def load_collection(request: Request) -> ChartCollection:

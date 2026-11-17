@@ -15,6 +15,10 @@ Four layers, because each is blind to the others:
   2. RENDER: the three real routes emit the declaring element, with the right
      name and params that parse as JSON -- and a hostile value cannot break out
      of the attribute.
+     (kundli_generated and ask_answered render only on the GET that follows their
+     POST, #1068: these tests reach them through the `saved_chart` / POST /ask
+     fixtures, whose cookie jar carries the one-shot flag. When they fire and
+     when they do not is tests/test_analytics_completion_events.py.)
   3. BEHAVIOUR (Node, the real analytics.js against a stub DOM): an event fires
      once on load, a second scan does not re-fire it, an element a swap adds later
      fires once, and a malformed payload neither throws nor blocks its neighbour.

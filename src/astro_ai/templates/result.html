@@ -1127,5 +1127,7 @@
 </main>
 {# #1067: declared, fired by analytics.js (an inline Analytics call runs before the deferred script and throws). #}
 {% from "_analytics_event.html" import analytics_event %}
+{% if fire_kundli_generated %}
 {{ analytics_event('kundli_generated', {'lang': lang}) }}
+{% endif %}
 {% endblock %}
