@@ -218,17 +218,41 @@ than no attribution, because it turns a real check into a fabricated one. Both
 tiers additionally DECLINE when the winning scope carries two or more dates of
 the same year — one festival name cannot say which of them it labels.
 
+GATE 5 - TRANSIT ARTICLES ARE CHECKED AGAINST THE EPHEMERIS (#1071)
+-------------------------------------------------------------------
+`gochar-*` articles state planetary ingress and station dates, which are not
+festivals: no registry row or computed festival source can answer for them, so
+Gate 1 reported every one as UNCHECKED ("no known festival named"). The date
+that matters on such a page is a fact about the sky, and the repo already
+computes it: `chart._sid_calc_ut`, the Lahiri frame the site's own charts use.
+
+Gate 5 finds every date-shaped string in a `gochar-*` article — both written
+forms, with or without a year, INCLUDING both ends of a range, which Gates 1-4
+leave undefended — and requires it to fall within one day of an ephemeris
+event (a sign ingress of Jupiter, Saturn, Mars, the true node or the mean node,
+or a retrograde/direct station of Mercury, Jupiter, Saturn or Mars). Within one
+day because an ingress near midnight differs by a day between an ephemeris and
+a Panchang. A year-less date is read in the year in the article's own filename
+or the year after it.
+
+It is the opposite of a suppression list: it adds checks to dates that had none
+and fails on a mismatch. What it does NOT do is say WHICH event a date is — a
+wrong date that happens to land on some other real event passes here. The
+per-article test (tests/test_gochar_2027_claims.py) pins each date to its named
+event; this gate is the repo-wide floor that makes "0 UNCHECKED" mean something.
+
 Usage:  uv run python scripts/verify_learn_article_dates.py
 """
 
 from __future__ import annotations
 
+import functools
 import html
 import re
 import sys
 from collections import Counter
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable
 
@@ -1310,6 +1334,131 @@ def gate_4_corroboration(claims: list[Claim], bare: list[BareDate]) -> list[str]
 # Coverage - what this gate could not check, and why
 # --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
+# Gate 5 - transit (gochar-*) articles against the ephemeris
+# --------------------------------------------------------------------------
+
+_IST = timezone(timedelta(hours=5, minutes=30))
+_CAP_MONTHS = {m.capitalize(): n for m, n in _MONTHS.items() if len(m) > 3}
+_TRANSIT_DATE_RE = re.compile(
+    rf"(?:\b(?P<day_a>\d{{1,2}}){_ORDINAL}\s+(?P<month_a>{'|'.join(_CAP_MONTHS)})\b"
+    rf"|\b(?P<month_b>{'|'.join(_CAP_MONTHS)})\s+(?P<day_b>\d{{1,2}}){_ORDINAL}(?!\d))"
+    rf"(?:,?\s+(?P<year>\d{{4}})\b)?"
+)
+
+
+def is_transit(path: Path) -> bool:
+    """A transit article is named `gochar-<year>-...`; derived from the filename, never listed."""
+    return path.stem.startswith("gochar-")
+
+
+@functools.lru_cache(maxsize=1)
+def ephemeris_event_days() -> frozenset[date]:
+    """IST calendar days of every ingress and station a transit article may name, 2025-2028.
+
+    Swiss Ephemeris through `chart._sid_calc_ut` (sidereal Lahiri, the site's own frame), scanned
+    hourly with a bisection on every change, exactly as tests/test_gochar_2027_claims.py does.
+    """
+    import swisseph as swe
+
+    from astro_ai.chart import _sid_calc_ut
+
+    def lon_speed(jd: float, body: int) -> tuple[float, float]:
+        pos = _sid_calc_ut(jd, body, swe.FLG_SPEED)[0]
+        return pos[0], pos[3]
+
+    def ist_day(jd: float) -> date:
+        y, mo, d, h = swe.revjul(jd)
+        t = datetime(y, mo, d, tzinfo=timezone.utc) + timedelta(hours=h)
+        return t.astimezone(_IST).date()
+
+    def bisect(pred, a: float, b: float) -> float:
+        fa = pred(a)
+        for _ in range(50):
+            m = (a + b) / 2
+            if pred(m) == fa:
+                a = m
+            else:
+                b = m
+        return b
+
+    start, end, step = swe.julday(2025, 1, 1, 0.0), swe.julday(2029, 1, 1, 0.0), 1 / 24
+    days: set[date] = set()
+    sign = lambda jd, body: int(lon_speed(jd, body)[0] // 30)  # noqa: E731
+    moving = lambda jd, body: lon_speed(jd, body)[1] > 0  # noqa: E731
+    for body, pred in (
+        [(b, sign) for b in (swe.JUPITER, swe.SATURN, swe.MARS, swe.TRUE_NODE, swe.MEAN_NODE)]
+        + [(b, moving) for b in (swe.MERCURY, swe.JUPITER, swe.SATURN, swe.MARS)]
+    ):
+        jd, prev = start, pred(start, body)
+        while jd < end:
+            n = jd + step
+            cur = pred(n, body)
+            if cur != prev:
+                days.add(ist_day(bisect(lambda x, b=body, f=pred: f(x, b), jd, n)))
+            jd, prev = n, cur
+    return frozenset(days)
+
+
+def transit_dates() -> list[tuple[Path, int, str, int, int, int | None]]:
+    """(path, line, raw, month, day, year-or-None) for every date string in every transit article.
+
+    Read from the same reader-visible text the other gates use, so a date inside a comment is not a
+    claim. Both ends of a range are separate matches here, which is the point.
+    """
+    out = []
+    for path in sorted(LEARN_DIR.glob("*.html")):
+        if not is_transit(path):
+            continue
+        open_span: int | None = None
+        for line_no, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if not raw.strip():
+                continue
+            visible, open_span = _visible(raw, open_span)
+            text = plain_text(visible)
+            for m in _TRANSIT_DATE_RE.finditer(text):
+                month = _CAP_MONTHS[m.group("month_a") or m.group("month_b")]
+                day_num = int(m.group("day_a") or m.group("day_b"))
+                year = int(m.group("year")) if m.group("year") else None
+                out.append((path, line_no, m.group(0), month, day_num, year))
+    return out
+
+
+def _near_event(events: frozenset[date], year: int, month: int, day_num: int) -> bool:
+    try:
+        d = date(year, month, day_num)
+    except ValueError:
+        return False
+    return any(abs((d - e).days) <= 1 for e in events)
+
+
+def gate_5_transit_dates(dates: list[tuple[Path, int, str, int, int, int | None]]) -> list[str]:
+    failures: list[str] = []
+    if not dates:
+        print("  no transit (gochar-*) article carries a date")
+        return failures
+    events = ephemeris_event_days()
+    per_article: Counter[str] = Counter()
+    for path, line_no, raw, month, day_num, year in dates:
+        per_article[path.name] += 1
+        if year is not None:
+            years = [year]
+        else:
+            stem = re.search(r"20\d\d", path.stem)
+            years = [int(stem.group(0)), int(stem.group(0)) + 1] if stem else list(range(2025, 2029))
+        if not any(_near_event(events, y, month, day_num) for y in years):
+            failures.append(
+                f"{path.name}:{line_no}: {raw!r} is within a day of no ingress or station in "
+                f"{', '.join(str(y) for y in years)} (swisseph, Lahiri, IST). Fix the date, or if the "
+                "ephemeris is wrong fix chart._sid_calc_ut first; do not suppress."
+            )
+    print(f"  {len(dates)} date string(s) in {len(per_article)} transit article(s) checked against "
+          f"{len(events)} ephemeris event day(s)")
+    for name, n in sorted(per_article.items()):
+        print(f"    {name}: {n} date string(s), ranges' endpoints included")
+    return failures
+
+
 def print_coverage(
     claims: list[Claim], unclaimed: list[Unclaimed], n_articles: int,
     bare: list[BareDate],
@@ -1317,12 +1466,17 @@ def print_coverage(
     explicit = [c for c in claims if c.year_source == "explicit"]
     inherited = [c for c in claims if c.year_source == "inherited"]
     checked = [c for c in explicit if c.source is not None]
-    unchecked = [c for c in explicit if c.source is None]
-    pct = (100.0 * len(checked) / len(explicit)) if explicit else 0.0
+    # A transit article's dates are read by Gate 5 (the ephemeris), so Gate 1's "no festival named"
+    # is not an UNCHECKED claim there: it is a claim some other gate owns.
+    transit_checked = [c for c in explicit if c.source is None and is_transit(c.path)]
+    unchecked = [c for c in explicit if c.source is None and not is_transit(c.path)]
+    unclaimed = [u for u in unclaimed if not is_transit(u.path)]
+    pct = (100.0 * (len(checked) + len(transit_checked)) / len(explicit)) if explicit else 0.0
 
     by_scope = Counter(c.scope for c in checked)
     print(f"  {n_articles} article(s) scanned, {len(explicit)} dated claim(s) found")
-    print(f"  {len(checked)} checked ({pct:.0f}%), {len(unchecked)} unchecked")
+    print(f"  {len(checked)} checked against a festival source, {len(transit_checked)} against the "
+          f"ephemeris (Gate 5) ({pct:.0f}%), {len(unchecked)} unchecked")
     print(f"  attribution scope: {by_scope['line']} line, {by_scope['block']} block")
     for claim in unchecked:
         tag = "strict" if is_strict(claim.path) else "non-strict"
@@ -1436,6 +1590,8 @@ def main() -> int:
          lambda: gate_3_strict_attribution(claims)),
         ("Gate 4 - bare dates in muhurat/festival articles must corroborate",
          lambda: gate_4_corroboration(claims, bare)),
+        ("Gate 5 - transit (gochar-*) article dates vs the ephemeris",
+         lambda: gate_5_transit_dates(transit_dates())),
     ]
 
     all_failures: list[str] = []
