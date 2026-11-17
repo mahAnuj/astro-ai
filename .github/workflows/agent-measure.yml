@@ -417,7 +417,7 @@ jobs:
         if: "!cancelled() && steps.ask_creds_gone.outcome == 'success' && steps.ask_due.outputs.due == 'true' && steps.ask_sample.outcome == 'success' && steps.ask_sample.outputs.n != '0'"
         continue-on-error: true
         timeout-minutes: 25
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278
         env:
           CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: "1"
         with:
