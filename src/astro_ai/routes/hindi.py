@@ -102,7 +102,7 @@ async def hindi_unpublished(request: Request, path: str) -> RedirectResponse:
     # strip_hi_prefix, NOT english_url, for the else-branch. english_url runs
     # _normalise, which lowercases and strips the trailing slash — so
     # /hi/learn/karva-chauth-2026/ redirected to /learn/karva-chauth-2026,
-    # which Starlette then 307'd back to the slashed form: two hops for all 77
+    # which Starlette then redirected (307, now 308, #1176) back to the slashed form: two hops for all 77
     # /learn/ URLs. The same normalisation defect as the picker's `next`, one
     # layer over, and hindi_pages.strip_hi_prefix's own docstring forbids
     # exactly this use of english_url (QA round 6, B-2).
@@ -114,8 +114,8 @@ async def hindi_unpublished(request: Request, path: str) -> RedirectResponse:
     # Handing the path through unchanged means the ENGLISH route's own slash
     # convention decides, rather than this module guessing one. Measured, and
     # the conventions genuinely differ: /learn/ is canonical WITH the slash
-    # (/learn 307s to /learn/) while /about is canonical WITHOUT it (/about/
-    # 307s to /about). english_url normalised every path to the no-slash form,
+    # (/learn redirects to /learn/) while /about is canonical WITHOUT it (/about/
+    # redirects to /about). english_url normalised every path to the no-slash form,
     # which was right for /about and wrong for all 77 /learn/ URLs. A reader
     # who types a slash a route does not use now pays exactly the one extra
     # hop they would pay typing it on the English URL directly — pre-existing
