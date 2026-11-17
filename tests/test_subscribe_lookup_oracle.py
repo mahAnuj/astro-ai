@@ -20,6 +20,7 @@ session is a real signed cookie, so `load_user` is the production code path.
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 
 import pytest
 
@@ -64,7 +65,10 @@ def _record(blob, email):
 def _sign_in(client, email):
     """A real signed session cookie for `email`, as the OAuth callback would set."""
     cookie = session._serializer().dumps(
-        {"user": {"email": email, "name": "T", "sub": f"sub-{email}", "since": "2026-01-01"}})
+        {"user": {"email": email, "name": "T", "sub": f"sub-{email}",
+                  # now, not a literal: `load_user` refuses a sign-in older than
+                  # SIGNIN_MAX_AGE (#1106), so a fixed date goes stale on its own.
+                  "since": datetime.now(timezone.utc).isoformat()}})
     client.cookies.set(session.COOKIE_NAME, cookie)
 
 

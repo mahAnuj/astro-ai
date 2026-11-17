@@ -21,6 +21,7 @@ grep.
 from __future__ import annotations
 
 import re
+from datetime import datetime, timezone
 
 import pytest
 
@@ -48,7 +49,9 @@ def _text(html: str) -> str:
 def _signed_in(client) -> None:
     cookie = session._serializer().dumps({
         "user": {"email": "reader@example.test", "name": "Reader",
-                 "sub": "sub-1", "since": "2026-10-01T00:00:00+00:00"},
+                 "sub": "sub-1",
+                 # now, not a literal: a sign-in older than SIGNIN_MAX_AGE is refused (#1106)
+                 "since": datetime.now(timezone.utc).isoformat()},
     })
     client.cookies.set(session.COOKIE_NAME, cookie)
 
