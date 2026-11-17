@@ -24,7 +24,7 @@ import logging
 import time as _time
 from datetime import date
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
 from astro_ai import (
@@ -256,6 +256,7 @@ async def subscribe_lookup(request: Request, email: str = Form(...)) -> JSONResp
 
 @router.post("/subscribe")
 async def subscribe(request: Request,
+                    background_tasks: BackgroundTasks,
                     email: str = Form(...),
                     lang: str = Form("en"),
                     city: str = Form(""),
@@ -265,16 +266,20 @@ async def subscribe(request: Request,
     Called from the modal in _subscribe_modal.html via fetch(). Returns JSON
     `{ok: true}` on success or `{ok: false, error: "..."}` so the frontend
     can show inline feedback without a full page reload. The BODY, status and
-    headers are the same for a new and an existing address, but the TIMING is
-    not: a new address builds and sends the welcome email inside the request
-    (measured in #1159's QA round: ~300-2300 ms against ~2-40 ms for an
-    existing one), so an anonymous caller can still infer membership from the
-    response time. That channel is tracked separately (#1163);
-    only double opt-in or sending the welcome after the response closes it.
+    headers are the same for a new and an existing address, and so is the
+    TIMING: the welcome email is sent AFTER the response, as a background task
+    (#1163). Sending it inline made a new address take ~300-2300 ms against
+    ~2-40 ms for an existing one (measured in #1159's QA round), which let an
+    anonymous caller infer membership from the response time.
 
     Side effect: sends a one-off welcome email to brand-new subscribers
     (skipped for re-subscribes). Welcome failure is logged but doesn't
     block the success response — the subscription itself already saved.
+    What this does NOT close: a probe still subscribes the address and mails
+    it, so anyone can send a stranger a welcome email. Only double opt-in
+    closes that, and it is a product decision, not an engineering one (#1163
+    stays open for it). See docs/decisions/2026-11-17-subscribe-welcome-after-response.md
+    for the delivery risk the post-response send accepts.
 
     An existing address's stored prefs are rewritten only when the caller is
     signed in as that address (#1159). Anonymous, the endpoint cannot change a
@@ -309,15 +314,32 @@ async def subscribe(request: Request,
             )
         return JSONResponse({"ok": False, "error": msg}, status_code=400)
     if is_new:
-        try:
-            _send_welcome_email(email, lang, city, rashi)
-        except Exception as err:
-            # Log and continue — the user is already subscribed; missing
-            # welcome is a minor degradation, not a failure.
-            logging.getLogger(__name__).warning("welcome email failed for %s: %s", email, err)
-        # Only notify on brand-new subscriptions, not re-subscribes.
+        # AFTER the response, so a new address does not take longer than an
+        # existing one (#1163). The sync wrapper runs in the threadpool.
+        background_tasks.add_task(_send_welcome_after_response, email, lang, city, rashi)
+        # Only notify on brand-new subscriptions, not re-subscribes. Deliberately
+        # HERE, on the event loop, and not in the background function: notify()
+        # schedules with `asyncio.get_event_loop().create_task` and skips on
+        # RuntimeError, so from a threadpool thread the alert would be dropped
+        # with nothing logged. It only schedules a task, so it costs ~nothing.
         notify.subscribed(email=email, source=(city or "unknown"), lang=lang)
     return JSONResponse({"ok": True})
+
+
+def _send_welcome_after_response(email: str, lang: str, city: str, rashi: str) -> None:
+    """Background-task body: send the welcome and never let it raise.
+
+    Runs in the threadpool after /subscribe has answered. An exception escaping
+    a background task is logged by the server and the subscriber has already
+    been told "ok", so the failure is logged here under the same wording the
+    inline version used.
+    """
+    try:
+        _send_welcome_email(email, lang, city, rashi)
+    except Exception as err:  # noqa: BLE001
+        # Log and continue — the user is already subscribed; missing
+        # welcome is a minor degradation, not a failure.
+        logging.getLogger(__name__).warning("welcome email failed for %s: %s", email, err)
 
 
 def _panchang_for_city(city: str | None, request_cache: dict | None = None):
