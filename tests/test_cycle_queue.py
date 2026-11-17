@@ -73,8 +73,9 @@ class FakeGh:
             return "\n".join(json.dumps({"number": n, "ref": ref, "sha": self.heads.get(n, ""),
                                          "labels": [l for l in labs.split(",") if l]})
                              for n, (ref, labs, _m) in self.open_prs.items())
-        if args[0] == "api" and "/pulls/" in args[1] and args[-1] == ".mergeable":
-            return self.open_prs[int(args[1].rsplit("/", 1)[1])][2] + "\n"
+        if args[0] == "api" and "/pulls/" in args[1] and args[-1] == ".mergeable_state":
+            m = self.open_prs[int(args[1].rsplit("/", 1)[1])][2]
+            return {"true": "clean", "false": "dirty", "null": "unknown"}.get(m, m) + "\n"
         if args[0] == "api" and "/pulls/" in args[1]:
             return self.heads.get(int(args[1].rsplit("/", 1)[1]), "") + "\n"
         if args[:3] == ["api", "-X", "POST"]:
@@ -670,3 +671,13 @@ def test_a_fix_pr_entry_is_parsed_and_runs_in_the_build_lane():
     m = cq.ENTRY.search("<!-- agent-work-queue: kind=fix_pr target=951 by=agent-work-qa-fix -->")
     assert m and m.group(1) == "fix_pr" and m.group(2) == "951"
     assert cq.lane_of("fix_pr") == "build"
+
+
+def test_an_ISSUE_entry_whose_PR_passed_QA_but_went_RED_on_the_same_head_is_still_started():
+    """2026-11-17: #1121, #1127, #1136, #1138 -- QA PASS bound to the head, gates
+    then red on that head, GitHub `blocked`. The red-gates fix was dropped as
+    'waiting to merge' each time and the PRs sat for a day."""
+    gh = _issue_431(mergeable="blocked")
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls and car.calls[0][0] == "issue=431"
