@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-16T23:58:08Z",
+  "generated_at": "2026-11-17T02:56:14Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 131,
+  "open": 132,
   "with_ask": 46,
   "by_area": {
     "UNCLASSIFIED": 48,
@@ -23,6 +23,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "TESTS": 1,
     "PRIVACY": 1,
     "KNOWLEDGE": 1,
     "MUHURAT": 1,
@@ -35,19 +36,34 @@
   },
   "by_type": {
     "untyped": 35,
-    "bug": 31,
+    "bug": 32,
     "enhancement": 29,
     "chore": 19,
     "correctness": 12,
     "design": 5
   },
   "by_priority": {
-    "unset": 95,
+    "unset": 96,
     "medium": 22,
     "high": 14
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1141,
+      "title": "tests: test_ops_day_picker freezes TODAY at import; gates go red across UTC midnight",
+      "ask": "",
+      "area": "TESTS",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-17T00:14:02Z",
+      "updated": "2026-11-17T00:14:02Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1139,
       "title": "Abhijit is called 'best' / 'most auspicious' on /panchang, today, trivia and the rashifal prompt; no knowledge/ line says so (follow-up to #1025)",
@@ -56,10 +72,13 @@
       "type": "correctness",
       "priority": "unset",
       "labels": [
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-16T23:57:18Z",
-      "updated": "2026-11-16T23:57:18Z",
+      "updated": "2026-11-17T02:55:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -77,7 +96,7 @@
         "design-proposal"
       ],
       "created": "2026-11-16T17:33:22Z",
-      "updated": "2026-11-16T17:33:22Z",
+      "updated": "2026-11-17T01:49:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -177,12 +196,12 @@
         "skill:knowledge-integrator",
         "astrology-correctness",
         "chore",
-        "qa-fail",
+        "qa-pass",
         "provenance:trusted",
-        "qa:independent"
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T10:27:01Z",
-      "updated": "2026-11-16T18:44:07Z",
+      "updated": "2026-11-17T00:33:17Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -511,7 +530,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-14T13:15:47Z",
-      "updated": "2026-11-16T23:57:23Z",
+      "updated": "2026-11-17T00:14:12Z",
       "blocked": false,
       "needs_evidence": false
     },
