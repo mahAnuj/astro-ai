@@ -32,7 +32,7 @@ trust the number.
 | top-level modules | measured | `ls src/astro_ai/*.py \| wc -l` |
 | route handlers | 69 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 25 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
-| top-level templates | 58 | `ls src/astro_ai/templates/*.html \| wc -l` |
+| top-level templates | 59 | `ls src/astro_ai/templates/*.html \| wc -l` |
 | `/learn` articles | 77 | `ls src/astro_ai/templates/learn/*.html \| wc -l` |
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
 | knowledge files | 11 files, 9961 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
