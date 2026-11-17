@@ -327,11 +327,13 @@ jobs:
       # THIS job, not a job of its own: a new job is a permissions block, which
       # verify_workflow_permissions.py reads as a widening.
       #
-      # The repository is public and so are these logs. Three things keep a
+      # The repository is public and so are these logs. Four things keep a
       # user's words out of them: the collector whitelists fields and prints
-      # counts only; the audit agent runs with show_full_output "false"; and
+      # counts only; the audit agent runs with show_full_output "false";
       # ask_audit_guard.py refuses (and deletes) any output that quotes the
-      # sample before it can be committed or summarised.
+      # sample before it can be committed or summarised; and the agent can
+      # reach GitHub only through ask_audit_post.py, which runs the same check
+      # before it posts anything.
       - name: Is the /ask audit due
         id: ask_due
         if: "!cancelled()"
@@ -357,11 +359,15 @@ jobs:
       # its own: the three variables pointing at it are blanked for every later
       # step through $GITHUB_ENV. Same shape as agent-steward's app-health
       # watch. always(): a failed collector must not leave the creds behind.
+      # The checkout's persisted GITHUB_TOKEN (an http.extraheader in
+      # .git/config) goes too: the agent can Read files, and no step after
+      # this one in the job uses git (QA on PR #1169, finding 3).
       - name: Remove the bucket credentials before the audit agent runs
         if: always()
         env:
           CREDS: ${{ steps.gcs.outputs.credentials_file_path }}
         run: |
+          git config --local --unset-all http.https://github.com/.extraheader || true
           [ -n "$CREDS" ] && rm -f "$CREDS"
           rm -f gha-creds-*.json "$GITHUB_WORKSPACE"/gha-creds-*.json
           {
@@ -374,9 +380,27 @@ jobs:
 
       # show_full_output "false" is the load-bearing line: "true" prints every
       # tool result -- every Read of the sample -- into this public log.
+      # display_report "false" explicitly, not by default: v1 defaults it off
+      # today, but @v1 is a floating tag and the report is Claude-authored text.
       # No WebFetch or WebSearch, and Bash only for the named commands, so the
-      # agent has no general way to send the sample anywhere. `gh issue` can
-      # still post text, which is why every body goes through ask_audit_guard.py.
+      # agent has no general way to send the sample anywhere. Posting to GitHub
+      # is ask_audit_post.py and nothing else: it runs the guard and the
+      # Evidence Block check itself and posts only if both pass, so a raw
+      # `gh issue create|comment` is NOT on the list (QA on PR #1169).
+      #
+      # --permission-mode default: v1 otherwise runs in AUTO mode, where a
+      # safety review may approve a call no allow rule covers (the action's
+      # docs/usage.md, "Permission Mode": "Opt out if your workflow relies on
+      # --allowedTools as a strict list"). This step does rely on it.
+      # Nothing on the list can print the environment: no env/printenv, no
+      # jq (`jq -n env`), no wc or free-form date (`wc --files0-from` and
+      # `date -f` echo a file's lines in their errors), and Read is denied
+      # /proc, /dev, .git, the runner temp dir and ~/.config / ~/.claude.
+      # Writes are confined to the three outputs and /tmp/ask-work.
+      # CLAUDE_CODE_SUBPROCESS_ENV_SCRUB "1": the action's documented
+      # best-effort scrub of Anthropic, cloud and Actions secrets from the
+      # environment of every tool subprocess (docs/security.md); it is
+      # otherwise on only with allowed_non_write_users.
       # continue-on-error and a step timeout: a slow or failed audit must not
       # fail the measurement run, whose report is already persisted above.
       - name: Audit the /ask answers
@@ -385,9 +409,12 @@ jobs:
         continue-on-error: true
         timeout-minutes: 25
         uses: anthropics/claude-code-action@v1
+        env:
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: "1"
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: "false"
+          display_report: "false"
           prompt: |
             Act as the `qa` agent in its LLM-prose-audit role: read .claude/agents/qa.md,
             sections "Auditing LLM prose" and "Untrusted input, and what QA will not PASS",
@@ -446,11 +473,16 @@ jobs:
             - First search: `gh issue list --state open --label astrology-correctness
               --search "ask-audit-class: <class>"`. If one exists, add a comment with this
               week's count instead of a new issue.
-            - Write the body to /tmp/ask-work/issue-<class>.md, then run
-              `python3 scripts/ask_audit_guard.py issue-body /tmp/ask-work/issue-<class>.md
-              --labels astrology-correctness,bug,layer:prompt` and fix the body until it
-              exits 0. Run `python3 scripts/ask_audit_guard.py leaks <file>` on every
-              comment body too. Only then post, with --body-file.
+            - Write the body to /tmp/ask-work/issue-<class>.md. Post ONLY with
+              `python3 scripts/ask_audit_post.py --body-file /tmp/ask-work/issue-<class>.md
+              --title "<title>" --labels astrology-correctness,bug,layer:prompt` (a new
+              issue) or `... --body-file <file> --labels astrology-correctness,bug,layer:prompt
+              --issue <n>` (a comment). It refuses a body or title that quotes the sample
+              and a failing Evidence Block, and posts nothing then: fix the body and re-run
+              it. A comment needs the Evidence Block too, with this week's count. You have
+              no other way to post. It also adds `provenance:outsider`, so the loop never
+              builds from these issues as if they were its own.
+            - Titles are public too: no user text in them.
             - Labels: astrology-correctness, bug, layer:prompt.
             - The body carries the hidden line `<!-- ask-audit-class: <class> -->`, what the
               defect is, how many of n_graded showed it, ONE paraphrased example, the
@@ -474,19 +506,44 @@ jobs:
           claude_args: |
             --max-turns 80
             --effort high
-            --allowedTools "Read,Write,Glob,Grep,Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(python3 scripts/ask_audit_guard.py:*),Bash(jq:*),Bash(date:*),Bash(wc:*)"
-            --disallowedTools "WebFetch,WebSearch"
+            --permission-mode default
+            --allowedTools "Read,Glob,Grep,Edit(//tmp/ask-work/**),Edit(//tmp/measure/ask-audit.json),Edit(//tmp/ask-audit-report.md),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh label list:*),Bash(python3 scripts/ask_audit_guard.py:*),Bash(python3 scripts/ask_audit_post.py:*),Bash(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            --disallowedTools "WebFetch,WebSearch,Read(//proc/**),Read(//dev/**),Read(./.git/**),Read(//home/runner/work/_temp/**),Read(~/.config/**),Read(~/.claude/**)"
 
       # Deterministic, outside the model: anything the audit wrote that quotes
       # the sample is deleted before the commit job or the summary can see it.
       # `-newer` limits it to what this block wrote, so the analyst's files are
       # never judged by it.
+      #
+      # NUL-safe and exit-safe, both defects QA reproduced on PR #1169 under
+      # the runner's `bash -e`: the list was `$(find ...; ls <report>)`, whose
+      # status is ls's, so a missing report (a capped run, or n == 0) killed
+      # the step before the guard ran and the files were uploaded unguarded;
+      # and `$files` unquoted split `x y.json` into two names that were never
+      # checked. Now a bash array from `find -print0`, the report appended
+      # only if present, every path passed quoted. Guard exit 1 is a quote
+      # (deleted); exit 2 is "could not verify", which is NOT a pass, so the
+      # files are deleted unchecked rather than published.
       - name: Refuse audit output that quotes a user
         if: "always() && steps.ask_due.outputs.due == 'true' && steps.ask_sample.outcome == 'success'"
         run: |
-          files=$(find /tmp/measure -type f -newer /tmp/ask-sample.json; ls /tmp/ask-audit-report.md 2>/dev/null)
-          [ -n "$files" ] && { python3 scripts/ask_audit_guard.py leaks --delete $files \
-            || echo "::warning::audit output quoted a user and was deleted"; }
+          files=()
+          if [ -f /tmp/ask-sample.json ]; then
+            mapfile -d '' files < <(find /tmp/measure -type f -newer /tmp/ask-sample.json -print0 2>/dev/null)
+          elif [ -f /tmp/measure/ask-audit.json ]; then
+            files=(/tmp/measure/ask-audit.json)  # no sample to judge by: the guard exits 2 and it goes
+          fi
+          if [ -f /tmp/ask-audit-report.md ]; then files+=(/tmp/ask-audit-report.md); fi
+          rc=0
+          if [ "${#files[@]}" -gt 0 ]; then
+            python3 scripts/ask_audit_guard.py --sample /tmp/ask-sample.json leaks --delete "${files[@]}" || rc=$?
+          fi
+          case "$rc" in
+            0) echo "audit output checked: ${#files[@]} file(s), no user text" ;;
+            1) echo "::warning::a user quote was found in the audit output; those files were deleted" ;;
+            *) echo "::warning::could not verify the audit output (guard exit $rc); deleting it unchecked"
+               rm -f -- "${files[@]}" ;;
+          esac
           if [ -s /tmp/ask-audit-report.md ]; then
             tee -a "$GITHUB_STEP_SUMMARY" < /tmp/ask-audit-report.md
           else

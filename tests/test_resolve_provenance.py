@@ -547,3 +547,47 @@ def test_the_renderings_that_ARE_recognised_are_the_ones_measured():
     test_every_bot_but_this_repos_own_app_is_an_outsider."""
     for login in ("app/claude", "claude[bot]", "app/claude[bot]", "Claude", "app/CLAUDE"):
         assert verdict(FakeGh(author=(login, True))) == rp.TRUSTED, login
+
+
+# ---- the taint: the loop's own issue that relays outsider text (#1167, PR #1169) ----------
+#
+# The weekly /ask audit reads a stranger's question and files an issue as
+# `claude[bot]`. The self-app exception would make that TRUSTED and `--apply`
+# would then strip the label, so the stranger's words reached an engineer in one
+# hop. `scripts/ask_audit_post.py` marks every such issue `provenance:outsider`;
+# these say the mark wins over the trusted author, and only a human override
+# lifts it.
+
+@pytest.mark.parametrize("login", ["app/claude", "claude[bot]", "app/github-actions"])
+def test_an_outsider_label_on_the_own_apps_issue_makes_it_an_outsider(login):
+    fake = FakeGh(author=(login, True), labels=("provenance:outsider", "astrology-correctness"))
+    v = rp.classify(fake, REPO, 7)
+    assert v.verdict == rp.OUTSIDER
+    assert "relays outsider text" in v.reason
+    assert fake.permission_calls() == []          # still no permission lookup for a bot
+
+
+def test_apply_keeps_the_taint_on_the_own_apps_issue():
+    """Before the taint rule `--apply` removed `provenance:outsider` here."""
+    fake = FakeGh(author=("app/claude", True), labels=("provenance:outsider",))
+    assert run_main(fake, "--apply") == 1
+    assert not any("--remove-label" in c for c in writes(fake))
+
+
+def test_a_bot_applied_trusted_label_does_not_lift_the_taint():
+    fake = FakeGh(author=("app/claude", True),
+                  labels=("provenance:outsider", "provenance:trusted"),
+                  events=[labeled("provenance:trusted", "claude[bot]", actor_type="Bot")])
+    assert verdict(fake) == rp.OUTSIDER
+
+
+def test_a_human_maintainers_override_lifts_the_taint():
+    fake = FakeGh(author=("app/claude", True),
+                  labels=("provenance:outsider", "provenance:trusted"),
+                  events=[labeled("provenance:trusted", "mahAnuj")],
+                  perms={"mahAnuj": OK("admin")})
+    assert verdict(fake) == rp.TRUSTED
+
+
+def test_the_own_apps_issue_without_the_label_is_still_trusted():
+    assert verdict(FakeGh(author=("app/claude", True), labels=("astrology-correctness",))) == rp.TRUSTED

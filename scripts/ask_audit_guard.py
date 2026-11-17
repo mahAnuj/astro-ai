@@ -22,8 +22,10 @@ punctuation. A question shorter than QUESTION_RUN words is checked whole once
 it is MIN_CHARS long. Answers get a longer run because they are generated
 prose and share stock phrases with the prompt an issue legitimately cites.
 
-It never prints the matched text -- only the sample `id` and the file -- since
-its own output lands in the same public log.
+It never prints the matched text, nor the matched row's sample `id` -- only
+the file it was found in -- since its own output lands in the same public log,
+and a stable per-question hash there is one more handle on a user than anyone
+reading the log needs (QA on PR #1169).
 
 EXIT CODES: 0 clean   1 a quote (or a failing Evidence Block)   2 could not run
 """
@@ -103,11 +105,9 @@ def main(argv: list[str]) -> int:
             if not p.exists():
                 print(f"ok   {f}: absent")
                 continue
-            hits = quotes(p.read_text(errors="replace"), sample)
-            if hits:
+            if quotes(p.read_text(errors="replace"), sample):
                 bad += 1
-                print(f"LEAK {f}: quotes sample answer(s) {', '.join(hits)}"
-                      + (" -- deleted" if a.delete else ""))
+                print(f"LEAK a user quote was found in {f}" + (" -- deleted" if a.delete else ""))
                 if a.delete:
                     p.unlink()
             else:
@@ -118,9 +118,8 @@ def main(argv: list[str]) -> int:
     if not body:
         print(f"FAIL {a.file}: empty or missing")
         return 1
-    hits = quotes(body, sample)
-    if hits:
-        print(f"FAIL {a.file}: quotes sample answer(s) {', '.join(hits)}. Paraphrase; never quote a user.")
+    if quotes(body, sample):
+        print(f"FAIL a user quote was found in {a.file}. Paraphrase; never quote a user.")
         return 1
     from verify_issue_evidence import check  # noqa: PLC0415
     labels = [x.strip() for x in a.labels.split(",") if x.strip()]

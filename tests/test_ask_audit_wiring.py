@@ -11,6 +11,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -24,6 +25,7 @@ NOW = datetime(2026, 11, 17, 21, 0, tzinfo=timezone.utc)
 def _load(name: str):
     spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / f"{name}.py")
     mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod          # dataclasses resolve annotations through sys.modules
     spec.loader.exec_module(mod)
     return mod
 
@@ -82,6 +84,50 @@ def test_the_audit_has_no_web_tools():
     # Bash only for named commands: a bare `Bash` would allow curl.
     assert "Bash" not in [t.strip() for t in allowed.split(",")]
     assert re.search(r'--disallowedTools\s+"[^"]*WebFetch[^"]*WebSearch', args)
+
+
+def _allowed() -> list[str]:
+    args = _steps()[_audit()]["with"]["claude_args"]
+    return [t.strip() for t in re.search(r'--allowedTools\s+"([^"]*)"', args).group(1).split(",")]
+
+
+def test_the_audit_posts_only_through_the_post_script():
+    """QA on PR #1169: raw `gh issue create|comment` took `--body-file <any
+    path>`, so the guard ran only if the agent chose to run it."""
+    allowed = _allowed()
+    assert "Bash(python3 scripts/ask_audit_post.py:*)" in allowed
+    for t in allowed:
+        assert not re.match(r"Bash\(gh issue (create|comment|edit|close)", t), t
+        assert not re.match(r"Bash\(gh (api|label create|pr)", t), t
+    assert {"Bash(gh issue list:*)", "Bash(gh issue view:*)", "Bash(gh label list:*)"} <= set(allowed)
+
+
+def test_no_allowed_command_can_print_the_environment():
+    """`jq -n env`, `wc --files0-from=/proc/self/environ` and `date -f FILE`
+    all echo what they read; Read of /proc/<pid>/environ or .git/config would
+    hand the agent the OAuth token or the checkout's GITHUB_TOKEN."""
+    step = _steps()[_audit()]
+    allowed, args = _allowed(), step["with"]["claude_args"]
+    for t in allowed:
+        if t.startswith("Bash("):
+            cmd = t[5:].split(":")[0].split()[0]
+            assert cmd in {"gh", "python3", "date"}, t
+    assert "Bash(date -u +%Y-%m-%dT%H:%M:%SZ)" in allowed
+    assert not any(t.startswith("Bash(date") and t != "Bash(date -u +%Y-%m-%dT%H:%M:%SZ)" for t in allowed)
+    # Writes are confined to the outputs: a bare Write could edit .claude/ settings.
+    assert "Write" not in allowed and "Edit" not in allowed
+    assert all(t.startswith("Edit(//tmp/") for t in allowed if t.startswith(("Edit", "Write")))
+    denied = re.search(r'--disallowedTools\s+"([^"]*)"', args).group(1).split(",")
+    for rule in ("Read(//proc/**)", "Read(//dev/**)", "Read(./.git/**)"):
+        assert rule in denied, rule
+    # v1 runs in auto mode by default, where a safety review can pass a call no
+    # allow rule covers; this list is only a boundary in default mode.
+    assert re.search(r"--permission-mode\s+default\b", args)
+    assert step["env"]["CLAUDE_CODE_SUBPROCESS_ENV_SCRUB"] == "1"
+    assert step["with"]["display_report"] == "false"
+    # The checkout's persisted token is removed before the agent can Read it.
+    rm = _steps()[_named("Remove the bucket credentials")]["run"]
+    assert "git config --local --unset-all http.https://github.com/.extraheader" in rm
 
 
 def test_the_audit_uses_the_analysts_token_and_skips_an_empty_sample():
@@ -320,3 +366,196 @@ def test_the_guard_without_a_sample_is_not_a_pass(tmp_path):
     f.write_text("x")
     mod = _load("ask_audit_guard")
     assert mod.main(["x", "--sample", str(tmp_path / "none.json"), "leaks", str(f)]) == 2
+
+
+def test_the_guard_names_the_file_not_the_sample_id(tmp_path, capsys):
+    f = tmp_path / "audit.json"
+    f.write_text("user asked: will i clear the bank exam in march")
+    assert _guard(tmp_path, "leaks", str(f)) == 1
+    out = capsys.readouterr().out
+    assert f"a user quote was found in {f}" in out
+    assert "abc123" not in out
+
+
+# ---- the post-step file guard, EXECUTED (QA on PR #1169, D1 and D2) ----------------
+#
+# The step's own shell, lifted from the YAML and run under `bash -e` (the
+# runner's default) with every /tmp/ path moved into a temp dir. Reading the
+# YAML could not have caught either defect: both are about how bash expands it.
+
+QUOTE = "user asked: will i clear the bank exam in march"
+
+
+def _run_refuse_step(tmp_path, files: dict, report: str | None = None, sample=True):
+    import os
+    import subprocess
+    import time
+    run = _steps()[_named("Refuse audit output that quotes a user")]["run"]
+    root = tmp_path / "t"
+    (root / "measure").mkdir(parents=True)
+    if sample:
+        (root / "ask-sample.json").write_text(json.dumps(SAMPLE))
+        old = time.time() - 60
+        os.utime(root / "ask-sample.json", (old, old))
+    for name, text in files.items():
+        (root / "measure" / name).write_text(text)
+    if report is not None:
+        (root / "ask-audit-report.md").write_text(report)
+    assert "/tmp/ask-sample.json" in run and "/tmp/measure" in run
+    script = run.replace("/tmp/", f"{root}/")
+    env = dict(os.environ, GITHUB_STEP_SUMMARY=str(root / "summary.md"))
+    p = subprocess.run(["bash", "-e", "-c", script], cwd=ROOT, env=env,
+                       capture_output=True, text=True, timeout=60)
+    return p, root
+
+
+def test_executed_no_report_still_runs_the_guard_and_deletes_a_quote(tmp_path):
+    """D1: `files=$(find ...; ls <report>)` took ls's exit 2 and the step died
+    before the guard, leaving the quoting file to be uploaded."""
+    p, root = _run_refuse_step(tmp_path, {"ask-audit.json": QUOTE})
+    assert p.returncode == 0, p.stdout + p.stderr
+    assert not (root / "measure" / "ask-audit.json").exists()
+    assert "bank exam" not in p.stdout + p.stderr
+
+
+def test_executed_quiet_week_is_green(tmp_path):
+    """D1, the n == 0 week: no audit ran, no report, no new files."""
+    p, root = _run_refuse_step(tmp_path, {})
+    assert p.returncode == 0, p.stdout + p.stderr
+    assert "no report written" in (root / "summary.md").read_text()
+
+
+def test_executed_a_space_in_a_file_name_is_still_checked(tmp_path):
+    """D2: an unquoted `$files` split `x y.json` into `x` and `y.json`."""
+    p, root = _run_refuse_step(tmp_path, {"x y.json": QUOTE, "clean.json": '{"n": 3}'},
+                               report="| rubric | pass |\n| grounded | 3 |\n")
+    assert p.returncode == 0, p.stdout + p.stderr
+    assert not (root / "measure" / "x y.json").exists()
+    assert (root / "measure" / "clean.json").exists()
+    assert "| grounded | 3 |" in (root / "summary.md").read_text()
+
+
+def test_executed_a_quoting_report_is_deleted_and_never_summarised(tmp_path):
+    p, root = _run_refuse_step(tmp_path, {}, report=f"Example: {QUOTE}\n")
+    assert p.returncode == 0, p.stdout + p.stderr
+    assert not (root / "ask-audit-report.md").exists()
+    assert "bank exam" not in (root / "summary.md").read_text()
+
+
+def test_executed_could_not_verify_deletes_unchecked_and_says_so(tmp_path):
+    """Guard exit 2 is not a pass, and not a quote either."""
+    p, root = _run_refuse_step(tmp_path, {"ask-audit.json": '{"n": 3}'},
+                               report="aggregates", sample=False)
+    assert p.returncode == 0, p.stdout + p.stderr
+    assert not (root / "measure" / "ask-audit.json").exists()
+    assert not (root / "ask-audit-report.md").exists()
+    assert "could not verify" in p.stdout and "quote was found" not in p.stdout
+
+
+# ---- ask_audit_post.py: the only way the audit posts --------------------------------
+
+EVIDENCE = (
+    "<!-- ask-audit-class: exam-verdict -->\nAn education answer gave a pass/fail verdict.\n"
+    "## Evidence Block\n"
+    "- **corpus:** n/a. The defect is a prompt-contract breach, ask.txt:49, no rule claimed.\n"
+    "- **tokens:** 0 Groq, measured: the audit reads stored answers and makes no app LLM call.\n"
+    "- **repro:** `jq '.defect_classes[0].count' measurements/ask-audit.json` -> `1`\n"
+    "- **thesis:** tightening ask.txt:49 removes the verdicts.\n"
+    "- **metric:** the class count is 0 on the next weekly audit.\n")
+
+
+class FakeGh:
+    def __init__(self, fail=()):
+        self.calls, self.fail = [], set(fail)
+
+    def __call__(self, args):
+        self.calls.append(list(args))
+        rc = 1 if tuple(args[:2]) in self.fail else 0
+        return self.mod.Result(rc, "https://github.com/o/r/issues/9\n" if args[:2] == ["issue", "create"] else "")
+
+    def posts(self):
+        return [c for c in self.calls if c[:2] in (["issue", "create"], ["issue", "comment"])]
+
+
+def _post(tmp_path, monkeypatch, body, *args, gh=None, where="work"):
+    mod = _load("ask_audit_post")
+    work = tmp_path / "ask-work"
+    work.mkdir(exist_ok=True)
+    sample = tmp_path / "sample.json"
+    sample.write_text(json.dumps(SAMPLE))
+    monkeypatch.setattr(mod, "WORK_DIR", work)
+    monkeypatch.setattr(mod, "SAMPLE", sample)
+    f = (work if where == "work" else tmp_path) / "issue-exam-verdict.md"
+    f.write_text(body)
+    gh = gh or FakeGh()
+    gh.mod = mod
+    return mod.main(["x", "--body-file", str(f), *args], gh=gh), gh
+
+
+LABELS = ("--labels", "astrology-correctness,bug,layer:prompt")
+
+
+def test_post_refuses_a_quoting_body_and_posts_nothing(tmp_path, monkeypatch, capsys):
+    rc, gh = _post(tmp_path, monkeypatch, EVIDENCE + f"\nExample: {QUOTE}\n",
+                   "--title", "Exam verdicts", *LABELS)
+    assert rc == 1 and gh.calls == []
+    assert "bank exam" not in capsys.readouterr().out
+
+
+def test_post_refuses_a_quoting_title(tmp_path, monkeypatch):
+    rc, gh = _post(tmp_path, monkeypatch, EVIDENCE,
+                   "--title", "Will I clear the bank exam in March", *LABELS)
+    assert rc == 1 and gh.calls == []
+
+
+def test_post_refuses_a_failing_evidence_block(tmp_path, monkeypatch):
+    rc, gh = _post(tmp_path, monkeypatch, "An answer gave a verdict.\n", "--title", "t", *LABELS)
+    assert rc == 1 and gh.calls == []
+
+
+def test_post_files_a_clean_body_with_the_outsider_label(tmp_path, monkeypatch):
+    rc, gh = _post(tmp_path, monkeypatch, EVIDENCE, "--title", "Exam verdicts", *LABELS)
+    assert rc == 0
+    [create] = [c for c in gh.calls if c[:2] == ["issue", "create"]]
+    labels = [create[i + 1] for i, x in enumerate(create) if x == "--label"]
+    assert "provenance:outsider" in labels and "astrology-correctness" in labels
+    assert gh.calls[0][:3] == ["label", "create", "provenance:outsider"]
+
+
+def test_post_comment_labels_the_issue_before_commenting(tmp_path, monkeypatch):
+    rc, gh = _post(tmp_path, monkeypatch, EVIDENCE, *LABELS, "--issue", "42")
+    assert rc == 0
+    edit = gh.calls.index(["issue", "edit", "42", "--add-label", "provenance:outsider"])
+    comment = next(i for i, c in enumerate(gh.calls) if c[:3] == ["issue", "comment", "42"])
+    assert edit < comment
+
+
+def test_post_comment_is_not_posted_when_the_label_fails(tmp_path, monkeypatch):
+    rc, gh = _post(tmp_path, monkeypatch, EVIDENCE, *LABELS, "--issue", "42",
+                   gh=FakeGh(fail={("issue", "edit")}))
+    assert rc == 2 and gh.posts() == []
+
+
+def test_post_refuses_a_body_outside_the_work_dir(tmp_path, monkeypatch):
+    """Else it is a way to post any readable file, /proc/<pid>/environ included."""
+    rc, gh = _post(tmp_path, monkeypatch, EVIDENCE, "--title", "t", *LABELS, where="outside")
+    assert rc == 2 and gh.calls == []
+
+
+def test_post_refuses_a_label_off_the_list(tmp_path, monkeypatch):
+    rc, gh = _post(tmp_path, monkeypatch, EVIDENCE, "--title", "t",
+                   "--labels", "bug,provenance:trusted")
+    assert rc == 2 and gh.calls == []
+
+
+def test_post_without_a_sample_posts_nothing(tmp_path, monkeypatch):
+    mod = _load("ask_audit_post")
+    work = tmp_path / "ask-work"
+    work.mkdir()
+    (work / "b.md").write_text(EVIDENCE)
+    monkeypatch.setattr(mod, "WORK_DIR", work)
+    monkeypatch.setattr(mod, "SAMPLE", tmp_path / "none.json")
+    gh = FakeGh()
+    gh.mod = mod
+    assert mod.main(["x", "--body-file", str(work / "b.md"), "--title", "t", *LABELS], gh=gh) == 2
+    assert gh.calls == []
