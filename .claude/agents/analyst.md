@@ -86,7 +86,14 @@ arrived yet. State the exact window on every number you report.
    **A window is clean only when it starts on or after the deploy date.** The fetch reads one trailing
    28-day window ending 3 days ago, and it cannot split a page at its deploy date (#490), so a window
    that still contains the deploy mixes before and after. Before the window is clean, post **one**
-   note, "pending — scoreable from <deploy + 31 days>", and then nothing more. Once it is clean, score
+   note, "pending — scoreable from <deploy + 31 days>", and then nothing more — **and set a timer for
+   that date** (#1187), so the scoring run is queued on the day instead of waiting for whichever run
+   comes next. You cannot set it yourself: your `gh` is the Claude App token, and only timers written
+   by `github-actions[bot]` count. Append one line per pending issue to `/tmp/analyst-timers.txt`,
+   exactly `target=issue:<n> key=score-<n> due=<deploy + 31 days, YYYY-MM-DD> action=measure:<n>`,
+   and `agent-measure`'s next step sets it with `scripts/timers.py set --from-file`. Write the line
+   for every issue still pending, not only a new one: the key makes it idempotent, and that is how a
+   note written before timers existed becomes one. Once it is clean, score
    **once**. Post again only if the verdict changes or the number moves past what the metric calls
    material. If the metric's sample floor cannot be reached at current traffic, post **once**
    "unscoreable at this traffic: <n> vs <floor>", and stop. Read your own earlier comments on an

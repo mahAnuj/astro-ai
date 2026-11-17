@@ -369,7 +369,9 @@ jobs:
       #
       # Same credential, same guards and the same script as chief's carrier
       # below -- one mechanism, not a second copy. `scripts/dispatch_cycle.sh`
-      # carries the reasoning and the exit codes.
+      # carries the reasoning and the exit codes. Since 2026-11-17 (#1185) it
+      # QUEUES the ruling and wakes agent-queue, whose drain is the only thing
+      # that starts a cycle; it exports QUEUED for `acted` below.
       - name: Carry out the steward's dispatch
         id: steward_dispatch
         if: steps.detect.outputs.stalled == 'true'
@@ -455,7 +457,14 @@ jobs:
           inflight=$(jq '[.[] | select(.status == "in_progress" or .status == "queued")] | length' \
                        <<<"$runs" 2>/dev/null || echo 0)
           cycles=${cycles:-0}; inflight=${inflight:-0}
-          echo "cycles since $SINCE=$cycles, already in flight=$inflight"
+          # A QUEUED RULING IS AN ACT (#1185). The carrier no longer starts the
+          # cycle itself; it appends to the queue and agent-queue starts it
+          # seconds or minutes later -- usually after this step has run, so
+          # counting only runs would read every steward dispatch as inaction
+          # and wake chief for nothing.
+          queued=0
+          [ -n "${QUEUED:-}" ] && queued=1
+          echo "cycles since $SINCE=$cycles, already in flight=$inflight, steward ruling queued=$queued"
           issues=$(gh issue list --repo "$GH_REPO" --state all --limit 20 \
                      --json createdAt --jq "[.[] | select(.createdAt > \"$SINCE\")] | length" 2>/dev/null || echo 0)
           echo "since $SINCE: cycles dispatched=$cycles, issues filed=$issues"
@@ -480,9 +489,9 @@ jobs:
             # is a different fact and is reported as one.
             echo "ok=true" >> "$GITHUB_OUTPUT"
             echo "::notice::$inflight cycle(s) already in flight — anything the steward ruled is queued behind it (scripts/cycle_queue.py) and chief has nothing to add while one runs, so standing down was correct. Not waking chief."
-          elif [ "$cycles" -gt 0 ] || [ "$issues" -gt 0 ]; then
+          elif [ "$cycles" -gt 0 ] || [ "$issues" -gt 0 ] || [ "$queued" -gt 0 ]; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::the steward acted — $cycles cycle(s), $issues issue(s)"
+            echo "::notice::the steward acted — $cycles cycle(s), $issues issue(s), $queued queued ruling(s)"
           else
             echo "ok=false" >> "$GITHUB_OUTPUT"
             echo "::warning::$demanded stall(s) demanded an action and NOTHING happened — no cycle dispatched, no issue filed. Waking chief."
@@ -603,7 +612,8 @@ jobs:
       # chief cannot dispatch anything else and cannot dispatch twice. A ruling
       # made while a cycle is in flight is QUEUED rather than dispatched over it
       # (scripts/cycle_queue.py) -- the guard chief could not verify for itself
-      # is applied here, where the token can read the API.
+      # is applied here, where the token can read the API. Since 2026-11-17
+      # every ruling is queued and agent-queue's drain starts it (#1185).
       - name: Carry out chief's dispatch ruling
         if: steps.acted.outputs.ok == 'false'
         env:
@@ -652,7 +662,10 @@ jobs:
               if [ "${ACTED_OK:-}" = "false" ]; then
                 echo ""
                 echo "**The steward produced no action, so chief was woken.**"
-                if [ -n "${DISPATCHED:-}" ]; then
+                if [ -n "${QUEUED:-}" ]; then
+                  # Queued, not started (#1185): agent-queue's drain starts it.
+                  echo "${QUEUED_BY:-chief} ruled a dispatch and it was queued: \`agent-work\` at ${QUEUED_KIND:-?} #${QUEUED}; agent-queue starts it when its lane is free."
+                elif [ -n "${DISPATCHED:-}" ]; then
                   # "carried out" is now only ever printed for a run this job
                   # watched start AND saw still running 90s later. See #421 for
                   # what this sentence used to mean.

@@ -1,23 +1,38 @@
 # Starts the oldest QUEUED `agent-work` ruling once the slot is actually free.
 #
+# THE ONLY WORKER (2026-11-17, #1185, design #1184). Every handler now only
+# APPENDS its ruling to the queue (`scripts/dispatch_cycle.sh` in queue mode)
+# and wakes this workflow; the drain below is the only code that starts an
+# `agent-work` cycle, one entry per free lane, folding the other entries for
+# the same target into the run it starts. tests/test_inbox_single_worker.py
+# pins that no other path dispatches agent-work.
+#
 # WHY A SEPARATE WORKFLOW, AND WHY ON COMPLETION
 # ----------------------------------------------
 # `agent-work` runs one cycle at a time, and GitHub keeps at most ONE pending
 # run per concurrency group: a third dispatch cancels the waiting one, with no
-# error anywhere. So a dispatch made while a cycle is running is QUEUED by
-# `scripts/dispatch_cycle.sh` (via `scripts/cycle_queue.py`), and this workflow
-# drains it.
+# error anywhere. So every dispatch is QUEUED by `scripts/dispatch_cycle.sh`
+# (via `scripts/cycle_queue.py`), and this workflow drains it. Two drains in
+# a row, or one GitHub cancels while pending, cost nothing: each re-reads the
+# queue, which is the source of truth, and a drain killed mid-dispatch leaves
+# a claim the next drain recovers (cycle_queue.recover_claims).
 #
 # Draining from a final step INSIDE `agent-work` was the obvious design and is
 # wrong: that run is still in progress, so the dispatch lands in the pending
 # slot, where `agent-work`'s own scheduled fire can cancel it. `workflow_run`
 # on completion means the slot is free when this looks.
 #
-# `Agent steward` completing is the backstop (twice a day): it catches an entry
-# queued when no cycle was really running -- the busy check counts an
-# unreadable answer as busy -- and a drain run that died. It costs no scheduled
-# runs of its own. A `*/30` cron here would be ~1,400 Actions minutes a month
-# against a 2,000-minute allowance, for a case those two triggers already cover.
+# THE HOURLY BACKSTOP (2026-11-17, #1186). Until then this said "deliberately
+# no cron": a `*/30` cron was ~1,400 Actions minutes a month against a
+# 2,000-minute allowance, and `Agent steward` completing (twice a day) was the
+# backstop. Both premises are gone. The repo is public, so measurements/cost.json
+# records Actions minutes as unlimited (#338), and an hourly run that finds
+# nothing takes about a minute -- at most 744 runs a month. And twice a day
+# was too slow: an entry whose wake was cancelled sat until the steward came
+# round. Each hourly run fires due timers (scripts/timers.py, #1187), drains,
+# chains, then runs the liveness check (scripts/liveness.py) and files what it
+# finds. No model runs in this workflow. `Agent steward` completing still
+# drains too. Off the hour, because :00 is GitHub's most throttled slot.
 #
 # A DISPATCHED CYCLE WAKES THIS ITSELF (#826, 2026-11-10). `workflow_run`
 # stops after three levels: a cron cycle wakes this (2), this dispatches the
@@ -40,6 +55,8 @@ on:
     # `name:` fields, never filenames -- verify_workflows.py checks both exist.
     workflows: ["Agent work", "Agent steward"]
     types: [completed]
+  schedule:
+    - cron: "17 * * * *"   # the hourly backstop (#1186): timers, drain, chain, liveness
   workflow_dispatch:
     inputs:
       after_run:
@@ -47,9 +64,12 @@ on:
         required: false
         default: ""
 
-# Every scope here is one an existing dispatcher already holds:
-#   actions: write        dispatch_cycle.sh runs `gh workflow run agent-work.yml`
-#   issues/pull-requests  edit a queue entry's marker once it is taken or dropped
+# Every scope here is one an existing dispatcher already holds, and the hourly
+# steps (#1186, #1187) needed none beyond them:
+#   actions: write        dispatch_cycle.sh runs `gh workflow run agent-work.yml`;
+#                         a `measure` entry starts agent-measure; liveness reads runs
+#   issues/pull-requests  edit a queue entry's or a timer's marker; append a timer's
+#                         queue entry; file liveness findings (file_ops_findings.py)
 permissions:
   contents: read
   actions: write
@@ -79,7 +99,19 @@ jobs:
           AFTER_RUN: ${{ inputs.after_run }}
         run: python3 scripts/wait_for_run.py
 
+      # TIMERS FIRE FIRST (#1187), so a timer due this hour is drained this hour.
+      # Each due timer appends one keyed queue entry; a double fire appends
+      # nothing (the queue dedupes the key). Hourly runs only: a wake from a
+      # handler has its own entry to drain and no reason to search for timers.
+      - name: Fire due timers into the queue
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 scripts/timers.py fire
+
       - name: Start the oldest queued cycle
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -93,8 +125,10 @@ jobs:
       # and the finished cycle produced a PR, start one ranked cycle now. Every
       # guard and its measurement is in scripts/chain_cycle.py's header.
       - name: Chain the next ranked cycle
-        # A woken run (above) supplies WAKE_* instead of the event payload.
-        if: always() && (github.event_name == 'workflow_run' || env.WAKE_NAME != '')
+        # A woken run (above) supplies WAKE_* instead of the event payload. An
+        # hourly run has no finished cycle, so chain_cycle.py declines to chain
+        # and only weighs the evidence retrofit (6h cooldown, quota-gated).
+        if: always() && (github.event_name == 'workflow_run' || github.event_name == 'schedule' || env.WAKE_NAME != '')
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -103,3 +137,24 @@ jobs:
           WR_CONCLUSION: ${{ github.event.workflow_run.conclusion || env.WAKE_CONCLUSION }}
           WR_STARTED: ${{ github.event.workflow_run.run_started_at || env.WAKE_STARTED }}
         run: python3 scripts/chain_cycle.py
+
+      # LIVENESS (#1186): every event reaches an end, every ready PR merges.
+      # API reads only. Exit 1 is "found something" and is filed; exit 2 is
+      # "could not read", and then nothing is filed and nothing is cleared,
+      # because an unread queue is not a clean one. `--scope liveness` keeps
+      # the filer off the steward's kinds and the steward off these.
+      - name: Liveness check, filed as ops findings
+        if: always() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          AGENT_AUTHORS: claude[bot],github-actions[bot],shubhagya-publisher[bot],${{ github.repository_owner }}
+        run: |
+          set +e
+          python3 scripts/liveness.py --out /tmp/liveness.json
+          rc=$?
+          if [ "$rc" -ge 2 ]; then
+            echo "::warning::liveness could not read the API (exit $rc); nothing filed, nothing cleared."
+            exit 0
+          fi
+          python3 scripts/file_ops_findings.py --repo "$GH_REPO" --findings /tmp/liveness.json --scope liveness

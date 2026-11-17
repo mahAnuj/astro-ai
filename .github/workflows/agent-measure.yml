@@ -177,6 +177,14 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # A SCORING TIMER DISPATCHES THIS RUN (#1187): when an analyst timer
+          # fires and the daily slot has not run since its due time,
+          # agent-queue's drain dispatches this workflow with GITHUB_TOKEN, and
+          # the action refuses a Bot actor without this line (#421: 3 of 3
+          # bot-initiated agent-work dispatches died in 1.5s). `github-actions`,
+          # never `'*'`, for agent-work.yml's reason: it trusts only this
+          # repository's own token, which already needs write access to dispatch.
+          allowed_bots: "github-actions"
           prompt: |
             Act as the `analyst` agent. Follow .claude/agents/analyst.md exactly.
 
@@ -216,7 +224,12 @@ jobs:
                - A window is CLEAN when its start (today - 31 days) is on or after the
                  deploy date (the merge to main). Before that, post ONE comment on the
                  issue, "pending — scoreable from <deploy + 31 days>", if no such note
-                 is there yet, and otherwise post nothing.
+                 is there yet, and otherwise post nothing. AND, for every issue in that
+                 pending state (note new or already there), append one line to
+                 /tmp/analyst-timers.txt, exactly:
+                   target=issue:<n> key=score-<n> due=<deploy + 31 days, YYYY-MM-DD> action=measure:<n>
+                 A later step sets it as a timer, which queues a scoring run on that
+                 date (#1187). Setting is idempotent per key, so repeat it nightly.
                - Once clean: post predicted, actual, verdict ONCE. On later runs post
                  again only if the verdict changes or the number moves past what the
                  metric calls material. An unchanged verdict goes in /tmp/report.md,
@@ -275,6 +288,20 @@ jobs:
             # and `date` — and a half-blocked agent burns turns discovering what
             # it may not do.
             --allowedTools "Read,Write,Glob,Grep,TodoWrite,Bash"
+
+      # THE ANALYST'S TIMERS (#1187). The analyst's own `gh` is the Claude App
+      # token, so a timer it wrote itself would be `claude[bot]`'s and ignored;
+      # it records lines instead, and this step sets them with GITHUB_TOKEN on
+      # the job's existing `issues: write`. `--allow-kinds measure`: the file
+      # may only schedule scoring runs, never an agent-work cycle. Non-fatal:
+      # a timer not set leaves the prose note, which is today's behaviour.
+      - name: Set the analyst's scoring timers
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 scripts/timers.py set --from-file /tmp/analyst-timers.txt --allow-kinds measure
 
       # Without this the work is invisible. The run log holds the prompt and the
       # cost, never the findings.

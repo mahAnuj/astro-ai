@@ -26,6 +26,23 @@
 #
 # Usage:  dispatch_cycle.sh <ruling-file> <who> [--dry-run]
 #
+# TWO MODES SINCE 2026-11-17 (#1185, design #1184). By default -- every
+# handler: qa-on-green, red_gates, pr_fix_after_qa, the steward, chief -- this
+# script validates the ruling, APPENDS it to the durable queue
+# (scripts/cycle_queue.py) and wakes `agent-queue.yml`. It starts no cycle. The
+# event used to live inside the handler's own run whenever the lane was idle,
+# so a run GitHub cancelled lost it (qa-on-green runs 44059296498 and
+# 44059273106, 2026-11-17: #1165 and #1171 got no QA round). Only
+# `cycle_queue.py drain` sets CYCLE_CARRIER=drain, and only in that mode does
+# the script reach `gh workflow run agent-work.yml` below -- the drain is the
+# one worker; tests/test_inbox_single_worker.py pins that nothing else starts
+# a cycle.
+#
+# In queue mode the entry is keyed (kind, target, head): QUEUE_HEAD if the
+# caller knows the head it ruled on, else a `pr=`/`fix_pr=` ruling's current
+# head from the API. QUEUE_ON names where the entry may be written (default:
+# the target). QUEUE_KEY is a timer's (key, due), from scripts/timers.py.
+#
 # The ruling file's first line is EXACTLY ONE of:
 #   issue=<digits>   work this issue -- a full delivery cycle
 #   pr=<digits>      run ONE QA round on this pull request
@@ -37,12 +54,14 @@
 # read out of a PR body.
 #
 # EXIT CODES, so a workflow step can route on them:
-#   0  dispatched and verified running; or nothing was recorded (a legitimate
-#      ruling); or a cycle is already in flight, so this one is QUEUED
-#      (scripts/cycle_queue.py) and started when that cycle completes.
+#   0  queue mode: QUEUED (or already queued) and agent-queue woken -- a wake
+#      that fails is a warning, because the hourly drain still finds the entry.
+#      Drain mode: dispatched and verified running, or a cycle appeared after
+#      the drain's own check, so it is re-QUEUED. Either mode: nothing was
+#      recorded (a legitimate ruling).
 #   1  a ruling was recorded and could NOT be carried out: unparseable, the
-#      target is not open, an `issue=` ruling named a pull request, no run
-#      appeared, the run died on arrival, or it could not be queued.
+#      target is not open, an `issue=` ruling named a pull request, it could
+#      not be queued, or (drain mode) no run appeared or it died on arrival.
 #   2  could not run: bad arguments.
 set -uo pipefail
 
@@ -136,7 +155,47 @@ if [ "$state" != "OPEN" ]; then
   exit 1
 fi
 
-# Never DISPATCH a second cycle behind one in flight. An unreadable answer counts as
+# QUEUE MODE: APPEND, WAKE, AND STOP (#1185). Everything below this block is
+# the drain's. The handler's only side effect is the entry, so a handler run
+# that GitHub cancels a second later has already done its whole job.
+if [ "${CYCLE_CARRIER:-}" != "drain" ]; then
+  head="${QUEUE_HEAD:-}"
+  if [ -z "$head" ] && [ "$kind" != issue ]; then
+    head=$(gh pr view "$target" --repo "$GH_REPO" --json headRefOid --jq .headRefOid 2>/dev/null || echo "")
+  fi
+  # A head that is not 40 hex is dropped rather than trusted: it only keys the
+  # entry, and a malformed one would split a single event into two.
+  printf '%s' "$head" | grep -qE '^[0-9a-f]{40}$' || head=""
+  if [ -n "$DRY" ]; then
+    echo "DRY RUN: would queue agent-work at $kind #$target on ${WHO}'s ruling${head:+ at ${head:0:7}}"
+    exit 0
+  fi
+  QUEUE_PY="$(dirname "$0")/cycle_queue.py"
+  if ! python3 "$QUEUE_PY" enqueue --kind "$kind" --target "$target" --by "$WHO" \
+         --on "${QUEUE_ON:-$target}" --head "$head" --key "${QUEUE_KEY:-}"; then
+    echo "::error::${WHO}'s ruling at $kind #$target could NOT be queued. It is lost unless re-ruled."
+    exit 1
+  fi
+  echo "::notice::${WHO}'s ruling at $kind #$target is QUEUED; agent-queue, the only worker, starts it when its lane is free."
+  if [ -n "${GITHUB_ENV:-}" ]; then
+    # QUEUED, not DISPATCHED: no run exists yet, and a reader that took one
+    # for the other would report a cycle that has not started. agent-steward's
+    # accountability step counts this as the steward having acted.
+    echo "QUEUED=$target" >> "$GITHUB_ENV"
+    echo "QUEUED_KIND=$kind" >> "$GITHUB_ENV"
+    echo "QUEUED_BY=$WHO" >> "$GITHUB_ENV"
+  fi
+  # The wake is best effort. A failure costs latency, never the event: the
+  # entry is durable and agent-queue's hourly backstop drains it (#1186).
+  if gh workflow run agent-queue.yml --repo "$GH_REPO" >/dev/null 2>&1; then
+    echo "::notice::woke agent-queue to drain it now."
+  else
+    echo "::warning::could not wake agent-queue; the entry waits for the next drain (at most an hour, on its backstop)."
+  fi
+  exit 0
+fi
+
+# DRAIN MODE FROM HERE. Never DISPATCH a second cycle behind one in flight. An unreadable answer counts as
 # busy: guessing "not busy" is what spends the quota twice.
 #
 # PER LANE since 2026-11-03: a `pr=` QA round runs in `agent-work-qa` and is
@@ -176,6 +235,7 @@ if [ "$busy" != "0" ]; then
     exit 0
   fi
   if ! python3 "$(dirname "$0")/cycle_queue.py" enqueue \
+         --head "${QUEUE_HEAD:-}" --key "${QUEUE_KEY:-}" \
          --kind "$kind" --target "$target" --by "$WHO" --on "${QUEUE_ON:-$target}"; then
     echo "::error::${WHO}'s ruling at $kind #$target could NOT be queued. It is lost unless re-ruled."
     exit 1

@@ -1,0 +1,31 @@
+"""#1187 (2026-11-17): timers fire into the inbox exactly once per occurrence,
+from trusted markers only, and an agent's file may schedule only what its step
+allows. tests/test_timers.py."""
+
+MUTATIONS = [
+    ("timers: a timer key is deduped only while pending, so a double fire runs twice",
+     "scripts/cycle_queue.py",
+     '            return e.key == key and e.state != "claimed"',
+     '            return e.key == key and e.state == "pending"',
+     "test_a_timer_key_is_one_event_even_after_it_ran"),
+    ("timers: a marker any author pastes is fired",
+     "scripts/timers.py",
+     "    if c.get(\"login\") != WRITER:\n        return None\n    m = TIMER.search",
+     "    if False:\n        return None\n    m = TIMER.search",
+     "test_an_UNTRUSTED_authors_marker_is_ignored"),
+    ("timers: a schedule advances one step, so it stays due and fires every hour",
+     "scripts/timers.py",
+     "    k = int((now - due) / step) + 1",
+     "    k = 1",
+     "test_a_schedule_ADVANCES_past_now_and_fires_once_not_a_burst"),
+    ("timers: a fired follow-up is never marked done",
+     "scripts/timers.py",
+     "                body = body_for(t, t.due, True, ",
+     "                body = body_for(t, t.due, False, ",
+     "test_a_followup_completes"),
+    ("timers: an agent's file schedules any action kind, including an agent-work cycle",
+     "scripts/timers.py",
+     "        if allow_kinds is not None and m.group(1) not in allow_kinds:",
+     "        if False:",
+     "test_from_file_carries_only_the_allowed_kinds"),
+]
