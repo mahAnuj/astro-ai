@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-16T21:24:28Z",
+ "generated_at": "2026-11-17T06:08:41Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -903,6 +903,17 @@
     "themes": [
      "grounding"
     ]
+   },
+   {
+    "number": 1150,
+    "at": "2026-11-17T06:00:17Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1150#issuecomment-6940131215",
+    "summary": "QA: FAIL \u2014 verified at `6df4052b2dda16af0b3f3961343937a51e73d5e4` One defect, D1: ARCHITECTURE.md:1042 says the two dasha lords are passed to Analytics.track in dasha_deep_dive.html; that file now declares the event via analytics_event(...). FIX: reword that phrase, leave the bullet otherwise alone.",
+    "themes": [
+     "grounding",
+     "i18n",
+     "security"
+    ]
    }
   ],
   "reverts": [],
@@ -938,24 +949,16 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": [
-   {
-    "kind": "loop-last-run-failed",
-    "level": "amber",
-    "title": "agent-prioritise.yml: last run failed",
-    "detail": "The schedule verdict is fine, so `agents.json` raised no alert, but the most recent run of each loop named here was red. A weekly loop is not re-run before its next slot, so nothing else will notice. Check whether a fix has landed since; if one has, dispatch the workflow.",
-    "where": "/admin/ops"
-   }
-  ]
+  "ops_findings": []
  },
  "error_themes": {
-  "grounding": 27,
+  "grounding": 28,
   "regression": 23,
   "tests": 21,
   "copy": 20,
   "tokens": 18,
-  "security": 10,
-  "i18n": 9,
+  "security": 11,
+  "i18n": 10,
   "performance": 8
  },
  "repeated_themes": [
@@ -1012,13 +1015,6 @@
    "url": "https://github.com/mahAnuj/astro-ai/issues/373#issuecomment-6353962512"
   },
   {
-   "number": 374,
-   "verdict": "UNSCOREABLE",
-   "headline": "UNSCORED (not determinable this run)",
-   "at": "2026-10-17T22:53:28Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/374#issuecomment-6242618584"
-  },
-  {
    "number": 396,
    "verdict": "PASS",
    "headline": "PASS on the first clause only",
@@ -1031,13 +1027,6 @@
    "headline": "PASS on the countable clause; the behavioural clause was not checked",
    "at": "2026-10-22T23:55:46Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/397#issuecomment-6353962033"
-  },
-  {
-   "number": 400,
-   "verdict": "HIT",
-   "headline": "HIT (partial read) \u2014 ceiling gate present and green",
-   "at": "2026-10-17T22:53:26Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/400#issuecomment-6242618012"
   },
   {
    "number": 426,
@@ -1143,16 +1132,57 @@
    "headline": "pending \u2014 scoreable from 2026-12-14",
    "at": "2026-11-13T01:40:49Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/835#issuecomment-6841267939"
+  },
+  {
+   "number": 843,
+   "verdict": "UNSCOREABLE",
+   "headline": "not scoreable from GA4/GSC",
+   "at": "2026-11-17T03:27:10Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/843#issuecomment-6937202562"
+  },
+  {
+   "number": 1066,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-16; the metric needs an export that does not exist",
+   "at": "2026-11-17T03:27:08Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1066#issuecomment-6937201708"
+  },
+  {
+   "number": 1073,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-17",
+   "at": "2026-11-17T03:27:00Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1073#issuecomment-6937199116"
+  },
+  {
+   "number": 1074,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-17; floor at risk",
+   "at": "2026-11-17T03:27:06Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1074#issuecomment-6937201154"
+  },
+  {
+   "number": 1075,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-17",
+   "at": "2026-11-17T03:27:07Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1075#issuecomment-6937201420"
+  },
+  {
+   "number": 1093,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-16; the metric needs an export that does not exist",
+   "at": "2026-11-17T03:27:09Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1093#issuecomment-6937202015"
   }
  ],
  "outcome_counts": {
-  "OTHER": 1,
-  "MISS": 1,
-  "UNSCOREABLE": 7,
-  "HIT": 1,
-  "PARTIAL": 1,
   "PASS": 5,
-  "PENDING": 9
+  "MISS": 1,
+  "OTHER": 1,
+  "UNSCOREABLE": 7,
+  "PARTIAL": 1,
+  "PENDING": 14
  },
  "competitor_patterns": [
   {

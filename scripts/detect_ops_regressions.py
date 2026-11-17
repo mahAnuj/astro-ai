@@ -125,6 +125,14 @@ WASTE_SHARE_ALERT = 0.40
 WASTE_MIN_CYCLES = 5
 #: The build lane idle this share of the window, with work open, is a finding.
 IDLE_SHARE_ALERT = 0.75
+#: Claude tokens per merged PR rising by more than this over the previous window
+#: is a finding (2026-11-17, from loop.json `tokens`). Both windows need
+#: TOKENS_MIN_PRS merged PRs and TOKENS_MIN_COVERAGE of their runs measured, or a
+#: quiet week or a half-read one would fire on noise. Measured when it landed:
+#: 9.6M tokens per merged PR (101 PRs) against 11.7M the week before (49 PRs).
+TOKENS_RISE_ALERT = 0.50
+TOKENS_MIN_PRS = 3
+TOKENS_MIN_COVERAGE = 0.8
 #: Of the last STARVED_WINDOW build cycles, how many ending "nothing" means the
 #: lane is starved rather than unlucky. 2026-11-10 ran 01:53 pr open, 02:06
 #: nothing, 04:30 pr open, 05:02 nothing: the empties ALTERNATED with the one
@@ -368,6 +376,25 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
             f"that is unused capacity: the schedule, not the work, is the limit. Check the "
             f"Claude weekly quota first -- if it has headroom, more cron slots in "
             f"agent-work.yml are the lever; if not, idle is the right answer.", "/admin/ops")
+
+    # --- what a shipped fix costs in Claude tokens (2026-11-17) ---------------
+    tk = loop.get("tokens") or {}
+    pv = tk.get("previous") or {}
+    per, before = tk.get("per_merged_pr"), pv.get("per_merged_pr")
+
+    def _covered(d: dict) -> bool:
+        return (d.get("merged_prs") or 0) >= TOKENS_MIN_PRS and (d.get("runs") or 0) > 0 \
+            and (d.get("measured") or 0) / d["runs"] >= TOKENS_MIN_COVERAGE
+
+    if isinstance(per, (int, float)) and isinstance(before, (int, float)) and before > 0 \
+            and _covered(tk) and _covered(pv) and per > before * (1 + TOKENS_RISE_ALERT):
+        add("cycle-tokens", "amber",
+            f"Claude tokens per merged PR rose {round((per / before - 1) * 100)}% in {tk.get('days')}d",
+            f"{per:,} tokens per merged PR ({tk.get('merged_prs')} PRs) against {before:,} the "
+            f"window before ({pv.get('merged_prs')} PRs). Every measured run counts, QA rounds and "
+            f"empty cycles included, so a rise is either costlier cycles or more cycles per fix: "
+            f"compare `median_cycle` and `median_qa_round` in loop.json `tokens`, then the rows' "
+            f"`turns`. The weekly Claude quota is what this spends.", "/admin/ops")
 
     # --- the build lane is starved (2026-11-10) ------------------------------
     # Build cycles that build nothing are not idle capacity (that is loop-idle)

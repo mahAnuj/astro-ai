@@ -135,7 +135,10 @@ def _events(out):
 
 def test_tool_link_from_a_learn_page_sends_one_cta_click(tmp_path):
     out = _run(tmp_path, clicks=[{"href": "/manglik-check", "ancestors": ["article", "p"]}])
-    assert out["listeners"] == ["click"], "exactly one delegated click listener"
+    # Exactly one delegated CLICK listener. Other event types are not this test's
+    # business: #1067 added DOMContentLoaded and htmx:afterSettle for declared events.
+    assert [t for t in out["listeners"] if t == "click"] == ["click"], \
+        "exactly one delegated click listener"
     ev = _events(out)
     assert len(ev) == 1, out["calls"]
     _, _, name, params = ev[0]

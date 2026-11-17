@@ -57,11 +57,11 @@ def test_english_block_tells_the_model_the_windows_are_background_only():
     failure) plus a digest across all seven.
     """
     assert _block("en", 8) == (  # Thursday: Rahu Kaal is segment 6
-        "Today's inauspicious and auspicious windows. Rahu Kaal falls in the "
+        "Today's two daytime windows. Rahu Kaal falls in the "
         "6th of the eight equal parts of daylight — mid-afternoon — "
         "and is the wrong time to begin anything, sign, or decide. Abhijit "
-        "Muhurta is the ~48 minutes centred on LOCAL solar noon, and is the "
-        "day's most favourable window for important action.\n"
+        "Muhurta is the midday muhurta, the ~48 minutes centred on LOCAL "
+        "solar noon.\n"
         "BACKGROUND ONLY — never surface this. Do not name Rahu Kaal or "
         "Abhijit Muhurta, and do not paraphrase either window; the page and "
         "the email already show this reader their own times for both. State "
@@ -71,7 +71,7 @@ def test_english_block_tells_the_model_the_windows_are_background_only():
         "waiting."
     )
     digest = hashlib.sha256("".join(_week("en")).encode()).hexdigest()[:16]
-    assert digest == "185ff1401795566a"
+    assert digest == "4f62c9d1d886c00c"
 
 
 def test_no_language_tells_the_model_to_name_a_window():

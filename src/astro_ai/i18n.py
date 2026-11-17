@@ -56,8 +56,8 @@ _EN: Final[dict[str, str]] = {
     "rahu_kaal_tag":       "Avoid",
     "rahu_kaal_desc":      "Inauspicious window. Avoid starting new ventures, signing important papers, or big decisions during this time.",
     "abhijit_muhurta":     "Abhijit Muhurta",
-    "abhijit_tag":         "Best time",
-    "abhijit_desc":        "Most auspicious window of the day. Favourable for important actions, meetings, signing, beginnings.",
+    "abhijit_tag":         "Midday",
+    "abhijit_desc":        "The midday muhurta: a fifteenth of daylight, centred on local solar noon.",
 
     # The LLM-facing day-windows block (chart.format_day_windows_for_rashifal,
     # #270). These are PROMPT text, not page chrome: the whole block is
@@ -65,7 +65,7 @@ _EN: Final[dict[str, str]] = {
     # ("in the Abhijit window near midday") out of an English block. EN must
     # stay byte-identical to the pre-#270 literals — pinned by
     # tests/test_rashifal_window_block.py.
-    "rashifal_window_facts": "Today's inauspicious and auspicious windows. {rahu} falls in the {ordinal} of the eight equal parts of daylight — {band} — and is the wrong time to begin anything, sign, or decide. {abhijit} is the ~48 minutes centred on LOCAL solar noon, and is the day's most favourable window for important action.",
+    "rashifal_window_facts": "Today's two daytime windows. {rahu} falls in the {ordinal} of the eight equal parts of daylight — {band} — and is the wrong time to begin anything, sign, or decide. {abhijit} is the midday muhurta, the ~48 minutes centred on LOCAL solar noon.",
     "rashifal_window_directive": "BACKGROUND ONLY — never surface this. Do not name {rahu} or {abhijit}, and do not paraphrase either window; the page and the email already show this reader their own times for both. State no clock time and no soft clock ('mid-morning', 'near midday') — across Indian cities these windows shift by up to 79 minutes. Use the shape above only to decide whether the day favours pushing or waiting.",
     "rahu_ord_1": "1st",
     "rahu_ord_2": "2nd",
@@ -92,7 +92,7 @@ _EN: Final[dict[str, str]] = {
     "rahu_band_8": "the last stretch before sunset",
     "gochar_base_rate":    "By classical reckoning the slow planets are demanding in most positions — Saturn, Rahu and Ketu in nine houses of twelve, Jupiter in seven. Seeing several marked challenging is the ordinary shape of this table, not a verdict on your year.",
     "strip_rahu_kaal":     "Rahu Kaal (avoid)",
-    "strip_abhijit":       "Abhijit (best)",
+    "strip_abhijit":       "Abhijit (midday)",
     "strip_tithi":         "Tithi",
     "strip_moon":          "Moon",
     "strip_weekday_in":    "in",
@@ -649,8 +649,8 @@ _HI: Final[dict[str, str]] = {
     "rahu_kaal_tag":       "वर्जित",
     "rahu_kaal_desc":      "अशुभ समय। इस अवधि में कोई नया कार्य आरम्भ करना, महत्वपूर्ण दस्तावेज़ों पर हस्ताक्षर करना, या बड़े निर्णय लेने से बचें।",
     "abhijit_muhurta":     "अभिजित मुहूर्त",
-    "abhijit_tag":         "श्रेष्ठ समय",
-    "abhijit_desc":        "दिन का सर्वोत्तम शुभ समय। महत्वपूर्ण कार्यों, बैठकों, हस्ताक्षरों और आरम्भों के लिए अनुकूल।",
+    "abhijit_tag":         "मध्याह्न",
+    "abhijit_desc":        "मध्याह्न का मुहूर्त: दिन के उजाले का पंद्रहवाँ भाग, स्थानीय सूर्य-मध्याह्न पर केंद्रित।",
 
     # See the _EN twin. Fully Devanagari on purpose (#270): a Latin word in
     # this block is a word the model may echo into Devanagari prose.
@@ -659,7 +659,7 @@ _HI: Final[dict[str, str]] = {
     # `Say "during Rahu Kaal" or "in the Abhijit window near midday"`, and
     # that file is deliberately not edited (it would move the prompt
     # fingerprint and re-warm every cache).
-    "rashifal_window_facts": "आज के अशुभ और शुभ समय। {rahu} दिन के उजाले के आठ बराबर भागों में से {ordinal} भाग में पड़ता है — {band} — और यह कुछ भी आरम्भ करने, हस्ताक्षर करने या निर्णय लेने का अनुचित समय है। {abhijit} स्थानीय सूर्य-मध्याह्न के केंद्र में स्थित लगभग 48 मिनट की अवधि है, और महत्वपूर्ण कार्य के लिए दिन का सबसे अनुकूल समय है।",
+    "rashifal_window_facts": "आज के दिन के दो समय। {rahu} दिन के उजाले के आठ बराबर भागों में से {ordinal} भाग में पड़ता है — {band} — और यह कुछ भी आरम्भ करने, हस्ताक्षर करने या निर्णय लेने का अनुचित समय है। {abhijit} मध्याह्न का मुहूर्त है — स्थानीय सूर्य-मध्याह्न के केंद्र में स्थित लगभग 48 मिनट की अवधि।",
     "rashifal_window_directive": "केवल पृष्ठभूमि — इसे राशिफल में कभी न लिखें। {rahu} या {abhijit} का नाम न लें, न ही दूसरे शब्दों में इन अवधियों की ओर संकेत करें; पृष्ठ और ईमेल पहले से ही पाठक को उसका अपना समय दिखा देते हैं। न घड़ी का समय बताएँ, न अनुमानित समय — भारतीय शहरों में ये अवधियाँ 79 मिनट तक खिसक जाती हैं। ऊपर दी गई बात से केवल दिन का मिज़ाज तय करें। अन्य निर्देशों के अंग्रेज़ी उदाहरण-वाक्यांश कभी न दोहराएँ; पूरी बात देवनागरी में लिखें।",
     "rahu_ord_1": "पहले",
     "rahu_ord_2": "दूसरे",
@@ -681,7 +681,7 @@ _HI: Final[dict[str, str]] = {
     "rahu_band_8": "सूर्यास्त से ठीक पहले का अंतिम समय",
     "gochar_base_rate":    "शास्त्रीय गणना के अनुसार मंद ग्रह अधिकांश स्थितियों में कठिन फल देते हैं — शनि, राहु और केतु बारह में से नौ भावों में, तथा गुरु सात में। इसलिए कई ग्रहों का चुनौतीपूर्ण दिखना इस तालिका का सामान्य स्वरूप है, आपके वर्ष पर कोई निर्णय नहीं।",
     "strip_rahu_kaal":     "राहु काल (वर्जित)",
-    "strip_abhijit":       "अभिजित (श्रेष्ठ)",
+    "strip_abhijit":       "अभिजित (मध्याह्न)",
     "strip_tithi":         "तिथि",
     "strip_moon":          "चंद्र",
     "strip_weekday_in":    "में",

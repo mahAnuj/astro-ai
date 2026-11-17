@@ -1,0 +1,30 @@
+"""#1104: a Cloud Run revision refuses to start on an unset, blank or placeholder secret.
+tests/test_fail_closed_secrets.py."""
+
+MUTATIONS = [
+    ("#1104: the lifespan no longer checks the secrets on Cloud Run",
+     "src/astro_ai/main.py",
+     '    if os.environ.get("K_REVISION"):\n        from astro_ai.routes.deps import insecure_secrets',
+     '    if False:\n        from astro_ai.routes.deps import insecure_secrets',
+     "test_cloud_run_refuses_to_start_on_a_bad_secret"),
+    ("#1104: the cookie secret is no longer checked, so its public fallback is accepted",
+     "src/astro_ai/routes/deps.py",
+     'for name in ("ADMIN_PASSWORD", "ASTRO_AI_COOKIE_SECRET"):',
+     'for name in ("ADMIN_PASSWORD",):',
+     "test_cloud_run_refuses_to_start_on_a_bad_secret"),
+    ("#1104: a committed placeholder counts as a configured secret again",
+     "src/astro_ai/routes/deps.py",
+     "        if not value or value in placeholders:",
+     "        if not value:",
+     "test_cloud_run_refuses_to_start_on_a_bad_secret"),
+    ("#1104: a whitespace-only value counts as configured again",
+     "src/astro_ai/routes/deps.py",
+     'value = os.environ.get(name, "").strip()',
+     'value = os.environ.get(name, "")',
+     "test_cloud_run_refuses_to_start_on_a_bad_secret"),
+    ("#1104: the unsubscribe key is back on its own literal, shared with the admin fallback",
+     "src/astro_ai/subscribers.py",
+     "    from astro_ai.session import cookie_secret\n\n    return cookie_secret().encode()",
+     '    import os\n\n    return os.environ.get("ASTRO_AI_COOKIE_SECRET", "bhagya-dev-only-CHANGE-ME").encode()',
+     "test_unsubscribe_fallback_is_not_the_admin_password"),
+]

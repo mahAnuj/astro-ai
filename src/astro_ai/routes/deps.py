@@ -49,6 +49,7 @@ from astro_ai import cache, daily_cache, email_sender, events, feedback, festiva
 
 
 from astro_ai.session import (
+    _DEV_SECRET,
     SUPPORTED_LANGS,
     ChartCollection,
     SavedMatching,
@@ -540,12 +541,32 @@ _basic_auth = HTTPBasic(realm="Bhagya admin")
 _ADMIN_DEV_FALLBACK = "bhagya-dev-only-CHANGE-ME"
 
 
+def insecure_secrets() -> list[str]:
+    """Names of the secrets that are unset, blank, or a committed dev placeholder (#1104).
+
+    The repo is public, so both placeholders below are known to everyone. A value
+    equal to EITHER is rejected for BOTH secrets: the unsubscribe key used to share
+    the admin string, and a deploy that pasted the wrong placeholder into the wrong
+    variable is still a public secret. Read from the environment on every call, not
+    at import, so a test (or a changed env) is seen. Returns names only, never values.
+    """
+    placeholders = {_ADMIN_DEV_FALLBACK, _DEV_SECRET}
+    bad = []
+    for name in ("ADMIN_PASSWORD", "ASTRO_AI_COOKIE_SECRET"):
+        value = os.environ.get(name, "").strip()
+        if not value or value in placeholders:
+            bad.append(name)
+    return bad
+
+
 def require_admin(creds: HTTPBasicCredentials = Depends(_basic_auth)) -> None:
     """HTTP Basic Auth gate for admin routes.
 
     Username must be 'admin'; password comes from the ADMIN_PASSWORD env var.
     If unset, falls back to a clearly-flagged dev placeholder so local
-    development still works — but the var MUST be set before any deploy.
+    development still works. On Cloud Run (K_REVISION set) that fallback is never
+    reachable: `main._lifespan` refuses to start the revision when ADMIN_PASSWORD
+    is unset, blank or a placeholder (`insecure_secrets`, #1104).
     `secrets.compare_digest` is used on both sides to dodge timing attacks.
     """
     expected_password = os.environ.get("ADMIN_PASSWORD", _ADMIN_DEV_FALLBACK)
