@@ -16,8 +16,11 @@ Expiry: 30 days from creation. Enforced two ways:
       `snapshot/` after 30 days. Set up once in GCS console; requires
       no code. See docs/snapshot-lifecycle.md for the exact rule.
 
-IDs are unguessable — 4-byte URL-safe tokens (~6-7 chars, 2^32 space).
-Not enumerable; someone would need to try ~2B URLs to hit one at random.
+IDs are 16-byte URL-safe tokens (22 chars, 2^128 space) — #1160. Until then
+they were 4 bytes (6 chars, 2^32 space), which is within reach of a request
+loop: viewing `/r/{id}` is not rate-limited and shows name and birth details.
+Links minted at the old length stay readable until they expire — `load()`
+accepts any id up to 32 characters, so there is no migration.
 
 Privacy: snapshot stores birth details + reading text. Owner opts in at
 creation time (by clicking "Share"). Deletion request → owner emails us
@@ -44,9 +47,10 @@ log = logging.getLogger(__name__)
 # revisit, short enough to keep PII from lingering indefinitely.
 SNAPSHOT_TTL_DAYS = 30
 
-# 4 bytes = ~6-7 URL-safe chars = 2^32 space. Collision-safe for our
-# scale (thousands of snapshots per year, not billions).
-_ID_BYTES = 4
+# 16 bytes = 22 URL-safe chars = 2^128 space (#1160). Was 4 (2^32), which a
+# request loop can probe because viewing a link is not rate-limited. `load()`
+# still accepts up to 32 chars so links already shared keep working.
+_ID_BYTES = 16
 
 # Local filesystem fallback for when GCS isn't configured (dev + preview
 # environments). Prod always has BHAGYA_STORAGE_BUCKET set and never

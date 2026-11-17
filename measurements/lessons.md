@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-16T19:42:10Z)
+# Lessons — last 30 days (generated 2026-11-17T06:08:41Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -11,35 +11,32 @@ deterministic, no LLM.
 ## Repeated error themes: act on these
 
 - **copy** — 20 QA FAIL(s): #536, #544, #550, #564, #649, #654, #675, #691, #815, #833, #841, #884, #960, #1000, #1077
-- **grounding** — 27 QA FAIL(s): #524, #536, #635, #701, #706, #713, #747, #772, #815, #833, #841, #845, #859, #875, #1011, #1027, #1057, #1058, #1063, #1077, #1086, #1132
-- **i18n** — 9 QA FAIL(s): #448, #524, #564, #737, #815, #875, #1057
+- **grounding** — 28 QA FAIL(s): #524, #536, #635, #701, #706, #713, #747, #772, #815, #833, #841, #845, #859, #875, #1011, #1027, #1057, #1058, #1063, #1077, #1086, #1132, #1150
+- **i18n** — 10 QA FAIL(s): #448, #524, #564, #737, #815, #875, #1057, #1150
 - **performance** — 8 QA FAIL(s): #524, #536, #565, #675, #747, #815
 - **regression** — 23 QA FAIL(s): #536, #544, #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747, #815, #841, #884, #1000, #1002, #1128
-- **security** — 10 QA FAIL(s): #544, #564, #636, #712, #747, #841, #846, #1000
+- **security** — 11 QA FAIL(s): #544, #564, #636, #712, #747, #841, #846, #1000, #1150
 - **tests** — 21 QA FAIL(s): #448, #536, #544, #550, #701, #713, #747, #754, #801, #804, #833, #841, #846, #913, #999, #1027, #1058
 - **tokens** — 18 QA FAIL(s): #536, #564, #649, #654, #660, #675, #747, #815, #841, #846, #913, #1000
 
 ## Our errors
 
-- QA FAIL verdicts: 99
+- QA FAIL verdicts: 100
 - reverted commits on main: 0
 - failed verify-production runs: 6
-- ops findings now: 1
-  - [amber] loop-last-run-failed: agent-prioritise.yml: last run failed
+- ops findings now: 0
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 1, MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 9, UNSCOREABLE 7
+counts: MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 14, UNSCOREABLE 7
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: OTHER — BAR MET, not attributable to the CTA
 - #311: MISS — MISS
 - #329: UNSCOREABLE — UNSCOREABLE at this traffic: 3 vs 10
 - #338: PASS — PASS
 - #373: PARTIAL — PARTIAL
-- #374: UNSCOREABLE — UNSCORED (not determinable this run)
 - #396: PASS — PASS on the first clause only
 - #397: PASS — PASS on the countable clause; the behavioural clause was not checked
-- #400: HIT — HIT (partial read) — ceiling gate present and green
 - #426: PENDING — pending — scoreable from 2026-12-03
 - #493: UNSCOREABLE — UNSCORED — the measured event has not happened yet
 - #508: PENDING — pending — scoreable from 2026-12-04
@@ -55,6 +52,12 @@ counts: HIT 1, MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 9, UNSCOREABLE 7
 - #685: PENDING — pending — scoreable from 2026-12-04
 - #735: PENDING — pending — scoreable from 2026-12-12
 - #835: PENDING — pending — scoreable from 2026-12-14
+- #843: UNSCOREABLE — not scoreable from GA4/GSC
+- #1066: PENDING — pending — scoreable from 2026-12-16; the metric needs an export that does not exist
+- #1073: PENDING — pending — scoreable from 2026-12-17
+- #1074: PENDING — pending — scoreable from 2026-12-17; floor at risk
+- #1075: PENDING — pending — scoreable from 2026-12-17
+- #1093: PENDING — pending — scoreable from 2026-12-16; the metric needs an export that does not exist
 
 A MISS is the most useful line here: before proposing work of the same kind, say why this time differs, or do not propose it.
 

@@ -11,7 +11,7 @@ Gate 4 (#193) closed that hole, and those two rows catch like the others now.
 
     uv run python scripts/mutate_learn_article_dates.py   # exit 1 if any escapes
 
-THE EXPECTED STATE IS 4/4. Every row below is a corruption the shipped gate
+THE EXPECTED STATE IS 8/8 (4/4 before Gate 5, #1071; the May row was added after QA found Gate 5 blind to May). Every row below is a corruption the shipped gate
 catches today, so a miss is a REGRESSION in `verify_learn_article_dates.py` and
 never a known gap. 2/4 was the pre-Gate-4 reading and stopped being acceptable
 the day Gate 4 landed.
@@ -37,6 +37,7 @@ import tempfile
 GATE = "scripts/verify_learn_article_dates.py"
 DIWALI = "src/astro_ai/templates/learn/diwali-muhurat-2026.html"
 VIVAH = "src/astro_ai/templates/learn/vivah-muhurat-2027.html"
+GOCHAR27 = "src/astro_ai/templates/learn/gochar-2027-planetary-transits.html"
 
 # (label, path, line_no, from_substring, to_substring, why it must fail)
 MUTATIONS = [
@@ -44,7 +45,7 @@ MUTATIONS = [
     # plans around, and both sit in a string that reached no gate at all until
     # Gate 4 — they are the reason it exists, and the reason it must stay.
     ("vivah: Chaturmas opens two days later, on the WRONG day",
-     VIVAH, 98, "on Jul 14", "on Jul 16",
+     VIVAH, 101, "on Jul 14", "on Jul 16",
      "Gate 4 — bare `Jul 14` must corroborate the Jul 14 2027 Devshayani claim"),
 
     ("diwali: Shukla Pratipada reaches sunrise on the WRONG day (#143's date)",
@@ -61,6 +62,24 @@ MUTATIONS = [
     ("diwali: Govardhan Puja's weekday no longer matches its date",
      DIWALI, 18, "Tuesday, Nov 10, 2026", "Wednesday, Nov 10, 2026",
      "Gate 2 — 2026-11-10 is a Tuesday"),
+
+    # #1071: Gate 5, the transit articles. None of these dates is a festival, so Gates 1-4 never read
+    # them; each row moves one by a month and must now be caught against the ephemeris.
+    ("gochar-2027: Jupiter's entry into Cancer moved a month (explicit year)",
+     GOCHAR27, 20, "25 January 2027", "25 February 2027",
+     "Gate 5 — no Jupiter/Saturn/Mars/node event within a day of 25 Feb 2027"),
+
+    ("gochar-2027: a range's FIRST endpoint moved to 10 April (undefended by Gates 1-4)",
+     GOCHAR27, 83, "(10 January–1 April 2027)", "(10 April–1 April 2027)",
+     "Gate 5 — a range endpoint is a date string like any other"),
+
+    ("gochar-2027: a year-less per-sign date moved a month",
+     GOCHAR27, 113, "speech; 25 January–26 June", "speech; 25 February–26 June",
+     "Gate 5 — a year-less date is read in the article's own year"),
+
+    ("gochar-2027: Rahu into Sagittarius moved from 24 May to 18 May 2028 (the three-letter month)",
+     GOCHAR27, 201, "on 24 May 2028", "on 18 May 2028",
+     "Gate 5 — `May` is a full month name; a `len(m) > 3` filter dropped it and no May date was read"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

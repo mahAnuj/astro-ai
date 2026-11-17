@@ -961,6 +961,37 @@ a{color:#1f5fae} a:hover{color:#174a88}
     {% endif %}
   </section>
 
+  {# ── What the loop's Claude tokens bought. loop.json `tokens`
+     (collect_loop_measurements.py `token_summary`, 2026-11-17). Per merged PR is
+     EVERY measured run's tokens in the window -- QA rounds and empty cycles
+     included -- over the PRs that merged, so the waste that earned a fix is in
+     its price. Tokens = input + output + cache read + cache write. #}
+  {% set T = ops.tokens %}
+  <section class="panel">
+    <h2>Claude tokens per shipped fix <span class="lbl">last {{ T.days if T else 7 }} days</span></h2>
+    {% if T %}
+    <div class="waste-grid">
+      <div><span class="lab">tokens per merged PR</span>
+        <span class="n c-shipped">{{ T.per_pr_text or '—' }}
+          {% if T.change_pct is not none %}<span class="lbl">({{ '+' if T.change_pct > 0 }}{{ T.change_pct }}% vs the {{ T.days }}d before)</span>{% endif %}</span></div>
+      <div><span class="lab">median per cycle</span><span class="n">{{ T.cycle_text or '—' }}</span></div>
+      <div><span class="lab">median per QA round</span><span class="n">{{ T.qa_text or '—' }}</span></div>
+      <div><span class="lab">window total</span><span class="n">{{ T.total_text or '—' }}
+        <span class="lbl">(${{ '%.0f'|format(T.total.cost_list_usd or 0) }} list)</span></span></div>
+    </div>
+    <p class="sub" style="margin-top:10px">
+      median by outcome:
+      {% for k, v in T.by_outcome_text.items() %}{{ k }} {{ v }} ({{ T.median_by_outcome[k].runs }}){% if not loop.last %} · {% endif %}{% endfor %}
+      · {{ T.measured }} of {{ T.runs }} runs measured{% if T.measured < T.runs %}, so the totals are a floor{% endif %}
+      · {{ T.merged_prs }} PRs merged{% if T.prev_per_pr_text %} · previous window {{ T.prev_per_pr_text }} per PR{% endif %}
+    </p>
+    <p class="sub">Cost is list price, covered by the Max subscription; the weekly quota is what binds.</p>
+    {% else %}
+    <p class="none"><code>loop.json</code> carries no <code>tokens</code> block yet — the next
+      <code>agent-measure</code> run writes it.</p>
+    {% endif %}
+  </section>
+
   {# ── Token budget ──────────────────────────────────────────────────────
      FULL WIDTH, AND ABOVE THE FOLD, ON PURPOSE. This lived inside App health,
      which sits in the 1fr column of a `1.25fr 1fr` grid — so the one table on
