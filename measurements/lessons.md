@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-17T17:20:58Z)
+# Lessons — last 30 days (generated 2026-11-17T18:39:56Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -23,8 +23,10 @@ deterministic, no LLM.
 
 - QA FAIL verdicts: 107
 - reverted commits on main: 0
-- failed verify-production runs: 8
-- ops findings now: 0
+- failed verify-production runs: 9
+- ops findings now: 2
+  - [amber] loop-last-run-failed: verify-production.yml: last run failed
+  - [amber] loop-starved: 3 of the last 4 build cycles built nothing
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
