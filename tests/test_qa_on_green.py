@@ -128,7 +128,13 @@ def test_the_trigger_names_the_workflow_by_its_name_and_not_its_filename():
 
 
 def test_it_is_serialised_so_two_pushes_do_not_race():
-    assert DOC["concurrency"]["group"] == "qa-on-green"
+    # Per PR branch and gate workflow, never one global group: GitHub keeps one
+    # pending run per group and cancels the older one, which dropped #1165's
+    # decision (run 44059296498, 2026-11-17) when several PRs went green at once.
+    group = DOC["concurrency"]["group"]
+    assert group.startswith("qa-on-green-")
+    assert "${{ github.event.workflow_run.head_branch }}" in group
+    assert "${{ github.event.workflow_run.name }}" in group
     assert DOC["concurrency"]["cancel-in-progress"] is False
 
 

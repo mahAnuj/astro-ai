@@ -122,7 +122,8 @@ def test_other_events_are_not_excluded_on_a_dark_half_tithi(event, tithi):
 
 
 def test_other_events_ratings_on_a_krishna_ekadashi_and_dwadashi_are_pinned():
-    # Measured identical before and after the change over 365 days for all four events.
+    # Measured identical before and after the change over 365 days for all four events (#1022);
+    # namkaran's 12th changed afterwards, see the row below.
     pinned = {
         ("griha_pravesh", date(2026, 12, 4)): "excellent",
         ("business", date(2026, 12, 4)): "excellent",
@@ -130,7 +131,9 @@ def test_other_events_ratings_on_a_krishna_ekadashi_and_dwadashi_are_pinned():
         ("namkaran", date(2026, 12, 4)): "excellent",
         ("griha_pravesh", date(2026, 12, 5)): "good",
         ("vidyarambh", date(2026, 12, 5)): "excellent",
-        ("namkaran", date(2026, 12, 5)): "excellent",
+        # #1060: Raman's Namakarana avoid list carries the 12th, so this was "excellent" only on the
+        # Dwadashi credit the books do not support.
+        ("namkaran", date(2026, 12, 5)): "avoid",
         ("business", date(2027, 3, 5)): "excellent",
     }
     for (event, d), want in pinned.items():

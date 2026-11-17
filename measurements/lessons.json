@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-17T06:08:41Z",
+ "generated_at": "2026-11-17T17:20:58Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -878,6 +878,16 @@
     ]
    },
    {
+    "number": 1105,
+    "at": "2026-11-17T13:56:36Z",
+    "url": "https://github.com/mahAnuj/astro-ai/issues/1105#issuecomment-6950113387",
+    "summary": "QA: FAIL \u2014 verified at 17676aa97e176292aaf17f8f8f68b8987eabbfe2  Independent round (qa:independent). Head SHA re-checked equal before and after. `resolve_provenance.py 1105` exit 0 (TRUSTED), so no provenance block. The FAIL is one defect, and it destroys data.  ## The defect: after an account is de",
+    "themes": [
+     "tokens",
+     "tests"
+    ]
+   },
+   {
     "number": 1128,
     "at": "2026-11-16T07:21:46Z",
     "url": "https://github.com/mahAnuj/astro-ai/pull/1128#issuecomment-6910109917",
@@ -914,10 +924,81 @@
      "i18n",
      "security"
     ]
+   },
+   {
+    "number": 1162,
+    "at": "2026-11-17T09:02:58Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1162#issuecomment-6943539083",
+    "summary": "QA: FAIL \u2014 verified at `54fed753da94a36257d736ffb5836ed35afa57ae` DEFECT: the /subscribe docstring claims 'this route is not an oracle either', but anonymous timing separates new from existing addresses: with the real _send_welcome_email, fake storage, no Brevo key and a dead LLM key, an existing ad",
+    "themes": [
+     "security"
+    ]
+   },
+   {
+    "number": 1169,
+    "at": "2026-11-17T10:35:27Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1169#issuecomment-6945590886",
+    "summary": "QA: FAIL \u2014 verified at `b1492b42e0b9421ef1b1bf71f5120a7dedbe24cf` JUDGE-ONLY round (diff touches .github/workflows/; no push attempted). Two blocking defects in the new step \"Refuse audit output that quotes a user\" (agent-measure.yml), both reproduced by execution under bash -e:  D1 DEFECT: `files=$",
+    "themes": [
+     "grounding",
+     "tests",
+     "security"
+    ]
+   },
+   {
+    "number": 1169,
+    "at": "2026-11-17T11:48:33Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1169#issuecomment-6947170684",
+    "summary": "QA: FAIL at d76b49a00b22e202fc82d8595655d4ca14567e40  Independent cold round (provenance: independent). I read `gh pr diff 1169` myself, checked the head out in a separate worktree, and executed the scripts and the extracted workflow steps. I did not rely on the earlier in-cycle PASS.  ## The defect",
+    "themes": [
+     "grounding",
+     "tests",
+     "security",
+     "regression"
+    ]
+   },
+   {
+    "number": 1167,
+    "at": "2026-11-17T11:48:37Z",
+    "url": "https://github.com/mahAnuj/astro-ai/issues/1167#issuecomment-6947171957",
+    "summary": "QA: FAIL at d76b49a00b22e202fc82d8595655d4ca14567e40  Independent cold round (provenance: independent). I read `gh pr diff 1169` myself, checked the head out in a separate worktree, and executed the scripts and the extracted workflow steps. I did not rely on the earlier in-cycle PASS.  ## The defect",
+    "themes": [
+     "grounding",
+     "tests",
+     "security",
+     "regression"
+    ]
+   },
+   {
+    "number": 1174,
+    "at": "2026-11-17T12:15:50Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1174#issuecomment-6947762185",
+    "summary": "QA: FAIL at 4dd20744dd1c77dc6a790389a141228b09032017 (independent, cold read; head confirmed with `gh pr view`)  The workflow change itself is correct. The guard test has one hole that matches the exact risk this round was asked to check, so I am failing it for a one-test fix.  **What passed (all ex",
+    "themes": []
+   },
+   {
+    "number": 1173,
+    "at": "2026-11-17T13:56:35Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1173#issuecomment-6950112864",
+    "summary": "QA: FAIL \u2014 verified at 17676aa97e176292aaf17f8f8f68b8987eabbfe2  Independent round (qa:independent). Head SHA re-checked equal before and after. `resolve_provenance.py 1105` exit 0 (TRUSTED), so no provenance block. The FAIL is one defect, and it destroys data.  ## The defect: after an account is de",
+    "themes": [
+     "tokens",
+     "tests"
+    ]
    }
   ],
   "reverts": [],
   "verify_production_failed": [
+   {
+    "run": 44092951700,
+    "at": "2026-11-17T13:27:45Z",
+    "sha": "6403af1"
+   },
+   {
+    "run": 44044451462,
+    "at": "2026-11-17T08:10:17Z",
+    "sha": "db87a25"
+   },
    {
     "run": 43797263108,
     "at": "2026-11-16T03:17:12Z",
@@ -952,12 +1033,12 @@
   "ops_findings": []
  },
  "error_themes": {
-  "grounding": 28,
-  "regression": 23,
-  "tests": 21,
+  "grounding": 31,
+  "tests": 26,
+  "regression": 25,
+  "tokens": 20,
   "copy": 20,
-  "tokens": 18,
-  "security": 11,
+  "security": 15,
   "i18n": 10,
   "performance": 8
  },
@@ -1177,10 +1258,10 @@
   }
  ],
  "outcome_counts": {
-  "PASS": 5,
   "MISS": 1,
   "OTHER": 1,
   "UNSCOREABLE": 7,
+  "PASS": 5,
   "PARTIAL": 1,
   "PENDING": 14
  },

@@ -164,14 +164,14 @@ jobs:
           if [ "$RASHI" = "all" ]; then echo "MERGE=" >> "$GITHUB_ENV";
           else echo "MERGE=--merge" >> "$GITHUB_ENV"; fi
 
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Write is NOT in the action's default tool set, and a denial does
           # not fail the step -- see RUNDIR above. Named explicitly so the
           # refusal cannot recur silently. Bash is for the agent's own
           # --dry-run check.
-          claude_args: --max-turns 40 --allowedTools "Read,Write,Edit,Bash,Glob,Grep"
+          claude_args: --permission-mode default --max-turns 40 --allowedTools "Read,Write,Edit,Bash,Glob,Grep"
           prompt: |
             You are writing the Rashifal for the day the brief names, for
             shubhagya.com (usually tomorrow, IST). This text is

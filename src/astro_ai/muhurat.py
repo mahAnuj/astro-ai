@@ -582,16 +582,16 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
     "namkaran": {
         "slug": "namkaran",
         "hero_title": "Namkaran Muhurat — Auspicious Baby Naming Ceremony Dates",
-        "hero_subtitle": "Traditional 11th-day timing + soft nakshatra selection for a newborn.",
+        "hero_subtitle": "Raman's 10th, 12th or 16th day after birth + auspicious nakshatra and tithi selection for a newborn.",
         "seo_title": "Namkaran Muhurat + Baby First-Letter Nakshatra Table Calculator",
-        "seo_desc": "Free Namkaran Muhurat finder with the traditional 108-syllable first-letter table (27 nakshatras × 4 padas) — enter baby's birth details and get the traditional Sanskrit starting-letters for the name, plus soft-nakshatra day picks, favourable tithi, Bhadra avoidance, Choghadiya sub-day windows, and no-Panchak checks.",
+        "seo_desc": "Free Namkaran Muhurat finder with the traditional 108-syllable first-letter table (27 nakshatras × 4 padas) — enter baby's birth details and get the traditional Sanskrit starting-letters for the name, plus auspicious-nakshatra day picks, favourable tithi, Bhadra avoidance, Choghadiya sub-day windows, and no-Panchak checks.",
         "intro_paragraphs": [
-            "Namkaran (naming ceremony) is commonly held around the 11th day after birth, though modern families choose within the first 3-4 weeks; the day is custom, not a rule this finder sources to a book. The muhurat rules apply to whichever day is chosen. Because this is a child-driven ceremony, some rules that apply to adult-planned events (Chaturmas, Kharmas, Dagdha, Guru combustion) do NOT block Namkaran — the ceremony must happen close to the birth regardless.",
-            "What we do check: soft/friendly nakshatras (Ashwini, Rohini, Mrigashira, Punarvasu, Pushya, Hasta, Chitra, Swati, Anuradha, Shravana, Revati), favourable tithi, weekday preference (Mon/Wed/Thu/Fri best), no Panchak, no eclipse. Harsh nakshatras (Bharani, Krittika, Ardra, Ashlesha, Magha, Jyeshtha, Mula) are avoided for infants.",
+            "B.V. Raman's Muhurtha gives the 10th, 12th or 16th day after the child's birth for the naming ceremony, and says an auspicious day must be fixed if that is not possible; many families today choose another day within the first weeks. This finder has no birth date to count from, so its muhurat rules apply to whichever day is chosen. Because this is a child-driven ceremony, some rules that apply to adult-planned events (Chaturmas, Kharmas, Dagdha, Guru combustion) do NOT block Namkaran — the ceremony must happen close to the birth regardless.",
+            "What we do check: auspicious nakshatras (Ashwini, Rohini, Mrigashira, Punarvasu, Pushya, Hasta, Chitra, Swati, Anuradha, Shravana, Dhanishta, Shatabhisha, Uttara Phalguni, Uttara Ashadha, Uttara Bhadrapada, Revati), favourable tithi, weekday preference (Mon/Wed/Thu/Fri best), no Panchak, no eclipse. Tithis Raman rejects for naming (4th, 6th, 8th, 12th, 14th, Full Moon, New Moon) are avoided, and so is the 9th, which this finder keeps as its own reading: Raman's figure for it is damaged in the copy this site holds and Rao's Table 79 row omits it. Harsh nakshatras (Bharani, Krittika, Ardra, Ashlesha, Magha, Jyeshtha, Mula) are avoided for infants; Magha is the contested one, because Raman lists it as auspicious for naming and Rao's Table 79 omits it, and this finder follows the avoid reading.",
         ],
         "rules_summary": [
-            "Soft/friendly nakshatra required (mridu, laghu, dhruva, chara classifications)",
-            "Favourable tithi (2, 3, 5, 7, 10, 11, 12, 13)",
+            "Auspicious nakshatra required (Raman's list and Rao's Table 79 row for naming, which both include Dhanishta and Shatabhisha)",
+            "Favourable tithi (2, 3, 5, 7, 10, 11, 13); the 4th, 6th, 8th, 9th, 12th, 14th, Full Moon and New Moon are avoided (Raman's list, plus the 9th as this finder's reading)",
             "Weekday: Mon, Wed, Thu, Fri preferred; Tuesday excluded (Raman allows it on the child's 10th, 12th or 16th day; this tool has no birth date to apply that); Saturday scores one point lower",
             "No Panchak",
             "No eclipse days — widely followed convention this finder applies",
@@ -727,17 +727,29 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
     },
     "namkaran": {
         "label": "Namkaran (Baby Naming)",
-        # Namkaran classically done on the 11th day post-birth, but the
-        # muhurat rules apply to whichever day it's actually observed.
+        # Raman's Namakarana names the 10th, 12th or 16th day after birth; no held book
+        # names the 11th day or the Grihya Sutras (#1060, knowledge/vedic_reference.md
+        # 29.13). The muhurat rules apply to whichever day is actually observed.
+        #
+        # Tithis (#1060): Rao's Table 79 "Naming a child" row is 2, 3, 5, 7, 10, 11, 13 and
+        # omits the 12th. Raman's avoid list carries the 4th, 6th, 8th, 12th, 14th, Full
+        # Moon and New Moon, so Dwadashi was credited here against both books, and Shashti
+        # and Purnima were not avoided. Navami stays avoided: the figure is OCR-damaged in
+        # Raman and Rao omits it (contested, unchanged).
         "good_tithis": {"Dwitiya", "Tritiya", "Panchami", "Saptami", "Dashami",
-                         "Ekadashi", "Dwadashi", "Trayodashi"},
-        "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",
-                          "Amavasya"},
-        # Soft/friendly (mridu/laghu/dhruva/chara) nakshatras favoured.
+                         "Ekadashi", "Trayodashi"},
+        "avoid_tithis": {"Chaturthi", "Shashti", "Ashtami", "Navami", "Dwadashi",
+                          "Chaturdashi", "Amavasya", "Purnima"},
+        # Nakshatras (#1060): Raman's auspicious list and Rao's row both carry Dhanishta
+        # and Satabhisha (Shatabhisha here), which were missing. Chitra is on Rao's row only
+        # and stays credited. Magha stays in avoid_nakshatras: Raman lists Makha as
+        # auspicious for naming and Rao's row omits it, so the two books disagree and this
+        # finder keeps the harsh-star reading (contested, unchanged).
         "good_nakshatras": {"Ashwini", "Rohini", "Mrigashira", "Punarvasu",
                              "Pushya", "Hasta", "Chitra", "Swati",
-                             "Anuradha", "Shravana", "Uttara Phalguni",
-                             "Uttara Ashadha", "Uttara Bhadrapada", "Revati"},
+                             "Anuradha", "Shravana", "Dhanishta", "Shatabhisha",
+                             "Uttara Phalguni", "Uttara Ashadha",
+                             "Uttara Bhadrapada", "Revati"},
         # Harsh (tikshna/krura) nakshatras avoided for infants.
         "avoid_nakshatras": {"Bharani", "Krittika", "Ardra", "Ashlesha",
                               "Magha", "Jyeshtha", "Mula", "Purva Bhadrapada"},
@@ -745,7 +757,7 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "avoid_days": {"Tuesday", "Saturday"},
         "check_panchak": True,
         "check_chaturmas": False,   # Namkaran timing is child-driven, not liturgical
-        "check_kharmas":   False,   # ditto — must happen ~11th day post-birth regardless
+        "check_kharmas":   False,   # ditto — timed from the birth, not the liturgical year
         "check_dagdha":    False,   # child-driven timing overrides Dagdha
         # Combustion waived. UNSOURCED for Namkaran: knowledge/grahas.md 12.5 holds no
         # Namkaran line. It follows by analogy from Raman's Seemantha (p. 58) and
@@ -1193,9 +1205,16 @@ def _choghadiya_windows(weekday: str, sunrise: datetime, sunset: datetime) -> li
 # Classical 108-syllable naming table (27 nakshatras × 4 padas). The
 # baby's Moon nakshatra pada at BIRTH determines auspicious first
 # letters for the name. Real Namkaran astrologers consult this table.
-# Source not held: no book in the corpus carries this table, and the two texts
-# it was credited to before #716 are not held. The note that it was
-# consolidated per Drik Panchang / Namkaran manuals is unverified.
+# NOT taken from any held book (#1062). Raman's Muhurtha (1948), Appendix "Nama
+# Nakshatra, Finding" (djvu L6969-7110, printed pp. 105-106) prints a 27 x 4 table
+# in his own transliteration. Compared with this one: 18 of 27 rows agree after
+# allowing for that spelling, Shravana differs (his Ju, Jay, Jo, Gha; the
+# alternate below), Ardra pada 3 and Uttara Bhadrapada differ or are unreadable in
+# the OCR, and six more cannot be settled from OCR alone. Those rows are left as
+# they were: a printed Devanagari source or a second book must settle them, not
+# the OCR. The texts it was credited to before #716 are not held, and the note
+# that it was consolidated per Drik Panchang / Namkaran manuals is unverified.
+# knowledge/vedic_reference.md 29.13 has the row-by-row comparison.
 _NAMKARAN_LETTERS: dict[str, tuple[str, str, str, str]] = {
     "Ashwini":         ("Chu", "Che", "Cho", "La"),
     "Bharani":         ("Li",  "Lu",  "Le",  "Lo"),
@@ -1225,6 +1244,22 @@ _NAMKARAN_LETTERS: dict[str, tuple[str, str, str, str]] = {
     "Uttara Bhadrapada":("Du", "Tha", "Jha", "Nya"),
     "Revati":          ("De",  "Do",  "Cha", "Chi"),
 }
+
+
+# Shravana is the one row where Raman's printed list is a different set of
+# syllables, not a different spelling of ours (#1062). The finder keeps its own
+# row as the primary and shows this one beside it. Raman prints "Ju, Jay, Jo, Gha";
+# his "ay" is our "e" (his "Chay", "Day", "Tay" are our Che, De, Te), and he works
+# the example "James" to Shravana pada 2 (L7096-7105).
+_NAMKARAN_ALTERNATE_LETTERS: dict[str, tuple[str, str, str, str]] = {
+    "Shravana": ("Ju", "Je", "Jo", "Gha"),
+}
+
+
+def _namkaran_alternate_letters(child_moon_nakshatra: str) -> tuple[str, ...]:
+    """The second circulating pada set for a nakshatra, or () where the finder
+    has only one."""
+    return _NAMKARAN_ALTERNATE_LETTERS.get(child_moon_nakshatra, ())
 
 
 def _namkaran_first_letters(child_moon_nakshatra: str, child_moon_pada: int) -> tuple[str, tuple[str, ...]]:

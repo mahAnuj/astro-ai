@@ -123,7 +123,7 @@ jobs:
           } | tee /tmp/corpus.txt
           cat /tmp/corpus.txt >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
@@ -187,6 +187,10 @@ jobs:
             muhurat.py, numerology.py or matching.py. File issues; Engineering
             implements.
           claude_args: |
+            # #1172: strict tool list. claude-code-action made auto mode the default
+            # on 2026-11-12 (its #2004); there a safety review can pass a call no
+            # --allowedTools rule covers. `default` restores the boundary.
+            --permission-mode default
             # 150, not 80 (#605-adjacent, 2026-10-31). The 2026-10-28 run
             # died with "Reached maximum number of turns (80)" and its
             # workflow had not changed since 10-08, so this was the only one

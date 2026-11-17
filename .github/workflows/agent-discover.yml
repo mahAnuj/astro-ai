@@ -98,7 +98,7 @@ jobs:
           else
             echo "no prior measurement — proceeding without one"
           fi
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
@@ -158,6 +158,10 @@ jobs:
             NOT to file and why — that last part is as useful as the rest,
             because it stops the same idea being re-raised next week.
           claude_args: |
+            # #1172: strict tool list. claude-code-action made auto mode the default
+            # on 2026-11-12 (its #2004); there a safety review can pass a call no
+            # --allowedTools rule covers. `default` restores the boundary.
+            --permission-mode default
             # Write was missing and Bash was enumerated, which cost a real run:
             # 51 turns, $1.21, 12 denials, no issues filed and no report — the
             # agent could not write a file even if told to. The guardrail is the

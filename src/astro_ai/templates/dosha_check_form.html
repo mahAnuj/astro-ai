@@ -88,5 +88,40 @@
   </section>
   {% endif %}
 
+  {# #1175: the three tool pages that render this template link the specific
+     articles on their own subject, keyed by form_action so the GET form and
+     the POST error re-render both carry them. Link text is the article's
+     name in words; no claim is made here that the article does not make. #}
+  {% set _guides = {
+    '/manglik-check': [
+      ('/learn/manglik-dosh/', 'Manglik Dosh: what it really means', 'The houses, the cancellation rules and the remedies, in one honest guide'),
+      ('/learn/manglik-remedies/', 'Manglik remedies', 'Classical practices to soften Mars in a marriage chart'),
+      ('/learn/marriage-delayed/', 'Why is my marriage delayed?', 'Seven chart signals, Manglik among them'),
+    ],
+    '/sade-sati-check': [
+      ('/learn/sade-sati/', 'Sade Sati without the fear', 'The three phases of Saturn\'s 7.5-year transit and what each teaches'),
+      ('/learn/career-during-sade-sati/', 'Career during Sade Sati', 'What each phase tends to mean at work'),
+      ('/learn/saturn-remedies/', 'Saturn remedies', 'The classical approach to working with Shani'),
+    ],
+    '/kaal-sarp-check': [
+      ('/learn/kaal-sarp-dosh/', 'Kaal Sarp Dosh: what it is and is not', 'Where the idea comes from, with healthy scepticism'),
+      ('/learn/kaal-sarp-dosh-remedies/', 'Kaal Sarp Dosh remedies', 'Which practices are classical and which are tradition'),
+      ('/learn/rahu-in-vedic-astrology/', 'Rahu, the Dragon\'s Head', 'The node at one end of the axis this check measures'),
+    ],
+  }.get(form_action, []) %}
+  {% if _guides %}
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
+    <h2 class="font-marcellus text-lg text-bhagya-ink mb-3">Read more</h2>
+    <div class="space-y-3">
+      {% for href, title, desc in _guides %}
+      <a href="{{ href }}" class="block p-3 bg-white rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">{{ title }} &rarr;</div>
+        <div class="text-xs text-bhagya-muted">{{ desc }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
 </main>
 {% endblock %}

@@ -156,7 +156,7 @@ ARTICLES: tuple[Article, ...] = (
         category="Grahas",
         hero_image="/static/learn/surya-sun-in-vedic-astrology/hero.svg",
         read_time="10 min",
-        related=("the-9-grahas-overview", "chandra-moon-in-vedic-astrology", "sun-mahadasha"),
+        related=("the-9-grahas-overview", "chandra-moon-in-vedic-astrology", "sun-mahadasha", "surya-sun-remedies"),
         faqs=(
             {
                 "q": "What does Sun signify in Vedic astrology?",
@@ -370,7 +370,7 @@ ARTICLES: tuple[Article, ...] = (
         category="Grahas",
         hero_image="/static/learn/budha-mercury-in-vedic-astrology/hero.svg",
         read_time="10 min",
-        related=("the-9-grahas-overview", "surya-sun-in-vedic-astrology", "guru-jupiter-in-vedic-astrology"),
+        related=("the-9-grahas-overview", "surya-sun-in-vedic-astrology", "guru-jupiter-in-vedic-astrology", "mercury-remedies"),
         faqs=(
             {
                 "q": "What does Mercury signify in Vedic astrology?",
@@ -618,7 +618,7 @@ ARTICLES: tuple[Article, ...] = (
         category="Dasha",
         hero_image="/static/learn/sun-mahadasha/hero.svg",
         read_time="9 min",
-        related=("vimshottari-dasha-explained", "surya-sun-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha"),
+        related=("vimshottari-dasha-explained", "surya-sun-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha", "surya-sun-remedies"),
         faqs=(
             {
                 "q": "How long is Sun Mahadasha and when does it typically arrive?",
@@ -898,7 +898,7 @@ ARTICLES: tuple[Article, ...] = (
         category="Nakshatras",
         hero_image="/static/learn/bharani-nakshatra/hero.svg",
         read_time="7 min",
-        related=("ashwini-nakshatra", "shukra-venus-in-vedic-astrology", "kundali-matching-ashtakoot-guna-milan"),
+        related=("ashwini-nakshatra", "shukra-venus-in-vedic-astrology", "kundali-matching-ashtakoot-guna-milan", "krittika-nakshatra"),
         faqs=(
             {
                 "q": "How do I know if I have Moon in Bharani nakshatra?",
