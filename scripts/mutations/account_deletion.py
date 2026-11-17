@@ -38,4 +38,9 @@ MUTATIONS = [
      "    except not_found:\n        return True\n    except Exception as err:\n        if getattr(err, \"code\", None) == 404:\n            return True\n        log.warning(\"storage.delete",
      "    except Exception as err:\n        log.warning(\"storage.delete",
      "test_storage_delete_success_404_and_failure"),
+    ("#1105: readings delete ignores whose record it is (wipes the first user's readings)",
+     "src/astro_ai/users.py",
+     '            if existing.get("sub") == sub:\n                existing["readings"] = [\n                    r for r in existing.get("readings", [])',
+     '            if True:\n                existing["readings"] = [\n                    r for r in existing.get("readings", [])',
+     "test_delete_readings_for_chart_keeps_other_charts_and_the_record"),
 ]

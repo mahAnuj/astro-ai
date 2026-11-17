@@ -190,6 +190,11 @@ def test_delete_readings_for_chart_keeps_other_charts_and_the_record(fake_store)
     assert [r.id for r in users.list_readings(BOB["sub"])] == ["rb"], \
         "same chart id on another user's record is not ours to delete"
     assert users.delete_readings_for_chart("nobody", CHART_A["id"]) is True
+    # Scoping the other way round: Bob asking for chart A's id must not touch
+    # Alice's record, which comes first in the store (#1105 QA round 1).
+    assert users.delete_readings_for_chart(BOB["sub"], CHART_A["id"]) is True
+    assert [r.id for r in users.list_readings(ALICE["sub"])] == ["r2"]
+    assert [r.id for r in users.list_readings(BOB["sub"])] == []
 
 
 # -- POST /delete-chart -------------------------------------------------------
