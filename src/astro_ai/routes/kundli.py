@@ -62,7 +62,13 @@ from astro_ai.routes.deps import (
     templates,
 )
 from astro_ai.routes.llm_support import _cached, _fire_error_alert
-from astro_ai.session import load_collection, load_user
+from astro_ai.session import (
+    clear_event_flag,
+    event_flag_present,
+    load_collection,
+    load_user,
+    set_event_flag,
+)
 
 log = logging.getLogger(__name__)
 
@@ -147,6 +153,9 @@ async def reading(
         )
     response = RedirectResponse("/kundli", status_code=303)
     _save_collection_synced(response, collection, request)
+    # #1068: kundli_generated counts THIS completion, not every render of
+    # result.html. Set last, after the collection write (see session.set_event_flag).
+    set_event_flag(request, response, "kundli_generated")
     # notify.kundli_generated fires from _render_natal_for after the LLM
     # succeeds — that way the notification includes the model that actually
     # served the request. Firing here would fire on form submit, before the
@@ -397,10 +406,13 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     # Zodiac glyphs for the three summary chips (Lagna, Moon, Sun).
     moon_plt = next(p for p in chart.planets if p.name == "Moon")
     sun_plt  = next(p for p in chart.planets if p.name == "Sun")
+    # #1068: true only on the GET that follows a successful POST /reading.
+    fire_kundli_generated = event_flag_present(request, "kundli_generated")
     response = templates.TemplateResponse(
         request,
         "result.html",
         {
+            "fire_kundli_generated": fire_kundli_generated,
             "details": details,
             "reading": reading_text,
             "reading_unavailable": reading_unavailable,
@@ -431,6 +443,10 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             "sade_sati_remaining_years": ss_remaining_years,
         },
     )
+    if fire_kundli_generated:
+        # Consumed whether or not the reading generated: a failed generation
+        # still rendered the page the seeker was sent to.
+        clear_event_flag(request, response, "kundli_generated")
     if reading_unavailable is not None:
         # A degraded page must never be pinned by a shared cache: the seeker's
         # retry has to reach the app and regenerate.
