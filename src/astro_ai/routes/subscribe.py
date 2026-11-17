@@ -1,7 +1,7 @@
 """Daily-Rashifal subscriptions and the email blast (issue #154).
 
 Owns:
-    POST /subscribe/lookup            prefill the modal with existing prefs
+    POST /subscribe/lookup            prefill the modal with the signed-in user's own prefs
     POST /subscribe                   subscribe + one-off welcome email
     GET  /unsubscribe                 HMAC-token one-click unsubscribe page
     POST /admin/send-daily-rashifal   the 7 AM IST Cloud Scheduler blast,
@@ -62,6 +62,7 @@ from astro_ai.routes.deps import (
     templates,
 )
 from astro_ai.routes.llm_support import _fire_error_alert, _llm_error_friendly
+from astro_ai.session import load_user
 
 log = logging.getLogger(__name__)
 
@@ -203,27 +204,48 @@ def _shared_three_tier(
     return text
 
 
+# The one body /subscribe/lookup sends to everybody it will not answer for. A
+# module constant so the "unknown" and "not yours" branches cannot drift into two
+# different bodies, which is what an enumeration oracle is made of.
+_LOOKUP_NO_ANSWER = {"ok": True, "subscribed": False,
+                     "lang": "en", "city": "", "rashi": "all"}
+
+
+def _is_signed_in_as(request: Request, email: str) -> bool:
+    """True when the request's signed-in user owns `email` (same normalisation
+    as `subscribers._normalize`, so case and padding cannot split the match)."""
+    user = load_user(request)
+    if user is None:
+        return False
+    return bool(email.strip()) and user.email.strip().lower() == email.strip().lower()
+
+
 @router.post("/subscribe/lookup")
-async def subscribe_lookup(email: str = Form(...)) -> JSONResponse:
-    """Return the current preferences for a subscriber, or defaults if unknown.
+async def subscribe_lookup(request: Request, email: str = Form(...)) -> JSONResponse:
+    """Return the signed-in user's OWN subscription preferences, else defaults.
 
-    Called from the subscribe modal on email input (debounced) so the form
-    prefills with the subscriber's existing lang / city / rashi choices. This
-    prevents the silent reset that happens when a returning subscriber submits
-    the form with default field values — the `subscribe()` upsert overwrites
-    lang and rashi unconditionally.
+    Called from the subscribe modal on email input (debounced) and when a
+    signed-in user opens it via "Edit preferences", so the form prefills with
+    the subscriber's stored lang / city / rashi.
 
-    Same shape returned for subscribed and unsubscribed emails; the
-    `subscribed` flag distinguishes them so the UI can show a "welcome back"
-    hint. Not privacy-perfect (an attacker can enumerate) but proportional
-    for a public astrology mailing list at this scale.
+    It answers only when the request's signed-in user's email equals the posted
+    one. Every other caller -- anonymous, someone else's address, an address
+    that is not subscribed, a malformed one -- gets the identical default body
+    and the storage blob is not even read for them, so neither the body nor the
+    latency says whether an address is on the list. Until #1159 it answered for
+    anyone ("an attacker can enumerate"), which also leaked the address's city
+    and rashi; a public mailing list is not a reason to publish that.
+
+    The prefill exists to stop `subscribe()` silently resetting a returning
+    subscriber's prefs. Anonymous visitors no longer need it: `/subscribe` does
+    not overwrite an existing address's prefs unless the caller is signed in as
+    that address (see `subscribe()` below).
     """
+    if not _is_signed_in_as(request, email):
+        return JSONResponse(dict(_LOOKUP_NO_ANSWER))
     sub = subscribers.find_by_email(email)
     if sub is None:
-        return JSONResponse({
-            "ok": True, "subscribed": False,
-            "lang": "en", "city": "", "rashi": "all",
-        })
+        return JSONResponse(dict(_LOOKUP_NO_ANSWER))
     return JSONResponse({
         "ok": True, "subscribed": True,
         "lang": sub.get("lang", "en"),
@@ -242,17 +264,26 @@ async def subscribe(request: Request,
 
     Called from the modal in _subscribe_modal.html via fetch(). Returns JSON
     `{ok: true}` on success or `{ok: false, error: "..."}` so the frontend
-    can show inline feedback without a full page reload.
+    can show inline feedback without a full page reload. The body is the same
+    for a new and an existing address, so this route is not an oracle either.
 
     Side effect: sends a one-off welcome email to brand-new subscribers
     (skipped for re-subscribes). Welcome failure is logged but doesn't
     block the success response — the subscription itself already saved.
+
+    An existing address's stored prefs are rewritten only when the caller is
+    signed in as that address (#1159). Anonymous, the endpoint cannot change a
+    victim's lang / city / rashi, and an anonymous returning subscriber whose
+    form now opens with defaults (lookup answers only the signed-in owner) does
+    not silently reset their own choices.
     """
     # `request` is declared on this handler so it can alert like its siblings
     # do — it previously went unused, which is why a storage failure here
     # returned 400 to the user and produced no signal at all (#183).
     try:
-        ok, is_new, msg = subscribers.subscribe(email, lang, city, rashi)
+        ok, is_new, msg = subscribers.subscribe(
+            email, lang, city, rashi,
+            overwrite_prefs=_is_signed_in_as(request, email))
     except Exception as err:  # noqa: BLE001
         # subscribe() is not documented to raise, so if it does, something
         # unmodelled broke and we want to hear about it rather than 500 silently.
