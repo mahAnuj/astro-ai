@@ -44,6 +44,8 @@ is the baseline #1188's metric asks for. `outbox-noise` does not fire on it (4.0
   `agent-merge`'s merge trigger; the outbox normalises SHAs and would dedupe a PASS at a new
   head against the PASS at the old one. `cycle_queue.py`, `pr_fix_after_qa.py` and the other
   #1185-#1187 files are being changed in parallel and are allow-listed until that lands.
+  `ask_audit_post.py` (#1167) landed on `main` while this was built; it posts only a
+  leak-guarded body file and is allow-listed until a follow-up migrates it.
   Agents posting with `gh` directly from `.claude/` prose are a later step.
 
 ## Where the ledger lands, and the alternatives

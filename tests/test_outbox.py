@@ -505,6 +505,11 @@ ALLOWED = {
     # outbox normalises SHAs, so it would dedupe a PASS at a new head against the PASS
     # at the old one and the PR would never merge. qa_verdict.sh stays the only writer.
     "scripts/qa_verdict.sh": "SHA-bound verdict, the merge trigger",
+    # Landed on main (#1167, PR #1169) while #1188 was being built: the /ask audit's
+    # guarded poster, which only posts a body file under its work dir and labels the
+    # issue provenance:outsider first. Its leak guard is freshly QA'd and the outbox
+    # takes the body in-process, so it is migrated in a follow-up, not under this PR.
+    "scripts/ask_audit_post.py": "#1167 leak-guarded poster, migration is a follow-up",
 }
 # scripts/mutations/ is not scanned: its rows carry posting CODE as text to inject
 # into a sandbox copy, and post nothing themselves.
