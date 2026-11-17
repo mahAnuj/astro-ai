@@ -264,8 +264,13 @@ async def subscribe(request: Request,
 
     Called from the modal in _subscribe_modal.html via fetch(). Returns JSON
     `{ok: true}` on success or `{ok: false, error: "..."}` so the frontend
-    can show inline feedback without a full page reload. The body is the same
-    for a new and an existing address, so this route is not an oracle either.
+    can show inline feedback without a full page reload. The BODY, status and
+    headers are the same for a new and an existing address, but the TIMING is
+    not: a new address builds and sends the welcome email inside the request
+    (measured in #1159's QA round: ~300-2300 ms against ~2-40 ms for an
+    existing one), so an anonymous caller can still infer membership from the
+    response time. That channel is tracked separately (#1163);
+    only double opt-in or sending the welcome after the response closes it.
 
     Side effect: sends a one-off welcome email to brand-new subscribers
     (skipped for re-subscribes). Welcome failure is logged but doesn't
