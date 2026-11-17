@@ -105,6 +105,9 @@ import urllib.parse
 from dataclasses import dataclass, field
 from typing import Callable
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import outbox  # noqa: E402  -- the one posting path (#1188)
+
 TRUSTED, OUTSIDER, UNRESOLVED = "TRUSTED", "OUTSIDER", "UNRESOLVED"
 EXIT = {TRUSTED: 0, OUTSIDER: 1, UNRESOLVED: 2}
 
@@ -428,7 +431,12 @@ def apply_verdict(gh: Gh, repo: str, number: int, v: Verdict, current_labels: se
                 "untrusted -- the check could not complete (a 403, a 5xx, a timeout, an empty "
                 "answer or an unreadable author all stop here by design). Re-run "
                 "`scripts/resolve_provenance.py` once the cause is cleared.")
-        do(["issue", "comment", n, "--repo", repo, "--body", body], "comment")
+        # Through the outbox (#1188): dedupe, daily cap, retry, a ledger line. Its own
+        # read failing is fail-open too, so the ruling above still holds.
+        o = outbox.Outbox(outbox.from_result_runner(gh), repo).post(
+            number, "provenance-unresolved", body)
+        if o.outcome == "failed":
+            problems.append(f"comment failed ({o.error[:120]})")
         return problems
 
     want, drop = (LABEL_TRUSTED, LABEL_OUTSIDER) if v.verdict == TRUSTED else (LABEL_OUTSIDER, LABEL_TRUSTED)

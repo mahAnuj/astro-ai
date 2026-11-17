@@ -45,6 +45,10 @@ THE GROUNDING RULE IS PRINTED INTO THE LEDGER. A competitor pattern may suggest
 what to BUILD: structure, tools, wording, speed. It never imports an astrological
 claim. A rule seen on a rival site ships only once it traces to knowledge/*.md.
 
+IT ALSO WRITES measurements/outbox.json (#1188), through scripts/collect_outbox.py,
+before the detector runs. It rides here so the outbox evals needed no workflow edit;
+its failure never stops the lessons. See docs/decisions/2026-11-17-always-on-outbox.md.
+
 EXIT CODES
 ----------
   0 written   1 nothing readable (the previous files are left standing)   2 bad args
@@ -61,6 +65,9 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import collect_outbox  # noqa: E402  -- #1188, see main()
 
 WINDOW_DAYS = 30
 REPEAT_AT = 2
@@ -313,6 +320,14 @@ def main(argv: list[str], gh: Runner = run_gh, now: datetime | None = None,
         a = ap.parse_args(argv[1:])
     except SystemExit:
         return 2
+    # #1188: measurements/outbox.json rides in this step rather than in a step of its
+    # own, so the outbox evals needed no workflow edit (this job already reads issue
+    # comments). BEFORE ops(), so the detector judges this run's file. It can never
+    # cost the lessons: any failure leaves the previous outbox.json standing.
+    try:
+        collect_outbox.write(gh, a.repo, Path(a.out_dir) / "outbox.json", now)
+    except Exception as exc:  # noqa: BLE001 -- see above
+        print(f"::warning::outbox.json not refreshed ({exc.__class__.__name__}: {exc})")
     try:
         doc = collect(gh, a.repo, now or datetime.now(timezone.utc), ops())
     except (RuntimeError, ValueError, KeyError) as exc:

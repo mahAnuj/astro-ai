@@ -154,6 +154,17 @@ TOKEN_DAY_ALERT = 0.80
 #: once. Two is enough -- two unrelated diffs failing the same test is the
 #: defect living on `main`, which is what #797 left for seven PRs overnight.
 SHARED_FAILURE_MIN_PRS = 2
+#: `outbox-noise` (2026-11-17, #1188): the loop's comment volume, from
+#: measurements/outbox.json (scripts/collect_outbox.py), against the window before.
+#: Fires when the duplicate rate or comments per PR rise by more than this...
+OUTBOX_RISE_ALERT = 0.50
+#: ...and only on a sample that can carry a rate: both windows need this many loop
+#: comments, and comments-per-PR needs this many PRs in each. A quiet week of 4
+#: comments going to 7 is not noise.
+OUTBOX_MIN_COMMENTS = 30
+OUTBOX_MIN_PRS = 5
+#: A duplicate rate rising from 0 has no ratio, so it fires only once it reaches this.
+OUTBOX_DUP_FLOOR_PCT = 3.0
 
 #: What this script cannot see, named so silence is never read as health. Each
 #: entry is (concern, where it is computed, why a checkout cannot reach it).
@@ -451,6 +462,49 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
                     f"#797's IST fixture against a UTC-keyed cache) and re-run it with the "
                     f"date skewed. Fix once, on one branch; the PRs go green on their next "
                     f"gates run.", "measurements/gate_failures.json")
+
+    # --- the loop's own noise (2026-11-17, #1188) ----------------------------
+    # #311, #276 and #329 each collected 20+ near-identical comments and nothing
+    # said so. The rates come from every loop comment, outbox or not, so a rise
+    # here is real volume, not a migrated script's.
+    try:
+        ob = _read("outbox.json")
+    except FileNotFoundError:
+        ob = None                         # not collected yet: judge nothing
+    except (OSError, json.JSONDecodeError) as exc:
+        ob = None
+        unreadable.append(f"outbox.json ({exc.__class__.__name__})")
+    if ob:
+        gen = _instant(ob.get("generated_at", ""))
+        cur, prev = ob.get("current") or {}, ob.get("previous") or {}
+        if gen is None or (now - gen) > timedelta(hours=STALE_HOURS):
+            unreadable.append("outbox.json (stale or no generated_at)")
+        elif ob.get("truncated"):
+            # Read newest first, so a page cap shortens the PREVIOUS window and any
+            # comparison against it would read as a rise.
+            unreadable.append("outbox.json (a page cap truncated the previous window)")
+        elif (cur.get("loop_comments") or 0) >= OUTBOX_MIN_COMMENTS \
+                and (prev.get("loop_comments") or 0) >= OUTBOX_MIN_COMMENTS:
+            rises = []
+            d1, d0 = cur.get("duplicate_rate_pct"), prev.get("duplicate_rate_pct")
+            if isinstance(d1, (int, float)) and isinstance(d0, (int, float)) and d1 >= OUTBOX_DUP_FLOOR_PCT \
+                    and d1 > d0 * (1 + OUTBOX_RISE_ALERT):
+                rises.append(f"duplicate rate {d0}% -> {d1}%")
+            p1, p0 = cur.get("comments_per_pr"), prev.get("comments_per_pr")
+            if isinstance(p1, (int, float)) and isinstance(p0, (int, float)) and p0 > 0 \
+                    and (cur.get("prs") or 0) >= OUTBOX_MIN_PRS and (prev.get("prs") or 0) >= OUTBOX_MIN_PRS \
+                    and p1 > p0 * (1 + OUTBOX_RISE_ALERT):
+                rises.append(f"comments per PR {p0} -> {p1}")
+            if rises:
+                top = ", ".join(f"#{t['number']} ({t['comments']})" for t in (cur.get("top_threads") or [])[:3])
+                add("outbox-noise", "amber",
+                    f"Loop comment noise rose: {'; '.join(rises)}",
+                    f"{cur.get('loop_comments')} loop comments in the last {ob.get('window_days')}d "
+                    f"against {prev.get('loop_comments')} the window before; busiest threads {top or 'none'}. "
+                    f"{cur.get('via_outbox', 0)} went through scripts/outbox.py. Read the busiest thread "
+                    f"first: a repeat there is a poster with no change rule. Lever: route that poster "
+                    f"through outbox.py (dedupe + daily cap), or lower its kind's cap in KINDS. Never "
+                    f"raise a cap to quiet this finding.", "/admin/ops")
 
     # --- the backlog, and the triage debt under it ------------------------
     try:

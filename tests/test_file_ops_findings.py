@@ -50,10 +50,24 @@ class FakeGh:
                 raise RuntimeError("404")
             self.issues[n]["labels"].remove(name)
             return "{}"
-        if args[:3] == ["api", "-X", "POST"] and args[3].endswith("/comments"):
-            n = int(args[3].split("/issues/")[1].split("/")[0])
-            self.issues[n]["comments"].append(args[5][len("body="):])
-            return "{}"
+        # Comments go through scripts/outbox.py (#1188): `gh issue comment` to post,
+        # `gh issue view --json comments` to read what this identity already said.
+        if args[:2] == ["issue", "comment"]:
+            n = int(args[2])
+            self.issues[n]["comments"].append(args[args.index("--body") + 1])
+            return f"https://github.com/{REPO}/issues/{n}#issuecomment-{n * 1000 + len(self.issues[n]['comments'])}\n"
+        if args[:2] == ["issue", "view"] and args[-2:] == ["--json", "comments"]:
+            n = int(args[2])
+            # Stamped long ago, so the outbox's 24h cap never binds across these
+            # simulated runs; `dedupe: last` does not read the clock at all.
+            return json.dumps({"comments": [
+                {"body": b, "viewerDidAuthor": True, "createdAt": "2020-01-01T00:00:00Z",
+                 "url": f"https://github.com/{REPO}/issues/{n}#issuecomment-{n * 1000 + k + 1}"}
+                for k, b in enumerate(self.issues[n]["comments"])]})
+        if args[:2] == ["api", "--paginate"] and "state=all" in args[2]:
+            return "\n".join(json.dumps({"number": k, "state": "open", "created_at": "2020-01-01T00:00:00Z",
+                                         "user": {"login": v["by"]}, "body": v["body"]})
+                             for k, v in self.issues.items())
         if args[:2] == ["api", "--paginate"] and "/comments" in args[2]:
             n = int(args[2].split("/issues/")[1].split("/")[0])
             return "\n".join(self.issues[n]["comments"])
@@ -82,7 +96,7 @@ def test_the_same_finding_on_the_next_run_is_SILENCE():
     gh = FakeGh()
     fo.carry(gh, REPO, [F()], "t1")
     s = fo.carry(gh, REPO, [F(detail="numbers moved")], "t2")
-    assert s == {"filed": 0, "updated": 0, "unchanged": 1, "cleared": 0}
+    assert s == {"filed": 0, "updated": 0, "unchanged": 1, "cleared": 0, "suppressed": 0}
     assert all(not i["comments"] for i in gh.issues.values())
 
 

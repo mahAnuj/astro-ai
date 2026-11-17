@@ -88,6 +88,11 @@ from pathlib import Path
 from typing import Callable
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
+import outbox  # noqa: E402  -- the one posting path (#1188)
+
+#: scripts/outbox.py KINDS entry for the one stage-1 comment per issue per state.
+OUTBOX_KIND = "triage-stage1"
 RESOLVER = ROOT / "scripts" / "resolve_provenance.py"
 EVIDENCE = ROOT / "scripts" / "verify_issue_evidence.py"
 
@@ -425,8 +430,17 @@ def apply_decision(gh: Gh, repo: str, issue: dict, d: Decision) -> list:
 
     if d.comment is not None and not has_marker(issue, d.key):
         # Comment first: if it fails the label is not added, so the next run retries both.
-        if not do(["issue", "comment", n, "--repo", repo, "--body", d.comment], "comment"):
+        # Through the outbox (#1188): dedupe, daily cap, retry, a ledger line. `recent` is
+        # the comment list already read, so no new read; `tally=False` because a tally is
+        # an edit through `gh api`, and #367 pins this script's writes to comment, issue
+        # edit and label create.
+        o = outbox.Outbox(outbox.from_result_runner(gh), repo, tally=False).post(
+            int(n), OUTBOX_KIND, d.comment, recent=list(issue.get("comments") or []))
+        if o.outcome == "failed":
+            problems.append(f"#{n}: comment failed ({o.error[:120]})")
             return problems
+        if o.outcome == "capped":
+            return problems     # as for a failure: no label, so the next run retries both
     if d.label not in have:
         do(["label", "create", d.label, "--repo", repo, "--force", "--color",
             LABEL_COLOUR[d.label], "--description", LABEL_DESC], f"create label {d.label}")
