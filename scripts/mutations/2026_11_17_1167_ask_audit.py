@@ -114,10 +114,10 @@ MUTATIONS = [
      "test_the_audit_posts_only_through_the_post_script"),
     ("#1169: the audit runs in auto mode, where the allow list is not a boundary",
      ".github/workflows/agent-measure.yml",
-     # Anchored on the audit step's own lines: the analyst step above it carries
-     # the same `--permission-mode default` since #1174, so the bare line matched 2x.
-     "            --max-turns 80\n            --effort high\n            --permission-mode default\n",
-     "            --max-turns 80\n            --effort high\n",
+     # Anchored on the line before it: #1174 added the same flag to the
+     # analyst step, so the bare line now matches twice.
+     "            --effort high\n            --permission-mode default\n",
+     "            --effort high\n",
      "test_no_allowed_command_can_print_the_environment"),
     ("#1169: provenance:outsider does not override the loop's own author",
      "scripts/resolve_provenance.py",

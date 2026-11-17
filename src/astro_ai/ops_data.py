@@ -2135,6 +2135,49 @@ def _tokens_view(loop_doc: dict | None) -> dict | None:
                                 for o, v in (t.get("median_by_outcome") or {}).items()}}
 
 
+def _outbox_view(doc: dict | None, now: datetime) -> dict | None:
+    """measurements/outbox.json (scripts/collect_outbox.py, #1188): how noisy the
+    loop's own comments are, current window against the one before.
+
+    None when the file is absent or not the expected shape -- not collected yet --
+    so the panel says so instead of rendering zeros. `empty` when it was collected
+    and the loop posted nothing in the window: a real state, said as such."""
+    if not isinstance(doc, dict) or not isinstance(doc.get("current"), dict):
+        return None
+    cur, prev = doc["current"], doc.get("previous") or {}
+
+    def change(a, b):
+        return (round((a - b) / b * 100)
+                if isinstance(a, (int, float)) and isinstance(b, (int, float)) and b else None)
+
+    sup = cur.get("suppressed") or {}
+    owner = cur.get("owner_touched") or {}
+    return {
+        "days": doc.get("window_days") or 7,
+        "age": _age(doc.get("generated_at"), now),
+        "empty": not cur.get("loop_comments"),
+        "loop_comments": cur.get("loop_comments") or 0,
+        "prev_loop_comments": prev.get("loop_comments"),
+        "per_pr": cur.get("comments_per_pr"),
+        "prs": cur.get("prs") or 0,
+        "per_pr_change": change(cur.get("comments_per_pr"), prev.get("comments_per_pr")),
+        "per_issue": cur.get("comments_per_issue"),
+        "issues": cur.get("issues") or 0,
+        "dup_pct": cur.get("duplicate_rate_pct"),
+        "dup_prev_pct": prev.get("duplicate_rate_pct"),
+        "duplicates": cur.get("duplicates") or 0,
+        "via_outbox": cur.get("via_outbox") or 0,
+        "sent_by_kind": cur.get("sent_by_kind") or {},
+        "deduped": sup.get("deduped"),
+        "capped": sup.get("capped"),
+        "failed": sup.get("failed"),
+        "owner_pct": owner.get("pct"),
+        "owner_prs": owner.get("prs") or 0,
+        "owner_commented": owner.get("owner_commented") or 0,
+        "top": cur.get("top_threads") or [],
+    }
+
+
 def snapshot(now: datetime | None = None,
              app_days: int = DEFAULT_APP_DAYS, app_day: str = "") -> dict:
     """Everything /admin/ops renders, in one dict. Never raises.
@@ -2221,6 +2264,7 @@ def snapshot(now: datetime | None = None,
         "claude": claude,
         "waste": _waste_view(loop_doc),
         "tokens": _tokens_view(loop_doc),
+        "outbox": _outbox_view(_fetch("outbox.json"), now),
         "issues": issues,
         "cost": cost,
         "traffic": traffic,
