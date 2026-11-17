@@ -127,7 +127,7 @@ MUTATIONS = [
      "test_a_failed_ops_post_is_still_exit_1_and_a_capped_triage_comment_adds_no_label"),
     ("#1188: triage comments around the outbox again",
      "scripts/triage_outsider_issues.py",
-     "        o = outbox.Outbox(outbox.from_result_runner(gh), repo, tally=False).post(\n"
+     "        o = outbox.Outbox(outbox.from_result_runner(gh), repo, tally=False, transport=\"porcelain\").post(\n"
      "            int(n), OUTBOX_KIND, d.comment, recent=list(issue.get(\"comments\") or []))\n",
      "        gh([\"issue\", \"comment\", n, \"--repo\", repo, \"--body\", d.comment])\n"
      "        o = outbox.Outcome(\"sent\", OUTBOX_KIND, n, \"\")\n",
@@ -139,7 +139,7 @@ MUTATIONS = [
      "test_a_failed_ops_post_is_still_exit_1_and_a_capped_triage_comment_adds_no_label"),
     ("#1188: resolve_provenance comments around the outbox again",
      "scripts/resolve_provenance.py",
-     "        o = outbox.Outbox(outbox.from_result_runner(gh), repo).post(\n"
+     "        o = outbox.Outbox(outbox.from_result_runner(gh), repo, transport=\"porcelain\").post(\n"
      "            number, \"provenance-unresolved\", body)\n",
      "        do([\"issue\", \"comment\", n, \"--repo\", repo, \"--body\", body], \"comment\")\n"
      "        o = outbox.Outcome(\"sent\", \"provenance-unresolved\", n, \"\")\n",

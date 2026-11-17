@@ -75,6 +75,24 @@ class FakeGh:
                 raise exc
             cid = self._new(n, body)
             return f"https://github.com/{REPO}/issues/{n}#issuecomment-{cid}\n"
+        # REST, the default transport: same store, REST shapes.
+        if args[:2] == ["api", "--paginate"] and "/comments?since=" in args[2]:
+            if self.read_fails:
+                raise ob.GhError("gh: Bad Gateway (HTTP 502)")
+            n = int(args[2].split("/issues/")[1].split("/")[0])
+            return "\n".join(json.dumps({
+                "id": int(c["url"].rsplit("-", 1)[1]), "created_at": c["createdAt"],
+                "user": {"login": "github-actions[bot]" if c["viewerDidAuthor"] else "drive-by"},
+                "body": c["body"]}) for c in self.comments.get(n, []))
+        if args[:3] == ["api", "-X", "POST"] and args[3].endswith("/comments"):
+            n = int(args[3].split("/issues/")[1].split("/")[0])
+            body = args[5][len("body="):]
+            if self.fail:
+                exc = self.fail.pop(0)
+                if self.land_on_fail:
+                    self._new(n, body)
+                raise exc
+            return str(self._new(n, body))
         if args[:3] == ["api", "-X", "PATCH"]:
             cid = int(args[3].rsplit("/", 1)[1])
             for cs in self.comments.values():
@@ -94,11 +112,15 @@ class FakeGh:
         raise AssertionError(args)
 
     def posts(self):
-        return [c for c in self.calls if c[1:2] == ["comment"]]
+        return [c for c in self.calls if c[1:2] == ["comment"]
+                or (c[:3] == ["api", "-X", "POST"] and c[3].endswith("/comments"))]
 
 
 def box(gh, **kw):
+    """Porcelain unless asked: the cases below are about the rules, which are the same
+    on both wires; the REST cases further down prove the default wire separately."""
     sleeps = kw.pop("sleeps", [])
+    kw.setdefault("transport", "porcelain")
     return ob.Outbox(gh, REPO, now=lambda: NOW, sleep=sleeps.append, ledger_path=kw.pop("ledger", ""),
                      log=kw.pop("log", sys.stderr), **kw)
 
@@ -298,6 +320,32 @@ def test_tally_false_writes_nothing_back():
     assert not [c for c in gh.calls if c[0] == "api"]
 
 
+# ---- the default wire: REST ----------------------------------------------------------------
+
+def test_rest_posts_reads_and_dedupes_on_the_issue_comments_endpoint():
+    gh = FakeGh()
+    b = box(gh, transport="rest")
+    o = b.post(5, "triage-stage1", "x", on="pr")
+    post = gh.posts()[0]
+    assert o.outcome == "sent" and post[:4] == ["api", "-X", "POST", f"repos/{REPO}/issues/5/comments"]
+    assert b.rows[-1]["comment_id"] == 9001
+    assert box(gh, transport="rest").post(5, "triage-stage1", "x", on="pr").outcome == "deduped"
+
+
+def test_rest_trusts_only_the_loops_identities():
+    body = "a stop"
+    m = ob.marker("provenance-unresolved", ob.key_for("provenance-unresolved", body))
+    gh = FakeGh({5: [own(body + m, author=False)]})          # REST shows it as `drive-by`
+    assert box(gh, transport="rest").post(5, "provenance-unresolved", body).outcome == "sent"
+
+
+def test_rest_retries_a_5xx_and_tallies_by_comment_id():
+    gh = FakeGh(fail=[ob.GhError("gh: Bad Gateway (HTTP 502)")])
+    assert box(gh, transport="rest").post(5, "triage-stage1", "x").attempts == 2
+    box(gh, transport="rest").post(5, "triage-stage1", "x")
+    assert ob.parse_marker(gh.comments[5][0]["body"])["deduped"] == 1
+
+
 # ---- issues --------------------------------------------------------------------------------
 
 def _issue(body, state="open", login="github-actions[bot]", at=NOW):
@@ -330,7 +378,7 @@ def test_cli_post_and_exit_codes(tmp_path):
     bad = FakeGh(fail=[ob.GhError("HTTP 422")])
     assert ob.main(["post", "--repo", REPO, "--pr", "5", "--kind", "triage-stage1",
                     "--body-file", str(f)], gh=bad) == 1
-    assert bad.posts()[0][0] == "pr"
+    assert bad.posts()[0][3] == f"repos/{REPO}/issues/5/comments", "REST serves a PR on the issue endpoint"
     assert ob.main(["post", "--repo", "nope", "--issue", "5", "--kind", "k", "--body-file", str(f)],
                    gh=FakeGh()) == 2
 
@@ -345,7 +393,8 @@ def test_file_ops_findings_files_and_comments_through_the_outbox():
             if args[:2] == ["api", "--paginate"] and "creator=" in args[2]:
                 return "\n".join(json.dumps({"number": 100 + k, "body": i["body"]})
                                  for k, i in enumerate(self.issues))
-            if args[:2] == ["api", "--paginate"] and "/comments" in args[2]:
+            if args[:2] == ["api", "--paginate"] and "/comments" in args[2] and "since=" not in args[2]:
+                # file_ops' own change rule reads raw bodies; the outbox's read has `since=`.
                 return "\n".join(c["body"] for c in self.comments.get(int(args[2].split("/issues/")[1].split("/")[0]), []))
             if args[:3] == ["api", "-X", "POST"] and "/labels" in args[3] or args[:3] == ["api", "-X", "DELETE"]:
                 return "{}"
@@ -354,13 +403,15 @@ def test_file_ops_findings_files_and_comments_through_the_outbox():
     gh = G()
     F = lambda level="amber", title="Claude weekly quota 90% used": {  # noqa: E731
         "kind": "claude-quota", "level": level, "title": title, "detail": "d", "where": ""}
-    fo.carry(gh, REPO, [F()], "2026-11-17T00:00Z", box=box(gh))
+    fo.carry(gh, REPO, [F()], "2026-11-17T00:00Z", box=box(gh, transport="rest"))
     assert "kind=ops-finding-issue" in gh.issues[0]["body"]
-    fo.carry(gh, REPO, [F("red", "Claude weekly quota 97% used")], "t2", box=box(gh))
+    fo.carry(gh, REPO, [F("red", "Claude weekly quota 97% used")], "t2", box=box(gh, transport="rest"))
     assert "kind=ops-finding " in gh.comments[100][0]["body"]
+    assert any(c[:3] == ["api", "-X", "POST"] and c[3].endswith("/issues/100/comments") for c in gh.calls), \
+        "file_ops keeps the REST wire it used before the outbox"
     # Two comments already today: a third change in the same day is capped, counted, not lost.
-    fo.carry(gh, REPO, [], "t3", box=box(gh))
-    s = fo.carry(gh, REPO, [F()], "t4", box=box(gh))
+    fo.carry(gh, REPO, [], "t3", box=box(gh, transport="rest"))
+    s = fo.carry(gh, REPO, [F()], "t4", box=box(gh, transport="rest"))
     assert s["suppressed"] == 1 and len(gh.comments[100]) == 2
 
 
@@ -391,7 +442,7 @@ def test_a_failed_ops_post_is_still_exit_1_and_a_capped_triage_comment_adds_no_l
     gh = NoOpenFindings(fail=[ob.GhError("gh: Validation Failed (HTTP 422)")])
     F ={"kind": "claude-quota", "level": "amber", "title": "t", "detail": "d", "where": ""}
     with pytest.raises(RuntimeError, match="422"):
-        fo.carry(gh, REPO, [F], "t1", box=box(gh))
+        fo.carry(gh, REPO, [F], "t1", box=box(gh, transport="rest"))
 
     t = _load("triage_outsider_issues")
     calls = []

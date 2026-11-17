@@ -53,14 +53,17 @@ A read that fails is FAIL-OPEN: the post goes out, checked against this run's le
 only. A visible duplicate is better than a stop that announces nothing
 (resolve_provenance.py's ruling, which this inherits rather than overrides).
 
-TRANSPORT
----------
-Comments go through `gh issue|pr comment` and are read with `gh issue|pr view --json
-comments`, the same porcelain the migrated callers already used, so their pinned
-write surfaces (#367: triage may only list, comment, edit and create labels) do not
-widen. Issues are created through `gh api -X POST repos/<r>/issues`, which drops a
-missing label instead of failing the whole create -- file_ops_findings.py relies on
-that. Never a shell; argv lists only.
+TRANSPORT -- each migrated caller keeps the wire it already used
+----------------------------------------------------------------
+`transport="rest"` (the default, and file_ops_findings.py's): `gh api` on the
+issue-comments endpoint, which serves PRs too and reports a clean `HTTP <code>`.
+`transport="porcelain"` (triage and resolve_provenance): `gh issue|pr comment` and
+`gh issue|pr view --json comments`, so #367's pinned write surface for triage (list,
+comment, issue edit, label create) does not widen. Porcelain is GraphQL, which a
+Claude Code web session's proxy refuses (measured 2026-11-17: HTTP 403); GitHub
+Actions is not behind that proxy. Issues are created through `gh api -X POST
+repos/<r>/issues`, which drops a missing label instead of failing the whole create --
+file_ops_findings.py relies on that. Never a shell; argv lists only.
 
 CLI
 ---
@@ -276,9 +279,12 @@ class Outbox:
 
     def __init__(self, gh: Runner, repo: str, *, now: Callable[[], datetime] | None = None,
                  sleep: Callable[[float], None] = time.sleep, ledger_path: str | None = None,
-                 log=None, tally: bool = True):
+                 log=None, tally: bool = True, transport: str = "rest"):
         if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo or ""):
             raise ValueError(f"bad repo {repo!r}")
+        if transport not in ("rest", "porcelain"):
+            raise ValueError(f"bad transport {transport!r}")
+        self.transport = transport
         self.gh, self.repo, self.sleep = gh, repo, sleep
         self.now = now or (lambda: datetime.now(timezone.utc))
         self.ledger_path = ledger_path if ledger_path is not None else os.environ.get("OUTBOX_LEDGER", "")
@@ -324,9 +330,19 @@ class Outbox:
     # ---- reading what is already there ----------------------------------------------
     def _read_comments(self, number: int, on: str) -> list[dict] | None:
         try:
-            raw = self.gh([on, "view", str(number), "--repo", self.repo, "--json", "comments"])
-            data = json.loads(raw or "{}")
-            return list(data.get("comments") or []) if isinstance(data, dict) else None
+            if self.transport == "porcelain":
+                raw = self.gh([on, "view", str(number), "--repo", self.repo, "--json", "comments"])
+                data = json.loads(raw or "{}")
+                return list(data.get("comments") or []) if isinstance(data, dict) else None
+            # REST: the issue-comments endpoint serves PRs too. `since` is the longest
+            # window any kind uses, so a long thread is not read from its first page.
+            since = self.now() - timedelta(days=max([DEFAULT_WINDOW_DAYS] + [
+                int(k.get("window_days", DEFAULT_WINDOW_DAYS)) for k in KINDS.values()]))
+            raw = self.gh(["api", "--paginate",
+                           f"repos/{self.repo}/issues/{number}/comments?since="
+                           f"{since.strftime('%Y-%m-%dT%H:%M:%SZ')}&per_page=100",
+                           "--jq", ".[] | {id, created_at, user: {login: .user.login}, body}"])
+            return _json_stream(raw)
         except (GhError, RuntimeError, ValueError, TypeError) as exc:
             print(f"OUTBOX-LEDGER read failed for {on}:{number} ({str(exc)[:120]}); "
                   "checking this run's ledger only", file=self.log)
@@ -413,13 +429,17 @@ class Outbox:
             self._tally(newest, verdict)
             return self._record(Outcome(verdict, kind, target, key), checked=checked)
         text = (body or "").rstrip() + "\n\n" + marker(kind, key)
-        args = [on, "comment", str(number), "--repo", self.repo, "--body", text]
+        if self.transport == "porcelain":
+            args = [on, "comment", str(number), "--repo", self.repo, "--body", text]
+        else:
+            args = ["api", "-X", "POST", f"repos/{self.repo}/issues/{number}/comments",
+                    "-f", f"body={text}", "--jq", ".id"]
         attempts, status, err = 0, None, ""
         for attempt in range(1, len(RETRY_DELAYS) + 2):
             attempts = attempt
             try:
-                out = self.gh(args)
-                cid = _comment_id({"url": (out or "").strip()})
+                out = (self.gh(args) or "").strip()
+                cid = int(out) if out.isdigit() else _comment_id({"url": out})
                 return self._record(Outcome("sent", kind, target, key, attempts), cid, checked)
             except (GhError, RuntimeError) as exc:
                 status, transient = classify(exc)

@@ -431,9 +431,10 @@ def apply_verdict(gh: Gh, repo: str, number: int, v: Verdict, current_labels: se
                 "untrusted -- the check could not complete (a 403, a 5xx, a timeout, an empty "
                 "answer or an unreadable author all stop here by design). Re-run "
                 "`scripts/resolve_provenance.py` once the cause is cleared.")
-        # Through the outbox (#1188): dedupe, daily cap, retry, a ledger line. Its own
-        # read failing is fail-open too, so the ruling above still holds.
-        o = outbox.Outbox(outbox.from_result_runner(gh), repo).post(
+        # Through the outbox (#1188): dedupe, daily cap, retry, a ledger line, on the
+        # same porcelain comment command as before. Its own read failing is
+        # fail-open too, so the ruling above still holds.
+        o = outbox.Outbox(outbox.from_result_runner(gh), repo, transport="porcelain").post(
             number, "provenance-unresolved", body)
         if o.outcome == "failed":
             problems.append(f"comment failed ({o.error[:120]})")

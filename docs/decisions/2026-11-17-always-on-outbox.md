@@ -34,7 +34,11 @@ is the baseline #1188's metric asks for. `outbox-noise` does not fire on it (4.0
   `triage-stage1` cap 2, 30-day window; `provenance-unresolved` cap 1.
 - **Migrated:** `file_ops_findings.py`, `triage_outsider_issues.py`,
   `resolve_provenance.py`. Each keeps its own "only on change" rule; the outbox is the
-  second line. `tests/test_outbox.py` fails if any other script under `scripts/` posts a
+  second line, and each keeps the wire it used: REST `gh api` for `file_ops_findings.py`
+  (the default), `gh issue comment` / `gh issue view` porcelain for triage (whose write
+  surface #367 pins) and `resolve_provenance.py`. Porcelain is GraphQL, which a Claude Code
+  web session's proxy refuses (HTTP 403, measured while building this); Actions is not
+  behind it. `tests/test_outbox.py` fails if any other script under `scripts/` posts a
   comment or files an issue without it, with an explicit allow-list.
 - **Not migrated, on purpose:** `qa_verdict.sh`. Its comment is SHA-bound and is
   `agent-merge`'s merge trigger; the outbox normalises SHAs and would dedupe a PASS at a new

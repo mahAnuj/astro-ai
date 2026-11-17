@@ -431,10 +431,10 @@ def apply_decision(gh: Gh, repo: str, issue: dict, d: Decision) -> list:
     if d.comment is not None and not has_marker(issue, d.key):
         # Comment first: if it fails the label is not added, so the next run retries both.
         # Through the outbox (#1188): dedupe, daily cap, retry, a ledger line. `recent` is
-        # the comment list already read, so no new read; `tally=False` because a tally is
-        # an edit through `gh api`, and #367 pins this script's writes to comment, issue
-        # edit and label create.
-        o = outbox.Outbox(outbox.from_result_runner(gh), repo, tally=False).post(
+        # the comment list already read, so no new read; porcelain and `tally=False`
+        # because #367 pins this script's writes to the porcelain comment, issue edit and
+        # label create, and a tally is an edit through `gh api`.
+        o = outbox.Outbox(outbox.from_result_runner(gh), repo, tally=False, transport="porcelain").post(
             int(n), OUTBOX_KIND, d.comment, recent=list(issue.get("comments") or []))
         if o.outcome == "failed":
             problems.append(f"#{n}: comment failed ({o.error[:120]})")

@@ -1011,7 +1011,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
         <span class="n">{{ O.per_issue if O.per_issue is not none else '—' }}</span>
         <span class="lbl">{{ O.issues }} issues</span></div>
       <div><span class="lab">duplicate rate</span>
-        <span class="n {{ 'c-failed' if (O.dup_pct or 0) >= 3 }}">{{ O.dup_pct if O.dup_pct is not none else '—' }}{% if O.dup_pct is not none %}%{% endif %}</span>
+        <span class="n">{{ O.dup_pct if O.dup_pct is not none else '—' }}{% if O.dup_pct is not none %}%{% endif %}</span>
         <span class="lbl">{{ O.duplicates }} of {{ O.loop_comments }}{% if O.dup_prev_pct is not none %} · was {{ O.dup_prev_pct }}%{% endif %}</span></div>
       <div><span class="lab">outbox refused</span>
         <span class="n">{{ O.deduped if O.deduped is not none else '—' }} / {{ O.capped if O.capped is not none else '—' }}</span>
