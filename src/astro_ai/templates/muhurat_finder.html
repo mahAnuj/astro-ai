@@ -317,7 +317,12 @@
                states the FRACTION and gives the fixed figure only as the
                12-hour-day case. Same for the legend below. -#}
             {% if c.abhijit_muhurta or c.rahu_kaal %}
-            <div title="Abhijit Muhurta — the 8th of 15 equal parts of daylight, around solar noon. Its length follows the day: ~48 min on a 12-hour day, but 16 min to 84 min across a year at high latitude."><span class="text-emerald-800">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
+            {#- #1025: the mark says only what is computed. "✓" = Abhijit lies clear of Rahu Kaal and
+               Bhadra on this row; "~" = it overlaps one of them (the note below names the minutes).
+               Nothing the finder holds says Abhijit is "the most auspicious window" or ranks it above
+               either, so no auspiciousness is claimed. A ✓ over minutes the row also marks ✗ was
+               the contradiction. -#}
+            <div title="Abhijit Muhurta — the midday muhurta: a fifteenth of daylight centred on solar noon. Its length follows the day: ~48 min on a 12-hour day, but 16 min to 84 min across a year at high latitude. {% if c.abhijit_overlaps %}It overlaps Rahu Kaal or Bhadra on this day, so it carries ~ and not ✓.{% else %}✓ means it lies clear of Rahu Kaal and Bhadra on this day.{% endif %}">{% if c.abhijit_overlaps %}<span class="text-amber-800">~</span>{% else %}<span class="text-emerald-800">✓</span>{% endif %} Abhijit {{ c.abhijit_muhurta }}</div>
             <div title="Rahu Kaal — avoid for launches"><span class="text-rose-600">✗</span> Rahu Kaal {{ c.rahu_kaal }}</div>
             {% for note in c.abhijit_overlaps %}<div class="text-amber-800 text-xs whitespace-normal max-w-[220px] leading-tight">{{ note }}</div>{% endfor %}
             {%- else %}
@@ -356,7 +361,7 @@
       </tbody>
     </table>
     <p class="text-xs text-bhagya-muted mt-2 italic">
-      <span class="text-emerald-800">✓</span> Abhijit Muhurta = the most auspicious window, a fifteenth of daylight around solar noon. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Days under Atiganda, Shula, Ganda, Vyatipata or Vaidhriti are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present. These weekday-nakshatra booster tables are this finder&rsquo;s own convention: Raman&rsquo;s <em>Muhurtha</em> has a similar Siddha Yoga list, but these are not the same tables.
+      <span class="text-emerald-800">✓</span> Abhijit Muhurta = the midday muhurta, a fifteenth of daylight centred on solar noon; <span class="text-emerald-800">✓</span> means it lies clear of Rahu Kaal and Bhadra that day, and <span class="text-amber-800">~</span> means it overlaps one of them, with the overlap named on the row. The finder holds no source that calls Abhijit the most auspicious window or ranks it above either. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Days under Atiganda, Shula, Ganda, Vyatipata or Vaidhriti are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present. These weekday-nakshatra booster tables are this finder&rsquo;s own convention: Raman&rsquo;s <em>Muhurtha</em> has a similar Siddha Yoga list, but these are not the same tables.
     </p>
     <p class="text-xs text-bhagya-muted mt-1 italic">
       One verdict, one moment: tithi, nakshatra, yoga, Panchak, Dagdha and combustion are all read at {{ '%02d:00' % muhurta_instant_hour() }} local time on the date, so each rating judges stars and tithis that hold together. The <a href="/panchang" class="underline">Panchang</a> page names a day by its tithi at sunrise, so the two can show a different tithi or yoga for the same date when one changes in between. Where Abhijit falls inside Rahu Kaal or Bhadra the row says so and the minutes are shown as they are; this finder does not rank one window above the other.

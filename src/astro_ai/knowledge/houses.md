@@ -319,9 +319,11 @@ Navamsa."
 **Common rules:**
 - **Sun in 10th (Digbala + own portfolio) = fame, government
   position, natural authority.**
-- **Saturn in 10th (Digbala) = long career, often in service /
+- **Saturn in 10th = long career, often in service /
   government / structured hierarchies; success comes late but is
-  durable.**
+  durable.** (Interpretive reading, no source line held. This is NOT
+  Saturn's Digbala: Saturn is strong in the 7th, the 10th is the Sun's
+  and Mars's, per Rao §3.2.15 and grahas.md Directions.)
 - **Combust or weak 10th lord = career struggle.**
 
 ---

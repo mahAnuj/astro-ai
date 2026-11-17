@@ -33,8 +33,8 @@ both numbers and both are checked.
 
 REPORT-ONLY ROWS (#405)
 
-Four rows are volatile: Python (lines), top-level modules, verification gates and
-the behaviour suite. Measured on main@50a9c42 over `git log -100` (99 non-merge
+Four rows were volatile first (seven since 2026-11-17, see REPORT_ONLY): Python (lines),
+top-level modules, verification gates and the behaviour suite. Measured on main@50a9c42 over `git log -100` (99 non-merge
 commits plus merge 4f66d50), the WHOLE FILES changed in: ARCHITECTURE.md 27
 non-merge commits, verify_behaviour.py 22, mutate_behaviour_suite.py 19 (28/23/20
 counting merge 4f66d50, which resolved conflicts in all three). Those are file
@@ -91,6 +91,15 @@ REPORT_ONLY = {
     "top-level modules",
     "verification gates",
     "behaviour suite",
+    # 2026-11-17: the same conflict, three more rows. Over `git log -100` on
+    # main the rows' own lines changed in: knowledge files 11, top-level
+    # templates 5, `/learn` articles 3 commits. On 2026-11-16..17 alone it turned
+    # #1058, #1127, #1136 and #1164 red or conflicting after another PR merged
+    # first, and cost #1150 two QA rounds (template count 58 -> 59). Every
+    # knowledge or template PR edited one shared number the command already knows.
+    "knowledge files",
+    "top-level templates",
+    "`/learn` articles",
 }
 MEASURED = "measured"
 
