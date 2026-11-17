@@ -18,7 +18,6 @@ from __future__ import annotations
 import hmac
 import hashlib
 import logging
-import os
 import re
 from datetime import datetime, timezone
 from typing import Iterable
@@ -46,11 +45,18 @@ def _normalize(email: str) -> str:
 def _unsubscribe_secret() -> bytes:
     """HMAC key for tamper-proof unsubscribe links.
 
-    Reuses the cookie secret so we don't have to manage another env var.
-    If the secret is unset, fall back to a clearly-flagged dev string —
-    same convention as ADMIN_PASSWORD in routes/deps.py.
+    The cookie secret, via `session.cookie_secret()` so there is one place the env
+    var and its dev fallback are read. With ASTRO_AI_COOKIE_SECRET set this is the
+    same bytes as before, so links already sent keep verifying. Until #1104 this
+    had its own fallback string, identical to ADMIN_PASSWORD's; unset, the key is
+    now session's dev placeholder. On Cloud Run an unset or placeholder secret
+    stops the revision starting (`main._lifespan`), so the fallback is dev-only.
     """
-    return os.environ.get("ASTRO_AI_COOKIE_SECRET", "bhagya-dev-only-CHANGE-ME").encode()
+    # Imported here, not at module scope: session imports llm, and subscribers
+    # must stay importable from anywhere (same reason as identity._subkey).
+    from astro_ai.session import cookie_secret
+
+    return cookie_secret().encode()
 
 
 def unsubscribe_token(email: str) -> str:
