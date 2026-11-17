@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -23,7 +24,7 @@ DELHI = ("New Delhi, India", 28.6139, 77.2090, "Asia/Kolkata")
 # English ranking words, and the Hindi ones the old strings used (श्रेष्ठ, सर्वोत्तम, सबसे शुभ, अनुकूल).
 _RANKING = re.compile(
     r"most auspicious|best|most favourable|favourable for|auspicious window|perfect for|good for signing"
-    r"|श्रेष्ठ|सर्वोत्तम|सबसे शुभ|सबसे अनुकूल|के लिए अनुकूल",
+    r"|to act in|श्रेष्ठ|सर्वोत्तम|उत्तम|सबसे शुभ|सबसे अनुकूल|के लिए अनुकूल",
     re.I,
 )
 _KEYS = ("abhijit_tag", "abhijit_desc", "strip_abhijit", "rashifal_window_facts")
@@ -78,6 +79,26 @@ def test_the_panchang_page_labels_abhijit_midday_and_does_not_rank_it(client, mo
     for phrase in ("Abhijit Muhurat (best)", "Most auspicious ~48 min", "most universally auspicious",
                    "Perfect for signing"):
         assert phrase not in html, phrase
+
+
+_TEMPLATES = Path(__file__).resolve().parents[1] / "src" / "astro_ai" / "templates"
+
+
+def test_the_daily_email_row_does_not_tag_abhijit_auspicious():
+    """QA on #1139: email/daily_rashifal.html tagged the Abhijit row '(auspicious)' / '(शुभ)'."""
+    src = (_TEMPLATES / "email" / "daily_rashifal.html").read_text()
+    start = src.index("Abhijit Muhurta{% endif %}</strong>")
+    row = src[start:start + 600].split("</tr>")[0]
+    assert "auspicious" not in row and "शुभ" not in row, row
+    assert "midday" in row and "मध्याह्न" in row
+
+
+def test_the_homepage_today_card_does_not_say_to_act_in_abhijit():
+    """QA on #1139: index.html's /today card said 'Abhijit Muhurta to act in'."""
+    src = (_TEMPLATES / "index.html").read_text()
+    line = next(l for l in src.splitlines() if "Abhijit Muhurta" in l and "Rahu Kaal window to avoid" in l)
+    assert not _RANKING.search(line), line
+    assert "midday Abhijit Muhurta" in line
 
 
 def test_the_panchang_docstring_does_not_claim_a_ranking():
