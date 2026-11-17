@@ -535,6 +535,40 @@ ARTICLES: tuple[Article, ...] = (
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
+        slug="gochar-2027-planetary-transits",
+        title="Gochar 2027: The Year's Major Planetary Transits and What They Mean for Your Moon Sign",
+        summary="Jupiter enters Cancer on 25 January 2027, Saturn crosses from Pisces into Aries on 3 June, and Rahu and Ketu stay put all year. Every date is computed on the Lahiri sidereal reckoning, with a house-by-house reading for each Moon sign from the classical Gochara table.",
+        seo_title="Gochar 2027: Jupiter, Saturn and Rahu Transits by Moon Sign",
+        seo_description="Gochar 2027 dates on the Lahiri reckoning: Jupiter into Cancer 25 Jan, Saturn into Aries 3 Jun, Rahu-Ketu unchanged. Your Moon sign, house by house.",
+        category="Concepts",
+        hero_image="/static/learn/gochar-2027-planetary-transits/hero.svg",
+        read_time="11 min",
+        related=("gochar-2026-planetary-transits", "sade-sati", "guru-jupiter-in-vedic-astrology", "shani-saturn"),
+        last_updated="2026-11",
+        faqs=(
+            {
+                "q": "What are the major planetary transits in 2027?",
+                "a": "Jupiter is in Leo until 25 January 2027, in Cancer from 25 January to 26 June, in Leo again from 26 June to 26 November and in Virgo from 26 November. Saturn moves from Pisces into Aries on 3 June 2027 and back into Pisces on 20 October. Rahu and Ketu stay in Capricorn and Cancer all year. All dates are on the Lahiri (sidereal) reckoning in Indian Standard Time, and a Panchang can differ by a day when an ingress falls near midnight.",
+            },
+            {
+                "q": "When does Saturn enter Aries in 2027?",
+                "a": "Saturn enters Aries on 3 June 2027, turns retrograde there on 9 August, slips back into Pisces on 20 October and turns direct in Pisces on 24 December. It re-enters Aries on 23 February 2028. Counted from the Moon, Sade Sati's rising phase begins for Taurus Moons on 3 June, Aries Moons are in the peak phase and Pisces Moons in the setting phase; Aquarius Moons leave Sade Sati on 3 June and return to it on 20 October.",
+            },
+            {
+                "q": "Where is Jupiter in 2027?",
+                "a": "Jupiter is in Leo until 25 January 2027 and in Cancer, its exaltation sign, from 25 January to 26 June. It turns direct in Cancer on 13 April, returns to Leo on 26 June and enters Virgo on 26 November. The classical Gochara table counts Jupiter as favourable in the 2nd, 5th, 7th, 9th and 11th houses from your Moon sign and unfavourable in the other seven, whatever Jupiter's own strength in that sign, so the same stretch can suit one Moon sign and not another.",
+            },
+            {
+                "q": "Do Rahu and Ketu change sign in 2027?",
+                "a": "No. Rahu entered Capricorn and Ketu entered Cancer on 25 November 2026 (true node, the convention this site's charts use; almanacs that use the mean node give 5 December 2026). The next change is Rahu into Sagittarius and Ketu into Gemini on 24 May 2028, so the axis stays where it is for the whole of 2027.",
+            },
+            {
+                "q": "How do I know which transits affect my Moon sign?",
+                "a": "Gochar is counted as a house from your Janma Rashi (Moon sign), not from your Lagna or Sun sign. Generate your free Kundli on Shubh Bhagya to find your Moon sign, then read that section for the house in which Saturn, Jupiter, Rahu and Ketu fall and the verdict the classical Gochara table gives for it. It is a first approximation, so weigh it with your dasha and natal chart.",
+            },
+        ),
+    ),
+    Article(
         slug="kundali-matching-ashtakoot-guna-milan",
         title="Kundali Matching: The 36-Guna Compatibility System Explained",
         summary="Before Indian marriages, families traditionally match Kundlis to check compatibility. The Ashtakoot Guna Milan system scores compatibility on 36 points across 8 factors. Here's what each of the 8 factors measures, what the total score really means, and why it's not the whole story.",
