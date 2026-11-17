@@ -35,11 +35,11 @@ MUTATIONS = [
         'test_rahu_and_ketu_exaltation_rows_agree_across_grahas_and_rashis',
     ),
     (
-        "#1086: grahas.md drops Raman's Taurus 20 / Scorpio 20 reckoning and calls the Taurus side unsourced again",
+        "#1086: grahas.md restores the Raman 'Taurus 20 / Scorpio 20' quotation no independent round can open",
         'src/astro_ai/knowledge/grahas.md',
-        'respectively" and puts debilitation 180° opposite',
-        'respectively" and not a sourced one; debilitation 180° opposite',
-        'test_grahas_records_that_two_held_books_disagree_on_rahu_and_ketu',
+        'Another reckoning in circulation puts Rahu\'s exaltation in\nTaurus and Ketu\'s in Scorpio, with the debilitations opposite.',
+        'Raman lists Rahu and Ketu as "Taurus 20° and Scorpio 20°\nrespectively" and puts debilitation 180° opposite.',
+        'test_grahas_records_the_rahu_and_ketu_disagreement_without_an_uncheckable_quotation',
     ),
     (
         "#1086: saturn-in-10th intro calls the 10th Saturn's digbala again",

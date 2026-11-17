@@ -202,17 +202,20 @@ A planet's strength depends on which sign it's in. Below: own sign
 | Rahu | Aquarius | Gemini (CONTESTED: some say Taurus) | Sagittarius (CONTESTED: some say Scorpio) | Virgo |
 | Ketu | Scorpio | Sagittarius (CONTESTED: some say Scorpio) | Gemini (CONTESTED: some say Taurus) | Pisces |
 
-**Rahu/Ketu dignity is CONTESTED between two held books.** Rao's Table 6
+**Rahu/Ketu dignity is CONTESTED between reckonings.** Rao's Table 6
 (*Integrated Approach*, §3.3) gives Rahu exalted in Gemini and
-debilitated in Sagittarius, Ketu the reverse, and states no alternative.
-Raman's *Astrology for Beginners* (Exaltation section) lists the deep
-exaltation points of "Rahu and Ketu" as "Taurus 20° and Scorpio 20°
-respectively" and puts debilitation 180° opposite, so Rahu falls in
-Scorpio and Ketu in Taurus. Rao *Lessons*, `Astrology-e-book` and Raman
-*Muhurtha* 1948 state neither (measured 2026-11-16 from pypdf
-extractions of the PDFs, so no pdftotext line numbers are pinned here).
-Pages say Gemini first, the reckoning in the Rao tables this file
-follows, and say the texts disagree. rashis.md §6 uses the same wording.
+debilitated in Sagittarius, Ketu the reverse, and states no
+alternative. Another reckoning in circulation puts Rahu's exaltation in
+Taurus and Ketu's in Scorpio, with the debilitations opposite. This
+file records that as a disagreement and does not quote or pin it: no
+locator for it could be checked by an independent QA round (the
+Raman *Astrology for Beginners* PDF is not available to every runner;
+see the corpus table), so only Rao's placement is asserted. Rao
+*Lessons*, `Astrology-e-book` and Raman *Muhurtha* 1948 state neither
+(measured 2026-11-16 from pypdf extractions, so no pdftotext line
+numbers are pinned here). Pages say Gemini first, the reckoning in the
+Rao tables this file follows, and say the texts disagree. rashis.md §6
+uses the same wording.
 
 ### 8.1 Rao's analogy for the four dignities
 

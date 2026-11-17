@@ -95,13 +95,17 @@ def test_rahu_and_ketu_exaltation_rows_agree_across_grahas_and_rashis():
     assert "CONTESTED" in _row(r, "Ketu") and "CONTESTED" in _row(g, "Ketu")
 
 
-def test_grahas_records_that_two_held_books_disagree_on_rahu_and_ketu():
+def test_grahas_records_the_rahu_and_ketu_disagreement_without_an_uncheckable_quotation():
+    # chief's ruling on PR #1132 (2026-11-17): the CONTESTED note asserts Rao's Table 6 and says other
+    # reckonings differ, but carries no direct quotation, degree or 180-degree claim attributed to a book
+    # an independent QA round cannot open (Raman's Astrology for Beginners PDF is absent from the runner).
     g = _plain((KNOW / "grahas.md").read_text(encoding="utf-8"))
-    assert "Rahu/Ketu dignity is CONTESTED between two held books" in g
-    # Rao's Table 6 (Gemini/Sagittarius) against Raman's Astrology for Beginners (Taurus 20 / Scorpio 20).
+    assert "Rahu/Ketu dignity is CONTESTED between reckonings" in g
     assert "Rao's Table 6" in g and "states no alternative" in g
-    assert "Raman's *Astrology for Beginners*" in g and "Taurus 20° and Scorpio 20°" in g
-    assert "not a sourced one" not in g  # the false 'no held book gives Taurus' claim, retired
+    assert "Taurus and Ketu's in Scorpio" in g  # the disagreement is still recorded
+    assert "Taurus 20" not in g and "Scorpio 20" not in g  # no unverifiable degree quotation
+    assert "180° opposite" not in g
+    assert "not a sourced one" not in g  # the false 'no held book gives Taurus' claim stays retired
 
 
 # ---- no page repeats the losing side ------------------------------------------------------------
