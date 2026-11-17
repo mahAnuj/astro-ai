@@ -1039,7 +1039,7 @@ Dated, with the evidence. **Check here before proposing a change.**
   `account.py`'s `log.exception("chart sync on sign-in failed for %s", user.email)` is not driven,
   only a successful sign-in. The Google profile name is empty by construction, so the sign-in
   alert's name (disclosed in `privacy.html`) is not exercised. The two dasha lords passed to
-  `Analytics.track` in `dasha_deep_dive.html` are allowed as a planet name, one of nine, at the grain of the rashi
+  `analytics_event('dasha_deep_dive_viewed', …)` in `dasha_deep_dive.html` are allowed as a planet name, one of nine, at the grain of the rashi
   triple Telegram already carries; that is a judgement `privacy.html` does not spell out. The
   subscriber's city reaches Telegram as `source=` by design and carries no sentinel in the sweep.
   Email in operational logs is pinned as allowed, not endorsed.
