@@ -1,6 +1,75 @@
 {
-  "generated_at": "2026-11-17T18:38:17Z",
+  "generated_at": "2026-11-17T20:19:57Z",
   "rows": [
+    {
+      "owner_helped": null,
+      "run": 44160935432,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T19:39:30Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 40.3,
+      "issue": 1176,
+      "pr": 1197,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 150,
+      "tokens_output": 45280,
+      "tokens_cache_read": 3962261,
+      "tokens_cache_write": 265230,
+      "cost_list_usd": 1.6178,
+      "model": "claude-sonnet-5-5",
+      "turns": 16
+    },
+    {
+      "owner_helped": null,
+      "run": 44155473078,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T19:09:09Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 16.7,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 50,
+      "tokens_output": 14001,
+      "tokens_cache_read": 2189215,
+      "tokens_cache_write": 90368,
+      "cost_list_usd": 0.7205,
+      "model": "claude-sonnet-5-5",
+      "turns": 30
+    },
+    {
+      "owner_helped": null,
+      "run": 44151667027,
+      "workflow": "agent-work",
+      "date": "2026-11-17",
+      "started": "2026-11-17T18:47:42Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 0.9,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 4,
+      "tokens_output": 817,
+      "tokens_cache_read": 66691,
+      "tokens_cache_write": 37547,
+      "cost_list_usd": 0.165,
+      "model": "claude-sonnet-5-5",
+      "turns": 2
+    },
     {
       "owner_helped": null,
       "run": 44149528236,
@@ -62,13 +131,13 @@
       "outcome": "pr open",
       "attribution": "receipt",
       "kind": "issue",
+      "turns": 24,
       "tokens_input": 41,
       "tokens_output": 11667,
       "tokens_cache_read": 1445626,
       "tokens_cache_write": 65531,
       "cost_list_usd": 0.5234,
-      "model": "claude-sonnet-5-5",
-      "turns": 24
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": null,
@@ -108,13 +177,13 @@
       "outcome": "pr open",
       "attribution": "receipt",
       "kind": "issue",
+      "turns": 19,
       "tokens_input": 36,
       "tokens_output": 8500,
       "tokens_cache_read": 1206875,
       "tokens_cache_write": 62251,
       "cost_list_usd": 0.4548,
-      "model": "claude-sonnet-5-5",
-      "turns": 19
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": null,
@@ -10105,48 +10174,48 @@
   ],
   "waste": {
     "days": 7,
-    "cycles": 201,
+    "cycles": 200,
     "minutes_by_outcome": {
-      "shipped": 3895.4,
-      "pr open": 135.9,
-      "judged": 445.9,
+      "shipped": 3814.0,
+      "pr open": 176.2,
+      "judged": 461.9,
       "nothing": 36.8,
       "failed": 0.0,
       "unknown": 0.0
     },
-    "minutes_total": 4514.0,
+    "minutes_total": 4488.9,
     "minutes_without_result": 36.8,
     "share_without_result": 0.008,
-    "shipped_prs": 108,
-    "build_idle_hours": 103.0,
-    "build_idle_share": 0.613
+    "shipped_prs": 106,
+    "build_idle_hours": 103.6,
+    "build_idle_share": 0.617
   },
   "tokens": {
     "days": 7,
-    "runs": 201,
-    "measured": 201,
+    "runs": 200,
+    "measured": 200,
     "total": {
-      "tokens": 1017294353,
-      "input": 23256,
-      "output": 7728471,
-      "cache_read": 959326060,
-      "cache_write": 50216566,
-      "cost_list_usd": 327.08
+      "tokens": 1000594583,
+      "input": 22851,
+      "output": 7592756,
+      "cache_read": 943742863,
+      "cache_write": 49236113,
+      "cost_list_usd": 321.45
     },
     "median_by_outcome": {
       "shipped": {
-        "runs": 124,
-        "tokens": 6546990,
-        "cost_list_usd": 2.22
+        "runs": 121,
+        "tokens": 6538052,
+        "cost_list_usd": 2.2
       },
       "pr open": {
-        "runs": 5,
-        "tokens": 5838880,
-        "cost_list_usd": 1.79
+        "runs": 6,
+        "tokens": 5055900,
+        "cost_list_usd": 1.7
       },
       "judged": {
-        "runs": 60,
-        "tokens": 1196049,
+        "runs": 61,
+        "tokens": 1226151,
         "cost_list_usd": 0.46
       },
       "nothing": {
@@ -10155,16 +10224,16 @@
         "cost_list_usd": 0.3
       }
     },
-    "median_cycle": 6214747,
-    "median_qa_round": 1196049,
-    "merged_prs": 108,
-    "per_merged_pr": 9419392,
+    "median_cycle": 6081530,
+    "median_qa_round": 1226151,
+    "merged_prs": 106,
+    "per_merged_pr": 9439572,
     "cost_list_usd_per_merged_pr": 3.03,
     "previous": {
-      "runs": 135,
-      "measured": 133,
-      "merged_prs": 51,
-      "per_merged_pr": 11679909
+      "runs": 137,
+      "measured": 135,
+      "merged_prs": 54,
+      "per_merged_pr": 11449519
     }
   }
 }

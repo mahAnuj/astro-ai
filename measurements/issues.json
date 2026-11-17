@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-17T18:38:33Z",
+  "generated_at": "2026-11-17T20:20:12Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 133,
-  "with_ask": 48,
+  "open": 131,
+  "with_ask": 47,
   "by_area": {
-    "UNCLASSIFIED": 53,
+    "UNCLASSIFIED": 52,
     "INFRA": 14,
     "REDESIGN": 10,
     "OPS": 7,
@@ -23,7 +23,6 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "MAIN-RED": 1,
     "SECURITY": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
@@ -33,14 +32,14 @@
   },
   "by_type": {
     "untyped": 36,
-    "enhancement": 35,
-    "bug": 28,
+    "enhancement": 34,
+    "bug": 27,
     "chore": 18,
     "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 92,
+    "unset": 90,
     "medium": 22,
     "high": 18,
     "low": 1
@@ -60,21 +59,6 @@
       "created": "2026-11-17T18:25:06Z",
       "updated": "2026-11-17T18:25:06Z",
       "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 1191,
-      "title": "[main-red] pr-gates did not pass on main at be026a3",
-      "ask": "",
-      "area": "MAIN-RED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-11-17T18:12:30Z",
-      "updated": "2026-11-17T18:12:48Z",
-      "blocked": false,
       "needs_evidence": false
     },
     {
@@ -98,22 +82,6 @@
       "number": 1189,
       "title": "always-on 5/6 memory: index-then-load agent definitions and one in-place progress comment per issue",
       "ask": "Definitions use index-then-load.",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "category:technical"
-      ],
-      "created": "2026-11-17T18:01:37Z",
-      "updated": "2026-11-17T18:01:37Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1188,
-      "title": "always-on 4/6 outbox: one deduped, capped, logged posting path with noise evals on /admin/ops",
-      "ask": "A ledger in measurements/outbox.json, with counts only.",
       "area": "UNCLASSIFIED",
       "type": "enhancement",
       "priority": "unset",
@@ -221,10 +189,12 @@
       "labels": [
         "bug",
         "seo",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-17T12:12:56Z",
-      "updated": "2026-11-17T12:12:56Z",
+      "updated": "2026-11-17T20:19:32Z",
       "blocked": false,
       "needs_evidence": false
     },
