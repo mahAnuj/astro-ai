@@ -122,7 +122,9 @@ POLICY: dict[str, Rule] = {
     "events": _rule(
         "email question city",
         'privacy.html "Our 30-day activity log": the question, answer and email, '
-        "plus the birth CITY and an age band; not name, date, time or full place"),
+        "plus the birth CITY and an age band; for a question, a chart summary of "
+        "signs, houses, Moon nakshatra and dasha lords (#1167); not name, date, "
+        "time or full place"),
     "log": _rule(
         "email",
         'privacy.html "Operational logs" says a log line can include an email '
