@@ -122,4 +122,9 @@ MUTATIONS = [
      "    if base == TRUSTED and is_bot and LABEL_OUTSIDER in labels:",
      "    if False:",
      "test_an_outsider_label_on_the_own_apps_issue_makes_it_an_outsider"),
+    ("#1169 QA: the audit runs even when credential removal failed",
+     ".github/workflows/agent-measure.yml",
+     "steps.ask_creds_gone.outcome == 'success' && ",
+     "",
+     "test_the_audit_runs_only_if_the_credentials_were_actually_removed"),
 ]

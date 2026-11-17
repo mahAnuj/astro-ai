@@ -559,3 +559,15 @@ def test_post_without_a_sample_posts_nothing(tmp_path, monkeypatch):
     gh.mod = mod
     assert mod.main(["x", "--body-file", str(work / "b.md"), "--title", "t", *LABELS], gh=gh) == 2
     assert gh.calls == []
+
+
+def test_the_audit_runs_only_if_the_credentials_were_actually_removed():
+    """QA FAIL on #1169: a failed removal (exit 1) did not stop the audit agent."""
+    import yaml as _y
+    from pathlib import Path as _P
+    doc = _y.safe_load((_P(__file__).resolve().parents[1] / ".github/workflows/agent-measure.yml").read_text())
+    steps = doc["jobs"]["measure"]["steps"]
+    rm = next(s for s in steps if s.get("name") == "Remove the bucket credentials before the audit agent runs")
+    audit = next(s for s in steps if s.get("name") == "Audit the /ask answers")
+    assert rm.get("id") == "ask_creds_gone"
+    assert "steps.ask_creds_gone.outcome == 'success'" in audit["if"]

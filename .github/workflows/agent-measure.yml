@@ -363,6 +363,7 @@ jobs:
       # .git/config) goes too: the agent can Read files, and no step after
       # this one in the job uses git (QA on PR #1169, finding 3).
       - name: Remove the bucket credentials before the audit agent runs
+        id: ask_creds_gone
         if: always()
         env:
           CREDS: ${{ steps.gcs.outputs.credentials_file_path }}
@@ -405,7 +406,11 @@ jobs:
       # fail the measurement run, whose report is already persisted above.
       - name: Audit the /ask answers
         id: ask_audit
-        if: "!cancelled() && steps.ask_due.outputs.due == 'true' && steps.ask_sample.outcome == 'success' && steps.ask_sample.outputs.n != '0'"
+        # QA FAIL on #1169: the removal step fails closed (exit 1, "credentials
+        # survived"), but !cancelled() is true after a failed step, so the audit
+        # still ran with the bucket credentials on disk. It now runs only when
+        # the removal SUCCEEDED.
+        if: "!cancelled() && steps.ask_creds_gone.outcome == 'success' && steps.ask_due.outputs.due == 'true' && steps.ask_sample.outcome == 'success' && steps.ask_sample.outputs.n != '0'"
         continue-on-error: true
         timeout-minutes: 25
         uses: anthropics/claude-code-action@v1
