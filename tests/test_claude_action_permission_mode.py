@@ -38,7 +38,12 @@ def test_every_claude_step_sets_a_strict_permission_mode():
     bad = []
     for wf, job, step in _claude_steps():
         args = (step.get("with") or {}).get("claude_args") or ""
-        modes = re.findall(r"--permission-mode\s+(\S+)", args)
+        # The action drops every line whose first non-blank character is `#`
+        # (base-action stripShellComments at the pinned SHA), so a commented-out
+        # mode is NO mode. QA on #1174: `# --permission-mode default` passed the
+        # raw-string check while the step fell back to auto.
+        live = "\n".join(ln for ln in args.splitlines() if not ln.strip().startswith("#"))
+        modes = re.findall(r"--permission-mode\s+(\S+)", live)
         if len(modes) != 1 or modes[0] not in STRICT:
             bad.append(f"{wf}:{job} -> {modes or 'none'}")
     assert not bad, "auto/bypass/missing permission mode: " + "; ".join(bad)

@@ -12,4 +12,9 @@ MUTATIONS = [
      "anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278",
      "anthropics/claude-code-action@v1",
      "test_every_claude_step_pins_the_action_to_a_commit"),
+    ("#1172 QA: agent-research comments the mode out (the action strips it -> auto)",
+     ".github/workflows/agent-research.yml",
+     "            --permission-mode default",
+     "            # --permission-mode default",
+     "test_every_claude_step_sets_a_strict_permission_mode"),
 ]
