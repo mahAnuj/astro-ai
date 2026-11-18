@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-18T20:30:34Z",
+  "generated_at": "2026-11-18T23:08:42Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 121,
@@ -30,8 +30,8 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 36,
-    "enhancement": 31,
+    "untyped": 37,
+    "enhancement": 30,
     "bug": 22,
     "chore": 18,
     "correctness": 10,
@@ -46,18 +46,19 @@
   "blocked": 9,
   "rows": [
     {
-      "number": 1226,
-      "title": "analytics: tool_submitted event and fetch_ga4.py --journeys (#1070 slice 2)",
+      "number": 1229,
+      "title": "analytics: login, language_switched, share events and from_path on subscribe_completed (#1070 slice 3)",
       "ask": "",
       "area": "ANALYTICS",
-      "type": "enhancement",
+      "type": "untyped",
       "priority": "unset",
       "labels": [
-        "enhancement",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
-      "created": "2026-11-18T19:20:04Z",
-      "updated": "2026-11-18T19:20:12Z",
+      "created": "2026-11-18T22:30:58Z",
+      "updated": "2026-11-18T23:07:50Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -327,7 +328,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-18T19:20:14Z",
+      "updated": "2026-11-18T22:31:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1958,7 +1959,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-18T20:30:34Z",
+    "generated_at": "2026-11-18T23:08:42Z",
     "window_days": 28,
     "open_now": 121,
     "merged_open_hours": 24,
@@ -2363,16 +2364,16 @@
       },
       {
         "date": "2026-11-18",
-        "opened": 9,
-        "closed": 17,
+        "opened": 10,
+        "closed": 18,
         "net": -8,
         "open_end": 121,
         "opened_by": {
-          "loop": 8,
+          "loop": 9,
           "ops": 1
         },
         "closed_by": {
-          "close-on-evidence": 15,
+          "close-on-evidence": 16,
           "prioritise": 1,
           "main-red-report": 1
         }
@@ -3594,9 +3595,14 @@
         "number": 1217,
         "closed_at": "2026-11-18T12:59:43Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1226,
+        "closed_at": "2026-11-18T21:12:34Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 1,
     "truncated": []
   }
 }
