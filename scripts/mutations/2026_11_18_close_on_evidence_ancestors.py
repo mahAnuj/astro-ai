@@ -12,4 +12,8 @@ MUTATIONS = [
      _W, '            [ "$rel" = "ahead" ] && prs="$prs $pr"',
      '            [ "$rel" = "never" ] && prs="$prs $pr"',
      "test_every_pr_contained_in_the_verified_commit_closes_its_issue"),
+    ("close-on-evidence: a 'Closes #a, #b and #c' list closes only the first again",
+     _W, "#[0-9]+([[:space:]]*(,|and|&)[[:space:]]*#[0-9]+)*' \\",
+     "#[0-9]+' \\",
+     "test_a_list_of_issues_after_closes_closes_all_of_them"),
 ]

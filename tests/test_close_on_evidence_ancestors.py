@@ -30,7 +30,7 @@ case "$*" in
   "pr view 1200"*"headRefName"*) echo "issue/1201-y" ;;
   "pr view 999"*"headRefName"*) echo "issue/998-z" ;;
   "pr view 1077"*) printf 'title\ncloses #1056\n' ;;
-  "pr view 1200"*) printf 'title\nfixes #1201\n' ;;
+  "pr view 1200"*) printf 'title\nCloses #1201, #1202 and #1203\n' ;;
   "pr view 999"*) printf 'title\ncloses #998\n' ;;
   "issue view"*) echo OPEN ;;
   "issue close"*) echo closed ;;
@@ -82,3 +82,12 @@ def test_every_pr_contained_in_the_verified_commit_closes_its_issue(tmp_path):
     assert any("1056" in c for c in closed), "the burst-merged PR #1077's issue must close"
     assert any("1201" in c for c in closed), "the run's own PR still closes"
     assert not any("998" in c for c in closed), "a PR not in the verified history must not close"
+
+
+def test_a_list_of_issues_after_closes_closes_all_of_them(tmp_path):
+    """PR #1196 said 'Closes #1185, #1186 and #1187'; only #1185 closed."""
+    r, _, calls = _run(tmp_path, _step("Close what this commit shipped")["run"], sha=B, live=B,
+                       extra_env={"LIVE": B})
+    closed = " ".join(ln for ln in calls.splitlines() if ln.startswith("issue close"))
+    for n in ("1201", "1202", "1203"):
+        assert n in closed, n
