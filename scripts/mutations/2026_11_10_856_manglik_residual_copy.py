@@ -75,4 +75,9 @@ MUTATIONS = [
      "or delayed marriage. You will often read that the dosha softens after age 28; that is a modern folk claim with no classical text behind it, and we do not rely on it.",
      "or delayed marriage until the dosha resolves through age (many texts consider Manglik effects to soften significantly after age 28).",
      "test_planets_in_7th_house_does_not_attribute_the_age_28_claim_to_the_texts"),
+    ("#856: checker result guide card calls them 'the six qualifying houses' flatly again",
+     "src/astro_ai/templates/manglik_check_result.html",
+     "Depth: which houses count (five in the sources we work from, the 1st optional), the cancellation rules",
+     "Depth: the six qualifying houses, the cancellation rules",
+     "test_manglik_check_result_guide_card_does_not_state_six_houses_flatly"),
 ]
