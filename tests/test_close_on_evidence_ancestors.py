@@ -32,6 +32,9 @@ case "$*" in
                    "{\"n\":1200,\"m\":\"$B\",\"t\":\"Closes #1201, #1202 and #1203\",\"b\":\"issue/1201-y\"}" \
                    "{\"n\":999,\"m\":\"$C\",\"t\":\"closes #998\",\"b\":\"issue/998-z\"}" \
                    "{\"n\":555,\"m\":\"$D\",\"t\":\"chore: measurement\",\"b\":\"measurements/1-1\"}" ;;
+  *"/events"*) # one page; prints what --jq would: reopens after the PR merged
+     if [ -n "${REOPENED:-}" ] && [[ "$*" == *"issues/$REOPENED/events"* ]]; then echo 1; else echo 0; fi ;;
+  "pr view"*"mergedAt"*) echo "2026-11-15T10:00:00Z" ;;
   "pr view 1077"*"headRefName"*) echo "issue/1056-x" ;;
   "pr view 1200"*"headRefName"*) echo "issue/1201-y" ;;
   "pr view 999"*"headRefName"*) echo "issue/998-z" ;;
@@ -134,3 +137,22 @@ def test_a_failed_compare_still_closes_the_rest_then_exits_non_zero(tmp_path):
     closed = " ".join(ln for ln in calls.splitlines() if ln.startswith("issue close"))
     assert "1201" in closed, "the verified commit's own PR needs no compare and still closes"
     assert "1056" not in closed, "a PR whose compare failed is not closed on a guess"
+
+
+# --- a reopened issue stays open (QA FAIL on #1212 at f71d4db) ----------------
+
+def test_an_issue_reopened_after_its_pr_merged_is_not_closed_again(tmp_path):
+    r, _, calls = _run(tmp_path, _step("Close what this commit shipped")["run"], sha=B, live=B,
+                       extra_env={"LIVE": B, "REOPENED": "1056"})
+    assert r.returncode == 0, r.stderr
+    closed = " ".join(ln for ln in calls.splitlines() if ln.startswith("issue close"))
+    assert "1056" not in closed and "reopened after PR #1077 merged" in r.stdout
+    assert "1201" in closed, "issues nobody reopened still close"
+    assert "events" in calls and "reopened" in calls
+
+
+def test_an_unreadable_timeline_closes_nothing_for_that_issue_and_exits_non_zero(tmp_path):
+    r, _, calls = _close(tmp_path, "issues/1056/events")
+    assert r.returncode != 0 and "timeline read(s) failed" in r.stdout
+    closed = " ".join(ln for ln in calls.splitlines() if ln.startswith("issue close"))
+    assert "1056" not in closed and "1201" in closed

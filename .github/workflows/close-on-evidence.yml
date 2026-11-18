@@ -187,8 +187,10 @@ jobs:
           fi
           echo "PRs contained in $SHA:$prs"
 
+          reopen_errors=0
           for pr in $prs; do
             body=$(gh pr view "$pr" --repo "$GH_REPO" --json body,title --jq '.title + "\n" + .body')
+            merged_at=$(gh pr view "$pr" --repo "$GH_REPO" --json mergedAt --jq .mergedAt)
             # GitHub's own closing keywords, so behaviour matches what an author
             # reading the PR would expect.
             # A list counts too: "Closes #1185, #1186 and #1187" closed only #1185
@@ -260,6 +262,21 @@ jobs:
             for n in $issues; do
               state=$(gh issue view "$n" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)
               [ "$state" = "OPEN" ] || { echo "#$n is $state — skipping"; continue; }
+              # REOPENED AFTER THIS PR MERGED = production disagreed (QA on #1212
+              # at f71d4db). Since this step looks back 14 days, every green run
+              # would otherwise re-close an issue a human reopened, and the closing
+              # comment's own "Reopen if production disagrees" would mean nothing.
+              # A later PR that claims it (merged after the reopen) still closes it.
+              # An unreadable timeline closes nothing on a guess.
+              if ! reopened=$(gh api --paginate "repos/$GH_REPO/issues/$n/events" \
+                     --jq "[.[] | select(.event == \"reopened\" and .created_at > \"$merged_at\")] | length" \
+                     | jq -s 'add // 0'); then
+                echo "::warning::could not read #$n's events -- not closing it this run"
+                reopen_errors=$((reopen_errors + 1)); continue
+              fi
+              if [ "${reopened:-0}" != "0" ]; then
+                echo "#$n was reopened after PR #$pr merged — not re-closing it"; continue
+              fi
               # Empty on a workflow_dispatch run, which has no workflow_run payload.
               if [ -n "${RUN_URL:-}" ]; then run_link=" ([run]($RUN_URL))"; else run_link=""; fi
               gh issue close "$n" --repo "$GH_REPO" --reason completed --comment \
@@ -273,7 +290,10 @@ jobs:
               echo "closed #$n"
             done
           done
+          if [ "$reopen_errors" -gt 0 ]; then
+            echo "::error::$reopen_errors issue timeline read(s) failed -- those issues were not closed; the next green run retries them"
+          fi
           if [ "$compare_errors" -gt 0 ]; then
             echo "::error::$compare_errors compare call(s) failed -- those PRs' issues were not closed; the next green run retries them"
-            exit 1
           fi
+          if [ "$compare_errors" -gt 0 ] || [ "$reopen_errors" -gt 0 ]; then exit 1; fi
