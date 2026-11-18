@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-18T20:31:43Z",
+ "generated_at": "2026-11-18T23:10:18Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 44378576254,
-  "at": "2026-11-18T19:15:28Z",
-  "five_hour": 0.15,
-  "seven_day": 0.74,
+  "run": 44418100890,
+  "at": "2026-11-18T23:08:30Z",
+  "five_hour": 0.03,
+  "seven_day": 0.75,
   "status": "allowed",
   "resets": {
-   "five_hour": 1795036800,
+   "five_hour": 1795058400,
    "seven_day": 1795154400
   }
  },
- "peak_seven_day": 0.74,
+ "peak_seven_day": 0.75,
  "rejected_runs": [],
  "readings": [
   {
@@ -66,33 +66,9 @@
   },
   {
    "workflow": "agent-work",
-   "run": 44345533184,
-   "at": "2026-11-18T16:17:39Z",
-   "five_hour": 0.11,
-   "seven_day": 0.72,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1795036800,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 44366995363,
-   "at": "2026-11-18T18:11:40Z",
-   "five_hour": 0.09,
-   "seven_day": 0.73,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1795036800,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 44373922917,
-   "at": "2026-11-18T18:49:46Z",
-   "five_hour": 0.12,
+   "run": 44395548615,
+   "at": "2026-11-18T20:52:23Z",
+   "five_hour": 0.16,
    "seven_day": 0.74,
    "status": "allowed",
    "resets": {
@@ -102,13 +78,37 @@
   },
   {
    "workflow": "agent-work",
-   "run": 44378576254,
-   "at": "2026-11-18T19:15:28Z",
-   "five_hour": 0.15,
+   "run": 44395946059,
+   "at": "2026-11-18T20:54:40Z",
+   "five_hour": 0.17,
    "seven_day": 0.74,
    "status": "allowed",
    "resets": {
     "five_hour": 1795036800,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 44411358136,
+   "at": "2026-11-18T22:24:59Z",
+   "five_hour": 0.03,
+   "seven_day": 0.75,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1795058400,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 44418100890,
+   "at": "2026-11-18T23:08:30Z",
+   "five_hour": 0.03,
+   "seven_day": 0.75,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1795058400,
     "seven_day": 1795154400
    }
   }
