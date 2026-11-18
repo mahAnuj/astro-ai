@@ -190,6 +190,22 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .waste-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:8px}
 .waste-grid div{padding:8px 10px;border:1px solid var(--line);border-radius:4px}
 .waste-grid .n{display:block;font-size:18px;font-weight:600}
+/* Issue flow (2026-11-18): opened vs closed bars, open-count line on its own scale. */
+.f-opened{fill:var(--open);background:var(--open)}
+.f-closed{fill:var(--shipped);background:var(--shipped)}
+.dchart .f-line{fill:none;stroke:var(--ink);stroke-width:1.5}
+.f-line-key{background:var(--ink);height:2px!important;vertical-align:3px!important}
+.flow-reading{margin:0 0 12px;font-size:14px;max-width:90ch}
+.flow-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:14px}
+/* Not `.loops`: that table has a 520px floor for the wide day tables, and these
+   sit three to a row. */
+.flow-t{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.flow-t td{padding:6px 0;border-bottom:1px solid var(--line)}
+.flow-t tr:last-child td{border-bottom:0}
+.flow-t td.n{text-align:right;font-family:var(--mono);font-size:12px}
+.flow-mo{list-style:none;margin:8px 0 0;padding:0;font-size:13px}
+.flow-mo li{padding:5px 0 5px 8px;border-left:2px solid var(--line-2);margin-bottom:4px}
+.flow-mo li.hot{border-left-color:var(--open)}
 
 /* ── Segmented bars (backlog groupings) ──────────────────────────────── */
 .seg-tabs{display:flex;gap:2px;margin-bottom:16px;border:1px solid var(--line);
@@ -1713,6 +1729,90 @@ a{color:#1f5fae} a:hover{color:#174a88}
     </div>
   </section>
   {% endif %}
+
+  {# ── Issue flow (2026-11-18). Owner: "Many prs have been merged but I don't see
+     issue count reducing". The open count alone cannot tell findings arriving
+     faster from fixes not closing; opened against closed, who did each, and the
+     merged-but-open list can. issues.json `trend`, written by
+     scripts/issue_flow.py from the backlog collector; always the committed
+     snapshot, never the live backlog (ops_data._issue_flow_view says why). #}
+  {% set F = ops.issue_flow %}
+  <section class="panel" id="issue-flow">
+    <h2>Issue flow <span class="lbl">UTC days · last {{ F.window_days if F and F.window_days else 28 }}{% if F %} · {{ F.age.text }}{% endif %}</span></h2>
+    <div class="body">
+    {% if F and F.error %}
+      <p class="none">The trend could not be collected on the last run: <code>{{ F.error }}</code>.
+        The backlog below is unaffected.</p>
+    {% elif F and F.empty %}
+      <p class="none">No issues opened or closed in the last {{ F.window_days }} days.</p>
+    {% elif F %}
+      <p class="flow-reading">{{ F.reading }}</p>
+      {% if F.truncated %}<p class="lbl" style="color:var(--open)">A page cap cut the read short ({{ F.truncated|join(', ') }}): the counts are a floor.</p>{% endif %}
+      {% set G = F.chart %}
+      <svg class="dchart flow" viewBox="0 0 {{ G.w }} {{ G.h }}" role="img"
+           aria-label="Issues opened and closed per day, with the open count at the end of each day, last {{ G.cols|length }} days. The numbers are in the table below.">
+        <line class="grid" x1="{{ G.left }}" x2="{{ G.right_x - 6 }}" y1="{{ G.plot_h }}" y2="{{ G.plot_h }}"/>
+        <line class="grid soft" x1="{{ G.left }}" x2="{{ G.right_x - 6 }}" y1="0.5" y2="0.5"/>
+        <text class="ax" x="{{ G.left - 6 }}" y="{{ G.plot_h }}" text-anchor="end" dy="0.32em">0</text>
+        <text class="ax" x="{{ G.left - 6 }}" y="1" text-anchor="end" dy="0.7em">{{ G.ymax }}</text>
+        <text class="ax" x="{{ G.right_x }}" y="{{ G.plot_h }}" text-anchor="start" dy="0.32em">{{ G.lo }}</text>
+        <text class="ax" x="{{ G.right_x }}" y="1" text-anchor="start" dy="0.7em">{{ G.hi }}</text>
+        {% for c in G.cols %}
+        <g><title>{{ c.tip }}</title>
+          {% if c.oh %}<rect class="f-opened" x="{{ c.ox }}" y="{{ c.oy }}" width="{{ c.w }}" height="{{ c.oh }}" rx="1"/>{% endif %}
+          {% if c.ch %}<rect class="f-closed" x="{{ c.cxb }}" y="{{ c.cy }}" width="{{ c.w }}" height="{{ c.ch }}" rx="1"/>{% endif %}
+          {% if c.show_label %}<text class="ax day" x="{{ c.cx }}" y="{{ G.label_y }}" text-anchor="middle">{{ c.label }}</text>{% endif %}
+        </g>
+        {% endfor %}
+        <polyline class="f-line" points="{{ G.points }}"/>
+      </svg>
+      <div class="dlegend">
+        <span><i class="f-opened"></i>opened (left scale)</span>
+        <span><i class="f-closed"></i>closed (left scale)</span>
+        <span><i class="f-line-key"></i>open at end of day (right scale)</span>
+      </div>
+      <div class="flow-grid">
+        <div><div class="lbl">Opened, last 7 days, by source · {{ F.opened }}</div>
+          <table class="flow-t"><tbody>
+          {% for label, n in F.sources %}<tr><td>{{ label }}</td><td class="n">{{ n }}</td></tr>{% endfor %}
+          </tbody></table></div>
+        <div><div class="lbl">Closed, last 7 days, by closer · {{ F.closed }}</div>
+          <table class="flow-t"><tbody>
+          {% for label, n in F.closers %}<tr><td>{{ label }}</td><td class="n">{{ n }}</td></tr>{% endfor %}
+          </tbody></table></div>
+        <div><div class="lbl">Merged but still open · {{ F.merged_open|length }}</div>
+          {% if F.merged_open %}
+          <ul class="flow-mo">
+          {% for r in F.merged_open %}
+            <li{% if F.alarm %} class="hot"{% endif %}><a href="https://github.com/mahAnuj/astro-ai/issues/{{ r.number }}">#{{ r.number }}</a>
+              {{ r.title }} <span class="lbl">PR #{{ r.pr }} merged {{ r.hours }}h ago</span></li>
+          {% endfor %}
+          </ul>
+          {% else %}
+          <p class="sub">None: every issue a merged PR claimed more than {{ F.merged_open_hours }}h ago is closed.</p>
+          {% endif %}
+        </div>
+      </div>
+      <details class="dtable">
+        <summary>Show as table</summary>
+        <div class="tscroll" role="region" aria-label="Issues opened and closed per day"><table class="loops">
+          <thead><tr><th>Day</th><th>Opened</th><th>Closed</th><th>Net</th><th>Open at end</th></tr></thead>
+          <tbody>
+          {% for d in F.days|reverse %}
+            <tr><td>{{ d.date[5:] }}</td><td class="c">{{ d.opened }}</td><td class="c">{{ d.closed }}</td>
+              <td class="c">{{ '+' if d.net > 0 }}{{ d.net }}</td><td class="c">{{ d.open_end }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table></div>
+      </details>
+      <p class="lbl" style="margin-top:10px">Source: audit / session = filed from the owner's account; loop = claude[bot], github-actions[bot], shubhagya-publisher[bot]; [OPS] = the ops detector's findings. Closer is read from the issue's timeline, the closed event and the closer's own comment beside it. Merged but still open = an open issue a merged PR claimed (closing keyword, or an issue/N- branch) more than {{ F.merged_open_hours }}h ago: the fix shipped and close-on-evidence did not close it.</p>
+    {% else %}
+      <p class="none">The issue trend is not in <code>measurements/issues.json</code> yet. The next
+        <code>agent-measure</code> run writes it (<code>collect_issue_backlog.py</code> calls
+        <code>issue_flow.py</code>).</p>
+    {% endif %}
+    </div>
+  </section>
 
   <div class="cols">
     {# ── Backlog, three ways, each segment a filter ─────────────────── #}
