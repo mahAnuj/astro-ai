@@ -193,7 +193,11 @@ def test_title_is_untouched_and_no_seo_override_was_added():
     a = _article()
     assert a.title == "Rahu Mahadasha + Ketu Antardasha: Surviving the Nodal Axis Flip"
     assert not getattr(a, "seo_title", "")
-    assert not getattr(a, "seo_description", "")
+
+
+def test_the_meta_description_is_inside_the_ceiling():
+    # #1178: seo_description was empty, so the 257-character summary was the meta; it is set now.
+    assert 50 <= len(_article().seo_description) <= 160
 
 
 # --- #1075: the 'effects' and 'remedies' intents are named in headings, with no new claim ---
@@ -280,7 +284,9 @@ def test_head_query_surfaces_are_untouched_and_no_section_was_cut(client):
     """Title, H1 source, meta and the opening callout stay; the effects block adds a section and removes none."""
     a = _article()
     assert a.title == "Rahu Mahadasha + Ketu Antardasha: Surviving the Nodal Axis Flip"
-    assert not getattr(a, "seo_title", "") and not getattr(a, "seo_description", "")
+    # seo_title stays empty; seo_description was set in #1178 so the long summary stops being the meta.
+    assert not getattr(a, "seo_title", "")
+    assert 50 <= len(a.seo_description) <= 160 and a.summary.startswith("The exact transition Reddit asks about")
     assert "the nodal axis flip" in _text(client).lower()
     html = client.get(f"/learn/{SLUG}/").text
     assert html.count("<h2>") == 9  # 8 article sections before; the block adds one and cuts none

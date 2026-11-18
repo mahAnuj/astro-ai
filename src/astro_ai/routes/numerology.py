@@ -46,7 +46,7 @@ async def numerology_form(request: Request) -> HTMLResponse:
         request, "numerology.html",
         {
             "page_title": "Free Numerology Calculator — Chaldean and Lo Shu (with honest tradition note)",
-            "page_meta": "Free numerology calculator using the Chaldean system plus the Chinese Lo Shu grid. Life Path, Destiny/Expression, Soul Urge, Personality, Name Number, per-Life-Path profile, Personal Year, Karmic Debt (13/14/16/19), traditional per-number practices, and 2-person compatibility. Honest about tradition: these systems are 19th-20th century Western and ancient Chinese, not classical Vedic Jyotish. No signup.",
+            "page_meta": "Free numerology calculator using the Chaldean system plus the Chinese Lo Shu grid. Life Path, Destiny, Soul Urge. Not classical Vedic Jyotish.",
             "reading": None,
             "error": None,
             "lang": _lang(request),
@@ -183,7 +183,7 @@ async def numerology_compat_form(request: Request) -> HTMLResponse:
         request, "numerology_compat.html",
         {
             "page_title": "Numerology Compatibility — 2-Person Pairing Check",
-            "page_meta": "Free numerology compatibility check — Life Path + Birthday + Destiny pair verdicts using the modern Chaldean framework (not classical Vedic Jyotish). General / marriage / business contexts.",
+            "page_meta": "Free numerology compatibility check — Life Path, Birthday and Destiny pair verdicts on the modern Chaldean framework (not classical Vedic Jyotish).",
             "compat": None, "error": None, "lang": _lang(request),
         },
     )

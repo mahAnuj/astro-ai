@@ -7,7 +7,7 @@
       "final_path": "/",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "Free Vedic astrology online — Janma Kundli, daily Rashifal for all 12 rashis, today's Panchang, Numerology (Vedic + Chaldean with per-planet remedies), Vivah Muhurat + 4 other event dates, Kundli Matching, plus 3 free personal questions about your chart every day. Sidereal Lahiri, Swiss Ephemeris, no signup.",
+      "meta_description": "Free Vedic astrology — Janma Kundli, daily Rashifal for all 12 rashis, today's Panchang, Numerology, Muhurat, Kundli Matching and 3 free questions a day.",
       "status": 200,
       "title": "Shubh Bhagya — Free Kundli, Rashifal, Panchang, Numerology, Muhurat, Ask 3 Free Questions"
     },
@@ -16,7 +16,7 @@
       "final_path": "/about",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "The people, principles, and classical sources behind Shubh Bhagya. Why we don't do fear-based upsell, which Sanskrit texts we cite, and how our chart math works. Trust the sky, not the salesman.",
+      "meta_description": "The people, principles, and classical sources behind Shubh Bhagya: why we don't do fear-based upsell, which texts we cite, and how our chart math works.",
       "status": 200,
       "title": "About Shubh Bhagya — Editorial Principles + Classical Sources"
     },
@@ -25,7 +25,7 @@
       "final_path": "/dasha",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "Free Vimshottari Dasha timeline from your birth chart — current Mahadasha + Antardasha, all 9 planetary periods in canonical order, with the classical significations of each ruling graha. Sidereal Lahiri, Swiss Ephemeris.",
+      "meta_description": "Free Vimshottari Dasha timeline from your birth chart — current Mahadasha + Antardasha, all 9 planetary periods, with each graha's classical significations.",
       "status": 200,
       "title": "Free Vimshottari Dasha Calculator — Current Mahadasha, Antardasha, Full 120-Year Timeline"
     },
@@ -43,7 +43,7 @@
       "final_path": "/kaal-sarp-check",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "Honest Kaal Sarp Yoga check with classical-source transparency. We detect the geometric pattern and are upfront that Kaal Sarp is not in the classical Vedic texts — it is a 20th-century Indian classification widely debated even among respected astrologers.",
+      "meta_description": "Honest Kaal Sarp Yoga check: we detect the geometric pattern, and are upfront that it is a 20th-century Indian classification, not in the classical texts.",
       "status": 200,
       "title": "Kaal Sarp geometry check — honest, classical-source-checked — Shubh Bhagya"
     },
@@ -52,7 +52,7 @@
       "final_path": "/kundli",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic Janma Kundli — sidereal Lahiri chart with all 12 houses, Vimshottari Mahadasha timeline, Manglik dosh + Sade Sati checks, Nakshatra padas, and honest classical interpretation. No signup, no upsell. Bhagya reads the sky, not your wallet.",
+      "meta_description": "Free Vedic Janma Kundli — sidereal Lahiri chart, all 12 houses, Vimshottari Mahadasha timeline, Manglik + Sade Sati checks, Nakshatra padas. No signup.",
       "status": 200,
       "title": "Free Janma Kundli — Instant Vedic Birth Chart with Dasha, Manglik, Sade Sati"
     },
@@ -79,7 +79,7 @@
       "final_path": "/learn/the-9-grahas-overview/",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "A quick tour of the nine planets Vedic astrology uses — what each one governs, which weekday and direction it rules, its exaltation and debilitation signs, and its gemstone. The starting point before any deeper study.",
+      "meta_description": "A quick tour of the nine planets Vedic astrology uses — what each governs, its weekday and direction, exaltation and debilitation signs, and gemstone.",
       "status": 200,
       "title": "The 9 Grahas: Meet the Planets of Your Kundli"
     },
@@ -88,7 +88,7 @@
       "final_path": "/learn/vimshottari-dasha-explained/",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "The most-used timing system in Vedic astrology divides your life into nine chapters totalling 120 years — each ruled by one planet. Understanding your current mahadasha and antardasha is the single most useful timing skill in Jyotish.",
+      "meta_description": "Vimshottari divides life into nine chapters totalling 120 years, each ruled by one planet. Your mahadasha and antardasha are the key timing skill.",
       "status": 200,
       "title": "Vimshottari Dasha: Your 120-Year Life Map"
     },
@@ -115,7 +115,7 @@
       "final_path": "/muhurat",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "Free Muhurat Finder for Vivah (wedding), Griha Pravesh (house-warming), Namkaran (baby naming), Vidyarambh (education-start) and Business openings. Checks tithi, nakshatra, Panchak, Bhadra and the Nitya Yogas as B.V. Raman's Muhurtha gives them, and also applies widely followed conventions it labels as its own: Chaturmas, Kharmas, Dagdha, eclipse days, Choghadiya windows, Amrit Siddhi and Sarvartha Siddhi boosters. Bride+groom pair scoring for Vivah, first-letter Nakshatra table for Namkaran.",
+      "meta_description": "Free Muhurat Finder for Vivah, Griha Pravesh, Namkaran, Vidyarambh and Business. Tithi, nakshatra, Panchak, Bhadra, Nitya Yogas per B.V. Raman's Muhurtha.",
       "status": 200,
       "title": "Muhurat Finder — Vivah, Griha Pravesh, Namkaran Auspicious Dates"
     },
@@ -124,7 +124,7 @@
       "final_path": "/numerology",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "Free numerology calculator using the Chaldean system plus the Chinese Lo Shu grid. Life Path, Destiny/Expression, Soul Urge, Personality, Name Number, per-Life-Path profile, Personal Year, Karmic Debt (13/14/16/19), traditional per-number practices, and 2-person compatibility. Honest about tradition: these systems are 19th-20th century Western and ancient Chinese, not classical Vedic Jyotish. No signup.",
+      "meta_description": "Free numerology calculator using the Chaldean system plus the Chinese Lo Shu grid. Life Path, Destiny, Soul Urge. Not classical Vedic Jyotish.",
       "status": 200,
       "title": "Free Numerology Calculator — Chaldean and Lo Shu (with honest tradition note)"
     },
@@ -133,7 +133,7 @@
       "final_path": "/numerology/compatibility",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "Free numerology compatibility check — Life Path + Birthday + Destiny pair verdicts using the modern Chaldean framework (not classical Vedic Jyotish). General / marriage / business contexts.",
+      "meta_description": "Free numerology compatibility check — Life Path, Birthday and Destiny pair verdicts on the modern Chaldean framework (not classical Vedic Jyotish).",
       "status": 200,
       "title": "Numerology Compatibility — 2-Person Pairing Check"
     },
@@ -142,7 +142,7 @@
       "final_path": "/panchang",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "Today's Panchang for Mumbai, India — tithi (lunar day), nakshatra (moon's constellation), weekday lord, yoga, karana, sunrise/sunset, Rahu Kaal, Abhijit Muhurta, and full Choghadiya day-window breakdown. Classical Vedic sidereal Lahiri.",
+      "meta_description": "Today's Panchang for Mumbai, India — tithi, nakshatra, sunrise/sunset, Rahu Kaal, Abhijit Muhurta, Choghadiya. Classical Vedic sidereal Lahiri.",
       "status": 200,
       "title": "Today's Panchang — {DATE} · Tithi, Nakshatra, Rahu Kaal, Choghadiya"
     },
@@ -169,7 +169,7 @@
       "final_path": "/rashifal/aquarius",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -178,7 +178,7 @@
       "final_path": "/rashifal/aries",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -187,7 +187,7 @@
       "final_path": "/rashifal/cancer",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -196,7 +196,7 @@
       "final_path": "/rashifal/capricorn",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -205,7 +205,7 @@
       "final_path": "/rashifal/gemini",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -214,7 +214,7 @@
       "final_path": "/rashifal/leo",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -223,7 +223,7 @@
       "final_path": "/rashifal/libra",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -232,7 +232,7 @@
       "final_path": "/rashifal/pisces",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -241,7 +241,7 @@
       "final_path": "/rashifal/sagittarius",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -250,7 +250,7 @@
       "final_path": "/rashifal/scorpio",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -259,7 +259,7 @@
       "final_path": "/rashifal/taurus",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -268,7 +268,7 @@
       "final_path": "/rashifal/virgo",
       "hreflang_count": 3,
       "html_lang": "en",
-      "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
+      "meta_description": "Free instant Vedic astrology — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, Kundali matching. No signup.",
       "status": 503,
       "title": "High demand right now — Shubh Bhagya"
     },
@@ -286,7 +286,7 @@
       "final_path": "/terms",
       "hreflang_count": 0,
       "html_lang": "en",
-      "meta_description": "Terms for using Shubh Bhagya — free Vedic astrology tool. Honest astrology-as-guidance disclaimer, AI-generated content disclaimer, and your responsibilities as a user.",
+      "meta_description": "Terms for using Shubh Bhagya — free Vedic astrology tool. Astrology-as-guidance disclaimer, AI-generated content disclaimer, and your responsibilities.",
       "status": 200,
       "title": "Terms of Service — Shubh Bhagya"
     }

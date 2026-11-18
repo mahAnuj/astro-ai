@@ -253,7 +253,7 @@ _EN: Final[dict[str, str]] = {
     # url) and ignores what it does not use, so the two tables can phrase the
     # same fact in a different order without the call site changing.
     "rashifal_single_title":    "{rashi_en} / {rashi_sa} Rashifal — {date} · Daily Vedic Horoscope",
-    "rashifal_single_meta":     "{rashi_en} ({rashi_sa}) daily Rashifal for {date} — a substantive Vedic Moon-sign reading anchored on today's actual sky (weekday-lord, tithi, moon nakshatra). Free, sidereal Lahiri.",
+    "rashifal_single_meta":     "{rashi_en} ({rashi_sa}) daily Rashifal for {date} — Vedic Moon-sign reading from today's sky (weekday lord, tithi, nakshatra). Free, sidereal Lahiri.",
     "rashifal_single_headline": "{rashi_en} Rashifal — {date}",
     "rashifal_single_ld_desc":  "{rashi_en} ({rashi_sa}) daily Vedic horoscope for {date} — sidereal Lahiri.",
     "rashifal_single_alt":      "{rashi_en} ({rashi_sa}) zodiac silhouette",
@@ -844,7 +844,7 @@ _HI: Final[dict[str, str]] = {
     # (no Devanagari form of Choghadiya existed anywhere in the repo), and the
     # three labels in rashifal_single_attrs.
     "rashifal_single_title":    "{rashi_hi} राशिफल आज — {date} · दैनिक वैदिक भविष्यफल",
-    "rashifal_single_meta":     "{rashi_hi} ({rashi_en}) राशि का आज का राशिफल, {date} — आज की वास्तविक ग्रह स्थिति पर आधारित विस्तृत वैदिक भविष्यफल: वार का स्वामी, तिथि और चंद्र नक्षत्र। पूरी तरह मुफ्त।",
+    "rashifal_single_meta":     "{rashi_hi} ({rashi_en}) राशि का आज का राशिफल, {date} — आज की ग्रह स्थिति पर आधारित वैदिक भविष्यफल: वार का स्वामी, तिथि और चंद्र नक्षत्र। पूरी तरह मुफ्त।",
     "rashifal_single_headline": "{rashi_hi} राशिफल — {date}",
     "rashifal_single_ld_desc":  "{rashi_hi} ({rashi_en}) राशि का आज का वैदिक राशिफल — {date}।",
     "rashifal_single_alt":      "{rashi_hi} ({rashi_en}) राशि का चिह्न",

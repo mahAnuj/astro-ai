@@ -9,6 +9,8 @@ Hermetic: reads the registry and the rendered pages only, no network, no LLM.
 """
 from __future__ import annotations
 
+import dataclasses
+import datetime
 import html
 import importlib.util
 import re
@@ -39,8 +41,8 @@ SHORTENED = (
 )
 
 
-def _art(desc="", title="", slug="x"):
-    return SimpleNamespace(slug=slug, seo_description=desc, seo_title=title)
+def _art(desc="", title="", slug="x", summary=""):
+    return SimpleNamespace(slug=slug, seo_description=desc, seo_title=title, summary=summary)
 
 
 def test_no_registered_description_exceeds_160_decoded_characters():
@@ -88,7 +90,13 @@ def test_floor_boundary_is_50_inclusive_and_a_stub_fails():
 
 def test_an_unset_description_is_not_measured():
     # Empty falls back to `summary` by design; the floor is for a description that is set.
+    # (#1178: "not measured" now means "not held to the floor" -- the summary fallback IS
+    # measured against the ceiling, see test_an_over_length_summary_fallback_is_a_failure.)
     assert gate.check([_art("")])[0] == []
+
+
+def test_an_unset_description_with_a_short_summary_passes():
+    assert gate.check([_art("", summary="short")])[0] == []
 
 
 def test_a_long_title_is_reported_but_never_fails():
@@ -103,3 +111,137 @@ def test_the_shortened_description_reaches_the_rendered_meta_tag(client, slug):
     assert r.status_code == 200
     desc = re.search(r'<meta name="description" content="(.*?)">', r.text, re.S).group(1)
     assert html.unescape(desc) == html.unescape(art.seo_description)
+
+
+# --- #1178: the EFFECTIVE description, not only a set `seo_description` --------------------
+
+
+def test_every_article_effective_description_is_inside_the_ceiling():
+    over = {a.slug: len(html.unescape(a.seo_description or a.summary)) for a in ARTICLES
+            if len(html.unescape(a.seo_description or a.summary)) > 160}
+    assert not over, f"effective meta description over 160 decoded characters: {over}"
+
+
+def test_an_over_length_summary_fallback_is_a_failure():
+    # The pre-#1178 gate passed this: seo_description empty, so it measured nothing, while the
+    # page rendered a 210-330 character summary as its meta description.
+    failures, _ = gate.check([_art("", slug="fallback", summary="s" * 161)])
+    assert len(failures) == 1 and "fallback" in failures[0] and "161" in failures[0]
+    assert "summary" in failures[0]
+    # ... and the fallback is measured DECODED, like everything else here.
+    assert gate.check([_art("", summary="&mdash;" * 40 + "s" * 110)])[0] == []
+
+
+def test_a_set_description_decides_the_effective_value_not_the_summary():
+    # The summary feeds cards and may be long; it is only the meta description when nothing else is.
+    assert gate.check([_art("d" * 100, summary="s" * 300)])[0] == []
+
+
+def test_the_gate_measures_the_real_summary_fallback():
+    # Real registry shape: blank one description and the long summary behind it must trip the gate.
+    victim = next(a for a in ARTICLES if len(a.summary) > 160)
+    blanked = dataclasses.replace(victim, seo_description="")
+    failures, _ = gate.check([blanked])
+    assert failures and victim.slug in failures[0]
+
+
+def test_an_over_length_template_description_fails_the_rendered_check(monkeypatch):
+    # Render through the real app, with one EVENT_LANDING `seo_desc` pushed over the ceiling.
+    from astro_ai import muhurat
+
+    monkeypatch.setitem(muhurat.EVENT_LANDING["vivah"], "seo_desc", "w" * 200)
+    rendered, problems = gate.render_sitemap_pages()
+    assert problems == []
+    failures = gate.check_pages(rendered)
+    assert len(failures) == 1 and "/muhurat/vivah" in failures[0] and "200" in failures[0], failures
+
+
+def test_check_pages_ceiling_floor_and_decoding():
+    ok = [("/a", 200, "x" * 160), ("/b", 200, "x" * 50), ("/c", 200, "&mdash;" * 40 + "x" * 110)]
+    assert gate.check_pages(ok) == []
+    assert len(gate.check_pages([("/a", 200, "x" * 161)])) == 1
+    stub = gate.check_pages([("/a", 200, "x" * 49)])
+    assert len(stub) == 1 and "floor" in stub[0]
+
+
+def test_a_page_that_is_not_200_or_has_no_description_fails():
+    # An unreadable page is not a short one: skipping it is the vacuous pass #193 names.
+    bad = gate.check_pages([("/down", 503, None), ("/redirect", 307, None), ("/bare", 200, None)])
+    assert len(bad) == 3
+    assert "503" in bad[0] and "307" in bad[1] and "no <meta" in bad[2]
+
+
+def test_a_crawl_that_measures_zero_pages_fails(monkeypatch, capsys):
+    monkeypatch.setattr(gate, "render_sitemap_pages", lambda: ([], []))
+    assert gate.main() == 1
+    assert "zero pages" in capsys.readouterr().out
+
+
+def test_a_crawl_problem_fails_the_gate(monkeypatch, capsys):
+    monkeypatch.setattr(gate, "render_sitemap_pages",
+                        lambda: ([("/x", 200, "d" * 100)], ["/sitemap.xml returned HTTP 500"]))
+    assert gate.main() == 1
+    assert "/sitemap.xml returned HTTP 500" in capsys.readouterr().out
+
+
+def test_the_crawl_renders_one_future_dated_panchang_and_no_llm_page():
+    today = datetime.date(2026, 11, 18)
+    locs = ["/", "/rashifal", "/rashifal/aries", "/hi/rashifal/aries", "/hi/rashifal",
+            "/panchang", "/panchang/2026-11-17", "/panchang/2026-11-18",
+            "/panchang/2026-11-19", "/panchang/2026-11-20", "/learn/ketu-remedies/"]
+    got = gate.sitemap_targets(locs, today)
+    assert "/rashifal/aries" not in got and "/hi/rashifal/aries" not in got
+    assert "/rashifal" in got and "/hi/rashifal" in got
+    assert [t for t in got if t.startswith("/panchang/")] == ["/panchang/2026-11-19"]
+    assert "/panchang" in got and "/learn/ketu-remedies/" in got
+
+
+def test_the_real_crawl_measures_both_panchang_shapes_and_the_hindi_twins():
+    rendered, problems = gate.render_sitemap_pages()
+    assert problems == []
+    urls = {u for u, _, _ in rendered}
+    assert "/panchang" in urls and any(u.startswith("/panchang/") for u in urls)
+    assert any(u.startswith("/hi/") for u in urls)
+    assert len(rendered) > 50
+    assert gate.check_pages(rendered) == []
+
+
+def test_an_over_length_rashifal_meta_key_fails_the_gate(monkeypatch, capsys):
+    assert gate.check_rashifal_meta(gate.rashifal_meta_lengths()) == []
+    from astro_ai import i18n
+
+    monkeypatch.setitem(i18n._EN, "rashifal_single_meta", "{rashi_en} " + "w" * 200)
+    failures = gate.check_rashifal_meta(gate.rashifal_meta_lengths())
+    assert len(failures) == 1 and "[en]" in failures[0]
+    # ... and it is main(), the thing CI runs, that goes red -- not only the helper.
+    monkeypatch.setattr(gate, "render_sitemap_pages", lambda: ([("/x", 200, "d" * 100)], []))
+    assert gate.main() == 1
+    assert "rashifal_single_meta [en]" in capsys.readouterr().out
+    monkeypatch.setitem(i18n._HI, "rashifal_single_meta", "{rashi_hi} " + "व" * 200)
+    assert len(gate.check_rashifal_meta(gate.rashifal_meta_lengths())) == 2
+
+
+def test_a_missing_rashifal_meta_key_is_a_failure_not_a_short_pass(monkeypatch):
+    from astro_ai import i18n
+
+    monkeypatch.delitem(i18n._EN, "rashifal_single_meta")
+    monkeypatch.delitem(i18n._HI, "rashifal_single_meta")
+    assert len(gate.check_rashifal_meta(gate.rashifal_meta_lengths())) == 2
+
+
+def test_the_base_html_default_is_inside_the_band_and_the_gate_reads_it():
+    # No sitemap page falls through to the default, so a crawl never measures it; error pages and
+    # the /rashifal/<rashi> fallback still serve it (#1178, QA finding on PR #1202).
+    value = gate.base_default_description()
+    assert value is not None and gate.check_base_default(value) == []
+    assert 50 <= len(html.unescape(value)) <= 160
+
+
+def test_an_over_length_or_missing_base_default_fails_the_gate(monkeypatch, capsys):
+    assert len(gate.check_base_default("w" * 161)) == 1
+    assert len(gate.check_base_default("w" * 49)) == 1
+    assert len(gate.check_base_default(None)) == 1
+    monkeypatch.setattr(gate, "render_sitemap_pages", lambda: ([("/x", 200, "d" * 100)], []))
+    monkeypatch.setattr(gate, "base_default_description", lambda: "w" * 200)
+    assert gate.main() == 1
+    assert "base.html default meta_description is 200" in capsys.readouterr().out
