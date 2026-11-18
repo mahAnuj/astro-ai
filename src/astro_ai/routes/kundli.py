@@ -29,7 +29,7 @@ from datetime import date
 from fastapi import APIRouter, Form, Request, Response
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
-from astro_ai import cache, email_sender, events, notify, probe, snapshots, users
+from astro_ai import cache, email_sender, events, notify, probe, snapshots, storage, users
 from astro_ai.identity import identity_key, short_key
 from astro_ai.profiling import coarse_profile
 from astro_ai import providers as llm_providers
@@ -63,6 +63,7 @@ from astro_ai.routes.deps import (
 )
 from astro_ai.routes.llm_support import _cached, _fire_error_alert
 from astro_ai.session import (
+    SUPPORTED_LANGS,
     clear_event_flag,
     event_flag_present,
     load_collection,
@@ -101,6 +102,29 @@ def _natal_cache_keys(details: BirthDetails, *, lang: str) -> tuple[str, str]:
         f"natal:{chart_fp}:n={name_fp}:{lang}:{prompt_fp}",
         f"llm/natal/{lang}/{prompt_fp}/{chart_fp}.{name_fp}.txt",
     )
+
+
+def natal_blob_keys(details: BirthDetails) -> list[str]:
+    """Every durable natal blob path this chart can have been written under for
+    the CURRENT prompt: one per supported language (#1105).
+
+    Derived from `_natal_cache_keys`, never restated, so erasure cannot drift from
+    the key the render path writes. Blobs under an older prompt token are not
+    reachable: the token is part of the path and `storage.py` cannot list.
+    """
+    return [_natal_cache_keys(details, lang=lang)[1] for lang in sorted(SUPPORTED_LANGS)]
+
+
+def erase_natal_blobs(charts) -> bool:
+    """Delete the natal reading blobs for `charts` (SavedChart-like). True only if
+    every delete confirmed -- an absent blob counts, a failure does not (#1105).
+
+    Keeps going after a failure so one bad key does not shield the others. Logs no
+    key: it embeds hashes of birth data and the seeker's name.
+    """
+    keys = {k for c in charts for k in natal_blob_keys(c.to_birth_details())}
+    results = [storage.delete(k) for k in sorted(keys)]
+    return all(results)
 
 
 @router.post("/reading")

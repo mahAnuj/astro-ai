@@ -1,13 +1,17 @@
 """#1105 -- no code path used to delete personal data; these do.
 
 Covers `storage.delete`, `users.delete_user`, `users.delete_readings_for_chart`,
-`POST /account/delete` and the reading cleanup in `POST /delete-chart`.
+`POST /account/delete`, the reading cleanup in `POST /delete-chart`, and the
+durable natal blobs (`llm/natal/...`) both of them erase.
 
 The fake below stands in for GCS at the `storage.get_json` / `storage.update_json`
 seam, which is where users.py and subscribers.py read and write. It keeps the real
 contract that matters here: `update_json` returns None when storage is down (callers
 must treat that as "not deleted"), and it persists exactly what the mutator returns, so
-a mutator returning None writes `null` over the whole file.
+a mutator returning None writes `null` over the whole file. `storage.delete` is
+faked too: it returns False for a key in `fake.blob_down` and True otherwise
+(including for an absent key, like the real one), and removes the key from
+`fake.natal` so a test can see what survived.
 
 Mutation rows: scripts/mutations/account_deletion.py.
 """
@@ -21,6 +25,8 @@ from fastapi.testclient import TestClient
 
 from astro_ai import session as S
 from astro_ai import storage, subscribers, users
+from astro_ai.llm import BirthDetails
+from astro_ai.routes.kundli import _natal_cache_keys, natal_blob_keys
 
 ALICE = {"sub": "sub-alice", "email": "alice@example.test", "name": "Alice"}
 BOB = {"sub": "sub-bob", "email": "bob@example.test", "name": "Bob"}
@@ -28,6 +34,18 @@ CHART_A = dict(id="aaaa1111", name="Alice", birth_date="1990-04-12",
                birth_time="14:35", birth_place="Mumbai, India")
 CHART_A2 = dict(id="aaaa2222", name="Alice2", birth_date="1991-05-13",
                 birth_time="08:10", birth_place="Pune, India")
+# Same birth data as CHART_A under another name: a different seeker's reading,
+# which lives in its own blob and must survive Alice's deletion.
+CHART_NAMESAKE = dict(CHART_A, id="cccc3333", name="Someone Else")
+
+
+def _details(chart):
+    return BirthDetails(name=chart["name"], birth_date=chart["birth_date"],
+                        birth_time=chart["birth_time"], birth_place=chart["birth_place"])
+
+
+def _blob_keys(chart):
+    return [_natal_cache_keys(_details(chart), lang=lang)[1] for lang in ("en", "hi")]
 
 
 def _reading(rid, chart_id):
@@ -51,6 +69,15 @@ def fake_store(monkeypatch):
             {"email": ALICE["email"]}, {"email": BOB["email"]}]},
     }
     down: set[str] = set()
+    blob_down: set[str] = set()
+    natal = {k: "reading" for c in (CHART_A, CHART_A2, CHART_NAMESAKE)
+             for k in _blob_keys(c)}
+
+    def delete(key):
+        if key in blob_down:
+            return False
+        natal.pop(key, None)
+        return True
 
     def get_json(key):
         return copy.deepcopy(blobs.get(key))
@@ -67,7 +94,9 @@ def fake_store(monkeypatch):
 
     monkeypatch.setattr(storage, "get_json", get_json)
     monkeypatch.setattr(storage, "update_json", update_json)
-    return type("Fake", (), {"blobs": blobs, "down": down})
+    monkeypatch.setattr(storage, "delete", delete)
+    return type("Fake", (), {"blobs": blobs, "down": down, "natal": natal,
+                             "blob_down": blob_down})
 
 
 def _cookie(user=ALICE, charts=(CHART_A, CHART_A2)):
@@ -173,6 +202,56 @@ def test_account_delete_subscriber_failure_is_503(signed_in, fake_store):
     assert _subs_of(fake_store) == [BOB["sub"]], "the record half already succeeded"
 
 
+def test_account_delete_erases_each_charts_natal_blobs_for_both_languages(signed_in, fake_store):
+    assert len(fake_store.natal) == 6
+    resp = signed_in.post("/account/delete", data={"confirm": "DELETE"},
+                          follow_redirects=False)
+    assert resp.status_code == 303
+    assert sorted(fake_store.natal) == sorted(_blob_keys(CHART_NAMESAKE)), \
+        "Alice's four blobs (2 charts x en/hi) go; a different name's blob stays"
+
+
+def test_account_delete_blob_failure_is_503_keeps_session_and_the_record(signed_in, fake_store):
+    stuck = _blob_keys(CHART_A2)[1]
+    fake_store.blob_down.add(stuck)
+    resp = signed_in.post("/account/delete", data={"confirm": "DELETE"},
+                          follow_redirects=False)
+    assert resp.status_code == 503 and "try again" in resp.text
+    assert not [h for h in resp.headers.get_list("set-cookie")
+                if h.startswith(S.COOKIE_NAME + "=")], "session must survive a failed delete"
+    # The record is the only cross-device chart list, so it stays for the retry;
+    # the subscription is not held hostage to the blob outage.
+    assert ALICE["sub"] in _subs_of(fake_store)
+    assert _subs(fake_store) == [BOB["email"]]
+    assert stuck in fake_store.natal
+    assert not set(_blob_keys(CHART_A)) & set(fake_store.natal), "the others still went"
+    # Retry converges once storage is back, keys recomputed from the kept charts.
+    fake_store.blob_down.clear()
+    retry = signed_in.post("/account/delete", data={"confirm": "DELETE"},
+                           follow_redirects=False)
+    assert retry.status_code == 303
+    assert _subs_of(fake_store) == [BOB["sub"]]
+    assert sorted(fake_store.natal) == sorted(_blob_keys(CHART_NAMESAKE))
+
+
+def test_account_delete_retry_finds_the_blobs_from_the_record_alone(client, fake_store):
+    """A fresh device has no charts in its cookie; the record must supply them."""
+    client.cookies.set(S.COOKIE_NAME, _cookie(charts=()))
+    resp = client.post("/account/delete", data={"confirm": "DELETE"},
+                       follow_redirects=False)
+    assert resp.status_code == 303
+    assert sorted(fake_store.natal) == sorted(_blob_keys(CHART_NAMESAKE))
+
+
+def test_natal_erasure_keys_are_the_keys_the_render_path_writes():
+    """Drift guard: erasure must be derived from `_natal_cache_keys`, the one
+    builder both /kundli and the snapshot path write their blob with."""
+    details = _details(CHART_A)
+    written = {_natal_cache_keys(details, lang=lang)[1] for lang in ("en", "hi")}
+    assert set(natal_blob_keys(details)) == written and len(written) == 2
+    assert all(k.startswith("llm/natal/") for k in written)
+
+
 def test_account_page_offers_the_delete_form(signed_in, fake_store):
     html = signed_in.get("/account").text
     assert 'action="/account/delete"' in html and 'name="confirm"' in html
@@ -209,6 +288,33 @@ def test_delete_chart_removes_that_charts_readings_only(signed_in, fake_store):
     assert resp.status_code == 303 and resp.headers["location"] == "/"
     assert [r.id for r in users.list_readings(ALICE["sub"])] == ["r2"]
     assert [r.id for r in users.list_readings(BOB["sub"])] == ["rb"]
+
+
+def test_delete_chart_removes_only_that_charts_natal_blobs(signed_in, fake_store):
+    resp = signed_in.post("/delete-chart", data={"chart_id": CHART_A["id"]},
+                          follow_redirects=False)
+    assert resp.status_code == 303
+    assert set(fake_store.natal) == set(_blob_keys(CHART_A2)) | set(_blob_keys(CHART_NAMESAKE))
+
+
+def test_delete_chart_still_redirects_when_the_blob_delete_fails(signed_in, fake_store):
+    fake_store.blob_down.update(_blob_keys(CHART_A))
+    resp = signed_in.post("/delete-chart", data={"chart_id": CHART_A["id"]},
+                          follow_redirects=False)
+    assert resp.status_code == 303 and resp.headers["location"] == "/"
+    assert [r.id for r in users.list_readings(ALICE["sub"])] == ["r2"], \
+        "the readings cleanup still ran"
+
+
+def test_delete_chart_still_redirects_when_the_blob_delete_raises(signed_in, fake_store,
+                                                                  monkeypatch):
+    def boom(key):
+        raise RuntimeError("storage exploded")
+
+    monkeypatch.setattr(storage, "delete", boom)
+    resp = signed_in.post("/delete-chart", data={"chart_id": CHART_A["id"]},
+                          follow_redirects=False)
+    assert resp.status_code == 303 and resp.headers["location"] == "/"
 
 
 def test_delete_chart_still_redirects_when_reading_cleanup_raises(signed_in, fake_store,

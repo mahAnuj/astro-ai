@@ -25,6 +25,7 @@ from starlette.concurrency import run_in_threadpool
 from astro_ai import notify, revocation, subscribers, users
 from astro_ai.origin_guard import same_origin_or_403
 from astro_ai.routes.deps import _lang, _safe_redirect_target, templates
+from astro_ai.routes.kundli import erase_natal_blobs
 from astro_ai.routes.llm_support import _fire_error_alert
 from astro_ai.session import (
     ChartCollection,
@@ -227,11 +228,12 @@ async def account_delete(
     request: Request,
     confirm: str = Form(default=""),
 ) -> Response:
-    """Erase the signed-in user's record, readings and newsletter subscription.
+    """Erase the signed-in user's record, readings, cached natal readings and
+    newsletter subscription.
 
-    The session cookie is cleared ONLY when both stores confirmed: clearing it
+    The session cookie is cleared ONLY when every store confirmed: clearing it
     after a partial failure would sign the user out of the one place that can
-    retry, leaving data behind with no way to ask again. Both steps are
+    retry, leaving data behind with no way to ask again. Every step is
     idempotent, so a retry is safe. Nothing here logs the email or name.
     """
     user = load_user(request)
@@ -242,9 +244,16 @@ async def account_delete(
             "Type DELETE in the box to confirm. Nothing was deleted.",
             status_code=400,
         )
-    # Run both even if the first fails, so one outage does not leave the
-    # newsletter subscription behind for a retry that may never come.
-    removed_user = users.delete_user(user.sub)
+    # Natal blobs FIRST, while the chart list that derives their keys still
+    # exists. If they fail the user record is KEPT: it is the only cross-device
+    # list of charts, so removing it would leave a retry unable to recompute the
+    # keys. The cookie's charts are included too -- sign-in sync can fail, so
+    # this device may hold a chart the record never got. The newsletter
+    # subscription is removed regardless, so one outage does not leave it behind
+    # for a retry that may never come.
+    charts = [*load_collection(request).charts, *users.load_charts(user.sub).charts]
+    removed_blobs = erase_natal_blobs(charts)
+    removed_user = removed_blobs and users.delete_user(user.sub)  # False => 503 below
     removed_sub, _msg = subscribers.unsubscribe(user.email)
     if not (removed_user and removed_sub):
         return HTMLResponse(
