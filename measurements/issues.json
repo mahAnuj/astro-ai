@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-18T18:09:55Z",
+  "generated_at": "2026-11-18T20:30:34Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 120,
+  "open": 121,
   "with_ask": 44,
   "by_area": {
     "UNCLASSIFIED": 41,
@@ -10,7 +10,7 @@
     "REDESIGN": 10,
     "OPS": 8,
     "FEATURE": 7,
-    "ANALYTICS": 5,
+    "ANALYTICS": 6,
     "SEO": 4,
     "CORPUS": 4,
     "RETRIEVAL": 3,
@@ -31,20 +31,36 @@
   },
   "by_type": {
     "untyped": 36,
-    "enhancement": 30,
+    "enhancement": 31,
     "bug": 22,
     "chore": 18,
     "correctness": 10,
     "design": 4
   },
   "by_priority": {
-    "unset": 82,
+    "unset": 83,
     "medium": 22,
     "high": 15,
     "low": 1
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1226,
+      "title": "analytics: tool_submitted event and fetch_ga4.py --journeys (#1070 slice 2)",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-18T19:20:04Z",
+      "updated": "2026-11-18T19:20:12Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1221,
       "title": "[INFRA] main-red-report never fires for the dispatched pr-gates runs agent-merge starts, so a green main does not close its sentinel and a red one would not report (#1216 open 5h after green)",
@@ -311,7 +327,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-18T11:27:29Z",
+      "updated": "2026-11-18T19:20:14Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1942,9 +1958,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-18T18:09:55Z",
+    "generated_at": "2026-11-18T20:30:34Z",
     "window_days": 28,
-    "open_now": 120,
+    "open_now": 121,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2347,12 +2363,12 @@
       },
       {
         "date": "2026-11-18",
-        "opened": 8,
+        "opened": 9,
         "closed": 17,
-        "net": -9,
-        "open_end": 120,
+        "net": -8,
+        "open_end": 121,
         "opened_by": {
-          "loop": 7,
+          "loop": 8,
           "ops": 1
         },
         "closed_by": {
@@ -3580,7 +3596,7 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 0,
     "truncated": []
   }
 }

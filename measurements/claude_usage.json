@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-18T18:11:06Z",
+ "generated_at": "2026-11-18T20:31:43Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 44345533184,
-  "at": "2026-11-18T16:17:39Z",
-  "five_hour": 0.11,
-  "seven_day": 0.72,
+  "run": 44378576254,
+  "at": "2026-11-18T19:15:28Z",
+  "five_hour": 0.15,
+  "seven_day": 0.74,
   "status": "allowed",
   "resets": {
    "five_hour": 1795036800,
    "seven_day": 1795154400
   }
  },
- "peak_seven_day": 0.72,
+ "peak_seven_day": 0.74,
  "rejected_runs": [],
  "readings": [
   {
@@ -66,32 +66,8 @@
   },
   {
    "workflow": "agent-work",
-   "run": 44293904656,
-   "at": "2026-11-18T11:21:09Z",
-   "five_hour": 0.03,
-   "seven_day": 0.71,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1795018800,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 44304393801,
-   "at": "2026-11-18T12:29:23Z",
-   "five_hour": 0.04,
-   "seven_day": 0.71,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1795018800,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 44343896958,
-   "at": "2026-11-18T16:09:25Z",
+   "run": 44345533184,
+   "at": "2026-11-18T16:17:39Z",
    "five_hour": 0.11,
    "seven_day": 0.72,
    "status": "allowed",
@@ -102,10 +78,34 @@
   },
   {
    "workflow": "agent-work",
-   "run": 44345533184,
-   "at": "2026-11-18T16:17:39Z",
-   "five_hour": 0.11,
-   "seven_day": 0.72,
+   "run": 44366995363,
+   "at": "2026-11-18T18:11:40Z",
+   "five_hour": 0.09,
+   "seven_day": 0.73,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1795036800,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 44373922917,
+   "at": "2026-11-18T18:49:46Z",
+   "five_hour": 0.12,
+   "seven_day": 0.74,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1795036800,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 44378576254,
+   "at": "2026-11-18T19:15:28Z",
+   "five_hour": 0.15,
+   "seven_day": 0.74,
    "status": "allowed",
    "resets": {
     "five_hour": 1795036800,
