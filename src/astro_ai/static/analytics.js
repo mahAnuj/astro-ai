@@ -28,6 +28,9 @@
  *                                    to a tool; links in nav/header/footer never
  *                                    count (fired by the delegated listener
  *                                    below, not by templates — see TOOL_ROOTS)
+ *   .toolSubmitted({tool})         — a visitor submitted a tool form (#1226); fired
+ *                                    by the delegated submit listener below from
+ *                                    `form[data-tool]`, never by a template
  *
  * Add a new event by adding a method here — keep templates dumb.
  *
@@ -215,6 +218,38 @@
     } catch (err) { /* analytics must never break a click */ }
   });
 
+  // ── tool_submitted: a visitor submitted a tool's form (#1226, #1070 row 1) ──
+  // The denominator for slice 1's completion events (matching_completed,
+  // numerology_completed, muhurat_searched, dosha_check_completed): "completed /
+  // submitted" per tool. GA4's enhanced-measurement `form_submit` cannot stand in
+  // for it -- body is hx-boost, so submits are AJAX and it counted 1 in 28 days.
+  //
+  // ONE delegated listener on `document`, not a handler bound to each form: a
+  // boosted page swap replaces <body>'s children but never `document`, so this
+  // keeps working on every page a visitor reaches without a reload, exactly as
+  // the cta_click listener above does. `submit` bubbles, and the browser raises
+  // it only for a form that passed validation, so an incomplete form is not
+  // counted as a submission.
+  //
+  // The tool comes from the form's own `data-tool` attribute, a fixed vocabulary
+  // that templates set in markup; nothing the visitor typed is read. A missing or
+  // unknown value sends nothing (TOOL_NAMES is the whole list). The only param is
+  // `tool`. tests/test_analytics_tool_submitted.py pins every value here against
+  // the templates that carry it. Never preventDefault/stopPropagation: observe.
+  var TOOL_NAMES = ['kundli', 'matching', 'numerology', 'numerology_compat',
+                    'muhurat', 'manglik', 'sade_sati', 'kaal_sarp', 'ask'];
+
+  document.addEventListener('submit', function (e) {
+    try {
+      var el = e.target;
+      if (el && !el.closest && el.parentElement) el = el.parentElement;  // text node
+      if (!el || !el.closest) return;
+      var form = el.closest('form[data-tool]');
+      if (!form) return;
+      window.Analytics.toolSubmitted({ tool: form.getAttribute('data-tool') });
+    } catch (err) { /* analytics must never break a submit */ }
+  });
+
   // ── Declared events: <div hidden data-analytics-event=... data-analytics-params=...> ──
   // Templates cannot call `Analytics.*` inline (this file is deferred, so the call
   // runs first and throws), so a template declares an event as inert markup and
@@ -307,6 +342,15 @@
         to_path: p.to_path,
         transport_type: 'beacon'
       });
+    },
+
+    // Params are rebuilt from the one named field, and only a value in
+    // TOOL_NAMES is sent, so neither a stray attribute nor a caller can put
+    // anything else on the wire.
+    toolSubmitted: function (p) {
+      var tool = p && p.tool;
+      if (TOOL_NAMES.indexOf(tool) === -1) return;
+      track('tool_submitted', { tool: tool });
     },
 
     // Manual pageview helper. GA4's auto-config sends the initial pageview;

@@ -186,7 +186,7 @@
         <div class="mt-6 pt-5 border-t border-bhagya-line-2">
           <h3 class="font-marcellus text-lg text-bhagya-ink mb-1">+ Save another chart</h3>
           <p class="text-sm text-bhagya-muted mb-3">Add a family member, partner, or friend &mdash; up to 10 total.</p>
-          <form method="post" action="/reading" class="space-y-2.5">
+          <form method="post" action="/reading" data-tool="kundli" class="space-y-2.5">
             <input type="text" name="name" placeholder="Name (optional)"
                    class="w-full px-3 py-2 border border-bhagya-border rounded-lg text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <input type="date" name="birth_date" required
@@ -218,7 +218,7 @@
          that everything else uses borders, not shadows, so this card reads as
          the single elevated thing on the page. Do not copy the shadow onto
          another card "for consistency" — the inconsistency is the point. #}
-      <form method="post" action="/reading" id="kundli-form"
+      <form method="post" action="/reading" id="kundli-form" data-tool="kundli"
             class="bg-bhagya-cream rounded-md p-5 sm:p-8 scroll-mt-20
                    shadow-[0_30px_60px_-20px_rgba(0,0,0,0.55)]">
         <h2 class="font-marcellus text-xl sm:text-[26px] text-bhagya-ink mb-1">Start with your birth details</h2>

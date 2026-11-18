@@ -1065,7 +1065,7 @@ Dated, with the evidence. **Check here before proposing a change.**
   `analytics_event('dasha_deep_dive_viewed', …)` in `dasha_deep_dive.html` are allowed as a planet name, one of nine, at the grain of the rashi
   triple Telegram already carries; that is a judgement `privacy.html` does not spell out. The completion
   markers of #1217 (`matching_completed`, `numerology_completed`, `muhurat_searched`, `dosha_check_completed`)
-  pass only enums and integers; `docs/decisions/2026-11-18-1217-tool-completion-events-need-no-flag.md`. The
+  pass only enums and integers; `docs/decisions/2026-11-18-1217-tool-completion-events-need-no-flag.md`. `tool_submitted` (#1226) is sent by one delegated `submit` listener in `analytics.js` from `form[data-tool]` and carries only `tool`, a nine-value enum read from a template attribute, never a field the visitor typed. The
   subscriber's city reaches Telegram as `source=` by design and carries no sentinel in the sweep.
   Email in operational logs is pinned as allowed, not endorsed.
 

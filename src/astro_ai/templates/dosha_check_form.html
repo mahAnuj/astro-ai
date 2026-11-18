@@ -34,7 +34,11 @@
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
     {% endif %}
 
-    <form method="post" action="{{ form_action }}" class="space-y-4">
+    {# #1226: the analytics `tool` value, derived from form_action like _guides below.
+       An unrecognised action emits no attribute, so analytics.js sends nothing. #}
+    {% set _tool = {'/manglik-check': 'manglik', '/sade-sati-check': 'sade_sati',
+                    '/kaal-sarp-check': 'kaal_sarp'}.get(form_action) %}
+    <form method="post" action="{{ form_action }}"{% if _tool %} data-tool="{{ _tool }}"{% endif %} class="space-y-4">
       <div>
         <label for="name" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Your name (optional)</label>
         <input type="text" name="name" id="name" value="{{ prefill.name if prefill else '' }}"
