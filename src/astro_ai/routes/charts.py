@@ -23,6 +23,7 @@ from fastapi.responses import RedirectResponse
 
 from astro_ai import users
 from astro_ai.routes.deps import _safe_redirect_target, _save_collection_synced
+from astro_ai.routes.kundli import erase_natal_blobs
 from astro_ai.session import clear_collection, load_collection, load_user
 
 log = logging.getLogger(__name__)
@@ -50,8 +51,17 @@ async def delete_chart(
     chart_id: str = Form(...),
 ) -> RedirectResponse:
     """Remove a saved chart; if it was active, activate whatever remains first."""
-    collection = load_collection(request).remove(chart_id)
+    before = load_collection(request)
+    collection = before.remove(chart_id)
     response = RedirectResponse("/", status_code=303)
+    # The cached natal reading addresses the seeker by name and never expires
+    # (#1105). Best-effort like the readings below. A twin chart (same name and
+    # birth data) shares the blob; deleting a cache blob is harmless, the next
+    # view regenerates it.
+    try:
+        erase_natal_blobs([c for c in before.charts if c.id == chart_id])
+    except Exception:
+        log.warning("delete-chart: could not remove the cached natal reading")
     # A reading is personal data about that chart's birth details; removing
     # the chart must not leave its readings behind in users.json (#1105).
     # Best-effort: the redirect and cookie handling below never depend on it.
