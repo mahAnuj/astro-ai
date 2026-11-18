@@ -4,7 +4,7 @@
 - **PR / issue:** #1065 (`partial/`, refs and does not close). The collector, the `/admin/ops`
   panel, their tests and their mutation rows. Not built here: the `agent-measure.yml` step that
   runs the collector and writes `measurements/index-status.json` (closed-list item 1, a session
-  authors it). Until that step exists the panel shows "no usable file", which is the honest state.
+  authors it). Until that step exists the panel shows "No usable measurements/index-status.json (not collected yet)", which is the honest state.
 
 ## Why, measured
 
@@ -52,7 +52,7 @@ Decisions in it, each of which has a test and a mutation row
   copies only `src/`, so `raw.githubusercontent.com` serves it; no Dockerfile change, no GCS
   write). It lists `request_indexing` in the file's order, capped at `INDEX_LIST_MAX` = 10, so the
   panel and the file cannot disagree about which page is first. It never raises: a missing or
-  malformed file renders "no usable file" rather than a 500 on the control room. Every string came
+  malformed file renders "No usable measurements/index-status.json (not collected yet)" or "(unreadable)" rather than a 500 on the control room. Every string came
   over the network, so it is autoescaped, nothing is `|safe`, and the URLs sit in a read-only
   textarea rather than links. A partial run shows an amber banner, and an empty list on a partial
   run says the unreached pages were not checked instead of claiming nothing is waiting.
