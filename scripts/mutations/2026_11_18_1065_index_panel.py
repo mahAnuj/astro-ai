@@ -37,4 +37,9 @@ MUTATIONS = [
      "<span class=\"d\">{{ X.partial_reason or 'no reason recorded' }}.",
      "<span class=\"d\">{{ (X.partial_reason or 'no reason recorded')|safe }}.",
      "test_strings_from_the_file_are_escaped"),
+    ("ops: a partial run with an empty list claims no page is waiting",
+     "src/astro_ai/templates/admin_ops.html",
+     "{% if X.partial %}No inspected page is waiting on a recrawl request.",
+     "{% if False %}No inspected page is waiting on a recrawl request.",
+     "test_a_partial_run_with_nothing_to_list_does_not_claim_nothing_is_waiting"),
 ]

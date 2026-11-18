@@ -191,6 +191,24 @@ def test_the_page_shows_the_partial_banner(client, monkeypatch, tmp_path, mdir):
     assert "The run stopped early" in s and "quota: HTTP 429" in s
 
 
+def test_a_partial_run_with_nothing_to_list_does_not_claim_nothing_is_waiting(
+        client, monkeypatch, tmp_path, mdir):
+    doc = _collected_doc(quota_after=3)
+    doc["request_indexing"] = []
+    _put(mdir, doc)
+    s = _page(client, monkeypatch, tmp_path)
+    assert "have not been checked" in s
+    assert "No page is waiting" not in s
+
+
+def test_a_complete_run_with_nothing_to_list_says_so(client, monkeypatch, tmp_path, mdir):
+    doc = _collected_doc()
+    doc["request_indexing"] = []
+    _put(mdir, doc)
+    s = _page(client, monkeypatch, tmp_path)
+    assert "No page is waiting on a recrawl request." in s
+
+
 def test_the_page_says_not_collected_without_the_file(client, monkeypatch, tmp_path, mdir):
     s = _page(client, monkeypatch, tmp_path)
     assert "not collected yet" in s and "<textarea" not in s

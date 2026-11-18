@@ -1668,7 +1668,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
       <p class="note">Search Console's URL Inspection tool takes one URL at a time and has no API for
         "Request indexing", so this is a list to work through by hand.</p>
       {% else %}
-      <p class="none">No page is waiting on a recrawl request.</p>
+      <p class="none">{% if X.partial %}No inspected page is waiting on a recrawl request. The pages the run did not reach have not been checked.{% else %}No page is waiting on a recrawl request.{% endif %}</p>
       {% endif %}
     {% else %}
       <p class="none">No usable <code>measurements/index-status.json</code> ({{ X.message }}).

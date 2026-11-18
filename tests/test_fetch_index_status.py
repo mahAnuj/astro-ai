@@ -402,6 +402,38 @@ def test_main_writes_one_document_with_the_designed_keys(repo, tmp_path, capsys,
         assert phrase in doc["note"]
 
 
+def test_same_site_keeps_only_http_urls_on_the_sitemaps_own_host():
+    entries = [{"url": u, "priority": None} for u in (
+        "https://shubhagya.com/a", "https://SHUBHAGYA.com/b", "https://evil.example/x",
+        "file:///etc/passwd", "ftp://shubhagya.com/c", "https://shubhagya.com.evil.example/d")]
+    kept, dropped = fis.same_site(entries, "https://shubhagya.com/sitemap.xml")
+    assert [e["url"] for e in kept] == ["https://shubhagya.com/a", "https://SHUBHAGYA.com/b"]
+    assert dropped == 4
+
+
+def test_main_never_sends_an_off_site_or_file_url_to_inspection(repo, tmp_path, capsys, monkeypatch):
+    sent = []
+
+    def post(url, body, bearer):
+        sent.append(body["inspectionUrl"])
+        return resp()
+
+    fis.post = post
+    monkeypatch.setattr(fis, "token", lambda: "tok")
+    xml = ('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+           f"<url><loc>{BASE}/rashifal</loc></url>"
+           "<url><loc>https://evil.example/x</loc></url>"
+           "<url><loc>file:///etc/passwd</loc></url></urlset>")
+    f = tmp_path / "s.xml"
+    f.write_text(xml)
+    rc = fis.main(["--sitemap-file", str(f), "--root", str(repo),
+                   "--impressions", str(tmp_path / "none.json")])
+    doc = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert sent == [BASE + "/rashifal"]
+    assert [r["url"] for r in doc["rows"]] == [BASE + "/rashifal"]
+
+
 def test_main_prints_nothing_and_exits_1_when_the_file_would_be_noise(repo, tmp_path, capsys,
                                                                       monkeypatch):
     monkeypatch.setattr(fis, "token", lambda: "tok")

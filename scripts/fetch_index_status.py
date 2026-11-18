@@ -144,6 +144,21 @@ def parse_sitemap(xml: str | bytes) -> list[dict]:
     return out
 
 
+def same_site(entries: list[dict], sitemap_url: str) -> tuple[list[dict], int]:
+    """Keep only http(s) entries on the sitemap's own host. Returns (kept, dropped). Pure.
+
+    The sitemap is data. An off-site or file:// <loc> would be sent to URL Inspection
+    as an inspectionUrl (quota spent, an error row written), so it is dropped here.
+    """
+    host = urllib.parse.urlsplit(sitemap_url).netloc.lower()
+    kept = []
+    for e in entries:
+        parts = urllib.parse.urlsplit(e["url"])
+        if parts.scheme in ("http", "https") and parts.netloc.lower() == host:
+            kept.append(e)
+    return kept, len(entries) - len(kept)
+
+
 def fetch_sitemap(url: str) -> bytes:
     if not url.startswith(("https://", "http://")):
         raise ValueError(f"sitemap url must be http(s): {url!r}")
@@ -421,6 +436,10 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, ET.ParseError, urllib.error.URLError) as e:
         print(f"fetch_index_status: sitemap unreadable: {e}", file=sys.stderr)
         return 1
+    entries, off_site = same_site(entries, args.sitemap_url)
+    if off_site:
+        print(f"fetch_index_status: skipped {off_site} sitemap URL(s) not on "
+              f"{urllib.parse.urlsplit(args.sitemap_url).netloc}", file=sys.stderr)
     if args.limit_urls is not None:
         entries = entries[:max(args.limit_urls, 0)]
     if not entries:
