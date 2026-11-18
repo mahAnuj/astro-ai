@@ -65,7 +65,7 @@
     {% if error %}
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
     {% endif %}
-    <form method="post" action="/numerology" class="space-y-4">
+    <form method="post" action="/numerology" data-tool="numerology" class="space-y-4">
       <div>
         <label for="name" class="block text-sm font-medium text-bhagya-ink-soft mb-1">The name you are known by</label>
         {# #203: the name that governs is the one in actual use, not the one on

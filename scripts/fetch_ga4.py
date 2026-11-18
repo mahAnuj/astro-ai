@@ -51,6 +51,35 @@ dimension). GA4 holds the history; it was never asked for.
 arrive through two channels), so the by-channel users are never summed here and
 `coverage_note` says so. A previous window with 0 sessions is stated as such:
 the property may simply not have been collecting, which is not a collapse.
+
+--journeys IS LANDING PAGE x EVENT, SPLIT BY PARAMETER (#1226, #1070)
+--------------------------------------------------------------------
+#1070's metric is a completion ratio (completed / submitted) per tool, and "which
+landing pages lead to a tool being used". `--events` counts events site-wide and
+cannot say which page the visitor arrived on; the default report has landings but no
+events. `--journeys` asks four things as FOUR requests, because they fail
+differently: (A) landing page x eventName with `sessions` and `eventCount`, which
+needs nothing from the property; and (B, C, D) eventName x one of `customEvent:tool`,
+`customEvent:event_type`, `customEvent:mode`, each of which needs that parameter
+registered as a custom dimension (GA4 Admin > Custom definitions, an owner step on
+#1070). An unregistered one answers HTTP 400, so each split is its own request and a
+400 voids only that split (`status: "unregistered"`), as `--events` treats
+`cta_click` (#782). Only a 400 means unregistered; a 403 or a 5xx fails the run.
+
+Landings are folded to a path (query string, fragment and trailing slash dropped, as
+the analyst definition requires) and rows that fold together are summed: a session has
+one landing, so summing sessions over landings for ONE event is safe. `sessions` are
+NOT additive across events -- one session that submits and then completes is in both
+rows -- and `coverage_note` says so. Every truncation at LIMIT is reported.
+
+`since` is the date an event began to exist; a zero before it is not a measurement.
+`tool_submitted` has no date here because this file cannot know when #1226's client
+change deployed: it stays null, and `partial_history` is then null (unknown), never
+false, until someone records the deploy.
+
+NOT WIRED INTO CI. Calling this from .github/workflows/agent-measure.yml is a
+workflow edit the App token cannot push (#421); it is a separate owner or session
+act, to bundle with #1205's step.
 """
 
 from __future__ import annotations
@@ -71,6 +100,34 @@ NOT_SET = "(not set)"
 # The event is emitted from PR #688, merged 2026-11-03 04:42Z; before that a zero is
 # not a measurement of anything.
 CTA_SINCE = "2026-11-03"
+
+# --journeys (#1226). The event names this issue family declares, each with the date
+# it began to exist (None = not established here; see the module docstring).
+# tool_submitted: #1226 part 1, commit 9b9ee35; its deploy date is unknown to this file,
+# so it stays None until recorded. The four completion events: PR #1218 (0416530),
+# merged 2026-11-18T12:53:58Z (`git log -1 --format=%cI 0416530`). cta_click: CTA_SINCE.
+# kundli_generated, ask_answered and subscribe_completed predate this work and no date
+# is verified here, so None rather than a guess.
+JOURNEY_SINCE = {
+    "tool_submitted": None,
+    "kundli_generated": None,
+    "matching_completed": "2026-11-18",
+    "numerology_completed": "2026-11-18",
+    "muhurat_searched": "2026-11-18",
+    "dosha_check_completed": "2026-11-18",
+    "ask_answered": None,
+    "subscribe_completed": None,
+    "cta_click": CTA_SINCE,
+}
+JOURNEY_EVENTS = tuple(JOURNEY_SINCE)
+# Each split is its own request (an unregistered custom dimension answers 400), filtered
+# to the events that carry that parameter: tool on tool_submitted; event_type and mode
+# on muhurat_searched (templates/muhurat_finder.html, #1217).
+JOURNEY_SPLITS = (
+    ("tool", "customEvent:tool", ("tool_submitted",)),
+    ("event_type", "customEvent:event_type", ("muhurat_searched",)),
+    ("mode", "customEvent:mode", ("muhurat_searched",)),
+)
 
 
 def daily(args, start: str, end: str, bearer: str) -> int:
@@ -323,6 +380,139 @@ def events(args, start: str, end: str, bearer: str) -> int:
     return 0
 
 
+def fold_landing(landing: str) -> str:
+    """A landing as a path: no query string, fragment or trailing slash.
+
+    Unlike busiest_pages.fold this DROPS NOTHING: an unreadable landing such as
+    "(not set)" stays visible as its own row, so the export's totals still add up.
+    """
+    path = landing.split("?", 1)[0].split("#", 1)[0]
+    if path.startswith("/") and path != "/":
+        path = path.rstrip("/") or "/"
+    return path
+
+
+def _in_list(names) -> dict:
+    return {"filter": {"fieldName": "eventName",
+                       "inListFilter": {"values": list(names)}}}
+
+
+def _since_note(start: str, event: str) -> dict:
+    since = JOURNEY_SINCE[event]
+    # None, not False, when the date is unknown: "no partial history" would be a claim.
+    return {"since": since,
+            "partial_history": None if since is None else start < since}
+
+
+def journeys(args, start: str, end: str, bearer: str) -> int:
+    """Landing x event rows plus tool / event_type / mode splits (#1226).
+
+    Four requests (see the module docstring). A 400 on a split marks that split
+    `unregistered` and leaves request A and the other splits intact; any other
+    error propagates and fails the run.
+    """
+    url = API.format(pid=args.property)
+    ranges = [{"startDate": start, "endDate": end}]
+    order = [{"metric": {"metricName": "eventCount"}, "desc": True}]
+    data = post(url, {
+        "dateRanges": ranges,
+        "dimensions": [{"name": "landingPage"}, {"name": "eventName"}],
+        "metrics": [{"name": "sessions"}, {"name": "eventCount"}],
+        "dimensionFilter": _in_list(JOURNEY_EVENTS),
+        "orderBys": order,
+        "limit": LIMIT,
+    }, bearer)
+    folded: dict[tuple[str, str], dict] = {}
+    raw_rows = data.get("rows", [])
+    for r in raw_rows:
+        key = (fold_landing(r["dimensionValues"][0]["value"]),
+               r["dimensionValues"][1]["value"])
+        cur = folded.setdefault(key, {"landing": key[0], "event": key[1],
+                                      "sessions": 0, "event_count": 0})
+        cur["sessions"] += int(r["metricValues"][0]["value"])
+        cur["event_count"] += int(r["metricValues"][1]["value"])
+    rows = sorted(folded.values(), key=lambda r: (-r["event_count"], r["landing"], r["event"]))
+    row_count = data.get("rowCount", len(raw_rows))
+    truncated = row_count > len(raw_rows)
+    totals = dict.fromkeys(JOURNEY_EVENTS, 0)
+    for r in rows:
+        totals[r["event"]] = totals.get(r["event"], 0) + r["event_count"]
+
+    splits, parts = {}, []
+    for name, dim, names in JOURNEY_SPLITS:
+        entry = {"dimension": dim, "events": list(names), "rows": [],
+                 "row_count": 0, "truncated": False}
+        try:
+            got = post(url, {
+                "dateRanges": ranges,
+                "dimensions": [{"name": "eventName"}, {"name": dim}],
+                "metrics": [{"name": "eventCount"}],
+                "dimensionFilter": _in_list(names),
+                "orderBys": order,
+                "limit": LIMIT,
+            }, bearer)
+        except ApiError as e:
+            if e.status != 400:
+                raise
+            entry["status"] = "unregistered"
+            parts.append(f"split {name}: NOT available, GA4 answered HTTP 400 for {dim}, "
+                         "i.e. it is not registered as a custom dimension (GA4 Admin > "
+                         "Custom definitions, an owner step on #1070); the landing x event "
+                         "rows are still valid")
+        else:
+            g_rows = got.get("rows", [])
+            entry["rows"] = [{"event": r["dimensionValues"][0]["value"],
+                              "value": r["dimensionValues"][1]["value"],
+                              "count": int(r["metricValues"][0]["value"])}
+                             for r in g_rows]
+            entry["row_count"] = got.get("rowCount", len(g_rows))
+            entry["truncated"] = entry["row_count"] > len(g_rows)
+            if entry["rows"] and all(r["value"] == NOT_SET for r in entry["rows"]):
+                # Same reading as --events: a registered-too-late or never-collected
+                # parameter reports (not set), which is not a distribution.
+                entry["status"] = "not_set"
+                entry["rows"] = []
+                parts.append(f"split {name}: every row reports {NOT_SET}, so {dim} was "
+                             "never collected or is not registered; not emitted as data")
+            else:
+                entry["status"] = "ok"
+            if entry["truncated"]:
+                parts.append(f"split {name} TRUNCATED: {len(g_rows)} of "
+                             f"{entry['row_count']} rows returned")
+        splits[name] = entry
+
+    parts.insert(0, "`sessions` per landing x event are NOT additive across events: one "
+                    "session that submits and then completes is counted in both rows, so "
+                    "never add sessions over different events (over landings, for one "
+                    "event, they are additive: a session has one landing)")
+    if truncated:
+        parts.append(f"TRUNCATED: {len(raw_rows)} of {row_count} landing x event rows "
+                     "returned")
+    since_note = {e: _since_note(start, e) for e in JOURNEY_EVENTS}
+    if any(v["partial_history"] for v in since_note.values()):
+        parts.append("a zero for an event before its `since` is not a measurement; "
+                     "partial_history marks the events whose window starts earlier")
+    if any(v["since"] is None for v in since_note.values()):
+        parts.append("events with since null have no verified start date here "
+                     "(tool_submitted: from #1226's deploy, not recorded); a zero for "
+                     "them is not yet a measurement")
+
+    print(json.dumps({
+        "source": "ga4", "property": args.property, "mode": "journeys",
+        "window": [start, end],
+        "dimensions": ["landingPage", "eventName"],
+        "note": "window excludes the last 3 days — GA4 standard reports lag 24-48h",
+        "row_count": row_count, "truncated": truncated,
+        "landing_count": len({r["landing"] for r in rows}),
+        "event_totals": totals,
+        "events": since_note,
+        "rows": rows,
+        "splits": splits,
+        "coverage_note": "; ".join(parts),
+    }, indent=2))
+    return 0
+
+
 TREND_METRICS = ("sessions", "activeUsers", "newUsers", "engagedSessions",
                  "userEngagementDuration")
 TREND_KEYS = ("sessions", "active_users", "new_users", "engaged_sessions",
@@ -441,7 +631,13 @@ def main() -> int:
     ap.add_argument("--trend", action="store_true",
                     help="this window against the same-length window before it: site "
                          "totals and by channel (mutually exclusive with the other reports)")
+    ap.add_argument("--journeys", action="store_true",
+                    help="landing x event rows for the #1070 funnel events plus tool / "
+                         "event_type / mode splits (mutually exclusive with the other reports)")
     args = ap.parse_args()
+    if args.journeys and (args.daily or args.events or args.anomalies or args.trend):
+        sys.exit("--journeys is a separate report from --daily, --events, --anomalies and "
+                 "--trend; run them one at a time")
     if args.events and args.daily:
         sys.exit("--events and --daily are separate reports; run them one at a time")
     if args.trend and (args.daily or args.events or args.anomalies):
@@ -460,6 +656,8 @@ def main() -> int:
         return events(args, start, end, bearer)
     if args.anomalies:
         return anomalies(args, start, end, bearer)
+    if args.journeys:
+        return journeys(args, start, end, bearer)
     if args.trend:
         return trend(args, start, end, bearer)
 

@@ -26,7 +26,7 @@
     {% if error %}
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
     {% endif %}
-    <form method="post" action="/muhurat" class="space-y-4">
+    <form method="post" action="/muhurat" data-tool="muhurat" class="space-y-4">
       <div>
         <label for="event_type" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Event type</label>
         <select name="event_type" id="event_type" class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
