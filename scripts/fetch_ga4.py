@@ -37,6 +37,20 @@ they are the Data API answers HTTP 400, not `(not set)` -- so the total must
 survive that failure instead of dying with it. One request dimensioned by event x
 two params would also multiply rows. Only a 400 on the split is read as
 "unregistered"; a 403 or a 5xx still fails the run.
+
+--trend IS THE PREVIOUS WINDOW GA4 NEVER HAD (#1115)
+----------------------------------------------------
+The analyst reported "no GA4 previous-window export" in four reports running, so
+a GSC impressions rise (+145%) could not be tied to sessions or users.
+`--trend` asks the same question of two adjacent windows -- the current one and
+one of the SAME LENGTH ending the day before it starts, as `fetch_gsc.py --trend`
+does -- as four requests (site totals and by-channel, per window; no `date`
+dimension). GA4 holds the history; it was never asked for.
+
+`activeUsers` per channel do NOT add up to the site figure (one person can
+arrive through two channels), so the by-channel users are never summed here and
+`coverage_note` says so. A previous window with 0 sessions is stated as such:
+the property may simply not have been collecting, which is not a collapse.
 """
 
 from __future__ import annotations
@@ -309,6 +323,100 @@ def events(args, start: str, end: str, bearer: str) -> int:
     return 0
 
 
+TREND_METRICS = ("sessions", "activeUsers", "newUsers", "engagedSessions",
+                 "userEngagementDuration")
+TREND_KEYS = ("sessions", "active_users", "new_users", "engaged_sessions",
+              "engagement_seconds")
+
+
+def previous_window(start: str, end: str) -> tuple[str, str]:
+    """The window of the SAME LENGTH ending the day before `start` (as fetch_gsc)."""
+    s = datetime.strptime(start, "%Y-%m-%d")
+    span = (datetime.strptime(end, "%Y-%m-%d") - s).days
+    prev_end = s - timedelta(days=1)
+    return ((prev_end - timedelta(days=span)).strftime("%Y-%m-%d"),
+            prev_end.strftime("%Y-%m-%d"))
+
+
+def _trend_values(mv: list) -> dict:
+    return {k: int(float(m["value"])) for k, m in zip(TREND_KEYS, mv)}
+
+
+def _delta(cur: dict, pre: dict) -> tuple[dict, dict]:
+    """Per-metric change and percentage. None, not 0 and not infinity, when the
+    previous value is 0: there is no percentage change from nothing."""
+    delta = {k: cur[k] - pre[k] for k in TREND_KEYS}
+    pct = {k: round(delta[k] / pre[k] * 100, 1) if pre[k] else None for k in TREND_KEYS}
+    return delta, pct
+
+
+def _trend_window(url: str, bearer: str, start: str, end: str) -> tuple[dict, dict, int]:
+    """(site totals, {channel -> values}, channel rowCount) for one window. Two requests.
+
+    GA4 sends no `rows` key for an empty window; that is zeros, not an error.
+    """
+    rng = [{"startDate": start, "endDate": end}]
+    metrics = [{"name": m} for m in TREND_METRICS]
+    tot = post(url, {"dateRanges": rng, "metrics": metrics}, bearer)
+    t_rows = tot.get("rows") or []
+    totals = _trend_values(t_rows[0]["metricValues"]) if t_rows else dict.fromkeys(TREND_KEYS, 0)
+    ch = post(url, {"dateRanges": rng,
+                    "dimensions": [{"name": "sessionDefaultChannelGroup"}],
+                    "metrics": metrics,
+                    "orderBys": [{"metric": {"metricName": "sessions"}, "desc": True}],
+                    "limit": LIMIT}, bearer)
+    c_rows = ch.get("rows") or []
+    by = {r["dimensionValues"][0]["value"]: _trend_values(r["metricValues"]) for r in c_rows}
+    return totals, by, ch.get("rowCount", len(c_rows))
+
+
+def trend(args, start: str, end: str, bearer: str) -> int:
+    """This window against the one immediately before it (#1115): totals and by channel."""
+    url = API.format(pid=args.property)
+    prev_start, prev_end = previous_window(start, end)
+    cur_tot, cur_by, cur_n = _trend_window(url, bearer, start, end)
+    pre_tot, pre_by, pre_n = _trend_window(url, bearer, prev_start, prev_end)
+
+    zero = dict.fromkeys(TREND_KEYS, 0)
+    rows = []
+    for ch in set(cur_by) | set(pre_by):
+        c, p = cur_by.get(ch), pre_by.get(ch)
+        d, pct = _delta(c or zero, p or zero)
+        rows.append({"channel": ch, "current": c or zero, "previous": p or zero,
+                     "delta": d, "delta_pct": pct,
+                     "is_new": p is None, "is_gone": c is None})
+    # Absolute size of the movement, so the biggest fall is as visible as the biggest rise.
+    rows.sort(key=lambda r: (-abs(r["delta"]["sessions"]), r["channel"]))
+    delta, delta_pct = _delta(cur_tot, pre_tot)
+
+    parts = ["activeUsers per channel do NOT sum to the site total (one person can "
+             "appear in two channels): by_channel users must not be added up"]
+    if pre_tot["sessions"] == 0:
+        parts.append("previous window empty: property may not have been collecting, "
+                     "so no change can be read from this comparison")
+    for label, tot, by, n in (("current", cur_tot, cur_by, cur_n),
+                              ("previous", pre_tot, pre_by, pre_n)):
+        got = sum(v["sessions"] for v in by.values())
+        if tot["sessions"] and got < tot["sessions"]:
+            parts.append(f"{label} window: channel rows account for "
+                         f"{round(got / tot['sessions'] * 100)}% of the site's "
+                         f"{tot['sessions']} sessions")
+        if n > len(by):
+            parts.append(f"{label} window TRUNCATED: {len(by)} of {n} channel rows returned")
+
+    print(json.dumps({
+        "source": "ga4", "property": args.property, "mode": "trend",
+        "window": [start, end], "window_prev": [prev_start, prev_end],
+        "note": "window excludes the last 3 days — GA4 standard reports lag 24-48h",
+        "totals": {"current": cur_tot, "previous": pre_tot,
+                   "delta": delta, "delta_pct": delta_pct},
+        "channels_now": len(cur_by), "channels_prev": len(pre_by),
+        "coverage_note": "; ".join(parts),
+        "by_channel": rows,
+    }, indent=2))
+    return 0
+
+
 def _engagement(mv: list) -> dict:
     """engaged_sessions and engagement_seconds (total userEngagementDuration),
     or nothing if the response carried only the first four metrics."""
@@ -330,9 +438,15 @@ def main() -> int:
     ap.add_argument("--anomalies", action="store_true",
                     help="find spike days in the window and break each down by source, "
                          "landing page, browser and engagement")
+    ap.add_argument("--trend", action="store_true",
+                    help="this window against the same-length window before it: site "
+                         "totals and by channel (mutually exclusive with the other reports)")
     args = ap.parse_args()
     if args.events and args.daily:
         sys.exit("--events and --daily are separate reports; run them one at a time")
+    if args.trend and (args.daily or args.events or args.anomalies):
+        sys.exit("--trend is a separate report from --daily, --events and --anomalies; "
+                 "run them one at a time")
     if not args.property.isdigit():
         sys.exit("GA4_PROPERTY_ID must be the numeric property id "
                  "(GA4 > Admin > Property Settings), not the G- measurement id")
@@ -346,6 +460,8 @@ def main() -> int:
         return events(args, start, end, bearer)
     if args.anomalies:
         return anomalies(args, start, end, bearer)
+    if args.trend:
+        return trend(args, start, end, bearer)
 
     body = {
         "dateRanges": [{"startDate": start, "endDate": end}],
