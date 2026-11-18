@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-18T02:04:04Z",
+ "generated_at": "2026-11-18T02:55:30Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-11T02:04:04Z",
-  "end": "2026-11-18T02:04:04Z",
-  "loop_comments": 1252,
-  "on_prs": 731,
-  "prs": 135,
-  "on_issues": 521,
-  "issues": 148,
-  "comments_per_pr": 5.41,
+  "start": "2026-11-11T02:55:30Z",
+  "end": "2026-11-18T02:55:30Z",
+  "loop_comments": 1275,
+  "on_prs": 730,
+  "prs": 133,
+  "on_issues": 545,
+  "issues": 155,
+  "comments_per_pr": 5.49,
   "comments_per_issue": 3.52,
-  "duplicates": 62,
-  "duplicate_rate_pct": 5.0,
+  "duplicates": 63,
+  "duplicate_rate_pct": 4.9,
   "sent_by_kind": {
-   "ops-finding": 4
+   "ops-finding": 6
   },
-  "via_outbox": 4,
+  "via_outbox": 6,
   "top_threads": [
    {
     "on": "pr",
@@ -31,24 +31,24 @@
    },
    {
     "on": "pr",
-    "number": 1000,
-    "comments": 15
-   },
-   {
-    "on": "pr",
-    "number": 1002,
-    "comments": 15
-   },
-   {
-    "on": "pr",
     "number": 1121,
+    "comments": 16
+   },
+   {
+    "on": "pr",
+    "number": 1170,
+    "comments": 16
+   },
+   {
+    "on": "pr",
+    "number": 1000,
     "comments": 15
    }
   ],
   "owner_touched": {
-   "prs": 135,
+   "prs": 133,
    "owner_commented": 6,
-   "pct": 4
+   "pct": 5
   },
   "suppressed": {
    "deduped": 0,
@@ -57,17 +57,17 @@
   }
  },
  "previous": {
-  "start": "2026-11-04T02:04:04Z",
-  "end": "2026-11-11T02:04:04Z",
-  "loop_comments": 835,
-  "on_prs": 486,
-  "prs": 84,
-  "on_issues": 349,
-  "issues": 81,
-  "comments_per_pr": 5.79,
-  "comments_per_issue": 4.31,
+  "start": "2026-11-04T02:55:30Z",
+  "end": "2026-11-11T02:55:30Z",
+  "loop_comments": 856,
+  "on_prs": 497,
+  "prs": 85,
+  "on_issues": 359,
+  "issues": 83,
+  "comments_per_pr": 5.85,
+  "comments_per_issue": 4.33,
   "duplicates": 32,
-  "duplicate_rate_pct": 3.8,
+  "duplicate_rate_pct": 3.7,
   "sent_by_kind": {},
   "via_outbox": 0,
   "top_threads": [
@@ -98,7 +98,7 @@
    }
   ],
   "owner_touched": {
-   "prs": 86,
+   "prs": 87,
    "owner_commented": 9,
    "pct": 10
   }

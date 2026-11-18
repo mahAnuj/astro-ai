@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-11-18T02:02:13Z",
+  "generated_at": "2026-11-18T02:54:16Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 130,
-  "with_ask": 47,
+  "open": 131,
+  "with_ask": 46,
   "by_area": {
-    "UNCLASSIFIED": 51,
-    "INFRA": 14,
+    "UNCLASSIFIED": 50,
+    "INFRA": 15,
     "REDESIGN": 10,
     "OPS": 7,
     "FEATURE": 7,
+    "ANALYTICS": 5,
     "SEO": 5,
-    "ANALYTICS": 4,
     "CORPUS": 4,
     "RETRIEVAL": 3,
     "CHORE": 3,
@@ -31,21 +31,49 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 36,
-    "enhancement": 34,
-    "bug": 26,
+    "untyped": 37,
+    "enhancement": 33,
+    "bug": 27,
     "chore": 18,
     "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 89,
+    "unset": 91,
     "medium": 22,
-    "high": 18,
+    "high": 17,
     "low": 1
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1208,
+      "title": "analytics: export LLM fallbacks (and reasons) in llm-usage.json — errors per route are unmeasured in three consecutive analyst reports",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-18T02:46:01Z",
+      "updated": "2026-11-18T02:46:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1207,
+      "title": "[INFRA] agent-queue drains into a cycle for a target another cycle just finished; the stand-down leaves no comment, so the carrier reports failure and retries",
+      "ask": "",
+      "area": "INFRA",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-18T02:05:15Z",
+      "updated": "2026-11-18T02:05:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1205,
       "title": "analytics: call fetch_ga4.py --trend from agent-measure.yml and list the file for the analyst (#1115 part 2, owner act #1)",
@@ -126,23 +154,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1185,
-      "title": "always-on 1/6 inbox: every trigger appends to a durable inbox first; one worker per lane; fold pending events per target",
-      "ask": "Handlers only append.",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "high",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "priority:high"
-      ],
-      "created": "2026-11-17T18:01:34Z",
-      "updated": "2026-11-17T18:01:34Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1184,
       "title": "always-on loop: inbox, timers, memory, permissions, outbox on Anthropic's five primitives — GitHub-native first (design)",
       "ask": "",
@@ -170,10 +181,12 @@
       "labels": [
         "enhancement",
         "seo",
-        "provenance:trusted"
+        "qa-fail",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-17T12:12:59Z",
-      "updated": "2026-11-18T01:13:54Z",
+      "updated": "2026-11-18T02:46:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -249,7 +262,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-16T00:42:51Z",
-      "updated": "2026-11-18T02:01:18Z",
+      "updated": "2026-11-18T02:13:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -289,7 +302,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T20:41:26Z",
-      "updated": "2026-11-17T20:28:07Z",
+      "updated": "2026-11-18T02:14:12Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -329,7 +342,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T10:25:50Z",
-      "updated": "2026-11-18T01:29:21Z",
+      "updated": "2026-11-18T02:13:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -718,7 +731,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-11T21:59:55Z",
-      "updated": "2026-11-17T23:19:15Z",
+      "updated": "2026-11-18T02:05:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -789,7 +802,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-17T20:20:17Z",
+      "updated": "2026-11-18T02:15:05Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -837,7 +850,7 @@
         "chore"
       ],
       "created": "2026-11-09T00:26:38Z",
-      "updated": "2026-11-18T02:02:03Z",
+      "updated": "2026-11-18T02:15:06Z",
       "blocked": false,
       "needs_evidence": false
     },
