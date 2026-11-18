@@ -11,6 +11,7 @@ import contextlib
 import logging
 import os
 import time
+from urllib.parse import unquote, urlsplit
 
 import uvicorn
 from fastapi import FastAPI, Request, Response
@@ -214,6 +215,65 @@ class _RewriteHostFromForwardedMiddleware:
 
 
 app.add_middleware(_RewriteHostFromForwardedMiddleware)
+
+
+class _SlashRedirect308Middleware:
+    """Make Starlette's trailing-slash redirect permanent-and-method-preserving (#1176).
+
+    `redirect_slashes` answers /kundli/ -> /kundli and /learn/x -> /learn/x/
+    with 307, a TEMPORARY redirect, so a crawler is told the slash variant may
+    come back and keeps both URLs in play. 308 is the permanent equivalent.
+    Starlette hard-codes 307 in the router, so the status is rewritten on the
+    way out.
+
+    Deliberately narrow: only a 307 to a GET or HEAD whose Location is the
+    request's own path with the trailing slash toggled (same query). Any other
+    307 (a handler's own redirect, a POST, a Location that differs in more
+    than the slash) passes through untouched. The Location is never altered,
+    so whatever _RewriteHostFromForwardedMiddleware made of the host stands.
+
+    ORDERING: `add_middleware` inserts at index 0, so the last added is the
+    outermost. Chain, outermost first: GZip, RedirectLangParam, this,
+    _RewriteHostFromForwarded, router. It only has to sit OUTSIDE the router,
+    which the router's `send` reaches first; it reads the status and Location
+    only, so GZip's position is irrelevant (headers are never compressed).
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or scope.get("method") not in ("GET", "HEAD"):
+            await self.app(scope, receive, send)
+            return
+
+        async def _send(message):
+            if message["type"] == "http.response.start" and message.get("status") == 307:
+                location = None
+                for name, value in message.get("headers", []):
+                    if name.lower() == b"location":
+                        location = value.decode("latin-1")
+                        break
+                if location is not None and self._is_slash_toggle(scope, location):
+                    message = {**message, "status": 308}
+            await send(message)
+
+        await self.app(scope, receive, _send)
+
+    @staticmethod
+    def _is_slash_toggle(scope, location: str) -> bool:
+        # urlsplit handles absolute (https://host/p/) and relative (/p/) alike.
+        parts = urlsplit(location)
+        if parts.query != scope.get("query_string", b"").decode("latin-1"):
+            return False
+        # Location is percent-encoded; scope["path"] is decoded.
+        target = unquote(parts.path)
+        path = scope.get("path", "")
+        # Both non-empty: "/" toggled would be "", which no redirect means.
+        return bool(path and target) and (target == path + "/" or path == target + "/")
+
+
+app.add_middleware(_SlashRedirect308Middleware)
 # #124 S8 — 301 ?lang=hi onto /hi/{path} where a Hindi URL exists, so the
 # Hindi content has exactly one indexable URL. It only redirects, never lets a
 # handler render with a mutated path, which is why a middleware is safe here

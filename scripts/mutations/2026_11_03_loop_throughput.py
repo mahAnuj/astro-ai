@@ -103,7 +103,9 @@ MUTATIONS = [
      "test_a_filed_issue_passes_the_loops_own_evidence_gate"),
     ("ops carrier: issue filed without the chore label (gsc:/ga4: then required)",
      "scripts/file_ops_findings.py",
-     '                    "-f", f"labels[]={LABEL}"]',
-     '                    ]',
+     # Re-anchored 2026-11-17 (#1188): the create now goes through outbox.create_issue
+     # with a label list; the rule guarded is unchanged.
+     '            labels = [LABEL]\n',
+     '            labels = []\n',
      "test_a_filed_issue_passes_the_loops_own_evidence_gate"),
 ]

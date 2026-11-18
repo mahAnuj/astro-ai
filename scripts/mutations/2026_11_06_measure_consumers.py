@@ -18,7 +18,8 @@ MUTATIONS = [
      "test_a_number_wobble_is_SILENCE_not_a_comment"),
     ("ops carrier: findings are filed with no priority again",
      "scripts/file_ops_findings.py",
-     '            if PRIORITY.get(f["level"]):\n                args += ["-f", f"labels[]={PRIORITY[f[\'level\']]}"]',
+     # Re-anchored 2026-11-17 (#1188): the label list now goes to outbox.create_issue.
+     '            if PRIORITY.get(f["level"]):\n                labels.append(PRIORITY[f["level"]])',
      '            if False:\n                pass',
      "test_a_red_finding_is_filed_at_priority_high"),
     ("ops carrier: a level change no longer moves the priority label",

@@ -19,8 +19,8 @@ WHAT IS ASSERTED, and where each fake sits:
   into a pool worker, so a ContextVar set by the route would read as unset in
   every one of the twelve. Real `generate_rashifal`, `providers.chat` captured;
 * the interactive entry points -- the on-demand `/rashifal/{rashi}` card, and
-  the welcome email, which runs inside the subscriber's own request -- pass NO
-  budget;
+  the welcome email, which is sent after the subscriber's response (#1163) --
+  pass NO budget;
 * the budget changes what chat() does: with the same saturated bucket, the
   default skips to the next provider and the job budget waits.
 
@@ -208,7 +208,8 @@ def test_send_daily_shares_ONE_deadline_across_both_languages(
 
 def test_the_welcome_email_is_interactive_and_passes_no_deadline(
         monkeypatch, captured_generate):
-    """It runs inside the subscriber's own POST, so it keeps the short default."""
+    """It is sent right after the subscriber's own POST answers (#1163), so it
+    keeps the short default."""
     from astro_ai.routes import subscribe
 
     monkeypatch.setattr(subscribe.email_sender, "send", lambda *a, **k: True)
