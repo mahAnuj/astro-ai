@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-18T18:11:54Z",
+ "generated_at": "2026-11-18T20:32:30Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1039,6 +1039,13 @@
      "tests",
      "regression"
     ]
+   },
+   {
+    "number": 1212,
+    "at": "2026-11-18T18:53:31Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1212#issuecomment-6988357887",
+    "summary": "QA: FAIL \u2014 verified at `e101051062e523fec486d7cc59a5285127ba354a` Earlier FAILs fixed (10/10 tests, pre_qa_check PASS), but f71d4db's 'set -o pipefail' now kills the step silently on any PR with no closing keyword: executed rc=1, no message, nothing closed when the keyword-less own PR is listed firs",
+    "themes": []
    },
    {
     "number": 1210,
