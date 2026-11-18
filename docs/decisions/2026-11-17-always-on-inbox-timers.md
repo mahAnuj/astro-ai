@@ -96,3 +96,15 @@ and 1188 as well"* (#1188, the outbox, is built separately).
 0 Groq tokens: no app LLM path is touched. Claude: none in the queue, timers or liveness. A `measure`
 timer costs one analyst run only when the daily slot did not run after its due time. Actions: at
 most 744 hourly runs a month on a public repo.
+
+## Amendment 2026-11-18: the hourly steps no longer wait on GitHub's cron
+
+Measured on the first day: the `17 * * * *` schedule, merged 02:14 UTC, fired once
+(10:15 UTC) and not again through 17:38, so timers and liveness ran once in fifteen
+slots. GitHub documents scheduled runs as best-effort, delayed or dropped under load.
+Every agent-queue run now asks `scripts/hourly_due.py`: a scheduled run is due, and
+any other wake is due when no run in the last 55 minutes completed the timers step.
+Event wakes are far more frequent than hourly, so they hold the cadence and the cron
+is a fallback. Both steps are idempotent, so an unreadable API answers "due".
+Rejected: a repository variable as the "last ran" clock (`GITHUB_TOKEN` cannot write
+variables, and adding that scope is the owner's act #3).
