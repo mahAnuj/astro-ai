@@ -155,21 +155,36 @@ jobs:
           # that is ~400 PRs, so: page through them, keep only PRs that claim an
           # issue that is still OPEN, and spend a compare call on those alone.
           since=$(date -u -d '14 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          # Fail LOUD (QA on #1212): a listing that errors must turn the run red,
+          # never pass as "nothing to close". pipefail covers the gh | jq pipes;
+          # each listing is captured on its own so `bash -e` sees its status.
+          set -o pipefail
           open_json=$(gh api --paginate "repos/$GH_REPO/issues?state=open&per_page=100" \
-                        --jq '[.[] | select(.pull_request == null) | .number]' | jq -s 'add // []')
-          prs=""
-          for pr_merge in $(gh api --paginate "repos/$GH_REPO/pulls?state=closed&sort=updated&direction=desc&per_page=100" \
+                        --jq '[.[] | select(.pull_request == null) | .number]' | jq -s 'add // []') \
+            || { echo "::error::could not list open issues -- closing nothing"; exit 1; }
+          list=$(gh api --paginate "repos/$GH_REPO/pulls?state=closed&sort=updated&direction=desc&per_page=100" \
                  --jq ".[] | select(.merged_at != null and .merged_at >= \"$since\") | {n: .number, m: .merge_commit_sha, t: ((.title // \"\") + \" \" + (.body // \"\")), b: .head.ref}" \
                | jq -r --argjson open "$open_json" \
                    '((if (.t | test("(?i)(clos(e|es|ed)|fix(es|ed)?|resolv(e|es|ed))\\s+#[0-9]")) then [.t | scan("#([0-9]+)") | .[0] | tonumber] else [] end)
                      + [.b | scan("^issue/([0-9]+)-") | .[0] | tonumber]) as $c
-                    | select(any($c[]; . as $x | $open | index($x)) or .m == env.SHA) | "\(.n):\(.m)"'); do
+                    | select(any($c[]; . as $x | $open | index($x)) or .m == env.SHA) | "\(.n):\(.m)"') \
+            || { echo "::error::could not list merged PRs -- closing nothing"; exit 1; }
+          prs=""; compare_errors=0
+          for pr_merge in $list; do
             pr=${pr_merge%%:*}; merge=${pr_merge#*:}
             if [ "$merge" = "$SHA" ]; then prs="$prs $pr"; continue; fi
-            rel=$(gh api "repos/$GH_REPO/compare/$merge...$SHA" --jq .status 2>/dev/null || echo error)
-            [ "$rel" = "ahead" ] && prs="$prs $pr"
+            if ! rel=$(gh api "repos/$GH_REPO/compare/$merge...$SHA" --jq .status 2>/dev/null); then
+              echo "::warning::compare failed for PR #$pr ($merge) -- not closing its issues this run"
+              compare_errors=$((compare_errors + 1)); continue
+            fi
+            if [ "$rel" = "ahead" ]; then prs="$prs $pr"; fi
           done
-          [ -n "$prs" ] || { echo "no PR in the last 14 days is contained in $SHA"; exit 0; }
+          if [ -z "$prs" ]; then
+            if [ "$compare_errors" -gt 0 ]; then
+              echo "::error::$compare_errors compare call(s) failed and nothing else qualified -- closing nothing"; exit 1
+            fi
+            echo "no PR in the last 14 days is contained in $SHA"; exit 0
+          fi
           echo "PRs contained in $SHA:$prs"
 
           for pr in $prs; do
@@ -258,3 +273,7 @@ jobs:
               echo "closed #$n"
             done
           done
+          if [ "$compare_errors" -gt 0 ]; then
+            echo "::error::$compare_errors compare call(s) failed -- those PRs' issues were not closed; the next green run retries them"
+            exit 1
+          fi

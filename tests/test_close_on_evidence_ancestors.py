@@ -21,6 +21,7 @@ A, B = "a" * 40, "b" * 40          # A = older merge, B = newer merge (contains 
 
 FAKE_GH = r'''#!/usr/bin/env bash
 echo "$*" >> "$CALLS"
+if [ -n "${FAIL_ON:-}" ] && [[ "$*" == *"$FAIL_ON"* ]]; then echo "HTTP 403" >&2; exit 1; fi
 case "$*" in
   *"compare/"*) # compare/X...Y -> ahead when X is A and Y is B, identical when equal
      spec=$(echo "$*" | grep -oE 'compare/[0-9a-f]+\.\.\.[0-9a-f]+'); x=${spec#compare/}; x=${x%%...*}; y=${spec##*...}
@@ -106,3 +107,30 @@ def test_only_prs_claiming_an_open_issue_cost_a_compare_call(tmp_path):
     compares = [ln for ln in calls.splitlines() if "compare/" in ln]
     assert compares and not any("d" * 40 in c for c in compares), "PR 555 claims nothing open"
     assert "--paginate" in next(ln for ln in calls.splitlines() if "pulls?state=closed" in ln)
+
+
+# --- a failing listing must turn the run red (QA FAIL on #1212 at 349a6e8) ----
+
+def _close(tmp, fail_on):
+    return _run(tmp, _step("Close what this commit shipped")["run"], sha=B, live=B,
+                extra_env={"LIVE": B, "FAIL_ON": fail_on})
+
+
+def test_a_failed_pr_listing_exits_non_zero_and_closes_nothing(tmp_path):
+    r, _, calls = _close(tmp_path, "pulls?state=closed")
+    assert r.returncode != 0 and "could not list merged PRs" in r.stdout
+    assert "issue close" not in calls
+
+
+def test_a_failed_open_issue_listing_exits_non_zero_and_closes_nothing(tmp_path):
+    r, _, calls = _close(tmp_path, "issues?state=open")
+    assert r.returncode != 0 and "could not list open issues" in r.stdout
+    assert "issue close" not in calls
+
+
+def test_a_failed_compare_still_closes_the_rest_then_exits_non_zero(tmp_path):
+    r, _, calls = _close(tmp_path, "compare/")
+    assert r.returncode != 0 and "compare call(s) failed" in r.stdout
+    closed = " ".join(ln for ln in calls.splitlines() if ln.startswith("issue close"))
+    assert "1201" in closed, "the verified commit's own PR needs no compare and still closes"
+    assert "1056" not in closed, "a PR whose compare failed is not closed on a guess"
