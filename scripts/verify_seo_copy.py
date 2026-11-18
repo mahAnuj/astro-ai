@@ -48,6 +48,9 @@ RULES
       EVENT_LANDING `seo_desc` values and both Panchang shapes (undated, and ONE
       dated URL in the future, which takes `dated_description` instead of the
       inline text). It also covers the Hindi twins, which share the templates.
+      The `base.html` default is also read from the template source (Gate 3b):
+      no sitemap page falls through to it, but error pages and the Rashifal
+      fallback serve it, so a crawl alone never measures it.
   Gate 4 - the Rashifal meta.  /rashifal/<rashi> cannot be rendered hermetically,
       so `rashifal_single_meta` is rendered through `translate()` for EN and HI,
       for all 12 rashis and every day of a year (the date's length varies), and
@@ -214,6 +217,34 @@ def render_sitemap_pages():
     return rendered, problems
 
 
+_BASE_DEFAULT = re.compile(
+    r'<meta name="description" content="\{% block meta_description %\}(.*?)\{% endblock %\}"')
+
+
+def base_default_description() -> str | None:
+    """The `base.html` default meta description, read from the template source.
+
+    No sitemap page falls through to it (every one overrides the block), so a crawl
+    never measures it -- yet error pages and `/rashifal/<rashi>` fallbacks still serve
+    it. Reading the source is the only way to hold it to the band.
+    """
+    src = (Path(__file__).resolve().parent.parent / "src" / "astro_ai" / "templates"
+           / "base.html").read_text(encoding="utf-8")
+    m = _BASE_DEFAULT.search(src)
+    return m.group(1) if m else None
+
+
+def check_base_default(value: str | None) -> list[str]:
+    if value is None:
+        return ["base.html: the default meta_description block was not found (gate cannot measure it)"]
+    n = _visible_length(value)
+    if n > DESC_CEILING:
+        return [f"base.html default meta_description is {n} chars decoded (ceiling {DESC_CEILING})"]
+    if n < DESC_FLOOR:
+        return [f"base.html default meta_description is {n} chars decoded (floor {DESC_FLOOR})"]
+    return []
+
+
 def rashifal_meta_lengths() -> dict[str, tuple[int, str]]:
     """Longest decoded `rashifal_single_meta` per language, over 12 rashis x 365 days."""
     from astro_ai.i18n import translate
@@ -278,6 +309,11 @@ def main() -> int:
     print(f"rendered meta description: {len(rendered)} pages measured in-process, "
           f"{len(page_failures)} failures (band {DESC_FLOOR}-{DESC_CEILING} decoded)")
 
+    base_failures = check_base_default(base_default_description())
+    for line in base_failures:
+        print(f"FAIL: {line}")
+    print(f"base.html default meta_description: {len(base_failures)} failures")
+
     rashifal = rashifal_meta_lengths()
     rashifal_failures = check_rashifal_meta(rashifal)
     for line in rashifal_failures:
@@ -285,7 +321,7 @@ def main() -> int:
     print("rashifal_single_meta longest: "
           + ", ".join(f"{lang.upper()} {n}" for lang, (n, _) in sorted(rashifal.items()))
           + f"; {len(rashifal_failures)} failures")
-    return 1 if (failures or page_failures or rashifal_failures) else 0
+    return 1 if (failures or page_failures or base_failures or rashifal_failures) else 0
 
 
 if __name__ == "__main__":

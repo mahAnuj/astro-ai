@@ -227,3 +227,21 @@ def test_a_missing_rashifal_meta_key_is_a_failure_not_a_short_pass(monkeypatch):
     monkeypatch.delitem(i18n._EN, "rashifal_single_meta")
     monkeypatch.delitem(i18n._HI, "rashifal_single_meta")
     assert len(gate.check_rashifal_meta(gate.rashifal_meta_lengths())) == 2
+
+
+def test_the_base_html_default_is_inside_the_band_and_the_gate_reads_it():
+    # No sitemap page falls through to the default, so a crawl never measures it; error pages and
+    # the /rashifal/<rashi> fallback still serve it (#1178, QA finding on PR #1202).
+    value = gate.base_default_description()
+    assert value is not None and gate.check_base_default(value) == []
+    assert 50 <= len(html.unescape(value)) <= 160
+
+
+def test_an_over_length_or_missing_base_default_fails_the_gate(monkeypatch, capsys):
+    assert len(gate.check_base_default("w" * 161)) == 1
+    assert len(gate.check_base_default("w" * 49)) == 1
+    assert len(gate.check_base_default(None)) == 1
+    monkeypatch.setattr(gate, "render_sitemap_pages", lambda: ([("/x", 200, "d" * 100)], []))
+    monkeypatch.setattr(gate, "base_default_description", lambda: "w" * 200)
+    assert gate.main() == 1
+    assert "base.html default meta_description is 200" in capsys.readouterr().out

@@ -42,3 +42,15 @@ its longest (12 rashis x 365 dates). Now **EN 157, HI 155**.
   `dated_description` path, so one future date is enough.
 
 Tokens: 0. No LLM call, prompt or Groq budget is touched.
+
+## QA round 1 follow-up (PR #1202, head bbc7d55)
+
+QA failed the PR on one point: the issue's acceptance names "the `base.html` default", which was
+210 decoded characters and untouched, and the crawl never measures it because every sitemap page
+overrides the block (a scratch lengthening left the gate green). It is still served on error
+pages and on the `/rashifal/<rashi>` 503 fallback. Now: the default is 157 characters (same
+claims, dropped "by Shubh Bhagya", "get", "online", "for marriage", "no spam"), the gate reads
+the block from `base.html` directly (Gate 3b, `check_base_default`), the 12 `/rashifal/*` 503
+entries in `tests/english_surface_baseline.json` carry the new text, and two mutation rows pin it.
+`verify_english_surface.py` needs a server on :8000 and was not run; the baseline edit is the same
+string substitution on all 12 entries.

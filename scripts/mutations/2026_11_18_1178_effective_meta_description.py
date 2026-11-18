@@ -33,4 +33,12 @@ MUTATIONS = [
      _G, "    if dated:\n        targets.append(dated)",
      "    if False:\n        targets.append(dated)",
      "test_the_crawl_renders_one_future_dated_panchang_and_no_llm_page"),
+    ("#1178: the base.html default is no longer measured (QA: gate stayed green on a 210-char default)",
+     _G, "    base_failures = check_base_default(base_default_description())",
+     "    base_failures = []",
+     "test_an_over_length_or_missing_base_default_fails_the_gate"),
+    ("#1178: the base.html default grows past the ceiling again",
+     "src/astro_ai/templates/base.html", "Kundali matching. No signup.{% endblock %}",
+     "Kundali matching. No signup, no spam, no ads, no tracking, nothing to install, ever, for anyone, anywhere.{% endblock %}",
+     "test_the_base_html_default_is_inside_the_band_and_the_gate_reads_it"),
 ]
