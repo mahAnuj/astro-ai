@@ -189,12 +189,15 @@ def test_registry_keeps_the_arithmetic_and_every_faq_question():
     ]
 
 
-def test_title_is_untouched_and_the_meta_description_is_inside_the_ceiling():
+def test_title_is_untouched_and_no_seo_override_was_added():
     a = _article()
     assert a.title == "Rahu Mahadasha + Ketu Antardasha: Surviving the Nodal Axis Flip"
     assert not getattr(a, "seo_title", "")
+
+
+def test_the_meta_description_is_inside_the_ceiling():
     # #1178: seo_description was empty, so the 257-character summary was the meta; it is set now.
-    assert 50 <= len(a.seo_description) <= 160
+    assert 50 <= len(_article().seo_description) <= 160
 
 
 # --- #1075: the 'effects' and 'remedies' intents are named in headings, with no new claim ---

@@ -88,9 +88,14 @@ def test_floor_boundary_is_50_inclusive_and_a_stub_fails():
     assert len(failures) == 1 and "stub" in failures[0] and "floor" in failures[0]
 
 
-def test_an_unset_description_is_not_held_to_the_floor():
+def test_an_unset_description_is_not_measured():
     # Empty falls back to `summary` by design; the floor is for a description that is set.
+    # (#1178: "not measured" now means "not held to the floor" -- the summary fallback IS
+    # measured against the ceiling, see test_an_over_length_summary_fallback_is_a_failure.)
     assert gate.check([_art("")])[0] == []
+
+
+def test_an_unset_description_with_a_short_summary_passes():
     assert gate.check([_art("", summary="short")])[0] == []
 
 
