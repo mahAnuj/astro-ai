@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-18T16:39:05Z",
+  "generated_at": "2026-11-18T18:09:55Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 121,
+  "open": 120,
   "with_ask": 44,
   "by_area": {
-    "UNCLASSIFIED": 42,
+    "UNCLASSIFIED": 41,
     "INFRA": 15,
     "REDESIGN": 10,
     "OPS": 8,
@@ -32,13 +32,13 @@
   "by_type": {
     "untyped": 36,
     "enhancement": 30,
-    "bug": 23,
+    "bug": 22,
     "chore": 18,
     "correctness": 10,
     "design": 4
   },
   "by_priority": {
-    "unset": 83,
+    "unset": 82,
     "medium": 22,
     "high": 15,
     "low": 1
@@ -74,7 +74,7 @@
         "chore"
       ],
       "created": "2026-11-18T12:29:33Z",
-      "updated": "2026-11-18T12:29:33Z",
+      "updated": "2026-11-18T18:04:34Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -617,25 +617,6 @@
       "labels": [],
       "created": "2026-11-11T21:59:55Z",
       "updated": "2026-11-18T02:05:25Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 856,
-      "title": "Manglik copy: remaining flat six-house claims and the 'many texts … after age 28' claim outrun the held sources (residue of #838)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-10T18:33:28Z",
-      "updated": "2026-11-18T16:38:18Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1961,9 +1942,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-18T16:39:05Z",
+    "generated_at": "2026-11-18T18:09:55Z",
     "window_days": 28,
-    "open_now": 121,
+    "open_now": 120,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2367,29 +2348,21 @@
       {
         "date": "2026-11-18",
         "opened": 8,
-        "closed": 16,
-        "net": -8,
-        "open_end": 121,
+        "closed": 17,
+        "net": -9,
+        "open_end": 120,
         "opened_by": {
           "loop": 7,
           "ops": 1
         },
         "closed_by": {
-          "close-on-evidence": 14,
+          "close-on-evidence": 15,
           "prioritise": 1,
           "main-red-report": 1
         }
       }
     ],
-    "merged_open": [
-      {
-        "number": 856,
-        "title": "Manglik copy: remaining flat six-house claims and the 'many texts … after age 28' claim outrun the held sources (residue of #838)",
-        "pr": 857,
-        "merged_at": "2026-11-10T19:13:32Z",
-        "hours": 189
-      }
-    ],
+    "merged_open": [],
     "closed_rows": [
       {
         "number": 163,
@@ -3037,6 +3010,11 @@
         "closer": "owner"
       },
       {
+        "number": 856,
+        "closed_at": "2026-11-18T17:21:54Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 865,
         "closed_at": "2026-11-11T01:16:14Z",
         "closer": "main-red-report"
@@ -3602,7 +3580,7 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 11,
+    "timelines_read": 1,
     "truncated": []
   }
 }
