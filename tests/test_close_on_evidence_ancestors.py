@@ -25,7 +25,12 @@ case "$*" in
   *"compare/"*) # compare/X...Y -> ahead when X is A and Y is B, identical when equal
      spec=$(echo "$*" | grep -oE 'compare/[0-9a-f]+\.\.\.[0-9a-f]+'); x=${spec#compare/}; x=${x%%...*}; y=${spec##*...}
      if [ "$x" = "$y" ]; then echo identical; elif [ "$x" = "$A" ] && [ "$y" = "$B" ]; then echo ahead; else echo behind; fi ;;
-  *"pulls?state=closed"*) printf '%s\n' "1077:$A" "1200:$B" "999:$C" ;;
+  *"issues?state=open"*) echo '[1056, 1201, 1202, 1203, 998]' ;;
+  *"pulls?state=closed"*)
+     printf '%s\n' "{\"n\":1077,\"m\":\"$A\",\"t\":\"x closes #1056\",\"b\":\"issue/1056-x\"}" \
+                   "{\"n\":1200,\"m\":\"$B\",\"t\":\"Closes #1201, #1202 and #1203\",\"b\":\"issue/1201-y\"}" \
+                   "{\"n\":999,\"m\":\"$C\",\"t\":\"closes #998\",\"b\":\"issue/998-z\"}" \
+                   "{\"n\":555,\"m\":\"$D\",\"t\":\"chore: measurement\",\"b\":\"measurements/1-1\"}" ;;
   "pr view 1077"*"headRefName"*) echo "issue/1056-x" ;;
   "pr view 1200"*"headRefName"*) echo "issue/1201-y" ;;
   "pr view 999"*"headRefName"*) echo "issue/998-z" ;;
@@ -58,7 +63,7 @@ def _run(tmp, script, sha, live, extra_env=None):
     out = tmp / "out"; out.write_text("")
     calls = tmp / "calls"; calls.write_text("")
     env = {**os.environ, "PATH": f"{b}:{os.environ['PATH']}", "SHA": sha, "A": A, "B": B,
-           "C": "c" * 40, "GH_REPO": "o/r", "CALLS": str(calls), "GITHUB_OUTPUT": str(out),
+           "C": "c" * 40, "D": "d" * 40, "GH_REPO": "o/r", "CALLS": str(calls), "GITHUB_OUTPUT": str(out),
            "RUN_URL": "", **(extra_env or {})}
     r = subprocess.run(["bash", "-e", "-c", script], env=env, capture_output=True, text=True)
     return r, out.read_text(), calls.read_text()
@@ -91,3 +96,13 @@ def test_a_list_of_issues_after_closes_closes_all_of_them(tmp_path):
     closed = " ".join(ln for ln in calls.splitlines() if ln.startswith("issue close"))
     for n in ("1201", "1202", "1203"):
         assert n in closed, n
+
+
+def test_only_prs_claiming_an_open_issue_cost_a_compare_call(tmp_path):
+    """~400 PRs in 14 days: a PR claiming nothing open (PR 555) gets no compare."""
+    r, _, calls = _run(tmp_path, _step("Close what this commit shipped")["run"], sha=B, live=B,
+                       extra_env={"LIVE": B})
+    assert r.returncode == 0, r.stderr
+    compares = [ln for ln in calls.splitlines() if "compare/" in ln]
+    assert compares and not any("d" * 40 in c for c in compares), "PR 555 claims nothing open"
+    assert "--paginate" in next(ln for ln in calls.splitlines() if "pulls?state=closed" in ln)

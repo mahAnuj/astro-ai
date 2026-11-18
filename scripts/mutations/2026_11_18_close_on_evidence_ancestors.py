@@ -16,4 +16,8 @@ MUTATIONS = [
      _W, "#[0-9]+([[:space:]]*(,|and|&)[[:space:]]*#[0-9]+)*' \\",
      "#[0-9]+' \\",
      "test_a_list_of_issues_after_closes_closes_all_of_them"),
+    ("close-on-evidence: every merged PR gets a compare call, not only those claiming an open issue",
+     _W, "select(any($c[]; . as $x | $open | index($x)) or .m == env.SHA)",
+     "select(true)",
+     "test_only_prs_claiming_an_open_issue_cost_a_compare_call"),
 ]
