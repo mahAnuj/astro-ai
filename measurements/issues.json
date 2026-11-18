@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-17T23:17:13Z",
+  "generated_at": "2026-11-18T02:02:13Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 129,
+  "open": 130,
   "with_ask": 47,
   "by_area": {
     "UNCLASSIFIED": 51,
@@ -11,8 +11,8 @@
     "OPS": 7,
     "FEATURE": 7,
     "SEO": 5,
+    "ANALYTICS": 4,
     "CORPUS": 4,
-    "ANALYTICS": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "ASK": 2,
@@ -31,7 +31,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 35,
+    "untyped": 36,
     "enhancement": 34,
     "bug": 26,
     "chore": 18,
@@ -39,13 +39,26 @@
     "design": 5
   },
   "by_priority": {
-    "unset": 88,
+    "unset": 89,
     "medium": 22,
     "high": 18,
     "low": 1
   },
   "blocked": 7,
   "rows": [
+    {
+      "number": 1205,
+      "title": "analytics: call fetch_ga4.py --trend from agent-measure.yml and list the file for the analyst (#1115 part 2, owner act #1)",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-18T01:43:20Z",
+      "updated": "2026-11-18T01:43:20Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1190,
       "title": "always-on 6/6 permissions: credential proxy design spike",
@@ -160,7 +173,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-17T12:12:59Z",
-      "updated": "2026-11-17T12:13:17Z",
+      "updated": "2026-11-18T01:13:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -176,12 +189,12 @@
         "category:technical",
         "priority:high",
         "astrology-correctness",
-        "qa-fail",
+        "qa-pass",
         "provenance:trusted",
-        "qa:independent"
+        "qa:in-cycle"
       ],
       "created": "2026-11-17T09:46:07Z",
-      "updated": "2026-11-17T18:34:42Z",
+      "updated": "2026-11-18T00:02:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -200,7 +213,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-17T09:03:13Z",
-      "updated": "2026-11-17T23:16:30Z",
+      "updated": "2026-11-17T23:30:19Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -230,9 +243,13 @@
       "area": "ANALYTICS",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-11-16T00:42:51Z",
-      "updated": "2026-11-16T00:42:51Z",
+      "updated": "2026-11-18T02:01:18Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -312,7 +329,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T10:25:50Z",
-      "updated": "2026-11-17T18:25:13Z",
+      "updated": "2026-11-18T01:29:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -612,7 +629,7 @@
         "chore"
       ],
       "created": "2026-11-12T17:43:39Z",
-      "updated": "2026-11-17T20:20:16Z",
+      "updated": "2026-11-17T23:17:19Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -701,7 +718,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-11T21:59:55Z",
-      "updated": "2026-11-17T17:45:29Z",
+      "updated": "2026-11-17T23:19:15Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -820,7 +837,7 @@
         "chore"
       ],
       "created": "2026-11-09T00:26:38Z",
-      "updated": "2026-11-10T00:51:12Z",
+      "updated": "2026-11-18T02:02:03Z",
       "blocked": false,
       "needs_evidence": false
     },
