@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-18T12:29:27Z",
+  "generated_at": "2026-11-18T16:39:05Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 130,
-  "with_ask": 45,
+  "open": 121,
+  "with_ask": 44,
   "by_area": {
-    "UNCLASSIFIED": 49,
+    "UNCLASSIFIED": 42,
     "INFRA": 15,
     "REDESIGN": 10,
-    "OPS": 7,
+    "OPS": 8,
     "FEATURE": 7,
-    "ANALYTICS": 6,
+    "ANALYTICS": 5,
     "SEO": 4,
     "CORPUS": 4,
     "RETRIEVAL": 3,
@@ -23,43 +23,58 @@
     "DESIGN": 2,
     "BUG": 2,
     "MAIN-RED": 1,
-    "SECURITY": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
-    "UI": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 37,
-    "enhancement": 33,
-    "bug": 27,
+    "untyped": 36,
+    "enhancement": 30,
+    "bug": 23,
     "chore": 18,
     "correctness": 10,
-    "design": 5
+    "design": 4
   },
   "by_priority": {
-    "unset": 91,
+    "unset": 83,
     "medium": 22,
-    "high": 16,
+    "high": 15,
     "low": 1
   },
-  "blocked": 8,
+  "blocked": 9,
   "rows": [
     {
-      "number": 1217,
-      "title": "analytics: completion events for matching, numerology, muhurat and the dosha checks (#1070 rows 3-6)",
-      "ask": "",
-      "area": "ANALYTICS",
-      "type": "enhancement",
+      "number": 1221,
+      "title": "[INFRA] main-red-report never fires for the dispatched pr-gates runs agent-merge starts, so a green main does not close its sentinel and a red one would not report (#1216 open 5h after green)",
+      "ask": "The fix is in .github/workflows/ (either report from the dispatching step, or have the agent-merge dispatch carry the report, or add a trigger that does fire).",
+      "area": "INFRA",
+      "type": "bug",
       "priority": "unset",
       "labels": [
-        "enhancement",
-        "provenance:trusted"
+        "bug",
+        "category:technical",
+        "needs-human-review"
       ],
-      "created": "2026-11-18T11:27:20Z",
-      "updated": "2026-11-18T11:27:27Z",
+      "created": "2026-11-18T12:32:36Z",
+      "updated": "2026-11-18T12:32:51Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 1219,
+      "title": "[OPS] 8 issues still open after a merged PR claimed them",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "chore"
+      ],
+      "created": "2026-11-18T12:29:33Z",
+      "updated": "2026-11-18T12:29:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -74,7 +89,7 @@
         "bug"
       ],
       "created": "2026-11-18T05:51:20Z",
-      "updated": "2026-11-18T05:51:20Z",
+      "updated": "2026-11-18T12:32:48Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -151,39 +166,6 @@
       ],
       "created": "2026-11-17T18:01:37Z",
       "updated": "2026-11-17T18:01:37Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1187,
-      "title": "always-on 3/6 timers: agent-set follow-ups and schedules, fired into the inbox by a no-AI poller",
-      "ask": "The timer store is hidden comments: <!-- agent-timer: key=… due=<ISO> kind=followup|schedule every=<dur> target=… action=… -->.",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "category:technical"
-      ],
-      "created": "2026-11-17T18:01:36Z",
-      "updated": "2026-11-17T18:01:36Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1186,
-      "title": "always-on 2/6 liveness: hourly backstop drain + inbox-stale / ready-unmerged / red-unhandled findings",
-      "ask": "Backstop drain: an hourly, no-AI agent-queue run, so a cancelled wake strands nothing for more than an hour.",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "high",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "priority:high"
-      ],
-      "created": "2026-11-17T18:01:35Z",
-      "updated": "2026-11-17T18:01:35Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -280,27 +262,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1106,
-      "title": "security: sessions never expire server-side and sign-out cannot revoke them; /auth/google has no CSRF check",
-      "ask": "",
-      "area": "SECURITY",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "effort:s",
-        "risk:medium",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-15T20:41:26Z",
-      "updated": "2026-11-18T02:14:12Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1105,
       "title": "privacy: no code path deletes personal data — add account deletion, delete a chart's readings, and enforce retention in the bucket",
       "ask": "Add a signed-in \"delete my account\" action on /account.",
@@ -318,25 +279,6 @@
       ],
       "created": "2026-11-15T20:41:18Z",
       "updated": "2026-11-18T06:51:47Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1080,
-      "title": "debilitated-sun-career: calls Sun in the 10th \"most classically difficult\" though the corpus gives Sun digbala there; remedies labelled classical are unsourced",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-15T10:25:47Z",
-      "updated": "2026-11-16T03:17:09Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -408,24 +350,6 @@
       ],
       "created": "2026-11-15T10:10:28Z",
       "updated": "2026-11-18T06:38:45Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1056,
-      "title": "learn muhurat articles (vivah-muhurat-2027, griha-pravesh-muhurat-2026-2027) still call unsourced rules classical and credit Grihya Sutra / Padma Purana",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-15T07:17:29Z",
-      "updated": "2026-11-15T10:39:19Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -544,24 +468,6 @@
       "created": "2026-11-13T23:25:59Z",
       "updated": "2026-11-14T04:43:36Z",
       "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 970,
-      "title": "[INFRA] reading_quality: add the five natal.txt:54 DO NOT phrases it does not check (#327)",
-      "ask": "",
-      "area": "INFRA",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "category:technical",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-13T22:27:23Z",
-      "updated": "2026-11-14T00:13:28Z",
-      "blocked": false,
       "needs_evidence": false
     },
     {
@@ -715,42 +621,6 @@
       "needs_evidence": false
     },
     {
-      "number": 908,
-      "title": "Clarity masking unverified and /ask?q= in request logs: privacy disclosure gaps left from #819",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "chore",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-11T21:48:17Z",
-      "updated": "2026-11-17T07:54:44Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 889,
-      "title": "Diamond chart: header comment says degrees stay in a table under /matching charts (false), and the South-Indian LAGNA caption overlaps a crowded house 1 (follow-up to #871)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-11T05:23:36Z",
-      "updated": "2026-11-12T02:25:06Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 856,
       "title": "Manglik copy: remaining flat six-house claims and the 'many texts … after age 28' claim outrun the held sources (residue of #838)",
       "ask": "",
@@ -765,7 +635,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-10T18:33:28Z",
-      "updated": "2026-11-10T19:13:35Z",
+      "updated": "2026-11-18T16:38:18Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -782,25 +652,6 @@
       ],
       "created": "2026-11-10T15:40:41Z",
       "updated": "2026-11-18T02:15:05Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 838,
-      "title": "Manglik copy: six-house rule, combust-Mars cancellation and 'classical' list claims outrun the held sources (slice of #777)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-10T04:36:46Z",
-      "updated": "2026-11-10T18:33:37Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1561,25 +1412,6 @@
       "needs_evidence": false
     },
     {
-      "number": 310,
-      "title": "[UI] PWA install banner covers the primary CTA on the first fold, mobile and desktop",
-      "ask": "",
-      "area": "UI",
-      "type": "design",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "design-proposal",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-09T00:18:11Z",
-      "updated": "2026-11-11T07:09:30Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 291,
       "title": "Workflow prompts still label GSC pages as 'queries' and GA4 row count as 'landing pages' (follow-up to #272)",
       "ask": "",
@@ -2129,9 +1961,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-18T12:29:27Z",
+    "generated_at": "2026-11-18T16:39:05Z",
     "window_days": 28,
-    "open_now": 130,
+    "open_now": 121,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2534,15 +2366,16 @@
       },
       {
         "date": "2026-11-18",
-        "opened": 6,
-        "closed": 5,
-        "net": 1,
-        "open_end": 130,
+        "opened": 8,
+        "closed": 16,
+        "net": -8,
+        "open_end": 121,
         "opened_by": {
-          "loop": 6
+          "loop": 7,
+          "ops": 1
         },
         "closed_by": {
-          "close-on-evidence": 3,
+          "close-on-evidence": 14,
           "prioritise": 1,
           "main-red-report": 1
         }
@@ -2550,60 +2383,11 @@
     ],
     "merged_open": [
       {
-        "number": 310,
-        "title": "[UI] PWA install banner covers the primary CTA on the first fold, mobile and desktop",
-        "pr": 891,
-        "merged_at": "2026-11-11T07:09:27Z",
-        "hours": 173
-      },
-      {
-        "number": 838,
-        "title": "Manglik copy: six-house rule, combust-Mars cancellation and 'classical' list claims outrun the held sources (slice of #777)",
-        "pr": 839,
-        "merged_at": "2026-11-10T05:08:09Z",
-        "hours": 199
-      },
-      {
         "number": 856,
         "title": "Manglik copy: remaining flat six-house claims and the 'many texts … after age 28' claim outrun the held sources (residue of #838)",
         "pr": 857,
         "merged_at": "2026-11-10T19:13:32Z",
-        "hours": 185
-      },
-      {
-        "number": 889,
-        "title": "Diamond chart: header comment says degrees stay in a table under /matching charts (false), and the South-Indian LAGNA caption overlaps a crowded house 1 (follow-up to #871)",
-        "pr": 892,
-        "merged_at": "2026-11-12T02:25:03Z",
-        "hours": 154
-      },
-      {
-        "number": 908,
-        "title": "Clarity masking unverified and /ask?q= in request logs: privacy disclosure gaps left from #819",
-        "pr": 916,
-        "merged_at": "2026-11-12T02:08:41Z",
-        "hours": 154
-      },
-      {
-        "number": 970,
-        "title": "[INFRA] reading_quality: add the five natal.txt:54 DO NOT phrases it does not check (#327)",
-        "pr": 977,
-        "merged_at": "2026-11-14T00:13:24Z",
-        "hours": 108
-      },
-      {
-        "number": 1056,
-        "title": "learn muhurat articles (vivah-muhurat-2027, griha-pravesh-muhurat-2026-2027) still call unsourced rules classical and credit Grihya Sutra / Padma Purana",
-        "pr": 1077,
-        "merged_at": "2026-11-15T10:39:16Z",
-        "hours": 73
-      },
-      {
-        "number": 1080,
-        "title": "debilitated-sun-career: calls Sun in the 10th \"most classically difficult\" though the corpus gives Sun digbala there; remedies labelled classical are unsourced",
-        "pr": 1118,
-        "merged_at": "2026-11-16T03:17:06Z",
-        "hours": 57
+        "hours": 189
       }
     ],
     "closed_rows": [
@@ -2685,6 +2469,11 @@
       {
         "number": 309,
         "closed_at": "2026-11-11T12:03:23Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 310,
+        "closed_at": "2026-11-18T16:04:27Z",
         "closer": "close-on-evidence"
       },
       {
@@ -3233,6 +3022,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 838,
+        "closed_at": "2026-11-18T16:04:29Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 843,
         "closed_at": "2026-11-10T16:43:27Z",
         "closer": "close-on-evidence"
@@ -3278,6 +3072,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 889,
+        "closed_at": "2026-11-18T16:04:32Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 893,
         "closed_at": "2026-11-11T11:36:16Z",
         "closer": "close-on-evidence"
@@ -3290,6 +3089,11 @@
       {
         "number": 903,
         "closed_at": "2026-11-12T02:31:23Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 908,
+        "closed_at": "2026-11-18T16:04:35Z",
         "closer": "close-on-evidence"
       },
       {
@@ -3345,6 +3149,11 @@
       {
         "number": 968,
         "closed_at": "2026-11-14T01:15:54Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 970,
+        "closed_at": "2026-11-18T16:04:37Z",
         "closer": "close-on-evidence"
       },
       {
@@ -3513,6 +3322,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1056,
+        "closed_at": "2026-11-18T16:04:40Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1059,
         "closed_at": "2026-11-15T11:23:31Z",
         "closer": "close-on-evidence"
@@ -3583,6 +3397,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1080,
+        "closed_at": "2026-11-18T16:04:42Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1081,
         "closed_at": "2026-11-15T20:36:36Z",
         "closer": "close-on-evidence"
@@ -3645,6 +3464,11 @@
       {
         "number": 1104,
         "closed_at": "2026-11-17T07:19:04Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1106,
+        "closed_at": "2026-11-18T16:04:44Z",
         "closer": "close-on-evidence"
       },
       {
@@ -3743,6 +3567,16 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1186,
+        "closed_at": "2026-11-18T16:04:47Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1187,
+        "closed_at": "2026-11-18T16:04:50Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1188,
         "closed_at": "2026-11-17T19:31:30Z",
         "closer": "close-on-evidence"
@@ -3761,9 +3595,14 @@
         "number": 1211,
         "closed_at": "2026-11-18T03:44:54Z",
         "closer": "main-red-report"
+      },
+      {
+        "number": 1217,
+        "closed_at": "2026-11-18T12:59:43Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 11,
     "truncated": []
   }
 }

@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-18T12:31:35Z",
+ "generated_at": "2026-11-18T16:41:58Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1031,6 +1031,16 @@
     ]
    },
    {
+    "number": 1212,
+    "at": "2026-11-18T16:26:41Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1212#issuecomment-6984641750",
+    "summary": "QA: FAIL \u2014 verified at `f71d4db0764933c9168596f783c499664014b470` Earlier FAIL fixed (8/8 tests, pre_qa_check PASS, 7/7 mutation rows RED by hand). New defect: an issue a human reopens is re-closed by the next green run for 14 days, because the only guard is state=OPEN (executed: two runs of the rea",
+    "themes": [
+     "tests",
+     "regression"
+    ]
+   },
+   {
     "number": 1210,
     "at": "2026-11-18T05:58:14Z",
     "url": "https://github.com/mahAnuj/astro-ai/pull/1210#issuecomment-6970481405",
@@ -1095,20 +1105,12 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": [
-   {
-    "kind": "fixes-not-closing",
-    "level": "amber",
-    "title": "8 issues still open after a merged PR claimed them",
-    "detail": "#310 (PR #891, 173h), #838 (PR #839, 199h), #856 (PR #857, 185h), #889 (PR #892, 154h), #908 (PR #916, 154h), #970 (PR #977, 108h), #1056 (PR #1077, 73h), #1080 (PR #1118, 57h). Each PR merged more than 24h ago and claims its issue, so the fix shipped and nothing closed it. Levers: check close-on-evidence.yml's runs for those merge commits (did it fire, and did it find the live commit?) and verify-production.yml (a red or skipped run closes nothing). A PR that only partly fixes its issue should say `Refs #N`, not `closes #N`.",
-    "where": "/admin/ops"
-   }
-  ]
+  "ops_findings": []
  },
  "error_themes": {
   "grounding": 31,
-  "tests": 29,
-  "regression": 28,
+  "tests": 30,
+  "regression": 29,
   "tokens": 21,
   "copy": 20,
   "security": 15,
