@@ -11,6 +11,7 @@
      - pdf_filename_hint: str  — becomes the document.title. Should be
                                   a short human-readable label like
                                   "Priya's Kundli" or "Bride+Groom Match".
+     - pdf_share_content: str  — optional; see #1229 note below. Omit to send no event.
      - pdf_on_night: bool      — optional, defaults false. Set it when the
                                   button sits on a bhagya-night panel.
 
@@ -25,9 +26,15 @@
    All content wrapped in .no-print so it doesn't appear in the PDF itself. #}
 {% set _hint = pdf_filename_hint if pdf_filename_hint is defined else 'Shubh Bhagya reading' %}
 {% set _night = pdf_on_night if pdf_on_night is defined else false %}
+{# #1229: `share` event. Set `pdf_share_content` (kundli | rashifal | learn) to
+   count a click here as share(method=pdf); leave it unset and the click sends
+   nothing. Only result.html sets it: numerology, matching and the muhurat finder
+   have no value in that closed list, and widening the list is not this partial's
+   call. Never pass a name, filename or anything typed. #}
+{% set _share = pdf_share_content if pdf_share_content is defined else none %}
 
 <div class="no-print flex items-center gap-2 flex-wrap">
-  <button type="button"
+  <button type="button"{% if _share %} data-share-method="pdf" data-share-content="{{ _share }}"{% endif %}
           onclick="(function(){var t=document.title;document.title='Bhagya - {{ _hint | escape }}';window.print();setTimeout(function(){document.title=t;},1000);})()"
           class="inline-flex items-center gap-2 font-semibold text-sm px-4 py-2 rounded border transition-colors
                  {% if _night %}bg-transparent border-bhagya-gold/40 text-bhagya-cream hover:border-bhagya-saffron hover:text-bhagya-saffron
