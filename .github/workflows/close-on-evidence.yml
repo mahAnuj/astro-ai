@@ -122,19 +122,45 @@ jobs:
             echo "::notice::/health reports no build_sha — cannot prove which commit is live, not closing anything"
             exit 0
           fi
+          # 2026-11-18: a newer deploy that CONTAINS this commit is still proof it
+          # is live. Requiring live == SHA skipped every PR merged in a burst: by
+          # the time its verify-production finished, a later merge was serving.
+          # Measured: #1056 (PR #1077, verify green 2026-11-15) never closed.
           if [ "$live" != "$SHA" ]; then
-            echo "::notice::live commit $live is not this run's $SHA — a newer deploy landed, not closing"
-            exit 0
+            rel=$(gh api "repos/$GH_REPO/compare/$SHA...$live" --jq .status 2>/dev/null || echo error)
+            if [ "$rel" != "ahead" ]; then
+              echo "::notice::live commit $live does not contain $SHA (compare: $rel) — not closing"
+              exit 0
+            fi
+            echo "live $live contains $SHA"
           fi
+          echo "live=$live" >> "$GITHUB_OUTPUT"
           echo "ok=true" >> "$GITHUB_OUTPUT"
 
       - name: Close what this commit shipped
         if: steps.live.outputs.ok == 'true'
+        env:
+          LIVE: ${{ steps.live.outputs.live }}
         run: |
           # Only issues a merged PR explicitly claimed. A commit message
           # mentioning an issue is not a claim that it is fixed.
-          prs=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" --jq '.[].number')
-          [ -n "$prs" ] || { echo "no PR for $SHA"; exit 0; }
+          # Every PR merged in the last 7 days whose merge commit is in $SHA's
+          # history, not only $SHA's own PR (2026-11-18). A green run on $SHA
+          # proves the code of all of them is live and passing now -- including
+          # PRs whose own run was skipped (a newer deploy already serving) or
+          # failed on the deploy-wait timeout (#1080 via PR #1118). Closing is
+          # idempotent: an issue already closed is skipped below.
+          since=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          prs=""
+          for pr_merge in $(gh api "repos/$GH_REPO/pulls?state=closed&sort=updated&direction=desc&per_page=100" \
+                 --jq ".[] | select(.merged_at != null and .merged_at >= \"$since\") | \"\(.number):\(.merge_commit_sha)\""); do
+            pr=${pr_merge%%:*}; merge=${pr_merge#*:}
+            if [ "$merge" = "$SHA" ]; then prs="$prs $pr"; continue; fi
+            rel=$(gh api "repos/$GH_REPO/compare/$merge...$SHA" --jq .status 2>/dev/null || echo error)
+            [ "$rel" = "ahead" ] && prs="$prs $pr"
+          done
+          [ -n "$prs" ] || { echo "no PR in the last 7 days is contained in $SHA"; exit 0; }
+          echo "PRs contained in $SHA:$prs"
 
           for pr in $prs; do
             body=$(gh pr view "$pr" --repo "$GH_REPO" --json body,title --jq '.title + "\n" + .body')
@@ -214,7 +240,7 @@ jobs:
 
           - PR #$pr merged to \`main\`
           - \`verify-production\` concluded **success** for \`$SHA\`$run_link
-          - \`/health\` reports \`build_sha\` = \`$SHA\`, so **this commit is the revision serving**
+          - \`/health\` reports \`build_sha\` = \`$LIVE\`, which is or contains \`$SHA\`, so **this PR's code is serving**
 
           That is CLAUDE.md's two-stage close: the fix landed, the deploy was verified, and the commit was confirmed live before closing. Reopen if production disagrees — a green run proves the invariants it asserts, not that nothing else broke."
               echo "closed #$n"
