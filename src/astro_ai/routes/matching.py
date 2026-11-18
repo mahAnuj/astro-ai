@@ -209,6 +209,12 @@ async def matching_result(
             "lang": lang,
             "guna": guna,
             "verdict_key": verdict_key,
+            # matching_completed (#1217): a band of the 36-point total, never the
+            # score or anything about the two people. 18 is the verdict's own
+            # floor (`_overall_verdict`); 25 is the issue's cut, not a verdict
+            # boundary (those are 18/24/30). Half points (17.5, 24.5) stay low.
+            "score_band": ("0-17" if guna.total_awarded < 18
+                           else "18-24" if guna.total_awarded < 25 else "25-36"),
             "sections": narrative_sections,
             "groom": {
                 "name": g_name.strip(), "birth_date": g_birth_date,

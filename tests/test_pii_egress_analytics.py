@@ -122,6 +122,12 @@ def test_the_ask_redirect_may_carry_the_question_only_because_analytics_js_strip
 #: ARCHITECTURE.md section 11).
 ALLOWED_CALL_EXPRESSIONS = frozenset({
     "lang", "current_category", "dasha.mahadasha.lord", "dasha.antardasha.lord",
+    # #1217: `score_band` is one of three literals chosen in routes/matching.py
+    # from the 36-point total; the four `muhurat_searched.*` are an event key
+    # validated against EVENT_RULES, two integers and a four-value mode, all built
+    # in routes/muhurat.py. None is read from a form field as typed.
+    "score_band", "muhurat_searched.event_type", "muhurat_searched.days",
+    "muhurat_searched.valid_count", "muhurat_searched.mode",
 })
 
 #: The same for the two inline blocks base.html builds for analytics.js.

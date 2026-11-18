@@ -144,6 +144,11 @@
   {% if candidates %}
   {% set good_candidates = candidates | rejectattr('rating', 'equalto', 'avoid') | list %}
   {% set avoid_candidates = candidates | selectattr('rating', 'equalto', 'avoid') | list %}
+  {# #1217 muhurat_searched (#1017 F1): declared only here, where a search found candidates. The route builds the values (an event key, two integers, a mode enum; no city, name or birth data) and each is spelt out here so tests/test_pii_egress_analytics.py reviews every one; a caller that passes none, as the tests that render this template directly do, declares nothing. #}
+  {% if muhurat_searched %}
+  {% from "_analytics_event.html" import analytics_event %}
+  {{ analytics_event('muhurat_searched', {'event_type': muhurat_searched.event_type, 'days': muhurat_searched.days, 'valid_count': muhurat_searched.valid_count, 'mode': muhurat_searched.mode}) }}
+  {% endif %}
   <style>
     /* Muhurat results table -> one card per candidate date below lg (1024px).
        Rule: no content auto-scrolls. This table's min-content width is

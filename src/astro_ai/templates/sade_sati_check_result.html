@@ -116,4 +116,7 @@
   </div>
 
 </main>
+{# #1217: declared, fired once by analytics.js. This template renders a result only from the POST that computed it -- no GET shows a stored one -- so a render with a result is a completion. #}
+{% from "_analytics_event.html" import analytics_event %}
+{{ analytics_event('dosha_check_completed', {'check': 'sade_sati', 'lang': lang}) }}
 {% endblock %}

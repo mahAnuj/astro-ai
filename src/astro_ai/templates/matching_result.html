@@ -431,4 +431,7 @@
    static now, which is also the honest presentation: a compatibility score is
    a computed result, not a slot machine coming to rest on one. #}
 
+{# #1217: declared, fired once by analytics.js. This template renders a result only from the POST that computed it -- no GET shows a stored one -- so a render with a result is a completion. #}
+{% from "_analytics_event.html" import analytics_event %}
+{{ analytics_event('matching_completed', {'lang': lang, 'score_band': score_band}) }}
 {% endblock %}
