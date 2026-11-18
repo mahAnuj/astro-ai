@@ -19,8 +19,11 @@
  * Public API (window.Analytics):
  *   .track(name, params)           — raw event, drops to all configured providers
  *   .kundliGenerated({lang})       — core conversion: someone read their chart
- *   .subscribeCompleted({lang})    — subscribed to daily Rashifal
- *   .languageSwitched({lang})      — clicked English/Hindi
+ *   .subscribeCompleted({lang,from_path}) — subscribed to daily Rashifal; from_path
+ *                                    is the page's path only (#1229), never a query
+ *   .languageSwitched({to_lang})   — picked English/Hindi in the nav (#1229); fired
+ *                                    by the delegated change listener below, only
+ *                                    for en|hi, beacon transport
  *   .pwaInstalled()                — accepted the PWA install prompt
  *   .feedbackSent({type})          — submitted the feedback form
  *   .pageView(path)                — manual pageview (use for SPA nav)
@@ -31,6 +34,14 @@
  *   .toolSubmitted({tool})         — a visitor submitted a tool form (#1226); fired
  *                                    by the delegated submit listener below from
  *                                    `form[data-tool]`, never by a template
+ *   .login({method})               — signed in; method 'google' only, beacon
+ *                                    transport. Called by base.html's
+ *                                    handleGoogleSignIn at event time, before the
+ *                                    reload (#1229)
+ *   .share({method,content_type})  — clicked a share control (#1229); fired by the
+ *                                    delegated click listener below from
+ *                                    `[data-share-method]` (+ data-share-content),
+ *                                    both values from a fixed list
  *
  * Add a new event by adding a method here — keep templates dumb.
  *
@@ -202,7 +213,7 @@
   // (ctrl/meta/shift) ARE counted -- the `click` event still fires for them and
   // a new-tab open is a follow; a middle click fires `auxclick`, not `click`,
   // and is not counted. Never preventDefault/stopPropagation: this observes.
-  document.addEventListener('click', function (e) {
+  function ctaClickHandler(e) {
     try {
       if (location.pathname.indexOf('/learn/') !== 0) return;
       var el = e.target;
@@ -216,7 +227,9 @@
       if (!isToolPath(url.pathname)) return;
       window.Analytics.ctaClick({ from_path: location.pathname, to_path: url.pathname });
     } catch (err) { /* analytics must never break a click */ }
-  });
+  }
+  // Registered once, below, together with shareClickHandler (#1229): this file
+  // keeps ONE delegated click listener (tests/test_cta_click_event.py pins it).
 
   // ── tool_submitted: a visitor submitted a tool's form (#1226, #1070 row 1) ──
   // The denominator for slice 1's completion events (matching_completed,
@@ -248,6 +261,68 @@
       if (!form) return;
       window.Analytics.toolSubmitted({ tool: form.getAttribute('data-tool') });
     } catch (err) { /* analytics must never break a submit */ }
+  });
+
+  // ── language_switched: the nav language <select> (#1229, #1070 row 10) ──────
+  // _lang_picker.html's <select name="lang"> carries `onchange="this.form.submit()"`.
+  // HTMLFormElement.submit() does NOT raise a `submit` event (only a click on a
+  // submit button or requestSubmit() does), so a `submit` listener on
+  // form[action="/lang"] would never fire for the one path a visitor actually
+  // uses; the observable event is the select's `change`, which bubbles to
+  // `document` after the inline handler has started the navigation. Hence a
+  // delegated `change` listener, not the `submit` one the issue named.
+  // tests/test_analytics_share_login_lang.py pins that the template still uses
+  // `.submit()` so this reasoning is rechecked if the markup changes.
+  //
+  // Only `to_lang` is sent, and only en|hi (LANG_CODES is the whole list): a
+  // value outside it sends nothing. Beacon transport: the submit is a full page
+  // navigation, which can cancel a plain gtag request. Never preventDefault or
+  // stopPropagation: this observes and the form must still post.
+  var LANG_CODES = ['en', 'hi'];
+
+  document.addEventListener('change', function (e) {
+    try {
+      var el = e.target;
+      if (el && !el.closest && el.parentElement) el = el.parentElement;  // text node
+      if (!el || !el.closest || !el.closest('form[action="/lang"]')) return;
+      if (el.getAttribute('name') !== 'lang') return;
+      window.Analytics.languageSwitched({ to_lang: el.value });
+    } catch (err) { /* analytics must never break a language switch */ }
+  });
+
+  // ── share: a visitor clicks a share control (#1229, #1070 row 11) ───────────
+  // The control declares itself in markup: data-share-method (SHARE_METHODS) and
+  // data-share-content (SHARE_CONTENT), set on the wa.me anchors in
+  // learn_article_base / rashifal_single / _rashifal_card_content, on result.html's
+  // WhatsApp controls and Cosmic Card link, and on _pdf_download_button.html when
+  // its including page names a content type. Nothing is read from an href, the
+  // URL or the link text -- a wa.me href carries the article title or a name.
+  // One delegated click listener on `document` (hx-boost safe, no per-link
+  // handler); a click on an icon inside the control bubbles to it via closest().
+  // Either value missing or outside its list sends nothing. Never
+  // preventDefault/stopPropagation: result.html's own handler must still run.
+  var SHARE_METHODS = ['whatsapp', 'snapshot', 'pdf'];
+  var SHARE_CONTENT = ['kundli', 'rashifal', 'learn'];
+
+  function shareClickHandler(e) {
+    try {
+      var el = e.target;
+      if (el && !el.closest && el.parentElement) el = el.parentElement;  // text node
+      if (!el || !el.closest) return;
+      var ctl = el.closest('[data-share-method]');
+      if (!ctl) return;
+      window.Analytics.share({
+        method: ctl.getAttribute('data-share-method'),
+        content_type: ctl.getAttribute('data-share-content')
+      });
+    } catch (err) { /* analytics must never break a click */ }
+  }
+
+  // The one delegated click listener: cta_click, then share. Each handler has its
+  // own try/catch, so a throw in one never skips the other.
+  document.addEventListener('click', function (e) {
+    ctaClickHandler(e);
+    shareClickHandler(e);
   });
 
   // ── Declared events: <div hidden data-analytics-event=... data-analytics-params=...> ──
@@ -301,8 +376,17 @@
   window.Analytics = {
     track: track,
     kundliGenerated:    function (p) { track('kundli_generated',     p); },
-    subscribeCompleted: function (p) { track('subscribe_completed',  p); },
-    languageSwitched:   function (p) { track('language_switched',    p); },
+    // #1229: params rebuilt from the two named fields. from_path is a PATH:
+    // anything from the first `?` or `#` on is cut, so a caller that hands over
+    // location.href or a search string still cannot put a query on the wire.
+    subscribeCompleted: function (p) {
+      p = p || {};
+      var params = { lang: p.lang };
+      if (typeof p.from_path === 'string') {
+        params.from_path = p.from_path.split('?')[0].split('#')[0];
+      }
+      track('subscribe_completed', params);
+    },
     pwaInstalled:       function ( ) { track('pwa_installed');           },
     feedbackSent:       function (p) { track('feedback_sent',        p); },
 
@@ -351,6 +435,32 @@
       var tool = p && p.tool;
       if (TOOL_NAMES.indexOf(tool) === -1) return;
       track('tool_submitted', { tool: tool });
+    },
+
+    // #1229. transport_type 'beacon' as ctaClick: the submit that follows is a
+    // full navigation. Params rebuilt from the one named field; only en|hi sent.
+    languageSwitched: function (p) {
+      var to = p && p.to_lang;
+      if (LANG_CODES.indexOf(to) === -1) return;
+      track('language_switched', { to_lang: to, transport_type: 'beacon' });
+    },
+
+    // #1229. `login` is GA4's recommended event name. method is 'google' (the only
+    // sign-in there is). Beacon transport: base.html reloads the page right after.
+    login: function (p) {
+      var method = p && p.method;
+      if (method !== 'google') return;
+      track('login', { method: method, transport_type: 'beacon' });
+    },
+
+    // #1229. `share` is GA4's recommended event name. Params rebuilt from the two
+    // named fields and each checked against its list, so neither a stray
+    // attribute nor a caller can put anything else on the wire.
+    share: function (p) {
+      var method = p && p.method, content = p && p.content_type;
+      if (SHARE_METHODS.indexOf(method) === -1) return;
+      if (SHARE_CONTENT.indexOf(content) === -1) return;
+      track('share', { method: method, content_type: content });
     },
 
     // Manual pageview helper. GA4's auto-config sends the initial pageview;

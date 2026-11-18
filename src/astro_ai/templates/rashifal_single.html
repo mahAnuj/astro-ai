@@ -158,6 +158,7 @@
       <a href="{{ lang_prefix }}/rashifal" class="text-bhagya-sindoor hover:underline">{{ t(lang, 'rashifal_all_12') }}</a>
       <a href="https://wa.me/?text={{ t(lang, 'rashifal_single_share', rashi_en=rashi_en, rashi_hi=rashi_hi, url=site_url ~ self_path) | urlencode }}"
          target="_blank" rel="noopener"
+         data-share-method="whatsapp" data-share-content="rashifal"
          class="inline-flex items-center gap-1.5 text-emerald-800 hover:underline">
         {{ t(lang, 'rashifal_share_whatsapp') }}
       </a>

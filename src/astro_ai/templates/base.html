@@ -1715,6 +1715,10 @@
           .then(function (r) { return r.json(); })
           .then(function (j) {
             if (j.ok) {
+              // #1229: `login` (GA4 recommended name), method only. Beacon
+              // transport in analytics.js so the reload cannot cancel it. Guarded:
+              // a missing or failing script must never block the reload.
+              try { if (window.Analytics && window.Analytics.login) window.Analytics.login({ method: 'google' }); } catch (e) {}
               location.reload();
             } else {
               hideSigningIn();

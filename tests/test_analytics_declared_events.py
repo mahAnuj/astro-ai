@@ -65,6 +65,25 @@ def _paren_close(text: str, open_at: int) -> int:
     return len(text)
 
 
+def _brace_close(text: str, open_at: int) -> int:
+    depth = 0
+    for i in range(open_at, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return i
+    return len(text)
+
+
+#: The Google Identity Services sign-in callback. Google's SDK invokes it only
+#: after a visitor completes the OAuth popup, long after analytics.js has run, so
+#: a call inside it is event-time exactly like one inside an addEventListener
+#: argument (#1229: base.html's `login`). Only this one named function is allowed.
+_GIS_CALLBACK_RE = re.compile(r"window\.handleGoogleSignIn\s*=\s*function\s*\([^)]*\)\s*\{")
+
+
 def immediate_analytics_calls(template_text: str) -> list[str]:
     """`Analytics.*(` calls in inline <script> blocks that run at parse time.
 
@@ -84,6 +103,8 @@ def immediate_analytics_calls(template_text: str) -> list[str]:
                          if not ln.lstrip().startswith("//"))
         spans = [(a.end() - 1, _paren_close(body, a.end() - 1))
                  for a in re.finditer(r"addEventListener\s*\(", body)]
+        spans += [(g.end() - 1, _brace_close(body, g.end() - 1))
+                  for g in _GIS_CALLBACK_RE.finditer(body)]
         for c in _CALL_RE.finditer(body):
             if not any(lo < c.start() < hi for lo, hi in spans):
                 bad.append(body[c.start():c.start() + 60].splitlines()[0])
@@ -106,6 +127,16 @@ def test_the_detector_flags_the_1067_shape_and_allows_handlers():
     assert not immediate_analytics_calls(
         "<script>// Analytics.track('commented out')\nvar x = 1;</script>")
     assert not immediate_analytics_calls("<p>Analytics.track('prose')</p>")
+    # #1229: the Google sign-in callback is event-time; any other function is not.
+    assert not immediate_analytics_calls(
+        "<script>window.handleGoogleSignIn = function (r) {\n"
+        "  fetch('/a').then(function (j) { Analytics.login({method: 'google'}); });\n"
+        "};</script>")
+    assert immediate_analytics_calls(
+        "<script>window.somethingElse = function (r) { Analytics.login({method: 'google'}); };"
+        "</script>")
+    assert immediate_analytics_calls(
+        "<script>window.handleGoogleSignIn = function (r) { };\nAnalytics.login({});</script>")
 
 
 def test_no_template_calls_analytics_while_the_page_is_parsing():

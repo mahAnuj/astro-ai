@@ -1065,7 +1065,7 @@ Dated, with the evidence. **Check here before proposing a change.**
   `analytics_event('dasha_deep_dive_viewed', …)` in `dasha_deep_dive.html` are allowed as a planet name, one of nine, at the grain of the rashi
   triple Telegram already carries; that is a judgement `privacy.html` does not spell out. The completion
   markers of #1217 (`matching_completed`, `numerology_completed`, `muhurat_searched`, `dosha_check_completed`)
-  pass only enums and integers; `docs/decisions/2026-11-18-1217-tool-completion-events-need-no-flag.md`. `tool_submitted` (#1226) is sent by one delegated `submit` listener in `analytics.js` from `form[data-tool]` and carries only `tool`, a nine-value enum read from a template attribute, never a field the visitor typed. The
+  pass only enums and integers; `docs/decisions/2026-11-18-1217-tool-completion-events-need-no-flag.md`. `tool_submitted` (#1226) is sent by one delegated `submit` listener in `analytics.js` from `form[data-tool]` and carries only `tool`, a nine-value enum read from a template attribute, never a field the visitor typed. `login`, `language_switched`, `share` (#1229) follow the same rule: fixed-vocabulary scalars only (`method` google; `to_lang` en|hi; `share` `method` whatsapp|snapshot|pdf and `content_type` kundli|rashifal|learn, declared as `data-share-method`/`data-share-content` in markup, never read from an href), and `subscribe_completed` gains `from_path`, the path with any query or hash cut. `language_switched` listens for the select's `change`, because `form.submit()` raises no `submit` event. The
   subscriber's city reaches Telegram as `source=` by design and carries no sentinel in the sweep.
   Email in operational logs is pinned as allowed, not endorsed.
 
