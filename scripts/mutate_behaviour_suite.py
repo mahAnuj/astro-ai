@@ -3933,7 +3933,7 @@ MUTATIONS = [
 
     ("#398 s11: the result page's guide card promises every classical cancellation rule again",
      "src/astro_ai/templates/manglik_check_result.html",
-     "Depth: the six qualifying houses, the cancellation rules the tradition repeats",
+     "Depth: which houses count (five in the sources we work from, the 1st optional), the cancellation rules the tradition repeats",
      "Depth: all six qualifying houses, every classical cancellation rule, the cancellation rules the tradition repeats",
      "test_the_result_page_makes_no_such_claim_either"),
 

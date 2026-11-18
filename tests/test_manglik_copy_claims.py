@@ -170,3 +170,10 @@ def test_planets_in_7th_house_does_not_attribute_the_age_28_claim_to_the_texts(c
     t = _text(client, "/learn/planets-in-7th-house-marriage/")
     assert "many texts consider" not in t
     assert "after age 28; that is a modern folk claim with no classical text behind it" in t
+
+
+def test_manglik_check_result_guide_card_does_not_state_six_houses_flatly(client):
+    """#856: the guide card under the result must not say 'the six qualifying houses' unqualified."""
+    t = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", client.post("/manglik-check", data=_BIRTH).text))
+    assert "Depth: the six qualifying houses" not in t
+    assert "Depth: which houses count (five in the sources we work from, the 1st optional)" in t
