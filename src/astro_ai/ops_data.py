@@ -8,7 +8,8 @@ WHERE THE DATA COMES FROM, AND WHY IT IS NOT READ FROM DISK IN PRODUCTION
 
     loop.json    one row per completed `agent-work` cycle
     cost.json    one row per vendor; `monthly_usd` is null where unreadable
-    issues.json  the open backlog with a derived area/type/priority
+    issues.json  the open backlog with a derived area/type/priority, and its
+                 28-day opened/closed `trend` (scripts/issue_flow.py)
 
 The Docker image copies only `src/`, so **none of these files exist in the
 deployed container** — the architect recorded that caveat on #338 before the
@@ -2135,6 +2136,115 @@ def _tokens_view(loop_doc: dict | None) -> dict | None:
                                 for o, v in (t.get("median_by_outcome") or {}).items()}}
 
 
+#: Open issues a merged PR claimed more than a day ago, at or above which the
+#: fixes are not closing (2026-11-18). One definition: the "Issue flow" panel
+#: words its reading on it and scripts/detect_ops_regressions.py raises
+#: `fixes-not-closing` on it, so the page and the finding cannot disagree.
+FIXES_NOT_CLOSING_MIN = 3
+
+#: Display names for the trend's buckets (scripts/issue_flow.py SOURCES and
+#: CLOSERS), in the order the tables list them.
+FLOW_SOURCES = (("audit", "audit / session (owner)"), ("loop", "loop bots"),
+                ("ops", "[OPS] findings"), ("outsider", "outsiders"))
+FLOW_CLOSERS = (("close-on-evidence", "close-on-evidence"), ("prioritise", "/prioritise"),
+                ("cannot-reproduce", "CANNOT-REPRODUCE"),
+                ("main-red-report", "red-main sentinel cleared"),
+                ("owner", "owner, by hand"), ("other", "other"), ("unread", "not read"))
+
+
+def _flow_chart(days: list[dict], *, width: int = 700, plot_h: int = 120) -> dict:
+    """SVG geometry for opened-vs-closed bars with an open-count line. Computed
+    here so the template holds no arithmetic (the `_by_day_chart` rule). The
+    line has its own scale, labelled on the right: it counts hundreds where the
+    bars count tens, and one axis would flatten one of them."""
+    left, right = 26, 34
+    slot = (width - left - right) / len(days)
+    bar_w = max(min(slot * 0.34, 14), 2)
+    ymax = max(4, max(max(d["opened"], d["closed"]) for d in days))
+    opens = [d["open_end"] for d in days]
+    lo, hi = min(opens), max(opens)
+    if hi - lo < 4:
+        lo, hi = lo - 2, hi + 2
+    cols, pts = [], []
+    for i, d in enumerate(days):
+        x0 = left + i * slot + slot / 2 - bar_w
+        oh = d["opened"] / ymax * plot_h
+        ch = d["closed"] / ymax * plot_h
+        ly = plot_h - (d["open_end"] - lo) / (hi - lo) * plot_h
+        pts.append(f"{round(left + i * slot + slot / 2, 2)},{round(ly, 2)}")
+        cols.append({"date": d["date"], "label": d["date"][5:],
+                     "show_label": i % 4 == (len(days) - 1) % 4,
+                     "cx": round(left + i * slot + slot / 2, 2),
+                     "ox": round(x0, 2), "oy": round(plot_h - oh, 2), "oh": round(oh, 2),
+                     "cxb": round(x0 + bar_w, 2), "cy": round(plot_h - ch, 2), "ch": round(ch, 2),
+                     "w": round(bar_w, 2),
+                     "tip": (f"{d['date']}: {d['opened']} opened, {d['closed']} closed, "
+                             f"net {'+' if d['net'] > 0 else ''}{d['net']}, {d['open_end']} open at end of day")})
+    return {"w": width, "h": plot_h + 26, "plot_h": plot_h, "left": left, "right_x": width - right + 6,
+            "ymax": ymax, "lo": lo, "hi": hi, "label_y": plot_h + 18,
+            "points": " ".join(pts), "cols": cols}
+
+
+def _issue_flow_view(doc: dict | None, now: datetime) -> dict | None:
+    """issues.json `trend` (scripts/issue_flow.py, 2026-11-18): opened against
+    closed, who did each, and the fixes that shipped without closing their issue.
+
+    Read from the COMMITTED snapshot even when the backlog itself is live: the
+    trend reads ~250 timelines on its first run, which is a collector's job and
+    never a request's. None when the block is absent (not collected yet);
+    {"error"} when the collector recorded a failure; `empty` when the window
+    holds no activity at all."""
+    t = (doc or {}).get("trend") if isinstance(doc, dict) else None
+    if not isinstance(t, dict):
+        return None
+    if t.get("error") or not isinstance(t.get("days"), list) or not t["days"]:
+        return {"error": t.get("error") or "the trend block has no days",
+                "age": _age(t.get("generated_at") or (doc or {}).get("generated_at"), now)}
+    days = t["days"]
+    week, before = days[-7:], days[-8] if len(days) >= 8 else None
+    opened = sum(d.get("opened", 0) for d in week)
+    closed = sum(d.get("closed", 0) for d in week)
+    src, by = Counter(), Counter()
+    for d in week:
+        src.update(d.get("opened_by") or {})
+        by.update(d.get("closed_by") or {})
+    # Open at the end of the day before the week, so "rose N" is the week's own change.
+    start_open = before["open_end"] if before else week[0]["open_end"] - week[0]["net"]
+    delta = week[-1]["open_end"] - start_open
+    mo = t.get("merged_open") or []
+
+    def top(counter, names):
+        # Largest bucket; a tie goes to the first in the table's own order, so
+        # the sentence does not change with the order days were summed in.
+        k, label = max(names, key=lambda kv: (counter.get(kv[0], 0), -names.index(kv)))
+        return f"{counter.get(k, 0)} {label}"
+
+    move = (f"rose {delta}" if delta > 0 else f"fell {-delta}" if delta < 0 else "held level")
+    reading = (f"Open count {move} in the last 7 days: {opened} opened"
+               + (f" ({top(src, FLOW_SOURCES)})" if src else "")
+               + f", {closed} closed" + (f" ({top(by, FLOW_CLOSERS)})" if by else "") + ". ")
+    if len(mo) >= FIXES_NOT_CLOSING_MIN:
+        reading += (f"{len(mo)} issues are still open more than {t.get('merged_open_hours', 24)}h "
+                    "after a merged PR claimed them: fixes are not all closing.")
+    elif opened > closed:
+        reading += "Fixes are closing; findings are being added faster."
+    elif closed or opened:
+        reading += "Issues are closing at least as fast as they are being added."
+    return {
+        "age": _age(t.get("generated_at"), now),
+        "days": days, "window_days": t.get("window_days") or len(days),
+        "empty": not any(d.get("opened") or d.get("closed") for d in days),
+        "chart": _flow_chart(days),
+        "opened": opened, "closed": closed, "delta": delta,
+        "sources": [(label, src.get(k, 0)) for k, label in FLOW_SOURCES],
+        "closers": [(label, by.get(k, 0)) for k, label in FLOW_CLOSERS if by.get(k) or k != "unread"],
+        "merged_open": mo, "merged_open_hours": t.get("merged_open_hours", 24),
+        "alarm": len(mo) >= FIXES_NOT_CLOSING_MIN,
+        "truncated": t.get("truncated") or [],
+        "reading": reading,
+    }
+
+
 def _outbox_view(doc: dict | None, now: datetime) -> dict | None:
     """measurements/outbox.json (scripts/collect_outbox.py, #1188): how noisy the
     loop's own comments are, current window against the one before.
@@ -2265,6 +2375,8 @@ def snapshot(now: datetime | None = None,
         "waste": _waste_view(loop_doc),
         "tokens": _tokens_view(loop_doc),
         "outbox": _outbox_view(_fetch("outbox.json"), now),
+        # The committed snapshot, never the live backlog: see _issue_flow_view.
+        "issue_flow": _issue_flow_view(snap_doc, now),
         "issues": issues,
         "cost": cost,
         "traffic": traffic,

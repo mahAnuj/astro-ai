@@ -88,7 +88,7 @@ MEASUREMENTS = ROOT / "measurements"
 
 sys.path.insert(0, str(ROOT / "src"))
 
-from astro_ai.ops_data import _last_run_failed  # noqa: E402
+from astro_ai.ops_data import FIXES_NOT_CLOSING_MIN, _last_run_failed  # noqa: E402
 
 #: A week. Both trend findings compare the newest committed snapshot against
 #: the oldest one at least this old, so a single bad day cannot fire either.
@@ -512,6 +512,25 @@ def find(now: datetime | None = None) -> tuple[list[dict], list[str]]:
     except (OSError, json.JSONDecodeError) as exc:
         unreadable.append(f"issues.json ({exc.__class__.__name__})")
         return findings, unreadable
+
+    # --- fixes shipped, issues not closing (2026-11-18) ----------------------
+    # Owner: "Many prs have been merged but I don't see issue count reducing".
+    # `trend.merged_open` (scripts/issue_flow.py) lists open issues a merged PR
+    # claimed more than MERGED_OPEN_HOURS ago, so every one named has already
+    # been shipped-but-open for over a day; the count needs no history of its own.
+    # Before the backlog trend below, which returns early on a short history.
+    mo = (issues.get("trend") or {}).get("merged_open") or []
+    if len(mo) >= FIXES_NOT_CLOSING_MIN:
+        named = ", ".join("#%s (PR #%s, %sh)" % (r.get("number"), r.get("pr"), r.get("hours"))
+                          for r in mo[:10])
+        add("fixes-not-closing", "amber",
+            f"{len(mo)} issues still open after a merged PR claimed them",
+            f"{named}{' and more' if len(mo) > 10 else ''}. Each PR merged more than "
+            f"{(issues.get('trend') or {}).get('merged_open_hours', 24)}h ago and claims its issue, "
+            f"so the fix shipped and nothing closed it. Levers: check close-on-evidence.yml's runs "
+            f"for those merge commits (did it fire, and did it find the live commit?) and "
+            f"verify-production.yml (a red or skipped run closes nothing). A PR that only "
+            f"partly fixes its issue should say `Refs #N`, not `closes #N`.", "/admin/ops")
 
     # NO FINDING IS DERIVED FROM `by_priority`, deliberately, and the first
     # draft of this file got that wrong. See the module header: the label is
