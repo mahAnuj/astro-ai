@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-11-18T02:54:16Z",
+  "generated_at": "2026-11-18T05:37:13Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 131,
+  "open": 129,
   "with_ask": 46,
   "by_area": {
-    "UNCLASSIFIED": 50,
+    "UNCLASSIFIED": 49,
     "INFRA": 15,
     "REDESIGN": 10,
     "OPS": 7,
     "FEATURE": 7,
     "ANALYTICS": 5,
-    "SEO": 5,
+    "SEO": 4,
     "CORPUS": 4,
     "RETRIEVAL": 3,
     "CHORE": 3,
@@ -32,19 +32,19 @@
   },
   "by_type": {
     "untyped": 37,
-    "enhancement": 33,
-    "bug": 27,
+    "enhancement": 32,
+    "bug": 26,
     "chore": 18,
     "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 91,
+    "unset": 89,
     "medium": 22,
     "high": 17,
     "low": 1
   },
-  "blocked": 7,
+  "blocked": 8,
   "rows": [
     {
       "number": 1208,
@@ -55,7 +55,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-18T02:46:01Z",
-      "updated": "2026-11-18T02:46:01Z",
+      "updated": "2026-11-18T03:05:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -81,10 +81,12 @@
       "area": "ANALYTICS",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "needs-human-review"
+      ],
       "created": "2026-11-18T01:43:20Z",
-      "updated": "2026-11-18T01:43:20Z",
-      "blocked": false,
+      "updated": "2026-11-18T03:01:38Z",
+      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -172,25 +174,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1178,
-      "title": "seo: effective meta descriptions over 160 chars, enforced by verify_seo_copy (#1107 criterion 5)",
-      "ask": "",
-      "area": "SEO",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "seo",
-        "qa-fail",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-17T12:12:59Z",
-      "updated": "2026-11-18T02:46:04Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1167,
       "title": "ask: audit saved /ask answers weekly for astrological correctness (grounded in knowledge/, prompt contract, safety) without publishing user questions",
       "ask": "Collector step, no model (in agent-measure's GCS-credentialed job, like collect_llm_usage.py).",
@@ -262,7 +245,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-16T00:42:51Z",
-      "updated": "2026-11-18T02:13:21Z",
+      "updated": "2026-11-18T03:01:39Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -324,25 +307,6 @@
       ],
       "created": "2026-11-15T20:41:18Z",
       "updated": "2026-11-17T17:41:48Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1083,
-      "title": "10th-lord-in-6th: \"Jupiter debilitated in Scorpio\" is wrong (debilitated in Capricorn); five unsourced \"classical\" attributions",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-15T10:25:50Z",
-      "updated": "2026-11-18T02:13:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -425,10 +389,11 @@
         "enhancement",
         "seo",
         "category:technical",
-        "priority:high"
+        "priority:high",
+        "provenance:trusted"
       ],
       "created": "2026-11-15T10:10:28Z",
-      "updated": "2026-11-15T10:10:28Z",
+      "updated": "2026-11-18T03:11:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2148,5 +2113,1638 @@
       "blocked": false,
       "needs_evidence": false
     }
-  ]
+  ],
+  "trend": {
+    "generated_at": "2026-11-18T05:37:13Z",
+    "window_days": 28,
+    "open_now": 129,
+    "merged_open_hours": 24,
+    "days": [
+      {
+        "date": "2026-10-22",
+        "opened": 2,
+        "closed": 1,
+        "net": 1,
+        "open_end": 114,
+        "opened_by": {
+          "loop": 2
+        },
+        "closed_by": {
+          "owner": 1
+        }
+      },
+      {
+        "date": "2026-10-23",
+        "opened": 6,
+        "closed": 2,
+        "net": 4,
+        "open_end": 118,
+        "opened_by": {
+          "audit": 2,
+          "loop": 4
+        },
+        "closed_by": {
+          "prioritise": 1,
+          "owner": 1
+        }
+      },
+      {
+        "date": "2026-10-24",
+        "opened": 7,
+        "closed": 2,
+        "net": 5,
+        "open_end": 123,
+        "opened_by": {
+          "audit": 6,
+          "loop": 1
+        },
+        "closed_by": {
+          "owner": 2
+        }
+      },
+      {
+        "date": "2026-10-25",
+        "opened": 0,
+        "closed": 0,
+        "net": 0,
+        "open_end": 123,
+        "opened_by": {},
+        "closed_by": {}
+      },
+      {
+        "date": "2026-10-26",
+        "opened": 2,
+        "closed": 0,
+        "net": 2,
+        "open_end": 125,
+        "opened_by": {
+          "audit": 1,
+          "loop": 1
+        },
+        "closed_by": {}
+      },
+      {
+        "date": "2026-10-27",
+        "opened": 4,
+        "closed": 1,
+        "net": 3,
+        "open_end": 128,
+        "opened_by": {
+          "loop": 4
+        },
+        "closed_by": {
+          "other": 1
+        }
+      },
+      {
+        "date": "2026-10-28",
+        "opened": 8,
+        "closed": 2,
+        "net": 6,
+        "open_end": 134,
+        "opened_by": {
+          "audit": 2,
+          "loop": 6
+        },
+        "closed_by": {
+          "owner": 2
+        }
+      },
+      {
+        "date": "2026-10-29",
+        "opened": 5,
+        "closed": 0,
+        "net": 5,
+        "open_end": 139,
+        "opened_by": {
+          "loop": 5
+        },
+        "closed_by": {}
+      },
+      {
+        "date": "2026-10-30",
+        "opened": 5,
+        "closed": 8,
+        "net": -3,
+        "open_end": 136,
+        "opened_by": {
+          "audit": 3,
+          "loop": 2
+        },
+        "closed_by": {
+          "close-on-evidence": 1,
+          "owner": 6,
+          "other": 1
+        }
+      },
+      {
+        "date": "2026-10-31",
+        "opened": 4,
+        "closed": 12,
+        "net": -8,
+        "open_end": 128,
+        "opened_by": {
+          "audit": 3,
+          "loop": 1
+        },
+        "closed_by": {
+          "close-on-evidence": 2,
+          "prioritise": 7,
+          "cannot-reproduce": 1,
+          "owner": 2
+        }
+      },
+      {
+        "date": "2026-11-01",
+        "opened": 8,
+        "closed": 4,
+        "net": 4,
+        "open_end": 132,
+        "opened_by": {
+          "audit": 6,
+          "loop": 2
+        },
+        "closed_by": {
+          "prioritise": 1,
+          "owner": 3
+        }
+      },
+      {
+        "date": "2026-11-02",
+        "opened": 3,
+        "closed": 5,
+        "net": -2,
+        "open_end": 130,
+        "opened_by": {
+          "loop": 3
+        },
+        "closed_by": {
+          "close-on-evidence": 4,
+          "other": 1
+        }
+      },
+      {
+        "date": "2026-11-03",
+        "opened": 2,
+        "closed": 4,
+        "net": -2,
+        "open_end": 128,
+        "opened_by": {
+          "loop": 1,
+          "ops": 1
+        },
+        "closed_by": {
+          "close-on-evidence": 4
+        }
+      },
+      {
+        "date": "2026-11-04",
+        "opened": 3,
+        "closed": 3,
+        "net": 0,
+        "open_end": 128,
+        "opened_by": {
+          "loop": 3
+        },
+        "closed_by": {
+          "close-on-evidence": 2,
+          "other": 1
+        }
+      },
+      {
+        "date": "2026-11-05",
+        "opened": 7,
+        "closed": 2,
+        "net": 5,
+        "open_end": 133,
+        "opened_by": {
+          "loop": 6,
+          "ops": 1
+        },
+        "closed_by": {
+          "close-on-evidence": 1,
+          "owner": 1
+        }
+      },
+      {
+        "date": "2026-11-06",
+        "opened": 12,
+        "closed": 23,
+        "net": -11,
+        "open_end": 122,
+        "opened_by": {
+          "audit": 7,
+          "loop": 5
+        },
+        "closed_by": {
+          "close-on-evidence": 2,
+          "prioritise": 20,
+          "other": 1
+        }
+      },
+      {
+        "date": "2026-11-07",
+        "opened": 5,
+        "closed": 12,
+        "net": -7,
+        "open_end": 115,
+        "opened_by": {
+          "loop": 5
+        },
+        "closed_by": {
+          "close-on-evidence": 10,
+          "owner": 1,
+          "other": 1
+        }
+      },
+      {
+        "date": "2026-11-08",
+        "opened": 5,
+        "closed": 5,
+        "net": 0,
+        "open_end": 115,
+        "opened_by": {
+          "loop": 4,
+          "ops": 1
+        },
+        "closed_by": {
+          "close-on-evidence": 3,
+          "prioritise": 2
+        }
+      },
+      {
+        "date": "2026-11-09",
+        "opened": 8,
+        "closed": 12,
+        "net": -4,
+        "open_end": 111,
+        "opened_by": {
+          "audit": 1,
+          "loop": 6,
+          "ops": 1
+        },
+        "closed_by": {
+          "close-on-evidence": 9,
+          "prioritise": 3
+        }
+      },
+      {
+        "date": "2026-11-10",
+        "opened": 7,
+        "closed": 11,
+        "net": -4,
+        "open_end": 107,
+        "opened_by": {
+          "audit": 1,
+          "loop": 5,
+          "ops": 1
+        },
+        "closed_by": {
+          "close-on-evidence": 7,
+          "prioritise": 3,
+          "owner": 1
+        }
+      },
+      {
+        "date": "2026-11-11",
+        "opened": 12,
+        "closed": 17,
+        "net": -5,
+        "open_end": 102,
+        "opened_by": {
+          "audit": 1,
+          "loop": 10,
+          "ops": 1
+        },
+        "closed_by": {
+          "close-on-evidence": 14,
+          "main-red-report": 1,
+          "owner": 1,
+          "other": 1
+        }
+      },
+      {
+        "date": "2026-11-12",
+        "opened": 11,
+        "closed": 11,
+        "net": 0,
+        "open_end": 102,
+        "opened_by": {
+          "audit": 1,
+          "loop": 8,
+          "ops": 2
+        },
+        "closed_by": {
+          "close-on-evidence": 7,
+          "main-red-report": 2,
+          "owner": 2
+        }
+      },
+      {
+        "date": "2026-11-13",
+        "opened": 13,
+        "closed": 10,
+        "net": 3,
+        "open_end": 105,
+        "opened_by": {
+          "loop": 12,
+          "ops": 1
+        },
+        "closed_by": {
+          "close-on-evidence": 9,
+          "prioritise": 1
+        }
+      },
+      {
+        "date": "2026-11-14",
+        "opened": 34,
+        "closed": 22,
+        "net": 12,
+        "open_end": 117,
+        "opened_by": {
+          "audit": 14,
+          "loop": 20
+        },
+        "closed_by": {
+          "close-on-evidence": 20,
+          "prioritise": 1,
+          "main-red-report": 1
+        }
+      },
+      {
+        "date": "2026-11-15",
+        "opened": 44,
+        "closed": 23,
+        "net": 21,
+        "open_end": 138,
+        "opened_by": {
+          "audit": 33,
+          "loop": 11
+        },
+        "closed_by": {
+          "close-on-evidence": 16,
+          "prioritise": 1,
+          "owner": 6
+        }
+      },
+      {
+        "date": "2026-11-16",
+        "opened": 3,
+        "closed": 10,
+        "net": -7,
+        "open_end": 131,
+        "opened_by": {
+          "loop": 2,
+          "ops": 1
+        },
+        "closed_by": {
+          "close-on-evidence": 10
+        }
+      },
+      {
+        "date": "2026-11-17",
+        "opened": 22,
+        "closed": 24,
+        "net": -2,
+        "open_end": 129,
+        "opened_by": {
+          "audit": 9,
+          "loop": 13
+        },
+        "closed_by": {
+          "close-on-evidence": 13,
+          "prioritise": 2,
+          "main-red-report": 3,
+          "owner": 6
+        }
+      },
+      {
+        "date": "2026-11-18",
+        "opened": 4,
+        "closed": 4,
+        "net": 0,
+        "open_end": 129,
+        "opened_by": {
+          "loop": 4
+        },
+        "closed_by": {
+          "close-on-evidence": 2,
+          "prioritise": 1,
+          "main-red-report": 1
+        }
+      }
+    ],
+    "merged_open": [
+      {
+        "number": 310,
+        "title": "[UI] PWA install banner covers the primary CTA on the first fold, mobile and desktop",
+        "pr": 891,
+        "merged_at": "2026-11-11T07:09:27Z",
+        "hours": 166
+      },
+      {
+        "number": 838,
+        "title": "Manglik copy: six-house rule, combust-Mars cancellation and 'classical' list claims outrun the held sources (slice of #777)",
+        "pr": 839,
+        "merged_at": "2026-11-10T05:08:09Z",
+        "hours": 192
+      },
+      {
+        "number": 856,
+        "title": "Manglik copy: remaining flat six-house claims and the 'many texts … after age 28' claim outrun the held sources (residue of #838)",
+        "pr": 857,
+        "merged_at": "2026-11-10T19:13:32Z",
+        "hours": 178
+      },
+      {
+        "number": 889,
+        "title": "Diamond chart: header comment says degrees stay in a table under /matching charts (false), and the South-Indian LAGNA caption overlaps a crowded house 1 (follow-up to #871)",
+        "pr": 892,
+        "merged_at": "2026-11-12T02:25:03Z",
+        "hours": 147
+      },
+      {
+        "number": 908,
+        "title": "Clarity masking unverified and /ask?q= in request logs: privacy disclosure gaps left from #819",
+        "pr": 916,
+        "merged_at": "2026-11-12T02:08:41Z",
+        "hours": 147
+      },
+      {
+        "number": 970,
+        "title": "[INFRA] reading_quality: add the five natal.txt:54 DO NOT phrases it does not check (#327)",
+        "pr": 977,
+        "merged_at": "2026-11-14T00:13:24Z",
+        "hours": 101
+      },
+      {
+        "number": 1056,
+        "title": "learn muhurat articles (vivah-muhurat-2027, griha-pravesh-muhurat-2026-2027) still call unsourced rules classical and credit Grihya Sutra / Padma Purana",
+        "pr": 1077,
+        "merged_at": "2026-11-15T10:39:16Z",
+        "hours": 66
+      },
+      {
+        "number": 1080,
+        "title": "debilitated-sun-career: calls Sun in the 10th \"most classically difficult\" though the corpus gives Sun digbala there; remedies labelled classical are unsourced",
+        "pr": 1118,
+        "merged_at": "2026-11-16T03:17:06Z",
+        "hours": 50
+      }
+    ],
+    "closed_rows": [
+      {
+        "number": 163,
+        "closed_at": "2026-10-31T19:42:06Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 177,
+        "closed_at": "2026-11-07T00:58:52Z",
+        "closer": "owner"
+      },
+      {
+        "number": 184,
+        "closed_at": "2026-11-07T09:11:23Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 200,
+        "closed_at": "2026-11-07T17:17:53Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 209,
+        "closed_at": "2026-11-07T03:06:44Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 219,
+        "closed_at": "2026-11-11T01:23:26Z",
+        "closer": "other"
+      },
+      {
+        "number": 230,
+        "closed_at": "2026-10-31T19:41:19Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 231,
+        "closed_at": "2026-11-06T06:14:50Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 232,
+        "closed_at": "2026-10-31T19:41:24Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 254,
+        "closed_at": "2026-11-02T23:22:15Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 262,
+        "closed_at": "2026-11-04T00:22:51Z",
+        "closer": "other"
+      },
+      {
+        "number": 265,
+        "closed_at": "2026-11-02T03:07:33Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 278,
+        "closed_at": "2026-11-06T15:22:01Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 279,
+        "closed_at": "2026-11-06T06:31:59Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 308,
+        "closed_at": "2026-11-11T19:02:43Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 309,
+        "closed_at": "2026-11-11T12:03:23Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 350,
+        "closed_at": "2026-11-06T15:21:58Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 354,
+        "closed_at": "2026-11-06T06:31:56Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 357,
+        "closed_at": "2026-10-31T19:41:36Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 358,
+        "closed_at": "2026-10-31T19:41:39Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 361,
+        "closed_at": "2026-11-06T06:14:55Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 362,
+        "closed_at": "2026-10-24T00:00:50Z",
+        "closer": "owner"
+      },
+      {
+        "number": 366,
+        "closed_at": "2026-11-12T02:52:40Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 367,
+        "closed_at": "2026-11-06T06:32:02Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 379,
+        "closed_at": "2026-11-07T10:11:22Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 380,
+        "closed_at": "2026-11-11T00:44:31Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 381,
+        "closed_at": "2026-11-12T19:11:26Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 382,
+        "closed_at": "2026-11-07T14:19:44Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 384,
+        "closed_at": "2026-10-30T16:58:22Z",
+        "closer": "owner"
+      },
+      {
+        "number": 387,
+        "closed_at": "2026-10-28T11:05:54Z",
+        "closer": "owner"
+      },
+      {
+        "number": 388,
+        "closed_at": "2026-10-30T02:58:46Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 389,
+        "closed_at": "2026-10-30T17:25:12Z",
+        "closer": "owner"
+      },
+      {
+        "number": 392,
+        "closed_at": "2026-11-06T15:21:54Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 398,
+        "closed_at": "2026-10-31T07:23:32Z",
+        "closer": "owner"
+      },
+      {
+        "number": 399,
+        "closed_at": "2026-11-06T06:30:37Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 406,
+        "closed_at": "2026-10-31T19:41:59Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 407,
+        "closed_at": "2026-10-31T19:42:02Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 426,
+        "closed_at": "2026-11-02T12:24:22Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 429,
+        "closed_at": "2026-11-07T20:28:07Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 430,
+        "closed_at": "2026-10-28T10:43:22Z",
+        "closer": "owner"
+      },
+      {
+        "number": 431,
+        "closed_at": "2026-11-03T19:11:01Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 432,
+        "closed_at": "2026-11-03T02:18:01Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 433,
+        "closed_at": "2026-11-13T23:02:39Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 446,
+        "closed_at": "2026-11-06T15:27:28Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 450,
+        "closed_at": "2026-10-31T02:43:22Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 457,
+        "closed_at": "2026-11-13T20:58:50Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 461,
+        "closed_at": "2026-10-31T19:39:02Z",
+        "closer": "owner"
+      },
+      {
+        "number": 463,
+        "closed_at": "2026-11-09T00:59:21Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 465,
+        "closed_at": "2026-10-30T17:25:20Z",
+        "closer": "owner"
+      },
+      {
+        "number": 466,
+        "closed_at": "2026-11-05T21:47:20Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 468,
+        "closed_at": "2026-10-30T17:25:17Z",
+        "closer": "owner"
+      },
+      {
+        "number": 472,
+        "closed_at": "2026-10-22T05:25:13Z",
+        "closer": "owner"
+      },
+      {
+        "number": 475,
+        "closed_at": "2026-11-06T06:13:59Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 485,
+        "closed_at": "2026-11-06T15:21:56Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 490,
+        "closed_at": "2026-11-13T11:11:43Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 493,
+        "closed_at": "2026-10-23T04:52:54Z",
+        "closer": "owner"
+      },
+      {
+        "number": 495,
+        "closed_at": "2026-10-27T17:37:19Z",
+        "closer": "other"
+      },
+      {
+        "number": 503,
+        "closed_at": "2026-11-10T08:55:08Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 505,
+        "closed_at": "2026-10-23T23:53:06Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 508,
+        "closed_at": "2026-11-06T06:13:56Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 510,
+        "closed_at": "2026-10-30T17:25:14Z",
+        "closer": "owner"
+      },
+      {
+        "number": 513,
+        "closed_at": "2026-11-07T14:38:16Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 514,
+        "closed_at": "2026-11-01T21:01:56Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 515,
+        "closed_at": "2026-10-24T09:22:10Z",
+        "closer": "owner"
+      },
+      {
+        "number": 518,
+        "closed_at": "2026-11-06T18:32:25Z",
+        "closer": "other"
+      },
+      {
+        "number": 523,
+        "closed_at": "2026-11-06T06:14:52Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 528,
+        "closed_at": "2026-11-09T12:10:47Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 543,
+        "closed_at": "2026-10-31T20:18:11Z",
+        "closer": "cannot-reproduce"
+      },
+      {
+        "number": 553,
+        "closed_at": "2026-11-06T15:21:51Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 557,
+        "closed_at": "2026-11-06T15:21:48Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 560,
+        "closed_at": "2026-11-10T08:55:11Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 570,
+        "closed_at": "2026-11-03T04:47:23Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 573,
+        "closed_at": "2026-10-30T17:25:09Z",
+        "closer": "owner"
+      },
+      {
+        "number": 580,
+        "closed_at": "2026-11-10T08:55:13Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 582,
+        "closed_at": "2026-11-10T20:14:55Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 583,
+        "closed_at": "2026-11-10T18:03:13Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 584,
+        "closed_at": "2026-11-11T00:03:16Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 593,
+        "closed_at": "2026-11-08T14:49:00Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 594,
+        "closed_at": "2026-11-09T23:50:13Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 595,
+        "closed_at": "2026-11-12T16:21:24Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 596,
+        "closed_at": "2026-11-11T07:15:46Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 597,
+        "closed_at": "2026-11-07T19:43:55Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 602,
+        "closed_at": "2026-11-01T00:09:24Z",
+        "closer": "owner"
+      },
+      {
+        "number": 604,
+        "closed_at": "2026-11-01T00:09:24Z",
+        "closer": "owner"
+      },
+      {
+        "number": 605,
+        "closed_at": "2026-11-10T21:36:10Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 607,
+        "closed_at": "2026-10-30T17:59:08Z",
+        "closer": "other"
+      },
+      {
+        "number": 610,
+        "closed_at": "2026-11-06T06:13:54Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 616,
+        "closed_at": "2026-11-02T13:02:14Z",
+        "closer": "other"
+      },
+      {
+        "number": 618,
+        "closed_at": "2026-11-06T06:13:51Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 621,
+        "closed_at": "2026-10-31T08:32:45Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 628,
+        "closed_at": "2026-11-06T06:13:49Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 644,
+        "closed_at": "2026-11-06T15:21:46Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 652,
+        "closed_at": "2026-11-01T10:04:35Z",
+        "closer": "owner"
+      },
+      {
+        "number": 669,
+        "closed_at": "2026-11-02T13:27:58Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 678,
+        "closed_at": "2026-11-04T19:00:24Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 685,
+        "closed_at": "2026-11-03T11:04:08Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 709,
+        "closed_at": "2026-11-04T19:12:33Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 713,
+        "closed_at": "2026-11-10T05:14:40Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 714,
+        "closed_at": "2026-11-11T03:55:00Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 715,
+        "closed_at": "2026-11-11T02:20:53Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 716,
+        "closed_at": "2026-11-10T12:29:51Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 719,
+        "closed_at": "2026-11-05T10:30:24Z",
+        "closer": "owner"
+      },
+      {
+        "number": 726,
+        "closed_at": "2026-11-08T20:59:38Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 727,
+        "closed_at": "2026-11-06T15:21:43Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 731,
+        "closed_at": "2026-11-06T04:05:13Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 732,
+        "closed_at": "2026-11-07T22:53:49Z",
+        "closer": "other"
+      },
+      {
+        "number": 735,
+        "closed_at": "2026-11-11T02:43:43Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 738,
+        "closed_at": "2026-11-07T23:19:50Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 739,
+        "closed_at": "2026-11-08T02:28:26Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 743,
+        "closed_at": "2026-11-09T11:00:31Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 744,
+        "closed_at": "2026-11-09T03:40:04Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 759,
+        "closed_at": "2026-11-10T21:40:21Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 762,
+        "closed_at": "2026-11-07T03:42:56Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 782,
+        "closed_at": "2026-11-09T01:04:44Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 794,
+        "closed_at": "2026-11-08T17:34:04Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 795,
+        "closed_at": "2026-11-08T20:59:36Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 798,
+        "closed_at": "2026-11-09T01:17:36Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 803,
+        "closed_at": "2026-11-09T12:10:50Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 813,
+        "closed_at": "2026-11-09T02:49:40Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 817,
+        "closed_at": "2026-11-09T21:57:57Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 818,
+        "closed_at": "2026-11-09T17:50:56Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 819,
+        "closed_at": "2026-11-11T22:10:24Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 823,
+        "closed_at": "2026-11-09T07:55:15Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 826,
+        "closed_at": "2026-11-10T17:10:40Z",
+        "closer": "owner"
+      },
+      {
+        "number": 835,
+        "closed_at": "2026-11-13T00:34:49Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 843,
+        "closed_at": "2026-11-10T16:43:27Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 852,
+        "closed_at": "2026-11-11T04:11:34Z",
+        "closer": "owner"
+      },
+      {
+        "number": 865,
+        "closed_at": "2026-11-11T01:16:14Z",
+        "closer": "main-red-report"
+      },
+      {
+        "number": 868,
+        "closed_at": "2026-11-13T15:34:50Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 871,
+        "closed_at": "2026-11-11T05:35:38Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 876,
+        "closed_at": "2026-11-12T17:28:21Z",
+        "closer": "owner"
+      },
+      {
+        "number": 879,
+        "closed_at": "2026-11-12T02:15:06Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 883,
+        "closed_at": "2026-11-11T05:07:24Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 885,
+        "closed_at": "2026-11-11T05:59:40Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 893,
+        "closed_at": "2026-11-11T11:36:16Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 896,
+        "closed_at": "2026-11-11T12:20:19Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 903,
+        "closed_at": "2026-11-12T02:31:23Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 912,
+        "closed_at": "2026-11-12T17:47:40Z",
+        "closer": "owner"
+      },
+      {
+        "number": 919,
+        "closed_at": "2026-11-12T02:24:37Z",
+        "closer": "main-red-report"
+      },
+      {
+        "number": 921,
+        "closed_at": "2026-11-12T04:10:27Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 924,
+        "closed_at": "2026-11-12T11:24:29Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 935,
+        "closed_at": "2026-11-12T17:53:05Z",
+        "closer": "main-red-report"
+      },
+      {
+        "number": 941,
+        "closed_at": "2026-11-13T03:40:44Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 943,
+        "closed_at": "2026-11-13T16:02:03Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 944,
+        "closed_at": "2026-11-13T15:39:50Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 959,
+        "closed_at": "2026-11-13T19:48:09Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 966,
+        "closed_at": "2026-11-13T22:43:54Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 968,
+        "closed_at": "2026-11-14T01:15:54Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 972,
+        "closed_at": "2026-11-14T00:26:45Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 978,
+        "closed_at": "2026-11-14T00:40:21Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 980,
+        "closed_at": "2026-11-14T01:03:01Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 982,
+        "closed_at": "2026-11-14T01:55:45Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 984,
+        "closed_at": "2026-11-14T01:31:21Z",
+        "closer": "main-red-report"
+      },
+      {
+        "number": 988,
+        "closed_at": "2026-11-14T02:35:20Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 990,
+        "closed_at": "2026-11-14T03:26:31Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 992,
+        "closed_at": "2026-11-14T04:10:10Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 993,
+        "closed_at": "2026-11-14T03:46:16Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 996,
+        "closed_at": "2026-11-14T04:43:51Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 998,
+        "closed_at": "2026-11-14T04:48:31Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1003,
+        "closed_at": "2026-11-14T05:51:20Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1004,
+        "closed_at": "2026-11-14T05:18:19Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1006,
+        "closed_at": "2026-11-14T06:35:36Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1008,
+        "closed_at": "2026-11-14T10:16:03Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1010,
+        "closed_at": "2026-11-14T07:46:13Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1014,
+        "closed_at": "2026-11-14T10:33:41Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1016,
+        "closed_at": "2026-11-14T14:23:10Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1018,
+        "closed_at": "2026-11-15T05:29:01Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1019,
+        "closed_at": "2026-11-15T04:39:54Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1020,
+        "closed_at": "2026-11-15T09:35:54Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1021,
+        "closed_at": "2026-11-14T20:31:29Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1022,
+        "closed_at": "2026-11-15T03:32:37Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1023,
+        "closed_at": "2026-11-14T23:43:50Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1024,
+        "closed_at": "2026-11-15T10:45:04Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1025,
+        "closed_at": "2026-11-17T10:46:19Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1027,
+        "closed_at": "2026-11-15T16:22:24Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1032,
+        "closed_at": "2026-11-14T17:09:43Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1036,
+        "closed_at": "2026-11-15T02:51:53Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1041,
+        "closed_at": "2026-11-17T13:27:48Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1045,
+        "closed_at": "2026-11-15T03:52:39Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1049,
+        "closed_at": "2026-11-15T04:05:27Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1051,
+        "closed_at": "2026-11-15T05:55:41Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1059,
+        "closed_at": "2026-11-15T11:23:31Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1060,
+        "closed_at": "2026-11-17T13:27:43Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1061,
+        "closed_at": "2026-11-15T11:23:34Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1062,
+        "closed_at": "2026-11-17T18:12:22Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1066,
+        "closed_at": "2026-11-15T11:11:13Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1067,
+        "closed_at": "2026-11-17T06:24:56Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1068,
+        "closed_at": "2026-11-17T08:04:08Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1071,
+        "closed_at": "2026-11-17T05:02:40Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1072,
+        "closed_at": "2026-11-17T03:29:38Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1073,
+        "closed_at": "2026-11-16T06:32:14Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1074,
+        "closed_at": "2026-11-16T11:32:00Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1075,
+        "closed_at": "2026-11-16T04:22:08Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1078,
+        "closed_at": "2026-11-15T10:51:56Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1079,
+        "closed_at": "2026-11-15T18:38:26Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1081,
+        "closed_at": "2026-11-15T20:36:36Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1082,
+        "closed_at": "2026-11-16T01:09:16Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1083,
+        "closed_at": "2026-11-18T03:05:16Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 1084,
+        "closed_at": "2026-11-16T03:30:28Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1085,
+        "closed_at": "2026-11-16T03:38:14Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1086,
+        "closed_at": "2026-11-17T09:41:51Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1087,
+        "closed_at": "2026-11-16T05:05:27Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1088,
+        "closed_at": "2026-11-16T04:45:07Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1089,
+        "closed_at": "2026-11-16T07:43:13Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1093,
+        "closed_at": "2026-11-15T15:01:34Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1095,
+        "closed_at": "2026-11-15T11:09:22Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 1100,
+        "closed_at": "2026-11-16T05:54:29Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1104,
+        "closed_at": "2026-11-17T07:19:04Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1108,
+        "closed_at": "2026-11-15T21:00:19Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1109,
+        "closed_at": "2026-11-15T21:00:21Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1110,
+        "closed_at": "2026-11-15T21:00:23Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1111,
+        "closed_at": "2026-11-15T21:00:26Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1112,
+        "closed_at": "2026-11-15T21:00:28Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1139,
+        "closed_at": "2026-11-17T03:09:22Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1141,
+        "closed_at": "2026-11-17T05:35:07Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1146,
+        "closed_at": "2026-11-17T06:11:49Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 1152,
+        "closed_at": "2026-11-17T10:32:32Z",
+        "closer": "main-red-report"
+      },
+      {
+        "number": 1159,
+        "closed_at": "2026-11-17T09:22:40Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1160,
+        "closed_at": "2026-11-17T08:49:04Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1172,
+        "closed_at": "2026-11-17T18:12:08Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1175,
+        "closed_at": "2026-11-17T13:08:15Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1176,
+        "closed_at": "2026-11-17T20:34:48Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1177,
+        "closed_at": "2026-11-17T17:38:17Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1178,
+        "closed_at": "2026-11-18T03:41:45Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1181,
+        "closed_at": "2026-11-17T14:19:51Z",
+        "closer": "main-red-report"
+      },
+      {
+        "number": 1185,
+        "closed_at": "2026-11-18T02:20:43Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1188,
+        "closed_at": "2026-11-17T19:31:30Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1191,
+        "closed_at": "2026-11-17T18:58:52Z",
+        "closer": "main-red-report"
+      },
+      {
+        "number": 1192,
+        "closed_at": "2026-11-17T20:26:52Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 1211,
+        "closed_at": "2026-11-18T03:44:54Z",
+        "closer": "main-red-report"
+      }
+    ],
+    "timelines_read": 230,
+    "truncated": []
+  }
 }
