@@ -103,7 +103,7 @@ def test_privacy_page_discloses_what_still_reaches_the_operator(client):
 def test_privacy_page_date_is_a_literal_not_the_current_year(client):
     # `{{ current_year() }}-08-06` made the page claim an update this year,
     # every year, with a fixed month and day nobody had edited it on.
-    assert "Last updated: 2026-11-11" in _text(client.get("/privacy").text)
+    assert "Last updated: 2026-11-17" in _text(client.get("/privacy").text)
 
 
 # ─── retired claims, everywhere they were found ────────────────────────────

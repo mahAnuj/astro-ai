@@ -256,6 +256,31 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
     return key
 
 
+def chart_snapshot(chart, dasha) -> dict:
+    """The compact chart summary stored on each ``form_ask`` event (#1167).
+
+    Purpose: a later audit grades chart-specific claims in an answer ("your
+    Saturn is in the 7th") against what the chart actually was. Owner's ruling,
+    2026-11-17: it never stores birth date, time or place.
+
+    Private by construction, not by filtering. Every field is read by name; the
+    Chart is never serialised wholesale, so a field added to it later cannot
+    leak in. Deliberately absent, and why: longitudes (``lagna_longitude`` plus
+    a planet's longitude pins the birth time to minutes), nakshatra pada, the
+    retrograde flag, dasha start/end dates and years (the Maha balance at birth
+    pins the Moon's longitude), and lat/lon/tz/birth_utc.
+    """
+    moon = next(p for p in chart.planets if p.name == "Moon")
+    return {
+        "lagna": chart.lagna_rashi,
+        "planets": {p.name: {"rashi": p.rashi, "house": p.house}
+                    for p in chart.planets},
+        "moon_nakshatra": moon.nakshatra,
+        "mahadasha": dasha.mahadasha.lord,
+        "antardasha": dasha.antardasha.lord,
+    }
+
+
 def _ask_overlay_path(context: str, role: str | None = None):
     """The per-context system-prompt overlay, or None for plain chart asks.
 
@@ -620,22 +645,32 @@ async def ask_submit(
             user_email=(_u_ask.email if _u_ask else ""),
             model=llm_providers.last_used_model(),
         )
+    _event_data = {
+        "question": question, "category": category, "lang": lang,
+        "model": llm_providers.last_used_model(),
+        # Answer body persisted (truncated to 4000 chars) so
+        # /admin/activity can spot-check Q&A quality across all
+        # Cloud Run instances — SQLite cache is per-instance +
+        # ephemeral, but events go to GCS. Truncation guards
+        # against a single runaway answer bloating the daily
+        # events blob; ~4KB × 5000 events/day = ~20MB max.
+        "answer": (answer_text or "")[:4000],
+        "context": context,
+        "cache_hit": was_cached,
+    }
+    # The seeker's OWN chart, never the partner's under matching context
+    # (`chart` is the saved chart; the partner is `partner_chart`). It is
+    # computed before the cache lookup, so a cache hit carries it too.
+    # Best-effort like the event itself: a failure drops the key and never the
+    # answer (#1167). Adds ~0.5KB per event (533 B measured), so ~2.7MB at the 5000/day cap.
+    try:
+        _event_data["chart"] = chart_snapshot(chart, dasha)
+    except Exception:  # noqa: BLE001 — events are best-effort
+        log.debug("chart snapshot for form_ask event failed", exc_info=True)
     events.record(
         type="form_ask",
         email=(_u_ask.email if _u_ask else ""),
-        data={
-            "question": question, "category": category, "lang": lang,
-            "model": llm_providers.last_used_model(),
-            # Answer body persisted (truncated to 4000 chars) so
-            # /admin/activity can spot-check Q&A quality across all
-            # Cloud Run instances — SQLite cache is per-instance +
-            # ephemeral, but events go to GCS. Truncation guards
-            # against a single runaway answer bloating the daily
-            # events blob; ~4KB × 5000 events/day = ~20MB max.
-            "answer": (answer_text or "")[:4000],
-            "context": context,
-            "cache_hit": was_cached,
-        },
+        data=_event_data,
     )
 
     # Redirect with the question + category (+ context) in the URL so

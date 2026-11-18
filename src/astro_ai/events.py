@@ -35,7 +35,13 @@ rashi triple, and the coarse `profiling.coarse_profile` fields (age band, city) 
 /admin/insights working.
 
 Events STILL carry: the signed-in user's email on every event; `form_ask`
-question text and the answer body; `error` message and traceback (a ChartError,
+question text and the answer body; `form_ask` also carries `data["chart"]`
+(#1167, owner ruling 2026-11-17): the Lagna sign, each planet's sign and house,
+the Moon's nakshatra and the current Mahadasha and Antardasha lord, built from an
+explicit allow-list in `routes/ask.chart_snapshot` so a field added to Chart
+cannot leak in. It excludes birth date, time and place, every longitude or
+degree, nakshatra pada, retrograde flags, dasha start/end dates and years, and
+lat/lon/tz; the key is absent when the snapshot could not be built. `error` message and traceback (a ChartError,
 which embeds the birth place, is redacted in routes/llm_support). Rows written
 before #255 still hold raw birth details until they age out at
 EVENT_RETENTION_DAYS. templates/privacy.html discloses the remainder.
