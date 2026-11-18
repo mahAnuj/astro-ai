@@ -2,7 +2,7 @@
 
 One file per area, loaded and appended by `scripts/mutate_behaviour_suite.py`.
 Each row re-opens one way the panel could mislead or break the page: dropping the
-partial flag (a quota-stopped run read as complete), raising on a bad file (a 500
+partial flag (a quota-stopped run read as complete), raising on a mistyped file (a 500
 on the whole control room), lifting the list cap, and rendering file-supplied
 strings unescaped.
 
@@ -17,12 +17,10 @@ MUTATIONS = [
      '            "partial": doc.get("partial") is True,',
      '            "partial": False,',
      "test_partial_and_its_reason_come_through"),
-    ("ops: the index view raises on a file that is not the expected shape instead of degrading",
+    ("ops: the index view lets a right-shaped but mistyped file raise instead of degrading",
      "src/astro_ai/ops_data.py",
-     '''        if not isinstance(doc, dict) or not isinstance(doc.get("counts"), dict):
-            return empty''',
-     '''        if not isinstance(doc, dict) or not isinstance(doc.get("counts"), dict):
-            raise ValueError("index-status.json is not the expected shape")''',
+     "    except Exception as exc:  # noqa: BLE001 -- a monitoring page must not 500",
+     "    except KeyError as exc:  # noqa: BLE001 -- a monitoring page must not 500",
      "test_a_garbage_file_never_raises"),
     ("ops: the index panel stops capping the request-indexing list at ten",
      "src/astro_ai/ops_data.py",

@@ -106,7 +106,10 @@ def test_the_panel_says_not_collected_when_the_file_is_absent(mdir):
 
 
 @pytest.mark.parametrize("raw", ["not json {", "[]", '"x"', "null", "{}",
-                                 '{"counts": 3}', '{"counts": {}, "request_indexing": 7}'])
+                                 '{"counts": 3}', '{"counts": {}, "request_indexing": 7}',
+                                 # Right shape, wrong type: `_age` raises TypeError on it, which
+                                 # only the view's own outer guard stands between and a 500.
+                                 '{"counts": {}, "generated_at": 12345}'])
 def test_a_garbage_file_never_raises(mdir, raw):
     _put(mdir, raw=raw)
     v = ops_data._index_view(NOW)
