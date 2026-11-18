@@ -1671,8 +1671,8 @@ a{color:#1f5fae} a:hover{color:#174a88}
       <p class="none">No page is waiting on a recrawl request.</p>
       {% endif %}
     {% else %}
-      <p class="none"><code>measurements/index-status.json</code> is {{ X.message }}. It is written by
-        <code>scripts/fetch_index_status.py</code>.</p>
+      <p class="none">No usable <code>measurements/index-status.json</code> ({{ X.message }}).
+        <code>scripts/fetch_index_status.py</code> writes it.</p>
     {% endif %}
     </div>
   </section>
