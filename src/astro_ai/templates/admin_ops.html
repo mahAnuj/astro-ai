@@ -189,6 +189,9 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .quota .sub{grid-column:1/-1;font-size:12px;color:var(--ink-dim)}
 .waste-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:8px}
 .waste-grid div{padding:8px 10px;border:1px solid var(--line);border-radius:4px}
+.ix-urls{display:block;width:100%;box-sizing:border-box;min-height:10.5em;margin-top:8px;padding:10px 12px;
+  background:var(--ground);color:var(--ink);border:1px solid var(--line-2);border-radius:4px;
+  font-family:var(--mono);font-size:12px;line-height:1.5;resize:vertical}
 .waste-grid .n{display:block;font-size:18px;font-weight:600}
 /* Issue flow (2026-11-18): opened vs closed bars, open-count line on its own scale. */
 .f-opened{fill:var(--open);background:var(--open)}
@@ -1629,6 +1632,66 @@ a{color:#1f5fae} a:hover{color:#174a88}
     </div>
   </section>
   {% endif %}
+
+  {# ── Google index status. measurements/index-status.json
+     (scripts/fetch_index_status.py, #1065). The ranking is the FILE's: this panel
+     lists `request_indexing` as written and never re-sorts it. Every string here
+     came out of a file fetched over the network, so it is autoescaped and none
+     of it is `|safe`; the URLs go in a textarea and are not turned into links,
+     so a `javascript:` value in the file has nowhere to run. #}
+  {% set X = ops.index %}
+  <section class="panel" id="index-status">
+    <h2>Google index status
+      <span class="lbl">{% if X.ok %}Search Console URL Inspection{% else %}{{ X.message }}{% endif %}</span>
+      {% if X.ok %}<span class="age" title="from measurements/index-status.json">as of {{ X.age.text }}</span>{% endif %}</h2>
+    <div class="body">
+    {% if X.ok %}
+      {% if X.partial %}
+      <div class="alert amber" style="margin-bottom:14px">
+        <span class="sev">partial</span>
+        <span class="t">The run stopped early</span>
+        <span class="d">{{ X.partial_reason or 'no reason recorded' }}. Pages it did not reach are
+          counted as not inspected, never as indexed.</span>
+      </div>
+      {% endif %}
+      <div class="waste-grid">
+        {% for k in ['total', 'inspected', 'indexed', 'not_indexed', 'stale', 'canonical_mismatch', 'blocked', 'unknown', 'errors', 'not_inspected'] %}
+        {% if k in X.counts %}<div><span class="lab">{{ k.replace('_', ' ') }}</span>
+          <span class="n">{{ X.counts[k] }}</span></div>{% endif %}
+        {% endfor %}
+      </div>
+      <p class="note" style="margin-top:10px">
+        {% if X.git_shallow %}Checked out shallow, so "changed after Google's last crawl" was not computed. {% endif %}
+        {% if X.impressions_matched %}{{ X.impressions_matched.get('matched') }} of {{ X.impressions_matched.get('with_impressions') }} pages with impressions were matched to a sitemap URL. {% endif %}
+        Canonical-mismatch and blocked pages are counted but not listed: "Request indexing" does not fix them.
+      </p>
+      {% if X.pages %}
+      <div class="lbl" style="margin:18px 0 9px">Request indexing · {{ X.pages|length }} page{{ '' if X.pages|length == 1 else 's' }}, most impressions first</div>
+      <div class="tscroll" role="region" aria-label="Pages to request indexing for"><table class="loops">
+        <thead><tr><th>Page</th><th>Why</th><th>Impr.</th></tr></thead>
+        <tbody>
+        {% for r in X.pages %}
+          <tr>
+            <td class="w mono">{{ r.url }}</td>
+            <td class="w">{{ r.reasons|join('; ') }}</td>
+            <td class="c">{{ r.impressions if r.impressions is not none else '—' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      <label class="lbl" for="ix-urls" style="display:block;margin-top:16px">The same URLs, one per line</label>
+      <textarea class="ix-urls" id="ix-urls" readonly rows="{{ X.pages|length }}">{{ X.urls }}</textarea>
+      <p class="note">Search Console's URL Inspection tool takes one URL at a time and has no API for
+        "Request indexing", so this is a list to work through by hand.</p>
+      {% else %}
+      <p class="none">{% if X.partial %}No inspected page is waiting on a recrawl request. The pages the run did not reach have not been checked.{% else %}No page is waiting on a recrawl request.{% endif %}</p>
+      {% endif %}
+    {% else %}
+      <p class="none">No usable <code>measurements/index-status.json</code> ({{ X.message }}).
+        <code>scripts/fetch_index_status.py</code> writes it.</p>
+    {% endif %}
+    </div>
+  </section>
 
   {# ── Traffic. Two daily series and what moved between two windows. ──────
      This panel existed as an apology for most of a day: GA4's committed export
