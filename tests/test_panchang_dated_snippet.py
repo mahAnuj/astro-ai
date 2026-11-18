@@ -115,7 +115,7 @@ def test_today_keeps_its_title_and_description(client):
     assert _title(page).startswith("Today's Panchang — ")
     assert _title(page).endswith(" · Tithi, Nakshatra, Rahu Kaal, Choghadiya")
     assert _description(page).startswith(
-        "Today's Panchang for Mumbai, India — tithi (lunar day), nakshatra")
+        "Today's Panchang for Mumbai, India — tithi, nakshatra")
     assert _description(page).endswith("Classical Vedic sidereal Lahiri.")
     # And today's page now carries the same one-sentence answer.
     assert _sentence(page)

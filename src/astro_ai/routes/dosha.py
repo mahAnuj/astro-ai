@@ -273,7 +273,7 @@ async def kaal_sarp_check_form(request: Request) -> HTMLResponse:
             page_lead="Detect the Kaal Sarp geometry in your chart (all seven non-shadow planets on one side of the Rahu-Ketu axis) with a transparent note about where this classification actually comes from — it is not defined in the classical Sanskrit Jyotish texts we cite elsewhere on this site.",
             form_action="/kaal-sarp-check",
             submit_label="Check the geometry →",
-            meta_desc="Honest Kaal Sarp Yoga check with classical-source transparency. We detect the geometric pattern and are upfront that Kaal Sarp is not in the classical Vedic texts — it is a 20th-century Indian classification widely debated even among respected astrologers.",
+            meta_desc="Honest Kaal Sarp Yoga check: we detect the geometric pattern, and are upfront that it is a 20th-century Indian classification, not in the classical texts.",
             prefill=_prefill_from_cookie(request),
             show_ksy_caveat=True,
         ),

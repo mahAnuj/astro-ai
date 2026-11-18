@@ -5,7 +5,7 @@
     snippet, the sentence under the H1 and the cards cannot disagree. /panchang
     (today) keeps its original title and description verbatim. #}
 {% block title %}{% if is_today %}Today's Panchang — {{ today_pretty }} · Tithi, Nakshatra, Rahu Kaal, Choghadiya{% else %}Panchang {{ today_pretty }} — Tithi, Nakshatra, Rahu Kaal ({{ city_short }}){% endif %}{% endblock %}
-{% block meta_description %}{% if not is_today %}{{ dated_description }}{% else %}Today's Panchang for {{ city_display }} — tithi (lunar day), nakshatra (moon's constellation), weekday lord, yoga, karana, sunrise/sunset, Rahu Kaal, Abhijit Muhurta, and full Choghadiya day-window breakdown. Classical Vedic sidereal Lahiri.{% endif %}{% endblock %}
+{% block meta_description %}{% if not is_today %}{{ dated_description }}{% else %}Today's Panchang for {{ city_display }} — tithi, nakshatra, sunrise/sunset, Rahu Kaal, Abhijit Muhurta, Choghadiya. Classical Vedic sidereal Lahiri.{% endif %}{% endblock %}
 
 {% block content %}
 {% set active_page = "" %}
