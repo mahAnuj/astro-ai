@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-18T02:55:45Z",
+ "generated_at": "2026-11-18T05:41:55Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -999,6 +999,36 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/1202#issuecomment-6967462755",
     "summary": "QA: FAIL \u2014 verified at `bbc7d559859eb933ce1f7a17729a928607aae5c5` DEFECT: acceptance names 'the base.html default included'; base.html:9 default is 210 decoded chars and untouched, and verify_seo_copy only measures it if a sitemap page falls through to it (none does). Scratch-lengthening it left the",
     "themes": []
+   },
+   {
+    "number": 1212,
+    "at": "2026-11-18T04:20:05Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1212#issuecomment-6968934695",
+    "summary": "QA: FAIL \u2014 verified at `05f0d460b031bb02f0f1e39faeb559108d2664b9` Gates, new tests and 53/53 mutations pass, but a failed PR listing now exits 0 (old code exited 1), and the unpaginated per_page=100 listing sees ~3.7 days not 7 (190 merged PRs in 7d, 100 examined); details and patch sketch in the co",
+    "themes": [
+     "tests",
+     "regression"
+    ]
+   },
+   {
+    "number": 1212,
+    "at": "2026-11-18T04:50:27Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1212#issuecomment-6969400116",
+    "summary": "QA: FAIL \u2014 verified at `e7f5b8db6aa66ceaf09de370906855dd08b2b258` Gates, tests and the new list-of-issues case pass, but e7f5b8d fixes none of the earlier FAIL: a failed PR listing still exits 0 (executed, rc=0), and per_page=100 with no pagination still examines 100 of 190 merged PRs in 7 days; pat",
+    "themes": [
+     "tests",
+     "regression"
+    ]
+   },
+   {
+    "number": 1212,
+    "at": "2026-11-18T05:13:56Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1212#issuecomment-6969768796",
+    "summary": "QA: FAIL \u2014 verified at `349a6e81605a9bacaa8f266ee325a2d6b3d2e531` Pagination and call volume fixed, tests pass, but a failed PR listing still exits 0 (executed: 403 on pulls?state=closed gives rc=0 and 'no PR in the last 14 days'; old code exited 1); a failed open-issues listing also degrades silent",
+    "themes": [
+     "tests",
+     "regression"
+    ]
    }
   ],
   "reverts": [],
@@ -1049,12 +1079,20 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": []
+  "ops_findings": [
+   {
+    "kind": "fixes-not-closing",
+    "level": "amber",
+    "title": "8 issues still open after a merged PR claimed them",
+    "detail": "#310 (PR #891, 166h), #838 (PR #839, 192h), #856 (PR #857, 178h), #889 (PR #892, 147h), #908 (PR #916, 147h), #970 (PR #977, 101h), #1056 (PR #1077, 66h), #1080 (PR #1118, 50h). Each PR merged more than 24h ago and claims its issue, so the fix shipped and nothing closed it. Levers: check close-on-evidence.yml's runs for those merge commits (did it fire, and did it find the live commit?) and verify-production.yml (a red or skipped run closes nothing). A PR that only partly fixes its issue should say `Refs #N`, not `closes #N`.",
+    "where": "/admin/ops"
+   }
+  ]
  },
  "error_themes": {
   "grounding": 31,
-  "tests": 26,
-  "regression": 25,
+  "tests": 29,
+  "regression": 28,
   "tokens": 20,
   "copy": 20,
   "security": 15,
