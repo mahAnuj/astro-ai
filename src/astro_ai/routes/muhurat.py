@@ -209,9 +209,25 @@ async def muhurat_finder_compute(
         )
     except Exception:
         pass
+    # muhurat_searched (#1217, #1017 F1): enums and integers only. `mode` is
+    # which optional input drove the result, one value. They can overlap (vivah +
+    # personal + couple), so the order is fixed: the most specific input wins.
+    # Namkaran means the child's chart was computed, not merely that event_type is
+    # namkaran (event_type is its own param). `days` is what was searched, as the
+    # page's own "N-day search" line counts it; `valid_count` is the non-avoid dates.
+    analytics_mode = ("couple" if (bride_chart is not None and groom_chart is not None)
+                      else "namkaran" if child_first_letter
+                      else "personal" if personal_chart is not None
+                      else "basic")
+    muhurat_searched = {
+        "event_type": event_type, "days": len(candidates),
+        "valid_count": sum(1 for c in candidates if c.rating != "avoid"),
+        "mode": analytics_mode,
+    }
     return templates.TemplateResponse(
         request, "muhurat_finder.html",
         {"candidates": candidates, "city": city, "start_date": start_date,
+         "muhurat_searched": muhurat_searched,
          "prefill_city": city, "prefill_start": start_date,
          "error": (personal_chart_error or couple_error) or None,
          "event_types": event_types, "selected_event": event_type,
