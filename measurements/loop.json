@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-18T02:01:47Z",
+  "generated_at": "2026-11-18T02:54:03Z",
   "rows": [
     {
-      "owner_helped": null,
+      "owner_helped": false,
       "run": 44216217548,
       "workflow": "agent-work",
       "date": "2026-11-18",
@@ -12,17 +12,17 @@
       "minutes": 31.9,
       "issue": 1115,
       "pr": 1204,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked",
+      "turns": 23,
       "tokens_input": 162,
       "tokens_output": 62861,
       "tokens_cache_read": 5090935,
       "tokens_cache_write": 365602,
       "cost_list_usd": 2.1859,
-      "model": "claude-sonnet-5-5",
-      "turns": 23
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": null,
@@ -48,7 +48,7 @@
       "turns": 25
     },
     {
-      "owner_helped": null,
+      "owner_helped": true,
       "run": 44213300955,
       "workflow": "agent-work",
       "date": "2026-11-18",
@@ -58,17 +58,17 @@
       "minutes": 22.5,
       "issue": 1083,
       "pr": 1121,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked",
+      "turns": 16,
       "tokens_input": 104,
       "tokens_output": 41363,
       "tokens_cache_read": 3543150,
       "tokens_cache_write": 237950,
       "cost_list_usd": 1.4773,
-      "model": "claude-sonnet-5-5",
-      "turns": 16
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": null,
@@ -85,13 +85,13 @@
       "outcome": "pr open",
       "attribution": "receipt",
       "kind": "ranked",
+      "turns": 20,
       "tokens_input": 264,
       "tokens_output": 93620,
       "tokens_cache_read": 12731787,
       "tokens_cache_write": 772304,
       "cost_list_usd": 4.2666,
-      "model": "claude-sonnet-5-5",
-      "turns": 20
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": null,
@@ -131,13 +131,13 @@
       "outcome": "pr open",
       "attribution": "receipt",
       "kind": "issue",
+      "turns": 14,
       "tokens_input": 67,
       "tokens_output": 14669,
       "tokens_cache_read": 1434503,
       "tokens_cache_write": 171589,
       "cost_list_usd": 0.8018,
-      "model": "claude-sonnet-5-5",
-      "turns": 14
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": null,
@@ -278,7 +278,7 @@
       "turns": 6
     },
     {
-      "owner_helped": null,
+      "owner_helped": true,
       "run": 44168574470,
       "workflow": "agent-work",
       "date": "2026-11-17",
@@ -288,8 +288,8 @@
       "minutes": 6.1,
       "issue": 1106,
       "pr": 1168,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "issue",
       "turns": 15,
@@ -462,7 +462,7 @@
       "turns": 11
     },
     {
-      "owner_helped": null,
+      "owner_helped": true,
       "run": 44147730239,
       "workflow": "agent-work",
       "date": "2026-11-17",
@@ -472,8 +472,8 @@
       "minutes": 6.7,
       "issue": 1106,
       "pr": 1168,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "issue",
       "turns": 24,
@@ -1037,7 +1037,7 @@
       "turns": 16
     },
     {
-      "owner_helped": null,
+      "owner_helped": true,
       "run": 44054007037,
       "workflow": "agent-work",
       "date": "2026-11-17",
@@ -1047,8 +1047,8 @@
       "minutes": 45.1,
       "issue": 1106,
       "pr": 1168,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked",
       "turns": 22,
@@ -1796,7 +1796,7 @@
       "turns": 33
     },
     {
-      "owner_helped": null,
+      "owner_helped": true,
       "run": 43798115781,
       "workflow": "agent-work",
       "date": "2026-11-16",
@@ -1806,8 +1806,8 @@
       "minutes": 26.4,
       "issue": 1083,
       "pr": 1121,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked",
       "turns": 44,
@@ -10519,44 +10519,44 @@
   ],
   "waste": {
     "days": 7,
-    "cycles": 206,
+    "cycles": 203,
     "minutes_by_outcome": {
-      "shipped": 3649.9,
-      "pr open": 300.1,
+      "shipped": 3636.0,
+      "pr open": 161.4,
       "judged": 520.3,
       "nothing": 43.8,
       "failed": 0.0,
       "unknown": 0.0
     },
-    "minutes_total": 4514.1,
+    "minutes_total": 4361.5,
     "minutes_without_result": 43.8,
     "share_without_result": 0.01,
     "shipped_prs": 101,
-    "build_idle_hours": 104.1,
-    "build_idle_share": 0.62
+    "build_idle_hours": 105.8,
+    "build_idle_share": 0.63
   },
   "tokens": {
     "days": 7,
-    "runs": 206,
-    "measured": 206,
+    "runs": 203,
+    "measured": 203,
     "total": {
-      "tokens": 986292171,
-      "input": 22612,
-      "output": 7505815,
-      "cache_read": 929817567,
-      "cache_write": 48946177,
-      "cost_list_usd": 318.61
+      "tokens": 953371940,
+      "input": 21928,
+      "output": 7284710,
+      "cache_read": 898316365,
+      "cache_write": 47748937,
+      "cost_list_usd": 309.7
     },
     "median_by_outcome": {
       "shipped": {
-        "runs": 116,
-        "tokens": 6520983,
-        "cost_list_usd": 2.18
+        "runs": 119,
+        "tokens": 6491867,
+        "cost_list_usd": 2.16
       },
       "pr open": {
-        "runs": 10,
-        "tokens": 4671064,
-        "cost_list_usd": 1.63
+        "runs": 4,
+        "tokens": 4667729,
+        "cost_list_usd": 1.7
       },
       "judged": {
         "runs": 63,
@@ -10569,16 +10569,16 @@
         "cost_list_usd": 0.28
       }
     },
-    "median_cycle": 5870240,
+    "median_cycle": 5906006,
     "median_qa_round": 1255195,
     "merged_prs": 101,
-    "per_merged_pr": 9765269,
-    "cost_list_usd_per_merged_pr": 3.15,
+    "per_merged_pr": 9439326,
+    "cost_list_usd_per_merged_pr": 3.07,
     "previous": {
-      "runs": 144,
-      "measured": 142,
-      "merged_prs": 58,
-      "per_merged_pr": 11394322
+      "runs": 147,
+      "measured": 145,
+      "merged_prs": 61,
+      "per_merged_pr": 11373622
     }
   }
 }

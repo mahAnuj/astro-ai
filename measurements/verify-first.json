@@ -1,53 +1,53 @@
 {
   "source": "busiest_pages.py",
   "window": [
-    "2026-10-18",
-    "2026-11-14"
+    "2026-10-19",
+    "2026-11-15"
   ],
   "basis": "GA4 engagedSessions",
   "rows": [
     {
-      "path": "/",
-      "sessions": 69,
-      "engaged_sessions": 47.0,
-      "engaged_rate": 0.68,
-      "avg_engagement_seconds": 251,
-      "gsc_impressions": 191,
-      "gsc_clicks": 9,
-      "gsc_position": 5.7,
-      "serves": "routes/home.py -> templates/index.html"
-    },
-    {
       "path": "/learn/rahu-mahadasha-ketu-antardasha",
-      "sessions": 76,
-      "engaged_sessions": 44.0,
-      "engaged_rate": 0.58,
-      "avg_engagement_seconds": 130,
-      "gsc_impressions": 3986,
+      "sessions": 82,
+      "engaged_sessions": 49.0,
+      "engaged_rate": 0.6,
+      "avg_engagement_seconds": 139,
+      "gsc_impressions": 3978,
       "gsc_clicks": 67,
       "gsc_position": 6.4,
       "serves": "templates/learn/rahu-mahadasha-ketu-antardasha.html"
     },
     {
+      "path": "/",
+      "sessions": 70,
+      "engaged_sessions": 45.0,
+      "engaged_rate": 0.64,
+      "avg_engagement_seconds": 226,
+      "gsc_impressions": 195,
+      "gsc_clicks": 9,
+      "gsc_position": 5.7,
+      "serves": "routes/home.py -> templates/index.html"
+    },
+    {
       "path": "/muhurat/griha-pravesh",
-      "sessions": 30,
-      "engaged_sessions": 29.0,
+      "sessions": 31,
+      "engaged_sessions": 30.0,
       "engaged_rate": 0.97,
-      "avg_engagement_seconds": 94,
-      "gsc_impressions": 388,
+      "avg_engagement_seconds": 92,
+      "gsc_impressions": 389,
       "gsc_clicks": 21,
       "gsc_position": 6.2,
       "serves": "routes/muhurat.py, muhurat.py"
     },
     {
       "path": "/learn/gochar-2026-planetary-transits",
-      "sessions": 38,
-      "engaged_sessions": 15.0,
+      "sessions": 41,
+      "engaged_sessions": 16.0,
       "engaged_rate": 0.39,
-      "avg_engagement_seconds": 29,
-      "gsc_impressions": 2097,
-      "gsc_clicks": 21,
-      "gsc_position": 5.3,
+      "avg_engagement_seconds": 27,
+      "gsc_impressions": 2325,
+      "gsc_clicks": 23,
+      "gsc_position": 5.2,
       "serves": "templates/learn/gochar-2026-planetary-transits.html"
     },
     {
@@ -56,32 +56,21 @@
       "engaged_sessions": 14.0,
       "engaged_rate": 0.78,
       "avg_engagement_seconds": 162,
-      "gsc_impressions": 2100,
+      "gsc_impressions": 2118,
       "gsc_clicks": 14,
       "gsc_position": 6.6,
       "serves": "templates/learn/sade-sati.html"
     },
     {
       "path": "/learn/rahu-mahadasha-career-problems",
-      "sessions": 22,
+      "sessions": 23,
       "engaged_sessions": 14.0,
-      "engaged_rate": 0.64,
-      "avg_engagement_seconds": 292,
-      "gsc_impressions": 1031,
+      "engaged_rate": 0.61,
+      "avg_engagement_seconds": 280,
+      "gsc_impressions": 1038,
       "gsc_clicks": 21,
-      "gsc_position": 5.9,
+      "gsc_position": 5.8,
       "serves": "templates/learn/rahu-mahadasha-career-problems.html"
-    },
-    {
-      "path": "/learn/career-during-sade-sati",
-      "sessions": 26,
-      "engaged_sessions": 13.0,
-      "engaged_rate": 0.5,
-      "avg_engagement_seconds": 217,
-      "gsc_impressions": 1165,
-      "gsc_clicks": 22,
-      "gsc_position": 5.4,
-      "serves": "templates/learn/career-during-sade-sati.html"
     },
     {
       "path": "/learn/7th-lord-placement-marriage-guide",
@@ -89,10 +78,21 @@
       "engaged_sessions": 12.0,
       "engaged_rate": 0.43,
       "avg_engagement_seconds": 59,
-      "gsc_impressions": 1512,
-      "gsc_clicks": 15,
+      "gsc_impressions": 1514,
+      "gsc_clicks": 14,
       "gsc_position": 7.2,
       "serves": "templates/learn/7th-lord-placement-marriage-guide.html"
+    },
+    {
+      "path": "/learn/career-during-sade-sati",
+      "sessions": 26,
+      "engaged_sessions": 12.0,
+      "engaged_rate": 0.46,
+      "avg_engagement_seconds": 207,
+      "gsc_impressions": 1204,
+      "gsc_clicks": 22,
+      "gsc_position": 5.4,
+      "serves": "templates/learn/career-during-sade-sati.html"
     },
     {
       "path": "/learn/10th-lord-in-6th-house-career",
@@ -100,20 +100,20 @@
       "engaged_sessions": 12.0,
       "engaged_rate": 0.48,
       "avg_engagement_seconds": 100,
-      "gsc_impressions": 715,
+      "gsc_impressions": 743,
       "gsc_clicks": 20,
-      "gsc_position": 6.6,
+      "gsc_position": 6.7,
       "serves": "templates/learn/10th-lord-in-6th-house-career.html"
     },
     {
       "path": "/learn/jupiter-in-10th-house-career",
-      "sessions": 21,
-      "engaged_sessions": 9.0,
+      "sessions": 23,
+      "engaged_sessions": 10.0,
       "engaged_rate": 0.43,
-      "avg_engagement_seconds": 75,
-      "gsc_impressions": 1840,
+      "avg_engagement_seconds": 68,
+      "gsc_impressions": 1900,
       "gsc_clicks": 18,
-      "gsc_position": 7.0,
+      "gsc_position": 7.1,
       "serves": "templates/learn/jupiter-in-10th-house-career.html"
     }
   ]

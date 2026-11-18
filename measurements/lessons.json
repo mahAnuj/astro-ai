@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-18T02:04:28Z",
+ "generated_at": "2026-11-18T02:55:45Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -991,6 +991,13 @@
     "at": "2026-11-17T23:11:55Z",
     "url": "https://github.com/mahAnuj/astro-ai/pull/1199#issuecomment-6963740043",
     "summary": "QA: FAIL \u2014 verified at `9fa6a80f0dc6019abbebe96b189ca6794e0240a2` Fix works in every executed check (ordering test red on main/green on branch; 3 mutation rows each killed by the new test only; real-server new-address 1555 ms on main vs 55 ms on branch, equal to existing; body identical; 6 concurren",
+    "themes": []
+   },
+   {
+    "number": 1202,
+    "at": "2026-11-18T02:46:05Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1202#issuecomment-6967462755",
+    "summary": "QA: FAIL \u2014 verified at `bbc7d559859eb933ce1f7a17729a928607aae5c5` DEFECT: acceptance names 'the base.html default included'; base.html:9 default is 210 decoded chars and untouched, and verify_seo_copy only measures it if a sitemap page falls through to it (none does). Scratch-lengthening it left the",
     "themes": []
    }
   ],
