@@ -567,9 +567,10 @@ def test_a_red_gate_is_not_a_reason_to_do_anything():
 def test_the_dispatch_goes_through_the_shared_carrier():
     """This repo's most reliable defect is a copied file diverging --
     `id-token: write` was missing from four loops each copied from a fifth. The
-    carrier re-checks that the issue is open and that no cycle is in flight, and
-    verifies the run survived 90s, because `gh workflow run` exits 0 on a run
-    that dies in 1.5s (#421, hidden three days)."""
+    carrier re-checks that the issue is open and QUEUES the ruling (since #1185,
+    always); agent-queue's drain starts it and verifies the run survived 90s,
+    because `gh workflow run` exits 0 on a run that dies in 1.5s (#421, hidden
+    three days)."""
     run = _step("Carry out the dispatch")["run"]
     assert "scripts/dispatch_cycle.sh" in run
     assert "gh workflow run" not in RUNS, (

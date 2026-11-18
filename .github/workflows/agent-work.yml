@@ -151,8 +151,9 @@ on:
 
 # ONE cycle at a time PER LANE. GitHub keeps at most ONE pending run in a group
 # and cancels the older pending run when another arrives, so nothing may
-# dispatch into a busy lane: `scripts/dispatch_cycle.sh` QUEUES the ruling
-# instead, and `agent-queue.yml` starts it when a run completes.
+# dispatch into a busy lane: `scripts/dispatch_cycle.sh` QUEUES every ruling
+# (since 2026-11-17, #1185, busy or not), and `agent-queue.yml`'s drain -- the
+# only dispatcher -- starts it when the lane is free.
 #
 # TWO LANES since 2026-11-03 (owner's request): a judge-only QA round (`pr=`)
 # never pushes, so it cannot conflict with a build cycle, and it no longer
@@ -792,8 +793,9 @@ jobs:
       # issue used to wait for a session. scripts/pr_fix_after_qa.py reads the
       # round's own verdict and, for a FAIL on the current head of such a PR
       # (no .github/workflows/ diff, under 3 fixes), writes the marker and hands
-      # `fix_pr=<n>` to the shared carrier, which queues it if the build lane is
-      # busy. No model decides it, and it writes no label.
+      # `fix_pr=<n>` to the shared carrier, which queues it (always, since
+      # #1185) for agent-queue's drain to start. No model decides it, and it
+      # writes no label.
       - name: Dispatch a fix when this QA round failed
         id: qa-fix
         if: always() && github.event.inputs.pr != ''

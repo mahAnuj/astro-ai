@@ -33,24 +33,53 @@ ignored, or it would aim a ~50-minute cycle at a target nobody ruled on.
 
 HOW IT DRAINS
 -------------
-`agent-queue.yml` runs `drain` when an `agent-work` run COMPLETES, so the slot
-is genuinely free and nothing is dispatched into the cancellable pending slot.
-Since 2026-11-03 there are two lanes (build, QA) and `drain` starts at most one
-entry PER FREE LANE -- up to two per run.
-It also runs when `agent-steward` completes (twice a day), a backstop for an
-entry queued when no cycle was really running (an unreadable busy check counts
-as busy) or a drain run that died. Within each lane `drain` takes the OLDEST
-entry, one at a time, because one cycle per lane is the whole constraint.
+SINCE 2026-11-17 EVERY DISPATCH IS QUEUED, not just a busy one (#1185, design
+#1184). A handler -- qa-on-green, red_gates, pr_fix_after_qa, the steward,
+chief -- hands its ruling to `scripts/dispatch_cycle.sh`, which appends an entry
+here and wakes `agent-queue.yml`. It starts nothing itself. The event used to
+live INSIDE the handler's workflow run when the lane was idle, so a run GitHub
+cancelled (one pending run per concurrency group) took the event with it:
+qa-on-green runs 44059296498 and 44059273106 were cancelled on 2026-11-17 and
+#1165, then #1171, got no QA round. An entry written first survives any run.
+
+`drain` is the ONLY code that starts an `agent-work` cycle (tests pin it). It
+runs when an `agent-work` run COMPLETES, when a handler wakes it, and hourly
+(the backstop, #1186), so the slot is genuinely free and a cancelled or
+duplicated drain loses nothing: the next one re-reads every entry. Since
+2026-11-03 there are two lanes (build, QA) and `drain` starts at most one
+entry PER FREE LANE -- up to two per run -- plus at most one `measure` run.
+
+ENTRIES ARE KEYED (kind, target, head) where a head exists, and a timer's
+entry by (timer key, due) -- `scripts/timers.py`. A key appended twice is one
+entry: the second append sees the first and adds nothing.
+
+FOLD. When `drain` starts an entry, every other pending entry for the SAME
+TARGET is marked `folded into run <id>`. Same target means the same PR (a
+`pr`/`fix_pr` entry, or an `issue` entry qa-on-green or red_gates wrote ON
+that PR), or the same issue. Within a target a FIX outranks a QA request: a
+`fix_pr` or `issue` cycle pushes, the push is a new head, and a new head earns
+its own QA round from qa-on-green -- whereas a round on the pre-fix head
+judges code that is about to change. So the fix is started and the round is
+folded into it, never the reverse. Equal rank goes oldest first.
 
 An entry is consumed by editing its marker, never by deleting the comment, so
 the record of what was queued, by whom, and what became of it stays readable:
 
+    agent-work-queue-claimed: ...        this drain is starting it
     agent-work-queue-taken: run=<id>     dispatched, run verified alive
+    agent-work-queue-folded: ...         covered by another entry's run
     agent-work-queue-dropped: <reason>   the carrier refused it (closed, a PR
                                          that already carries qa-pass, ...)
 
+A `claimed` entry whose drain died (cancelled, timed out) is recovered by the
+next drain once it is CLAIM_TTL old: taken if a matching run appeared, else
+returned to pending.
+
 Dispatching itself is NOT reimplemented here: `drain` hands the ruling to
-`scripts/dispatch_cycle.sh`, the one carrier every dispatcher shares.
+`scripts/dispatch_cycle.sh` in drain mode (`CYCLE_CARRIER=drain`), the one
+carrier every dispatcher shares. `measure` entries (a scoring run, fired by an
+analyst timer) are the exception: they start `agent-measure.yml`, see
+`drain_measure`.
 
 EXIT CODES
 ----------
@@ -68,6 +97,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -78,8 +108,18 @@ WRITER = "github-actions[bot]"
 #: How far back an entry is still worth starting. A queued round older than
 #: this is about a head that has almost certainly moved on.
 MAX_AGE_DAYS = 7
-ENTRY = re.compile(
-    r"<!-- agent-work-queue: kind=(issue|pr|fix_pr) target=([0-9]+) by=([A-Za-z0-9_.-]+) -->")
+KINDS = ("issue", "pr", "fix_pr", "measure")
+#: `head=` and `key=` are optional so entries written before 2026-11-17 parse.
+_FIELDS = (r"kind=(issue|pr|fix_pr|measure) target=([0-9]+) by=([A-Za-z0-9_.-]+)"
+           r"(?: head=([0-9a-f]{40}))?(?: key=([A-Za-z0-9_.:-]+))? -->")
+ENTRY = re.compile(r"<!-- agent-work-queue: " + _FIELDS)
+#: Any state: pending (bare marker) or a suffixed one.
+ANY_ENTRY = re.compile(r"<!-- agent-work-queue(?:-(claimed|taken|dropped|folded))?: " + _FIELDS)
+_KEY = re.compile(r"[A-Za-z0-9_.:-]+")
+_HEAD = re.compile(r"[0-9a-f]{40}")
+#: A claim older than this belongs to a drain that died: the job's own
+#: timeout is 15 minutes, so a live drain never holds a claim this long.
+CLAIM_TTL = timedelta(minutes=20)
 _BY = re.compile(r"[^A-Za-z0-9_.-]+")
 CARRIER = Path(__file__).resolve().parent / "dispatch_cycle.sh"
 #: The carrier's two rc=1 messages that mean "the ruling was fine, the RUN
@@ -113,17 +153,24 @@ class Entry:
     by: str
     created_at: str
     body: str
+    state: str = "pending"
+    head: str = ""
+    key: str = ""
+    #: The issue or PR the entry is written on (from the comment's issue_url);
+    #: 0 when unknown. qa-on-green writes an `issue=` entry on its PR.
+    on: int = 0
+    updated_at: str = ""
 
 
-def pending(gh: Runner, repo: str, now: datetime | None = None) -> list[Entry]:
-    """Untaken entries, oldest first. ONE paginated call covers every issue and
-    PR in the repo, which is why the queue can live on whichever item its
-    writer may comment on."""
+def entries(gh: Runner, repo: str, now: datetime | None = None) -> list[Entry]:
+    """Every entry in every state from the last MAX_AGE_DAYS, oldest first. ONE
+    paginated call covers every issue and PR in the repo, which is why the
+    queue can live on whichever item its writer may comment on."""
     since = ((now or datetime.now(timezone.utc)) - timedelta(days=MAX_AGE_DAYS)
              ).strftime("%Y-%m-%dT%H:%M:%SZ")
     raw = gh(["api", "--paginate",
               f"repos/{repo}/issues/comments?since={since}&sort=created&direction=asc&per_page=100",
-              "--jq", '.[] | {id, body, created_at, login: .user.login}'])
+              "--jq", '.[] | {id, body, created_at, updated_at, issue_url, login: .user.login}'])
     out: list[Entry] = []
     for line in raw.splitlines():
         line = line.strip()
@@ -132,32 +179,72 @@ def pending(gh: Runner, repo: str, now: datetime | None = None) -> list[Entry]:
         c = json.loads(line)
         if c.get("login") != WRITER:
             continue
-        m = ENTRY.search(c.get("body") or "")
+        m = ANY_ENTRY.search(c.get("body") or "")
         if not m:
             continue
-        out.append(Entry(int(c["id"]), m.group(1), int(m.group(2)), m.group(3),
-                         c.get("created_at") or "", c.get("body") or ""))
+        on = re.search(r"/issues/([0-9]+)$", c.get("issue_url") or "")
+        out.append(Entry(int(c["id"]), m.group(2), int(m.group(3)), m.group(4),
+                         c.get("created_at") or "", c.get("body") or "",
+                         state=m.group(1) or "pending", head=m.group(5) or "",
+                         key=m.group(6) or "", on=int(on.group(1)) if on else 0,
+                         updated_at=c.get("updated_at") or c.get("created_at") or ""))
     out.sort(key=lambda e: (e.created_at, e.comment_id))
     return out
 
 
-def enqueue(gh: Runner, repo: str, kind: str, target: int, by: str, on: int) -> int:
+def pending(gh: Runner, repo: str, now: datetime | None = None) -> list[Entry]:
+    """Untaken entries, oldest first."""
+    return [e for e in entries(gh, repo, now) if e.state == "pending"]
+
+
+def _duplicate(e: Entry, kind: str, target: int, head: str, key: str) -> bool:
+    """Is `e` the same event as the one being appended?
+
+    A TIMER entry (`key`) is one event for ever: a double fire of the same
+    (timer, due) must add nothing even after the first entry ran or was
+    dropped. A `claimed` entry is skipped so the carrier's race re-queue
+    (drain mode, a cycle appeared after the claim) can still write its fresh
+    entry. Anything else is the same event only while it is still PENDING --
+    a later re-ruling of a target whose round has run is new information --
+    and two different heads are two events (the fold merges them at drain)."""
+    if (e.kind, e.target) == (kind, target):
+        if key or e.key:
+            return e.key == key and e.state != "claimed"
+        return e.state == "pending" and (not head or not e.head or e.head == head)
+    return False
+
+
+def enqueue(gh: Runner, repo: str, kind: str, target: int, by: str, on: int,
+            head: str = "", key: str = "") -> int:
     by = _BY.sub("-", by).strip("-") or "unknown"
+    if head and not _HEAD.fullmatch(head):
+        print(f"::warning::ignoring a head that is not a 40-hex sha: {head[:60]!r}")
+        head = ""
+    if key and not _KEY.fullmatch(key):
+        print(f"::error::refusing an unparseable key {key[:60]!r} for {kind}={target}")
+        return 2
     try:
-        queued = pending(gh, repo)
+        queued = entries(gh, repo)
     except (RuntimeError, ValueError) as exc:
         print(f"::error::could not read the queue before adding {kind}={target}: {exc}")
         return 1
     for e in queued:
-        if (e.kind, e.target) == (kind, target):
-            print(f"already queued: {kind}={target} (by {e.by}, comment {e.comment_id}). "
-                  f"Not adding a second entry.")
+        if _duplicate(e, kind, target, head, key):
+            print(f"already queued: {kind}={target} (by {e.by}, comment {e.comment_id}, "
+                  f"{e.state}). Not adding a second entry.")
             return 0
-    body = (f"<!-- {MARK}: kind={kind} target={target} by={by} -->\n"
-            f"**Queued for `agent-work`:** `{kind}={target}`, ruled by `{by}`.\n\n"
-            f"A cycle is already running, and `agent-work` runs one at a time. This "
-            f"ruling is not dropped: `agent-queue` starts the oldest queued entry as "
-            f"soon as the running cycle completes, and edits this comment when it does.")
+    fields = f"kind={kind} target={target} by={by}"
+    if head:
+        fields += f" head={head}"
+    if key:
+        fields += f" key={key}"
+    body = (f"<!-- {MARK}: {fields} -->\n"
+            f"**Queued for `agent-queue`:** `{kind}={target}`, ruled by `{by}`"
+            + (f" at `{head[:7]}`" if head else "") + ".\n\n"
+            f"Every dispatch is written here first (#1185), so a cancelled Actions run "
+            f"cannot lose it. `agent-queue` is the only worker: it starts this entry when "
+            f"its lane is free -- within the hour at worst, on its hourly backstop -- and "
+            f"edits this comment when it does.")
     try:
         gh(["api", "-X", "POST", f"repos/{repo}/issues/{on}/comments", "-f", f"body={body}"])
     except RuntimeError as exc:
@@ -364,36 +451,271 @@ def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
     return None
 
 
-Carrier = Callable[[str, str], tuple[int, dict[str, str], str]]
+Carrier = Callable[..., tuple[int, dict[str, str], str]]
 
 
-def run_carrier(ruling: str, who: str) -> tuple[int, dict[str, str], str]:
-    """Hand ONE ruling to dispatch_cycle.sh; return (rc, exported env, output)."""
+def run_carrier(ruling: str, who: str, entry: Entry | None = None) -> tuple[int, dict[str, str], str]:
+    """Hand ONE ruling to dispatch_cycle.sh IN DRAIN MODE; return (rc, exported
+    env, output). `CYCLE_CARRIER=drain` is what lets the carrier start a run:
+    without it the carrier only appends to this queue (#1185), so this function
+    is the single place a cycle can be started from. The entry's head, key and
+    location ride along so a race re-queue writes the same event back."""
     with tempfile.TemporaryDirectory() as d:
         rf, envf = Path(d) / "ruling.txt", Path(d) / "env"
         rf.write_text(ruling + "\n")
         envf.touch()
-        env = dict(os.environ, GITHUB_ENV=str(envf))
+        env = dict(os.environ, GITHUB_ENV=str(envf), CYCLE_CARRIER="drain")
+        if entry is not None:
+            env.update(QUEUE_HEAD=entry.head, QUEUE_KEY=entry.key,
+                       QUEUE_ON=str(entry.on or entry.target))
         p = subprocess.run(["bash", str(CARRIER), str(rf), who],
                            capture_output=True, text=True, env=env, timeout=600)
         exported = dict(l.split("=", 1) for l in envf.read_text().splitlines() if "=" in l)
         return p.returncode, exported, p.stdout + p.stderr
 
 
-def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
-    # ONE ENTRY PER FREE LANE, oldest first within each. A lane that starts
+def _ts(s: str) -> datetime:
+    return datetime.fromisoformat(s.replace("Z", "+00:00"))
+
+
+def group_of(e: Entry) -> tuple:
+    """The TARGET an entry is about, for folding. An `issue` entry written on a
+    different number was written on its PR (qa-on-green and red_gates queue on
+    the PR they handle), so it belongs to that PR. An `issue` entry written on
+    the issue itself stays apart: guessing its PR would fold on a guess."""
+    if e.kind == "measure":
+        return ("measure",)
+    if e.kind in ("pr", "fix_pr"):
+        return ("pr", e.target)
+    if e.on and e.on != e.target:
+        return ("pr", e.on)
+    return ("issue", e.target)
+
+
+#: FOLD PRECEDENCE within one target: a fix outranks a QA request. The fix
+#: pushes; the push is a new head; qa-on-green gives the new head its own round.
+#: A round on the pre-fix head would judge code about to change.
+RANK = {"fix_pr": 2, "issue": 2, "pr": 1}
+
+
+def _order(es: list[Entry]) -> list[Entry]:
+    """Targets oldest first (by their oldest entry); within a target, the
+    highest RANK first, then the oldest."""
+    first: dict[tuple, tuple] = {}
+    for e in sorted(es, key=lambda e: (e.created_at, e.comment_id)):
+        first.setdefault(group_of(e), (e.created_at, e.comment_id))
+    return sorted(es, key=lambda e: (first[group_of(e)], -RANK.get(e.kind, 0),
+                                     e.created_at, e.comment_id))
+
+
+def _fold(gh: Runner, repo: str, taken: Entry, run_id: str, es: list[Entry],
+          handled: set[int]) -> None:
+    g = group_of(taken)
+    for o in es:
+        if o.comment_id in handled or group_of(o) != g:
+            continue
+        handled.add(o.comment_id)
+        try:
+            restate(gh, repo, o.comment_id, o.body, "pending", "folded",
+                    f"folded into run `{run_id}` (`{taken.kind}={taken.target}`, entry "
+                    f"{taken.comment_id}). One run per target: a fix outranks a QA request, "
+                    f"because the fix's push earns its own round.")
+            print(f"folded {o.kind}={o.target} into run {run_id}")
+        except RuntimeError as exc:
+            # Left pending: the next drain sees it and folds or starts it. A
+            # second run on one target is waste, never a lost event.
+            print(f"::warning::could not fold {o.kind}={o.target} into run {run_id}: {exc}")
+
+
+def _claim_run(e: Entry, runs: list[dict]) -> str | None:
+    """The agent-work run a dead drain started for `e`, if one appeared within
+    five minutes of the claim. Titles carry the target for `pr` and `fix_pr`;
+    an `issue` run is titled "Agent work" and is matched by time alone."""
+    want = {"pr": f"{QA_TITLE}: PR #{e.target}", "fix_pr": f"Agent work: fix PR #{e.target}",
+            "issue": "Agent work"}.get(e.kind)
+    try:
+        claimed = _ts(e.updated_at or e.created_at)
+    except ValueError:
+        return None
+    for r in runs:
+        try:
+            t = _ts(r.get("createdAt") or "")
+        except ValueError:
+            continue
+        if (r.get("displayTitle") == want
+                and claimed - timedelta(minutes=1) <= t <= claimed + timedelta(minutes=5)):
+            return str(r.get("databaseId"))
+    return None
+
+
+def recover_claims(gh: Runner, repo: str, es: list[Entry], now: datetime) -> int:
+    """A CANCELLED OR DEAD DRAIN IS HARMLESS. A drain killed between its claim
+    and its `taken` edit left an entry `claimed`, where no drain looked again.
+    Once a claim is CLAIM_TTL old its drain is gone: the entry is `taken` if a
+    matching run appeared, else returned to the queue. Unreadable runs leave it
+    for the next drain rather than risk a second cycle."""
+    stale = []
+    for e in es:
+        if e.state != "claimed":
+            continue
+        try:
+            if now - _ts(e.updated_at or e.created_at) > CLAIM_TTL:
+                stale.append(e)
+        except ValueError:
+            continue
+    if not stale:
+        return 0
+    try:
+        runs = json.loads(gh(["run", "list", "--repo", repo, "--workflow", "agent-work.yml",
+                              "--limit", "50", "--json", "databaseId,createdAt,displayTitle"]))
+    except (RuntimeError, ValueError):
+        print(f"::warning::{len(stale)} claimed entr(ies) from a dead drain; agent-work runs "
+              f"unreadable, so they wait for the next drain.")
+        return 0
+    for e in stale:
+        run = _claim_run(e, runs) if e.kind != "measure" else None
+        if run:
+            restate(gh, repo, e.comment_id, e.body, "claimed", "taken",
+                    f"agent-work run `{run}` started at `{e.kind}={e.target}`; the drain that "
+                    f"claimed this died before recording it.")
+            print(f"recovered {e.kind}={e.target}: taken by run {run}")
+        else:
+            restate(gh, repo, e.comment_id, e.body, "claimed", "pending",
+                    "the drain that claimed this died before dispatching it; returned to the queue.")
+            print(f"recovered {e.kind}={e.target}: back to pending")
+    return len(stale)
+
+
+#: A `measure` entry from a timer waits this long past its due time for the
+#: analyst's own daily slot (`0 21 * * *`, delivered 00:09-01:20Z over
+#: 2026-11-05..09, measure_due.py) before the drain spends a run on it.
+MEASURE_GRACE = timedelta(hours=4)
+_TIMER_DUE = re.compile(r"\.(\d{8}T\d{4}Z)$")
+
+
+def _cover_since(e: Entry) -> datetime:
+    """An analyst run that STARTED at or after this scores the issue: a timer's
+    due time (its key ends `.<YYYYMMDDTHHMMZ>`), else when the entry was written."""
+    m = _TIMER_DUE.search(e.key)
+    if m:
+        return datetime.strptime(m.group(1), "%Y%m%dT%H%MZ").replace(tzinfo=timezone.utc)
+    return _ts(e.created_at)
+
+
+def analyst_runs(gh: Runner, repo: str, since: datetime) -> tuple[list[tuple[str, datetime]], bool]:
+    """(completed runs whose `measure` job -- the analyst -- succeeded, with
+    their start; whether an agent-measure run is still in flight). Only
+    `schedule` and `workflow_dispatch` runs can carry the analyst."""
+    raw = json.loads(gh(["api", f"repos/{repo}/actions/workflows/agent-measure.yml/runs"
+                                f"?per_page=50&created=>={since:%Y-%m-%d}"]))
+    done, inflight = [], False
+    for r in raw.get("workflow_runs") or []:
+        if r.get("status") != "completed":
+            inflight = True
+            continue
+        if r.get("event") not in ("schedule", "workflow_dispatch"):
+            continue
+        jobs = json.loads(gh(["api", f"repos/{repo}/actions/runs/{r['id']}/jobs"])).get("jobs") or []
+        if any(j.get("name") == "measure" and j.get("conclusion") == "success" for j in jobs):
+            done.append((str(r["id"]), _ts(r.get("run_started_at") or r["created_at"])))
+    return done, inflight
+
+
+Starter = Callable[[Runner, str], "str | None"]
+
+
+def start_measure(gh: Runner, repo: str) -> str | None:
+    """Dispatch agent-measure (the analyst) and return the new run's id once it
+    appears, or None. `gh workflow run` exits 0 on a run that never appears."""
+    url = f"repos/{repo}/actions/workflows/agent-measure.yml/runs?per_page=1&event=workflow_dispatch"
+    jq = ".workflow_runs[0].id // 0"
+    before = gh(["api", url, "--jq", jq]).strip()
+    gh(["workflow", "run", "agent-measure.yml", "--repo", repo])
+    for _ in range(12):
+        time.sleep(5)
+        cand = gh(["api", url, "--jq", jq]).strip()
+        if cand not in ("", "0", before):
+            return cand
+    return None
+
+
+def drain_measure(gh: Runner, repo: str, ms: list[Entry], now: datetime,
+                  starter: Starter = start_measure) -> bool:
+    """Serve `measure` entries -- a scoring run an analyst timer asked for.
+    ONE analyst run scores every issue, so every ripe entry folds into one
+    run, and none is started when the daily slot already ran after the due
+    time (the usual case: the timer then costs no Claude at all). Returns
+    True when a dispatch failed (the drain goes red)."""
+    if not ms:
+        return False
+    try:
+        done, inflight = analyst_runs(gh, repo, min(_cover_since(e) for e in ms))
+    except (RuntimeError, ValueError, KeyError) as exc:
+        print(f"::warning::agent-measure runs unreadable ({exc}); {len(ms)} measure entr(ies) wait.")
+        return False
+    ripe = []
+    for e in ms:
+        cover = _cover_since(e)
+        run = next((rid for rid, started in done if started >= cover), None)
+        if run:
+            mark(gh, repo, e, "taken", f"covered by analyst run `{run}`, which started after "
+                                       f"{cover:%Y-%m-%dT%H:%MZ}; no extra run needed.")
+            print(f"measure={e.target} covered by run {run}")
+        elif now >= cover + (MEASURE_GRACE if _TIMER_DUE.search(e.key) else timedelta(0)):
+            ripe.append(e)
+    if not ripe:
+        return False
+    if inflight:
+        print(f"an agent-measure run is in flight; {len(ripe)} measure entr(ies) wait for it.")
+        return False
+    first, rest = ripe[0], ripe[1:]
+    body = restate(gh, repo, first.comment_id, first.body, "pending", "claimed")
+    try:
+        run_id = starter(gh, repo)
+    except RuntimeError as exc:
+        run_id = None
+        print(f"::error::could not dispatch agent-measure: {exc}")
+    if not run_id:
+        restate(gh, repo, first.comment_id, body, "claimed", "pending",
+                "the agent-measure dispatch did not produce a run; it stays queued.")
+        print(f"::error::measure={first.target}: agent-measure did not start; returned to the queue.")
+        return True
+    restate(gh, repo, first.comment_id, body, "claimed", "taken",
+            f"agent-measure run `{run_id}` started to score from the queue.")
+    print(f"started measure={first.target} as agent-measure run {run_id}")
+    _fold(gh, repo, first, run_id, rest, {first.comment_id})
+    return False
+
+
+def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier, now: datetime | None = None,
+          starter: Starter = start_measure) -> int:
+    now = now or datetime.now(timezone.utc)
+    allq = entries(gh, repo, now)
+    if recover_claims(gh, repo, allq, now):
+        allq = entries(gh, repo, now)
+    failed = drain_measure(gh, repo, [e for e in allq if e.state == "pending" and e.kind == "measure"],
+                           now, starter)
+    # ONE ENTRY PER FREE LANE, oldest target first. A lane that starts
     # (or fails to start) a cycle is busy for the rest of this run.
     busy_lanes = {lane for lane in LANES if busy(gh, repo, lane)}
     if busy_lanes == set(LANES):
         print("a cycle is running in every lane (or the check failed); the queue waits.")
-        return 0
-    entries = pending(gh, repo)
-    if not entries:
+        return 1 if failed else 0
+    queue = [e for e in allq if e.state == "pending" and e.kind != "measure"]
+    if not queue:
         print("queue empty.")
-        return 0
-    print(f"{len(entries)} queued; oldest first.")
-    failed = False
-    for e in entries:
+        return 1 if failed else 0
+    print(f"{len(queue)} queued; oldest target first, a fix before a QA request.")
+    # One decision per TARGET. A target whose best entry's lane is busy waits
+    # whole -- its QA request is not started beside a fix it is folded into.
+    # A drop or a refusal hands the target's next entry its turn.
+    settled: set[tuple] = set()
+    handled: set[int] = set()
+    for e in _order(queue):
+        g = group_of(e)
+        if g in settled or e.comment_id in handled:
+            continue
+        settled.add(g)
         lane = lane_of(e.kind)
         if lane in busy_lanes:
             continue
@@ -401,6 +723,8 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
         if reason:
             mark(gh, repo, e, "dropped", reason)
             print(f"dropped {e.kind}={e.target}: {reason}")
+            handled.add(e.comment_id)
+            settled.discard(g)
             continue
         # CLAIM BEFORE DISPATCH (QA round 1 on #675). Marking an entry only
         # AFTER a successful dispatch meant a failed PATCH left it pending, and
@@ -408,9 +732,10 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
         # turn). A claimed entry is no longer pending, so a failure from here on
         # can cost a ruling at worst, never a duplicate cycle.
         body = restate(gh, repo, e.comment_id, e.body, "pending", "claimed")
+        handled.add(e.comment_id)
         retries = e.body.count("**Pending:**")
         try:
-            rc, exported, out = carrier(f"{e.kind}={e.target}", f"queue({e.by})")
+            rc, exported, out = carrier(f"{e.kind}={e.target}", f"queue({e.by})", entry=e)
         except (OSError, subprocess.TimeoutExpired) as exc:
             # The carrier itself could not run. Nothing is known about the
             # ruling, so it goes back -- counted, like any other retry -- rather
@@ -429,6 +754,7 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
                     f"agent-work run `{run_id}` started at `{e.kind}={e.target}` from the queue.")
             print(f"started {e.kind}={e.target} as run {run_id} ({lane} lane)")
             busy_lanes.add(lane)
+            _fold(gh, repo, e, run_id, queue, handled)
             continue
         if rc == 1 and any(t in out for t in TRANSIENT) and retries < MAX_RETRIES:
             # The carrier ACCEPTED the ruling and the run did not survive -- the
@@ -456,9 +782,11 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier) -> int:
             # plain refusal (closed target) is a legitimate outcome and stays green.
             if any(t in out for t in TRANSIENT):
                 failed = True
+            settled.discard(g)
             continue
         # rc 0 with no run: the carrier found a cycle in flight after all (a
-        # race with another dispatcher). It could not see THIS entry -- it is
+        # race with a cron cycle or the chain step, the only other starters).
+        # It could not see THIS entry -- it is
         # claimed, not pending -- so it has already written a fresh one for the
         # same target. Restoring this one would leave two (#675 QA round 2,
         # N2), so this one is closed and the carrier's entry is the live one.
@@ -474,10 +802,12 @@ def main(argv: list[str], gh: Runner = run_gh) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
     q = sub.add_parser("enqueue")
-    q.add_argument("--kind", required=True, choices=("issue", "pr", "fix_pr"))
+    q.add_argument("--kind", required=True, choices=KINDS)
     q.add_argument("--target", required=True, type=int)
     q.add_argument("--by", required=True)
     q.add_argument("--on", type=int, help="issue/PR to write the entry on (default: target)")
+    q.add_argument("--head", default="", help="the PR head sha the event is about, if any")
+    q.add_argument("--key", default="", help="a dedupe key (timers: timer.<key>.<due>)")
     sub.add_parser("drain")
     try:
         a = ap.parse_args(argv[1:])
@@ -488,7 +818,7 @@ def main(argv: list[str], gh: Runner = run_gh) -> int:
         print("::error::cycle_queue.py needs GH_REPO=owner/name")
         return 2
     if a.cmd == "enqueue":
-        return enqueue(gh, repo, a.kind, a.target, a.by, a.on or a.target)
+        return enqueue(gh, repo, a.kind, a.target, a.by, a.on or a.target, a.head, a.key)
     try:
         return drain(gh, repo)
     except RuntimeError as exc:

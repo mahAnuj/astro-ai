@@ -98,11 +98,16 @@ permission from the top-level session to the loop. What has NOT changed:
   `fix_pr=<n>` fixes exactly the findings and writes **no verdict**; **at most three per PR**,
   one per head, never a `.github/workflows/` diff, never a fork.
   `docs/decisions/2026-11-13-loop-fixes-session-prs.md`.
-- **A dispatch made while a cycle runs is QUEUED** (`scripts/cycle_queue.py`,
-  `agent-queue.yml`). Only `github-actions[bot]` queue entries count; drain on completion, never
-  from inside `agent-work`; the queue writes no label and needs no new permission; no cron.
-  Lanes are told apart by the run title "QA round: PR #<n>" — change it only with all three
-  copies (`tests/test_cycle_queue.py`).
+- **Every dispatch is QUEUED, and `agent-queue`'s drain is the only worker** (#1185;
+  `scripts/cycle_queue.py`, `agent-queue.yml`). A handler appends an entry keyed (kind, target,
+  head) and wakes the drain; it never starts `agent-work` (`tests/test_inbox_single_worker.py`).
+  The drain starts one entry per free lane and folds the target's other entries into that run, a
+  fix before a QA request. Only `github-actions[bot]` entries count; never drain from inside
+  `agent-work`; the queue writes no label and needs no new permission. **An hourly backstop**
+  (#1186) fires due timers into the queue (`scripts/timers.py`, #1187), drains, chains, and files
+  `scripts/liveness.py` findings. Lanes are told apart by the run title "QA round: PR #<n>" —
+  change it only with all three copies (`tests/test_cycle_queue.py`).
+  `docs/decisions/2026-11-17-always-on-inbox-timers.md`.
 - **Chaining and parallelism are read from `measurements/claude_usage.json`, not argued.**
   `scripts/chain_cycle.py` chains only under 70% weekly use, fresh and `allowed`, at most 16
   build runs a UTC day, queue first. All agents share one Claude Max 5x subscription.

@@ -105,7 +105,7 @@ class FakeCarrier:
         self.results = list(results)        # each: (rc, run_id or None[, output])
         self.calls: list[tuple[str, str]] = []
 
-    def __call__(self, ruling, who):
+    def __call__(self, ruling, who, **kw):   # drain passes entry= (2026-11-17)
         self.calls.append((ruling, who))
         rc, run, *out = self.results.pop(0)
         return rc, ({"DISPATCHED_RUN": run} if run else {}), (out[0] if out else f"carrier rc={rc}")
@@ -241,7 +241,7 @@ def test_a_race_with_another_dispatcher_leaves_EXACTLY_ONE_live_entry():
     gh = FakeGh()
     gh.add(entry("pr", 1))
 
-    def carrier(ruling, who):           # what the real carrier does when busy
+    def carrier(ruling, who, **kw):     # what the real carrier does when busy
         cq.enqueue(gh, REPO, "pr", 1, who, on=1)
         return 0, {}, "QUEUED, not dropped"
     cq.drain(gh, REPO, carrier)
@@ -432,7 +432,10 @@ esac
 def test_the_carrier_QUEUES_a_ruling_when_a_cycle_is_running(ruling, queue_on, where, tmp_path):
     f = tmp_path / "ruling.txt"
     f.write_text(ruling + "\n")
-    env = dict(os.environ, PATH=f"{_bin(tmp_path)}:{os.environ['PATH']}", GH_REPO="owner/repo")
+    # Drain mode: this is the race path, where the drain's own carrier finds a
+    # cycle running after the drain checked. Queue mode always queues (#1185).
+    env = dict(os.environ, PATH=f"{_bin(tmp_path)}:{os.environ['PATH']}", GH_REPO="owner/repo",
+               CYCLE_CARRIER="drain")
     env.pop("GITHUB_ENV", None)
     if queue_on:
         env["QUEUE_ON"] = queue_on
@@ -459,7 +462,11 @@ def test_agent_queue_drains_on_COMPLETION_of_agent_work_and_the_steward():
     on = doc.get("on") or doc.get(True)
     assert on["workflow_run"]["workflows"] == ["Agent work", "Agent steward"]
     assert on["workflow_run"]["types"] == ["completed"]
-    assert "schedule" not in on, "a cron here costs ~1,400 Actions minutes a month"
+    # INVERTED 2026-11-17 (#1186). This asserted no cron ("~1,400 Actions minutes a
+    # month"); the repo is public, cost.json records Actions as unlimited (#338),
+    # and the hourly backstop is now the rule. tests/test_inbox_single_worker.py
+    # pins its shape; here only that it exists and is hourly.
+    assert [c["cron"].split()[1:] for c in on["schedule"]] == [["*", "*", "*", "*"]]
     # By name, not position: since 2026-11-06 a chain step follows the drain.
     run = next(s["run"] for s in doc["jobs"]["drain"]["steps"]
                if s.get("name") == "Start the oldest queued cycle")
@@ -597,7 +604,7 @@ def test_a_carrier_that_cannot_RUN_returns_the_entry_instead_of_stranding_it():
     gh = FakeGh()
     gh.add(entry("pr", 5))
 
-    def broken(ruling, who):
+    def broken(ruling, who, **kw):
         raise subprocess.TimeoutExpired("dispatch_cycle.sh", 600)
     assert cq.drain(gh, REPO, broken) == 1
     assert [e.target for e in cq.pending(gh, REPO)] == [5]

@@ -115,10 +115,10 @@ MUTATIONS = [
     # ---- the migrated posters ----
     ("#1188: file_ops_findings files its issue around the outbox again",
      "scripts/file_ops_findings.py",
-     '            _send(box.create_issue(KIND_ISSUE, f"[OPS] {f[\'title\']}", body_for(f, now), labels),\n'
+     '            _send(box.create_issue(KIND_ISSUE, f"[OPS] {f[\'title\']}", body_for(f, now, scope), labels),\n'
      '                  stats, "filed")',
      '            gh(["api", "-X", "POST", f"repos/{repo}/issues", "-f", f"title=[OPS] {f[\'title\']}",\n'
-     '                "-f", f"body={body_for(f, now)}"]); stats["filed"] += 1',
+     '                "-f", f"body={body_for(f, now, scope)}"]); stats["filed"] += 1',
      "test_no_script_posts_a_comment_or_issue_without_the_outbox"),
     ("#1188: a failed ops post is swallowed instead of exit 1",
      "scripts/file_ops_findings.py",

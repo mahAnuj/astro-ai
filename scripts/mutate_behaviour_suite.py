@@ -4825,8 +4825,9 @@ MUTATIONS = [
      'test_only_entries_written_by_github_actions_count'),
     ('queue: the same ruling is queued again and runs twice',
      'scripts/cycle_queue.py',
-     '        if (e.kind, e.target) == (kind, target):',
-     '        if False:',
+     # Re-anchored 2026-11-17: the test moved into _duplicate() (#1185 keys).
+     '    if (e.kind, e.target) == (kind, target):',
+     '    if False:',
      'test_the_same_ruling_is_never_queued_twice'),
     ('queue: newest first, so an old ruling can wait forever',
      'scripts/cycle_queue.py',

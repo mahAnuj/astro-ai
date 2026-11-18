@@ -134,7 +134,8 @@ def last_comment_state(gh: Runner, repo: str, number: int) -> tuple[str | None, 
 #: is dropped by the API without an error.
 LABEL = "chore"
 
-def body_for(f: dict, now: str) -> str:
+def body_for(f: dict, now: str, scope: str = "ops") -> str:
+    source, repro = SOURCES[scope]
     return (f"<!-- {MARK}: {f['kind']} -->\n<!-- ops-state: {_state(f)} -->\n"
             f"**{f['level'].upper()}: {f['title']}**\n\n{f['detail']}\n\n"
             # The loop's own intake gate (scripts/verify_issue_evidence.py) refuses an
@@ -148,14 +149,32 @@ def body_for(f: dict, now: str) -> str:
             f"- tokens: 0 measured — no LLM path is touched; the lever is the loop's own schedule\n"
             f"- thesis: acting on the lever named above brings this reading back under its threshold\n"
             f"- metric: `{f['kind']}` fires 0 times in the next 7 days (thresholds in scripts/detect_ops_regressions.py)\n"
-            f"- repro: `uv run python scripts/detect_ops_regressions.py --json` -> no finding of kind {f['kind']}\n\n"
-            f"Filed by `agent-steward`'s ops carrier from `scripts/detect_ops_regressions.py` "
+            f"- repro: `{repro}` -> no finding of kind {f['kind']}\n\n"
+            f"Filed by {source} "
             f"at {now}. One issue per finding kind: it is commented on when the finding "
             f"changes and when it clears, never refiled. See `/admin/ops`.")
 
 
 #: Kinds raised by scripts/watch_app_health.py (the live app, read from GCS).
 APP_PREFIX = "app-"
+
+#: Kinds raised by scripts/liveness.py, filed from agent-queue's hourly job
+#: (#1186). `carry` comments "cleared" on every open kind a run did NOT raise,
+#: so two carriers sharing one store must own disjoint kinds: the steward's
+#: run (scope `ops`) never touches these, and the liveness run (scope
+#: `liveness`) touches nothing else. tests/test_liveness.py pins this tuple to
+#: liveness.KINDS.
+LIVENESS_KINDS = ("inbox-stale", "ready-unmerged", "red-unhandled")
+SOURCES = {
+    "ops": ("`agent-steward`'s ops carrier from `scripts/detect_ops_regressions.py`",
+            "uv run python scripts/detect_ops_regressions.py --json"),
+    "liveness": ("`agent-queue`'s hourly liveness check, `scripts/liveness.py`",
+                 "python3 scripts/liveness.py"),
+}
+
+
+def in_scope(kind: str, scope: str) -> bool:
+    return (kind in LIVENESS_KINDS) == (scope == "liveness")
 
 
 #: Outbox kinds (scripts/outbox.py KINDS). The change and the cleared comments share
@@ -172,7 +191,8 @@ def _send(o: "outbox.Outcome", stats: dict, counted: str) -> None:
 
 
 def carry(gh: Runner, repo: str, findings: list[dict], now: str,
-          keep_prefix: str | None = None, box: "outbox.Outbox | None" = None) -> dict:
+          keep_prefix: str | None = None, scope: str = "ops",
+          box: "outbox.Outbox | None" = None) -> dict:
     """`keep_prefix`: kinds that were NOT read this run (the app watcher could not
     reach the bucket). Their open issues are left untouched rather than told
     'cleared' -- an unreadable source is not a clean one.
@@ -186,7 +206,7 @@ def carry(gh: Runner, repo: str, findings: list[dict], now: str,
     seen = set()
     for f in findings:
         kind = f["kind"]
-        if kind in seen:            # one issue per kind even if the detector repeats one
+        if kind in seen or not in_scope(kind, scope):   # one issue per kind; only this run's kinds
             continue
         seen.add(kind)
         cur = existing.get(kind)
@@ -194,7 +214,7 @@ def carry(gh: Runner, repo: str, findings: list[dict], now: str,
             labels = [LABEL]
             if PRIORITY.get(f["level"]):
                 labels.append(PRIORITY[f["level"]])
-            _send(box.create_issue(KIND_ISSUE, f"[OPS] {f['title']}", body_for(f, now), labels),
+            _send(box.create_issue(KIND_ISSUE, f"[OPS] {f['title']}", body_for(f, now, scope), labels),
                   stats, "filed")
             continue
         last, cleared = last_comment_state(gh, repo, cur["number"])
@@ -208,7 +228,7 @@ def carry(gh: Runner, repo: str, findings: list[dict], now: str,
                        f"<!-- ops-state: {_state(f)} -->\n**Now {f['level'].upper()}: "
                        f"{f['title']}** ({now})\n\n{f['detail']}"), stats, "updated")
     for kind, cur in existing.items():
-        if kind in seen:
+        if kind in seen or not in_scope(kind, scope):
             continue
         if keep_prefix and kind.startswith(keep_prefix):
             continue
@@ -227,6 +247,8 @@ def main(argv: list[str], gh: Runner = run_gh, now: datetime | None = None) -> i
     ap.add_argument("--repo", required=True)
     ap.add_argument("--findings", required=True, help="detect_ops_regressions.py --json output file")
     ap.add_argument("--app", help="scripts/watch_app_health.py --out file (the live app, from GCS)")
+    ap.add_argument("--scope", choices=tuple(SOURCES), default="ops",
+                    help="which kinds this run owns: ops (the steward) or liveness (agent-queue)")
     try:
         a = ap.parse_args(argv[1:])
         doc = json.loads(open(a.findings).read())
@@ -247,7 +269,7 @@ def main(argv: list[str], gh: Runner = run_gh, now: datetime | None = None) -> i
             print(f"app health not read ({app.get('why', 'no file')}); app-* issues left as they are")
     stamp = (now or datetime.now(timezone.utc)).strftime("%Y-%m-%dT%H:%MZ")
     try:
-        stats = carry(gh, a.repo, findings, stamp, keep_prefix=keep)
+        stats = carry(gh, a.repo, findings, stamp, keep_prefix=keep, scope=a.scope)
     except (RuntimeError, ValueError) as exc:
         print(f"::error::ops findings could not be filed: {exc}")
         return 1

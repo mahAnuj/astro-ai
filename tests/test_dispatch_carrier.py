@@ -75,7 +75,10 @@ esac
     return bindir
 
 
-def _run(tmp_path: Path, contents: str | None, *, who="steward", dry=True, **kw):  # noqa: D103
+def _run(tmp_path: Path, contents: str | None, *, who="steward", dry=True, mode="drain", **kw):  # noqa: D103
+    """`mode="drain"` by default (2026-11-17, #1185): these tests exercise the
+    dispatch path, which only `cycle_queue.py drain` reaches now. Queue mode --
+    what every handler gets -- is tested in tests/test_inbox_single_worker.py."""
     f = tmp_path / "ruling.txt"
     if contents is not None:
         f.write_text(contents)
@@ -83,6 +86,9 @@ def _run(tmp_path: Path, contents: str | None, *, who="steward", dry=True, **kw)
     env["PATH"] = f"{_fake_gh(tmp_path, **kw)}:{env['PATH']}"
     env["GH_REPO"] = "owner/repo"
     env.pop("GITHUB_ENV", None)
+    env.pop("CYCLE_CARRIER", None)
+    if mode == "drain":
+        env["CYCLE_CARRIER"] = "drain"
     cmd = ["bash", str(SCRIPT), str(f), who] + (["--dry-run"] if dry else [])
     return subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=300)
 
@@ -292,6 +298,7 @@ esac
     env["PATH"] = f"{bindir}:{env['PATH']}"
     env["GH_REPO"] = "owner/repo"
     env.pop("GITHUB_ENV", None)
+    env["CYCLE_CARRIER"] = "drain"      # the dispatch path is the drain's (#1185)
     subprocess.run(["bash", str(SCRIPT), str(f), "qa-on-green"],
                    capture_output=True, text=True, env=env, timeout=300)
     recorded = calls.read_text() if calls.exists() else ""
@@ -311,6 +318,7 @@ def test_the_dispatched_kind_is_exported_beside_the_number(tmp_path):
     env["PATH"] = f"{_fake_gh(tmp_path)}:{env['PATH']}"
     env["GH_REPO"] = "owner/repo"
     env["GITHUB_ENV"] = str(genv)
+    env["CYCLE_CARRIER"] = "drain"      # the dispatch path is the drain's (#1185)
     subprocess.run(["bash", str(SCRIPT), str(f), "qa-on-green"],
                    capture_output=True, text=True, env=env, timeout=300)
     written = genv.read_text()
