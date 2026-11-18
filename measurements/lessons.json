@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-18T05:41:55Z",
+ "generated_at": "2026-11-18T12:31:35Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1029,6 +1029,22 @@
      "tests",
      "regression"
     ]
+   },
+   {
+    "number": 1210,
+    "at": "2026-11-18T05:58:14Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1210#issuecomment-6970481405",
+    "summary": "QA: FAIL \u2014 verified at `459c0b3789442d5feddd9ff0235f72e0982f6e20` qa:in-cycle. Tests 54 new pass, full suite 5346 pass, 27/27 new mutation rows red in scoped run, shallow-clone and 429/quota behaviour verified by execution. DEFECT 1: docs/decisions/2026-11-18-index-status-collector.md says the /admi",
+    "themes": []
+   },
+   {
+    "number": 1210,
+    "at": "2026-11-18T06:14:29Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1210#issuecomment-6970755601",
+    "summary": "QA: FAIL \u2014 verified at `feba54dce661ddb20cb6701be7da2456808e0b31` qa:in-cycle. Round-1 findings all fixed and verified by execution (same_site filter incl. all-off-site exit 1, limit-urls after filter; panel wording for partial/complete/non-empty; 58 new tests, full suite 5350 green, floor 3498>=345",
+    "themes": [
+     "tokens"
+    ]
    }
   ],
   "reverts": [],
@@ -1084,7 +1100,7 @@
     "kind": "fixes-not-closing",
     "level": "amber",
     "title": "8 issues still open after a merged PR claimed them",
-    "detail": "#310 (PR #891, 166h), #838 (PR #839, 192h), #856 (PR #857, 178h), #889 (PR #892, 147h), #908 (PR #916, 147h), #970 (PR #977, 101h), #1056 (PR #1077, 66h), #1080 (PR #1118, 50h). Each PR merged more than 24h ago and claims its issue, so the fix shipped and nothing closed it. Levers: check close-on-evidence.yml's runs for those merge commits (did it fire, and did it find the live commit?) and verify-production.yml (a red or skipped run closes nothing). A PR that only partly fixes its issue should say `Refs #N`, not `closes #N`.",
+    "detail": "#310 (PR #891, 173h), #838 (PR #839, 199h), #856 (PR #857, 185h), #889 (PR #892, 154h), #908 (PR #916, 154h), #970 (PR #977, 108h), #1056 (PR #1077, 73h), #1080 (PR #1118, 57h). Each PR merged more than 24h ago and claims its issue, so the fix shipped and nothing closed it. Levers: check close-on-evidence.yml's runs for those merge commits (did it fire, and did it find the live commit?) and verify-production.yml (a red or skipped run closes nothing). A PR that only partly fixes its issue should say `Refs #N`, not `closes #N`.",
     "where": "/admin/ops"
    }
   ]
@@ -1093,7 +1109,7 @@
   "grounding": 31,
   "tests": 29,
   "regression": 28,
-  "tokens": 20,
+  "tokens": 21,
   "copy": 20,
   "security": 15,
   "i18n": 10,

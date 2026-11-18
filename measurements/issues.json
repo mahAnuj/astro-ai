@@ -1,21 +1,20 @@
 {
-  "generated_at": "2026-11-18T05:37:13Z",
+  "generated_at": "2026-11-18T12:29:27Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 129,
-  "with_ask": 46,
+  "open": 130,
+  "with_ask": 45,
   "by_area": {
     "UNCLASSIFIED": 49,
     "INFRA": 15,
     "REDESIGN": 10,
     "OPS": 7,
     "FEATURE": 7,
-    "ANALYTICS": 5,
+    "ANALYTICS": 6,
     "SEO": 4,
     "CORPUS": 4,
     "RETRIEVAL": 3,
     "CHORE": 3,
-    "ASK": 2,
     "PRIVACY": 2,
     "MEASURE": 2,
     "MATCHING": 2,
@@ -23,29 +22,62 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "MAIN-RED": 1,
     "SECURITY": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
+    "ASK": 1,
     "UI": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
     "untyped": 37,
-    "enhancement": 32,
-    "bug": 26,
+    "enhancement": 33,
+    "bug": 27,
     "chore": 18,
-    "correctness": 11,
+    "correctness": 10,
     "design": 5
   },
   "by_priority": {
-    "unset": 89,
+    "unset": 91,
     "medium": 22,
-    "high": 17,
+    "high": 16,
     "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 1217,
+      "title": "analytics: completion events for matching, numerology, muhurat and the dosha checks (#1070 rows 3-6)",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-18T11:27:20Z",
+      "updated": "2026-11-18T11:27:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1216,
+      "title": "[main-red] pr-gates did not pass on main at ff44d73",
+      "ask": "",
+      "area": "MAIN-RED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-18T05:51:20Z",
+      "updated": "2026-11-18T05:51:20Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1208,
       "title": "analytics: export LLM fallbacks (and reasons) in llm-usage.json — errors per route are unmeasured in three consecutive analyst reports",
@@ -70,7 +102,7 @@
         "bug"
       ],
       "created": "2026-11-18T02:05:15Z",
-      "updated": "2026-11-18T02:05:15Z",
+      "updated": "2026-11-18T05:38:51Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -170,27 +202,6 @@
       ],
       "created": "2026-11-17T18:01:33Z",
       "updated": "2026-11-17T18:01:56Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1167,
-      "title": "ask: audit saved /ask answers weekly for astrological correctness (grounded in knowledge/, prompt contract, safety) without publishing user questions",
-      "ask": "Collector step, no model (in agent-measure's GCS-credentialed job, like collect_llm_usage.py).",
-      "area": "ASK",
-      "type": "correctness",
-      "priority": "high",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "priority:high",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-17T09:46:07Z",
-      "updated": "2026-11-18T00:02:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -303,10 +314,10 @@
         "risk:medium",
         "qa-pass",
         "provenance:trusted",
-        "qa:independent"
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T20:41:18Z",
-      "updated": "2026-11-17T17:41:48Z",
+      "updated": "2026-11-18T06:51:47Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -354,10 +365,11 @@
       "priority": "high",
       "labels": [
         "enhancement",
-        "priority:high"
+        "priority:high",
+        "provenance:trusted"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-15T20:42:01Z",
+      "updated": "2026-11-18T11:27:29Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -390,10 +402,12 @@
         "seo",
         "category:technical",
         "priority:high",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-15T10:10:28Z",
-      "updated": "2026-11-18T03:11:46Z",
+      "updated": "2026-11-18T06:38:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2115,9 +2129,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-18T05:37:13Z",
+    "generated_at": "2026-11-18T12:29:27Z",
     "window_days": 28,
-    "open_now": 129,
+    "open_now": 130,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2520,15 +2534,15 @@
       },
       {
         "date": "2026-11-18",
-        "opened": 4,
-        "closed": 4,
-        "net": 0,
-        "open_end": 129,
+        "opened": 6,
+        "closed": 5,
+        "net": 1,
+        "open_end": 130,
         "opened_by": {
-          "loop": 4
+          "loop": 6
         },
         "closed_by": {
-          "close-on-evidence": 2,
+          "close-on-evidence": 3,
           "prioritise": 1,
           "main-red-report": 1
         }
@@ -2540,56 +2554,56 @@
         "title": "[UI] PWA install banner covers the primary CTA on the first fold, mobile and desktop",
         "pr": 891,
         "merged_at": "2026-11-11T07:09:27Z",
-        "hours": 166
+        "hours": 173
       },
       {
         "number": 838,
         "title": "Manglik copy: six-house rule, combust-Mars cancellation and 'classical' list claims outrun the held sources (slice of #777)",
         "pr": 839,
         "merged_at": "2026-11-10T05:08:09Z",
-        "hours": 192
+        "hours": 199
       },
       {
         "number": 856,
         "title": "Manglik copy: remaining flat six-house claims and the 'many texts … after age 28' claim outrun the held sources (residue of #838)",
         "pr": 857,
         "merged_at": "2026-11-10T19:13:32Z",
-        "hours": 178
+        "hours": 185
       },
       {
         "number": 889,
         "title": "Diamond chart: header comment says degrees stay in a table under /matching charts (false), and the South-Indian LAGNA caption overlaps a crowded house 1 (follow-up to #871)",
         "pr": 892,
         "merged_at": "2026-11-12T02:25:03Z",
-        "hours": 147
+        "hours": 154
       },
       {
         "number": 908,
         "title": "Clarity masking unverified and /ask?q= in request logs: privacy disclosure gaps left from #819",
         "pr": 916,
         "merged_at": "2026-11-12T02:08:41Z",
-        "hours": 147
+        "hours": 154
       },
       {
         "number": 970,
         "title": "[INFRA] reading_quality: add the five natal.txt:54 DO NOT phrases it does not check (#327)",
         "pr": 977,
         "merged_at": "2026-11-14T00:13:24Z",
-        "hours": 101
+        "hours": 108
       },
       {
         "number": 1056,
         "title": "learn muhurat articles (vivah-muhurat-2027, griha-pravesh-muhurat-2026-2027) still call unsourced rules classical and credit Grihya Sutra / Padma Purana",
         "pr": 1077,
         "merged_at": "2026-11-15T10:39:16Z",
-        "hours": 66
+        "hours": 73
       },
       {
         "number": 1080,
         "title": "debilitated-sun-career: calls Sun in the 10th \"most classically difficult\" though the corpus gives Sun digbala there; remedies labelled classical are unsourced",
         "pr": 1118,
         "merged_at": "2026-11-16T03:17:06Z",
-        "hours": 50
+        "hours": 57
       }
     ],
     "closed_rows": [
@@ -3689,6 +3703,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1167,
+        "closed_at": "2026-11-18T05:56:44Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1172,
         "closed_at": "2026-11-17T18:12:08Z",
         "closer": "owner"
@@ -3744,7 +3763,7 @@
         "closer": "main-red-report"
       }
     ],
-    "timelines_read": 230,
+    "timelines_read": 1,
     "truncated": []
   }
 }
