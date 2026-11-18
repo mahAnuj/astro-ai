@@ -65,7 +65,7 @@ log = logging.getLogger(__name__)
 #: Files this page reads, in the order the template presents them.
 FILES = ("loop.json", "cost.json", "issues.json", "agents.json",
          "ga4-daily.json", "gsc-daily.json",
-         "gsc-trend-page.json", "gsc-trend-query.json")
+         "gsc-trend-page.json", "gsc-trend-query.json", "index-status.json")
 
 #: Committed `main` of the repository the agents work in. Raw content, so no
 #: API token and no API rate limit — raw.githubusercontent.com is a CDN.
@@ -959,6 +959,79 @@ def _agents_view() -> dict:
         "delivery": doc.get("delivery") or {},
         "agents": doc.get("agents") or {},
     }
+
+
+#: How many URLs the panel lists. Ten is the collector's own `rank_requests`
+#: limit; the cap is repeated here because this reads a FILE, and a file written
+#: by a newer collector must not turn a one-click panel into a wall of text.
+INDEX_LIST_MAX = 10
+
+#: The counts the panel shows, in order. Anything else the file carries stays
+#: in the file.
+_INDEX_COUNT_KEYS = ("total", "inspected", "indexed", "not_indexed", "stale",
+                     "canonical_mismatch", "blocked", "unknown", "errors",
+                     "not_inspected")
+
+
+def _index_view(now: datetime | None = None) -> dict:
+    """Google index status, passed through from `index-status.json` (#1065).
+
+    `scripts/fetch_index_status.py` already ranked the pages worth asking Google
+    to recrawl and wrote them as `request_indexing`; re-ranking here would let
+    the panel and the file disagree about which page is first, the same reason
+    `_agents_view` leaves its verdicts alone. This only bounds and sanitises what
+    it was handed, because the file arrives over the network in production.
+
+    NEVER RAISES, and every key the ok path returns is present on the not-ok
+    path, for the reason `_loop_view` records: an absent or garbled file is the
+    ordinary state until the first collection, and a 500 here would take the
+    whole control room down with it.
+    """
+    empty = {"ok": False, "message": "not collected yet", "age": None,
+             "partial": False, "partial_reason": None, "git_shallow": None,
+             "counts": {}, "impressions_matched": None, "pages": [],
+             "urls": ""}
+    try:
+        doc = _fetch("index-status.json")
+        if not isinstance(doc, dict) or not isinstance(doc.get("counts"), dict):
+            return empty
+        raw = doc.get("request_indexing")
+        items = []
+        for r in (raw if isinstance(raw, list) else []):
+            if not isinstance(r, dict) or not isinstance(r.get("url"), str):
+                continue
+            why = r.get("reasons")
+            items.append({
+                "url": r["url"],
+                "reasons": [x for x in (why if isinstance(why, list) else [])
+                            if isinstance(x, str)],
+                "impressions": (r["impressions"]
+                                if isinstance(r.get("impressions"), int) else None),
+            })
+            if len(items) == INDEX_LIST_MAX:
+                break
+        matched = doc.get("impressions_matched")
+        reason = doc.get("partial_reason")
+        return {
+            "ok": True,
+            "message": "",
+            "age": _age(doc.get("generated_at"), now or datetime.now(timezone.utc)),
+            "partial": doc.get("partial") is True,
+            "partial_reason": reason if isinstance(reason, str) else None,
+            "git_shallow": doc.get("git_shallow") if isinstance(
+                doc.get("git_shallow"), bool) else None,
+            "counts": {k: doc["counts"][k] for k in _INDEX_COUNT_KEYS
+                       if isinstance(doc["counts"].get(k), int)},
+            "impressions_matched": matched if isinstance(matched, dict) else None,
+            # `pages`, not `items`: Jinja resolves `X.items` to dict.items().
+            "pages": items,
+            # One per line, for the textarea: what the owner pastes into
+            # Search Console's "Request indexing" box.
+            "urls": "\n".join(i["url"] for i in items),
+        }
+    except Exception as exc:  # noqa: BLE001 -- a monitoring page must not 500
+        log.warning("ops_data: index-status.json unusable: %s", exc, exc_info=True)
+        return {**empty, "message": "unreadable"}
 
 
 APP_CACHE_TTL = float(os.environ.get("OPS_APP_CACHE_TTL", "60"))
@@ -2224,6 +2297,7 @@ def snapshot(now: datetime | None = None,
     cost = _cost_view(_fetch("cost.json"), shipped_30d)
     traffic = _traffic_view()
     agents = _agents_view()
+    index = _index_view(now)
     app = _app_view(app_days, end_day)
     # Every return path of _app_view, cached or not, carries the dates it covers.
     app = {**app, "range": app.get("range") or window_range(app_days, today=end_day),
@@ -2269,6 +2343,7 @@ def snapshot(now: datetime | None = None,
         "cost": cost,
         "traffic": traffic,
         "agents": agents,
+        "index": index,
         "app": app,
         "rashifal": rashifal,
         "source": "disk" if measurements_dir() else "github",
