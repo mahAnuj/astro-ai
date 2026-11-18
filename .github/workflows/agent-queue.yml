@@ -29,7 +29,8 @@
 # records Actions minutes as unlimited (#338), and an hourly run that finds
 # nothing takes about a minute -- at most 744 runs a month. And twice a day
 # was too slow: an entry whose wake was cancelled sat until the steward came
-# round. Each hourly run fires due timers (scripts/timers.py, #1187), drains,
+# round. (Since 2026-11-18 the hourly steps also run on any wake once an hour
+# has passed -- see "Are the hourly steps due" below.) Each hourly run fires due timers (scripts/timers.py, #1187), drains,
 # chains, then runs the liveness check (scripts/liveness.py) and files what it
 # finds. No model runs in this workflow. `Agent steward` completing still
 # drains too. Off the hour, because :00 is GitHub's most throttled slot.
@@ -99,12 +100,26 @@ jobs:
           AFTER_RUN: ${{ inputs.after_run }}
         run: python3 scripts/wait_for_run.py
 
+      # NOT ONLY ON CRON (2026-11-18). Timers and liveness used to run on
+      # `schedule` alone, and GitHub's cron is best-effort: on its first day the
+      # hourly schedule fired once in fifteen slots. Every run now asks
+      # scripts/hourly_due.py, which says due on a scheduled run, or when no
+      # run in the last 55 min completed the timers step. Event wakes come far
+      # more often than hourly, so they keep the cadence; the cron is a fallback.
+      - name: Are the hourly steps due
+        id: hourly
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          THIS_RUN: ${{ github.run_id }}
+        run: python3 scripts/hourly_due.py
+
       # TIMERS FIRE FIRST (#1187), so a timer due this hour is drained this hour.
       # Each due timer appends one keyed queue entry; a double fire appends
-      # nothing (the queue dedupes the key). Hourly runs only: a wake from a
-      # handler has its own entry to drain and no reason to search for timers.
+      # nothing (the queue dedupes the key).
       - name: Fire due timers into the queue
-        if: github.event_name == 'schedule'
+        if: steps.hourly.outputs.due == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -144,7 +159,7 @@ jobs:
       # because an unread queue is not a clean one. `--scope liveness` keeps
       # the filer off the steward's kinds and the steward off these.
       - name: Liveness check, filed as ops findings
-        if: always() && github.event_name == 'schedule'
+        if: always() && steps.hourly.outputs.due == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}

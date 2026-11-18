@@ -582,10 +582,13 @@ def test_the_hourly_backstop_cron_exists_and_runs_timers_drain_chain_liveness_in
              "Chain the next ranked cycle", "Liveness check, filed as ops findings"]
     assert [n for n in names if n in order] == order
     by = {s.get("name"): s for s in steps}
-    assert "timers.py fire" in by[order[0]]["run"] and by[order[0]]["if"] == "github.event_name == 'schedule'"
+    # Since 2026-11-18 timers and liveness run whenever scripts/hourly_due.py
+    # says due (a scheduled run, or an hour since they last ran), not on cron
+    # alone: tests/test_hourly_due.py pins that.
+    assert "timers.py fire" in by[order[0]]["run"] and by[order[0]]["if"] == "steps.hourly.outputs.due == 'true'"
     assert "github.event_name == 'schedule'" in by[order[2]]["if"]
     live = by[order[3]]
-    assert "github.event_name == 'schedule'" in live["if"]
+    assert "steps.hourly.outputs.due == 'true'" in live["if"]
     assert "--scope liveness" in live["run"] and "liveness.py" in live["run"]
     assert by[order[1]]["if"] == "always()", "a failed timer step must not skip the drain"
 
