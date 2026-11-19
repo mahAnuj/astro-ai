@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-19T16:34:13Z",
+  "generated_at": "2026-11-19T18:22:25Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 124,
-  "with_ask": 44,
+  "open": 125,
+  "with_ask": 45,
   "by_area": {
     "UNCLASSIFIED": 42,
-    "INFRA": 15,
+    "INFRA": 16,
     "REDESIGN": 10,
     "OPS": 8,
     "FEATURE": 7,
@@ -33,19 +33,37 @@
   "by_type": {
     "untyped": 38,
     "enhancement": 30,
-    "chore": 21,
+    "chore": 22,
     "bug": 20,
     "correctness": 11,
     "design": 4
   },
   "by_priority": {
     "unset": 83,
-    "medium": 22,
+    "medium": 23,
     "high": 18,
     "low": 1
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1261,
+      "title": "infra: cap Cloud Run instances, and stop a query string bypassing the CDN cache on public endpoints (/api/agents/status)",
+      "ask": "Read and set Cloud Run --max-instances.",
+      "area": "INFRA",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "effort:s",
+        "risk:medium",
+        "chore"
+      ],
+      "created": "2026-11-19T17:21:28Z",
+      "updated": "2026-11-19T17:21:28Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1256,
       "title": "tokens: a generated code index so agents read the lines they need, not whole 4,000-line files",
@@ -693,7 +711,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-19T05:09:02Z",
+      "updated": "2026-11-19T17:59:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2003,9 +2021,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-19T16:34:13Z",
+    "generated_at": "2026-11-19T18:22:25Z",
     "window_days": 28,
-    "open_now": 124,
+    "open_now": 125,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2411,12 +2429,12 @@
       },
       {
         "date": "2026-11-19",
-        "opened": 10,
+        "opened": 11,
         "closed": 6,
-        "net": 4,
-        "open_end": 124,
+        "net": 5,
+        "open_end": 125,
         "opened_by": {
-          "audit": 3,
+          "audit": 4,
           "loop": 7
         },
         "closed_by": {
