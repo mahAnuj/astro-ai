@@ -199,6 +199,28 @@ def spike_days(rows: list[dict], top: int = 3) -> list[dict]:
     return sorted(hits, key=lambda r: -r["active_users"])[:top]
 
 
+def watch_days(rows: list[dict], spikes: list[dict], top: int = 7) -> list[dict]:
+    """Days at or above median + 10 that `spikes` did not take (#1236).
+
+    The spike bar is max(2 x median, median + 10, 15): at a median of 22 it is 44, so
+    on 2026-11-16 five of the seven days at 32+ users had no named source and the
+    analyst reported "not determined" four runs running. This is the tier between.
+    A day over the spike bar that `spike_days`' own cap of 3 cut falls here, not into
+    a gap. The median is computed as in `spike_days` on purpose: that function is
+    pinned by test_analyst_levers and a mutation row, so it is not refactored.
+    Returned most extreme first, at most `top`.
+    """
+    vals = sorted(r.get("active_users", 0) for r in rows if not r.get("no_data"))
+    if len(vals) < 7:
+        return []
+    med = vals[len(vals) // 2]
+    taken = {s["date"] for s in spikes}
+    hits = [dict(r, median=med, threshold=med + 10) for r in rows
+            if not r.get("no_data") and r.get("active_users", 0) >= med + 10
+            and r["date"] not in taken]
+    return sorted(hits, key=lambda r: -r["active_users"])[:top]
+
+
 def _breakdown(rows: list[dict], dims: list[str]) -> list[dict]:
     out = []
     for r in rows:
@@ -262,8 +284,12 @@ def anomalies(args, start: str, end: str, bearer: str) -> int:
                      "active_users": int(r["metricValues"][0]["value"])})
     metrics = [{"name": m} for m in ("sessions", "newUsers", "engagedSessions",
                                      "userEngagementDuration")]
-    found = []
-    for day in spike_days(rows):
+    spikes = spike_days(rows)
+    watch = watch_days(rows, spikes)
+    # Uncapped count, so a truncation is visible in the file rather than silent.
+    watch_omitted = len(watch_days(rows, spikes, top=len(rows))) - len(watch)
+
+    def day_breakdown(day: dict) -> tuple[list[dict], list[dict]]:
         rng = [{"startDate": day["date"], "endDate": day["date"]}]
         src_dims = ["sessionSourceMedium", "landingPagePlusQueryString"]
         tech_dims = ["browser", "deviceCategory", "country"]
@@ -272,13 +298,31 @@ def anomalies(args, start: str, end: str, bearer: str) -> int:
                        "metrics": metrics, "orderBys": order, "limit": 15}, bearer)
         b = post(url, {"dateRanges": rng, "dimensions": [{"name": d} for d in tech_dims],
                        "metrics": metrics, "orderBys": order, "limit": 10}, bearer)
-        by_source = _breakdown(a.get("rows", []), src_dims)
-        by_tech = _breakdown(b.get("rows", []), tech_dims)
-        found.append({**day, "explanation": explain(by_source, by_tech),
+        return (_breakdown(a.get("rows", []), src_dims),
+                _breakdown(b.get("rows", []), tech_dims))
+
+    found = []
+    for day in spikes:
+        by_source, by_tech = day_breakdown(day)
+        found.append({**day, "tier": "spike", "explanation": explain(by_source, by_tech),
                       "by_source": by_source, "by_tech": by_tech})
+    watched = []
+    for day in watch:
+        # Only here: the workflow deletes the whole file on any failure, so an error on
+        # this optional tier must not erase the spike breakdown above (#1236).
+        try:
+            by_source, by_tech = day_breakdown(day)
+            why = explain(by_source, by_tech)
+        except ApiError as e:
+            by_source, by_tech = [], []
+            why = f"breakdown failed (HTTP {e.status})"
+        watched.append({**day, "tier": "watch", "explanation": why,
+                        "by_source": by_source, "by_tech": by_tech})
     print(json.dumps({"source": "ga4", "property": args.property, "window": [start, end],
                       "rule": "active users >= max(2 x median, median + 10, 15)",
-                      "days_checked": len(rows), "spikes": found}, indent=2))
+                      "watch_rule": "active users >= median + 10, not a spike",
+                      "days_checked": len(rows), "spikes": found,
+                      "watch": watched, "watch_omitted": watch_omitted}, indent=2))
     return 0
 
 
