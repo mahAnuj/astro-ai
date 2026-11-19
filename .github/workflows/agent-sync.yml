@@ -21,6 +21,15 @@ on:
     # agent-prioritise (Sundays 22:30 IST) so next week's queue sees the goals.
     - cron: "23 15 * * 0"  # Sundays, 20:53 IST
   workflow_dispatch:
+    inputs:
+      # Owner, 2026-11-19: "can we run a workflow today to ask chief set the goal for
+      # remaining week?" A manual run can set goals now instead of waiting for Sunday.
+      goals_for:
+        description: "Goals to set: 'current' = this week's remaining days (+ this month/quarter if unset), 'next' = next week, as on Sunday, 'none' = a plain review"
+        required: false
+        default: "current"
+        type: choice
+        options: [current, next, none]
 
 concurrency:
   group: agent-sync
@@ -87,7 +96,7 @@ jobs:
           cat /tmp/week.txt
 
       - name: Sync
-        if: github.event.schedule != '41 17 * * 2' && github.event.schedule != '23 15 * * 0'
+        if: github.event.schedule != '41 17 * * 2' && github.event.schedule != '23 15 * * 0' && (github.event_name != 'workflow_dispatch' || inputs.goals_for == 'none')
         uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -234,8 +243,17 @@ jobs:
             weekly goals are met, what is lacking and direct the loop
             accordingly for next week"; "Week is 7 days ... Sunday review and
             Monday next week start"). chief.md, "Growth goals", has the format.
-            ON SUNDAY ONLY (this run's schedule is "23 15 * * 0", or a manual
-            dispatch), write:
+            WHICH GOALS THIS RUN SETS: schedule "${{ github.event.schedule }}",
+            manual input goals_for "${{ inputs.goals_for }}".
+            - Sunday schedule "23 15 * * 0", or goals_for "next": the files
+              below, for NEXT week.
+            - goals_for "current" (a mid-week manual run): /tmp/weekly-goals.md
+              for THIS ISO week (it started last Monday), sized to the days left
+              until Sunday; /tmp/monthly-goals.md and /tmp/quarterly-goals.md for
+              this month and quarter only if none exist yet. No score files: no
+              period has ended.
+            - any other run: no goals files.
+            For a Sunday run, write:
               /tmp/weekly-score.md   score THIS week (Mon-Sun): met / partial /
                                      missed per goal, the measured actual, why,
                                      what was lacking, and your direction

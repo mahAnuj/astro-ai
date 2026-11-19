@@ -309,3 +309,15 @@ def test_the_panel_renders_meters_split_and_decisions(client, mdir, monkeypatch,
     assert 'aria-valuenow="50"' in html, "the weekly meter shows the goal's measured progress"
     assert "#7" in html and "band page" in html and "architect, backend-engineer×2" in html
     assert "g-target" in html and "Show the split as a table" in html
+
+
+def test_a_manual_run_can_set_this_weeks_goals_without_running_the_sync():
+    """Owner, 2026-11-19: "can we run a workflow today to ask chief set the goal for remaining
+    week?" -- a mid-week dispatch sets goals for the CURRENT week, and skips the Friday /sync."""
+    doc = _wf("agent-sync.yml")
+    inp = (doc.get(True) or doc["on"])["workflow_dispatch"]["inputs"]["goals_for"]
+    assert inp["default"] == "current" and set(inp["options"]) == {"current", "next", "none"}
+    steps = {s.get("name"): s for s in doc["jobs"]["sync"]["steps"]}
+    assert "inputs.goals_for == 'none'" in steps["Sync"]["if"]
+    review = steps["Chief review"]["with"]["prompt"]
+    assert '${{ inputs.goals_for }}' in review and "for THIS ISO week" in review

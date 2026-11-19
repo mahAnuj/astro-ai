@@ -84,4 +84,9 @@ MUTATIONS = [
      '               {% if m.pct is not none %}aria-valuenow="{{ m.pct }}"{% endif %}>',
      '               >',
      "test_the_panel_renders_meters_split_and_decisions"),
+    ("growth-split: a goals-only manual run also runs the Friday sync",
+     ".github/workflows/agent-sync.yml",
+     " && (github.event_name != 'workflow_dispatch' || inputs.goals_for == 'none')\n",
+     "\n",
+     "test_a_manual_run_can_set_this_weeks_goals_without_running_the_sync"),
 ]
