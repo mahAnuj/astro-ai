@@ -122,26 +122,85 @@ jobs:
             echo "::notice::/health reports no build_sha — cannot prove which commit is live, not closing anything"
             exit 0
           fi
+          # 2026-11-18: a newer deploy that CONTAINS this commit is still proof it
+          # is live. Requiring live == SHA skipped every PR merged in a burst: by
+          # the time its verify-production finished, a later merge was serving.
+          # Measured: #1056 (PR #1077, verify green 2026-11-15) never closed.
           if [ "$live" != "$SHA" ]; then
-            echo "::notice::live commit $live is not this run's $SHA — a newer deploy landed, not closing"
-            exit 0
+            rel=$(gh api "repos/$GH_REPO/compare/$SHA...$live" --jq .status 2>/dev/null || echo error)
+            if [ "$rel" != "ahead" ]; then
+              echo "::notice::live commit $live does not contain $SHA (compare: $rel) — not closing"
+              exit 0
+            fi
+            echo "live $live contains $SHA"
           fi
+          echo "live=$live" >> "$GITHUB_OUTPUT"
           echo "ok=true" >> "$GITHUB_OUTPUT"
 
       - name: Close what this commit shipped
         if: steps.live.outputs.ok == 'true'
+        env:
+          LIVE: ${{ steps.live.outputs.live }}
         run: |
           # Only issues a merged PR explicitly claimed. A commit message
           # mentioning an issue is not a claim that it is fixed.
-          prs=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" --jq '.[].number')
-          [ -n "$prs" ] || { echo "no PR for $SHA"; exit 0; }
+          # Every PR merged in the last 14 days whose merge commit is in $SHA's
+          # history, not only $SHA's own PR (2026-11-18). A green run on $SHA
+          # proves the code of all of them is live and passing now -- including
+          # PRs whose own run was skipped (a newer deploy already serving) or
+          # failed on the deploy-wait timeout (#1080 via PR #1118). Closing is
+          # idempotent: an issue already closed is skipped below.
+          # 14 days, not 7: #838 and #856's fixes merged 7-8 days before this
+          # landed (issue_flow.py merged-but-open, 2026-11-18). At ~30 merges a day
+          # that is ~400 PRs, so: page through them, keep only PRs that claim an
+          # issue that is still OPEN, and spend a compare call on those alone.
+          since=$(date -u -d '14 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          # Fail LOUD (QA on #1212): a listing that errors must turn the run red,
+          # never pass as "nothing to close". pipefail covers the gh | jq pipes;
+          # each listing is captured on its own so `bash -e` sees its status.
+          set -o pipefail
+          open_json=$(gh api --paginate "repos/$GH_REPO/issues?state=open&per_page=100" \
+                        --jq '[.[] | select(.pull_request == null) | .number]' | jq -s 'add // []') \
+            || { echo "::error::could not list open issues -- closing nothing"; exit 1; }
+          list=$(gh api --paginate "repos/$GH_REPO/pulls?state=closed&sort=updated&direction=desc&per_page=100" \
+                 --jq ".[] | select(.merged_at != null and .merged_at >= \"$since\") | {n: .number, m: .merge_commit_sha, t: ((.title // \"\") + \" \" + (.body // \"\")), b: .head.ref}" \
+               | jq -r --argjson open "$open_json" \
+                   '((if (.t | test("(?i)(clos(e|es|ed)|fix(es|ed)?|resolv(e|es|ed))\\s+#[0-9]")) then [.t | scan("#([0-9]+)") | .[0] | tonumber] else [] end)
+                     + [.b | scan("^issue/([0-9]+)-") | .[0] | tonumber]) as $c
+                    | select(any($c[]; . as $x | $open | index($x)) or .m == env.SHA) | "\(.n):\(.m)"') \
+            || { echo "::error::could not list merged PRs -- closing nothing"; exit 1; }
+          prs=""; compare_errors=0
+          for pr_merge in $list; do
+            pr=${pr_merge%%:*}; merge=${pr_merge#*:}
+            if [ "$merge" = "$SHA" ]; then prs="$prs $pr"; continue; fi
+            if ! rel=$(gh api "repos/$GH_REPO/compare/$merge...$SHA" --jq .status 2>/dev/null); then
+              echo "::warning::compare failed for PR #$pr ($merge) -- not closing its issues this run"
+              compare_errors=$((compare_errors + 1)); continue
+            fi
+            if [ "$rel" = "ahead" ]; then prs="$prs $pr"; fi
+          done
+          if [ -z "$prs" ]; then
+            if [ "$compare_errors" -gt 0 ]; then
+              echo "::error::$compare_errors compare call(s) failed and nothing else qualified -- closing nothing"; exit 1
+            fi
+            echo "no PR in the last 14 days is contained in $SHA"; exit 0
+          fi
+          echo "PRs contained in $SHA:$prs"
 
+          reopen_errors=0
           for pr in $prs; do
             body=$(gh pr view "$pr" --repo "$GH_REPO" --json body,title --jq '.title + "\n" + .body')
+            merged_at=$(gh pr view "$pr" --repo "$GH_REPO" --json mergedAt --jq .mergedAt)
             # GitHub's own closing keywords, so behaviour matches what an author
             # reading the PR would expect.
-            issues=$(echo "$body" | grep -oiE '(clos(e|es|ed)|fix(e[sd])?|resolv(e|es|ed))[[:space:]]+#[0-9]+' \
-                     | grep -oE '[0-9]+' | sort -u)
+            # A list counts too: "Closes #1185, #1186 and #1187" closed only #1185
+            # until 2026-11-18 (PR #1196), leaving #1186 and #1187 open.
+            issues=$(echo "$body" | grep -oiE '(clos(e|es|ed)|fix(e[sd])?|resolv(e|es|ed))[[:space:]]+#[0-9]+([[:space:]]*(,|and|&)[[:space:]]*#[0-9]+)*' \
+                     | grep -oE '[0-9]+' | sort -u || true)
+            # `|| true` like refs= and the branch fallback below: under pipefail a
+            # body with no closing keyword makes grep exit 1, and `bash -e` then
+            # killed the step with no message and nothing closed (QA on #1212 at
+            # e101051). "No keyword" is a normal state the fallback exists for.
 
             # FALL BACK TO THE BRANCH NAME. The keyword is prose an agent has to
             # remember to write, and on 2026-10-09 it did not: PR #312 was titled
@@ -207,6 +266,21 @@ jobs:
             for n in $issues; do
               state=$(gh issue view "$n" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)
               [ "$state" = "OPEN" ] || { echo "#$n is $state — skipping"; continue; }
+              # REOPENED AFTER THIS PR MERGED = production disagreed (QA on #1212
+              # at f71d4db). Since this step looks back 14 days, every green run
+              # would otherwise re-close an issue a human reopened, and the closing
+              # comment's own "Reopen if production disagrees" would mean nothing.
+              # A later PR that claims it (merged after the reopen) still closes it.
+              # An unreadable timeline closes nothing on a guess.
+              if ! reopened=$(gh api --paginate "repos/$GH_REPO/issues/$n/events" \
+                     --jq "[.[] | select(.event == \"reopened\" and .created_at > \"$merged_at\")] | length" \
+                     | jq -s 'add // 0'); then
+                echo "::warning::could not read #$n's events -- not closing it this run"
+                reopen_errors=$((reopen_errors + 1)); continue
+              fi
+              if [ "${reopened:-0}" != "0" ]; then
+                echo "#$n was reopened after PR #$pr merged — not re-closing it"; continue
+              fi
               # Empty on a workflow_dispatch run, which has no workflow_run payload.
               if [ -n "${RUN_URL:-}" ]; then run_link=" ([run]($RUN_URL))"; else run_link=""; fi
               gh issue close "$n" --repo "$GH_REPO" --reason completed --comment \
@@ -214,9 +288,16 @@ jobs:
 
           - PR #$pr merged to \`main\`
           - \`verify-production\` concluded **success** for \`$SHA\`$run_link
-          - \`/health\` reports \`build_sha\` = \`$SHA\`, so **this commit is the revision serving**
+          - \`/health\` reports \`build_sha\` = \`$LIVE\`, which is or contains \`$SHA\`, so **this PR's code is serving**
 
           That is CLAUDE.md's two-stage close: the fix landed, the deploy was verified, and the commit was confirmed live before closing. Reopen if production disagrees — a green run proves the invariants it asserts, not that nothing else broke."
               echo "closed #$n"
             done
           done
+          if [ "$reopen_errors" -gt 0 ]; then
+            echo "::error::$reopen_errors issue timeline read(s) failed -- those issues were not closed; the next green run retries them"
+          fi
+          if [ "$compare_errors" -gt 0 ]; then
+            echo "::error::$compare_errors compare call(s) failed -- those PRs' issues were not closed; the next green run retries them"
+          fi
+          if [ "$compare_errors" -gt 0 ] || [ "$reopen_errors" -gt 0 ]; then exit 1; fi

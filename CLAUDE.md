@@ -290,9 +290,10 @@ not merge them:
 2. **Once deployed**, verify against `origin/main` and production, then close with that
    evidence.
 
-Only three things close issues: `close-on-evidence.yml` (merged `closes #N` PR,
-`verify-production` green for that commit, `/health` serving it — a null `build_sha` closes
-nothing); `project-manager` in `/prioritise` (already fixed, does not reproduce, overtaken,
+Only three things close issues: `close-on-evidence.yml` (merged `closes #N` PR whose merge
+commit is contained in a commit that `verify-production` passed and `/health` is serving — since
+2026-11-18 a later live commit counts, so PRs merged in a burst are not skipped; a null
+`build_sha` closes nothing); `project-manager` in `/prioritise` (already fixed, does not reproduce, overtaken,
 duplicate — never shipped-but-unverified); and `/agent-cycle` step 0 on `validate_issue.py`
 **exit 1 only** (`CANNOT-REPRODUCE`), never exit 3 or 4. **The engineer, dev-lead, QA and
 architect are still denied `gh issue close`.**
