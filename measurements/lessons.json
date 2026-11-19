@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-19T02:02:15Z",
+ "generated_at": "2026-11-19T02:28:18Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1116,8 +1116,8 @@
    {
     "kind": "loop-starved",
     "level": "amber",
-    "title": "3 of the last 4 build cycles built nothing",
-    "detail": "Empty cycles started 2026-11-18T23:08, 2026-11-18T23:10, 2026-11-18T23:12. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
+    "title": "2 of the last 4 build cycles built nothing",
+    "detail": "Empty cycles started 2026-11-18T23:10, 2026-11-18T23:12. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
     "where": "/admin/ops"
    }
   ]
@@ -1340,20 +1340,62 @@
    "url": "https://github.com/mahAnuj/astro-ai/issues/1075#issuecomment-6937201420"
   },
   {
+   "number": 1080,
+   "verdict": "UNSCOREABLE",
+   "headline": "not scoreable from GA4/GSC",
+   "at": "2026-11-19T02:18:03Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1080#issuecomment-6997658013"
+  },
+  {
+   "number": 1083,
+   "verdict": "UNSCOREABLE",
+   "headline": "not scoreable from GA4/GSC",
+   "at": "2026-11-19T02:18:04Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1083#issuecomment-6997658198"
+  },
+  {
    "number": 1093,
    "verdict": "PENDING",
    "headline": "pending \u2014 scoreable from 2026-12-16; the metric needs an export that does not exist",
    "at": "2026-11-17T03:27:09Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/1093#issuecomment-6937202015"
+  },
+  {
+   "number": 1178,
+   "verdict": "UNSCOREABLE",
+   "headline": "not scoreable from GA4/GSC",
+   "at": "2026-11-19T02:18:02Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1178#issuecomment-6997657776"
+  },
+  {
+   "number": 1217,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-19",
+   "at": "2026-11-19T02:18:00Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1217#issuecomment-6997657109"
+  },
+  {
+   "number": 1226,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-19",
+   "at": "2026-11-19T02:18:01Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1226#issuecomment-6997657332"
+  },
+  {
+   "number": 1229,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-19",
+   "at": "2026-11-19T02:18:02Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1229#issuecomment-6997657571"
   }
  ],
  "outcome_counts": {
   "PASS": 5,
   "MISS": 1,
   "OTHER": 1,
-  "UNSCOREABLE": 7,
+  "UNSCOREABLE": 10,
   "PARTIAL": 1,
-  "PENDING": 14
+  "PENDING": 17
  },
  "competitor_patterns": [
   {
