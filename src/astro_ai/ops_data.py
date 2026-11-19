@@ -66,7 +66,7 @@ log = logging.getLogger(__name__)
 #: Files this page reads, in the order the template presents them.
 FILES = ("loop.json", "cost.json", "issues.json", "agents.json",
          "ga4-daily.json", "gsc-daily.json",
-         "gsc-trend-page.json", "gsc-trend-query.json", "index-status.json")
+         "gsc-trend-page.json", "gsc-trend-query.json", "index-status.json", "growth.json")
 
 #: Committed `main` of the repository the agents work in. Raw content, so no
 #: API token and no API rate limit — raw.githubusercontent.com is a CDN.
@@ -2361,6 +2361,112 @@ def _outbox_view(doc: dict | None, now: datetime) -> dict | None:
     }
 
 
+#: The meters, in the order the panel draws them (owner, 2026-11-19).
+METER_ORDER = ("daily", "weekly", "monthly", "quarterly", "overall")
+GROWTH_DECISIONS_SHOWN = 15
+
+
+def _split_chart(days: list[dict], *, width: int = 700, plot_h: int = 110, target: float = 0.6) -> dict:
+    """SVG geometry for one 100%-stacked bar per IST day (growth / other / exempt) with the
+    60% target as a line, so a day under target reads at a glance. Computed here so the
+    template holds no arithmetic (the `_by_day_chart` rule)."""
+    left, right = 30, 8
+    slot = (width - left - right) / max(len(days), 1)
+    bar_w = max(min(slot * 0.62, 26), 3)
+    cols = []
+    for i, d in enumerate(days):
+        n = d["growth"] + d["other"] + d["exempt"]
+        x = left + i * slot + (slot - bar_w) / 2
+        segs, y = [], plot_h
+        for cls in ("growth", "other", "exempt"):
+            h = (d[cls] / n * plot_h) if n else 0
+            if h:
+                y -= h
+                segs.append({"cls": cls, "y": round(y, 2), "h": round(h, 2)})
+        share = "–" if d.get("share") is None else f"{round(d['share'] * 100)}%"
+        cols.append({"x": round(x, 2), "w": round(bar_w, 2), "segs": segs, "empty": n == 0,
+                     "cx": round(x + bar_w / 2, 2), "label": d["date"][5:],
+                     "show_label": i % 2 == (len(days) - 1) % 2,
+                     "tip": (f"{d['date']}: {d['growth']} growth, {d['other']} other, {d['exempt']} exempt"
+                             f" — growth share {share}")})
+    return {"w": width, "h": plot_h + 24, "plot_h": plot_h, "left": left, "right_x": width - right,
+            "target_y": round(plot_h * (1 - target), 2), "label_y": plot_h + 17, "cols": cols}
+
+
+def _agent_calls_table(loop_doc: dict | None, today_ist: str, days: int = 7) -> dict | None:
+    """Agent x IST day: how many build runs called each subagent (loop.json `agents_called`,
+    #1238). None until any row carries the field."""
+    rows = [r for r in (loop_doc or {}).get("rows") or [] if isinstance(r.get("agents_called"), dict)]
+    if not rows:
+        return None
+    today = datetime.strptime(today_ist, "%Y-%m-%d").date()
+    cols = [(today - timedelta(days=i)).isoformat() for i in range(days - 1, -1, -1)]
+    counts: dict[str, Counter] = {}
+    runs_read = Counter()
+    for r in rows:
+        at = _ist(r.get("started"))
+        if at is None:
+            continue
+        d = at.strftime("%Y-%m-%d")
+        if d not in cols:
+            continue
+        runs_read[d] += 1
+        for name in r["agents_called"]:
+            counts.setdefault(name, Counter())[d] += 1
+    peak = max([c for cnt in counts.values() for c in cnt.values()] or [1])
+    return {"days": [c[5:] for c in cols], "runs": [runs_read.get(c, 0) for c in cols],
+            "rows": [{"agent": name, "total": sum(cnt.values()),
+                      "cells": [{"n": cnt.get(c, 0), "heat": round(cnt.get(c, 0) / peak, 2)} for c in cols]}
+                     for name, cnt in sorted(counts.items(), key=lambda kv: -sum(kv[1].values()))]}
+
+
+def _growth_view(doc: dict | None, loop_doc: dict | None, today_ist: str, now: datetime) -> dict | None:
+    """Goals, their meters, the 60/40 split and what the loop decided (growth.json, written by
+    scripts/growth_split.py in agent-measure; owner, 2026-11-19). None until the file exists."""
+    if not isinstance(doc, dict) or not isinstance(doc.get("meters"), dict):
+        return None
+    meters = []
+    for name in METER_ORDER:
+        m = doc["meters"].get(name) or {}
+        p = m.get("progress")
+        meters.append({"name": name, "label": m.get("label") or name, "period": m.get("period"),
+                       "pct": None if p is None else round(p * 100),
+                       "tone": None if p is None else ("good" if p >= 0.8 else "warn" if p >= 0.4 else "low"),
+                       "detail": m.get("detail") or "", "goals": m.get("goals") or [],
+                       "queries": m.get("queries") or []})
+    cycles = []
+    for c in (doc.get("cycles") or [])[:GROWTH_DECISIONS_SHOWN]:
+        at = _ist(c.get("started"))
+        agents = c.get("agents")
+        cycles.append({**c, "when": at.strftime("%d %b %H:%M") if at else "–",
+                       "agents_text": ("–" if agents is None else
+                                       ", ".join(f"{k}{'×' + str(v) if v > 1 else ''}" for k, v in agents.items())
+                                       or "none")})
+    t, w = doc.get("today") or {}, doc.get("this_week") or {}
+    pct = lambda s: "–" if s is None else f"{round(s * 100)}%"
+    weekly = ((doc.get("goals") or {}).get("levels") or {}).get("weekly") or {}
+    reading = (f"Growth share: today {pct(t.get('share'))}, this week {pct(w.get('share'))}, "
+               f"against the {round((doc.get('target') or 0.6) * 100)}% target. "
+               f"{len(doc.get('open_growth') or [])} open growth issues. "
+               + ("The next ranked pick must be a growth issue." if doc.get("must_pick_growth")
+                  else "The split is on target for today."))
+    return {
+        "age": _age(doc.get("generated_at"), now),
+        "reading": reading,
+        "meters": meters,
+        "chart": _split_chart(doc.get("days") or [], target=doc.get("target") or 0.6),
+        "days": doc.get("days") or [],
+        "cycles": cycles,
+        "calls": _agent_calls_table(loop_doc, today_ist),
+        "history": weekly.get("history") or [],
+        "previous_score": weekly.get("previous_score"),
+        "direction": ((weekly.get("current") or {}).get("direction")
+                      or (weekly.get("previous_score") or {}).get("direction")),
+        "goals_issue": (doc.get("goals") or {}).get("issue"),
+        "open_growth": doc.get("open_growth") or [],
+    }
+
+
 def snapshot(now: datetime | None = None,
              app_days: int = DEFAULT_APP_DAYS, app_day: str = "") -> dict:
     """Everything /admin/ops renders, in one dict. Never raises.
@@ -2451,6 +2557,7 @@ def snapshot(now: datetime | None = None,
         "outbox": _outbox_view(_fetch("outbox.json"), now),
         # The committed snapshot, never the live backlog: see _issue_flow_view.
         "issue_flow": _issue_flow_view(snap_doc, now),
+        "growth": _growth_view(_fetch("growth.json"), loop_doc, today_ist, now),
         "issues": issues,
         "cost": cost,
         "traffic": traffic,

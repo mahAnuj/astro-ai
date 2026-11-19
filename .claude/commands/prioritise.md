@@ -16,6 +16,11 @@ Agent(
 
 Follow your agent definition. In particular:
 
+0. **The 60/40 growth split** (owner, 2026-11-19): run `python3 scripts/growth_split.py` and follow
+   "The 60/40 growth split" in your definition. The weekly queue holds at least 60% growth items
+   (production breakage excepted), the first ones serving this week's goals in the `weekly-goals`
+   issue, and states the split.
+
 1. **Staleness sweep FIRST.** Find issues that are already fixed, no longer reproduce, subsumed by another, or overtaken by a refactor. Verify against `origin/main`, not against claims in comments. Report these separately — closing stale issues is cheaper and more valuable than ranking them.
 
 2. **Then the queue.** At most 5-7 items, ordered by user harm, then unblocking power. For each: what is broken, why it sits at that position, what it blocks or waits on, rough size, which loop should take it, and whether it needs a verification gate.

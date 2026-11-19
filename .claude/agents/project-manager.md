@@ -96,6 +96,30 @@ Before ranking anything, find the issues that should not be in the list at all. 
 
 Report these separately from the queue. **Closing four stale issues is worth more than ranking them**, and it is the cheapest output you produce.
 
+## The 60/40 growth split — run this before ranking (owner, 2026-11-19)
+
+The owner: *"split everyday work into 60% growth and 40% other work ... CEO direction should be
+taken into account."* Measured that day: 13 of 62 build cycles in week 2026-W47 (21%) were growth
+work, and only 3 open issues were labelled for it.
+
+1. **Run `python3 scripts/growth_split.py`** (stdlib; needs `GH_REPO`). It prints today's and this
+   week's split, `must_pick_growth`, the current weekly goals and chief's direction, and the open
+   growth issues. Put its numbers in your hand-back.
+2. **Production first, always.** An open EXEMPT issue (`severity:blocker`, or an `[OPS]` finding at
+   `priority:high`) ranks first and does not count against the split.
+3. **When `must_pick_growth` is true, the top item must be a growth issue**: one labelled `growth`
+   (or `seo`, `content`, `engagement`, `friction`, `funnel:*`) or named in this week's goals. Pick
+   the eligible one that serves a weekly goal first, then the one closest to moving the
+   objective's metric. User harm still orders the issues within each side.
+4. **When no eligible growth issue exists**, rank the best other item, and say so in one line: "no
+   eligible growth issue — the 60% target needs supply". That line is what `seo-growth` and
+   chief act on; it is a finding, not a failure.
+5. **Label what you rank.** An issue that serves the objective (search, content, funnels, return
+   visits, new users) and lacks the label gets `growth`; say so in your hand-back.
+6. **Read chief's direction** — `direction` in the script's output and your row in
+   `measurements/sync/chief-guidance.md` — and follow it unless it conflicts with a gate,
+   CLAUDE.md, a QA verdict or `knowledge/*.md`.
+
 ## How to rank
 
 Order by **user harm**, then by unblocking power. Not by ease, not by age, not by label.
