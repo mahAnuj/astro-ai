@@ -1,29 +1,29 @@
 {
   "source": "busiest_pages.py",
   "window": [
-    "2026-10-19",
-    "2026-11-15"
+    "2026-10-20",
+    "2026-11-16"
   ],
   "basis": "GA4 engagedSessions",
   "rows": [
     {
       "path": "/learn/rahu-mahadasha-ketu-antardasha",
-      "sessions": 82,
+      "sessions": 81,
       "engaged_sessions": 49.0,
       "engaged_rate": 0.6,
-      "avg_engagement_seconds": 139,
-      "gsc_impressions": 3978,
-      "gsc_clicks": 67,
+      "avg_engagement_seconds": 140,
+      "gsc_impressions": 3913,
+      "gsc_clicks": 63,
       "gsc_position": 6.4,
       "serves": "templates/learn/rahu-mahadasha-ketu-antardasha.html"
     },
     {
       "path": "/",
-      "sessions": 70,
-      "engaged_sessions": 45.0,
+      "sessions": 69,
+      "engaged_sessions": 44.0,
       "engaged_rate": 0.64,
-      "avg_engagement_seconds": 226,
-      "gsc_impressions": 195,
+      "avg_engagement_seconds": 231,
+      "gsc_impressions": 207,
       "gsc_clicks": 9,
       "gsc_position": 5.7,
       "serves": "routes/home.py -> templates/index.html"
@@ -34,30 +34,30 @@
       "engaged_sessions": 30.0,
       "engaged_rate": 0.97,
       "avg_engagement_seconds": 92,
-      "gsc_impressions": 389,
+      "gsc_impressions": 384,
       "gsc_clicks": 21,
       "gsc_position": 6.2,
       "serves": "routes/muhurat.py, muhurat.py"
     },
     {
       "path": "/learn/gochar-2026-planetary-transits",
-      "sessions": 41,
-      "engaged_sessions": 16.0,
-      "engaged_rate": 0.39,
-      "avg_engagement_seconds": 27,
-      "gsc_impressions": 2325,
-      "gsc_clicks": 23,
-      "gsc_position": 5.2,
+      "sessions": 42,
+      "engaged_sessions": 17.0,
+      "engaged_rate": 0.4,
+      "avg_engagement_seconds": 29,
+      "gsc_impressions": 2512,
+      "gsc_clicks": 24,
+      "gsc_position": 5.1,
       "serves": "templates/learn/gochar-2026-planetary-transits.html"
     },
     {
       "path": "/learn/sade-sati",
-      "sessions": 18,
-      "engaged_sessions": 14.0,
-      "engaged_rate": 0.78,
-      "avg_engagement_seconds": 162,
-      "gsc_impressions": 2118,
-      "gsc_clicks": 14,
+      "sessions": 19,
+      "engaged_sessions": 15.0,
+      "engaged_rate": 0.79,
+      "avg_engagement_seconds": 278,
+      "gsc_impressions": 2133,
+      "gsc_clicks": 16,
       "gsc_position": 6.6,
       "serves": "templates/learn/sade-sati.html"
     },
@@ -67,21 +67,10 @@
       "engaged_sessions": 14.0,
       "engaged_rate": 0.61,
       "avg_engagement_seconds": 280,
-      "gsc_impressions": 1038,
+      "gsc_impressions": 1044,
       "gsc_clicks": 21,
       "gsc_position": 5.8,
       "serves": "templates/learn/rahu-mahadasha-career-problems.html"
-    },
-    {
-      "path": "/learn/7th-lord-placement-marriage-guide",
-      "sessions": 28,
-      "engaged_sessions": 12.0,
-      "engaged_rate": 0.43,
-      "avg_engagement_seconds": 59,
-      "gsc_impressions": 1514,
-      "gsc_clicks": 14,
-      "gsc_position": 7.2,
-      "serves": "templates/learn/7th-lord-placement-marriage-guide.html"
     },
     {
       "path": "/learn/career-during-sade-sati",
@@ -89,7 +78,7 @@
       "engaged_sessions": 12.0,
       "engaged_rate": 0.46,
       "avg_engagement_seconds": 207,
-      "gsc_impressions": 1204,
+      "gsc_impressions": 1239,
       "gsc_clicks": 22,
       "gsc_position": 5.4,
       "serves": "templates/learn/career-during-sade-sati.html"
@@ -100,21 +89,32 @@
       "engaged_sessions": 12.0,
       "engaged_rate": 0.48,
       "avg_engagement_seconds": 100,
-      "gsc_impressions": 743,
+      "gsc_impressions": 762,
       "gsc_clicks": 20,
       "gsc_position": 6.7,
       "serves": "templates/learn/10th-lord-in-6th-house-career.html"
     },
     {
       "path": "/learn/jupiter-in-10th-house-career",
-      "sessions": 23,
-      "engaged_sessions": 10.0,
-      "engaged_rate": 0.43,
-      "avg_engagement_seconds": 68,
-      "gsc_impressions": 1900,
+      "sessions": 24,
+      "engaged_sessions": 11.0,
+      "engaged_rate": 0.46,
+      "avg_engagement_seconds": 74,
+      "gsc_impressions": 1940,
       "gsc_clicks": 18,
       "gsc_position": 7.1,
       "serves": "templates/learn/jupiter-in-10th-house-career.html"
+    },
+    {
+      "path": "/learn/7th-lord-placement-marriage-guide",
+      "sessions": 27,
+      "engaged_sessions": 11.0,
+      "engaged_rate": 0.41,
+      "avg_engagement_seconds": 57,
+      "gsc_impressions": 1509,
+      "gsc_clicks": 14,
+      "gsc_position": 7.2,
+      "serves": "templates/learn/7th-lord-placement-marriage-guide.html"
     }
   ]
 }

@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-19",
-    "2026-11-15"
+    "2026-10-20",
+    "2026-11-16"
   ],
   "rule": "active users >= max(2 x median, median + 10, 15)",
   "days_checked": 28,

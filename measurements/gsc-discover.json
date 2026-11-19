@@ -2,18 +2,13 @@
   "source": "gsc",
   "type": "discover",
   "window": [
-    "2026-10-19",
-    "2026-11-15"
+    "2026-10-20",
+    "2026-11-16"
   ],
   "note": "Discover is not in the search report; GA4 counts its visits as google / organic",
   "total_clicks": 0,
   "total_impressions": 0,
   "days": [
-    {
-      "date": "2026-10-19",
-      "clicks": 0,
-      "impressions": 0
-    },
     {
       "date": "2026-10-20",
       "clicks": 0,
@@ -146,6 +141,11 @@
     },
     {
       "date": "2026-11-15",
+      "clicks": 0,
+      "impressions": 0
+    },
+    {
+      "date": "2026-11-16",
       "clicks": 0,
       "impressions": 0
     }

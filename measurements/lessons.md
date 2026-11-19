@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-19T02:02:15Z)
+# Lessons — last 30 days (generated 2026-11-19T02:28:18Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -25,11 +25,11 @@ deterministic, no LLM.
 - reverted commits on main: 0
 - failed verify-production runs: 9
 - ops findings now: 1
-  - [amber] loop-starved: 3 of the last 4 build cycles built nothing
+  - [amber] loop-starved: 2 of the last 4 build cycles built nothing
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 14, UNSCOREABLE 7
+counts: MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 17, UNSCOREABLE 10
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: OTHER — BAR MET, not attributable to the CTA
 - #311: MISS — MISS
@@ -58,7 +58,13 @@ counts: MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 14, UNSCOREABLE 7
 - #1073: PENDING — pending — scoreable from 2026-12-17
 - #1074: PENDING — pending — scoreable from 2026-12-17; floor at risk
 - #1075: PENDING — pending — scoreable from 2026-12-17
+- #1080: UNSCOREABLE — not scoreable from GA4/GSC
+- #1083: UNSCOREABLE — not scoreable from GA4/GSC
 - #1093: PENDING — pending — scoreable from 2026-12-16; the metric needs an export that does not exist
+- #1178: UNSCOREABLE — not scoreable from GA4/GSC
+- #1217: PENDING — pending — scoreable from 2026-12-19
+- #1226: PENDING — pending — scoreable from 2026-12-19
+- #1229: PENDING — pending — scoreable from 2026-12-19
 
 A MISS is the most useful line here: before proposing work of the same kind, say why this time differs, or do not propose it.
 

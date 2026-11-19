@@ -1,26 +1,26 @@
 {
- "generated_at": "2026-11-18T02:42:20Z",
+ "generated_at": "2026-11-19T02:13:25Z",
  "days": 7,
- "total_calls": 161,
- "cache_hits": 131,
- "cache_misses": 30,
- "hit_rate_pct": 81,
- "total_input_tokens": 104336,
- "total_output_tokens": 21376,
+ "total_calls": 167,
+ "cache_hits": 132,
+ "cache_misses": 35,
+ "hit_rate_pct": 79,
+ "total_input_tokens": 118234,
+ "total_output_tokens": 23744,
  "peak_day_tokens": 6849,
  "peak_day": "2026-11-13",
- "peak_day_measured_tokens": 32768,
- "peak_day_measured": "2026-11-13",
+ "peak_day_measured_tokens": 43421,
+ "peak_day_measured": "2026-11-18",
  "by_route": [
   {
    "route": "natal",
-   "calls": 112,
-   "hits": 103,
+   "calls": 114,
+   "hits": 104,
    "hit_rate_pct": 91,
-   "input_tokens": 59469,
-   "output_tokens": 10485,
-   "measured_calls": 9,
-   "tokens_per_call": 6607
+   "input_tokens": 65480,
+   "output_tokens": 11884,
+   "measured_calls": 10,
+   "tokens_per_call": 6548
   },
   {
    "route": "rashifal",
@@ -34,13 +34,23 @@
   },
   {
    "route": "ask",
-   "calls": 16,
+   "calls": 20,
    "hits": 0,
    "hit_rate_pct": 0,
-   "input_tokens": 35502,
-   "output_tokens": 4886,
-   "measured_calls": 16,
-   "tokens_per_call": 2218
+   "input_tokens": 43221,
+   "output_tokens": 5625,
+   "measured_calls": 20,
+   "tokens_per_call": 2161
+  },
+  {
+   "route": "today",
+   "calls": 2,
+   "hits": 0,
+   "hit_rate_pct": 0,
+   "input_tokens": 3823,
+   "output_tokens": 764,
+   "measured_calls": 2,
+   "tokens_per_call": 1911
   },
   {
    "route": "monthly",
@@ -53,16 +63,6 @@
    "tokens_per_call": 2109
   },
   {
-   "route": "today",
-   "calls": 1,
-   "hits": 0,
-   "hit_rate_pct": 0,
-   "input_tokens": 1881,
-   "output_tokens": 399,
-   "measured_calls": 1,
-   "tokens_per_call": 1881
-  },
-  {
    "route": "dasha_deep_dive",
    "calls": 1,
    "hits": 0,
@@ -71,16 +71,6 @@
    "output_tokens": 1413,
    "measured_calls": 1,
    "tokens_per_call": 1492
-  },
-  {
-   "route": "matching",
-   "calls": 1,
-   "hits": 0,
-   "hit_rate_pct": 0,
-   "input_tokens": 1774,
-   "output_tokens": 471,
-   "measured_calls": 1,
-   "tokens_per_call": 1774
   }
  ]
 }
