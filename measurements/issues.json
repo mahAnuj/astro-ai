@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-19T08:00:09Z",
+  "generated_at": "2026-11-19T11:26:35Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 121,
-  "with_ask": 43,
+  "open": 124,
+  "with_ask": 44,
   "by_area": {
     "UNCLASSIFIED": 42,
     "INFRA": 15,
@@ -13,6 +13,7 @@
     "ANALYTICS": 5,
     "SEO": 4,
     "CORPUS": 4,
+    "TOKENS": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "PRIVACY": 2,
@@ -32,19 +33,70 @@
   "by_type": {
     "untyped": 38,
     "enhancement": 30,
+    "chore": 21,
     "bug": 20,
-    "chore": 18,
     "correctness": 11,
     "design": 4
   },
   "by_priority": {
     "unset": 83,
     "medium": 22,
-    "high": 15,
+    "high": 18,
     "low": 1
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1256,
+      "title": "tokens: a generated code index so agents read the lines they need, not whole 4,000-line files",
+      "ask": "",
+      "area": "TOKENS",
+      "type": "chore",
+      "priority": "high",
+      "labels": [
+        "priority:high",
+        "effort:m",
+        "chore"
+      ],
+      "created": "2026-11-19T09:54:32Z",
+      "updated": "2026-11-19T09:54:32Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1255,
+      "title": "tokens: 26 of 123 build cycles in 7 days re-entered an issue already in progress — cut the rework, not the fix rounds",
+      "ask": "",
+      "area": "TOKENS",
+      "type": "chore",
+      "priority": "high",
+      "labels": [
+        "priority:high",
+        "effort:m",
+        "chore"
+      ],
+      "created": "2026-11-19T09:53:21Z",
+      "updated": "2026-11-19T09:53:21Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1254,
+      "title": "tokens: load only the step a cycle is on — agent-cycle.md is ~12k tokens re-read every turn, even in QA and fix rounds",
+      "ask": "Trim CLAUDE.md loading for loop runs where that can be done without losing a rule.",
+      "area": "TOKENS",
+      "type": "chore",
+      "priority": "high",
+      "labels": [
+        "priority:high",
+        "effort:m",
+        "chore"
+      ],
+      "created": "2026-11-19T09:53:08Z",
+      "updated": "2026-11-19T09:53:08Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1246,
       "title": "Growth goals: weekly, monthly, quarterly",
@@ -316,10 +368,11 @@
       "priority": "unset",
       "labels": [
         "enhancement",
-        "seo"
+        "seo",
+        "provenance:trusted"
       ],
       "created": "2026-11-15T10:19:17Z",
-      "updated": "2026-11-15T10:19:17Z",
+      "updated": "2026-11-19T11:25:47Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1950,9 +2003,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-19T08:00:09Z",
+    "generated_at": "2026-11-19T11:26:35Z",
     "window_days": 28,
-    "open_now": 121,
+    "open_now": 124,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2358,11 +2411,12 @@
       },
       {
         "date": "2026-11-19",
-        "opened": 7,
+        "opened": 10,
         "closed": 6,
-        "net": 1,
-        "open_end": 121,
+        "net": 4,
+        "open_end": 124,
         "opened_by": {
+          "audit": 3,
           "loop": 7
         },
         "closed_by": {

@@ -1,6 +1,80 @@
 {
-  "generated_at": "2026-11-19T07:59:59Z",
+  "generated_at": "2026-11-19T11:26:22Z",
   "rows": [
+    {
+      "owner_helped": null,
+      "run": 44513691440,
+      "workflow": "agent-work",
+      "date": "2026-11-19",
+      "started": "2026-11-19T11:18:53Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 7.3,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "nothing",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 92,
+      "tokens_output": 33080,
+      "tokens_cache_read": 3030524,
+      "tokens_cache_write": 170891,
+      "cost_list_usd": 1.1724,
+      "model": "claude-sonnet-5-5",
+      "turns": 24,
+      "agents_called": {
+        "project-manager": 1
+      }
+    },
+    {
+      "owner_helped": null,
+      "run": 44511819832,
+      "workflow": "agent-work",
+      "date": "2026-11-19",
+      "started": "2026-11-19T11:06:44Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 4.3,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 30,
+      "tokens_output": 8956,
+      "tokens_cache_read": 968097,
+      "tokens_cache_write": 62708,
+      "cost_list_usd": 0.4373,
+      "model": "claude-sonnet-5-5",
+      "turns": 19,
+      "agents_called": {}
+    },
+    {
+      "owner_helped": null,
+      "run": 44484112339,
+      "workflow": "agent-work",
+      "date": "2026-11-19",
+      "started": "2026-11-19T08:01:16Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 4.2,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 24,
+      "tokens_output": 5935,
+      "tokens_cache_read": 747695,
+      "tokens_cache_write": 53990,
+      "cost_list_usd": 0.3501,
+      "model": "claude-sonnet-5-5",
+      "turns": 15,
+      "agents_called": {}
+    },
     {
       "owner_helped": null,
       "run": 44480630158,
@@ -12438,67 +12512,67 @@
   ],
   "waste": {
     "days": 7,
-    "cycles": 211,
+    "cycles": 212,
     "minutes_by_outcome": {
-      "shipped": 4011.9,
+      "shipped": 3986.7,
       "pr open": 0.0,
-      "judged": 575.4,
-      "nothing": 53.7,
+      "judged": 580.1,
+      "nothing": 61.0,
       "failed": 0.0,
       "unknown": 0.0
     },
-    "minutes_total": 4641.0,
-    "minutes_without_result": 53.7,
-    "share_without_result": 0.012,
-    "shipped_prs": 95,
-    "build_idle_hours": 102.5,
-    "build_idle_share": 0.61
+    "minutes_total": 4627.8,
+    "minutes_without_result": 61.0,
+    "share_without_result": 0.013,
+    "shipped_prs": 94,
+    "build_idle_hours": 102.8,
+    "build_idle_share": 0.612
   },
   "tokens": {
     "days": 7,
-    "runs": 211,
-    "measured": 211,
+    "runs": 212,
+    "measured": 212,
     "total": {
-      "tokens": 915631380,
-      "input": 21488,
-      "output": 7221496,
-      "cache_read": 860276983,
-      "cache_write": 48111413,
-      "cost_list_usd": 305.95
+      "tokens": 914474139,
+      "input": 21451,
+      "output": 7221583,
+      "cache_read": 859204487,
+      "cache_write": 48026618,
+      "cost_list_usd": 305.69
     },
     "median_by_outcome": {
       "shipped": {
-        "runs": 120,
-        "tokens": 6268181,
-        "cost_list_usd": 2.06
+        "runs": 119,
+        "tokens": 6321615,
+        "cost_list_usd": 2.1
       },
       "judged": {
-        "runs": 68,
-        "tokens": 1211453,
-        "cost_list_usd": 0.47
+        "runs": 69,
+        "tokens": 1196755,
+        "cost_list_usd": 0.46
       },
       "nothing": {
-        "runs": 23,
-        "tokens": 442360,
+        "runs": 24,
+        "tokens": 442446,
         "cost_list_usd": 0.27
       }
     },
     "median_cycle": 5519560,
-    "median_qa_round": 1211453,
-    "merged_prs": 95,
-    "per_merged_pr": 9638225,
-    "cost_list_usd_per_merged_pr": 3.22,
+    "median_qa_round": 1196755,
+    "merged_prs": 94,
+    "per_merged_pr": 9728448,
+    "cost_list_usd_per_merged_pr": 3.25,
     "previous": {
-      "runs": 163,
-      "measured": 161,
+      "runs": 161,
+      "measured": 159,
       "merged_prs": 71,
-      "per_merged_pr": 10550312
+      "per_merged_pr": 10498919
     }
   },
   "agents": {
     "runs_read": {
-      "7d": 208,
-      "30d": 371
+      "7d": 209,
+      "30d": 374
     },
     "by_agent": {
       "architect": {
@@ -12530,7 +12604,7 @@
         "last_issue": 1226
       },
       "frontend-engineer": {
-        "7d": 9,
+        "7d": 8,
         "30d": 19,
         "last_run": 44411358136,
         "last_started": "2026-11-18T22:24:59Z",
@@ -12559,13 +12633,13 @@
       },
       "project-manager": {
         "7d": 90,
-        "30d": 163,
-        "last_run": 44411358136,
-        "last_started": "2026-11-18T22:24:59Z",
-        "last_issue": 1229
+        "30d": 164,
+        "last_run": 44513691440,
+        "last_started": "2026-11-19T11:18:53Z",
+        "last_issue": null
       },
       "qa": {
-        "7d": 114,
+        "7d": 113,
         "30d": 213,
         "last_run": 44459030175,
         "last_started": "2026-11-19T04:32:31Z",
