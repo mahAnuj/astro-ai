@@ -1,33 +1,21 @@
 {
- "generated_at": "2026-11-19T04:50:51Z",
+ "generated_at": "2026-11-19T07:51:56Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 44455237313,
-  "at": "2026-11-19T03:59:58Z",
-  "five_hour": 0.12,
-  "seven_day": 0.79,
+  "run": 44480630158,
+  "at": "2026-11-19T07:34:14Z",
+  "five_hour": 0.2,
+  "seven_day": 0.8,
   "status": "allowed_warning",
   "resets": {
    "five_hour": 1795077000,
    "seven_day": 1795154400
   }
  },
- "peak_seven_day": 0.79,
+ "peak_seven_day": 0.8,
  "rejected_runs": [],
  "readings": [
-  {
-   "workflow": "agent-prioritise",
-   "run": 44029180632,
-   "at": "2026-11-17T06:09:55Z",
-   "five_hour": 0.2,
-   "seven_day": 0.52,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1794900000,
-    "seven_day": 1795154400
-   }
-  },
   {
    "workflow": "agent-prioritise",
    "run": 44095206281,
@@ -66,46 +54,46 @@
   },
   {
    "workflow": "agent-work",
-   "run": 44447007673,
-   "at": "2026-11-19T02:48:48Z",
-   "five_hour": 0.21,
-   "seven_day": 0.77,
-   "status": "allowed_warning",
-   "resets": {
-    "five_hour": 1795058400,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 44452958127,
-   "at": "2026-11-19T03:39:23Z",
-   "five_hour": 0.03,
-   "seven_day": 0.78,
-   "status": "allowed_warning",
-   "resets": {
-    "five_hour": 1795077000,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 44455108902,
-   "at": "2026-11-19T03:58:44Z",
-   "five_hour": 0.04,
-   "seven_day": 0.78,
-   "status": "allowed_warning",
-   "resets": {
-    "five_hour": 1795077000,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 44455237313,
-   "at": "2026-11-19T03:59:58Z",
-   "five_hour": 0.12,
+   "run": 44459030175,
+   "at": "2026-11-19T04:32:31Z",
+   "five_hour": 0.13,
    "seven_day": 0.79,
+   "status": "allowed_warning",
+   "resets": {
+    "five_hour": 1795077000,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 44462272800,
+   "at": "2026-11-19T05:01:32Z",
+   "five_hour": 0.14,
+   "seven_day": 0.8,
+   "status": "allowed_warning",
+   "resets": {
+    "five_hour": 1795077000,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 44469688365,
+   "at": "2026-11-19T06:05:54Z",
+   "five_hour": 0.16,
+   "seven_day": 0.8,
+   "status": "allowed_warning",
+   "resets": {
+    "five_hour": 1795077000,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 44480630158,
+   "at": "2026-11-19T07:34:14Z",
+   "five_hour": 0.2,
+   "seven_day": 0.8,
    "status": "allowed_warning",
    "resets": {
     "five_hour": 1795077000,

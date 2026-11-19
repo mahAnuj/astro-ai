@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-19T04:51:37Z",
+ "generated_at": "2026-11-19T07:52:49Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1080,6 +1080,13 @@
     "themes": [
      "regression"
     ]
+   },
+   {
+    "number": 1240,
+    "at": "2026-11-19T04:56:15Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1240#issuecomment-7000138809",
+    "summary": "QA: FAIL \u2014 verified at `34d8968914a5b93e5e359870c50607a122632cae` DEFECT: scripts/mutate_agent_cycle_doc_gate.py:44-46,64 still anchor on the old agent count (<b>15</b><span>agents</span>, Fifteen agents, 9 of the 15); the PR moved the targets to 14 / Fourteen / 8 of the 14 (docs/agent-cycle.html:35",
+    "themes": []
    }
   ],
   "reverts": [],
