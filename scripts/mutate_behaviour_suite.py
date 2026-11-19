@@ -5112,6 +5112,15 @@ _TEST_FILE_CACHE: dict[str, str] | None = None
 # file that mentions the mutated file, then the rest (pytest collects a file named
 # both alone and inside `tests/` once, in the first position). The CONTROL is not
 # touched: it must see the whole suite pass.
+#
+# ONE FALLBACK AT A TIME. Several suite tests run shipped workflow steps that write
+# fixed paths (`/tmp/pr-files.txt` and friends in test_agent_merge_chief_release.py,
+# whose docstring rests on "serial runs cannot collide"). Ordering likely files first
+# sent several workers into the same such file at once; measured locally on 8 rows,
+# they collided and the CONTROL went BLIND. So fallbacks hold _FALLBACK_LOCK: at most
+# one runs, beside the CONTROL -- less overlap than the old harness, which ran up to
+# four whole suites at once. A fallback now takes seconds, so the queue is short.
+_FALLBACK_LOCK = threading.Lock()
 _TEST_TEXT_CACHE: dict[str, str] | None = None
 _PRIORITY_MAX = 15
 
@@ -5410,11 +5419,12 @@ def _probe(sandbox, rel: str, target, test: str) -> tuple[bool, str]:
     # which must see the whole suite or it would stop being a control. A real row
     # runs likely files first and stops at its first failure (see _priority_tests).
     if test and test != "_control":
-        result = subprocess.run(
-            [sys.executable, "-m", "pytest", *_priority_tests(sandbox, rel, test),
-             str(sandbox / "tests"), "-x", "-q", "--no-header"],
-            capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
-        )
+        with _FALLBACK_LOCK:
+            result = subprocess.run(
+                [sys.executable, "-m", "pytest", *_priority_tests(sandbox, rel, test),
+                 str(sandbox / "tests"), "-x", "-q", "--no-header"],
+                capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
+            )
     else:
         result = _pytest()
     if result.returncode == 0:
