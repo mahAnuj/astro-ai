@@ -39,7 +39,7 @@ Agent(subagent_type="seo-growth", description="Weekly search and funnel audit",
       prompt="""Audit search and the funnels for <cwd>, against OBJECTIVE.md, following
 .claude/agents/seo-growth.md. The numbers are already fetched: /tmp/gsc-band.json, /tmp/ga4.json,
 measurements/latest.md and the measurements/gsc-trend-*.json and ga4-events.json files. File one
-evidence-complete issue per finding (search open issues first). Return your findings in priority
+evidence-complete issue per finding, labelled `growth` (search open issues first). Return your findings in priority
 order, one line each. Read-only on code. You never push.""")
 ```
 

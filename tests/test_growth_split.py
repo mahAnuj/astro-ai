@@ -399,3 +399,15 @@ def test_the_ops_panel_survives_a_malformed_growth_json():
     v = ops_data._growth_view({"meters": {"daily": {"progress": 3.5}}, "cycles": [], "days": []},
                               None, "2026-11-19", NOW)
     assert v["meters"][0]["pct"] == 100
+
+
+def test_the_steward_job_leaves_chief_time_for_an_independent_qa_round():
+    """Runs 44463062219 and 44470132116 were cancelled at exactly 30:00, chief mid-review."""
+    job = _wf("agent-steward.yml")["jobs"]["steward"]
+    assert job["timeout-minutes"] >= 75
+
+
+def test_seo_growth_files_its_findings_labelled_growth():
+    """An unlabelled growth finding is invisible to the 60/40 split."""
+    for f in (".claude/agents/seo-growth.md", ".claude/commands/discover.md"):
+        assert "labelled `growth`" in (ROOT / f).read_text(), f

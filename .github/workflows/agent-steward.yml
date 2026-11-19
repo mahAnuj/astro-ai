@@ -81,7 +81,13 @@ jobs:
     # every Claude-spending loop job; delete it (or set anything else) to resume.
     if: vars.LOOP_PAUSED != 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 75, not 30 (2026-11-19). When a held PR's PASS is only `qa:in-cycle`, chief runs the
+    # independent `qa` round INSIDE this job, then rules. Measured on PRs #1240 and #1241:
+    # runs 44463062219 and 44470132116 were both cancelled at exactly 30:00, the steward
+    # step having taken 72s and 156s and chief's step 1698s and 1620s -- killed mid-review
+    # every time, so nothing was recorded and the PRs sat held. Six steward runs that week
+    # ended `cancelled`. 75 leaves chief ~70 minutes for a review plus a ruling.
+    timeout-minutes: 75
     permissions:
       contents: write         # push a BRANCH for its repair PR — never main
       pull-requests: write    # comment and routing labels only — never qa-pass
