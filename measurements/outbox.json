@@ -1,25 +1,30 @@
 {
- "generated_at": "2026-11-18T23:11:28Z",
+ "generated_at": "2026-11-19T02:01:58Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-11T23:11:28Z",
-  "end": "2026-11-18T23:11:28Z",
-  "loop_comments": 1222,
-  "on_prs": 715,
-  "prs": 128,
-  "on_issues": 507,
-  "issues": 155,
-  "comments_per_pr": 5.59,
-  "comments_per_issue": 3.27,
+  "start": "2026-11-12T02:01:58Z",
+  "end": "2026-11-19T02:01:58Z",
+  "loop_comments": 1234,
+  "on_prs": 717,
+  "prs": 130,
+  "on_issues": 517,
+  "issues": 159,
+  "comments_per_pr": 5.52,
+  "comments_per_issue": 3.25,
   "duplicates": 57,
-  "duplicate_rate_pct": 4.7,
+  "duplicate_rate_pct": 4.6,
   "sent_by_kind": {
-   "ops-finding": 7,
+   "ops-finding": 8,
    "ops-finding-issue": 1
   },
-  "via_outbox": 8,
+  "via_outbox": 9,
   "top_threads": [
+   {
+    "on": "pr",
+    "number": 1212,
+    "comments": 23
+   },
    {
     "on": "pr",
     "number": 1058,
@@ -28,11 +33,6 @@
    {
     "on": "pr",
     "number": 1132,
-    "comments": 21
-   },
-   {
-    "on": "pr",
-    "number": 1212,
     "comments": 21
    },
    {
@@ -47,7 +47,7 @@
    }
   ],
   "owner_touched": {
-   "prs": 128,
+   "prs": 130,
    "owner_commented": 4,
    "pct": 3
   },
@@ -58,17 +58,17 @@
   }
  },
  "previous": {
-  "start": "2026-11-04T23:11:28Z",
-  "end": "2026-11-11T23:11:28Z",
-  "loop_comments": 963,
-  "on_prs": 557,
-  "prs": 98,
-  "on_issues": 406,
-  "issues": 94,
-  "comments_per_pr": 5.68,
-  "comments_per_issue": 4.32,
-  "duplicates": 46,
-  "duplicate_rate_pct": 4.8,
+  "start": "2026-11-05T02:01:58Z",
+  "end": "2026-11-12T02:01:58Z",
+  "loop_comments": 956,
+  "on_prs": 564,
+  "prs": 99,
+  "on_issues": 392,
+  "issues": 93,
+  "comments_per_pr": 5.7,
+  "comments_per_issue": 4.22,
+  "duplicates": 45,
+  "duplicate_rate_pct": 4.7,
   "sent_by_kind": {},
   "via_outbox": 0,
   "top_threads": [
@@ -79,13 +79,13 @@
    },
    {
     "on": "pr",
-    "number": 706,
-    "comments": 19
+    "number": 833,
+    "comments": 17
    },
    {
     "on": "pr",
-    "number": 833,
-    "comments": 17
+    "number": 706,
+    "comments": 16
    },
    {
     "on": "pr",
@@ -93,13 +93,13 @@
     "comments": 15
    },
    {
-    "on": "issue",
-    "number": 402,
+    "on": "pr",
+    "number": 810,
     "comments": 14
    }
   ],
   "owner_touched": {
-   "prs": 100,
+   "prs": 101,
    "owner_commented": 11,
    "pct": 11
   }

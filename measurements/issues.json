@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-18T23:08:42Z",
+  "generated_at": "2026-11-19T02:00:28Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 121,
@@ -10,9 +10,9 @@
     "REDESIGN": 10,
     "OPS": 8,
     "FEATURE": 7,
-    "ANALYTICS": 6,
+    "CORPUS": 5,
+    "ANALYTICS": 5,
     "SEO": 4,
-    "CORPUS": 4,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "PRIVACY": 2,
@@ -30,9 +30,9 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 37,
+    "untyped": 36,
     "enhancement": 30,
-    "bug": 22,
+    "bug": 23,
     "chore": 18,
     "correctness": 10,
     "design": 4
@@ -46,19 +46,18 @@
   "blocked": 9,
   "rows": [
     {
-      "number": 1229,
-      "title": "analytics: login, language_switched, share events and from_path on subscribe_completed (#1070 slice 3)",
+      "number": 1232,
+      "title": "corpus: Raman rejects the first quarter of Makha and Moola for weddings; vivah finder has no pada test",
       "ask": "",
-      "area": "ANALYTICS",
-      "type": "untyped",
+      "area": "CORPUS",
+      "type": "bug",
       "priority": "unset",
       "labels": [
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
+        "bug",
+        "astrology-correctness"
       ],
-      "created": "2026-11-18T22:30:58Z",
-      "updated": "2026-11-18T23:07:50Z",
+      "created": "2026-11-19T01:04:48Z",
+      "updated": "2026-11-19T01:04:48Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -134,7 +133,7 @@
         "bug"
       ],
       "created": "2026-11-18T02:05:15Z",
-      "updated": "2026-11-18T05:38:51Z",
+      "updated": "2026-11-19T01:21:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -345,7 +344,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-17T07:05:57Z",
+      "updated": "2026-11-19T01:02:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -403,7 +402,7 @@
         "chore"
       ],
       "created": "2026-11-14T13:51:32Z",
-      "updated": "2026-11-14T13:51:32Z",
+      "updated": "2026-11-19T01:05:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -421,7 +420,7 @@
         "chore"
       ],
       "created": "2026-11-14T13:51:31Z",
-      "updated": "2026-11-14T13:51:31Z",
+      "updated": "2026-11-19T01:05:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -620,7 +619,7 @@
         "qa:independent"
       ],
       "created": "2026-11-12T01:26:53Z",
-      "updated": "2026-11-13T22:49:26Z",
+      "updated": "2026-11-19T01:05:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -649,7 +648,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-18T02:15:05Z",
+      "updated": "2026-11-19T01:19:17Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1184,7 +1183,7 @@
         "bug"
       ],
       "created": "2026-10-19T09:37:16Z",
-      "updated": "2026-11-09T11:20:17Z",
+      "updated": "2026-11-19T01:05:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1959,24 +1958,11 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-18T23:08:42Z",
+    "generated_at": "2026-11-19T02:00:28Z",
     "window_days": 28,
     "open_now": 121,
     "merged_open_hours": 24,
     "days": [
-      {
-        "date": "2026-10-22",
-        "opened": 2,
-        "closed": 1,
-        "net": 1,
-        "open_end": 114,
-        "opened_by": {
-          "loop": 2
-        },
-        "closed_by": {
-          "owner": 1
-        }
-      },
       {
         "date": "2026-10-23",
         "opened": 6,
@@ -2365,18 +2351,29 @@
       {
         "date": "2026-11-18",
         "opened": 10,
-        "closed": 18,
-        "net": -8,
-        "open_end": 121,
+        "closed": 19,
+        "net": -9,
+        "open_end": 120,
         "opened_by": {
           "loop": 9,
           "ops": 1
         },
         "closed_by": {
-          "close-on-evidence": 16,
+          "close-on-evidence": 17,
           "prioritise": 1,
           "main-red-report": 1
         }
+      },
+      {
+        "date": "2026-11-19",
+        "opened": 1,
+        "closed": 0,
+        "net": 1,
+        "open_end": 121,
+        "opened_by": {
+          "loop": 1
+        },
+        "closed_by": {}
       }
     ],
     "merged_open": [],
@@ -2639,11 +2636,6 @@
       {
         "number": 468,
         "closed_at": "2026-10-30T17:25:17Z",
-        "closer": "owner"
-      },
-      {
-        "number": 472,
-        "closed_at": "2026-10-22T05:25:13Z",
         "closer": "owner"
       },
       {
@@ -3599,6 +3591,11 @@
       {
         "number": 1226,
         "closed_at": "2026-11-18T21:12:34Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1229,
+        "closed_at": "2026-11-18T23:28:17Z",
         "closer": "close-on-evidence"
       }
     ],
