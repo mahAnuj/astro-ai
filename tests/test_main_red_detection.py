@@ -65,7 +65,7 @@ def test_pr_gates_sweeps_main_daily_inside_the_ist_utc_skew_window():
 
 
 def _scope_script() -> str:
-    step = next(s for s in _steps(_doc("pr-gates.yml"), "gates") if s.get("id") == "scope")
+    step = next(s for s in _steps(_doc("pr-gates.yml"), "scope") if s.get("id") == "scope")
     return step["run"].replace("${{ github.event.pull_request.base.sha }}", "")
 
 

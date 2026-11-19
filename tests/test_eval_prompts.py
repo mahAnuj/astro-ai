@@ -243,7 +243,7 @@ WF = ROOT / ".github" / "workflows" / "pr-gates.yml"
 
 
 def _step(name: str) -> dict:
-    steps = yaml.safe_load(WF.read_text())["jobs"]["gates"]["steps"]
+    steps = [s for j in yaml.safe_load(WF.read_text())["jobs"].values() for s in j["steps"]]
     return next(s for s in steps if s.get("name") == name)
 
 
@@ -296,7 +296,7 @@ def test_a_dispatched_run_evaluates_a_changed_prompt(tmp_path):
         "a dispatched run on a branch whose prompt differs from main read code=false, "
         f"so the prompt evaluation hanging off it is skipped and gates go green: {scope}")
     prompts = _step("Prompts changed?")
-    ctx = {"steps.scope.outputs.code": scope["code"], "github.event_name": "workflow_dispatch"}
+    ctx = {"needs.scope.outputs.code": scope["code"], "github.event_name": "workflow_dispatch"}
     assert _holds(prompts["if"], ctx), (
         f"`Prompts changed?` does not run on workflow_dispatch (if: {prompts['if']}), so a "
         "#322 rescue-net run of pr-gates skips the eval and reports green")

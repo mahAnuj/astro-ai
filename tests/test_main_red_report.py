@@ -694,13 +694,13 @@ def test_pr_gates_carries_the_step_the_reporter_reads(tmp_path):
     """
     import yaml
     wf = yaml.safe_load((WF_DIR / "pr-gates.yml").read_text())
-    steps = wf["jobs"]["gates"]["steps"]
+    steps = [s for j in wf["jobs"].values() for s in j["steps"]]   # parallel jobs since 2026-11-19
     marker = [s for s in steps if s.get("name") == "GATES ASSERTED"]
     assert len(marker) == 1, (
         "pr-gates.yml has no 'GATES ASSERTED' step; main-red-report.yml reads "
         "it by name to tell a real green from a scope-skipped one"
     )
-    assert "steps.scope.outputs.code" in marker[0].get("if", ""), (
+    assert "scope.outputs.code" in marker[0].get("if", ""), (
         "the marker must be gated on the same condition as the gates it "
         f"stands for; got: {marker[0].get('if')!r}"
     )

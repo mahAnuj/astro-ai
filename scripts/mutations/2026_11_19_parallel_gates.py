@@ -1,0 +1,30 @@
+"""pr-gates as parallel jobs (2026-11-19). Exercised by tests/test_pr_gates_parallel.py.
+One area file, a literal list (test_mutation_tables.py requires it)."""
+
+MUTATIONS = [
+    ("parallel gates: gates stops waiting for the mutation shards",
+     ".github/workflows/pr-gates.yml",
+     "    needs: [scope, suite, mutants, verify]\n",
+     "    needs: [scope, suite, verify]\n",
+     "test_gates_waits_for_every_job_and_runs_even_when_one_failed"),
+    ("parallel gates: a failed job skips gates instead of failing it",
+     ".github/workflows/pr-gates.yml",
+     "    if: always()\n    runs-on: ubuntu-latest\n",
+     "    runs-on: ubuntu-latest\n",
+     "test_gates_waits_for_every_job_and_runs_even_when_one_failed"),
+    ("parallel gates: a cancelled or skipped job counts as success",
+     ".github/workflows/pr-gates.yml",
+     '          bad = {k: v["result"] for k, v in needs.items() if v["result"] != "success"}\n',
+     '          bad = {k: v["result"] for k, v in needs.items() if v["result"] == "failure"}\n',
+     "test_gates_fails_unless_every_job_succeeded"),
+    ("parallel gates: the full sweep runs unsharded in every shard",
+     ".github/workflows/pr-gates.yml",
+     '            uv run python scripts/mutate_behaviour_suite.py --shard "$SHARD/4"\n',
+     '            uv run python scripts/mutate_behaviour_suite.py\n',
+     "test_the_sweep_is_split_four_ways_on_both_branches"),
+    ("parallel gates: an out-of-range shard runs instead of being refused",
+     "scripts/mutate_behaviour_suite.py",
+     "    if not _m or not (0 <= int(_m.group(1)) < int(_m.group(2))):",
+     "    if not _m:",
+     "test_a_bad_shard_is_refused_not_run"),
+]
