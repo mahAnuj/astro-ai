@@ -291,7 +291,7 @@ for (const d of spec.initial || []) page.push(node(d));
 vm.createContext(ctx);
 vm.runInContext(src, ctx);
 const events = () => (ctx.dataLayer || []).map(a => Array.prototype.slice.call(a))
-  .filter(c => c[0] === 'event' && c[1] !== 'user_identified');
+  .filter(c => c[0] === 'event');
 const fire = t => { for (const [n, f] of listeners) if (n === t) f({}); };
 const out = { thrown: [], listeners: listeners.map(l => l[0]), steps: [] };
 try {

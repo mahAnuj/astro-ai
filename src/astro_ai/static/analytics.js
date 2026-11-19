@@ -24,7 +24,6 @@
  *   .languageSwitched({to_lang})   — picked English/Hindi in the nav (#1229); fired
  *                                    by the delegated change listener below, only
  *                                    for en|hi, beacon transport
- *   .pwaInstalled()                — accepted the PWA install prompt
  *   .feedbackSent({type})          — submitted the feedback form
  *   .pageView(path)                — manual pageview (use for SPA nav)
  *   .ctaClick({from_path,to_path}) — a /learn reader followed an in-article link
@@ -42,6 +41,14 @@
  *                                    delegated click listener below from
  *                                    `[data-share-method]` (+ data-share-content),
  *                                    both values from a fixed list
+ *
+ * There is deliberately NO feature_view, user_identified or pwa_installed method
+ * (#1069). body is hx-boost, so a call made on page load runs
+ * once per FULL load and never on a boosted navigation: `feature_view` counted
+ * full loads, not feature views, and `user_identified` was ~700 events/28d that
+ * carried no behaviour. GA4's own page_view (history-change enhanced measurement)
+ * already covers every page; user properties are set once, below, by the
+ * bootstrap from window.BHAGYA_USER_PROPS (base.html), never as an event.
  *
  * Add a new event by adding a method here — keep templates dumb.
  *
@@ -136,6 +143,17 @@
       var cleanRef = stripQ(document.referrer);
       if (cleanRef !== document.referrer) gaCfg.page_referrer = cleanRef;
     }
+    // #1069: sticky user properties (age_bucket, lang, has_chart: enum values
+    // only, set by base.html before this deferred file runs). A `set`, not an
+    // event, so every later event is sliceable by them and nothing is counted.
+    // Called before `config` so the first page_view carries them. Absent or not
+    // an object -> nothing is sent, nothing throws.
+    try {
+      var up = window.BHAGYA_USER_PROPS;
+      if (up && typeof up === 'object' && !Array.isArray(up)) {
+        window.gtag('set', 'user_properties', up);
+      }
+    } catch (err) { /* analytics must never break the page */ }
     window.gtag('config', cfg.ga4, gaCfg);
     // hx-boost swaps pages without reloading this script.
     document.addEventListener('htmx:pushedIntoHistory', syncLocation);
@@ -387,32 +405,7 @@
       }
       track('subscribe_completed', params);
     },
-    pwaInstalled:       function ( ) { track('pwa_installed');           },
     feedbackSent:       function (p) { track('feedback_sent',        p); },
-
-    // Identify the user with anonymous demographic / preference signals.
-    // Called once per page with whatever the server knows: age bucket
-    // (derived from their saved chart's birthdate, NEVER the raw date),
-    // language preference, has-saved-chart, etc. GA4 stores these as
-    // user properties so every subsequent event is sliceable by them.
-    userIdentified: function (props) {
-      props = props || {};
-      if (window.gtag) {
-        window.gtag('set', 'user_properties', props);
-      }
-      // Also track as an event so the property appears immediately in
-      // realtime view (user_properties alone can take ~24h to surface).
-      track('user_identified', props);
-    },
-
-    // Record that a feature page was viewed — derived automatically from
-    // location.pathname by the auto-instrument in base.html. Lets us
-    // build clean GA4 funnels like /kundli → /dasha → /matching without
-    // wading through every URL variation.
-    featureView: function (feature) {
-      if (!feature) return;
-      track('feature_view', { feature: feature });
-    },
 
     // transport_type 'beacon': the click navigates away, and without it gtag's
     // XHR can be cancelled by the unload and the event lost. It is a
@@ -465,7 +458,9 @@
 
     // Manual pageview helper. GA4's auto-config sends the initial pageview;
     // call this on SPA-style nav (hx-boost swap) so subsequent pages also
-    // register. Path defaults to the current URL.
+    // register. Path defaults to the current URL. No caller in src/ today, but
+    // tests/test_analytics_ask_location.py pins that its page_location is
+    // sanitised (no `q`, no `city`), so a future caller cannot leak either.
     pageView: function (path) {
       if (window.gtag) {
         window.gtag('event', 'page_view', {
