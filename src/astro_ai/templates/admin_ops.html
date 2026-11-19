@@ -193,6 +193,27 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
   background:var(--ground);color:var(--ink);border:1px solid var(--line-2);border-radius:4px;
   font-family:var(--mono);font-size:12px;line-height:1.5;resize:vertical}
 .waste-grid .n{display:block;font-size:18px;font-weight:600}
+/* Goals and agent decisions (2026-11-19): meters, the 60/40 split, agent calls. */
+.meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.meter{padding:10px 12px;border:1px solid var(--line);border-radius:4px}
+.m-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.m-name{font-size:13px}
+.m-detail{font-size:12px;line-height:1.4}
+.m-pct{font-family:var(--mono);font-size:18px;font-weight:600}
+.m-track{height:8px;background:var(--panel-3);border-radius:4px;margin:8px 0 6px;overflow:hidden}
+.m-fill{height:100%;background:var(--nothing);border-radius:4px}
+.m-good .m-fill{background:var(--shipped)}
+.m-warn .m-fill{background:var(--open)}
+.m-low .m-fill{background:var(--failed)}
+.g-growth{fill:var(--shipped);background:var(--shipped)}
+.g-other{fill:var(--nothing);background:var(--nothing)}
+.g-exempt{fill:var(--failed);background:var(--failed)}
+.dchart .g-target{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:4 3}
+.g-target-key{background:var(--ink);height:2px!important;vertical-align:3px!important}
+.g-tag{border:1px solid var(--line-2);border-radius:3px;padding:1px 6px;font-size:12px;white-space:nowrap}
+.g-tag-growth{border-color:var(--shipped)}
+.g-tag-exempt{border-color:var(--failed)}
+.heat td.c{background:color-mix(in srgb,var(--shipped) calc(var(--heat,0) * 45%),transparent)}
 /* Issue flow (2026-11-18): opened vs closed bars, open-count line on its own scale. */
 .f-opened{fill:var(--open);background:var(--open)}
 .f-closed{fill:var(--shipped);background:var(--shipped)}
@@ -875,6 +896,126 @@ a{color:#1f5fae} a:hover{color:#174a88}
       separate schedules and rank against this one sentence; without it they optimise
       independently. <code>chief</code> owns it.</p>
     {% endif %}
+  </section>
+
+  {# ── Goals and agent decisions (owner, 2026-11-19). growth.json, scripts/growth_split.py. ── #}
+  {% set GR = ops.growth %}
+  <section class="panel" id="goals">
+    <h2>Goals and agent decisions <span class="lbl">IST · weeks Mon–Sun{% if GR %} · {{ GR.age.text }}{% endif %}</span></h2>
+    <div class="body">
+    {% if GR %}
+      <p class="flow-reading">{{ GR.reading }}</p>
+      <div class="meters">
+      {% for m in GR.meters %}
+        <div class="meter{% if m.tone %} m-{{ m.tone }}{% endif %}">
+          <div class="m-head"><span class="m-name">{{ m.label }}</span>
+            <span class="m-pct">{{ '–' if m.pct is none else m.pct ~ '%' }}</span></div>
+          <div class="m-track" role="meter" aria-label="{{ m.label }}" aria-valuemin="0" aria-valuemax="100"
+               {% if m.pct is not none %}aria-valuenow="{{ m.pct }}"{% endif %}>
+            <div class="m-fill" style="width:{{ 0 if m.pct is none else m.pct }}%"></div></div>
+          <div class="sub m-detail">{{ m.period or "" }} · {{ m.detail }}</div>
+          {% if m.goals %}
+          <table class="flow-t"><tbody>
+          {% for g in m.goals %}
+            <tr><td>{{ g.goal }}{% if g.issues %} <span class="lbl">{% for n in g.issues %}<a href="https://github.com/mahAnuj/astro-ai/issues/{{ n }}">#{{ n }}</a> {% endfor %}</span>{% endif %}</td>
+              <td class="n">{{ '–' if g.progress is none else (g.progress * 100)|round|int ~ '%' }}</td></tr>
+          {% endfor %}
+          </tbody></table>
+          {% endif %}
+        </div>
+      {% endfor %}
+      </div>
+
+      <div class="lbl" style="margin-top:16px">Build cycles per day, growth vs other (the line is the 60% target)</div>
+      {% set G = GR.chart %}
+      <svg class="dchart" viewBox="0 0 {{ G.w }} {{ G.h }}" role="img"
+           aria-label="Share of each day's build cycles that were growth work, other work or exempt production fixes, last {{ G.cols|length }} days, with the 60% target. The numbers are in the table below.">
+        <line class="grid" x1="{{ G.left }}" x2="{{ G.right_x }}" y1="{{ G.plot_h }}" y2="{{ G.plot_h }}"/>
+        <text class="ax" x="{{ G.left - 6 }}" y="{{ G.plot_h }}" text-anchor="end" dy="0.32em">0%</text>
+        <text class="ax" x="{{ G.left - 6 }}" y="1" text-anchor="end" dy="0.7em">100%</text>
+        {% for c in G.cols %}
+        <g><title>{{ c.tip }}</title>
+          {% for s in c.segs %}<rect class="g-{{ s.cls }}" x="{{ c.x }}" y="{{ s.y }}" width="{{ c.w }}" height="{{ s.h }}"/>{% endfor %}
+          {% if c.show_label %}<text class="ax day" x="{{ c.cx }}" y="{{ G.label_y }}" text-anchor="middle">{{ c.label }}</text>{% endif %}
+        </g>
+        {% endfor %}
+        <line class="g-target" x1="{{ G.left }}" x2="{{ G.right_x }}" y1="{{ G.target_y }}" y2="{{ G.target_y }}"/>
+      </svg>
+      <div class="dlegend">
+        <span><i class="g-growth"></i>growth</span><span><i class="g-other"></i>other</span>
+        <span><i class="g-exempt"></i>exempt (production broken)</span><span><i class="g-target-key"></i>60% target</span>
+      </div>
+
+      <div class="flow-grid">
+        <div style="grid-column:1/-1"><div class="lbl">What the loop decided · last {{ GR.cycles|length }} build cycles</div>
+          <div class="tscroll" role="region" aria-label="Recent build cycles"><table class="loops">
+            <thead><tr><th>When</th><th>Issue picked</th><th>Kind</th><th>Agents called</th><th>Outcome</th></tr></thead>
+            <tbody>
+            {% for c in GR.cycles %}
+              <tr><td>{{ c.when }}</td>
+                <td><a href="https://github.com/mahAnuj/astro-ai/issues/{{ c.issue }}">#{{ c.issue }}</a> {{ (c.title or '')[:70] }}</td>
+                <td><span class="g-tag g-tag-{{ c.class }}">{{ c.class }}</span></td>
+                <td>{{ c.agents_text }}</td>
+                <td>{{ c.outcome or '–' }}{% if c.pr %} · <a href="https://github.com/mahAnuj/astro-ai/pull/{{ c.pr }}">PR #{{ c.pr }}</a>{% endif %}</td></tr>
+            {% else %}
+              <tr><td colspan="5">No build cycle picked an issue in the window.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table></div></div>
+
+        <div style="grid-column:1/-1"><div class="lbl">Agents called per day · build runs read from logs</div>
+        {% if GR.calls %}
+          <div class="tscroll" role="region" aria-label="Agent calls per day"><table class="loops heat">
+            <thead><tr><th>Agent</th>{% for d in GR.calls.days %}<th>{{ d }}</th>{% endfor %}<th>7 days</th></tr></thead>
+            <tbody>
+            {% for r in GR.calls.rows %}
+              <tr><td>{{ r.agent }}</td>{% for c in r.cells %}<td class="c" style="--heat:{{ c.heat }}">{{ c.n or '' }}</td>{% endfor %}<td class="c">{{ r.total }}</td></tr>
+            {% endfor %}
+              <tr class="sub"><td>runs read</td>{% for n in GR.calls.runs %}<td class="c">{{ n }}</td>{% endfor %}<td></td></tr>
+            </tbody>
+          </table></div>
+        {% else %}
+          <p class="sub">Not collected yet: the next <code>agent-measure</code> run records <code>agents_called</code> per build run (#1238).</p>
+        {% endif %}
+        </div>
+
+        <div><div class="lbl">Weekly goals, scored</div>
+        {% if GR.history %}
+          <table class="flow-t"><tbody>
+          {% for h in GR.history|reverse %}
+            <tr><td>{{ h.period }}</td><td class="n">{% if h.scored %}{{ h.met }} of {{ h.goals }} met{% else %}{{ h.goals }} goals, not scored yet{% endif %}</td></tr>
+          {% endfor %}
+          </tbody></table>
+        {% else %}
+          <p class="sub">No goals posted yet. <code>chief</code> sets them in its Sunday review (20:53 IST){% if GR.goals_issue %} on <a href="https://github.com/mahAnuj/astro-ai/issues/{{ GR.goals_issue }}">#{{ GR.goals_issue }}</a>{% endif %}.</p>
+        {% endif %}
+        </div>
+        <div><div class="lbl">Chief's direction</div>
+          {% if GR.direction %}<p class="sub">{{ GR.direction }}</p>{% else %}<p class="sub">None yet.</p>{% endif %}
+          {% if GR.previous_score and GR.previous_score.lacking %}<p class="sub"><b>Lacking last week:</b> {{ GR.previous_score.lacking }}</p>{% endif %}
+        </div>
+        <div><div class="lbl">Open growth issues · {{ GR.open_growth|length }}</div>
+          <p class="sub">{% for n in GR.open_growth[:20] %}<a href="https://github.com/mahAnuj/astro-ai/issues/{{ n }}">#{{ n }}</a> {% else %}None: the 60% target needs supply.{% endfor %}</p>
+        </div>
+      </div>
+
+      <details class="dtable">
+        <summary>Show the split as a table</summary>
+        <div class="tscroll" role="region" aria-label="Growth split per day"><table class="loops">
+          <thead><tr><th>Day</th><th>Growth</th><th>Other</th><th>Exempt</th><th>Growth share</th></tr></thead>
+          <tbody>
+          {% for d in GR.days|reverse %}
+            <tr><td>{{ d.date[5:] }}</td><td class="c">{{ d.growth }}</td><td class="c">{{ d.other }}</td><td class="c">{{ d.exempt }}</td>
+              <td class="c">{{ '–' if d.share is none else (d.share * 100)|round|int ~ '%' }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table></div>
+      </details>
+      <p class="sub" style="margin-top:10px;font-size:12px">Growth = an issue labelled growth, seo, content, engagement, friction or funnel:*, or named by a current goal. Exempt = severity:blocker, or an [OPS] finding at priority:high: production first, outside the split. Meters: daily = today's growth share against 60%; weekly, monthly, quarterly = the mean progress of that period's goals, each (current − baseline) ÷ (target − baseline) from measurements/; overall = OBJECTIVE.md's lever, top-10 queries ranking in the top 5.</p>
+    {% else %}
+      <p class="none">No <code>measurements/growth.json</code> yet. The next <code>agent-measure</code> run writes it (<code>scripts/growth_split.py</code>).</p>
+    {% endif %}
+    </div>
   </section>
 
   {# ── The sentence. Written from the newest row, never hardcoded. ───── #}

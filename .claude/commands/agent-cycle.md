@@ -336,7 +336,10 @@ scripts/validate_issue.py rather than reading titles. Rank only confirmed-live, 
 items. Read BACKLOG.md as a cache, not evidence. Read-only — propose closures, do not close.
 STARTED WORK FIRST: an open issue with a merged partial/<n>- PR and no open PR outranks any
 unstarted issue of the same or lower priority -- finish it, or say exactly which item of the
-closed 'cannot do' list in agent-cycle.md Step 4 still blocks it.""")
+closed 'cannot do' list in agent-cycle.md Step 4 still blocks it.
+THE 60/40 GROWTH SPLIT (owner, 2026-11-19): run python3 scripts/growth_split.py first and follow
+'The 60/40 growth split' in your definition -- when must_pick_growth is true the top item is a
+growth issue, unless production is broken. Quote today's split in your answer.""")
 ```
 
 Take its top item. Never queue work another loop is already doing — check `AGENT_STATUS.md` and

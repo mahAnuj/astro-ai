@@ -115,6 +115,12 @@ KINDS: dict[str, dict] = {
     "triage-stage1": {"cap": 2, "window_days": 30, "dedupe": "window"},
     # resolve_provenance.py: the UNRESOLVED stop. Once is the announcement.
     "provenance-unresolved": {"cap": 1, "window_days": 7, "dedupe": "window"},
+    # growth_split.py (2026-11-19): chief's Sunday goals and scores on the one
+    # `weekly-goals` issue -- up to six files a Sunday (weekly, monthly, quarterly,
+    # goals and score each). A re-posted identical file is a duplicate.
+    "growth-goals": {"cap": 6, "window_days": 7, "dedupe": "window"},
+    # growth_split.py creating that standing issue, once, when none is open.
+    "growth-goals-issue": {"cap": 1, "window_days": 30, "dedupe": "window"},
 }
 
 #: Seconds before each resend. Secondary rate limits ask for "at least a minute".

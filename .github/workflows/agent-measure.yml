@@ -681,6 +681,19 @@ jobs:
           python3 scripts/collect_issue_backlog.py --repo "$GH_REPO" --out measurements/issues.json \
             || echo "::warning::backlog not refreshed; measurements/issues.json is the previous one"
 
+      # Weekly growth goals and the 60/40 split (owner, 2026-11-19), for the
+      # ops page's "Agent decisions" panel. AFTER the loop collector: it reads
+      # measurements/loop.json. Issue reads only (`issues: read` above).
+      - name: Collect the growth split
+        if: steps.due.outputs.due == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/growth_split.py --repo "$GH_REPO" --out measurements/growth.json \
+            || echo "::warning::growth split not refreshed; measurements/growth.json is the previous one"
+
       # #345: is each loop alive, is it producing, and which agent is failing.
       # Runs AFTER the loop collector because it reads measurements/loop.json
       # for the delivery yield rather than recomputing it — two files

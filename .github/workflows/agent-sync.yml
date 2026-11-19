@@ -15,7 +15,21 @@ on:
     - cron: "0 18 * * 5"   # Fridays, 23:30 IST — after the week's loops have run
     # The chief review alone, mid-week (owner, 2026-11-06). Friday runs both.
     - cron: "41 17 * * 2"  # Tuesdays, 23:11 IST
+    # The chief review alone, with the GOALS (owner, 2026-11-19: "Week is 7
+    # days work not 5 days ... It should be Sunday review and Monday next week
+    # start"). Sunday 20:53 IST: the week Mon-Sun has run, and it lands before
+    # agent-prioritise (Sundays 22:30 IST) so next week's queue sees the goals.
+    - cron: "23 15 * * 0"  # Sundays, 20:53 IST
   workflow_dispatch:
+    inputs:
+      # Owner, 2026-11-19: "can we run a workflow today to ask chief set the goal for
+      # remaining week?" A manual run can set goals now instead of waiting for Sunday.
+      goals_for:
+        description: "Goals to set: 'current' = this week's remaining days (+ this month/quarter if unset), 'next' = next week, as on Sunday, 'none' = a plain review"
+        required: false
+        default: "current"
+        type: choice
+        options: [current, next, none]
 
 concurrency:
   group: agent-sync
@@ -73,11 +87,16 @@ jobs:
             gh pr list --state all --limit 80 --json number,title,author,state,labels,updatedAt \
               --jq '.[] | select(.updatedAt > (now - 604800 | todate))
                     | "#\(.number) \(.state) \(.author.login) [\([.labels[].name] | join(","))] \(.title[0:60])"'
+            echo
+            # Weekly growth goals and the 60/40 split (owner, 2026-11-19). The
+            # current goals, last week's score and this week's growth share.
+            echo "## Growth split and weekly goals (scripts/growth_split.py)"
+            python3 scripts/growth_split.py --repo "$GH_REPO" || echo "growth split unavailable this run"
           } > /tmp/week.txt
           cat /tmp/week.txt
 
       - name: Sync
-        if: github.event.schedule != '41 17 * * 2'
+        if: github.event.schedule != '41 17 * * 2' && github.event.schedule != '23 15 * * 0' && (github.event_name != 'workflow_dispatch' || inputs.goals_for == 'none')
         uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -206,6 +225,8 @@ jobs:
               measurements/latest.md            the analyst's latest report
               measurements/sync/latest.md       the last sync record, if any
               measurements/sync/chief-guidance.md  your previous guidance
+              /tmp/week.txt "Growth split"       this week's growth share against
+                                                the 60% target, and the goals
 
             FOR EACH AGENT (each agent-*.yml loop, and qa, steward, analyst,
             project-manager inside them), one verdict:
@@ -217,6 +238,37 @@ jobs:
             and ONE concrete instruction for the next half-week, naming the
             issue or file. Check whether last time's instruction was followed;
             say which were not.
+
+            WEEKLY GROWTH GOALS (owner, 2026-11-19: "CEO should monitor if
+            weekly goals are met, what is lacking and direct the loop
+            accordingly for next week"; "Week is 7 days ... Sunday review and
+            Monday next week start"). chief.md, "Growth goals", has the format.
+            WHICH GOALS THIS RUN SETS: schedule "${{ github.event.schedule }}",
+            manual input goals_for "${{ inputs.goals_for }}".
+            - Sunday schedule "23 15 * * 0", or goals_for "next": the files
+              below, for NEXT week.
+            - goals_for "current" (a mid-week manual run): /tmp/weekly-goals.md
+              for THIS ISO week (it started last Monday), sized to the days left
+              until Sunday; /tmp/monthly-goals.md and /tmp/quarterly-goals.md for
+              this month and quarter only if none exist yet. No score files: no
+              period has ended.
+            - any other run: no goals files.
+            For a Sunday run, write:
+              /tmp/weekly-score.md   score THIS week (Mon-Sun): met / partial /
+                                     missed per goal, the measured actual, why,
+                                     what was lacking, and your direction
+              /tmp/weekly-goals.md   NEXT week's goals (the ISO week starting
+                                     tomorrow, Monday): 3-5 goals
+              /tmp/monthly-goals.md  only when next week starts a month with no
+                                     goals yet (and /tmp/monthly-score.md for
+                                     the month that ended)
+              /tmp/quarterly-goals.md likewise for a quarter, and its score
+            Each goal: a metric, a metric_key from /tmp/week.txt's
+            "metric_keys", a baseline and a target read from measurements/ this
+            run, and the issues that serve it. A workflow step validates and
+            posts them on the `weekly-goals` issue; you do not.
+            On Tuesday and Friday, judge progress against the current goals and
+            their meters in your guidance; write no goals files.
 
             WRITE /tmp/chief-guidance.md: a dated heading, a table
             `| agent | verdict | evidence | guidance |`, then "Stop", "Start"
@@ -249,8 +301,25 @@ jobs:
             --allowedTools "Read,Write,Glob,Grep,TodoWrite,Agent,Bash"
             --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*),Bash(gh issue close:*),Bash(gh issue edit:*),Bash(gh pr edit:*),Bash(gh pr merge:*),Bash(gh pr close:*),Bash(gh pr review:*),Bash(gh label:*),Bash(gh api:*),Bash(gh workflow:*),Bash(git push:*),Bash(bash scripts/qa_verdict.sh:*),Bash(scripts/qa_verdict.sh:*),Bash(./scripts/qa_verdict.sh:*),Bash(python3 scripts/chief_clear.py:*)"
 
+      # Chief's goals and score, posted by this step with github.token (so
+      # by github-actions[bot], a trusted author growth_split.py reads), not
+      # by chief: the review is denied `gh api` and `gh issue edit`, and a
+      # file it writes is validated here before anything is posted. Sundays
+      # and manual runs only. In this job, so it gains no scope.
+      - name: Post the weekly growth goals
+        if: always() && (github.event.schedule == '23 15 * * 0' || github.event_name == 'workflow_dispatch')
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/growth_split.py --repo "$GH_REPO" --post \
+            /tmp/weekly-score.md /tmp/weekly-goals.md \
+            /tmp/monthly-score.md /tmp/monthly-goals.md \
+            /tmp/quarterly-score.md /tmp/quarterly-goals.md
+
       - name: Publish the sync record
-        if: always() && github.event.schedule != '41 17 * * 2'
+        if: always() && github.event.schedule != '41 17 * * 2' && github.event.schedule != '23 15 * * 0'
         run: |
           if [ -s /tmp/report.md ]; then
             tee -a "$GITHUB_STEP_SUMMARY" < /tmp/report.md

@@ -108,6 +108,13 @@ permission from the top-level session to the loop. What has NOT changed:
   `scripts/liveness.py` findings. Lanes are told apart by the run title "QA round: PR #<n>" —
   change it only with all three copies (`tests/test_cycle_queue.py`).
   `docs/decisions/2026-11-17-always-on-inbox-timers.md`.
+- **At least 60% of build cycles go to growth, against goals chief sets** (owner, 2026-11-19:
+  *"split everyday work into 60% growth and 40% other work ... CEO should monitor if weekly goals
+  are met"*). `project-manager` runs `scripts/growth_split.py` before every ranking and picks a
+  growth issue when `must_pick_growth` says so; production breakage is exempt and goes first.
+  `chief`'s **Sunday** review (weeks are Mon–Sun, IST) posts weekly, monthly and quarterly goals
+  on the `weekly-goals` issue; `/admin/ops` meters them.
+  `docs/decisions/2026-11-19-growth-goals-and-split.md`.
 - **Chaining and parallelism are read from `measurements/claude_usage.json`, not argued.**
   `scripts/chain_cycle.py` chains only under 70% weekly use, fresh and `allowed`, at most 16
   build runs a UTC day, queue first. All agents share one Claude Max 5x subscription.

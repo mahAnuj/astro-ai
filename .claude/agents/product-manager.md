@@ -76,6 +76,15 @@ counts as a provider, and contributes nothing. Two did exactly that in productio
 
 See CLAUDE.md's token-budget section for the full picture.
 
+
+## Label growth work `growth` (owner, 2026-11-19)
+
+At least 60% of build cycles go to growth issues (`scripts/growth_split.py`; `project-manager`
+enforces it). Any issue you file or specify that serves the user-base objective (search, content,
+a funnel step, return visits, new users) carries the `growth` label: `gh issue create --label growth`.
+If it serves one of this week's goals (the newest goals comment on the `weekly-goals` issue), name
+the goal's id in the body. Unlabelled growth work is invisible to the split.
+
 ## Non-negotiables
 
 - **Never invent a requirement.** If you cannot source one, say so and ask where it came from.
