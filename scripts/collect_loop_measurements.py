@@ -150,6 +150,13 @@ LOOP_IDENTITIES = frozenset({"github-actions[bot]", "claude[bot]", "shubhagya-pu
 # readable result object. `parse_usage` writes them; an old row without them is valid.
 USAGE_FIELDS = ("turns", "tokens_input", "tokens_output", "tokens_cache_read",
                 "tokens_cache_write", "cost_list_usd", "model")
+# OPTIONAL per-row field (2026-11-19): `agents_called`, {subagent: times called} for
+# one run, read from the same job log (agent-work runs with `show_full_output`, so
+# every Agent tool call is printed). `{}` means the log was read and the run called
+# no subagent (a QA round does its own work); ABSENT means it could not be read.
+# Owner, 2026-11-19: "we should track when was architect agent used in the flow" --
+# measured that day over 14 working cycles: architect 1, product-manager 0.
+AGENTS_FIELD = "agents_called"
 TOKEN_FIELDS = ("tokens_input", "tokens_output", "tokens_cache_read", "tokens_cache_write")
 # The action step's env listing prints the RESOLVED prompt (`PROMPT: /agent-cycle
 # --qa-pr 679`), never the template, so this cannot match a step's echoed source.
@@ -240,7 +247,13 @@ def validate_loop(doc) -> list[str]:
         if "owner_helped" not in r:
             r = {**r, "owner_helped": None}
         usage = {k: r[k] for k in USAGE_FIELDS if k in r}
-        r = {k: v for k, v in r.items() if k not in USAGE_FIELDS}
+        if AGENTS_FIELD in r:
+            ac = r[AGENTS_FIELD]
+            if not isinstance(ac, dict) or any(
+                    not isinstance(k, str) or not AGENT_NAME.fullmatch(k) or not _is_int(v) or v < 1
+                    for k, v in ac.items()):
+                errs.append(f"{where} {AGENTS_FIELD} is not {{agent-name: count >= 1}}")
+        r = {k: v for k, v in r.items() if k not in USAGE_FIELDS and k != AGENTS_FIELD}
         if usage:
             # All of a reading or none of it: a row with output tokens but no
             # cache reads would read as a cheap run rather than a half-parsed one.
@@ -307,6 +320,16 @@ def validate_loop(doc) -> list[str]:
     if t is not None and (not isinstance(t, dict) or not _is_int(t.get("measured"))
                           or t["measured"] > (t.get("runs") or 0)):
         errs.append("tokens block is malformed or measures more runs than it has")
+    ag = doc.get("agents")
+    if ag is not None:
+        rr = ag.get("runs_read") if isinstance(ag, dict) else None
+        ba = ag.get("by_agent") if isinstance(ag, dict) else None
+        if not isinstance(rr, dict) or not isinstance(ba, dict) or set(rr) != set(AGENT_WINDOWS):
+            errs.append("agents block is malformed")
+        else:
+            for name, a in ba.items():
+                if not isinstance(a, dict) or any(not _is_int(a.get(k)) or a[k] > rr[k] for k in AGENT_WINDOWS):
+                    errs.append(f"agents.by_agent.{name} counts more runs than were read")
     return errs
 
 
@@ -460,6 +483,30 @@ def _read_result(obj: list[str]):
     return uuid, turns, _sub_object(obj, _SINCE_LAST), _sub_object(obj, _CUMULATIVE)
 
 
+#: A subagent's start record, as claude-code-action prints it under
+#: `show_full_output` (verified on agent-work run 44433226676, 2026-11-19):
+#:   "tool_use_id": "toolu_018V…", "description": "Rank the eligible backlog",
+#:   "subagent_type": "project-manager", … "spawn_depth": 1,
+#: The same call also appears in the assistant message and in `wire_tool_inputs`;
+#: keying on the tool_use_id counts it once. Timestamps are stripped first, since
+#: each JSON line of the log carries one.
+AGENT_NAME = re.compile(r"[a-z][a-z0-9-]{0,40}")
+_AGENT_START = re.compile(
+    r'"tool_use_id":\s*"(toolu_\w+)",\s*"description":\s*"(?:[^"\\]|\\.)*",\s*"subagent_type":\s*"([a-z][a-z0-9-]{0,40})"')
+_LOG_TS = re.compile(r"^\d{4}-\d\d-\d\dT[\d:.]+Z ?", re.M)
+
+
+def parse_agent_calls(log: str) -> dict[str, int]:
+    """{subagent: times called} for one run's log; {} when it called none."""
+    calls: dict[str, str] = {}
+    for m in _AGENT_START.finditer(_LOG_TS.sub("", log)):
+        calls[m.group(1)] = m.group(2)
+    out: dict[str, int] = {}
+    for name in calls.values():
+        out[name] = out.get(name, 0) + 1
+    return dict(sorted(out.items()))
+
+
 def parse_usage(log: str) -> dict | None:
     """The Claude session's token usage for one run, or None when it cannot be read.
 
@@ -571,6 +618,7 @@ def attribute(src: Source, run: dict, owner: str) -> dict:
     logs = job_logs(src, run["id"])
     kind = kind_of(logs)
     usage = parse_usage("\n".join(logs))
+    agents = parse_agent_calls("\n".join(logs)) if logs else None
     for log in logs:
         got = parse_receipt(log)
         if got:
@@ -579,7 +627,7 @@ def attribute(src: Source, run: dict, owner: str) -> dict:
                 m = BRANCH_ISSUE.match(branch)
                 issue = int(m.group(1)) if m else None
             return {"issue": issue, "pr": pr, "attribution": "receipt", "no_pr_recorded": pr is None,
-                    "kind": kind, "usage": usage}
+                    "kind": kind, "usage": usage, "agents": agents}
     for log in logs:
         got = parse_net_line(log)
         if got:
@@ -588,9 +636,9 @@ def attribute(src: Source, run: dict, owner: str) -> dict:
             issue = int(m.group(1)) if m else None     # "on 'main'": ended without a branch
             pr = None if (no_pr or not m) else pr_for_branch(src, owner, branch, ts(run["updated_at"]))
             return {"issue": issue, "pr": pr, "attribution": "log", "no_pr_recorded": no_pr, "kind": kind,
-                    "usage": usage}
+                    "usage": usage, "agents": agents}
     return {"issue": None, "pr": None, "attribution": "unattributed", "no_pr_recorded": False,
-            "kind": kind, "usage": usage}
+            "kind": kind, "usage": usage, "agents": agents}
 
 
 def outcome_of(conclusion: str, pr: int | None, merged: bool | None, state: str | None,
@@ -668,6 +716,7 @@ def make_row(run: dict, a: dict, state, merged) -> dict:
         "kind": a.get("kind", "unknown"),
         "owner_helped": None,
         **(a.get("usage") or {}),
+        **({AGENTS_FIELD: a["agents"]} if a.get("agents") is not None else {}),
     })
 
 
@@ -692,6 +741,8 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
     # this collection writes the block, a row with no usage stays without it
     # (its log had no readable result) instead of being re-read every run.
     backfill_usage = existing is not None and "tokens" not in existing
+    # Same rule for `agents_called` (2026-11-19), keyed on the `agents` block.
+    backfill_agents = existing is not None and "agents" not in existing
     for run in list_runs(src, WORKFLOW_NAME, Window(now - LOOKBACK, now)):
         if run.get("status") != "completed":
             stats["pending"] += 1
@@ -701,7 +752,8 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
             need_kind = prev is not None and "kind" not in prev
             need_usage = (prev is not None and backfill_usage
                           and not any(k in prev for k in USAGE_FIELDS))
-            if need_kind or need_usage:
+            need_agents = (prev is not None and backfill_agents and AGENTS_FIELD not in prev)
+            if need_kind or need_usage or need_agents:
                 # A row settled before `kind` (or the token fields) existed: read
                 # its log ONCE, then it is frozen again like any other.
                 try:
@@ -714,6 +766,8 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
                     prev = judged({**prev, "kind": kind_of(logs)})
                 if need_usage:
                     prev = {**prev, **(parse_usage("\n".join(logs)) or {})}
+                if need_agents and logs:
+                    prev = {**prev, AGENTS_FIELD: parse_agent_calls("\n".join(logs))}
                 merged_rows[run["id"]] = prev
                 stats["migrated"] += 1
             if prev is not None and prev.get("outcome") == "shipped" and prev.get("owner_helped") is None:
@@ -762,7 +816,34 @@ def collect(src: Source, existing: dict | None, now: datetime, owner: str):
     stats["pruned"] = len(merged_rows) - len(kept)
     rows = sorted(kept.values(), key=lambda r: r["started"], reverse=True)
     return {"generated_at": iso(now), "rows": rows, "waste": waste(rows, now),
-            "tokens": token_summary(rows, now)}, stats
+            "tokens": token_summary(rows, now), "agents": agent_summary(rows, now)}, stats
+
+
+#: The spans the agent summary covers.
+AGENT_WINDOWS = {"7d": 7, "30d": 30}
+
+
+def agent_summary(rows: list[dict], now: datetime) -> dict:
+    """Per subagent: in how many runs it was called over each window, and the
+    last run that called it. `runs_read` is the denominator -- runs whose log was
+    read -- so "architect 1" reads as 1 of N, never as a bare count."""
+    out: dict = {"runs_read": {}, "by_agent": {}}
+    for label, days in AGENT_WINDOWS.items():
+        floor = iso(now - timedelta(days=days))
+        read = [r for r in rows if AGENTS_FIELD in r and r["started"] >= floor]
+        out["runs_read"][label] = len(read)
+        for r in read:
+            for name in r[AGENTS_FIELD]:
+                a = out["by_agent"].setdefault(name, {**{k: 0 for k in AGENT_WINDOWS}, "last_run": None,
+                                                     "last_started": None, "last_issue": None})
+                a[label] += 1
+    for r in rows:                                 # rows are newest first
+        for name in r.get(AGENTS_FIELD) or {}:
+            a = out["by_agent"].get(name)
+            if a is not None and a["last_run"] is None:
+                a.update(last_run=r["run"], last_started=r["started"], last_issue=r["issue"])
+    out["by_agent"] = dict(sorted(out["by_agent"].items()))
+    return out
 
 
 #: The span the waste figures cover. Short enough to show a change this week,

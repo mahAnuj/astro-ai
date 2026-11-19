@@ -1,0 +1,42 @@
+"""agents_called (2026-11-19): which subagents each agent-work run called, read
+from its job log by scripts/collect_loop_measurements.py, and the `agents`
+summary in measurements/loop.json. Exercised by tests/test_collect_loop_measurements.py.
+One area file, a literal list (test_mutation_tables.py requires it)."""
+
+MUTATIONS = [
+    ("agent-calls: one call printed four times counts four",
+     "scripts/collect_loop_measurements.py",
+     "        calls[m.group(1)] = m.group(2)\n    out: dict[str, int] = {}\n    for name in calls.values():",
+     "        calls[m.group(1) + str(m.start())] = m.group(2)\n    out: dict[str, int] = {}\n    for name in calls.values():",
+     "test_the_same_call_printed_again_is_still_one_call"),
+    ("agent-calls: log timestamps are not stripped, so nothing matches across lines",
+     "scripts/collect_loop_measurements.py",
+     "    for m in _AGENT_START.finditer(_LOG_TS.sub(\"\", log)):",
+     "    for m in _AGENT_START.finditer(log):",
+     "test_each_subagent_call_counts_once_however_often_the_log_prints_it"),
+    ("agent-calls: a new row never records the field",
+     "scripts/collect_loop_measurements.py",
+     "        **({AGENTS_FIELD: a[\"agents\"]} if a.get(\"agents\") is not None else {}),\n",
+     "",
+     "test_a_new_row_carries_agents_called_and_the_summary_names_the_last_run"),
+    ("agent-calls: an unread row counts as a run read",
+     "scripts/collect_loop_measurements.py",
+     "        read = [r for r in rows if AGENTS_FIELD in r and r[\"started\"] >= floor]",
+     "        read = [r for r in rows if r[\"started\"] >= floor]",
+     "test_an_unreadable_log_leaves_the_field_absent_so_it_is_not_counted_as_zero"),
+    ("agent-calls: the last run is the oldest, not the newest",
+     "scripts/collect_loop_measurements.py",
+     "            if a is not None and a[\"last_run\"] is None:",
+     "            if a is not None:",
+     "test_last_run_is_the_newest_run_that_called_the_agent"),
+    ("agent-calls: old rows are never backfilled",
+     "scripts/collect_loop_measurements.py",
+     "                if need_agents and logs:",
+     "                if False:",
+     "test_a_row_settled_before_agents_called_existed_is_read_ONCE_then_frozen"),
+    ("agent-calls: the validator accepts any agents_called",
+     "scripts/collect_loop_measurements.py",
+     "                errs.append(f\"{where} {AGENTS_FIELD} is not {{agent-name: count >= 1}}\")",
+     "                pass",
+     "test_the_validator_rejects_a_malformed_agents_called"),
+]
