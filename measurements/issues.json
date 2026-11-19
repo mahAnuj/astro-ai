@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-19T20:13:16Z",
+  "generated_at": "2026-11-19T23:24:11Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 125,
@@ -166,9 +166,13 @@
       "area": "ANALYTICS",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-11-19T02:17:38Z",
-      "updated": "2026-11-19T02:17:46Z",
+      "updated": "2026-11-19T23:23:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -352,7 +356,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-15T20:41:37Z",
-      "updated": "2026-11-17T12:13:11Z",
+      "updated": "2026-11-19T22:35:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -428,7 +432,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T10:10:28Z",
-      "updated": "2026-11-19T20:12:30Z",
+      "updated": "2026-11-19T22:35:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -590,7 +594,7 @@
         "chore"
       ],
       "created": "2026-11-13T03:30:48Z",
-      "updated": "2026-11-13T15:27:25Z",
+      "updated": "2026-11-19T20:13:15Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -711,7 +715,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-19T17:59:33Z",
+      "updated": "2026-11-19T20:13:16Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2021,7 +2025,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-19T20:13:16Z",
+    "generated_at": "2026-11-19T23:24:11Z",
     "window_days": 28,
     "open_now": 125,
     "merged_open_hours": 24,
