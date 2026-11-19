@@ -1,5 +1,5 @@
 ---
-description: Weekly discovery — product-manager leads, reading the analyst's numbers first, then rivals and social. Files evidence-complete issues. Builds nothing.
+description: Weekly discovery — seo-growth audits search and the funnels first, then product-manager specifies, reading the analyst's numbers, rivals and social. Files evidence-complete issues. Builds nothing.
 ---
 
 # /discover — find the next thing worth building
@@ -21,13 +21,39 @@ buildable the moment an engineer picks it up.
    #177/#178 say the entire 36-point Ashtakoota engine is untraceable. Specifying a feature on an
    unsourced rule creates work Research will later ask to be removed.
 
+## Step 1 — `seo-growth` first (since 2026-11-19)
+
+**Dispatch both agents below; do not do their work yourself.** The run that reads this is the
+coordinator. Measured on the 2026-11-17 run (Actions run 44005275102, `measurements/discover/2026-11-17.md`):
+0 subagent calls in 17 turns, 2 minutes, every role done inline by the coordinator, which is why
+`product-manager` showed 1 call in 30 days. A run whose log has no `seo-growth` dispatch did not
+follow this file.
+
+Search and the funnels are where users are won or lost, and until 2026-11-19 nobody owned them:
+`product-manager` did keyword work as a side task, and `conversion-lead` was never called by
+anything. So the run starts with `seo-growth`, in the FOREGROUND, and waits for it:
+
+```
+Agent(subagent_type="seo-growth", description="Weekly search and funnel audit",
+      run_in_background=false,
+      prompt="""Audit search and the funnels for <cwd>, against OBJECTIVE.md, following
+.claude/agents/seo-growth.md. The numbers are already fetched: /tmp/gsc-band.json, /tmp/ga4.json,
+measurements/latest.md and the measurements/gsc-trend-*.json and ga4-events.json files. File one
+evidence-complete issue per finding (search open issues first). Return your findings in priority
+order, one line each. Read-only on code. You never push.""")
+```
+
+## Step 2 — `product-manager` specifies
+
 ```
 Agent(subagent_type="product-manager", description="Weekly discovery",
+      run_in_background=false,
       prompt="""Lead discovery for <cwd>, against the objective in OBJECTIVE.md.
 
-Read the analyst's latest findings FIRST (measurements/latest.md), then rivals, then social, then
-the corpus. Do the SEO, keyword and competitor work yourself with WebFetch and WebSearch; no skills
-for them are installed.
+Start from seo-growth's findings (passed below) and the analyst's latest report
+(measurements/latest.md), then rivals, then social, then the corpus. seo-growth has already filed
+the search and funnel issues: do not re-file them; specify the ones that need a spec, and do the
+rival and social work it did not.
 
 File an issue ONLY if it carries a complete Evidence Block — gsc/ga4 with an explicit window,
 competing with a URL, keyword, corpus with a line range or [UNSOURCED], measured tokens, an

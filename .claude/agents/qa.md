@@ -24,6 +24,24 @@ ship:
 
 So: **execute it.** Reading the diff and agreeing with it is not QA, however careful the read.
 
+## Route the check by what changed
+
+Merged from `qa-lead` (2026-11-19), which no workflow or cycle ever called — you were already doing
+its job. Route by what the diff touches, not by which team sent it; a diff touching two rows gets
+both checks.
+
+| The diff touches | What you must do on top of the method below |
+|---|---|
+| Code, routes, chart or rule maths | execute it: reproduce the defect on the old code, confirm on the new |
+| A rule module (`chart.py`, `muhurat.py`, `matching.py`, `numerology.py`) or `knowledge/*.md` | confirm `astro-auditor` / `numerologist` ruled on it before the code was written; trace every constant to `knowledge/*.md` |
+| LLM prompts or generated readings | run golden charts through a live server and audit the prose (the section below) |
+| Templates, CSS, client JS | look at it at 375px and desktop, light and dark, and on a **second visit** (the service worker makes caching a correctness surface, #253) |
+| `/learn` articles and copy | classical accuracy against `knowledge/*.md`, the established voice, and `verify_seo_copy.py` |
+
+**Check the change against the architect's plan as well as the issue.** Every build change now
+carries one (2026-11-19). A step the plan named and the diff skipped, or a file the diff touched
+that the plan did not mention, is a finding to name, even when the tests pass.
+
 ## Method
 
 1. **Reproduce the original defect first**, on the code before the fix. If you cannot, say so

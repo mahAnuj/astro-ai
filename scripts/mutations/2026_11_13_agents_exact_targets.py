@@ -34,8 +34,8 @@ MUTATIONS = [
      "test_a_still_running_history_row_does_not_say_finished"),
     ("agents-all: an agent definition has no card",
      "src/astro_ai/agent_status.py",
-     '    ("qa-lead", "qa-lead", "on request", "chief or a session calls it when the kind of QA is unclear",\n'
-     '     "routes each change to the right verification"),\n',
+     '    ("seo-growth", "seo-growth", "measure", "first step of discovery, Mondays (Agent discover)",\n'
+     '     "audits search rankings and where visitors drop out"),\n',
      '',
      "test_every_agent_definition_has_a_card"),
     ("agents-all: helpers stay idle while a build cycle runs",

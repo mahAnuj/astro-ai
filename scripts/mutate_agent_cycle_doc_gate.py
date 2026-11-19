@@ -37,13 +37,22 @@ H, R = "docs/agent-cycle.html", "README.md"
 
 # Derived so the rows below cannot go stale when a workflow is added.
 _WORKFLOWS = len(list((ROOT / ".github" / "workflows").glob("*.yml")))
-_WORD = {15: "fifteen", 16: "sixteen", 17: "seventeen", 18: "eighteen",
-         19: "nineteen", 20: "twenty"}
+_WORD = {12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen", 16: "sixteen",
+         17: "seventeen", 18: "eighteen", 19: "nineteen", 20: "twenty"}
+# The agent counts too (QA FAIL on #1240): the literal "15" / "Fifteen" / "9 of the 15"
+# anchors went stale when the 2026-11-19 restructure took the team to 14, and three
+# rows reported NOT BEHAVING for a gate that was fine. Derived the same way the gate
+# derives them (verify_agent_cycle_doc.py: agent files, and those saying never push).
+import re as _re
+_AGENT_FILES = sorted((ROOT / ".claude" / "agents").glob("*.md"))
+_AGENTS = len(_AGENT_FILES)
+_NEVER_PUSH = sum(1 for f in _AGENT_FILES
+                  if _re.search(r"never push|do not push", f.read_text(), _re.I))
 
 # (label, file, old, new)
 ROWS = [
- ("agents count, HTML fact tile",      H, "<b>15</b><span>agents</span>", "<b>50</b><span>agents</span>"),
- ("agents count, README word form",    R, "Fifteen agents", "Fifty agents"),
+ ("agents count, HTML fact tile",      H, f"<b>{_AGENTS}</b><span>agents</span>", "<b>50</b><span>agents</span>"),
+ ("agents count, README word form",    R, f"{_WORD[_AGENTS].capitalize()} agents", "Fifty agents"),
  # DERIVED, not hardcoded. These two anchored on the literal "17"/"seventeen"
  # and went stale the moment #461 added an 18th workflow -- the harness then
  # reported NOT BEHAVING for rows whose subject was fine. A mutation anchor
@@ -62,7 +71,7 @@ ROWS = [
  # `agent-merge`. Found by independent QA on #564 before it merged.
  ("a hard-coded gate count comes back", H,
   "re-run every non-excluded <code>verify_*.py</code>", "re-run all 29 gates"),
- ("never-push count",                  H, "9 of the 15", "15 of the 15"),
+ ("never-push count",                  H, f"{_NEVER_PUSH} of the {_AGENTS}", f"{_AGENTS + 1} of the {_AGENTS}"),
  ("qa-on-green trigger count",         H, "Its one <code>workflow_run</code> trigger", "Its two triggers"),
  ("a weekly cron's IST day",           H, "<code>agent-discover</code> — Tue 01:30", "<code>agent-discover</code> — Mon 01:30"),
  ("architect tools",                   H, "Tools are <code>Read, Grep, Glob, Bash, Write</code>", "Tools are <code>Read, Grep, Glob, Bash, WebFetch</code>"),

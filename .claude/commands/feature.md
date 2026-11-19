@@ -9,12 +9,12 @@ description: Build one specified feature — spec, design, subtasks, implement, 
 ## The loop
 
 ```
-product-manager  ->  architect  ->  engineer(s)  ->  qa  ->  commit locally
+product-manager  ->  architect  ->  backend-engineer / frontend-engineer  ->  qa  ->  commit locally
 ```
 
 Skip `product-manager` only when the issue already carries a user story, checkable
-acceptance criteria and a success metric. Skip `architect` only when the change is one
-file and one function — and be honest about that, because "it's simple" is how a +33%
+acceptance criteria and a success metric. **Never skip `architect`** (owner, 2026-11-19): a
+one-file change gets a short plan instead of a full design. "It's simple" is how a +33%
 performance regression shipped in #150 and had to be re-factored out afterwards.
 
 ## What each stage owes
@@ -30,7 +30,7 @@ same-file work merged into one subtask, ordered by dependency then risk so the d
 fails early and cheaply. State tokens per call and per day, GCS round-trips added, and
 which cache layer is used with its key and TTL.
 
-**`engineer`** — implements one subtask. Measures rather than estimates. Re-reads every
+**`backend-engineer` / `frontend-engineer`** — implements one subtask, following the architect's steps. Measures rather than estimates. Re-reads every
 region immediately before editing, because `main.py` and `chart.py` are large and
 concurrently edited.
 

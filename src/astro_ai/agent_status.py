@@ -63,14 +63,16 @@ HTTP_TIMEOUT = 4.0
 CACHE_TTL = float(os.environ.get("AGENT_STATUS_TTL") or (60 if GH_TOKEN else 300))
 
 #: One card per agent definition in .claude/agents/ (all 15, owner 2026-11-13:
-#: "add cards for all agents ... we just show it upfront"), plus the merge
+#: "add cards for all agents ... we just show it upfront"; 14 since the 2026-11-19 restructure,
+#: docs/decisions/2026-11-19-team-restructure.md), plus the merge
 #: workflow, which is not an agent but is a step every change waits on.
 #: (id, name, group, where it runs, role line). tests/test_agent_status.py
 #: fails if a file in .claude/agents/ has no card here.
 AGENTS: tuple[tuple[str, str, str, str, str], ...] = (
     ("dev-lead", "dev-lead", "build", "runs every build cycle (Agent work)", "coordinates one issue from design to a QA'd PR"),
-    ("architect", "architect", "build", "called by dev-lead inside a build cycle", "designs a change before it is written"),
-    ("engineer", "engineer", "build", "called by dev-lead inside a build cycle", "writes the code and commits it, unpushed"),
+    ("architect", "architect", "build", "first step of every build cycle", "plans every change before it is written"),
+    ("backend-engineer", "backend-engineer", "build", "called by dev-lead inside a build cycle",
+     "writes routes, rule maths, LLM paths and storage"),
     ("frontend-engineer", "frontend-engineer", "build", "called by dev-lead inside a build cycle",
      "writes templates, CSS and client code"),
     ("qa", "QA", "build", "runs a QA round on every green PR", "reviews every PR before it can merge"),
@@ -81,14 +83,16 @@ AGENTS: tuple[tuple[str, str, str, str, str], ...] = (
     ("analyst", "analyst", "measure", "runs the measurements (Agent measure)", "measures the loop and the site"),
     ("astro-auditor", "astro-auditor", "measure", "audits the rules (Agent research)", "checks astrology rules in code against the sources"),
     ("numerologist", "numerologist", "measure", "audits the numbers (Agent research)", "checks numerology tables against the sources"),
+    ("seo-growth", "seo-growth", "measure", "first step of discovery, Mondays (Agent discover)",
+     "audits search rankings and where visitors drop out"),
     ("steward", "steward", "operate", "checks for stalls (Agent steward)", "restarts work that has stalled"),
-    ("infra-lead", "infra-lead", "operate", "reviews the platform (Agent infra)", "keeps the site up, fast and free"),
-    ("conversion-lead", "conversion-lead", "on request", "chief or a session calls it for a drop-off question",
-     "audits where visitors drop out"),
-    ("qa-lead", "qa-lead", "on request", "chief or a session calls it when the kind of QA is unclear",
-     "routes each change to the right verification"),
+    ("infra-reviewer", "infra-reviewer", "operate", "reviews the platform (Agent infra)", "keeps the site up, fast and free"),
 )
-GROUPS = ("build", "decide", "measure", "operate", "on request")
+GROUPS = ("build", "decide", "measure", "operate")
+#: Agents no workflow or cycle calls. Empty since the 2026-11-19 restructure (conversion-lead
+#: and qa-lead were the two). A card listed here says "not on any schedule" rather than borrow a
+#: workflow's state: an unscheduled agent shown as "idle, waiting" reads as one that runs.
+UNSCHEDULED: tuple[str, ...] = ()
 
 #: "standby": the run this agent is called from is live, but which helper a
 #: cycle is using at this minute is not visible from outside the Claude step.
@@ -319,7 +323,7 @@ def build(
         cards["chief"] = {"state": "idle", "detail": "no PR held for a ruling", "at": None}
 
     # helpers called inside a build cycle: standby while one runs
-    for key in ("architect", "engineer", "frontend-engineer"):
+    for key in ("architect", "backend-engineer", "frontend-engineer"):
         if build_runs:
             card = from_run(build_runs[0], "standby", "on call in the running build cycle")
             card["state"] = "standby" if build_runs[0].get("status") != "queued" else "queued"
@@ -327,8 +331,8 @@ def build(
         else:
             cards[key] = {"state": "idle", "detail": "waits for the next build cycle", "at": None}
 
-    # on request only: nothing schedules them
-    for key in ("conversion-lead", "qa-lead"):
+    # on request only: nothing schedules them (none today; see UNSCHEDULED)
+    for key in UNSCHEDULED:
         cards[key] = {"state": "idle", "detail": "not on any schedule", "at": None}
 
     # the scheduled agents, one workflow each
@@ -336,10 +340,11 @@ def build(
         ("steward", "Agent steward", "agent-steward.yml", "check"),
         ("analyst", "Agent measure", "agent-measure.yml", "measurement"),
         ("product-manager", "Agent discover", "agent-discover.yml", "discovery run"),
+        ("seo-growth", "Agent discover", "agent-discover.yml", "search and funnel audit"),
         ("project-manager", "Agent prioritise", "agent-prioritise.yml", "ranking"),
         ("astro-auditor", "Agent research", "agent-research.yml", "research audit"),
         ("numerologist", "Agent research", "agent-research.yml", "research audit"),
-        ("infra-lead", "Agent infra", "agent-infra.yml", "platform review"),
+        ("infra-reviewer", "Agent infra", "agent-infra.yml", "platform review"),
     ):
         running = runs_of(workflow_name)
         cards[key] = from_run(running[0], "running", f"{what} in progress") if running else from_history(workflow, what)

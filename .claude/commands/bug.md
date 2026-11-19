@@ -18,7 +18,7 @@ description: Fix one defect end to end — reproduce, fix, verify independently,
 ## The loop
 
 ```
-engineer  ->  qa (separate dispatch, own context)  ->  fix  ->  qa  ->  commit locally
+architect  ->  backend-engineer / frontend-engineer  ->  qa (separate dispatch, own context)  ->  fix  ->  qa  ->  commit locally
 ```
 
 **The engineer that wrote the code never verifies it.** That is the whole point — this
@@ -26,8 +26,8 @@ project has run fifteen QA passes and *every one failed its first submission*, t
 defects the fix itself introduced. Collapsing the loop to save a round trip removes the
 only thing that has been catching them.
 
-Dispatch `architect` first when the change touches more than one module, changes a shape,
-or when a ruling is needed before a constant is written. Dispatch `astro-auditor` before
+Dispatch `architect` first, always (owner, 2026-11-19): a one-line fix gets a short plan —
+the pattern, the failure mode, the steps — never none. Dispatch `astro-auditor` before
 writing any astrological or numerological constant.
 
 ## What the engineer's brief must carry

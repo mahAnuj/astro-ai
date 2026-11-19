@@ -339,7 +339,7 @@ footer a{color:var(--text-dim)}
 <header>
   <div class="wrap">
     <p class="eyebrow">astro-ai · shubhagya.com</p>
-    <h1>How fifteen AI agents build and grow a product, <em>and what keeps them in line</em>.</h1>
+    <h1>How fourteen AI agents build and grow a product, <em>and what keeps them in line</em>.</h1>
     <p class="thesis">
       Shubh Bhagya is built and maintained by a team of AI agents running on a schedule. They
       never talk to each other: each starts with no memory of the others, so every handoff is
@@ -348,7 +348,7 @@ footer a{color:var(--text-dim)}
       agent, decide what ships.</strong>
     </p>
     <div class="facts">
-      <div class="fact"><b>15</b><span>agents</span></div>
+      <div class="fact"><b>14</b><span>agents</span></div>
       <div class="fact"><b>19</b><span>workflows</span></div>
       <div class="fact"><b>7</b><span>stages</span></div>
       <div class="fact"><b>0</b><span>agents in the designed merge path</span></div>
@@ -549,13 +549,13 @@ const BANDS = [
   { n:"00", t:"The clock", d:"Almost nothing here is event-driven: these loops wake on cron, staggered into the window after the usage cap resets. The one exception is the steward, which also listens for Agent work to finish.", nodes:[
     { id:"work", kind:"workflow", name:"agent-work.yml", cap:"Six times a day, every four hours from 04:30 IST. Runs /agent-cycle — one issue, start to PR.",
       body:`<p>The delivery loop. Fires <code>0 23 * * *</code> — 04:30 IST, deliberately just after the Claude Max 5-hour rolling cap resets, because a cycle that dies mid-run leaves a half-finished branch. Since 2026-10-13 it also fires <code>0 11 * * *</code> — 16:30 IST, twelve hours on — so this runs <strong>twice a day, not once</strong>.</p>
-      <p><strong>One issue per run.</strong> A single cycle is 10–15 agent invocations, and QA historically fails its first submission most of the time, so two or three QA rounds per issue is the budget.</p>
+      <p><strong>One issue per run.</strong> A single cycle is 10–15 subagent invocations, and QA historically fails its first submission most of the time, so two or three QA rounds per issue is the budget.</p>
       <p class="sec">It passes on</p><p>A prompt (<code>/agent-cycle</code>) and nothing else. The cycle rediscovers all its own state from GitHub, because the previous run's memory is gone.</p>` },
     { id:"weekly", kind:"workflow", name:"six weekly loops", cap:"discover · infra · research · design · sync · prioritise. Staggered across the week.",
       body:`<p>Each wakes once a week, staggered so they never contend for the same quota window — in IST two of them share Friday (design just after midnight, sync late evening), which the UTC crons keep a day apart. The crons are <strong>UTC</strong>; the times below are IST, which is why four of them fall a day later than the day named in the workflow comments:</p>
       <ul><li><code>agent-prioritise</code> — Sun 22:30, ahead of the week</li>
       <li><code>agent-discover</code> — Tue 01:30 (<code>0 20 * * 1</code>), product-manager leads</li>
-      <li><code>agent-infra</code> — Wed 00:30 (<code>0 19 * * 2</code>), <code>infra-lead</code></li>
+      <li><code>agent-infra</code> — Wed 00:30 (<code>0 19 * * 2</code>), <code>infra-reviewer</code></li>
       <li><code>agent-research</code> — Thu 00:30 (<code>0 19 * * 3</code>), astrologer + numerologist</li>
       <li><code>agent-design</code> — Fri 01:30 (<code>0 20 * * 4</code>), audits the <em>live</em> site</li>
       <li><code>agent-sync</code> — Fri 23:30, after the week's loops have run</li></ul>
@@ -611,10 +611,10 @@ const BANDS = [
     { id:"architect", kind:"agent", name:"architect", cap:"Turns the spec into a numbered task list with explicit dependencies.",
       body:`<p>Tools are <code>Read, Grep, Glob, Bash, Write</code> — it has <code>Write</code>, for the design document, and no <code>WebFetch</code>. It chooses the approach and produces tasks an engineer can execute independently, which is what allows several engineers to run in parallel.</p>
       <p>Token shape is treated as a design decision here: prompt construction, caching and chunking are recorded in <code>ARCHITECTURE.md</code>, because the runtime is a free Groq tier and a design that exceeds the TPM budget is <strong>unbuildable as specified</strong>, not merely slow.</p>` },
-    { id:"engineer", kind:"agent", name:"engineer", cap:"Implements one scoped task. Never pushes to main. Never verifies itself.",
+    { id:"engineer", kind:"agent", name:"backend / frontend engineer", cap:"Implements one scoped task, following the architect's plan. Never pushes to main. Never verifies itself.",
       body:`<p>Takes a self-contained task — Goal, Files, Steps, Done-when — not "implement the feature". Several run in parallel when the architect's tasks are independent.</p>
       <p class="sec">Two rules repeated in its own definition</p>
-      <p>It <strong>never pushes to <code>main</code></strong>, and it <strong>never verifies its own work</strong>. The never-push rule is restated in <strong>9 of the 15</strong> agent definitions rather than once centrally, because a subagent reads only its own definition and its prompt — a rule stated once is a rule most of them never see. (<code>grep -lEi 'never push|do not push' .claude/agents/*.md | wc -l</code>. <code>CLAUDE.md</code> says "every one", which is itself the stale-number defect it warns about: the six without it are the roles that never write code.)</p>
+      <p>It <strong>never pushes to <code>main</code></strong>, and it <strong>never verifies its own work</strong>. The never-push rule is restated in 8 of the 14 agent definitions rather than once centrally, because a subagent reads only its own definition and its prompt — a rule stated once is a rule most of them never see. (<code>grep -lEi 'never push|do not push' .claude/agents/*.md | wc -l</code>. <code>CLAUDE.md</code> says "every one", which is itself the stale-number defect it warns about: the six without it are the roles that never write code.)</p>
       <p>It must also measure input tokens before and after: growth is a defect even when the output is correct. One path grew 18.5% per call (#212) — on the path that had <em>already</em> caused a 21-day outage, not as its cause. That outage was Firebase Hosting's ~60s cap on a rewrite to Cloud Run, misdiagnosed twice before it was found.</p>` },
     { id:"qa", kind:"agent", name:"qa", cap:"Independent. Verifies against acceptance criteria and returns PASS or FAIL.",
       body:`<p>Exercises the feature for real — curl, browser, direct call — and reports per criterion. It exists because the engineer cannot be the judge of its own work; the whole point is the independence.</p>
