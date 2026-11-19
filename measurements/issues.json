@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-11-19T04:49:44Z",
+  "generated_at": "2026-11-19T07:50:35Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 121,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 41,
+    "UNCLASSIFIED": 42,
     "INFRA": 15,
     "REDESIGN": 10,
     "OPS": 8,
     "FEATURE": 7,
     "ANALYTICS": 5,
-    "CORPUS": 5,
     "SEO": 4,
+    "CORPUS": 4,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "PRIVACY": 2,
@@ -30,9 +30,9 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 37,
+    "untyped": 38,
     "enhancement": 30,
-    "bug": 21,
+    "bug": 20,
     "chore": 18,
     "correctness": 11,
     "design": 4
@@ -45,6 +45,21 @@
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1246,
+      "title": "Growth goals: weekly, monthly, quarterly",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "weekly-goals"
+      ],
+      "created": "2026-11-19T07:40:12Z",
+      "updated": "2026-11-19T07:40:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1243,
       "title": "knowledge: vedic_reference.md §29.14 still says Magha/Mula first-pada exclusion is not implemented (after #1242)",
@@ -84,25 +99,6 @@
       "labels": [],
       "created": "2026-11-19T02:17:38Z",
       "updated": "2026-11-19T02:17:46Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1232,
-      "title": "corpus: Raman rejects the first quarter of Makha and Moola for weddings; vivah finder has no pada test",
-      "ask": "",
-      "area": "CORPUS",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-19T01:04:48Z",
-      "updated": "2026-11-19T04:43:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -644,7 +640,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-19T01:19:17Z",
+      "updated": "2026-11-19T05:09:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1954,7 +1950,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-19T04:49:44Z",
+    "generated_at": "2026-11-19T07:50:35Z",
     "window_days": 28,
     "open_now": 121,
     "merged_open_hours": 24,
@@ -2362,16 +2358,17 @@
       },
       {
         "date": "2026-11-19",
-        "opened": 4,
-        "closed": 3,
+        "opened": 7,
+        "closed": 6,
         "net": 1,
         "open_end": 121,
         "opened_by": {
-          "loop": 4
+          "loop": 7
         },
         "closed_by": {
-          "close-on-evidence": 2,
-          "main-red-report": 1
+          "close-on-evidence": 3,
+          "main-red-report": 2,
+          "owner": 1
         }
       }
     ],
@@ -3611,6 +3608,21 @@
         "number": 1229,
         "closed_at": "2026-11-18T23:28:17Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1232,
+        "closed_at": "2026-11-19T05:05:26Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1247,
+        "closed_at": "2026-11-19T07:45:58Z",
+        "closer": "owner"
+      },
+      {
+        "number": 1249,
+        "closed_at": "2026-11-19T07:48:33Z",
+        "closer": "main-red-report"
       }
     ],
     "timelines_read": 3,
