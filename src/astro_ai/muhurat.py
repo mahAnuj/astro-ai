@@ -531,7 +531,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
             "Favourable tithi: 2, 3, 5, 7, 10, 11, 13 (avoid 4, 8, 9, 14, Amavasya, Purnima); the 11th-13th are excluded in the waning half, below",
             "Wedding dates on the 11th, 12th or 13th tithi of the waning (Krishna paksha) half are excluded, following B.V. Raman's Muhurtha, which rejects the dark-half 11th through New Moon for marriage",
             "The bright-half 12th is not credited: Rao's wedding guideline table lists it, Raman's rejects it, so the finder gives it no credit either way",
-            "Favourable nakshatra: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati",
+            "Favourable nakshatra: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati; but the first quarter (pada) of Magha and of Mula is excluded, following B.V. Raman's Muhurtha, which rejects it for marriage",
             "No Panchak (Moon in Dhanishta latter half through Revati)",
             "No Chaturmas (Devshayani → Devuthani Ekadashi ≈ mid-July to mid-November) — widely followed convention this finder applies",
             "No Kharmas (Sun in Sagittarius ≈ mid-Dec to mid-Jan; Sun in Pisces ≈ mid-Mar to mid-Apr) — widely followed convention this finder applies",
@@ -679,6 +679,13 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         # and names the bright-half 11th and 13th among the best. Read by score_event via
         # .get(), so no other event has this key and none changes.
         "avoid_krishna_tithis": {"Ekadashi", "Dwadashi", "Trayodashi"},
+        # First quarter only (#1232): Raman's marriage chapter lists Makha and Moola among the
+        # best asterisms and then rejects their first quarter (knowledge/vedic_reference.md
+        # section 29.14). Whole-nakshatra membership cannot say "pada 1", so the two stay in
+        # good_nakshatras and score_event reads this via .get(), as it does the key above: no
+        # other event has it and none changes. The third clause of the same sentence, the last
+        # quarter of Revati, needs no entry: Revati is whole-nakshatra Panchak (_is_panchak).
+        "avoid_nakshatra_padas": {"Magha": {1}, "Mula": {1}},
         "good_nakshatras": {"Rohini", "Mrigashira", "Magha", "Uttara Phalguni",
                              "Hasta", "Swati", "Anuradha", "Mula",
                              "Uttara Ashadha", "Uttara Bhadrapada", "Revati"},
@@ -1571,6 +1578,16 @@ _VIVAH_KRISHNA_TITHI_REASON = (
     "{tithi} is not excluded."
 )
 
+# Vivah only (#1232). User-facing reason for a first-quarter Magha/Mula Moon, from
+# EVENT_RULES['vivah']['avoid_nakshatra_padas']. The knowledge file records Raman's marriage
+# chapter as calling Makha and Moola among the best asterisms and rejecting their first
+# quarter, so the reason says both and claims nothing about the other three quarters.
+_VIVAH_FIRST_PADA_REASON = (
+    "Moon in the first quarter (pada 1) of {nakshatra}: B.V. Raman's Muhurtha, marriage "
+    "chapter, rejects the first quarter of Makha and Moola for a wedding. The rest of "
+    "{nakshatra} stays good."
+)
+
 
 def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
                 is_panchak: bool, is_chaturmas: bool,
@@ -1578,7 +1595,8 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
                 combust: dict[str, bool],
                 adhik_reason: str = "",
                 nitya_yoga: str = "", nitya_blocks: bool = False,
-                boosters: tuple[str, ...] = ()) -> tuple[str, str, tuple[str, ...]]:
+                boosters: tuple[str, ...] = (),
+                moon_pada: int = 0) -> tuple[str, str, tuple[str, ...]]:
     """Return (rating, reason, flags) for the given event type.
 
     HARD exclusions (return 'avoid'), in priority order:
@@ -1587,7 +1605,9 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
       3. Panchak, Chaturmas, Kharmas, Dagdha (per-event flag)
       4. Atiganda / Shula / Ganda / Vyatipata / Vaidhriti Nitya Yogas — universal
       5. Combust karaka (per-event flag)
-      6. Avoid-nakshatra, avoid-tithi, and the paksha-aware avoid_krishna_tithis (Vivah, #1022)
+      6. Avoid-nakshatra, the pada-aware avoid_nakshatra_padas (Vivah, #1232; moon_pada 0
+         = unknown, never rejects), avoid-tithi, and the paksha-aware avoid_krishna_tithis
+         (Vivah, #1022)
       7. Tuesday (_HARD_AVOID_WEEKDAYS) — Raman, see the constant
 
     UNIVERSAL BOOSTERS override caution/acceptable → excellent:
@@ -1647,6 +1667,11 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
     if nakshatra in rules["avoid_nakshatras"]:
         flags.append("avoid_nakshatra")
         return "avoid", f"Avoid nakshatra ({nakshatra})", tuple(flags)
+    # Pada-aware nakshatra exclusion (#1232). Read with .get() so only the event that carries
+    # the key is affected; an unknown pada (0) is in no set, so it never rejects.
+    if moon_pada in rules.get("avoid_nakshatra_padas", {}).get(nakshatra, ()):
+        flags.append("avoid_nakshatra_pada")
+        return "avoid", _VIVAH_FIRST_PADA_REASON.format(nakshatra=nakshatra), tuple(flags)
     if panchang.tithi_name in rules["avoid_tithis"]:
         flags.append("avoid_tithi")
         return "avoid", f"Avoid tithi ({panchang.tithi_name})", tuple(flags)
@@ -1904,7 +1929,7 @@ def find_candidates(event_type: str, city: str, start: date,
             is_panchak, is_chaturmas, kharmas_reason, eclipse_reason, combust,
             adhik_reason=adhik_reason,
             nitya_yoga=nitya_yoga, nitya_blocks=nitya_blocks,
-            boosters=boosters,
+            boosters=boosters, moon_pada=moon_pada,
         )
         candidates.append(MuhuratCandidate(
             d=d, weekday=p.weekday,
