@@ -5099,6 +5099,56 @@ _CONTROL = (
 _TEST_FILE_CACHE: dict[str, str] | None = None
 
 
+# THE FALLBACK RUNS LIKELY FILES FIRST AND STOPS AT THE FIRST FAILURE (2026-11-19).
+# A row whose named test stays green falls through to the whole suite. Measured on
+# PR #1240's full sweep (run 44447057327): 24 rows plus the CONTROL took that path,
+# each a ~200s suite with four running at once on a 4-core runner, and the step took
+# 1881s of a 38-minute run; PR #1241's scoped run spent most of its 600s the same way
+# on 4 rows. A catch needs ONE real failure, so `-x` asks the same question: a row
+# with any failing test is CAUGHT with or without it, and a row with none still runs
+# every test (MISSED costs what it always did). Collection errors abort a pytest run
+# with or without `-x`, so NON-TEST FAILURE is unchanged too. The order is the only
+# lever on how soon that first failure arrives: the named test's file, then every test
+# file that mentions the mutated file, then the rest (pytest collects a file named
+# both alone and inside `tests/` once, in the first position). The CONTROL is not
+# touched: it must see the whole suite pass.
+_TEST_TEXT_CACHE: dict[str, str] | None = None
+_PRIORITY_MAX = 15
+
+
+def _priority_tests(sandbox: pathlib.Path, rel: str, test: str) -> list[str]:
+    """Test files to run first in a fallback, most likely to catch a mutation of `rel`."""
+    global _TEST_TEXT_CACHE
+    if _TEST_TEXT_CACHE is None:
+        _TEST_TEXT_CACHE = {}
+        for f in sorted((ROOT / "tests").rglob("test_*.py")):
+            try:
+                _TEST_TEXT_CACHE[f.relative_to(ROOT).as_posix()] = f.read_text(errors="replace")
+            except OSError:
+                continue
+    first = []
+    named = _test_nodeid(sandbox, test)[0] if test and test != "_control" else ""
+    if named.endswith(".py"):
+        first.append(named)
+    path = pathlib.PurePosixPath(rel)
+    needles = {rel, path.name}
+    if len(path.stem) >= 4:
+        needles.add(path.stem)
+    for f, text in _TEST_TEXT_CACHE.items():
+        cand = str(sandbox / f)
+        if cand not in first and (sandbox / f).exists() and any(n in text for n in needles):
+            first.append(cand)
+        if len(first) >= _PRIORITY_MAX:
+            break
+    return first
+
+
+def _first_failure(stdout: str) -> str:
+    """The first failing test's id in a pytest run's output, or ''."""
+    m = re.search(r"^(?:FAILED|ERROR) (\S+::\S+)", stdout, re.M)
+    return m.group(1).split("/tests/", 1)[-1] if m else ""
+
+
 def _test_nodeid(sandbox: pathlib.Path, test: str) -> list[str]:
     """pytest args selecting one test as narrowly as the tree allows."""
     global _TEST_FILE_CACHE
@@ -5357,8 +5407,16 @@ def _probe(sandbox, rel: str, target, test: str) -> tuple[bool, str]:
             return True, "CAUGHT"
 
     # Reached when the named test did not catch it, or for the control row,
-    # which must see the whole suite or it would stop being a control.
-    result = _pytest()
+    # which must see the whole suite or it would stop being a control. A real row
+    # runs likely files first and stops at its first failure (see _priority_tests).
+    if test and test != "_control":
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", *_priority_tests(sandbox, rel, test),
+             str(sandbox / "tests"), "-x", "-q", "--no-header"],
+            capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
+        )
+    else:
+        result = _pytest()
     if result.returncode == 0:
         return False, "*** MISSED ***"
     if not _red(result):
@@ -5368,7 +5426,9 @@ def _probe(sandbox, rel: str, target, test: str) -> tuple[bool, str]:
         # mutation but not the test this row names. The row still counts as
         # caught -- the defect cannot escape -- but its `test` field is
         # wrong, and a wrong field is what the GUARD GONE check cannot see.
-        return True, "CAUGHT BY ANOTHER TEST — row names `" + test + "`"
+        by = _first_failure(result.stdout)
+        return True, ("CAUGHT BY ANOTHER TEST — row names `" + test + "`"
+                      + (f", caught by `{by}`" if by else ""))
     return True, "CAUGHT"
 
 
@@ -5567,6 +5627,14 @@ if _scope_base:
               "sweep on main; this is a PR-only narrowing, never used there")
 else:
     _rows = list(MUTATIONS)
+
+# `--only SUBSTR` (2026-11-19): run only the rows whose label contains SUBSTR, plus the
+# CONTROL -- to re-run or time specific rows locally. Never used by a workflow: it is a
+# narrowing like --changed-since, and says so.
+_only = [sys.argv[_i + 1] for _i, _a in enumerate(sys.argv) if _a == "--only" and _i + 1 < len(sys.argv)]
+if _only:
+    _rows = [r for r in _rows if any(o in r[0] for o in _only)]
+    print(f"only: {len(_rows)} row(s) whose label contains {_only!r} -- a local narrowing, not a gate")
 
 _work = [_CONTROL] + _rows
 _verdicts: dict[int, tuple[str, str]] = {}
