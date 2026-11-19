@@ -1076,7 +1076,7 @@ MUTATIONS = [
     # "no branch", opens a parallel one, and the stalled PR is never touched --
     # ~50 Actions minutes against a free-tier budget to clear nothing.
     ("a cycle cannot find the fix/ branch the steward dispatched about",
-     ".claude/commands/agent-cycle.md",
+     ".claude/commands/agent-cycle/build.md",
      '"fix/<n>-*"   # a branch from an earlier cycle?',
      '# a branch from an earlier cycle?',
      "test_a_cycle_looks_for_every_namespace_the_steward_may_dispatch_at"),

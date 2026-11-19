@@ -40,7 +40,9 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 WF = ROOT / ".github" / "workflows" / "agent-steward.yml"
 AGENT = ROOT / ".claude" / "agents" / "steward.md"
-CYCLE = ROOT / ".claude" / "commands" / "agent-cycle.md"
+# The build-cycle steps (Step 2.5's branch probe among them) live in build.md
+# since #1254 split the command; the entry file routes to it.
+CYCLE = ROOT / ".claude" / "commands" / "agent-cycle" / "build.md"
 
 SOURCES = {
     "agent-steward.yml": WF.read_text(encoding="utf-8"),

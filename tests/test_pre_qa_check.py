@@ -28,7 +28,10 @@ sys.modules["pre_qa_check"] = pqc
 _spec.loader.exec_module(pqc)
 
 PR_GATES = (ROOT / ".github" / "workflows" / "pr-gates.yml").read_text(encoding="utf-8")
-AGENT_CYCLE = (ROOT / ".claude" / "commands" / "agent-cycle.md").read_text(encoding="utf-8")
+# /agent-cycle is two files since #1254: the entry (0c, 0d, 0a, the shared verdict section, 3.5)
+# and build.md (0, 1, 2, 2.5, 3, 3.6, 4, 4.5). Read both, entry first.
+CYCLE_BUILD = (ROOT / ".claude" / "commands" / "agent-cycle" / "build.md").read_text(encoding="utf-8")
+AGENT_CYCLE = (ROOT / ".claude" / "commands" / "agent-cycle.md").read_text(encoding="utf-8") + "\n" + CYCLE_BUILD
 
 
 def _pr_gates_list(var: str) -> set[str]:
@@ -140,14 +143,15 @@ def test_the_script_is_not_named_like_a_gate():
 
 
 def test_agent_cycle_runs_it_before_every_qa_dispatch():
-    step3 = AGENT_CYCLE[AGENT_CYCLE.index("## Step 3 — build it"):AGENT_CYCLE.index("## Step 3.5")]
+    # Step 0d quotes this heading, so slice it from build.md alone.
+    step3 = CYCLE_BUILD[CYCLE_BUILD.index("## Step 3 — build it"):CYCLE_BUILD.index("## Step 3.6")]
     qa_bullet = step3.index("**`qa` as a separate dispatch, always.**")
     check = step3.index("uv run python scripts/pre_qa_check.py")
     assert qa_bullet < check < step3.index("### Dispatch in the FOREGROUND")
     assert "Dispatch `qa` only on PASS." in step3
     assert "a re-QA after a fix included" in step3
 
-    # Step 2.5's two re-QA paths after a FAIL.
+    # The two re-QA paths after a FAIL (Step 2.5's, now in the shared section of the entry file).
     s25 = AGENT_CYCLE[AGENT_CYCLE.index("If that verdict is a FAIL"):
                       AGENT_CYCLE.index("**Dispatch the QA round with the verdict")]
     assert "Then\n    `scripts/pre_qa_check.py` (Step 3), and QA only on its PASS." in s25
