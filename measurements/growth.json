@@ -1,13 +1,13 @@
 {
- "generated_at": "2026-11-19T18:22:43Z",
+ "generated_at": "2026-11-19T20:13:31Z",
  "target": 0.6,
  "week": "2026-W47",
- "today_date": "2026-11-19",
+ "today_date": "2026-11-20",
  "today": {
   "growth": 0,
-  "other": 6,
+  "other": 0,
   "exempt": 0,
-  "share": 0.0
+  "share": null
  },
  "this_week": {
   "growth": 13,
@@ -23,13 +23,6 @@
  },
  "must_pick_growth": true,
  "days": [
-  {
-   "date": "2026-11-06",
-   "growth": 0,
-   "other": 7,
-   "exempt": 0,
-   "share": 0.0
-  },
   {
    "date": "2026-11-07",
    "growth": 0,
@@ -120,6 +113,13 @@
    "other": 6,
    "exempt": 0,
    "share": 0.0
+  },
+  {
+   "date": "2026-11-20",
+   "growth": 0,
+   "other": 0,
+   "exempt": 0,
+   "share": null
   }
  ],
  "cycles": [
@@ -877,16 +877,15 @@
   "ga4_new_users_28d": 640,
   "ga4_sessions_28d": 780,
   "objective_top5": 1,
-  "growth_share_today": 0.0,
   "growth_share_week": 0.206,
   "growth_share_month": 0.069
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
-   "period": "2026-11-19",
-   "progress": 0.0,
-   "detail": "0 of 6 cycles on growth, target 60%",
+   "period": "2026-11-20",
+   "progress": null,
+   "detail": "0 of 0 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {

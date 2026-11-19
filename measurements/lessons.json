@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-19T18:25:11Z",
+ "generated_at": "2026-11-19T20:15:38Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1077,6 +1077,15 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/1240#issuecomment-7000138809",
     "summary": "QA: FAIL \u2014 verified at `34d8968914a5b93e5e359870c50607a122632cae` DEFECT: scripts/mutate_agent_cycle_doc_gate.py:44-46,64 still anchor on the old agent count (<b>15</b><span>agents</span>, Fifteen agents, 9 of the 15); the PR moved the targets to 14 / Fourteen / 8 of the 14 (docs/agent-cycle.html:35",
     "themes": []
+   },
+   {
+    "number": 1262,
+    "at": "2026-11-19T18:31:33Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1262#issuecomment-7018279071",
+    "summary": "QA: FAIL \u2014 verified at `6bfc1386b40fe3288a0dcc2c0f0b6e23474d18d4` JUDGE-ONLY (diff touches .github/workflows/, so no fix pushed; patch below, applied by nobody).  WHAT PASSED, by execution: all nine checks green on 6bfc138 (scope, suite, 4 x mutants, verify, gates, build-gates). The \"Verification ga",
+    "themes": [
+     "regression"
+    ]
    }
   ],
   "reverts": [],
@@ -1131,22 +1140,22 @@
    {
     "kind": "claude-quota",
     "level": "amber",
-    "title": "Claude weekly quota 85% used",
+    "title": "Claude weekly quota 87% used",
     "detail": "Every agent shares one Claude Max subscription. 0 run(s) in the sample hit a limit. Levers, cheapest first: stop dispatching ranked (`/agent-cycle`) cycles that end in nothing; space out the weekly agent loops; keep QA rounds to one per head. Do not add a parallel build lane until it resets.",
     "where": "/admin/ops"
    },
    {
     "kind": "loop-starved",
     "level": "amber",
-    "title": "3 of the last 4 build cycles built nothing",
-    "detail": "Empty cycles started 2026-11-19T11:18, 2026-11-19T16:17, 2026-11-19T16:54. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
+    "title": "4 of the last 4 build cycles built nothing",
+    "detail": "Empty cycles started 2026-11-19T11:18, 2026-11-19T16:17, 2026-11-19T16:54, 2026-11-19T19:23. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
     "where": "/admin/ops"
    }
   ]
  },
  "error_themes": {
+  "regression": 32,
   "grounding": 31,
-  "regression": 31,
   "tests": 29,
   "tokens": 21,
   "copy": 20,
