@@ -26,15 +26,18 @@ case "$*" in
   *"compare/"*) # compare/X...Y -> ahead when X is A and Y is B, identical when equal
      spec=$(echo "$*" | grep -oE 'compare/[0-9a-f]+\.\.\.[0-9a-f]+'); x=${spec#compare/}; x=${x%%...*}; y=${spec##*...}
      if [ "$x" = "$y" ]; then echo identical; elif [ "$x" = "$A" ] && [ "$y" = "$B" ]; then echo ahead; else echo behind; fi ;;
-  *"issues?state=open"*) echo '[1056, 1201, 1202, 1203, 998]' ;;
+  *"issues?state=open"*) echo '[1056, 1201, 1202, 1203, 998, 1301]' ;;
   *"pulls?state=closed"*)
-     printf '%s\n' "{\"n\":1077,\"m\":\"$A\",\"t\":\"x closes #1056\",\"b\":\"issue/1056-x\"}" \
+     printf '%s\n' "{\"n\":1300,\"m\":\"$B\",\"t\":\"Lift the sticky CTA (#1301)\",\"b\":\"issue/1301-w\"}" \
+                   "{\"n\":1077,\"m\":\"$A\",\"t\":\"x closes #1056\",\"b\":\"issue/1056-x\"}" \
                    "{\"n\":1200,\"m\":\"$B\",\"t\":\"Closes #1201, #1202 and #1203\",\"b\":\"issue/1201-y\"}" \
                    "{\"n\":999,\"m\":\"$C\",\"t\":\"closes #998\",\"b\":\"issue/998-z\"}" \
                    "{\"n\":555,\"m\":\"$D\",\"t\":\"chore: measurement\",\"b\":\"measurements/1-1\"}" ;;
   *"/events"*) # one page; prints what --jq would: reopens after the PR merged
      if [ -n "${REOPENED:-}" ] && [[ "$*" == *"issues/$REOPENED/events"* ]]; then echo 1; else echo 0; fi ;;
   "pr view"*"mergedAt"*) echo "2026-11-15T10:00:00Z" ;;
+  "pr view 1300"*"headRefName"*) echo "issue/1301-w" ;;
+  "pr view 1300"*) printf 'Lift the sticky CTA (#1301)\nA mention, not a closing keyword.\n' ;;
   "pr view 1077"*"headRefName"*) echo "issue/1056-x" ;;
   "pr view 1200"*"headRefName"*) echo "issue/1201-y" ;;
   "pr view 999"*"headRefName"*) echo "issue/998-z" ;;
@@ -156,3 +159,16 @@ def test_an_unreadable_timeline_closes_nothing_for_that_issue_and_exits_non_zero
     assert r.returncode != 0 and "timeline read(s) failed" in r.stdout
     closed = " ".join(ln for ln in calls.splitlines() if ln.startswith("issue close"))
     assert "1056" not in closed and "1201" in closed
+
+
+# --- a PR with no closing keyword must not kill the step (QA FAIL at e101051) --
+
+def test_a_keyword_less_pr_listed_first_falls_back_to_its_branch_and_the_rest_still_close(tmp_path):
+    """PR 1300 is listed first and says '(#1301)', a mention. Under pipefail the
+    keyword grep exited 1 and bash -e ended the step silently, closing nothing."""
+    r, _, calls = _run(tmp_path, _step("Close what this commit shipped")["run"], sha=B, live=B,
+                       extra_env={"LIVE": B})
+    assert r.returncode == 0, (r.stdout, r.stderr)
+    closed = " ".join(ln for ln in calls.splitlines() if ln.startswith("issue close"))
+    assert "1301" in closed and "taking #1301 from branch" in r.stdout
+    assert "1056" in closed and "1201" in closed, "PRs after it still close"

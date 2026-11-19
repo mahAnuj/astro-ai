@@ -48,4 +48,9 @@ MUTATIONS = [
      '          if [ "$compare_errors" -gt 0 ] || [ "$reopen_errors" -gt 0 ]; then exit 1; fi',
      '          if [ "$compare_errors" -gt 0 ]; then exit 1; fi',
      "test_an_unreadable_timeline_closes_nothing_for_that_issue_and_exits_non_zero"),
+    ("close-on-evidence: a keyword-less PR kills the step under pipefail again",
+     ".github/workflows/close-on-evidence.yml",
+     "                     | grep -oE '[0-9]+' | sort -u || true)\n",
+     "                     | grep -oE '[0-9]+' | sort -u)\n",
+     "test_a_keyword_less_pr_listed_first_falls_back_to_its_branch_and_the_rest_still_close"),
 ]

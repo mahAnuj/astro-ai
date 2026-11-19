@@ -196,7 +196,11 @@ jobs:
             # A list counts too: "Closes #1185, #1186 and #1187" closed only #1185
             # until 2026-11-18 (PR #1196), leaving #1186 and #1187 open.
             issues=$(echo "$body" | grep -oiE '(clos(e|es|ed)|fix(e[sd])?|resolv(e|es|ed))[[:space:]]+#[0-9]+([[:space:]]*(,|and|&)[[:space:]]*#[0-9]+)*' \
-                     | grep -oE '[0-9]+' | sort -u)
+                     | grep -oE '[0-9]+' | sort -u || true)
+            # `|| true` like refs= and the branch fallback below: under pipefail a
+            # body with no closing keyword makes grep exit 1, and `bash -e` then
+            # killed the step with no message and nothing closed (QA on #1212 at
+            # e101051). "No keyword" is a normal state the fallback exists for.
 
             # FALL BACK TO THE BRANCH NAME. The keyword is prose an agent has to
             # remember to write, and on 2026-10-09 it did not: PR #312 was titled
