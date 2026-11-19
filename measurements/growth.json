@@ -1,0 +1,1126 @@
+{
+ "generated_at": "2026-11-19T08:00:24Z",
+ "target": 0.6,
+ "week": "2026-W47",
+ "today_date": "2026-11-19",
+ "today": {
+  "growth": 0,
+  "other": 6,
+  "exempt": 0,
+  "share": 0.0
+ },
+ "this_week": {
+  "growth": 13,
+  "other": 50,
+  "exempt": 0,
+  "share": 0.206
+ },
+ "this_month": {
+  "growth": 16,
+  "other": 215,
+  "exempt": 0,
+  "share": 0.069
+ },
+ "must_pick_growth": true,
+ "days": [
+  {
+   "date": "2026-11-06",
+   "growth": 0,
+   "other": 7,
+   "exempt": 0,
+   "share": 0.0
+  },
+  {
+   "date": "2026-11-07",
+   "growth": 0,
+   "other": 11,
+   "exempt": 0,
+   "share": 0.0
+  },
+  {
+   "date": "2026-11-08",
+   "growth": 0,
+   "other": 11,
+   "exempt": 0,
+   "share": 0.0
+  },
+  {
+   "date": "2026-11-09",
+   "growth": 0,
+   "other": 11,
+   "exempt": 0,
+   "share": 0.0
+  },
+  {
+   "date": "2026-11-10",
+   "growth": 0,
+   "other": 10,
+   "exempt": 0,
+   "share": 0.0
+  },
+  {
+   "date": "2026-11-11",
+   "growth": 0,
+   "other": 26,
+   "exempt": 0,
+   "share": 0.0
+  },
+  {
+   "date": "2026-11-12",
+   "growth": 0,
+   "other": 6,
+   "exempt": 0,
+   "share": 0.0
+  },
+  {
+   "date": "2026-11-13",
+   "growth": 1,
+   "other": 6,
+   "exempt": 0,
+   "share": 0.143
+  },
+  {
+   "date": "2026-11-14",
+   "growth": 0,
+   "other": 26,
+   "exempt": 0,
+   "share": 0.0
+  },
+  {
+   "date": "2026-11-15",
+   "growth": 0,
+   "other": 22,
+   "exempt": 0,
+   "share": 0.0
+  },
+  {
+   "date": "2026-11-16",
+   "growth": 3,
+   "other": 13,
+   "exempt": 0,
+   "share": 0.188
+  },
+  {
+   "date": "2026-11-17",
+   "growth": 5,
+   "other": 21,
+   "exempt": 0,
+   "share": 0.192
+  },
+  {
+   "date": "2026-11-18",
+   "growth": 5,
+   "other": 10,
+   "exempt": 0,
+   "share": 0.333
+  },
+  {
+   "date": "2026-11-19",
+   "growth": 0,
+   "other": 6,
+   "exempt": 0,
+   "share": 0.0
+  }
+ ],
+ "cycles": [
+  {
+   "run": 44455237313,
+   "started": "2026-11-19T03:59:58Z",
+   "issue": 1232,
+   "title": "corpus: Raman rejects the first quarter of Makha and Moola for weddings; vivah finder has no pada test",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1242,
+   "agents": null
+  },
+  {
+   "run": 44441088862,
+   "started": "2026-11-19T02:00:22Z",
+   "issue": 1069,
+   "title": "analytics: feature_view and user_identified fire only on full loads under hx-boost; user_identified is 44% of code-sent events; languageSwitched/pwaInstalled never called",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1234,
+   "agents": null
+  },
+  {
+   "run": 44433226676,
+   "started": "2026-11-19T00:58:05Z",
+   "issue": 1069,
+   "title": "analytics: feature_view and user_identified fire only on full loads under hx-boost; user_identified is 44% of code-sent events; languageSwitched/pwaInstalled never called",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1234,
+   "agents": null
+  },
+  {
+   "run": 44411358136,
+   "started": "2026-11-18T22:24:59Z",
+   "issue": 1229,
+   "title": "analytics: login, language_switched, share events and from_path on subscribe_completed (#1070 slice 3)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1230,
+   "agents": {
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44391751946,
+   "started": "2026-11-18T20:30:33Z",
+   "issue": 1226,
+   "title": "analytics: tool_submitted event and fetch_ga4.py --journeys (#1070 slice 2)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1227,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 44378576254,
+   "started": "2026-11-18T19:15:28Z",
+   "issue": 1226,
+   "title": "analytics: tool_submitted event and fetch_ga4.py --journeys (#1070 slice 2)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1227,
+   "agents": {
+    "engineer": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 44343896958,
+   "started": "2026-11-18T16:09:25Z",
+   "issue": 856,
+   "title": "Manglik copy: remaining flat six-house claims and the 'many texts \u2026 after age 28' claim outrun the held sources (residue of #838)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1222,
+   "agents": {
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44304393801,
+   "started": "2026-11-18T12:29:23Z",
+   "issue": 1217,
+   "title": "analytics: completion events for matching, numerology, muhurat and the dosha checks (#1070 rows 3-6)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1218,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 44293904656,
+   "started": "2026-11-18T11:21:09Z",
+   "issue": 1217,
+   "title": "analytics: completion events for matching, numerology, muhurat and the dosha checks (#1070 rows 3-6)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1218,
+   "agents": {
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44250725457,
+   "started": "2026-11-18T06:21:25Z",
+   "issue": 1105,
+   "title": "privacy: no code path deletes personal data \u2014 add account deletion, delete a chart's readings, and enforce retention in the bucket",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1214,
+   "agents": {}
+  },
+  {
+   "run": 44245481709,
+   "started": "2026-11-18T05:37:00Z",
+   "issue": 1065,
+   "title": "seo: track index status per sitemap URL (URL Inspection API), flag pages changed after Google's last crawl, and list which to request indexing for",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1210,
+   "agents": {
+    "qa": 3
+   }
+  },
+  {
+   "run": 44234677262,
+   "started": "2026-11-18T04:03:40Z",
+   "issue": 1105,
+   "title": "privacy: no code path deletes personal data \u2014 add account deletion, delete a chart's readings, and enforce retention in the bucket",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1214,
+   "agents": {
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44227513208,
+   "started": "2026-11-18T03:02:04Z",
+   "issue": 1065,
+   "title": "seo: track index status per sitemap URL (URL Inspection API), flag pages changed after Google's last crawl, and list which to request indexing for",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1210,
+   "agents": {
+    "architect": 1,
+    "engineer": 2,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 44220231852,
+   "started": "2026-11-18T02:01:54Z",
+   "issue": 1178,
+   "title": "seo: effective meta descriptions over 160 chars, enforced by verify_seo_copy (#1107 criterion 5)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1202,
+   "agents": {
+    "qa": 2
+   }
+  },
+  {
+   "run": 44216217548,
+   "started": "2026-11-18T01:29:39Z",
+   "issue": 1115,
+   "title": "analytics: add a GA4 previous-window export (fetch_ga4.py --trend) \u2014 three reports in a row could not compare sessions with the last window",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1204,
+   "agents": {
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44213300955,
+   "started": "2026-11-18T01:07:08Z",
+   "issue": 1083,
+   "title": "10th-lord-in-6th: \"Jupiter debilitated in Scorpio\" is wrong (debilitated in Capricorn); five unsourced \"classical\" attributions",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1121,
+   "agents": {
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44204629167,
+   "started": "2026-11-18T00:03:31Z",
+   "issue": 1178,
+   "title": "seo: effective meta descriptions over 160 chars, enforced by verify_seo_copy (#1107 criterion 5)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1202,
+   "agents": {
+    "engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 44198834383,
+   "started": "2026-11-17T23:22:41Z",
+   "issue": 1167,
+   "title": "ask: audit saved /ask answers weekly for astrological correctness (grounded in knowledge/, prompt contract, safety) without publishing user questions",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1170,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 44192795443,
+   "started": "2026-11-17T22:43:24Z",
+   "issue": 1163,
+   "title": "privacy: /subscribe response time tells an anonymous caller whether an email is subscribed (follow-up to #1159)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1199,
+   "agents": {
+    "chief": 1,
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 2
+   }
+  },
+  {
+   "run": 44168574470,
+   "started": "2026-11-17T20:22:14Z",
+   "issue": 1106,
+   "title": "security: sessions never expire server-side and sign-out cannot revoke them; /auth/google has no CSRF check",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1168,
+   "agents": {}
+  },
+  {
+   "run": 44160935432,
+   "started": "2026-11-17T19:39:30Z",
+   "issue": 1176,
+   "title": "seo: slash-variant redirects return 308, not 307 (#1107 criterion 3)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1197,
+   "agents": {
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44147730239,
+   "started": "2026-11-17T18:25:46Z",
+   "issue": 1106,
+   "title": "security: sessions never expire server-side and sign-out cannot revoke them; /auth/google has no CSRF check",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1168,
+   "agents": {}
+  },
+  {
+   "run": 44146060830,
+   "started": "2026-11-17T18:16:31Z",
+   "issue": 1167,
+   "title": "ask: audit saved /ask answers weekly for astrological correctness (grounded in knowledge/, prompt contract, safety) without publishing user questions",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1170,
+   "agents": {}
+  },
+  {
+   "run": 44128302969,
+   "started": "2026-11-17T16:39:46Z",
+   "issue": 1177,
+   "title": "seo: no-chart nav links (/today /monthly /yearly /ask) must not 303 (#1107 criterion 4)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1182,
+   "agents": {
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44097953603,
+   "started": "2026-11-17T13:57:34Z",
+   "issue": 1105,
+   "title": "privacy: no code path deletes personal data \u2014 add account deletion, delete a chart's readings, and enforce retention in the bucket",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1173,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 44088452354,
+   "started": "2026-11-17T13:00:28Z",
+   "issue": 1105,
+   "title": "privacy: no code path deletes personal data \u2014 add account deletion, delete a chart's readings, and enforce retention in the bucket",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1173,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 44087825162,
+   "started": "2026-11-17T12:56:24Z",
+   "issue": 1041,
+   "title": "knowledge: vedic_reference.md 29.9 and the 29 closing note still say the nitya-yoga blocker is 'narrower than its source' (stale after #1023)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1164,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 44075422963,
+   "started": "2026-11-17T11:35:38Z",
+   "issue": 1175,
+   "title": "seo: tool pages link specific articles and every article has an in-body inbound link (#1107 criteria 1-2)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1179,
+   "agents": {
+    "architect": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44068915395,
+   "started": "2026-11-17T10:53:06Z",
+   "issue": 1105,
+   "title": "privacy: no code path deletes personal data \u2014 add account deletion, delete a chart's readings, and enforce retention in the bucket",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1173,
+   "agents": {
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44060961645,
+   "started": "2026-11-17T10:01:37Z",
+   "issue": 1167,
+   "title": "ask: audit saved /ask answers weekly for astrological correctness (grounded in knowledge/, prompt contract, safety) without publishing user questions",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1170,
+   "agents": {
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44054007037,
+   "started": "2026-11-17T09:16:05Z",
+   "issue": 1106,
+   "title": "security: sessions never expire server-side and sign-out cannot revoke them; /auth/google has no CSRF check",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1168,
+   "agents": {
+    "architect": 1,
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44052519976,
+   "started": "2026-11-17T09:06:33Z",
+   "issue": 1041,
+   "title": "knowledge: vedic_reference.md 29.9 and the 29 closing note still say the nitya-yoga blocker is 'narrower than its source' (stale after #1023)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1164,
+   "agents": {
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44047430376,
+   "started": "2026-11-17T08:31:14Z",
+   "issue": 1159,
+   "title": "privacy: /subscribe/lookup tells anyone whether an email is subscribed, with its city and rashi (#908 item 2)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1162,
+   "agents": {
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 2
+   }
+  },
+  {
+   "run": 44041420072,
+   "started": "2026-11-17T07:47:32Z",
+   "issue": 1160,
+   "title": "privacy: share-link ids are 4 random bytes \u2014 make new ids 16 bytes, keep old ids readable (#908 item 3)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1161,
+   "agents": {
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44035519931,
+   "started": "2026-11-17T07:01:31Z",
+   "issue": 1068,
+   "title": "analytics: kundli_generated and ask_answered fire on every re-render (/kundli revisit, /r/ snapshot, /ask?q= reload), not on completion",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1157,
+   "agents": {
+    "engineer": 2,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44028808398,
+   "started": "2026-11-17T06:06:50Z",
+   "issue": 1104,
+   "title": "security: fail closed when ADMIN_PASSWORD or ASTRO_AI_COOKIE_SECRET is unset \u2014 the dev fallbacks are public",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1153,
+   "agents": {
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44020807802,
+   "started": "2026-11-17T04:58:33Z",
+   "issue": 1067,
+   "title": "analytics: kundli_generated, ask_answered and dasha_deep_dive_viewed throw 'Analytics is not defined' on full page loads (inline script runs before deferred analytics.js)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1150,
+   "agents": {
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 3
+   }
+  },
+  {
+   "run": 44019520177,
+   "started": "2026-11-17T04:46:49Z",
+   "issue": 1141,
+   "title": "tests: test_ops_day_picker freezes TODAY at import; gates go red across UTC midnight",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1149,
+   "agents": {
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44016404733,
+   "started": "2026-11-17T04:19:42Z",
+   "issue": 1071,
+   "title": "learn: write gochar-2027-planetary-transits before January \u2014 the 2026 sibling has 1,627 impressions at position 5.7 (swisseph-computed dates)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1148,
+   "agents": {
+    "qa": 2
+   }
+  },
+  {
+   "run": 44008797657,
+   "started": "2026-11-17T03:14:38Z",
+   "issue": 1071,
+   "title": "learn: write gochar-2027-planetary-transits before January \u2014 the 2026 sibling has 1,627 impressions at position 5.7 (swisseph-computed dates)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1148,
+   "agents": {
+    "engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  }
+ ],
+ "goals": {
+  "issue": 1246,
+  "levels": {
+   "weekly": {
+    "period": "2026-W47",
+    "current": {
+     "week": "2026-W47",
+     "goals": [
+      {
+       "id": "g1",
+       "goal": "Lift the week's growth share",
+       "metric": "growth share this week",
+       "metric_key": "growth_share_week",
+       "baseline": 0.206,
+       "target": 0.35,
+       "issues": []
+      },
+      {
+       "id": "g2",
+       "goal": "Hold search clicks while open SEO fixes land",
+       "metric": "GSC clicks, 28 days",
+       "metric_key": "gsc_clicks_28d",
+       "baseline": 383,
+       "target": 395,
+       "issues": [
+        1076,
+        1107
+       ]
+      },
+      {
+       "id": "g3",
+       "goal": "Grow impressions toward the month's 33,000",
+       "metric": "GSC impressions, 28 days",
+       "metric_key": "gsc_impressions_28d",
+       "baseline": 28918,
+       "target": 30500,
+       "issues": [
+        1076,
+        1107
+       ]
+      },
+      {
+       "id": "g4",
+       "goal": "Ship the three open growth issues",
+       "metric": "share of issues closed",
+       "metric_key": "",
+       "baseline": 0,
+       "target": 1,
+       "issues": [
+        1076,
+        1107,
+        1065
+       ]
+      }
+     ],
+     "direction": "Only #1065, #1076 and #1107 are open growth issues, so supply caps the share: project-manager picks them first, and seo-growth files band-page issues for the 6-20 queries in gsc-band.json today so the share can climb. Analytics-event PRs wait until the week share passes 0.35. Weekly Claude use is 0.79, so size cycles to the window and keep production breakage first.",
+     "at": "2026-11-19T07:52:11Z",
+     "by": "github-actions[bot]"
+    },
+    "previous_score": null,
+    "history": [
+     {
+      "period": "2026-W47",
+      "goals": 4,
+      "met": 0,
+      "scored": false
+     }
+    ]
+   },
+   "monthly": {
+    "period": "2026-11",
+    "current": {
+     "month": "2026-11",
+     "goals": [
+      {
+       "id": "m1",
+       "goal": "Grow impressions",
+       "metric": "GSC impressions, 28 days",
+       "metric_key": "gsc_impressions_28d",
+       "baseline": 28918,
+       "target": 33000,
+       "issues": [
+        1076,
+        1107,
+        1071
+       ]
+      },
+      {
+       "id": "m2",
+       "goal": "Grow visitors",
+       "metric": "GA4 users, 28 days",
+       "metric_key": "ga4_users_28d",
+       "baseline": 691,
+       "target": 800,
+       "issues": [
+        1072,
+        1073,
+        1075
+       ]
+      },
+      {
+       "id": "m3",
+       "goal": "Raise the month's growth share",
+       "metric": "growth share this month",
+       "metric_key": "growth_share_month",
+       "baseline": 0.069,
+       "target": 0.25,
+       "issues": []
+      }
+     ],
+     "direction": "The month starts at 16 growth cycles of 231; 0.60 is out of reach before 30 Nov, so the target is 0.25 and December carries the floor.",
+     "at": "2026-11-19T07:40:23Z",
+     "by": "github-actions[bot]"
+    },
+    "previous_score": null,
+    "history": [
+     {
+      "period": "2026-11",
+      "goals": 3,
+      "met": 0,
+      "scored": false
+     }
+    ]
+   },
+   "quarterly": {
+    "period": "2026-Q4",
+    "current": {
+     "quarter": "2026-Q4",
+     "goals": [
+      {
+       "id": "q1",
+       "goal": "Move the ten highest-impression queries into the top 5",
+       "metric": "queries at position <= 5",
+       "metric_key": "objective_top5",
+       "baseline": 1,
+       "target": 4,
+       "issues": [
+        1076,
+        1107,
+        1074
+       ]
+      },
+      {
+       "id": "q2",
+       "goal": "Grow search clicks",
+       "metric": "GSC clicks, 28 days",
+       "metric_key": "gsc_clicks_28d",
+       "baseline": 383,
+       "target": 600,
+       "issues": [
+        1071,
+        1072
+       ]
+      },
+      {
+       "id": "q3",
+       "goal": "Grow new visitors",
+       "metric": "GA4 new users, 28 days",
+       "metric_key": "ga4_new_users_28d",
+       "baseline": 640,
+       "target": 1000,
+       "issues": []
+      }
+     ],
+     "direction": "Rank band pages before machinery. Premium report (#1108) waits on traffic and is an owner product decision.",
+     "at": "2026-11-19T07:40:24Z",
+     "by": "github-actions[bot]"
+    },
+    "previous_score": null,
+    "history": [
+     {
+      "period": "2026-Q4",
+      "goals": 3,
+      "met": 0,
+      "scored": false
+     }
+    ]
+   }
+  },
+  "current": {
+   "week": "2026-W47",
+   "goals": [
+    {
+     "id": "g1",
+     "goal": "Lift the week's growth share",
+     "metric": "growth share this week",
+     "metric_key": "growth_share_week",
+     "baseline": 0.206,
+     "target": 0.35,
+     "issues": []
+    },
+    {
+     "id": "g2",
+     "goal": "Hold search clicks while open SEO fixes land",
+     "metric": "GSC clicks, 28 days",
+     "metric_key": "gsc_clicks_28d",
+     "baseline": 383,
+     "target": 395,
+     "issues": [
+      1076,
+      1107
+     ]
+    },
+    {
+     "id": "g3",
+     "goal": "Grow impressions toward the month's 33,000",
+     "metric": "GSC impressions, 28 days",
+     "metric_key": "gsc_impressions_28d",
+     "baseline": 28918,
+     "target": 30500,
+     "issues": [
+      1076,
+      1107
+     ]
+    },
+    {
+     "id": "g4",
+     "goal": "Ship the three open growth issues",
+     "metric": "share of issues closed",
+     "metric_key": "",
+     "baseline": 0,
+     "target": 1,
+     "issues": [
+      1076,
+      1107,
+      1065
+     ]
+    }
+   ],
+   "direction": "Only #1065, #1076 and #1107 are open growth issues, so supply caps the share: project-manager picks them first, and seo-growth files band-page issues for the 6-20 queries in gsc-band.json today so the share can climb. Analytics-event PRs wait until the week share passes 0.35. Weekly Claude use is 0.79, so size cycles to the window and keep production breakage first.",
+   "at": "2026-11-19T07:52:11Z",
+   "by": "github-actions[bot]"
+  },
+  "previous_score": null
+ },
+ "metrics": {
+  "gsc_clicks_28d": 383,
+  "gsc_impressions_28d": 28918,
+  "ga4_users_28d": 691,
+  "ga4_new_users_28d": 640,
+  "ga4_sessions_28d": 780,
+  "objective_top5": 1,
+  "growth_share_today": 0.0,
+  "growth_share_week": 0.206,
+  "growth_share_month": 0.069
+ },
+ "meters": {
+  "daily": {
+   "label": "Today: growth share of build cycles",
+   "period": "2026-11-19",
+   "progress": 0.0,
+   "detail": "0 of 6 cycles on growth, target 60%",
+   "goals": []
+  },
+  "weekly": {
+   "label": "Weekly goals",
+   "period": "2026-W47",
+   "progress": 0.0,
+   "detail": "4 goals, 4 measurable",
+   "goals": [
+    {
+     "id": "g1",
+     "goal": "Lift the week's growth share",
+     "metric": "growth share this week",
+     "metric_key": "growth_share_week",
+     "baseline": 0.206,
+     "target": 0.35,
+     "issues": [],
+     "current": 0.206,
+     "progress": 0.0,
+     "basis": "growth_share_week"
+    },
+    {
+     "id": "g2",
+     "goal": "Hold search clicks while open SEO fixes land",
+     "metric": "GSC clicks, 28 days",
+     "metric_key": "gsc_clicks_28d",
+     "baseline": 383,
+     "target": 395,
+     "issues": [
+      1076,
+      1107
+     ],
+     "current": 383,
+     "progress": 0.0,
+     "basis": "gsc_clicks_28d"
+    },
+    {
+     "id": "g3",
+     "goal": "Grow impressions toward the month's 33,000",
+     "metric": "GSC impressions, 28 days",
+     "metric_key": "gsc_impressions_28d",
+     "baseline": 28918,
+     "target": 30500,
+     "issues": [
+      1076,
+      1107
+     ],
+     "current": 28918,
+     "progress": 0.0,
+     "basis": "gsc_impressions_28d"
+    },
+    {
+     "id": "g4",
+     "goal": "Ship the three open growth issues",
+     "metric": "share of issues closed",
+     "metric_key": "",
+     "baseline": 0,
+     "target": 1,
+     "issues": [
+      1076,
+      1107,
+      1065
+     ],
+     "current": "0/3 issues closed",
+     "progress": 0.0,
+     "basis": "issues"
+    }
+   ]
+  },
+  "monthly": {
+   "label": "Monthly goals",
+   "period": "2026-11",
+   "progress": 0.0,
+   "detail": "3 goals, 3 measurable",
+   "goals": [
+    {
+     "id": "m1",
+     "goal": "Grow impressions",
+     "metric": "GSC impressions, 28 days",
+     "metric_key": "gsc_impressions_28d",
+     "baseline": 28918,
+     "target": 33000,
+     "issues": [
+      1076,
+      1107,
+      1071
+     ],
+     "current": 28918,
+     "progress": 0.0,
+     "basis": "gsc_impressions_28d"
+    },
+    {
+     "id": "m2",
+     "goal": "Grow visitors",
+     "metric": "GA4 users, 28 days",
+     "metric_key": "ga4_users_28d",
+     "baseline": 691,
+     "target": 800,
+     "issues": [
+      1072,
+      1073,
+      1075
+     ],
+     "current": 691,
+     "progress": 0.0,
+     "basis": "ga4_users_28d"
+    },
+    {
+     "id": "m3",
+     "goal": "Raise the month's growth share",
+     "metric": "growth share this month",
+     "metric_key": "growth_share_month",
+     "baseline": 0.069,
+     "target": 0.25,
+     "issues": [],
+     "current": 0.069,
+     "progress": 0.0,
+     "basis": "growth_share_month"
+    }
+   ]
+  },
+  "quarterly": {
+   "label": "Quarterly goals",
+   "period": "2026-Q4",
+   "progress": 0.0,
+   "detail": "3 goals, 3 measurable",
+   "goals": [
+    {
+     "id": "q1",
+     "goal": "Move the ten highest-impression queries into the top 5",
+     "metric": "queries at position <= 5",
+     "metric_key": "objective_top5",
+     "baseline": 1,
+     "target": 4,
+     "issues": [
+      1076,
+      1107,
+      1074
+     ],
+     "current": 1,
+     "progress": 0.0,
+     "basis": "objective_top5"
+    },
+    {
+     "id": "q2",
+     "goal": "Grow search clicks",
+     "metric": "GSC clicks, 28 days",
+     "metric_key": "gsc_clicks_28d",
+     "baseline": 383,
+     "target": 600,
+     "issues": [
+      1071,
+      1072
+     ],
+     "current": 383,
+     "progress": 0.0,
+     "basis": "gsc_clicks_28d"
+    },
+    {
+     "id": "q3",
+     "goal": "Grow new visitors",
+     "metric": "GA4 new users, 28 days",
+     "metric_key": "ga4_new_users_28d",
+     "baseline": 640,
+     "target": 1000,
+     "issues": [],
+     "current": 640,
+     "progress": 0.0,
+     "basis": "ga4_new_users_28d"
+    }
+   ]
+  },
+  "overall": {
+   "label": "Objective: top-10 queries ranking top 5",
+   "period": "quarter lever (OBJECTIVE.md)",
+   "progress": 0.1,
+   "detail": "1 of 10 highest-impression queries at position \u2264 5",
+   "queries": [
+    {
+     "query": "rahu mahadasha ketu antardasha",
+     "impressions": 424,
+     "position": 6.7
+    },
+    {
+     "query": "sun debilitated in which sign",
+     "impressions": 319,
+     "position": 7.5
+    },
+    {
+     "query": "sun is debilitated in which sign",
+     "impressions": 138,
+     "position": 6.7
+    },
+    {
+     "query": "jupiter in 10th house",
+     "impressions": 112,
+     "position": 11.1
+    },
+    {
+     "query": "yes",
+     "impressions": 101,
+     "position": 3.6
+    },
+    {
+     "query": "10th lord in 6th house",
+     "impressions": 94,
+     "position": 8.6
+    },
+    {
+     "query": "sun debilitated sign",
+     "impressions": 82,
+     "position": 5.9
+    },
+    {
+     "query": "sun debilitated",
+     "impressions": 76,
+     "position": 8.9
+    },
+    {
+     "query": "guru in 10th house",
+     "impressions": 73,
+     "position": 8.9
+    },
+    {
+     "query": "rahu mahadasha and ketu antardasha",
+     "impressions": 66,
+     "position": 7.1
+    }
+   ],
+   "goals": []
+  }
+ },
+ "open_growth": [
+  1065,
+  1076,
+  1107
+ ]
+}

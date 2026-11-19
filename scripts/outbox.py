@@ -255,6 +255,10 @@ class Outcome:
     attempts: int = 0
     status: int | None = None
     error: str = ""
+    # The created issue's number, from GitHub's own response (create_issue only). A caller
+    # that must post on the issue it just filed reads it here: the label/listing endpoints
+    # lag a fresh issue by seconds (growth_split.py, 2026-11-19: a re-list found nothing).
+    number: int | None = None
 
     @property
     def ok(self) -> bool:
@@ -508,8 +512,13 @@ class Outbox:
         for attempt in range(1, len(RETRY_DELAYS) + 2):
             attempts = attempt
             try:
-                self.gh(args)
-                return self._record(Outcome("sent", kind, target, key, attempts), checked=checked)
+                out = self.gh(args)
+                try:
+                    num = json.loads(out or "{}").get("number")
+                except (ValueError, AttributeError):
+                    num = None
+                return self._record(Outcome("sent", kind, target, key, attempts,
+                                            number=num if isinstance(num, int) else None), checked=checked)
             except (GhError, RuntimeError) as exc:
                 status, transient = classify(exc)
                 err = str(exc)[:200]
