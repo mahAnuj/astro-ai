@@ -554,7 +554,8 @@ def _goals_issue(gh: Runner, repo: str) -> int | None:
     return min(i["number"] for i in issues) if issues else None
 
 
-def post(gh: Runner, repo: str, path: str, now: datetime, box: "outbox.Outbox | None" = None) -> int:
+def post(gh: Runner, repo: str, path: str, now: datetime, box: "outbox.Outbox | None" = None,
+         issue: dict | None = None) -> int:
     """Post one of chief's files on the standing issue, through scripts/outbox.py (#1188):
     dedupe, a daily cap, retry, a ledger line. 0 posted or a duplicate, 3 nothing to post,
     1 refused or failed."""
@@ -573,13 +574,20 @@ def post(gh: Runner, repo: str, path: str, now: datetime, box: "outbox.Outbox | 
               "metric_key nor issues (see growth_split.py header); not posted")
         return 1
     box = box or outbox.Outbox(gh, repo)
-    n = _goals_issue(gh, repo)
+    # `issue` carries the standing issue's number between the files of one --post run. The
+    # first run on 2026-11-19 created the issue, re-listed by label to find it, got nothing
+    # (GitHub's listing lags a fresh issue), refused the weekly file and created a SECOND issue
+    # for the next one (#1246 and #1247). So: list once, and take a created issue's number
+    # from GitHub's own create response.
+    issue = issue if issue is not None else {}
+    n = issue.get("n") or _goals_issue(gh, repo)
     if n is None:
         made = box.create_issue("growth-goals-issue", ISSUE_TITLE, ISSUE_BODY, [GOALS_LABEL])
-        n = _goals_issue(gh, repo)
+        n = made.number or _goals_issue(gh, repo)
         if n is None:
             print(f"::error::could not create the {GOALS_LABEL} issue ({made.outcome}); not posted")
             return 1
+    issue["n"] = n
     o = box.post(n, "growth-goals", body)
     print(f"{path} ({got[1]} {got[0]}, {got[2]}) on #{n}: {o.outcome}")
     return 0 if o.outcome in ("sent", "deduped") else 1
@@ -600,8 +608,9 @@ def main(argv: list[str] | None = None, gh: Runner = run_gh, now: datetime | Non
         codes = []
         try:
             # scores before goals, so the issue reads in order
+            shared: dict = {}
             for path in sorted(a.post, key=lambda p: 0 if "score" in Path(p).name else 1):
-                codes.append(post(gh, a.repo, path, now))
+                codes.append(post(gh, a.repo, path, now, issue=shared))
         except (RuntimeError, ValueError, TypeError) as e:
             print(f"::error::posting failed: {e}")
             return 1
