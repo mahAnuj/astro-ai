@@ -565,7 +565,9 @@ MUTATIONS = [
      "scripts/report_loop_outcomes.py",
      "    return {\"expected\": sorted(closing | (branch - refs)),",
      "    return {\"expected\": sorted(closing | branch),",
-     "test_refs_decline_on_a_still_open_issue_is_not_a_shortfall"),
+     # Re-pointed 2026-11-19: the test named before stayed green on this mutation, so every
+     # sweep fell through to a whole-suite run. Measured: this test is the one that fails.
+     "test_claimed_issues_mirrors_close_on_evidence"),
 
     ("#316: the workflow loses pull-requests: read (the report would say UNKNOWN, forever)",
      ".github/workflows/loop-outcomes.yml",
@@ -1872,7 +1874,8 @@ MUTATIONS = [
      "src/astro_ai/events.py",
      '            if evt.get("type") != "error":\n                continue\n            data = evt.get("data") or {}',
      '            data = evt.get("data") or {}',
-     "test_the_count_and_the_rate_are_both_exact"),
+     # Re-pointed 2026-11-19, as #316 above: measured, this is the test that fails.
+     "test_only_error_events_are_counted"),
 
     ("#ops-tpl: the error cell goes back to a hardcoded red threshold",
      "src/astro_ai/templates/admin_ops.html",
@@ -2367,11 +2370,11 @@ MUTATIONS = [
      '"this is a floor, not a total." if loop.get("failed_truncated")',
      '"this is a floor, not a total." if loop.get("today_truncated")',
      "test_a_capped_pulls_read_does_not_make_the_failure_count_a_floor"),
-    ("#418/F4b: the truncation flag never reaches the alert",
-     "src/astro_ai/ops_data.py",
-     '"today_truncated": bool((live_today or {}).get("truncated")),\n        # Per tile',
-     '"today_truncated": False,\n        # Per tile',
-     "test_the_alert_admits_the_floor_when_the_tile_does"),
+    # "#418/F4b: the truncation flag never reaches the alert" -- REMOVED 2026-11-19. Since #418/N1
+    # the alert reads the per-endpoint `failed_truncated`, and nothing reads `today_truncated`
+    # any more, so forcing it to False changes no behaviour: measured, the whole suite stays
+    # green with the mutation applied (only the anchor tripwires failed). The N1 rows above
+    # guard the alert as it now works.
     ("#418/F10: the alert stops deduping and names a workflow once per run",
      "src/astro_ai/ops_data.py",
      'sorted({f.get("workflow") or "an unnamed workflow"\n                                      for f in loop["today_failed"]})',
@@ -5305,6 +5308,9 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
                 _drop_worker_sandbox()
 
 
+_TRIPWIRE_TESTS = ("tests/test_mutation_preflight.py", "tests/test_mutation_tables.py")
+
+
 def _probe(sandbox, rel: str, target, test: str) -> tuple[bool, str]:
     """Run the suite against an already-mutated sandbox."""
 
@@ -5358,7 +5364,18 @@ def _probe(sandbox, rel: str, target, test: str) -> tuple[bool, str]:
 
     # Reached when the named test did not catch it, or for the control row,
     # which must see the whole suite or it would stop being a control.
-    result = _pytest()
+    #
+    # THE TWO ANCHOR TRIPWIRES DO NOT COUNT AS A CATCH (2026-11-19). The preflight test and
+    # test_the_harness_actually_runs_the_area_rows fail whenever ANY row's anchor stops
+    # resolving -- which every mutation of a file that rows anchor in does, whatever it changes.
+    # Measured on #1240's full sweep: 12 rows fell through to here, and with the tripwires
+    # excluded 10 of them were caught by NOTHING -- reported as "CAUGHT BY ANOTHER TEST" for
+    # defects no behaviour test guarded. Those tests were fixed; this keeps it from recurring.
+    # A row whose own named test lives in one of these files still runs it on the fast path.
+    if test and test != "_control":
+        result = _pytest(*[a for f in _TRIPWIRE_TESTS for a in ("--ignore", str(sandbox / f))])
+    else:
+        result = _pytest()
     if result.returncode == 0:
         return False, "*** MISSED ***"
     if not _red(result):

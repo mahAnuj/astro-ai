@@ -277,7 +277,10 @@ def test_chief_may_dispatch_a_pr_scoped_round():
     assert "no longer a reason to stand down" in flat
 
     wf = (ROOT / ".github" / "workflows" / "agent-steward.yml").read_text(encoding="utf-8")
-    assert "`issue=<number>` OR `pr=<number>`" in wf, (
+    # CHIEF's step, not the steward's (2026-11-19): the steward's own prompt carries the same
+    # phrase, so a chief prompt that dropped `pr=` still passed on the steward's copy.
+    chief_step = wf.split("Dispatch the `chief` agent", 1)[1]
+    assert "`issue=<number>` OR `pr=<number>`" in chief_step, (
         "the runtime instruction still permits only `issue=`, so chief's prompt "
         "would offer a form the step refuses"
     )
@@ -290,6 +293,9 @@ def test_chief_is_still_refused_the_cases_a_cycle_cannot_clear():
     assert "`.github/workflows/**`" in flat
     assert "AGENT_AUTHORS" in flat
     assert "never a line \"to be safe\"" in flat
+    # The refusal itself (2026-11-19): the three strings above survive a rewording that turns
+    # "no line" into "a line is fine", so that mutation was caught only by the anchor tripwires.
+    assert "Still no line, deliberately, for a PR a cycle cannot clear" in flat
 
 
 def test_every_dispatch_form_chief_offers_is_one_the_carrier_parses():

@@ -50,6 +50,12 @@ def test_a_given_date_wins_and_a_bad_one_is_refused():
         rtd.target("workflow_dispatch", "2026-13-01", utc(6, 17))
     with pytest.raises(ValueError):
         rtd.target("workflow_dispatch", "tomorrow; rm -rf /", utc(6, 17))
+    # Forms date.fromisoformat ACCEPTS on Python 3.11+ but the scripts downstream do not:
+    # only the YYYY-MM-DD regex refuses them (2026-11-19 -- with the bad strings above alone,
+    # fromisoformat refused them too, so deleting the regex left this test green).
+    for compact in ("20261201", "2026-W49-2"):
+        with pytest.raises(ValueError):
+            rtd.target("workflow_dispatch", compact, utc(6, 17))
     assert rtd.main(["x", "--date", "nope"]) == 2
 
 
