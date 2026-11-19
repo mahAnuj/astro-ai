@@ -1,7 +1,7 @@
 # Growth goals at every level, a meter for each, and 60% of build cycles on growth
 
 - **Date:** 2026-11-19
-- **PR / issue:** this PR (owner request in session)
+- **PR / issue:** #1241 (owner request in session)
 
 ## Why, measured
 
@@ -24,7 +24,12 @@ Decided:
    20:53 IST, before Sunday's 22:30 IST ranking): weekly every Sunday, monthly and quarterly when
    none exist, each goal with a `metric_key` the collector measures. The workflow posts chief's
    files on the one `weekly-goals` issue with `github.token`; chief, denied `gh api` in that
-   review, posts nothing. Weeks are ISO, Monday to Sunday, IST.
+   review, posts nothing. Weeks are ISO, Monday to Sunday, IST. On the last day of a period
+   (Sunday, for a week), the next period's goals take over as soon as they are posted, so
+   Sunday's 22:30 IST ranking already plans against them (QA on #1241 measured them waiting
+   for Monday). Posting refuses a period other than this one or the next (goals) / the last
+   (scores), a goal no meter can measure, a body over 60,000 characters, and neutralises
+   `@` mentions.
 2. **60/40, enforced at ranking.** `project-manager` runs the script before every ranking; when
    `must_pick_growth` is true the top item is a growth issue, unless production is broken
    (exempt, outside the split). Growth = label `growth` (or the labels that already meant it), or

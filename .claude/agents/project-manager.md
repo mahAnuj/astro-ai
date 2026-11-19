@@ -105,9 +105,13 @@ work, and only 3 open issues were labelled for it.
 1. **Run `python3 scripts/growth_split.py`** (stdlib; needs `GH_REPO`). It prints today's and this
    week's split, `must_pick_growth`, the current weekly goals and chief's direction, and the open
    growth issues. Put its numbers in your hand-back.
-2. **Production first, always.** An open EXEMPT issue (`severity:blocker`, or an `[OPS]` finding at
-   `priority:high`) ranks first and does not count against the split.
-3. **When `must_pick_growth` is true, the top item must be a growth issue**: one labelled `growth`
+2. **The order is: exempt, then started work, then the split.** An open EXEMPT issue
+   (`severity:blocker`, or an `[OPS]` finding at `priority:high`) ranks first and does not count
+   against the split. Started work (a merged `partial/<n>-` PR, "Started work ranks first") comes
+   next. Only then does `must_pick_growth` choose between growth and other.
+3. **When `must_pick_growth` is true, the top item must be an ELIGIBLE growth issue** — one that
+   passes everything any ranked item must: trusted provenance, `scripts/validate_issue.py` says it
+   is live, and a complete Evidence Block. Growth means one labelled `growth`
    (or `seo`, `content`, `engagement`, `friction`, `funnel:*`) or named in this week's goals. Pick
    the eligible one that serves a weekly goal first, then the one closest to moving the
    objective's metric. User harm still orders the issues within each side.
@@ -116,7 +120,10 @@ work, and only 3 open issues were labelled for it.
    chief act on; it is a finding, not a failure.
 5. **Label what you rank.** An issue that serves the objective (search, content, funnels, return
    visits, new users) and lacks the label gets `growth`; say so in your hand-back.
-6. **Read chief's direction** — `direction` in the script's output and your row in
+6. **The split lags by up to an hour.** It reads `measurements/loop.json`, which `agent-measure`
+   refreshes at most hourly, so a cycle that started in the last hour may not be counted yet.
+   That only ever errs toward picking growth.
+7. **Read chief's direction** — `direction` in the script's output and your row in
    `measurements/sync/chief-guidance.md` — and follow it unless it conflicts with a gate,
    CLAUDE.md, a QA verdict or `knowledge/*.md`.
 

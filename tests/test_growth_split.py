@@ -321,3 +321,81 @@ def test_a_manual_run_can_set_this_weeks_goals_without_running_the_sync():
     assert "inputs.goals_for == 'none'" in steps["Sync"]["if"]
     review = steps["Chief review"]["with"]["prompt"]
     assert '${{ inputs.goals_for }}' in review and "for THIS ISO week" in review
+
+
+# --------------------------------------------------------------- QA FAIL on #1241 (81b3d63, 810e85e)
+
+SUN_2230_IST = datetime(2026, 11, 22, 17, 0, tzinfo=timezone.utc)
+
+
+def test_on_sunday_the_next_weeks_goals_steer_once_posted():
+    """Defect 1: Sunday's 22:30 IST ranking must see the goals the 20:53 IST review posted."""
+    gh = Gh([goals_comment(period="2026-W47"), goals_comment(period="2026-W48",
+             goals=[{"id": "n1", "goal": "next week", "issues": [9]}])])
+    lv = gs.read_goals(gh, REPO, SUN_2230_IST)["levels"]["weekly"]
+    assert lv["period"] == "2026-W48" and lv["current"]["goals"][0]["id"] == "n1"
+
+
+def test_on_sunday_with_no_next_goals_this_week_still_steers():
+    lv = gs.read_goals(Gh([goals_comment(period="2026-W47")]), REPO, SUN_2230_IST)["levels"]["weekly"]
+    assert lv["period"] == "2026-W47" and lv["current"] is not None
+
+
+def test_mid_week_next_weeks_goals_do_not_take_over_early():
+    lv = gs.read_goals(Gh([goals_comment(period="2026-W48")]), REPO, NOW)["levels"]["weekly"]
+    assert lv["period"] == "2026-W47" and lv["current"] is None
+
+
+def test_on_the_last_day_of_a_month_next_months_goals_take_over():
+    nov30 = datetime(2026, 11, 30, 12, 0, tzinfo=timezone.utc)
+    lv = gs.read_goals(Gh([goals_comment("monthly", "2026-12")]), REPO, nov30)["levels"]["monthly"]
+    assert lv["period"] == "2026-12" and lv["current"] is not None
+
+
+@pytest.mark.parametrize("body_period,kind,ok", [
+    ("2026-W47", "goals", True), ("2026-W48", "goals", True), ("2026-W10", "goals", False),
+    ("2026-W49", "goals", False), ("2026-W46", "score", True), ("2026-W45", "score", False),
+])
+def test_posting_accepts_only_this_or_the_next_period(body_period, kind, ok):
+    """Defect 2: a past period (2026-W10) was posted."""
+    c = goals_comment(period=body_period) if kind == "goals" else score_comment(period=body_period)
+    assert (gs.classify_file(c["body"], NOW) is not None) is ok
+
+
+@pytest.mark.parametrize("goal", [
+    {"id": "g1", "goal": "x"},
+    {"id": "g1", "goal": "x", "metric_key": "bogus"},
+])
+def test_posting_refuses_a_goal_no_meter_can_measure(goal):
+    assert gs.classify_file(goals_comment(goals=[goal])["body"], NOW) is None
+
+
+def test_posting_neutralises_mentions_and_refuses_an_oversized_body(tmp_path):
+    c = goals_comment()
+    f = tmp_path / "weekly-goals.md"
+    f.write_text(c["body"] + "\ncc @everyone and @mahAnuj, mail a@b.c, `@code`\n")
+    gh = Gh()
+    assert gs.main(["--repo", REPO, "--post", str(f)], gh=gh, now=NOW) == 0
+    body = next(a for call in gh.calls if "-X" in call for a in call if a.startswith("body="))
+    assert "@everyone" not in body and "@mahAnuj" not in body and "@​everyone" in body
+    assert "a@b.c" in body and "`@code`" in body
+    f.write_text(c["body"] + "x" * (gs.MAX_BODY + 1))
+    gh = Gh()
+    assert gs.main(["--repo", REPO, "--post", str(f)], gh=gh, now=NOW) == 1
+    assert not any("-X" in call for call in gh.calls)
+
+
+@pytest.mark.parametrize("bad", [{"metric_key": ["a"]}, {"issues": 5}, {"issues": True}, {"issues": [True]}])
+def test_a_malformed_goal_is_rejected_not_raised(bad):
+    """Defect 3: these crashed progress() or every read_goals()."""
+    c = goals_comment(goals=[{"id": "g1", "goal": "x", **bad}])
+    g = gs.read_goals(Gh([c]), REPO, NOW)
+    assert g["current"] is None
+
+
+def test_the_ops_panel_survives_a_malformed_growth_json():
+    """Minor 4: snapshot() never raises."""
+    assert ops_data._growth_view({"meters": {"daily": "x"}}, None, "2026-11-19", NOW) is None
+    v = ops_data._growth_view({"meters": {"daily": {"progress": 3.5}}, "cycles": [], "days": []},
+                              None, "2026-11-19", NOW)
+    assert v["meters"][0]["pct"] == 100

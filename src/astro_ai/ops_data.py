@@ -2421,6 +2421,16 @@ def _agent_calls_table(loop_doc: dict | None, today_ist: str, days: int = 7) -> 
 
 
 def _growth_view(doc: dict | None, loop_doc: dict | None, today_ist: str, now: datetime) -> dict | None:
+    """growth.json -> the panel, or None. Never raises: snapshot() promises the page never 500s,
+    and QA on #1241 measured a malformed file (a meter as a string, agents as a list) raising."""
+    try:
+        return _growth_view_unsafe(doc, loop_doc, today_ist, now)
+    except (TypeError, ValueError, KeyError, AttributeError) as exc:
+        log.warning("growth.json unreadable for the ops panel: %s", exc)
+        return None
+
+
+def _growth_view_unsafe(doc: dict | None, loop_doc: dict | None, today_ist: str, now: datetime) -> dict | None:
     """Goals, their meters, the 60/40 split and what the loop decided (growth.json, written by
     scripts/growth_split.py in agent-measure; owner, 2026-11-19). None until the file exists."""
     if not isinstance(doc, dict) or not isinstance(doc.get("meters"), dict):
@@ -2430,7 +2440,7 @@ def _growth_view(doc: dict | None, loop_doc: dict | None, today_ist: str, now: d
         m = doc["meters"].get(name) or {}
         p = m.get("progress")
         meters.append({"name": name, "label": m.get("label") or name, "period": m.get("period"),
-                       "pct": None if p is None else round(p * 100),
+                       "pct": None if p is None else max(0, min(100, round(float(p) * 100))),
                        "tone": None if p is None else ("good" if p >= 0.8 else "warn" if p >= 0.4 else "low"),
                        "detail": m.get("detail") or "", "goals": m.get("goals") or [],
                        "queries": m.get("queries") or []})

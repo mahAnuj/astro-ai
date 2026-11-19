@@ -140,6 +140,31 @@ def periods(now: datetime) -> dict[str, str]:
             "quarterly": f"{d.year}-Q{(d.month - 1) // 3 + 1}"}
 
 
+def _shift(level: str, period: str, step: int) -> str:
+    """The period `step` periods after `period` (negative: before)."""
+    if level == "weekly":
+        y, w = period.split("-W")
+        monday = datetime.fromisocalendar(int(y), int(w), 1).replace(tzinfo=IST)
+        return iso_week(monday + timedelta(weeks=step))
+    if level == "monthly":
+        y, m = map(int, period.split("-"))
+        i = y * 12 + (m - 1) + step
+        return f"{i // 12}-{i % 12 + 1:02d}"
+    y, q = period.split("-Q")
+    i = int(y) * 4 + (int(q) - 1) + step
+    return f"{i // 4}-Q{i % 4 + 1}"
+
+
+def effective_periods(now: datetime, posted: dict[str, set[str]]) -> dict[str, str]:
+    """The period whose goals steer the loop NOW, per level. Normally the calendar one, but on
+    the LAST DAY of a period (Sunday for a week), once the next period's goals are posted they
+    take over: QA on #1241 measured the Sunday review landing at 20:53 IST and Sunday's ranking
+    (22:30 IST) still reading the old week's goals until Monday."""
+    cal, tomorrow = periods(now), periods(now + timedelta(days=1))
+    return {lv: (tomorrow[lv] if tomorrow[lv] != cal[lv] and tomorrow[lv] in posted.get(lv, set())
+                 else cal[lv]) for lv in cal}
+
+
 def classify(issue: dict | None, goal_issues: set[int]) -> str:
     """growth | exempt | other, for one issue as the listing returns it."""
     if not issue:
@@ -183,12 +208,21 @@ def _num(x) -> bool:
 
 
 def _valid_goals(doc: dict) -> bool:
+    """Shape only: every field the readers touch has the type they expect (QA on #1241: a list
+    metric_key crashed progress(), and `issues: 5` made every read raise)."""
     goals = doc.get("goals")
     return isinstance(goals, list) and bool(goals) and all(
         isinstance(g, dict) and isinstance(g.get("id"), str) and isinstance(g.get("goal"), str)
-        and all(isinstance(n, int) for n in g.get("issues") or [])
+        and isinstance(g.get("issues", []), list)
+        and all(isinstance(n, int) and not isinstance(n, bool) for n in g.get("issues") or [])
+        and (g.get("metric_key") is None or isinstance(g["metric_key"], str))
         and all(g.get(k) is None or _num(g[k]) for k in ("baseline", "target"))
         for g in goals)
+
+
+def _measurable(doc: dict) -> bool:
+    """Posting only: every goal can move a meter -- a known metric_key, or issues to count."""
+    return all(g.get("metric_key") in METRIC_KEYS or bool(g.get("issues")) for g in doc["goals"])
 
 
 def _valid_score(doc: dict) -> bool:
@@ -233,7 +267,7 @@ def read_goals(gh: Runner, repo: str, now: datetime) -> dict:
             s = _parse(c.get("body") or "", SCORE_MARKS[lv], key)
             if s and _valid_score(s[1]):
                 seen.setdefault(s[0], {})["score"] = {**s[1], "at": c["at"], "by": c["login"]}
-        this = now_p[lv]
+        this = effective_periods(now, {lv: {p for p in seen if "goals" in seen[p]}})[lv]
         scored = sorted(p for p in seen if p < this and "score" in seen[p])
         levels[lv] = {
             "period": this,
@@ -484,13 +518,33 @@ owner, `claude[bot]` or `github-actions[bot]` are read. Edit a goal by posting a
 comment for the same period; the newest one wins. This issue is never closed by the loop."""
 
 
-def classify_file(body: str) -> tuple[str, str, str, dict] | None:
-    """(kind 'goals'|'score', level, period, doc) for one of chief's files, or None."""
+#: GitHub refuses a comment body over 65,536 characters with a 422.
+MAX_BODY = 60_000
+_MENTION = re.compile(r"(?<![\w`])@(?=[A-Za-z0-9])")
+
+
+def neutralise_mentions(body: str) -> str:
+    """`@name` -> `@\u200bname`: still readable, pings nobody. The poster is github-actions[bot],
+    and chief reads text anyone can write (PR titles in /tmp/week.txt), so an `@everyone` or an
+    owner mention in its file must not become a notification (QA on #1241)."""
+    return _MENTION.sub("@\u200b", body)
+
+
+def classify_file(body: str, now: datetime | None = None) -> tuple[str, str, str, dict] | None:
+    """(kind 'goals'|'score', level, period, doc) for one of chief's files, or None. With `now`,
+    also the posting rules: goals only for this period or the next, a score only for this period
+    or the last, and every goal measurable."""
+    cal = periods(now) if now else {}
     for lv, (key, _) in LEVELS.items():
         for kind, marks, check in (("score", SCORE_MARKS, _valid_score), ("goals", GOALS_MARKS, _valid_goals)):
             parsed = _parse(body, marks[lv], key)
-            if parsed and check(parsed[1]):
-                return kind, lv, parsed[0], parsed[1]
+            if not (parsed and check(parsed[1])):
+                continue
+            if now is not None:
+                allowed = {cal[lv], _shift(lv, cal[lv], 1 if kind == "goals" else -1)}
+                if parsed[0] not in allowed or (kind == "goals" and not _measurable(parsed[1])):
+                    return None
+            return kind, lv, parsed[0], parsed[1]
     return None
 
 
@@ -508,10 +562,15 @@ def post(gh: Runner, repo: str, path: str, now: datetime, box: "outbox.Outbox | 
     if not f.is_file() or not f.read_text().strip():
         print(f"no {path}: nothing to post")
         return 3
-    body = f.read_text()
-    got = classify_file(body)
+    body = neutralise_mentions(f.read_text())
+    if len(body) > MAX_BODY:
+        print(f"::error::{path} is {len(body)} characters, over {MAX_BODY}; not posted")
+        return 1
+    got = classify_file(body, now)
     if not got:
-        print(f"::error::{path} has no valid marker + ```json block (see growth_split.py header); not posted")
+        print(f"::error::{path} has no valid marker + ```json block, names a period other than this "
+              "one or the next (goals) / the last (scores), or has a goal with neither a known "
+              "metric_key nor issues (see growth_split.py header); not posted")
         return 1
     box = box or outbox.Outbox(gh, repo)
     n = _goals_issue(gh, repo)
@@ -543,7 +602,7 @@ def main(argv: list[str] | None = None, gh: Runner = run_gh, now: datetime | Non
             # scores before goals, so the issue reads in order
             for path in sorted(a.post, key=lambda p: 0 if "score" in Path(p).name else 1):
                 codes.append(post(gh, a.repo, path, now))
-        except (RuntimeError, ValueError) as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             print(f"::error::posting failed: {e}")
             return 1
         return 1 if 1 in codes else 0
@@ -556,10 +615,14 @@ def main(argv: list[str] | None = None, gh: Runner = run_gh, now: datetime | Non
         goals = read_goals(gh, a.repo, now)
         issues = recent_issues(gh, a.repo, now)
         fill_missing(gh, a.repo, rows, issues, now, goal_issue_numbers(goals))
-    except (RuntimeError, ValueError) as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         print(f"::error::GitHub read failed, nothing written: {e}")
         return 1
-    doc = build(rows, issues, goals, now, Path(a.measurements))
+    try:
+        doc = build(rows, issues, goals, now, Path(a.measurements))
+    except (TypeError, ValueError, KeyError) as e:
+        print(f"::error::could not build the document, nothing written: {e}")
+        return 1
     errs = validate(doc)
     if errs:
         print(f"::error::document does not validate, nothing written: {errs}")
