@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-19T02:27:53Z",
+ "generated_at": "2026-11-19T04:51:19Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-12T02:27:53Z",
-  "end": "2026-11-19T02:27:53Z",
-  "loop_comments": 1226,
-  "on_prs": 709,
-  "prs": 125,
-  "on_issues": 517,
-  "issues": 155,
-  "comments_per_pr": 5.67,
-  "comments_per_issue": 3.34,
-  "duplicates": 57,
-  "duplicate_rate_pct": 4.6,
+  "start": "2026-11-12T04:51:19Z",
+  "end": "2026-11-19T04:51:19Z",
+  "loop_comments": 1240,
+  "on_prs": 725,
+  "prs": 126,
+  "on_issues": 515,
+  "issues": 153,
+  "comments_per_pr": 5.75,
+  "comments_per_issue": 3.37,
+  "duplicates": 60,
+  "duplicate_rate_pct": 4.8,
   "sent_by_kind": {
    "ops-finding": 8,
    "ops-finding-issue": 1
@@ -23,7 +23,7 @@
    {
     "on": "pr",
     "number": 1212,
-    "comments": 23
+    "comments": 33
    },
    {
     "on": "pr",
@@ -47,9 +47,9 @@
    }
   ],
   "owner_touched": {
-   "prs": 125,
-   "owner_commented": 4,
-   "pct": 3
+   "prs": 126,
+   "owner_commented": 7,
+   "pct": 6
   },
   "suppressed": {
    "deduped": 0,
@@ -58,15 +58,15 @@
   }
  },
  "previous": {
-  "start": "2026-11-05T02:27:53Z",
-  "end": "2026-11-12T02:27:53Z",
-  "loop_comments": 974,
-  "on_prs": 573,
-  "prs": 100,
-  "on_issues": 401,
-  "issues": 95,
-  "comments_per_pr": 5.73,
-  "comments_per_issue": 4.22,
+  "start": "2026-11-05T04:51:19Z",
+  "end": "2026-11-12T04:51:19Z",
+  "loop_comments": 985,
+  "on_prs": 578,
+  "prs": 102,
+  "on_issues": 407,
+  "issues": 97,
+  "comments_per_pr": 5.67,
+  "comments_per_issue": 4.2,
   "duplicates": 45,
   "duplicate_rate_pct": 4.6,
   "sent_by_kind": {},
@@ -84,13 +84,13 @@
    },
    {
     "on": "pr",
-    "number": 706,
-    "comments": 16
+    "number": 815,
+    "comments": 15
    },
    {
     "on": "pr",
-    "number": 815,
-    "comments": 15
+    "number": 706,
+    "comments": 14
    },
    {
     "on": "pr",
@@ -99,7 +99,7 @@
    }
   ],
   "owner_touched": {
-   "prs": 102,
+   "prs": 104,
    "owner_commented": 11,
    "pct": 11
   }

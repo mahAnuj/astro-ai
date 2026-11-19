@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-19T02:25:51Z",
+  "generated_at": "2026-11-19T04:49:44Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 123,
-  "with_ask": 44,
+  "open": 121,
+  "with_ask": 43,
   "by_area": {
     "UNCLASSIFIED": 41,
     "INFRA": 15,
     "REDESIGN": 10,
     "OPS": 8,
-    "ANALYTICS": 7,
     "FEATURE": 7,
+    "ANALYTICS": 5,
     "CORPUS": 5,
     "SEO": 4,
     "RETRIEVAL": 3,
@@ -22,7 +22,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "MAIN-RED": 1,
+    "KNOWLEDGE": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
     "ASK": 1,
@@ -30,21 +30,37 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 38,
+    "untyped": 37,
     "enhancement": 30,
-    "bug": 23,
+    "bug": 21,
     "chore": 18,
-    "correctness": 10,
+    "correctness": 11,
     "design": 4
   },
   "by_priority": {
-    "unset": 85,
+    "unset": 83,
     "medium": 22,
     "high": 15,
     "low": 1
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1243,
+      "title": "knowledge: vedic_reference.md §29.14 still says Magha/Mula first-pada exclusion is not implemented (after #1242)",
+      "ask": "",
+      "area": "KNOWLEDGE",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness",
+        "chore"
+      ],
+      "created": "2026-11-19T04:43:24Z",
+      "updated": "2026-11-19T04:43:24Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1237,
       "title": "analytics: no export carries GA4 page_location — #1066 and #1093 cannot be scored (3 reports in a row)",
@@ -80,10 +96,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-19T01:04:48Z",
-      "updated": "2026-11-19T01:04:48Z",
+      "updated": "2026-11-19T04:43:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -117,21 +136,6 @@
       ],
       "created": "2026-11-18T12:29:33Z",
       "updated": "2026-11-18T18:04:34Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1216,
-      "title": "[main-red] pr-gates did not pass on main at ff44d73",
-      "ask": "",
-      "area": "MAIN-RED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-11-18T05:51:20Z",
-      "updated": "2026-11-19T02:03:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -268,23 +272,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1115,
-      "title": "analytics: add a GA4 previous-window export (fetch_ga4.py --trend) — three reports in a row could not compare sessions with the last window",
-      "ask": "",
-      "area": "ANALYTICS",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-16T00:42:51Z",
-      "updated": "2026-11-18T03:01:39Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1107,
       "title": "seo: tool pages link to no article, 10 articles have no in-body inbound link, slash variants 307, nav links four 303s, 55 descriptions over 160 chars",
       "ask": "",
@@ -354,25 +341,6 @@
       ],
       "created": "2026-11-15T10:14:10Z",
       "updated": "2026-11-18T22:31:06Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1069,
-      "title": "analytics: feature_view and user_identified fire only on full loads under hx-boost; user_identified is 44% of code-sent events; languageSwitched/pwaInstalled never called",
-      "ask": "Drop feature_view.",
-      "area": "ANALYTICS",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "severity:low",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-19T02:15:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1986,9 +1954,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-19T02:25:51Z",
+    "generated_at": "2026-11-19T04:49:44Z",
     "window_days": 28,
-    "open_now": 123,
+    "open_now": 121,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2394,25 +2362,20 @@
       },
       {
         "date": "2026-11-19",
-        "opened": 3,
-        "closed": 0,
-        "net": 3,
-        "open_end": 123,
+        "opened": 4,
+        "closed": 3,
+        "net": 1,
+        "open_end": 121,
         "opened_by": {
-          "loop": 3
+          "loop": 4
         },
-        "closed_by": {}
+        "closed_by": {
+          "close-on-evidence": 2,
+          "main-red-report": 1
+        }
       }
     ],
-    "merged_open": [
-      {
-        "number": 1115,
-        "title": "analytics: add a GA4 previous-window export (fetch_ga4.py --trend) — three reports in a row could not compare sessions with the last window",
-        "pr": 1204,
-        "merged_at": "2026-11-18T02:13:17Z",
-        "hours": 24
-      }
-    ],
+    "merged_open": [],
     "closed_rows": [
       {
         "number": 163,
@@ -3385,6 +3348,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1069,
+        "closed_at": "2026-11-19T02:37:23Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1071,
         "closed_at": "2026-11-17T05:02:40Z",
         "closer": "close-on-evidence"
@@ -3520,6 +3488,11 @@
         "closer": "owner"
       },
       {
+        "number": 1115,
+        "closed_at": "2026-11-19T03:10:01Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1139,
         "closed_at": "2026-11-17T03:09:22Z",
         "closer": "close-on-evidence"
@@ -3620,6 +3593,11 @@
         "closer": "main-red-report"
       },
       {
+        "number": 1216,
+        "closed_at": "2026-11-19T04:13:31Z",
+        "closer": "main-red-report"
+      },
+      {
         "number": 1217,
         "closed_at": "2026-11-18T12:59:43Z",
         "closer": "close-on-evidence"
@@ -3635,7 +3613,7 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 3,
     "truncated": []
   }
 }

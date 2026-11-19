@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-19T02:28:18Z",
+ "generated_at": "2026-11-19T04:51:37Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1062,6 +1062,24 @@
     "themes": [
      "tokens"
     ]
+   },
+   {
+    "number": 1241,
+    "at": "2026-11-19T03:56:07Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1241#issuecomment-6999203989",
+    "summary": "QA: FAIL \u2014 verified at `81b3d637fdaa9c14b81078a9039e41864e983178` Judge-only round (diff touches .github/workflows/, no push possible). Executed: tests/test_growth_split.py 28 pass, full pytest no failures, 16/16 mutation rows RED by hand, verify_workflow_permissions / verify_no_relaxation / verify_",
+    "themes": [
+     "regression"
+    ]
+   },
+   {
+    "number": 1241,
+    "at": "2026-11-19T04:00:17Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1241#issuecomment-6999265109",
+    "summary": "QA: FAIL \u2014 verified at `810e85ee3354e3014bcc7947a9757f000f766e67` Judge-only round (diff touches .github/workflows/, so no fix pushed). The head 810e85e only adds the agent-sync `goals_for` input, a test and a mutation row, and leaves scripts/growth_split.py and src/ unchanged since the FAIL at 81b3",
+    "themes": [
+     "regression"
+    ]
    }
   ],
   "reverts": [],
@@ -1112,20 +1130,12 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": [
-   {
-    "kind": "loop-starved",
-    "level": "amber",
-    "title": "2 of the last 4 build cycles built nothing",
-    "detail": "Empty cycles started 2026-11-18T23:10, 2026-11-18T23:12. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
-    "where": "/admin/ops"
-   }
-  ]
+  "ops_findings": []
  },
  "error_themes": {
   "grounding": 31,
+  "regression": 31,
   "tests": 30,
-  "regression": 29,
   "tokens": 21,
   "copy": 20,
   "security": 15,
