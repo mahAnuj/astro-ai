@@ -312,15 +312,16 @@ def _row(**kw):
 def test_a_frozen_row_is_not_re_fetched_at_all():
     src = Fake(runs_listing(run(1)))     # no jobs, no pulls: any fetch would be a 404 and show in calls
     # `tokens` present = a snapshot written after the token fields (2026-11-17);
+    # `agents` present = written after agents_called (2026-11-19); same rule.
     # one without it gets its listed logs read once, see test_loop_tokens.py.
-    doc, stats = collect(src, {"rows": [_row()], "tokens": {}})
+    doc, stats = collect(src, {"rows": [_row()], "tokens": {}, "agents": {}})
     assert stats["frozen"] == 1 and doc["rows"] == [_row()]
     assert src.calls == [c for c in src.calls if c.startswith("actions/workflows")]
 
 
 def test_a_pr_open_row_re_reads_the_pr_only_never_the_log():
     src = Fake({**runs_listing(run(1)), "pulls/42": pull(42, merged=True)})
-    doc, stats = collect(src, {"rows": [_row(outcome="pr open", pr_merged=False)], "tokens": {}})
+    doc, stats = collect(src, {"rows": [_row(outcome="pr open", pr_merged=False)], "tokens": {}, "agents": {}})
     assert stats["refreshed"] == 1
     assert (doc["rows"][0]["outcome"], doc["rows"][0]["pr_merged"]) == ("shipped", True)
     assert not any("/jobs" in c or "/logs" in c for c in src.calls)
@@ -691,5 +692,75 @@ def test_a_settled_shipped_row_without_the_field_is_read_once():
                 "pulls/42/commits?per_page=100": []})
     old = _row()
     del old["owner_helped"]
-    doc, stats = collect(src, {"rows": [old], "tokens": {}})
+    doc, stats = collect(src, {"rows": [old], "tokens": {}, "agents": {}})
     assert doc["rows"][0]["owner_helped"] is True and stats["migrated"] == 1
+
+
+# --------------------------------------------------------------------------- #
+# agents_called (2026-11-19, owner: "we should track when was architect agent
+# used in the flow"). The fixture is a REAL excerpt of agent-work run
+# 44433226676's job log (issue #1069): each subagent call appears as the
+# assistant's tool_use, in `wire_tool_inputs`, as a task start record and in
+# progress records -- four prints of one call, which must count once.
+# --------------------------------------------------------------------------- #
+
+AGENT_LOG = (FIX / "agent_calls_run_44433226676.log").read_text()
+
+
+def test_each_subagent_call_counts_once_however_often_the_log_prints_it():
+    assert AGENT_LOG.count('"subagent_type": "qa"') >= 3
+    assert cm.parse_agent_calls(AGENT_LOG) == {"frontend-engineer": 1, "project-manager": 1, "qa": 1}
+
+
+def test_a_log_with_no_subagent_call_is_an_empty_reading_not_none():
+    assert cm.parse_agent_calls(_prompt_line("/agent-cycle --qa-pr 9")) == {}
+
+
+def test_two_calls_to_the_same_agent_count_two():
+    second = AGENT_LOG.replace("toolu_", "toolu_X")
+    assert cm.parse_agent_calls(AGENT_LOG + second)["qa"] == 2
+
+
+def test_a_new_row_carries_agents_called_and_the_summary_names_the_last_run():
+    src = Fake({**runs_listing(run(1)), **jobs(1, 77)}, logs={"77": AGENT_LOG})
+    doc, _ = collect(src)
+    assert doc["rows"][0]["agents_called"] == {"frontend-engineer": 1, "project-manager": 1, "qa": 1}
+    s = doc["agents"]
+    assert s["runs_read"] == {"7d": 1, "30d": 1}
+    assert s["by_agent"]["qa"] == {"7d": 1, "30d": 1, "last_run": 1,
+                                   "last_started": "2026-10-13T10:00:00Z", "last_issue": None}
+    assert "architect" not in s["by_agent"], "an agent never called is absent, not invented"
+    assert cm.validate_loop(doc) == []
+
+
+def test_an_unreadable_log_leaves_the_field_absent_so_it_is_not_counted_as_zero():
+    s = cm.agent_summary([_row(), _row(run=2, agents_called={"architect": 1})], NOW)
+    assert s["runs_read"]["30d"] == 1 and s["by_agent"]["architect"]["30d"] == 1
+
+
+def test_a_row_settled_before_agents_called_existed_is_read_ONCE_then_frozen():
+    old = _row(outcome="nothing", pr=None, pr_merged=None)
+    src = Fake({**runs_listing(run(1)), **jobs(1, 77)}, logs={"77": AGENT_LOG})
+    doc, stats = collect(src, {"rows": [old], "tokens": {}})
+    assert doc["rows"][0]["agents_called"]["project-manager"] == 1 and stats["migrated"] == 1
+    doc2, stats2 = collect(Fake(runs_listing(run(1))), doc)
+    assert stats2["migrated"] == 0 and stats2["frozen"] == 1
+
+
+def test_the_validator_rejects_a_malformed_agents_called():
+    for bad in ({"qa": 0}, {"QA ROUND": 1}, ["qa"], {"qa": "1"}):
+        doc = {"generated_at": "x", "rows": [_row(agents_called=bad)]}
+        assert any("agents_called" in e for e in cm.validate_loop(doc)), bad
+
+
+def test_the_same_call_printed_again_is_still_one_call():
+    """A resumed session, or a job log fetched with a retried step, prints the
+    same start record again; the tool_use_id is what makes it one call."""
+    assert cm.parse_agent_calls(AGENT_LOG + AGENT_LOG) == {"frontend-engineer": 1, "project-manager": 1, "qa": 1}
+
+
+def test_last_run_is_the_newest_run_that_called_the_agent():
+    rows = [_row(run=3, started="2026-10-13T09:00:00Z", issue=30, agents_called={"architect": 1}),
+            _row(run=2, started="2026-10-12T09:00:00Z", issue=20, agents_called={"architect": 2})]
+    a = cm.agent_summary(rows, NOW)["by_agent"]["architect"]
+    assert (a["last_run"], a["last_issue"], a["7d"]) == (3, 30, 2)

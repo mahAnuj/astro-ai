@@ -224,7 +224,7 @@ def test_a_refreshed_open_PR_row_keeps_its_reading_without_re_reading_the_log():
     open_row = _row(run=1, issue=1067, pr=1150, pr_merged=False, outcome="pr open",
                     owner_helped=None, started="2026-11-17T05:00:00Z", **REAL)
     src = Fake({**_listing(_run()), "pulls/1150": MERGED, "pulls/1150/commits*": []})
-    doc, stats = cm.collect(src, {"rows": [open_row], "tokens": {}}, NOW, "mahAnuj")
+    doc, stats = cm.collect(src, {"rows": [open_row], "tokens": {}, "agents": {}}, NOW, "mahAnuj")
     assert stats["refreshed"] == 1
     assert {k: doc["rows"][0][k] for k in REAL} == REAL
     assert not any(c.startswith("actions/jobs/") for c in src.calls)

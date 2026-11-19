@@ -1,0 +1,120 @@
+2026-11-19T00:59:06.4575492Z         "id": "toolu_018VhCrn47cdjbmHkwstc4fm",
+2026-11-19T00:59:06.4576002Z         "name": "Agent",
+2026-11-19T00:59:06.4576411Z         "input": {
+2026-11-19T00:59:06.4576872Z           "description": "Rank the eligible backlog",
+2026-11-19T00:59:06.4577431Z           "subagent_type": "project-manager",
+2026-11-19T00:59:06.4577983Z           "run_in_background": false,
+2026-11-19T00:59:06.4587232Z           "prompt": "(trimmed)",
+2026-11-19T00:59:06.4593690Z         },
+2026-11-19T00:59:06.4594044Z         "caller": {
+2026-11-19T00:59:06.4594433Z           "type": "direct"
+2026-11-19T00:59:06.4606096Z   "request_id": "req_011ChBP1uYnDZ6nDtWAXaqv6",
+2026-11-19T00:59:06.4606534Z   "wire_tool_inputs": {
+2026-11-19T00:59:06.4606930Z     "toolu_018VhCrn47cdjbmHkwstc4fm": {
+2026-11-19T00:59:06.4607393Z       "description": "Rank the eligible backlog",
+2026-11-19T00:59:06.4607853Z       "subagent_type": "project-manager",
+2026-11-19T00:59:06.4608289Z       "run_in_background": false,
+2026-11-19T00:59:06.4617032Z       "prompt": "(trimmed)",
+2026-11-19T00:59:06.4623089Z     }
+2026-11-19T00:59:06.4623617Z   }
+2026-11-19T00:59:06.4623934Z }
+2026-11-19T00:59:06.4698311Z   "task_id": "aecf4fce200490868",
+2026-11-19T00:59:06.4698940Z   "run_id": "0mwmue34x-3b582939",
+2026-11-19T00:59:06.4699615Z   "tool_use_id": "toolu_018VhCrn47cdjbmHkwstc4fm",
+2026-11-19T00:59:06.4700395Z   "description": "Rank the eligible backlog",
+2026-11-19T00:59:06.4700924Z   "subagent_type": "project-manager",
+2026-11-19T00:59:06.4701359Z   "is_backgrounded": false,
+2026-11-19T00:59:06.4701751Z   "spawn_depth": 1,
+2026-11-19T00:59:06.4702121Z   "task_type": "local_agent",
+2026-11-19T00:59:06.4710181Z   "prompt": "(trimmed)",
+2026-11-19T00:59:06.4718023Z   "uuid": "f9645e3d-fe36-4d22-82e9-8e7a1912697a",
+2026-11-19T00:59:06.4940165Z   "agent_id": "aecf4fce200490868",
+2026-11-19T00:59:06.4940818Z   "session_id": "67a262b0-4c68-4b05-9a86-11cc095e415b",
+2026-11-19T00:59:06.4941533Z   "uuid": "7106226e-a64a-4acc-a985-fc1a7481df25",
+2026-11-19T00:59:06.4942249Z   "timestamp": "2026-11-19T00:59:06.462Z",
+2026-11-19T00:59:06.4942752Z   "subagent_type": "project-manager",
+2026-11-19T00:59:06.4943822Z   "task_description": "Rank the eligible backlog"
+2026-11-19T00:59:06.4944503Z }
+2026-11-19T00:59:08.9818214Z {
+2026-11-19T00:59:08.9818941Z   "type": "system",
+2026-11-19T00:59:08.9819811Z   "subtype": "task_progress",
+2026-11-19T01:02:38.8471240Z         "id": "toolu_01Tpf655iKA13JHUK3h9p4Ya",
+2026-11-19T01:02:38.8471677Z         "name": "Agent",
+2026-11-19T01:02:38.8472518Z         "input": {
+2026-11-19T01:02:38.8472951Z           "description": "Implement #1069 analytics fix",
+2026-11-19T01:02:38.8473949Z           "subagent_type": "frontend-engineer",
+2026-11-19T01:02:38.8474626Z           "run_in_background": false,
+2026-11-19T01:02:38.8514108Z           "prompt": "(trimmed)",
+2026-11-19T01:02:38.8530229Z         },
+2026-11-19T01:02:38.8530583Z         "caller": {
+2026-11-19T01:02:38.8530951Z           "type": "direct"
+2026-11-19T01:02:38.8552567Z   "request_id": "req_011ChBPGxN7DwbH8751MANbs",
+2026-11-19T01:02:38.8553011Z   "wire_tool_inputs": {
+2026-11-19T01:02:38.8553654Z     "toolu_01Tpf655iKA13JHUK3h9p4Ya": {
+2026-11-19T01:02:38.8554248Z       "description": "Implement #1069 analytics fix",
+2026-11-19T01:02:38.8554758Z       "subagent_type": "frontend-engineer",
+2026-11-19T01:02:38.8555231Z       "run_in_background": false,
+2026-11-19T01:02:38.8578788Z       "prompt": "(trimmed)",
+2026-11-19T01:02:38.8595135Z     }
+2026-11-19T01:02:38.8595465Z   }
+2026-11-19T01:02:38.8595785Z }
+2026-11-19T01:02:38.8597472Z   "task_id": "a312a25b2a4a2877d",
+2026-11-19T01:02:38.8597907Z   "run_id": "0mwmuin0k-012447ac",
+2026-11-19T01:02:38.8598365Z   "tool_use_id": "toolu_01Tpf655iKA13JHUK3h9p4Ya",
+2026-11-19T01:02:38.8598883Z   "description": "Implement #1069 analytics fix",
+2026-11-19T01:02:38.8599377Z   "subagent_type": "frontend-engineer",
+2026-11-19T01:02:38.8599812Z   "is_backgrounded": false,
+2026-11-19T01:02:38.8600200Z   "spawn_depth": 1,
+2026-11-19T01:02:38.8600572Z   "task_type": "local_agent",
+2026-11-19T01:02:38.8623300Z   "prompt": "(trimmed)",
+2026-11-19T01:02:38.8639220Z   "uuid": "71338172-9217-4bfd-b3f0-7bbe4e405c21",
+2026-11-19T01:02:38.8821360Z   "agent_id": "a312a25b2a4a2877d",
+2026-11-19T01:02:38.8821854Z   "session_id": "67a262b0-4c68-4b05-9a86-11cc095e415b",
+2026-11-19T01:02:38.8822370Z   "uuid": "0b278f8e-33f8-47b1-bb9e-476cf6dd39ed",
+2026-11-19T01:02:38.8822876Z   "timestamp": "2026-11-19T01:02:38.850Z",
+2026-11-19T01:02:38.8823473Z   "subagent_type": "frontend-engineer",
+2026-11-19T01:02:38.8823992Z   "task_description": "Implement #1069 analytics fix"
+2026-11-19T01:02:38.8824446Z }
+2026-11-19T01:02:41.2386981Z {
+2026-11-19T01:02:41.2414537Z   "type": "system",
+2026-11-19T01:02:41.2444246Z   "subtype": "task_progress",
+2026-11-19T01:38:56.5067008Z         "id": "toolu_01QMqMhs6nanqFjPymgP1cMM",
+2026-11-19T01:38:56.5067679Z         "name": "Agent",
+2026-11-19T01:38:56.5068204Z         "input": {
+2026-11-19T01:38:56.5068711Z           "description": "QA round on PR #1234",
+2026-11-19T01:38:56.5069172Z           "subagent_type": "qa",
+2026-11-19T01:38:56.5069592Z           "run_in_background": false,
+2026-11-19T01:38:56.5086615Z           "prompt": "(trimmed)",
+2026-11-19T01:38:56.5099179Z         },
+2026-11-19T01:38:56.5099517Z         "caller": {
+2026-11-19T01:38:56.5099872Z           "type": "direct"
+2026-11-19T01:38:56.5113655Z   "request_id": "req_011ChBS3kRFehnybtBZQTy7H",
+2026-11-19T01:38:56.5114343Z   "wire_tool_inputs": {
+2026-11-19T01:38:56.5114965Z     "toolu_01QMqMhs6nanqFjPymgP1cMM": {
+2026-11-19T01:38:56.5115695Z       "description": "QA round on PR #1234",
+2026-11-19T01:38:56.5116379Z       "subagent_type": "qa",
+2026-11-19T01:38:56.5117018Z       "run_in_background": false,
+2026-11-19T01:38:56.5134538Z       "prompt": "(trimmed)",
+2026-11-19T01:38:56.5152001Z     }
+2026-11-19T01:38:56.5152332Z   }
+2026-11-19T01:38:56.5152647Z }
+2026-11-19T01:38:56.5154340Z   "task_id": "ae94d74a83adf2ad2",
+2026-11-19T01:38:56.5161898Z   "run_id": "0mwmvtbb4-6039c000",
+2026-11-19T01:38:56.5162504Z   "tool_use_id": "toolu_01QMqMhs6nanqFjPymgP1cMM",
+2026-11-19T01:38:56.5163043Z   "description": "QA round on PR #1234",
+2026-11-19T01:38:56.5163718Z   "subagent_type": "qa",
+2026-11-19T01:38:56.5164128Z   "is_backgrounded": false,
+2026-11-19T01:38:56.5164511Z   "spawn_depth": 1,
+2026-11-19T01:38:56.5164875Z   "task_type": "local_agent",
+2026-11-19T01:38:56.5181184Z   "prompt": "(trimmed)",
+2026-11-19T01:38:56.5193901Z   "uuid": "f72d420a-52c9-44a7-8a3b-fda936987a10",
+2026-11-19T01:38:56.5377487Z   "agent_id": "ae94d74a83adf2ad2",
+2026-11-19T01:38:56.5377973Z   "session_id": "67a262b0-4c68-4b05-9a86-11cc095e415b",
+2026-11-19T01:38:56.5378490Z   "uuid": "498cbdd2-7631-4a25-b071-cef0d1f3725a",
+2026-11-19T01:38:56.5378964Z   "timestamp": "2026-11-19T01:38:56.510Z",
+2026-11-19T01:38:56.5379396Z   "subagent_type": "qa",
+2026-11-19T01:38:56.5379822Z   "task_description": "QA round on PR #1234"
+2026-11-19T01:38:56.5380238Z }
+2026-11-19T01:38:58.7862481Z {
+2026-11-19T01:38:58.7863525Z   "type": "system",
+2026-11-19T01:38:58.7863992Z   "subtype": "task_progress",
