@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-19T08:01:27Z",
+ "generated_at": "2026-11-19T11:28:03Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 44480630158,
-  "at": "2026-11-19T07:34:14Z",
-  "five_hour": 0.2,
-  "seven_day": 0.8,
+  "run": 44513691440,
+  "at": "2026-11-19T11:18:53Z",
+  "five_hour": 0.11,
+  "seven_day": 0.82,
   "status": "allowed_warning",
   "resets": {
-   "five_hour": 1795077000,
+   "five_hour": 1795095000,
    "seven_day": 1795154400
   }
  },
- "peak_seven_day": 0.8,
+ "peak_seven_day": 0.82,
  "rejected_runs": [],
  "readings": [
   {
@@ -54,42 +54,6 @@
   },
   {
    "workflow": "agent-work",
-   "run": 44459030175,
-   "at": "2026-11-19T04:32:31Z",
-   "five_hour": 0.13,
-   "seven_day": 0.79,
-   "status": "allowed_warning",
-   "resets": {
-    "five_hour": 1795077000,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 44462272800,
-   "at": "2026-11-19T05:01:32Z",
-   "five_hour": 0.14,
-   "seven_day": 0.8,
-   "status": "allowed_warning",
-   "resets": {
-    "five_hour": 1795077000,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 44469688365,
-   "at": "2026-11-19T06:05:54Z",
-   "five_hour": 0.16,
-   "seven_day": 0.8,
-   "status": "allowed_warning",
-   "resets": {
-    "five_hour": 1795077000,
-    "seven_day": 1795154400
-   }
-  },
-  {
-   "workflow": "agent-work",
    "run": 44480630158,
    "at": "2026-11-19T07:34:14Z",
    "five_hour": 0.2,
@@ -97,6 +61,42 @@
    "status": "allowed_warning",
    "resets": {
     "five_hour": 1795077000,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 44484112339,
+   "at": "2026-11-19T08:01:16Z",
+   "five_hour": 0.24,
+   "seven_day": 0.81,
+   "status": "allowed_warning",
+   "resets": {
+    "five_hour": 1795077000,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 44511819832,
+   "at": "2026-11-19T11:06:44Z",
+   "five_hour": 0.09,
+   "seven_day": 0.82,
+   "status": "allowed_warning",
+   "resets": {
+    "five_hour": 1795095000,
+    "seven_day": 1795154400
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 44513691440,
+   "at": "2026-11-19T11:18:53Z",
+   "five_hour": 0.11,
+   "seven_day": 0.82,
+   "status": "allowed_warning",
+   "resets": {
+    "five_hour": 1795095000,
     "seven_day": 1795154400
    }
   }
