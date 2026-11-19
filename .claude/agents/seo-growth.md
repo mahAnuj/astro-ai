@@ -81,7 +81,12 @@ A number you did not read from one of these this run does not go in an issue.
 ## What you hand back
 
 One issue per finding (search open issues first; comment on a match instead of filing twice),
-each with a complete Evidence Block:
+**labelled `growth`** (`gh issue create --label growth`), each with a complete Evidence Block.
+At least 60% of build cycles go to growth issues (`scripts/growth_split.py`), and an unlabelled
+finding is invisible to that split. If it serves one of this week's goals (the newest goals
+comment on the `weekly-goals` issue), name the goal's id in the body.
+
+Each Evidence Block carries:
 
 - the query or page, with the measured number and its **date window**
 - the concrete change proposed, and **the cheapest test** that would confirm or kill it
