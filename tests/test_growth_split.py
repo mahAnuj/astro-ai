@@ -399,3 +399,27 @@ def test_the_ops_panel_survives_a_malformed_growth_json():
     v = ops_data._growth_view({"meters": {"daily": {"progress": 3.5}}, "cycles": [], "days": []},
                               None, "2026-11-19", NOW)
     assert v["meters"][0]["pct"] == 100
+
+
+class LaggyGh(Gh):
+    """GitHub's label listing does not show a just-created issue yet (2026-11-19, #1246/#1247)."""
+
+    def __call__(self, args):
+        path = next(a for a in args if a.startswith("repos/"))
+        if "labels=weekly-goals" in path:
+            self.calls.append(args)
+            return "[]"
+        return super().__call__(args)
+
+
+def test_a_fresh_issue_is_created_once_and_every_file_lands_on_it(tmp_path):
+    """The first live run created #1246, re-listed, found nothing, refused the weekly file and
+    created #1247 for the next. Now: one create, its own number, all files on it."""
+    gh = LaggyGh(goals_issue=None)
+    files = [_file(tmp_path, "weekly-goals.md", goals_comment()),
+             _file(tmp_path, "monthly-goals.md", goals_comment("monthly", "2026-11")),
+             _file(tmp_path, "quarterly-goals.md", goals_comment("quarterly", "2026-Q4"))]
+    assert gs.main(["--repo", REPO, "--post", *files], gh=gh, now=NOW) == 0
+    creates = [c for c in gh.calls if "-X" in c and any(a.endswith("/issues") for a in c)]
+    posts = [c for c in gh.calls if "-X" in c and any(a.endswith("/issues/99/comments") for a in c)]
+    assert len(creates) == 1 and len(posts) == 3
