@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-19T20:13:31Z",
+ "generated_at": "2026-11-19T23:24:25Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-20",
  "today": {
   "growth": 0,
-  "other": 0,
+  "other": 1,
   "exempt": 0,
-  "share": null
+  "share": 0.0
  },
  "this_week": {
   "growth": 13,
-  "other": 50,
+  "other": 51,
   "exempt": 0,
-  "share": 0.206
+  "share": 0.203
  },
  "this_month": {
   "growth": 16,
-  "other": 215,
+  "other": 216,
   "exempt": 0,
   "share": 0.069
  },
@@ -117,12 +117,27 @@
   {
    "date": "2026-11-20",
    "growth": 0,
-   "other": 0,
+   "other": 1,
    "exempt": 0,
-   "share": null
+   "share": 0.0
   }
  ],
  "cycles": [
+  {
+   "run": 44629149030,
+   "started": "2026-11-19T22:29:49Z",
+   "issue": 1236,
+   "title": "analytics: anomaly breakdown skips every day under the spike bar \u2014 5 elevated days in 28 have no named source (4 reports in a row)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1266,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
   {
    "run": 44455237313,
    "started": "2026-11-19T03:59:58Z",
@@ -619,20 +634,6 @@
    "agents": {
     "qa": 2
    }
-  },
-  {
-   "run": 44008797657,
-   "started": "2026-11-17T03:14:38Z",
-   "issue": 1071,
-   "title": "learn: write gochar-2027-planetary-transits before January \u2014 the 2026 sibling has 1,627 impressions at position 5.7 (swisseph-computed dates)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1148,
-   "agents": {
-    "engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -877,15 +878,16 @@
   "ga4_new_users_28d": 640,
   "ga4_sessions_28d": 780,
   "objective_top5": 1,
-  "growth_share_week": 0.206,
+  "growth_share_today": 0.0,
+  "growth_share_week": 0.203,
   "growth_share_month": 0.069
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-20",
-   "progress": null,
-   "detail": "0 of 0 cycles on growth, target 60%",
+   "progress": 0.0,
+   "detail": "0 of 1 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
@@ -902,7 +904,7 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.206,
+     "current": 0.203,
      "progress": 0.0,
      "basis": "growth_share_week"
     },
