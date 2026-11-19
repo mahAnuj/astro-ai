@@ -89,6 +89,10 @@ AGENTS: tuple[tuple[str, str, str, str, str], ...] = (
     ("infra-reviewer", "infra-reviewer", "operate", "reviews the platform (Agent infra)", "keeps the site up, fast and free"),
 )
 GROUPS = ("build", "decide", "measure", "operate")
+#: Agents no workflow or cycle calls. Empty since the 2026-11-19 restructure (conversion-lead
+#: and qa-lead were the two). A card listed here says "not on any schedule" rather than borrow a
+#: workflow's state: an unscheduled agent shown as "idle, waiting" reads as one that runs.
+UNSCHEDULED: tuple[str, ...] = ()
 
 #: "standby": the run this agent is called from is live, but which helper a
 #: cycle is using at this minute is not visible from outside the Claude step.
@@ -326,6 +330,10 @@ def build(
             cards[key] = card
         else:
             cards[key] = {"state": "idle", "detail": "waits for the next build cycle", "at": None}
+
+    # on request only: nothing schedules them (none today; see UNSCHEDULED)
+    for key in UNSCHEDULED:
+        cards[key] = {"state": "idle", "detail": "not on any schedule", "at": None}
 
     # the scheduled agents, one workflow each
     for key, workflow_name, workflow, what in (
