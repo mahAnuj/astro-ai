@@ -1,8 +1,136 @@
 {
-  "generated_at": "2026-11-19T02:25:40Z",
+  "generated_at": "2026-11-19T04:43:50Z",
   "rows": [
     {
       "owner_helped": null,
+      "run": 44455237313,
+      "workflow": "agent-work",
+      "date": "2026-11-19",
+      "started": "2026-11-19T03:59:58Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 43.7,
+      "issue": 1232,
+      "pr": 1242,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 158,
+      "tokens_output": 46544,
+      "tokens_cache_read": 4376418,
+      "tokens_cache_write": 392047,
+      "cost_list_usd": 2.0172,
+      "model": "claude-sonnet-5-5",
+      "turns": 22,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
+    },
+    {
+      "owner_helped": null,
+      "run": 44455108902,
+      "workflow": "agent-work",
+      "date": "2026-11-19",
+      "started": "2026-11-19T03:58:44Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 1.8,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 21,
+      "tokens_output": 5246,
+      "tokens_cache_read": 593660,
+      "tokens_cache_write": 50113,
+      "cost_list_usd": 0.3123,
+      "model": "claude-sonnet-5-5",
+      "turns": 12,
+      "agents_called": {}
+    },
+    {
+      "owner_helped": null,
+      "run": 44452958127,
+      "workflow": "agent-work",
+      "date": "2026-11-19",
+      "started": "2026-11-19T03:39:23Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 17.0,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 104,
+      "tokens_output": 43455,
+      "tokens_cache_read": 3908067,
+      "tokens_cache_write": 182648,
+      "cost_list_usd": 1.3727,
+      "model": "claude-sonnet-5-5",
+      "turns": 16,
+      "agents_called": {
+        "qa": 1
+      }
+    },
+    {
+      "owner_helped": null,
+      "run": 44447007673,
+      "workflow": "agent-work",
+      "date": "2026-11-19",
+      "started": "2026-11-19T02:48:48Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 5.5,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 32,
+      "tokens_output": 7031,
+      "tokens_cache_read": 1052473,
+      "tokens_cache_write": 59894,
+      "cost_list_usd": 0.4152,
+      "model": "claude-sonnet-5-5",
+      "turns": 20,
+      "agents_called": {}
+    },
+    {
+      "owner_helped": null,
+      "run": 44446366870,
+      "workflow": "agent-work",
+      "date": "2026-11-19",
+      "started": "2026-11-19T02:43:23Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 5.1,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "judged",
+      "attribution": "receipt",
+      "kind": "qa-round",
+      "tokens_input": 41,
+      "tokens_output": 16419,
+      "tokens_cache_read": 1060647,
+      "tokens_cache_write": 119648,
+      "cost_list_usd": 0.6636,
+      "model": "claude-sonnet-5-5",
+      "turns": 12,
+      "agents_called": {
+        "qa": 1
+      }
+    },
+    {
+      "owner_helped": false,
       "run": 44441088862,
       "workflow": "agent-work",
       "date": "2026-11-19",
@@ -12,17 +140,17 @@
       "minutes": 15.4,
       "issue": 1069,
       "pr": 1234,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "issue",
+      "turns": 15,
       "tokens_input": 64,
       "tokens_output": 14992,
       "tokens_cache_read": 1437736,
       "tokens_cache_write": 135092,
       "cost_list_usd": 0.7127,
-      "model": "claude-sonnet-5-5",
-      "turns": 15
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": null,
@@ -45,10 +173,11 @@
       "tokens_cache_write": 68351,
       "cost_list_usd": 0.4896,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {}
     },
     {
-      "owner_helped": null,
+      "owner_helped": false,
       "run": 44433226676,
       "workflow": "agent-work",
       "date": "2026-11-19",
@@ -58,8 +187,8 @@
       "minutes": 61.9,
       "issue": 1069,
       "pr": 1234,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked",
       "turns": 28,
@@ -91,7 +220,8 @@
       "tokens_cache_write": 43264,
       "cost_list_usd": 0.246,
       "model": "claude-sonnet-5-5",
-      "turns": 8
+      "turns": 8,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -114,7 +244,8 @@
       "tokens_cache_write": 40518,
       "cost_list_usd": 0.2128,
       "model": "claude-sonnet-5-5",
-      "turns": 7
+      "turns": 7,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -137,7 +268,8 @@
       "tokens_cache_write": 42618,
       "cost_list_usd": 0.2413,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -160,7 +292,12 @@
       "tokens_cache_read": 10201883,
       "tokens_cache_write": 410528,
       "cost_list_usd": 3.164,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -183,7 +320,8 @@
       "tokens_cache_write": 47062,
       "cost_list_usd": 0.2964,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -206,7 +344,8 @@
       "tokens_cache_write": 47756,
       "cost_list_usd": 0.2777,
       "model": "claude-sonnet-5-5",
-      "turns": 9
+      "turns": 9,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -229,7 +368,10 @@
       "tokens_cache_write": 107753,
       "cost_list_usd": 0.7456,
       "model": "claude-sonnet-5-5",
-      "turns": 14
+      "turns": 14,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -252,7 +394,12 @@
       "tokens_cache_read": 7197098,
       "tokens_cache_write": 564316,
       "cost_list_usd": 3.0685,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "engineer": 1,
+        "frontend-engineer": 1,
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": null,
@@ -275,7 +422,8 @@
       "tokens_cache_write": 71478,
       "cost_list_usd": 0.4479,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -298,7 +446,8 @@
       "tokens_cache_write": 59364,
       "cost_list_usd": 0.3874,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -321,7 +470,8 @@
       "tokens_cache_write": 69737,
       "cost_list_usd": 0.5327,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -344,7 +494,11 @@
       "tokens_cache_read": 3238833,
       "tokens_cache_write": 250121,
       "cost_list_usd": 1.3716,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -367,7 +521,10 @@
       "tokens_cache_write": 114893,
       "cost_list_usd": 0.7969,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -390,7 +547,12 @@
       "tokens_cache_read": 10232317,
       "tokens_cache_write": 627498,
       "cost_list_usd": 3.5758,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -413,7 +575,8 @@
       "tokens_cache_write": 98471,
       "cost_list_usd": 0.8981,
       "model": "claude-sonnet-5-5",
-      "turns": 34
+      "turns": 34,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -436,7 +599,10 @@
       "tokens_cache_write": 242854,
       "cost_list_usd": 1.8851,
       "model": "claude-sonnet-5-5",
-      "turns": 32
+      "turns": 32,
+      "agents_called": {
+        "qa": 3
+      }
     },
     {
       "owner_helped": null,
@@ -459,7 +625,8 @@
       "tokens_cache_write": 91762,
       "cost_list_usd": 0.8389,
       "model": "claude-sonnet-5-5",
-      "turns": 41
+      "turns": 41,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -482,7 +649,8 @@
       "tokens_cache_write": 57370,
       "cost_list_usd": 0.3419,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -505,7 +673,8 @@
       "tokens_cache_write": 53334,
       "cost_list_usd": 0.3305,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -528,7 +697,12 @@
       "tokens_cache_read": 6954524,
       "tokens_cache_write": 644347,
       "cost_list_usd": 3.2022,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -551,7 +725,8 @@
       "tokens_cache_write": 69028,
       "cost_list_usd": 0.5823,
       "model": "claude-sonnet-5-5",
-      "turns": 30
+      "turns": 30,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -574,7 +749,12 @@
       "tokens_cache_read": 11335617,
       "tokens_cache_write": 961332,
       "cost_list_usd": 5.0513,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "architect": 1,
+        "engineer": 2,
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": null,
@@ -597,7 +777,8 @@
       "tokens_cache_write": 46591,
       "cost_list_usd": 0.2551,
       "model": "claude-sonnet-5-5",
-      "turns": 8
+      "turns": 8,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -620,7 +801,10 @@
       "tokens_cache_write": 248861,
       "cost_list_usd": 1.4905,
       "model": "claude-sonnet-5-5",
-      "turns": 34
+      "turns": 34,
+      "agents_called": {
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -643,7 +827,12 @@
       "tokens_cache_read": 5090935,
       "tokens_cache_write": 365602,
       "cost_list_usd": 2.1859,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -666,7 +855,8 @@
       "tokens_cache_write": 72250,
       "cost_list_usd": 0.5368,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -689,7 +879,11 @@
       "tokens_cache_read": 3543150,
       "tokens_cache_write": 237950,
       "cost_list_usd": 1.4773,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -712,7 +906,11 @@
       "tokens_cache_read": 12731787,
       "tokens_cache_write": 772304,
       "cost_list_usd": 4.2666,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": null,
@@ -735,7 +933,8 @@
       "tokens_cache_write": 61327,
       "cost_list_usd": 0.4432,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -758,7 +957,10 @@
       "tokens_cache_read": 1434503,
       "tokens_cache_write": 171589,
       "cost_list_usd": 0.8018,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -781,7 +983,8 @@
       "tokens_cache_write": 44348,
       "cost_list_usd": 0.2486,
       "model": "claude-sonnet-5-5",
-      "turns": 9
+      "turns": 9,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -804,7 +1007,8 @@
       "tokens_cache_write": 42683,
       "cost_list_usd": 0.2362,
       "model": "claude-sonnet-5-5",
-      "turns": 9
+      "turns": 9,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -827,7 +1031,8 @@
       "tokens_cache_write": 42948,
       "cost_list_usd": 0.2359,
       "model": "claude-sonnet-5-5",
-      "turns": 9
+      "turns": 9,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -850,7 +1055,13 @@
       "tokens_cache_read": 7250409,
       "tokens_cache_write": 417840,
       "cost_list_usd": 2.7767,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "chief": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -873,7 +1084,8 @@
       "tokens_cache_write": 62639,
       "cost_list_usd": 0.5178,
       "model": "claude-sonnet-5-5",
-      "turns": 30
+      "turns": 30,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -896,7 +1108,8 @@
       "tokens_cache_write": 40947,
       "cost_list_usd": 0.2123,
       "model": "claude-sonnet-5-5",
-      "turns": 6
+      "turns": 6,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -919,7 +1132,8 @@
       "tokens_cache_read": 720337,
       "tokens_cache_write": 51496,
       "cost_list_usd": 0.3376,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -942,7 +1156,8 @@
       "tokens_cache_write": 40851,
       "cost_list_usd": 0.226,
       "model": "claude-sonnet-5-5",
-      "turns": 9
+      "turns": 9,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -965,7 +1180,8 @@
       "tokens_cache_write": 101904,
       "cost_list_usd": 0.6603,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -988,7 +1204,12 @@
       "tokens_cache_read": 3962261,
       "tokens_cache_write": 265230,
       "cost_list_usd": 1.6178,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -1011,7 +1232,8 @@
       "tokens_cache_write": 90368,
       "cost_list_usd": 0.7205,
       "model": "claude-sonnet-5-5",
-      "turns": 30
+      "turns": 30,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1034,7 +1256,8 @@
       "tokens_cache_write": 37547,
       "cost_list_usd": 0.165,
       "model": "claude-sonnet-5-5",
-      "turns": 2
+      "turns": 2,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1057,7 +1280,8 @@
       "tokens_cache_write": 46436,
       "cost_list_usd": 0.2646,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1080,7 +1304,8 @@
       "tokens_cache_write": 56882,
       "cost_list_usd": 0.3446,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -1103,7 +1328,8 @@
       "tokens_cache_read": 1445626,
       "tokens_cache_write": 65531,
       "cost_list_usd": 0.5234,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1126,7 +1352,8 @@
       "tokens_cache_write": 54360,
       "cost_list_usd": 0.3557,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -1149,7 +1376,8 @@
       "tokens_cache_read": 1206875,
       "tokens_cache_write": 62251,
       "cost_list_usd": 0.4548,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1172,7 +1400,8 @@
       "tokens_cache_write": 44546,
       "cost_list_usd": 0.2533,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -1195,7 +1424,12 @@
       "tokens_cache_read": 3633860,
       "tokens_cache_write": 298630,
       "cost_list_usd": 1.6668,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -1218,7 +1452,8 @@
       "tokens_cache_write": 51304,
       "cost_list_usd": 0.3106,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -1241,7 +1476,10 @@
       "tokens_cache_read": 3179442,
       "tokens_cache_write": 129133,
       "cost_list_usd": 1.0527,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -1264,7 +1502,8 @@
       "tokens_cache_write": 57272,
       "cost_list_usd": 0.3795,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1287,7 +1526,8 @@
       "tokens_cache_write": 61364,
       "cost_list_usd": 0.3826,
       "model": "claude-sonnet-5-5",
-      "turns": 14
+      "turns": 14,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1310,7 +1550,8 @@
       "tokens_cache_write": 54809,
       "cost_list_usd": 0.3524,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -1333,7 +1574,10 @@
       "tokens_cache_read": 1465626,
       "tokens_cache_write": 99564,
       "cost_list_usd": 0.6653,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -1356,7 +1600,10 @@
       "tokens_cache_write": 87541,
       "cost_list_usd": 0.5151,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -1379,7 +1626,8 @@
       "tokens_cache_write": 51499,
       "cost_list_usd": 0.3162,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1402,7 +1650,8 @@
       "tokens_cache_write": 57601,
       "cost_list_usd": 0.4057,
       "model": "claude-sonnet-5-5",
-      "turns": 18
+      "turns": 18,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -1425,7 +1674,13 @@
       "tokens_cache_read": 8682598,
       "tokens_cache_write": 579013,
       "cost_list_usd": 3.3629,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "architect": 1,
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -1448,7 +1703,8 @@
       "tokens_cache_write": 83637,
       "cost_list_usd": 0.5998,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1471,7 +1727,8 @@
       "tokens_cache_write": 52680,
       "cost_list_usd": 0.3621,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1494,7 +1751,8 @@
       "tokens_cache_write": 62681,
       "cost_list_usd": 0.4316,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -1517,7 +1775,12 @@
       "tokens_cache_read": 8308207,
       "tokens_cache_write": 610844,
       "cost_list_usd": 3.2361,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -1540,7 +1803,10 @@
       "tokens_cache_write": 182348,
       "cost_list_usd": 1.3717,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -1563,7 +1829,8 @@
       "tokens_cache_write": 48951,
       "cost_list_usd": 0.3212,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -1586,7 +1853,12 @@
       "tokens_cache_read": 7232337,
       "tokens_cache_write": 413111,
       "cost_list_usd": 2.5958,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -1609,7 +1881,8 @@
       "tokens_cache_write": 50018,
       "cost_list_usd": 0.3447,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1632,7 +1905,8 @@
       "tokens_cache_write": 52636,
       "cost_list_usd": 0.3199,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1655,7 +1929,8 @@
       "tokens_cache_write": 51135,
       "cost_list_usd": 0.333,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -1678,7 +1953,13 @@
       "tokens_cache_read": 8772162,
       "tokens_cache_write": 437501,
       "cost_list_usd": 3.2598,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "architect": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -1701,7 +1982,11 @@
       "tokens_cache_read": 2380953,
       "tokens_cache_write": 182362,
       "cost_list_usd": 1.064,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -1724,7 +2009,12 @@
       "tokens_cache_write": 363234,
       "cost_list_usd": 2.3704,
       "model": "claude-sonnet-5-5",
-      "turns": 32
+      "turns": 32,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -1747,7 +2037,8 @@
       "tokens_cache_write": 50061,
       "cost_list_usd": 0.3215,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -1770,7 +2061,11 @@
       "tokens_cache_write": 314675,
       "cost_list_usd": 1.9708,
       "model": "claude-sonnet-5-5",
-      "turns": 29
+      "turns": 29,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -1793,7 +2088,8 @@
       "tokens_cache_write": 69846,
       "cost_list_usd": 0.5247,
       "model": "claude-sonnet-5-5",
-      "turns": 26
+      "turns": 26,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1816,7 +2112,8 @@
       "tokens_cache_write": 56264,
       "cost_list_usd": 0.3751,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -1839,7 +2136,8 @@
       "tokens_cache_write": 90616,
       "cost_list_usd": 0.635,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -1862,7 +2160,12 @@
       "tokens_cache_write": 586136,
       "cost_list_usd": 3.4866,
       "model": "claude-sonnet-5-5",
-      "turns": 32
+      "turns": 32,
+      "agents_called": {
+        "engineer": 2,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -1885,7 +2188,12 @@
       "tokens_cache_write": 411770,
       "cost_list_usd": 2.4343,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -1908,7 +2216,12 @@
       "tokens_cache_read": 13174859,
       "tokens_cache_write": 542749,
       "cost_list_usd": 3.8793,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 3
+      }
     },
     {
       "owner_helped": false,
@@ -1931,7 +2244,11 @@
       "tokens_cache_write": 322509,
       "cost_list_usd": 1.5308,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -1954,7 +2271,10 @@
       "tokens_cache_write": 225149,
       "cost_list_usd": 1.5173,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -1977,7 +2297,12 @@
       "tokens_cache_write": 862460,
       "cost_list_usd": 5.8656,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2000,7 +2325,11 @@
       "tokens_cache_write": 241208,
       "cost_list_usd": 1.4274,
       "model": "claude-sonnet-5-5",
-      "turns": 33
+      "turns": 33,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2023,7 +2352,11 @@
       "tokens_cache_write": 396752,
       "cost_list_usd": 2.9884,
       "model": "claude-sonnet-5-5",
-      "turns": 52
+      "turns": 52,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -2046,7 +2379,8 @@
       "tokens_cache_write": 83204,
       "cost_list_usd": 0.5536,
       "model": "claude-sonnet-5-5",
-      "turns": 18
+      "turns": 18,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -2069,7 +2403,8 @@
       "tokens_cache_read": 1282077,
       "tokens_cache_write": 74203,
       "cost_list_usd": 0.5221,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -2092,7 +2427,8 @@
       "tokens_cache_read": 1023640,
       "tokens_cache_write": 79918,
       "cost_list_usd": 0.4951,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -2115,7 +2451,11 @@
       "tokens_cache_read": 5868527,
       "tokens_cache_write": 302166,
       "cost_list_usd": 1.9676,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -2138,7 +2478,12 @@
       "tokens_cache_read": 7348201,
       "tokens_cache_write": 379155,
       "cost_list_usd": 2.546,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -2161,7 +2506,8 @@
       "tokens_cache_read": 686939,
       "tokens_cache_write": 65115,
       "cost_list_usd": 0.3671,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -2184,7 +2530,10 @@
       "tokens_cache_read": 5563989,
       "tokens_cache_write": 339279,
       "cost_list_usd": 1.9356,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "qa": 2
+      }
     },
     {
       "owner_helped": true,
@@ -2207,7 +2556,11 @@
       "tokens_cache_read": 11054704,
       "tokens_cache_write": 412470,
       "cost_list_usd": 3.1697,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -2230,7 +2583,12 @@
       "tokens_cache_write": 414547,
       "cost_list_usd": 2.7952,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -2253,7 +2611,8 @@
       "tokens_cache_write": 70551,
       "cost_list_usd": 0.4473,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -2276,7 +2635,11 @@
       "tokens_cache_write": 292578,
       "cost_list_usd": 1.9763,
       "model": "claude-sonnet-5-5",
-      "turns": 44
+      "turns": 44,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": true,
@@ -2299,7 +2662,11 @@
       "tokens_cache_read": 9618082,
       "tokens_cache_write": 293713,
       "cost_list_usd": 2.3692,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -2322,7 +2689,12 @@
       "tokens_cache_write": 590458,
       "cost_list_usd": 2.834,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "general-purpose": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2345,7 +2717,11 @@
       "tokens_cache_write": 400803,
       "cost_list_usd": 3.5955,
       "model": "claude-sonnet-5-5",
-      "turns": 56
+      "turns": 56,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2368,7 +2744,11 @@
       "tokens_cache_write": 279947,
       "cost_list_usd": 1.8871,
       "model": "claude-sonnet-5-5",
-      "turns": 41
+      "turns": 41,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2391,7 +2771,11 @@
       "tokens_cache_write": 300803,
       "cost_list_usd": 2.4016,
       "model": "claude-sonnet-5-5",
-      "turns": 62
+      "turns": 62,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2414,7 +2798,11 @@
       "tokens_cache_write": 258421,
       "cost_list_usd": 1.646,
       "model": "claude-sonnet-5-5",
-      "turns": 33
+      "turns": 33,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -2437,7 +2825,10 @@
       "tokens_cache_read": 5550091,
       "tokens_cache_write": 247593,
       "cost_list_usd": 1.7851,
-      "model": "claude-sonnet-5-5"
+      "model": "claude-sonnet-5-5",
+      "agents_called": {
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -2460,7 +2851,12 @@
       "tokens_cache_write": 339200,
       "cost_list_usd": 1.6083,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2483,7 +2879,12 @@
       "tokens_cache_write": 382159,
       "cost_list_usd": 2.3975,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -2506,7 +2907,8 @@
       "tokens_cache_write": 57159,
       "cost_list_usd": 0.278,
       "model": "claude-sonnet-5-5",
-      "turns": 6
+      "turns": 6,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -2529,7 +2931,8 @@
       "tokens_cache_write": 57975,
       "cost_list_usd": 0.2842,
       "model": "claude-sonnet-5-5",
-      "turns": 7
+      "turns": 7,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -2552,7 +2955,8 @@
       "tokens_cache_write": 56856,
       "cost_list_usd": 0.265,
       "model": "claude-sonnet-5-5",
-      "turns": 4
+      "turns": 4,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -2575,7 +2979,10 @@
       "tokens_cache_write": 129213,
       "cost_list_usd": 0.7442,
       "model": "claude-sonnet-5-5",
-      "turns": 14
+      "turns": 14,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2598,7 +3005,12 @@
       "tokens_cache_write": 345668,
       "cost_list_usd": 2.1598,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -2621,7 +3033,8 @@
       "tokens_cache_write": 57960,
       "cost_list_usd": 0.2895,
       "model": "claude-sonnet-5-5",
-      "turns": 7
+      "turns": 7,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -2644,7 +3057,11 @@
       "tokens_cache_write": 477173,
       "cost_list_usd": 2.4092,
       "model": "claude-sonnet-5-5",
-      "turns": 36
+      "turns": 36,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -2667,7 +3084,8 @@
       "tokens_cache_write": 70416,
       "cost_list_usd": 0.4202,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -2690,7 +3108,8 @@
       "tokens_cache_write": 80494,
       "cost_list_usd": 0.5117,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -2713,7 +3132,11 @@
       "tokens_cache_write": 282407,
       "cost_list_usd": 2.0162,
       "model": "claude-sonnet-5-5",
-      "turns": 43
+      "turns": 43,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2736,7 +3159,12 @@
       "tokens_cache_write": 528214,
       "cost_list_usd": 4.174,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -2759,7 +3187,8 @@
       "tokens_cache_write": 70754,
       "cost_list_usd": 0.4568,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -2782,7 +3211,10 @@
       "tokens_cache_write": 138795,
       "cost_list_usd": 0.7665,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2805,7 +3237,11 @@
       "tokens_cache_write": 252361,
       "cost_list_usd": 1.4222,
       "model": "claude-sonnet-5-5",
-      "turns": 28
+      "turns": 28,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -2828,7 +3264,8 @@
       "tokens_cache_write": 98424,
       "cost_list_usd": 0.8973,
       "model": "claude-sonnet-5-5",
-      "turns": 50
+      "turns": 50,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -2851,7 +3288,10 @@
       "tokens_cache_write": 121384,
       "cost_list_usd": 0.6685,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -2874,7 +3314,8 @@
       "tokens_cache_write": 84041,
       "cost_list_usd": 0.5627,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -2897,7 +3338,8 @@
       "tokens_cache_write": 68226,
       "cost_list_usd": 0.4093,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -2920,7 +3362,8 @@
       "tokens_cache_write": 97772,
       "cost_list_usd": 0.7109,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -2943,7 +3386,11 @@
       "tokens_cache_write": 263447,
       "cost_list_usd": 1.6963,
       "model": "claude-sonnet-5-5",
-      "turns": 29
+      "turns": 29,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2966,7 +3413,11 @@
       "tokens_cache_write": 206234,
       "cost_list_usd": 1.1133,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -2989,7 +3440,11 @@
       "tokens_cache_write": 448402,
       "cost_list_usd": 3.5928,
       "model": "claude-sonnet-5-5",
-      "turns": 73
+      "turns": 73,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -3012,7 +3467,8 @@
       "tokens_cache_write": 75735,
       "cost_list_usd": 0.5267,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -3035,7 +3491,11 @@
       "tokens_cache_write": 359832,
       "cost_list_usd": 2.6217,
       "model": "claude-sonnet-5-5",
-      "turns": 56
+      "turns": 56,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -3058,7 +3518,8 @@
       "tokens_cache_write": 69512,
       "cost_list_usd": 0.4016,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -3081,7 +3542,11 @@
       "tokens_cache_write": 477754,
       "cost_list_usd": 3.8922,
       "model": "claude-sonnet-5-5",
-      "turns": 52
+      "turns": 52,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -3104,7 +3569,10 @@
       "tokens_cache_write": 194455,
       "cost_list_usd": 0.9562,
       "model": "claude-sonnet-5-5",
-      "turns": 9
+      "turns": 9,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -3127,7 +3595,10 @@
       "tokens_cache_write": 225741,
       "cost_list_usd": 1.2403,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -3150,7 +3621,11 @@
       "tokens_cache_write": 489173,
       "cost_list_usd": 4.5254,
       "model": "claude-sonnet-5-5",
-      "turns": 101
+      "turns": 101,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": true,
@@ -3173,7 +3648,10 @@
       "tokens_cache_write": 161610,
       "cost_list_usd": 1.0587,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -3196,7 +3674,12 @@
       "tokens_cache_write": 730271,
       "cost_list_usd": 4.2284,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "engineer": 2,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3219,7 +3702,11 @@
       "tokens_cache_write": 296785,
       "cost_list_usd": 1.8259,
       "model": "claude-sonnet-5-5",
-      "turns": 37
+      "turns": 37,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -3242,7 +3729,12 @@
       "tokens_cache_write": 407284,
       "cost_list_usd": 2.5544,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -3265,7 +3757,11 @@
       "tokens_cache_write": 347516,
       "cost_list_usd": 3.0602,
       "model": "claude-sonnet-5-5",
-      "turns": 58
+      "turns": 58,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3288,7 +3784,12 @@
       "tokens_cache_write": 305985,
       "cost_list_usd": 1.626,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3311,7 +3812,11 @@
       "tokens_cache_write": 284475,
       "cost_list_usd": 1.8861,
       "model": "claude-sonnet-5-5",
-      "turns": 37
+      "turns": 37,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3334,7 +3839,13 @@
       "tokens_cache_write": 499553,
       "cost_list_usd": 3.3264,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "astro-auditor": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3357,7 +3868,11 @@
       "tokens_cache_write": 262116,
       "cost_list_usd": 1.7253,
       "model": "claude-sonnet-5-5",
-      "turns": 36
+      "turns": 36,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3380,7 +3895,11 @@
       "tokens_cache_write": 332780,
       "cost_list_usd": 2.333,
       "model": "claude-sonnet-5-5",
-      "turns": 51
+      "turns": 51,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -3403,7 +3922,12 @@
       "tokens_cache_write": 489154,
       "cost_list_usd": 2.9008,
       "model": "claude-sonnet-5-5",
-      "turns": 28
+      "turns": 28,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -3426,7 +3950,11 @@
       "tokens_cache_write": 216376,
       "cost_list_usd": 1.1652,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3449,7 +3977,10 @@
       "tokens_cache_write": 230920,
       "cost_list_usd": 1.1998,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {
+        "general-purpose": 2
+      }
     },
     {
       "owner_helped": false,
@@ -3472,7 +4003,12 @@
       "tokens_cache_write": 337956,
       "cost_list_usd": 1.9207,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3495,7 +4031,11 @@
       "tokens_cache_write": 244912,
       "cost_list_usd": 1.3869,
       "model": "claude-sonnet-5-5",
-      "turns": 28
+      "turns": 28,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3518,7 +4058,10 @@
       "tokens_cache_write": 129549,
       "cost_list_usd": 0.7741,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -3541,7 +4084,8 @@
       "tokens_cache_write": 70198,
       "cost_list_usd": 0.4446,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -3564,7 +4108,11 @@
       "tokens_cache_write": 375044,
       "cost_list_usd": 2.8908,
       "model": "claude-sonnet-5-5",
-      "turns": 45
+      "turns": 45,
+      "agents_called": {
+        "engineer": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -3587,7 +4135,8 @@
       "tokens_cache_write": 89430,
       "cost_list_usd": 0.5813,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -3610,7 +4159,10 @@
       "tokens_cache_write": 117717,
       "cost_list_usd": 0.6496,
       "model": "claude-sonnet-5-5",
-      "turns": 8
+      "turns": 8,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3633,7 +4185,12 @@
       "tokens_cache_write": 442407,
       "cost_list_usd": 2.4066,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -3656,7 +4213,8 @@
       "tokens_cache_write": 76046,
       "cost_list_usd": 0.5409,
       "model": "claude-sonnet-5-5",
-      "turns": 26
+      "turns": 26,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -3679,7 +4237,12 @@
       "tokens_cache_write": 385635,
       "cost_list_usd": 2.6659,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -3702,7 +4265,8 @@
       "tokens_cache_write": 93124,
       "cost_list_usd": 0.6047,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -3725,7 +4289,8 @@
       "tokens_cache_write": 86935,
       "cost_list_usd": 0.5763,
       "model": "claude-sonnet-5-5",
-      "turns": 18
+      "turns": 18,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -3748,7 +4313,12 @@
       "tokens_cache_write": 369638,
       "cost_list_usd": 2.3761,
       "model": "claude-sonnet-5-5",
-      "turns": 18
+      "turns": 18,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3771,7 +4341,12 @@
       "tokens_cache_write": 539391,
       "cost_list_usd": 3.1113,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3794,7 +4369,10 @@
       "tokens_cache_write": 183400,
       "cost_list_usd": 1.2986,
       "model": "claude-sonnet-5-5",
-      "turns": 32
+      "turns": 32,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3817,7 +4395,12 @@
       "tokens_cache_write": 381714,
       "cost_list_usd": 2.4283,
       "model": "claude-sonnet-5-5",
-      "turns": 26
+      "turns": 26,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3840,7 +4423,11 @@
       "tokens_cache_write": 362309,
       "cost_list_usd": 2.3292,
       "model": "claude-sonnet-5-5",
-      "turns": 30
+      "turns": 30,
+      "agents_called": {
+        "engineer": 1,
+        "qa": 3
+      }
     },
     {
       "owner_helped": false,
@@ -3863,7 +4450,12 @@
       "tokens_cache_write": 429382,
       "cost_list_usd": 3.2276,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3886,7 +4478,12 @@
       "tokens_cache_write": 376209,
       "cost_list_usd": 2.2899,
       "model": "claude-sonnet-5-5",
-      "turns": 18
+      "turns": 18,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3909,7 +4506,11 @@
       "tokens_cache_write": 321569,
       "cost_list_usd": 2.1039,
       "model": "claude-sonnet-5-5",
-      "turns": 39
+      "turns": 39,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -3932,7 +4533,12 @@
       "tokens_cache_write": 406539,
       "cost_list_usd": 2.3633,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3955,7 +4561,12 @@
       "tokens_cache_write": 423001,
       "cost_list_usd": 2.6571,
       "model": "claude-sonnet-5-5",
-      "turns": 26
+      "turns": 26,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -3978,7 +4589,12 @@
       "tokens_cache_write": 340754,
       "cost_list_usd": 1.9913,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -4001,7 +4617,11 @@
       "tokens_cache_write": 348589,
       "cost_list_usd": 2.5137,
       "model": "claude-sonnet-5-5",
-      "turns": 46
+      "turns": 46,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -4024,7 +4644,11 @@
       "tokens_cache_write": 266939,
       "cost_list_usd": 1.9237,
       "model": "claude-sonnet-5-5",
-      "turns": 48
+      "turns": 48,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -4047,7 +4671,8 @@
       "tokens_cache_write": 72695,
       "cost_list_usd": 0.4946,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -4070,7 +4695,13 @@
       "tokens_cache_write": 571129,
       "cost_list_usd": 3.6801,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "architect": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -4093,7 +4724,8 @@
       "tokens_cache_write": 56941,
       "cost_list_usd": 0.2749,
       "model": "claude-sonnet-5-5",
-      "turns": 6
+      "turns": 6,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -4116,7 +4748,11 @@
       "tokens_cache_write": 261921,
       "cost_list_usd": 1.6826,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -4139,7 +4775,12 @@
       "tokens_cache_write": 481496,
       "cost_list_usd": 2.7695,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -4162,7 +4803,12 @@
       "tokens_cache_write": 452970,
       "cost_list_usd": 2.7667,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -4185,7 +4831,12 @@
       "tokens_cache_write": 406763,
       "cost_list_usd": 2.5633,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -4208,7 +4859,10 @@
       "tokens_cache_write": 116566,
       "cost_list_usd": 0.5784,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -4231,7 +4885,12 @@
       "tokens_cache_write": 527758,
       "cost_list_usd": 3.9432,
       "model": "claude-sonnet-5-5",
-      "turns": 32
+      "turns": 32,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -4254,7 +4913,10 @@
       "tokens_cache_write": 222070,
       "cost_list_usd": 1.42,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": false,
@@ -4277,7 +4939,12 @@
       "tokens_cache_write": 317810,
       "cost_list_usd": 1.8705,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -4300,7 +4967,11 @@
       "tokens_cache_write": 236499,
       "cost_list_usd": 1.4736,
       "model": "claude-sonnet-5-5",
-      "turns": 34
+      "turns": 34,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -4323,7 +4994,12 @@
       "tokens_cache_write": 353757,
       "cost_list_usd": 2.2017,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -4346,7 +5022,8 @@
       "tokens_cache_write": 65259,
       "cost_list_usd": 0.3901,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -4369,7 +5046,8 @@
       "tokens_cache_write": 92437,
       "cost_list_usd": 0.6624,
       "model": "claude-sonnet-5-5",
-      "turns": 31
+      "turns": 31,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -4392,7 +5070,10 @@
       "tokens_cache_write": 130768,
       "cost_list_usd": 0.7862,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -4415,7 +5096,8 @@
       "tokens_cache_write": 83114,
       "cost_list_usd": 0.6069,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -4438,7 +5120,8 @@
       "tokens_cache_write": 60408,
       "cost_list_usd": 0.3473,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -4461,7 +5144,12 @@
       "tokens_cache_write": 344670,
       "cost_list_usd": 1.9193,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -4484,7 +5172,10 @@
       "tokens_cache_write": 218558,
       "cost_list_usd": 1.3869,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": false,
@@ -4507,7 +5198,11 @@
       "tokens_cache_write": 247889,
       "cost_list_usd": 1.4747,
       "model": "claude-sonnet-5-5",
-      "turns": 29
+      "turns": 29,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -4530,7 +5225,8 @@
       "tokens_cache_write": 78661,
       "cost_list_usd": 0.5062,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -4553,7 +5249,8 @@
       "tokens_cache_write": 85759,
       "cost_list_usd": 0.6152,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -4576,7 +5273,12 @@
       "tokens_cache_write": 354375,
       "cost_list_usd": 2.3793,
       "model": "claude-sonnet-5-5",
-      "turns": 18
+      "turns": 18,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -4599,7 +5301,8 @@
       "tokens_cache_write": 66651,
       "cost_list_usd": 0.3939,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -4622,7 +5325,8 @@
       "tokens_cache_write": 65584,
       "cost_list_usd": 0.385,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -4645,7 +5349,12 @@
       "tokens_cache_write": 306800,
       "cost_list_usd": 1.8365,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -4668,7 +5377,8 @@
       "tokens_cache_write": 76895,
       "cost_list_usd": 0.5153,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -4691,7 +5401,12 @@
       "tokens_cache_write": 338040,
       "cost_list_usd": 2.2471,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -4714,7 +5429,8 @@
       "tokens_cache_write": 70746,
       "cost_list_usd": 0.4834,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -4737,7 +5453,11 @@
       "tokens_cache_write": 324846,
       "cost_list_usd": 1.966,
       "model": "claude-sonnet-5-5",
-      "turns": 36
+      "turns": 36,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -4760,7 +5480,12 @@
       "tokens_cache_write": 597937,
       "cost_list_usd": 4.5017,
       "model": "claude-sonnet-5-5",
-      "turns": 33
+      "turns": 33,
+      "agents_called": {
+        "engineer": 2,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -4783,7 +5508,8 @@
       "tokens_cache_write": 84415,
       "cost_list_usd": 0.6008,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -4806,7 +5532,8 @@
       "tokens_cache_write": 71518,
       "cost_list_usd": 0.4647,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -4829,7 +5556,8 @@
       "tokens_cache_write": 67384,
       "cost_list_usd": 0.3962,
       "model": "claude-sonnet-5-5",
-      "turns": 14
+      "turns": 14,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -4852,7 +5580,11 @@
       "tokens_cache_write": 387527,
       "cost_list_usd": 2.6397,
       "model": "claude-sonnet-5-5",
-      "turns": 39
+      "turns": 39,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -4875,7 +5607,12 @@
       "tokens_cache_write": 342455,
       "cost_list_usd": 2.1315,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -4898,7 +5635,8 @@
       "tokens_cache_write": 83608,
       "cost_list_usd": 0.5235,
       "model": "claude-sonnet-5-5",
-      "turns": 18
+      "turns": 18,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -4921,7 +5659,11 @@
       "tokens_cache_write": 267236,
       "cost_list_usd": 1.6366,
       "model": "claude-sonnet-5-5",
-      "turns": 33
+      "turns": 33,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -4944,7 +5686,10 @@
       "tokens_cache_write": 154413,
       "cost_list_usd": 1.0039,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -4967,7 +5712,11 @@
       "tokens_cache_write": 352335,
       "cost_list_usd": 2.4143,
       "model": "claude-sonnet-5-5",
-      "turns": 45
+      "turns": 45,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -4990,7 +5739,11 @@
       "tokens_cache_write": 239708,
       "cost_list_usd": 1.4743,
       "model": "claude-sonnet-5-5",
-      "turns": 31
+      "turns": 31,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -5013,7 +5766,12 @@
       "tokens_cache_write": 533784,
       "cost_list_usd": 4.5938,
       "model": "claude-sonnet-5-5",
-      "turns": 27
+      "turns": 27,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -5036,7 +5794,8 @@
       "tokens_cache_write": 78964,
       "cost_list_usd": 0.6167,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -5059,7 +5818,10 @@
       "tokens_cache_write": 132031,
       "cost_list_usd": 0.8486,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -5082,7 +5844,8 @@
       "tokens_cache_write": 60205,
       "cost_list_usd": 0.3624,
       "model": "claude-sonnet-5-5",
-      "turns": 14
+      "turns": 14,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -5105,7 +5868,8 @@
       "tokens_cache_write": 59297,
       "cost_list_usd": 0.3362,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -5128,7 +5892,12 @@
       "tokens_cache_write": 672282,
       "cost_list_usd": 4.3427,
       "model": "claude-sonnet-5-5",
-      "turns": 40
+      "turns": 40,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -5151,7 +5920,13 @@
       "tokens_cache_write": 412102,
       "cost_list_usd": 2.2616,
       "model": "claude-sonnet-5-5",
-      "turns": 40
+      "turns": 40,
+      "agents_called": {
+        "astro-auditor": 1,
+        "chief": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -5174,7 +5949,8 @@
       "tokens_cache_write": 66091,
       "cost_list_usd": 0.4773,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -5197,7 +5973,11 @@
       "tokens_cache_write": 286574,
       "cost_list_usd": 2.3607,
       "model": "claude-sonnet-5-5",
-      "turns": 52
+      "turns": 52,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -5220,7 +6000,10 @@
       "tokens_cache_write": 169755,
       "cost_list_usd": 1.305,
       "model": "claude-sonnet-5-5",
-      "turns": 32
+      "turns": 32,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -5243,7 +6026,11 @@
       "tokens_cache_write": 334368,
       "cost_list_usd": 2.3681,
       "model": "claude-sonnet-5-5",
-      "turns": 46
+      "turns": 46,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": true,
@@ -5266,7 +6053,12 @@
       "tokens_cache_write": 268680,
       "cost_list_usd": 1.5527,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -5289,7 +6081,10 @@
       "tokens_cache_write": 142469,
       "cost_list_usd": 0.7715,
       "model": "claude-sonnet-5-5",
-      "turns": 9
+      "turns": 9,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -5312,7 +6107,10 @@
       "tokens_cache_write": 175227,
       "cost_list_usd": 1.499,
       "model": "claude-sonnet-5-5",
-      "turns": 42
+      "turns": 42,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -5335,7 +6133,14 @@
       "tokens_cache_write": 769205,
       "cost_list_usd": 5.7063,
       "model": "claude-sonnet-5-5",
-      "turns": 43
+      "turns": 43,
+      "agents_called": {
+        "astro-auditor": 1,
+        "chief": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -5358,7 +6163,11 @@
       "tokens_cache_write": 252808,
       "cost_list_usd": 1.6998,
       "model": "claude-sonnet-5-5",
-      "turns": 40
+      "turns": 40,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -5381,7 +6190,8 @@
       "tokens_cache_write": 60205,
       "cost_list_usd": 0.3411,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -5404,7 +6214,13 @@
       "tokens_cache_write": 569731,
       "cost_list_usd": 3.9366,
       "model": "claude-sonnet-5-5",
-      "turns": 28
+      "turns": 28,
+      "agents_called": {
+        "chief": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -5427,7 +6243,11 @@
       "tokens_cache_write": 359808,
       "cost_list_usd": 2.567,
       "model": "claude-sonnet-5-5",
-      "turns": 46
+      "turns": 46,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -5450,7 +6270,12 @@
       "tokens_cache_write": 489109,
       "cost_list_usd": 3.6639,
       "model": "claude-sonnet-5-5",
-      "turns": 33
+      "turns": 33,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -5473,7 +6298,8 @@
       "tokens_cache_write": 66989,
       "cost_list_usd": 0.4274,
       "model": "claude-sonnet-5-5",
-      "turns": 18
+      "turns": 18,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -5496,7 +6322,11 @@
       "tokens_cache_write": 221142,
       "cost_list_usd": 1.246,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -5519,7 +6349,13 @@
       "tokens_cache_write": 405804,
       "cost_list_usd": 2.178,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {
+        "chief": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -5542,7 +6378,11 @@
       "tokens_cache_write": 237370,
       "cost_list_usd": 1.2738,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -5565,7 +6405,12 @@
       "tokens_cache_write": 406456,
       "cost_list_usd": 2.373,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -5588,7 +6433,13 @@
       "tokens_cache_write": 415146,
       "cost_list_usd": 2.4533,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "chief": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -5611,7 +6462,8 @@
       "tokens_cache_write": 62358,
       "cost_list_usd": 0.3413,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -5634,7 +6486,12 @@
       "tokens_cache_write": 348198,
       "cost_list_usd": 2.1517,
       "model": "claude-sonnet-5-5",
-      "turns": 37
+      "turns": 37,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -5657,7 +6514,13 @@
       "tokens_cache_write": 547896,
       "cost_list_usd": 3.1892,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {
+        "chief": 1,
+        "engineer": 2,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -5680,7 +6543,12 @@
       "tokens_cache_write": 460798,
       "cost_list_usd": 2.5408,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -5703,7 +6571,8 @@
       "tokens_cache_write": 80851,
       "cost_list_usd": 0.5511,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -5726,7 +6595,10 @@
       "tokens_cache_write": 160205,
       "cost_list_usd": 1.0435,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -5749,7 +6621,8 @@
       "tokens_cache_write": 81563,
       "cost_list_usd": 0.5582,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -5772,7 +6645,8 @@
       "tokens_cache_write": 75748,
       "cost_list_usd": 0.593,
       "model": "claude-sonnet-5-5",
-      "turns": 29
+      "turns": 29,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -5795,7 +6669,10 @@
       "tokens_cache_write": 139773,
       "cost_list_usd": 0.7448,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -5818,7 +6695,11 @@
       "tokens_cache_write": 247596,
       "cost_list_usd": 1.4853,
       "model": "claude-sonnet-5-5",
-      "turns": 27
+      "turns": 27,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -5841,7 +6722,8 @@
       "tokens_cache_write": 76389,
       "cost_list_usd": 0.4934,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": true,
@@ -5864,7 +6746,12 @@
       "tokens_cache_write": 591868,
       "cost_list_usd": 2.718,
       "model": "claude-sonnet-5-5",
-      "turns": 18
+      "turns": 18,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -5887,7 +6774,8 @@
       "tokens_cache_write": 77143,
       "cost_list_usd": 0.4769,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -5910,7 +6798,8 @@
       "tokens_cache_write": 80545,
       "cost_list_usd": 0.5588,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -5933,7 +6822,12 @@
       "tokens_cache_write": 440669,
       "cost_list_usd": 2.9736,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -5956,7 +6850,13 @@
       "tokens_cache_write": 373480,
       "cost_list_usd": 2.069,
       "model": "claude-sonnet-5-5",
-      "turns": 37
+      "turns": 37,
+      "agents_called": {
+        "chief": 1,
+        "numerologist": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -5979,7 +6879,8 @@
       "tokens_cache_write": 115397,
       "cost_list_usd": 0.9928,
       "model": "claude-sonnet-5-5",
-      "turns": 33
+      "turns": 33,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6002,7 +6903,10 @@
       "tokens_cache_write": 214519,
       "cost_list_usd": 1.2792,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": false,
@@ -6025,7 +6929,12 @@
       "tokens_cache_write": 405908,
       "cost_list_usd": 2.6572,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -6048,7 +6957,10 @@
       "tokens_cache_write": 164419,
       "cost_list_usd": 0.8716,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": false,
@@ -6071,7 +6983,11 @@
       "tokens_cache_write": 336899,
       "cost_list_usd": 1.9488,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -6094,7 +7010,10 @@
       "tokens_cache_write": 119111,
       "cost_list_usd": 0.6304,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -6117,7 +7036,12 @@
       "tokens_cache_write": 518498,
       "cost_list_usd": 3.6045,
       "model": "claude-sonnet-5-5",
-      "turns": 48
+      "turns": 48,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 3
+      }
     },
     {
       "owner_helped": null,
@@ -6140,7 +7064,8 @@
       "tokens_cache_write": 55350,
       "cost_list_usd": 0.2513,
       "model": "claude-sonnet-5-5",
-      "turns": 3
+      "turns": 3,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -6163,7 +7088,10 @@
       "tokens_cache_write": 127748,
       "cost_list_usd": 0.6483,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -6186,7 +7114,8 @@
       "tokens_cache_write": 78731,
       "cost_list_usd": 0.5501,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -6209,7 +7138,10 @@
       "tokens_cache_write": 194348,
       "cost_list_usd": 1.3378,
       "model": "claude-sonnet-5-5",
-      "turns": 34
+      "turns": 34,
+      "agents_called": {
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": false,
@@ -6232,7 +7164,13 @@
       "tokens_cache_write": 472027,
       "cost_list_usd": 2.6851,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "chief": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -6255,7 +7193,14 @@
       "tokens_cache_write": 589064,
       "cost_list_usd": 3.6858,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "architect": 1,
+        "engineer": 1,
+        "product-manager": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -6278,7 +7223,8 @@
       "tokens_cache_write": 80049,
       "cost_list_usd": 0.4945,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6301,7 +7247,10 @@
       "tokens_cache_write": 157665,
       "cost_list_usd": 0.8387,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": null,
@@ -6324,7 +7273,8 @@
       "tokens_cache_write": 79744,
       "cost_list_usd": 0.5098,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6347,7 +7297,10 @@
       "tokens_cache_write": 169737,
       "cost_list_usd": 0.9609,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": true,
@@ -6370,7 +7323,10 @@
       "tokens_cache_write": 141055,
       "cost_list_usd": 0.8805,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -6393,7 +7349,8 @@
       "tokens_cache_write": 74579,
       "cost_list_usd": 0.539,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6416,7 +7373,8 @@
       "tokens_cache_write": 75980,
       "cost_list_usd": 0.4817,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6439,7 +7397,8 @@
       "tokens_cache_write": 78235,
       "cost_list_usd": 0.5927,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -6462,7 +7421,10 @@
       "tokens_cache_write": 150067,
       "cost_list_usd": 1.0558,
       "model": "claude-sonnet-5-5",
-      "turns": 30
+      "turns": 30,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -6485,7 +7447,8 @@
       "tokens_cache_write": 74429,
       "cost_list_usd": 0.5004,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6508,7 +7471,8 @@
       "tokens_cache_write": 93835,
       "cost_list_usd": 0.6428,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6531,7 +7495,10 @@
       "tokens_cache_write": 156998,
       "cost_list_usd": 1.0205,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -6554,7 +7521,8 @@
       "tokens_cache_write": 77234,
       "cost_list_usd": 0.5023,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6577,7 +7545,8 @@
       "tokens_cache_write": 78441,
       "cost_list_usd": 0.5493,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -6600,7 +7569,13 @@
       "tokens_cache_write": 824307,
       "cost_list_usd": 7.3608,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {
+        "architect": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -6623,7 +7598,11 @@
       "tokens_cache_write": 245015,
       "cost_list_usd": 1.4849,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -6646,7 +7625,8 @@
       "tokens_cache_write": 109984,
       "cost_list_usd": 1.0075,
       "model": "claude-sonnet-5-5",
-      "turns": 41
+      "turns": 41,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -6669,7 +7649,10 @@
       "tokens_cache_write": 117833,
       "cost_list_usd": 0.6502,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -6692,7 +7675,8 @@
       "tokens_cache_write": 92173,
       "cost_list_usd": 0.6278,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6715,7 +7699,8 @@
       "tokens_cache_write": 69805,
       "cost_list_usd": 0.4962,
       "model": "claude-sonnet-5-5",
-      "turns": 28
+      "turns": 28,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -6738,7 +7723,10 @@
       "tokens_cache_write": 112996,
       "cost_list_usd": 0.6056,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -6761,7 +7749,12 @@
       "tokens_cache_write": 1085036,
       "cost_list_usd": 7.2889,
       "model": "claude-sonnet-5-5",
-      "turns": 49
+      "turns": 49,
+      "agents_called": {
+        "engineer": 4,
+        "project-manager": 1,
+        "qa": 4
+      }
     },
     {
       "owner_helped": false,
@@ -6784,7 +7777,10 @@
       "tokens_cache_write": 151184,
       "cost_list_usd": 0.9175,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -6807,7 +7803,11 @@
       "tokens_cache_write": 318653,
       "cost_list_usd": 2.1459,
       "model": "claude-sonnet-5-5",
-      "turns": 43
+      "turns": 43,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -6830,7 +7830,12 @@
       "tokens_cache_write": 312352,
       "cost_list_usd": 1.8137,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -6853,7 +7858,11 @@
       "tokens_cache_write": 299282,
       "cost_list_usd": 2.3818,
       "model": "claude-sonnet-5-5",
-      "turns": 66
+      "turns": 66,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -6876,7 +7885,11 @@
       "tokens_cache_write": 276685,
       "cost_list_usd": 1.9048,
       "model": "claude-sonnet-5-5",
-      "turns": 26
+      "turns": 26,
+      "agents_called": {
+        "engineer": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -6899,7 +7912,13 @@
       "tokens_cache_write": 499980,
       "cost_list_usd": 3.3069,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {
+        "chief": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -6915,7 +7934,8 @@
       "pr_merged": null,
       "outcome": "failed",
       "attribution": "receipt",
-      "kind": "unknown"
+      "kind": "unknown",
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6931,7 +7951,8 @@
       "pr_merged": null,
       "outcome": "failed",
       "attribution": "receipt",
-      "kind": "unknown"
+      "kind": "unknown",
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6954,7 +7975,8 @@
       "tokens_cache_write": 86662,
       "cost_list_usd": 0.5504,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -6977,7 +7999,8 @@
       "tokens_cache_write": 64485,
       "cost_list_usd": 0.3997,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7000,7 +8023,8 @@
       "tokens_cache_write": 71221,
       "cost_list_usd": 0.4471,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7023,7 +8047,8 @@
       "tokens_cache_write": 73084,
       "cost_list_usd": 0.5015,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7046,7 +8071,8 @@
       "tokens_cache_write": 76528,
       "cost_list_usd": 0.4861,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7069,7 +8095,8 @@
       "tokens_cache_write": 58533,
       "cost_list_usd": 0.3078,
       "model": "claude-sonnet-5-5",
-      "turns": 9
+      "turns": 9,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7092,7 +8119,8 @@
       "tokens_cache_write": 75813,
       "cost_list_usd": 0.5417,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7115,7 +8143,8 @@
       "tokens_cache_write": 55816,
       "cost_list_usd": 0.2908,
       "model": "claude-sonnet-5-5",
-      "turns": 7
+      "turns": 7,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7138,7 +8167,8 @@
       "tokens_cache_write": 77124,
       "cost_list_usd": 0.5396,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7161,7 +8191,8 @@
       "tokens_cache_write": 59648,
       "cost_list_usd": 0.3453,
       "model": "claude-sonnet-5-5",
-      "turns": 14
+      "turns": 14,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7184,7 +8215,8 @@
       "tokens_cache_write": 77344,
       "cost_list_usd": 0.5761,
       "model": "claude-sonnet-5-5",
-      "turns": 27
+      "turns": 27,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -7207,7 +8239,12 @@
       "tokens_cache_write": 338421,
       "cost_list_usd": 2.2291,
       "model": "claude-sonnet-5-5",
-      "turns": 33
+      "turns": 33,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7230,7 +8267,11 @@
       "tokens_cache_write": 266935,
       "cost_list_usd": 1.7429,
       "model": "claude-sonnet-5-5",
-      "turns": 30
+      "turns": 30,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7253,7 +8294,11 @@
       "tokens_cache_write": 244817,
       "cost_list_usd": 1.5802,
       "model": "claude-sonnet-5-5",
-      "turns": 32
+      "turns": 32,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7276,7 +8321,11 @@
       "tokens_cache_write": 323058,
       "cost_list_usd": 2.3163,
       "model": "claude-sonnet-5-5",
-      "turns": 37
+      "turns": 37,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -7299,7 +8348,11 @@
       "tokens_cache_write": 279434,
       "cost_list_usd": 1.8359,
       "model": "claude-sonnet-5-5",
-      "turns": 32
+      "turns": 32,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -7322,7 +8375,10 @@
       "tokens_cache_write": 139347,
       "cost_list_usd": 0.7598,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7345,7 +8401,11 @@
       "tokens_cache_write": 271252,
       "cost_list_usd": 1.8657,
       "model": "claude-sonnet-5-5",
-      "turns": 34
+      "turns": 34,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7368,7 +8428,12 @@
       "tokens_cache_write": 340494,
       "cost_list_usd": 2.2241,
       "model": "claude-sonnet-5-5",
-      "turns": 28
+      "turns": 28,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7391,7 +8456,10 @@
       "tokens_cache_write": 119084,
       "cost_list_usd": 0.6531,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7414,7 +8482,13 @@
       "tokens_cache_write": 472608,
       "cost_list_usd": 2.6968,
       "model": "claude-sonnet-5-5",
-      "turns": 34
+      "turns": 34,
+      "agents_called": {
+        "chief": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -7437,7 +8511,10 @@
       "tokens_cache_write": 126838,
       "cost_list_usd": 0.6543,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7460,7 +8537,10 @@
       "tokens_cache_write": 168750,
       "cost_list_usd": 0.8033,
       "model": "claude-sonnet-5-5",
-      "turns": 17
+      "turns": 17,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7483,7 +8563,11 @@
       "tokens_cache_write": 354730,
       "cost_list_usd": 2.6402,
       "model": "claude-sonnet-5-5",
-      "turns": 44
+      "turns": 44,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7506,7 +8590,11 @@
       "tokens_cache_write": 230463,
       "cost_list_usd": 1.5295,
       "model": "claude-sonnet-5-5",
-      "turns": 40
+      "turns": 40,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -7529,7 +8617,10 @@
       "tokens_cache_write": 140515,
       "cost_list_usd": 0.8998,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7552,7 +8643,12 @@
       "tokens_cache_write": 402288,
       "cost_list_usd": 2.9204,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7575,7 +8671,11 @@
       "tokens_cache_write": 247829,
       "cost_list_usd": 1.4611,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -7598,7 +8698,10 @@
       "tokens_cache_write": 160872,
       "cost_list_usd": 1.0308,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -7621,7 +8724,8 @@
       "tokens_cache_write": 77219,
       "cost_list_usd": 0.5301,
       "model": "claude-sonnet-5-5",
-      "turns": 26
+      "turns": 26,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -7644,7 +8748,11 @@
       "tokens_cache_write": 318719,
       "cost_list_usd": 2.4268,
       "model": "claude-sonnet-5-5",
-      "turns": 49
+      "turns": 49,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -7667,7 +8775,11 @@
       "tokens_cache_write": 328961,
       "cost_list_usd": 2.9164,
       "model": "claude-sonnet-5-5",
-      "turns": 58
+      "turns": 58,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -7690,7 +8802,8 @@
       "tokens_cache_write": 60683,
       "cost_list_usd": 0.3511,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {}
     },
     {
       "owner_helped": false,
@@ -7713,7 +8826,12 @@
       "tokens_cache_write": 624543,
       "cost_list_usd": 3.2835,
       "model": "claude-sonnet-5-5",
-      "turns": 22
+      "turns": 22,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7736,7 +8854,12 @@
       "tokens_cache_write": 383000,
       "cost_list_usd": 2.1285,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -7759,7 +8882,10 @@
       "tokens_cache_write": 178659,
       "cost_list_usd": 0.9155,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -7782,7 +8908,10 @@
       "tokens_cache_write": 107687,
       "cost_list_usd": 0.608,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7805,7 +8934,12 @@
       "tokens_cache_write": 473806,
       "cost_list_usd": 3.2464,
       "model": "claude-sonnet-5-5",
-      "turns": 27
+      "turns": 27,
+      "agents_called": {
+        "frontend-engineer": 1,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -7828,7 +8962,8 @@
       "tokens_cache_write": 99328,
       "cost_list_usd": 0.8739,
       "model": "claude-sonnet-5-5",
-      "turns": 38
+      "turns": 38,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7851,7 +8986,8 @@
       "tokens_cache_write": 75428,
       "cost_list_usd": 0.5677,
       "model": "claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -7874,7 +9010,10 @@
       "tokens_cache_write": 155941,
       "cost_list_usd": 1.1468,
       "model": "claude-sonnet-5-5",
-      "turns": 14
+      "turns": 14,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -7897,7 +9036,12 @@
       "tokens_cache_write": 379588,
       "cost_list_usd": 2.4073,
       "model": "claude-sonnet-5-5",
-      "turns": 25
+      "turns": 25,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -7920,7 +9064,10 @@
       "tokens_cache_write": 149992,
       "cost_list_usd": 0.9242,
       "model": "claude-sonnet-5-5",
-      "turns": 12
+      "turns": 12,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -7943,7 +9090,10 @@
       "tokens_cache_write": 156435,
       "cost_list_usd": 0.7276,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": true,
@@ -7966,7 +9116,12 @@
       "tokens_cache_write": 553132,
       "cost_list_usd": 2.7212,
       "model": "claude-sonnet-5-5",
-      "turns": 21
+      "turns": 21,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -7989,7 +9144,10 @@
       "tokens_cache_write": 251474,
       "cost_list_usd": 1.3184,
       "model": "claude-sonnet-5-5",
-      "turns": 13
+      "turns": 13,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -8012,7 +9170,8 @@
       "tokens_cache_write": 70227,
       "cost_list_usd": 0.4893,
       "model": "claude-sonnet-5-5",
-      "turns": 23
+      "turns": 23,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -8035,7 +9194,8 @@
       "tokens_cache_write": 62836,
       "cost_list_usd": 0.3581,
       "model": "claude-sonnet-5-5",
-      "turns": 11
+      "turns": 11,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -8058,7 +9218,8 @@
       "tokens_cache_write": 91682,
       "cost_list_usd": 0.7096,
       "model": "claude-sonnet-5-5",
-      "turns": 30
+      "turns": 30,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -8081,7 +9242,8 @@
       "tokens_cache_write": 62794,
       "cost_list_usd": 0.4098,
       "model": "claude-sonnet-5-5",
-      "turns": 16
+      "turns": 16,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -8104,7 +9266,8 @@
       "tokens_cache_write": 67371,
       "cost_list_usd": 0.4133,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -8127,7 +9290,10 @@
       "tokens_cache_write": 178173,
       "cost_list_usd": 1.1907,
       "model": "claude-sonnet-5-5",
-      "turns": 15
+      "turns": 15,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -8150,7 +9316,10 @@
       "tokens_cache_write": 135673,
       "cost_list_usd": 0.7033,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -8173,7 +9342,10 @@
       "tokens_cache_write": 107182,
       "cost_list_usd": 0.6155,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -8196,7 +9368,12 @@
       "tokens_cache_write": 484902,
       "cost_list_usd": 3.4235,
       "model": "claude-sonnet-5-5",
-      "turns": 26
+      "turns": 26,
+      "agents_called": {
+        "frontend-engineer": 2,
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -8219,7 +9396,11 @@
       "tokens_cache_write": 214658,
       "cost_list_usd": 1.3183,
       "model": "claude-sonnet-5-5",
-      "turns": 31
+      "turns": 31,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": false,
@@ -8242,7 +9423,11 @@
       "tokens_cache_write": 285073,
       "cost_list_usd": 2.146,
       "model": "claude-sonnet-5-5",
-      "turns": 64
+      "turns": 64,
+      "agents_called": {
+        "project-manager": 1,
+        "qa": 2
+      }
     },
     {
       "owner_helped": null,
@@ -8265,7 +9450,10 @@
       "tokens_cache_write": 138821,
       "cost_list_usd": 0.6612,
       "model": "claude-sonnet-5-5",
-      "turns": 10
+      "turns": 10,
+      "agents_called": {
+        "project-manager": 1
+      }
     },
     {
       "owner_helped": false,
@@ -8288,7 +9476,14 @@
       "tokens_cache_write": 584023,
       "cost_list_usd": 3.9038,
       "model": "claude-haiku-5-5+claude-sonnet-5-5",
-      "turns": 24
+      "turns": 24,
+      "agents_called": {
+        "astro-auditor": 1,
+        "chief": 1,
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -8311,7 +9506,8 @@
       "tokens_cache_write": 77998,
       "cost_list_usd": 0.6645,
       "model": "claude-sonnet-5-5",
-      "turns": 32
+      "turns": 32,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -8334,7 +9530,10 @@
       "tokens_cache_write": 134253,
       "cost_list_usd": 0.8224,
       "model": "claude-sonnet-5-5",
-      "turns": 8
+      "turns": 8,
+      "agents_called": {
+        "qa": 1
+      }
     },
     {
       "owner_helped": false,
@@ -8357,7 +9556,12 @@
       "tokens_cache_write": 287741,
       "cost_list_usd": 1.6191,
       "model": "claude-sonnet-5-5",
-      "turns": 19
+      "turns": 19,
+      "agents_called": {
+        "engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
     },
     {
       "owner_helped": null,
@@ -8380,7 +9584,8 @@
       "tokens_cache_write": 80702,
       "cost_list_usd": 0.5605,
       "model": "claude-sonnet-5-5",
-      "turns": 20
+      "turns": 20,
+      "agents_called": {}
     },
     {
       "owner_helped": null,
@@ -11140,49 +12345,49 @@
   ],
   "waste": {
     "days": 7,
-    "cycles": 204,
+    "cycles": 207,
     "minutes_by_outcome": {
-      "shipped": 3910.2,
-      "pr open": 77.3,
-      "judged": 511.3,
+      "shipped": 3968.2,
+      "pr open": 43.7,
+      "judged": 534.7,
       "nothing": 53.7,
       "failed": 0.0,
       "unknown": 0.0
     },
-    "minutes_total": 4552.5,
+    "minutes_total": 4600.3,
     "minutes_without_result": 53.7,
     "share_without_result": 0.012,
     "shipped_prs": 94,
-    "build_idle_hours": 102.9,
-    "build_idle_share": 0.613
+    "build_idle_hours": 102.5,
+    "build_idle_share": 0.61
   },
   "tokens": {
     "days": 7,
-    "runs": 204,
-    "measured": 204,
+    "runs": 207,
+    "measured": 207,
     "total": {
-      "tokens": 906473313,
-      "input": 21205,
-      "output": 7120639,
-      "cache_read": 852110102,
-      "cache_write": 47221367,
-      "cost_list_usd": 301.3
+      "tokens": 909480977,
+      "input": 21314,
+      "output": 7175545,
+      "cache_read": 854673336,
+      "cache_write": 47610782,
+      "cost_list_usd": 303.32
     },
     "median_by_outcome": {
       "shipped": {
-        "runs": 118,
-        "tokens": 6493418,
-        "cost_list_usd": 2.13
+        "runs": 119,
+        "tokens": 6321615,
+        "cost_list_usd": 2.1
       },
       "pr open": {
-        "runs": 2,
-        "tokens": 3808496,
-        "cost_list_usd": 1.65
+        "runs": 1,
+        "tokens": 4815167,
+        "cost_list_usd": 2.02
       },
       "judged": {
-        "runs": 61,
-        "tokens": 1240184,
-        "cost_list_usd": 0.49
+        "runs": 64,
+        "tokens": 1211453,
+        "cost_list_usd": 0.47
       },
       "nothing": {
         "runs": 23,
@@ -11190,16 +12395,94 @@
         "cost_list_usd": 0.27
       }
     },
-    "median_cycle": 5585616,
-    "median_qa_round": 1240184,
+    "median_cycle": 5519560,
+    "median_qa_round": 1211453,
     "merged_prs": 94,
-    "per_merged_pr": 9643333,
-    "cost_list_usd_per_merged_pr": 3.21,
+    "per_merged_pr": 9675330,
+    "cost_list_usd_per_merged_pr": 3.23,
     "previous": {
-      "runs": 162,
-      "measured": 160,
-      "merged_prs": 70,
-      "per_merged_pr": 10610073
+      "runs": 163,
+      "measured": 161,
+      "merged_prs": 71,
+      "per_merged_pr": 10550312
+    }
+  },
+  "agents": {
+    "runs_read": {
+      "7d": 205,
+      "30d": 368
+    },
+    "by_agent": {
+      "architect": {
+        "7d": 4,
+        "30d": 6,
+        "last_run": 44227513208,
+        "last_started": "2026-11-18T03:02:04Z",
+        "last_issue": 1065
+      },
+      "astro-auditor": {
+        "7d": 1,
+        "30d": 4,
+        "last_run": 43668707942,
+        "last_started": "2026-11-15T02:38:10Z",
+        "last_issue": 1022
+      },
+      "chief": {
+        "7d": 1,
+        "30d": 12,
+        "last_run": 44192795443,
+        "last_started": "2026-11-17T22:43:24Z",
+        "last_issue": 1163
+      },
+      "engineer": {
+        "7d": 47,
+        "30d": 75,
+        "last_run": 44455237313,
+        "last_started": "2026-11-19T03:59:58Z",
+        "last_issue": 1232
+      },
+      "frontend-engineer": {
+        "7d": 9,
+        "30d": 19,
+        "last_run": 44411358136,
+        "last_started": "2026-11-18T22:24:59Z",
+        "last_issue": 1229
+      },
+      "general-purpose": {
+        "7d": 2,
+        "30d": 2,
+        "last_run": 43811828849,
+        "last_started": "2026-11-16T05:41:00Z",
+        "last_issue": 1073
+      },
+      "numerologist": {
+        "7d": 0,
+        "30d": 1,
+        "last_run": 42802822085,
+        "last_started": "2026-11-10T10:52:41Z",
+        "last_issue": 581
+      },
+      "product-manager": {
+        "7d": 0,
+        "30d": 1,
+        "last_run": 42661649574,
+        "last_started": "2026-11-09T17:08:17Z",
+        "last_issue": 818
+      },
+      "project-manager": {
+        "7d": 91,
+        "30d": 164,
+        "last_run": 44455237313,
+        "last_started": "2026-11-19T03:59:58Z",
+        "last_issue": 1232
+      },
+      "qa": {
+        "7d": 114,
+        "30d": 213,
+        "last_run": 44455237313,
+        "last_started": "2026-11-19T03:59:58Z",
+        "last_issue": 1232
+      }
     }
   }
 }
