@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-19T07:50:51Z",
+ "generated_at": "2026-11-19T08:00:24Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-19",
@@ -640,9 +640,69 @@
   "levels": {
    "weekly": {
     "period": "2026-W47",
-    "current": null,
+    "current": {
+     "week": "2026-W47",
+     "goals": [
+      {
+       "id": "g1",
+       "goal": "Lift the week's growth share",
+       "metric": "growth share this week",
+       "metric_key": "growth_share_week",
+       "baseline": 0.206,
+       "target": 0.35,
+       "issues": []
+      },
+      {
+       "id": "g2",
+       "goal": "Hold search clicks while open SEO fixes land",
+       "metric": "GSC clicks, 28 days",
+       "metric_key": "gsc_clicks_28d",
+       "baseline": 383,
+       "target": 395,
+       "issues": [
+        1076,
+        1107
+       ]
+      },
+      {
+       "id": "g3",
+       "goal": "Grow impressions toward the month's 33,000",
+       "metric": "GSC impressions, 28 days",
+       "metric_key": "gsc_impressions_28d",
+       "baseline": 28918,
+       "target": 30500,
+       "issues": [
+        1076,
+        1107
+       ]
+      },
+      {
+       "id": "g4",
+       "goal": "Ship the three open growth issues",
+       "metric": "share of issues closed",
+       "metric_key": "",
+       "baseline": 0,
+       "target": 1,
+       "issues": [
+        1076,
+        1107,
+        1065
+       ]
+      }
+     ],
+     "direction": "Only #1065, #1076 and #1107 are open growth issues, so supply caps the share: project-manager picks them first, and seo-growth files band-page issues for the 6-20 queries in gsc-band.json today so the share can climb. Analytics-event PRs wait until the week share passes 0.35. Weekly Claude use is 0.79, so size cycles to the window and keep production breakage first.",
+     "at": "2026-11-19T07:52:11Z",
+     "by": "github-actions[bot]"
+    },
     "previous_score": null,
-    "history": []
+    "history": [
+     {
+      "period": "2026-W47",
+      "goals": 4,
+      "met": 0,
+      "scored": false
+     }
+    ]
    },
    "monthly": {
     "period": "2026-11",
@@ -754,7 +814,60 @@
     ]
    }
   },
-  "current": null,
+  "current": {
+   "week": "2026-W47",
+   "goals": [
+    {
+     "id": "g1",
+     "goal": "Lift the week's growth share",
+     "metric": "growth share this week",
+     "metric_key": "growth_share_week",
+     "baseline": 0.206,
+     "target": 0.35,
+     "issues": []
+    },
+    {
+     "id": "g2",
+     "goal": "Hold search clicks while open SEO fixes land",
+     "metric": "GSC clicks, 28 days",
+     "metric_key": "gsc_clicks_28d",
+     "baseline": 383,
+     "target": 395,
+     "issues": [
+      1076,
+      1107
+     ]
+    },
+    {
+     "id": "g3",
+     "goal": "Grow impressions toward the month's 33,000",
+     "metric": "GSC impressions, 28 days",
+     "metric_key": "gsc_impressions_28d",
+     "baseline": 28918,
+     "target": 30500,
+     "issues": [
+      1076,
+      1107
+     ]
+    },
+    {
+     "id": "g4",
+     "goal": "Ship the three open growth issues",
+     "metric": "share of issues closed",
+     "metric_key": "",
+     "baseline": 0,
+     "target": 1,
+     "issues": [
+      1076,
+      1107,
+      1065
+     ]
+    }
+   ],
+   "direction": "Only #1065, #1076 and #1107 are open growth issues, so supply caps the share: project-manager picks them first, and seo-growth files band-page issues for the 6-20 queries in gsc-band.json today so the share can climb. Analytics-event PRs wait until the week share passes 0.35. Weekly Claude use is 0.79, so size cycles to the window and keep production breakage first.",
+   "at": "2026-11-19T07:52:11Z",
+   "by": "github-actions[bot]"
+  },
   "previous_score": null
  },
  "metrics": {
@@ -779,9 +892,68 @@
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W47",
-   "progress": null,
-   "detail": "no goals set for this period yet (chief sets them in its Sunday review)",
-   "goals": []
+   "progress": 0.0,
+   "detail": "4 goals, 4 measurable",
+   "goals": [
+    {
+     "id": "g1",
+     "goal": "Lift the week's growth share",
+     "metric": "growth share this week",
+     "metric_key": "growth_share_week",
+     "baseline": 0.206,
+     "target": 0.35,
+     "issues": [],
+     "current": 0.206,
+     "progress": 0.0,
+     "basis": "growth_share_week"
+    },
+    {
+     "id": "g2",
+     "goal": "Hold search clicks while open SEO fixes land",
+     "metric": "GSC clicks, 28 days",
+     "metric_key": "gsc_clicks_28d",
+     "baseline": 383,
+     "target": 395,
+     "issues": [
+      1076,
+      1107
+     ],
+     "current": 383,
+     "progress": 0.0,
+     "basis": "gsc_clicks_28d"
+    },
+    {
+     "id": "g3",
+     "goal": "Grow impressions toward the month's 33,000",
+     "metric": "GSC impressions, 28 days",
+     "metric_key": "gsc_impressions_28d",
+     "baseline": 28918,
+     "target": 30500,
+     "issues": [
+      1076,
+      1107
+     ],
+     "current": 28918,
+     "progress": 0.0,
+     "basis": "gsc_impressions_28d"
+    },
+    {
+     "id": "g4",
+     "goal": "Ship the three open growth issues",
+     "metric": "share of issues closed",
+     "metric_key": "",
+     "baseline": 0,
+     "target": 1,
+     "issues": [
+      1076,
+      1107,
+      1065
+     ],
+     "current": "0/3 issues closed",
+     "progress": 0.0,
+     "basis": "issues"
+    }
+   ]
   },
   "monthly": {
    "label": "Monthly goals",
