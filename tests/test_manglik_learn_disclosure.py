@@ -45,6 +45,10 @@ def test_manglik_dosh_says_both_held_lists_include_the_2nd_and_the_1st_is_option
     assert "Both of the house lists we work from include the 2nd" in t
     assert "some include the 1st" in t
     assert "optional addition" in t
+    # The BODY's own sentence (2026-11-19). "optional addition" appears five times on the
+    # rendered page (lede, checker line, summary), so deleting this sentence left the test green
+    # and the mutation row "caught" only by the anchor tripwires.
+    assert "The 1st house is therefore an optional addition in the sources, not a settled part of the rule" in t
 
 
 def test_manglik_dosh_no_longer_claims_similar_houses_strengthen_the_cancellation(client):

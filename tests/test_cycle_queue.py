@@ -367,6 +367,12 @@ def test_an_ISSUE_entry_with_qa_pass_but_NO_open_PR_is_still_started():
     for #431 (prefix match on the number)."""
     gh = _issue_431()
     del gh.open_prs[694]
+    # #43's PR carries everything a waiting PR needs -- `qa-pass` AND a PASS bound to its head
+    # -- so only the issue-NUMBER comparison can tell it from #431's (2026-11-19). Without the
+    # bound PASS, the head-binding check added 2026-11-15 dropped it first and the prefix row
+    # was "caught" only by the anchor tripwires.
+    gh.heads[650] = "5" * 40
+    gh.add(f"QA: PASS — verified at `{'5' * 40}`", login="claude[bot]", on=650)
     car = FakeCarrier([(0, "1")])
     cq.drain(gh, REPO, car)
     assert car.calls and car.calls[0][0] == "issue=431"

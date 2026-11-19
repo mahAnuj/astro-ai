@@ -61,6 +61,11 @@ def test_pages_that_state_the_six_houses_say_the_1st_is_an_optional_addition(cli
     t = _text(client, f"/learn/{slug}/")
     assert t.count("optional addition") >= surfaces, slug
     assert "which Shubh Bhagya counts" in t, slug
+    # Where the house list itself is stated, the clause sits inside it (2026-11-19): the phrases
+    # above also appear in the summary and meta text, so a body that lists "(1, 2, 4, 7, 8, 12)"
+    # flatly again still passed.
+    if "(1, 2, 4, 7, 8, 12" in t:
+        assert "(1, 2, 4, 7, 8, 12)" not in t, f"{slug} states the six houses without the optional-1st clause"
 
 
 def test_manglik_remedies_keypoints_say_the_1st_is_an_optional_addition():
@@ -82,6 +87,9 @@ def test_manglik_dosh_no_longer_calls_its_house_lists_classical(client):
     assert "classical house lists" not in t
     assert "the two house lists we work from" in t
     assert "is not to be found in the standard astrological texts" in t
+    # The body sentence itself (2026-11-19): the quote also appears in the summary and FAQ (3x on
+    # the page), so deleting the body's sentence left this green.
+    assert "One of those two authors goes further and writes that the dosha" in t
 
 
 # --- #856 -------------------------------------------------------------------------------

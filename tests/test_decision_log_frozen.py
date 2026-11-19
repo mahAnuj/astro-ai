@@ -21,6 +21,12 @@ def _section_10_dates() -> list[str]:
 
 
 def test_no_decision_row_is_added_to_the_frozen_table():
+    # The freeze date is the one the rules publish, not a constant free to drift (2026-11-19):
+    # moving it a year later let new §10 rows pass, and on a table with no late rows nothing
+    # noticed -- the mutation row was "caught" only by the anchor tripwires.
+    for doc, phrase in (("CLAUDE.md", f"frozen after {FROZEN_AFTER}"),
+                        ("docs/decisions/README.md", f"a row dated after {FROZEN_AFTER}")):
+        assert phrase in " ".join((ROOT / doc).read_text().split()), (doc, phrase)
     late = [d for d in _section_10_dates() if d > FROZEN_AFTER]
     assert not late, (f"{len(late)} row(s) dated after {FROZEN_AFTER} were added to ARCHITECTURE.md §10. "
                       f"Put each decision in its own file, docs/decisions/YYYY-MM-DD-<slug>.md "
