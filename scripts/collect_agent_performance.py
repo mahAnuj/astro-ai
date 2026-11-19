@@ -75,9 +75,12 @@ AGENT_PATTERNS: tuple[tuple[str, str], ...] = (
     ("chief",           _LEAD + r"chief ruling"),
     ("steward",         _LEAD + r"steward[\s,:(]"),
     ("analyst",         _LEAD + r"(Analyst score|Post-ship score)"),
-    ("infra-lead",      _LEAD + r"infra-lead"),
+    # Renamed 2026-11-19; the old names still match, so 30 days of history does not split.
+    ("infra-reviewer",  _LEAD + r"infra-(reviewer|lead)"),
+    ("seo-growth",      _LEAD + r"(seo-growth|conversion-lead)"),
     ("architect",       _LEAD + r"architect\b"),
-    ("engineer",        _LEAD + r"engineer\b"),
+    ("frontend-engineer", _LEAD + r"frontend-engineer\b"),
+    ("backend-engineer", _LEAD + r"(backend-)?engineer\b"),
     ("project-manager", _LEAD + r"project-manager\b"),
     ("product-manager", _LEAD + r"product-manager\b"),
     # Broadest, so it sits last: the cycle narrating its own steps.

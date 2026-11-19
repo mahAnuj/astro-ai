@@ -567,16 +567,16 @@ should have acted and whether it did:
 
 | the blockage | the role that owns it |
 |---|---|
-| gates green, no `qa-pass` and no `qa-fail` | `qa` — and `qa-lead` if it is unclear which kind of QA applies |
+| gates green, no `qa-pass` and no `qa-fail` | `qa` |
 | an astrological or numerological constant is disputed | `astro-auditor`, or `numerologist` for the numerology engine |
 | nobody can say whether it is worth building | `product-manager` |
 | nobody can say whether it is the next thing to build | `project-manager` |
 | the shape of the change is argued, not its value | `architect` |
 | a traffic or search claim with no number behind it | `analyst` |
-| a claim about drop-off, forms or return visits | `conversion-lead` |
-| a free-tier, latency, deploy or quota question | `infra-lead` |
+| a claim about search rankings, drop-off, forms or return visits | `seo-growth` |
+| a free-tier, latency, deploy or quota question | `infra-reviewer` |
 | finished work that is not flowing | `steward` |
-| it is written but nobody built it | `engineer`, or `frontend-engineer` for templates, CSS and client JS |
+| it is written but nobody built it | `architect` for the plan, then `backend-engineer`, or `frontend-engineer` for templates, CSS and client JS |
 
 **Distinguish "did not run" from "ran and declined."** They look identical from a blocked
 issue and they mean opposite things:

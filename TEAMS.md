@@ -1,6 +1,6 @@
 # The teams
 
-Eight teams, three levels. Every one of them ladders to the single line in `OBJECTIVE.md`:
+The teams, three levels. Every one of them ladders to the single line in `OBJECTIVE.md`:
 **move the 6–20 position band into the top 5 on the ten highest-impression queries** — which is to
 say, more users.
 
@@ -11,24 +11,25 @@ prevent.
 | Team | Lead | Owns | Judged on | Cadence |
 |---|---|---|---|---|
 | **Analytics** | `analyst` | GA4, GSC, scoring every ship | Were the misses reported as plainly as the hits | daily |
-| **Marketing** | `growth-manager` | SEO, keywords, competitors, social, content | Did the queries it picked actually move | weekly |
-| **Sales** | `conversion-lead` | The five funnels, retention, readiness to monetise | Step-through on the worst funnel step | weekly |
-| **Backend** | `engineer` | Routes, chart engine, LLM paths, storage | Merged work that moved its metric, no ranking regression | daily |
-| **Frontend** | `frontend-engineer` | Templates, CSS, client JS, service worker | Same — plus nothing broke silently | daily |
-| **Design** | `ui-designer` skill | Visual direction, signature moments, mobile | CTR at unchanged position | weekly |
-| **Research** | `astrologer` · `numerologist` | Corpus, citations, authenticity | Unsourced claims left on user-facing pages | weekly |
-| **IT** | `infra-lead` | Cloud Run, GCS, free tiers, deploys, latency | Headroom at 10x, and deploy proof that proves something | weekly |
-| **QA** | `qa-lead` | Verifying every team's output — code, prose, readings, visuals | Defects that reached production, and PASSes later proved wrong | every change |
+| **Growth** | `seo-growth` | Search rankings, indexing, the five funnels, return visits | Did the queries and funnel steps it picked actually move | weekly (Monday, first step of discovery) |
+| **Product** | `product-manager` | What one feature should be: story, criteria, metric | Specs whose acceptance criteria QA could check | weekly, and per feature in a build |
+| **Architecture** | `architect` | The plan for every change: steps, pattern, the five qualities | Changes that QA passed against the plan, no second way of doing a thing | every build |
+| **Backend** | `backend-engineer` | Routes, chart engine, LLM paths, storage | Merged work that moved its metric, no ranking regression | every build |
+| **Frontend** | `frontend-engineer` | Templates, CSS, client JS, service worker | Same — plus nothing broke silently | every build |
+| **Research** | `astro-auditor` · `numerologist` | Rules, corpus, citations, authenticity | Unsourced claims left on user-facing pages | weekly, and on every rule-file change |
+| **IT** | `infra-reviewer` | Cloud Run, GCS, free tiers, deploys, latency | Headroom at 10x, and deploy proof that proves something | weekly |
+| **QA** | `qa` | Verifying every team's output — code, prose, readings, visuals | Defects that reached production, and PASSes later proved wrong | every change |
 | — | **`chief`** | Ties, the objective, the lineage table | Nothing. It produces only when escalated to. | on escalation |
 
-Supporting roles sit inside teams and are dispatched by them: `architect` serves Backend and
-Frontend; `product-manager` serves Marketing; `project-manager` ranks the whole backlog for
-Engineering.
+`project-manager` ranks the whole backlog; `dev-lead` coordinates one issue through
+product-manager (features) → auditor (rule files) → architect → engineer → qa
+(`.claude/commands/agent-cycle.md` Step 3). Restructured 2026-11-19:
+`docs/decisions/2026-11-19-team-restructure.md`.
 
 **QA is not inside any of them.** It verifies every team's output and is always a separate
 dispatch, because *verification by the same reasoning that produced the change is not
-verification*. It routes by what changed: the `qa` agent for code, `kundali-qa` for generated
-readings, `article-qa` for content, `ui-auditor` and `mobile-flow-auditor` for the visual layer.
+verification*. It routes by what changed, inside the one `qa` agent (`qa.md`, "Route the check by what
+changed").
 Fifteen QA passes in this repo, fifteen first-submission failures — so budget two to three rounds
 per issue and treat a one-pass plan as unplanned.
 

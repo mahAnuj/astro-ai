@@ -4045,7 +4045,7 @@ MUTATIONS = [
     # 12 of 15 definitions ended up with no instruction to write anywhere
     # durable. These rows re-break each class so the gate cannot rot back out.
     ("#607 trail: an agent definition loses the output-goes section",
-     ".claude/agents/engineer.md",
+     ".claude/agents/backend-engineer.md",
      "  `>>` only \u2014 never `>`, never Write, never Edit on that file.\n\n## Where your output goes",
      "  `>>` only \u2014 never `>`, never Write, never Edit on that file.\n\n## Notes",
      "test_every_agent_names_where_its_output_goes"),
@@ -4055,7 +4055,7 @@ MUTATIONS = [
     # heading says "the issue is durable". QA on #609 inverted an agent's
     # issue instruction, left the heading intact, and the gate said `ok`.
     ("#607 trail: an agent names the PR but not the issue",
-     ".claude/agents/infra-lead.md",
+     ".claude/agents/infra-reviewer.md",
      "**On the issue:**",
      "Keep it in your own output:",
      "test_every_agent_names_both_the_issue_and_the_pr"),

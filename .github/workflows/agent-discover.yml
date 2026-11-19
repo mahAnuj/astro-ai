@@ -118,9 +118,13 @@ jobs:
             write one line in your report saying why not. An item left silent is the
             gap the owner had to fill by hand.
 
-            Follow .claude/commands/discover.md exactly. In particular: the
-            analyst's data first, then rivals by WebFetch, then social by
-            WebSearch, then the corpus. File an issue ONLY if it carries a
+            Follow .claude/commands/discover.md exactly. You are the
+            coordinator: dispatch `seo-growth` FIRST (Step 1), wait for it,
+            then dispatch `product-manager` (Step 2) with its findings, both
+            with run_in_background=false. Do not do their work yourself
+            (2026-11-19: the 2026-11-17 run made zero dispatches). In
+            particular: the analyst's data first, then rivals by WebFetch,
+            then social by WebSearch, then the corpus. File an issue ONLY if it carries a
             complete Evidence Block. An issue missing a field is not filed.
 
             measurements/lessons.md is the loop's memory (scripts/collect_lessons.py):

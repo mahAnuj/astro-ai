@@ -91,15 +91,25 @@ def test_every_agent_definition_has_a_card():
 
 def test_helpers_are_on_standby_only_while_a_build_cycle_runs():
     c = _cards([_run("Agent work", "Agent work")])
-    assert {c[k]["state"] for k in ("architect", "engineer", "frontend-engineer")} == {"standby"}
+    assert {c[k]["state"] for k in ("architect", "backend-engineer", "frontend-engineer")} == {"standby"}
     c = _cards([_run("Agent work", "QA round: PR #940")])  # a QA round is not a build cycle
-    assert {c[k]["state"] for k in ("architect", "engineer", "frontend-engineer")} == {"idle"}
+    assert {c[k]["state"] for k in ("architect", "backend-engineer", "frontend-engineer")} == {"idle"}
 
 
-def test_on_request_agents_say_they_have_no_schedule():
+def test_every_agent_runs_somewhere_and_seo_growth_lights_with_discovery():
+    """2026-11-19 restructure: conversion-lead and qa-lead sat on no schedule and
+    were never called. Every card now names a workflow or a build cycle."""
     c = _cards()
-    assert c["conversion-lead"]["state"] == "idle" and "not on any schedule" in c["conversion-lead"]["detail"]
-    assert "not on any schedule" in c["qa-lead"]["detail"]
+    assert not any("not on any schedule" in (v.get("detail") or "") for v in c.values())
+    assert "on request" not in agent_status.GROUPS
+    c = _cards([_run("Agent discover", "Agent discover", event="schedule")])
+    assert c["seo-growth"]["state"] == "running" and c["product-manager"]["state"] == "running"
+
+
+def test_cards_of_one_group_are_contiguous_so_each_heading_renders_once():
+    groups = [a[2] for a in agent_status.AGENTS]
+    seen = [g for i, g in enumerate(groups) if i == 0 or g != groups[i - 1]]
+    assert len(seen) == len(set(seen)), seen
 
 
 def test_research_runs_light_both_auditors():

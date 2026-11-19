@@ -461,11 +461,28 @@ if the diff itself has to change, and say which line. That is the one irreducibl
 
 Follow `/bug` or `/feature` internals exactly, whichever fits. In particular:
 
+The order, every build (owner, 2026-11-19):
+
+```
+[product-manager, features only] -> [astro-auditor / numerologist, rule files only] -> architect -> backend-engineer / frontend-engineer -> qa
+```
+
+- **`product-manager` first for a FEATURE** whose issue lacks a user story, checkable acceptance
+  criteria or a success metric. A bug fix skips it. Measured 2026-11-19: 1 call in 365 cycles,
+  so specs were being invented by whoever built them.
 - `astro-auditor` **first** for any astrological constant; `numerologist` first for any numerological
-  one. Before the code is written, not after.
-- `architect` when the change touches more than one module, changes a shape, or needs a ruling
-  before a constant is written.
-- `frontend-engineer` for templates, CSS, client JS. `engineer` for routes, chart maths, LLM paths.
+  one. Before the code is written, not after. **Mechanically: if the change will touch `chart.py`,
+  `muhurat.py`, `matching.py`, `panchang`/`festivals` tables or anything under `knowledge/`,
+  dispatch `astro-auditor`; if it touches `numerology.py`, dispatch `numerologist`.** Their ruling
+  goes to the architect.
+- **`architect` on EVERY build, before any engineer.** It reads what else is changing in the repo,
+  names the established pattern to follow, checks robustness, reliability, scalability and
+  security, and returns ordered steps. A one-file change gets a short plan, never none.
+  Measured 2026-11-19: architect ran in 6 of 365 cycles. See `architect.md`.
+- **The build team follows the plan:** `frontend-engineer` for templates, CSS, client JS and the
+  service worker; `backend-engineer` for routes, chart and rule maths, LLM paths, storage and
+  scripts. A change spanning both is two dispatches, backend first. Pass each the architect's
+  steps verbatim.
 - **`qa` as a separate dispatch, always.** Verification by the reasoning that produced the change is
   not verification. This project has run fifteen QA passes and *every one failed its first
   submission*, twice on defects the fix itself introduced. Budget two or three rounds.
@@ -493,7 +510,8 @@ because that run stayed alive to receive it.
 
 So: dispatch, **wait for the result**, read it, then dispatch the next role. A cycle is slow because
 it is sequential — architect, then engineer, then QA, two or three rounds. That is the shape, and
-rushing it by not waiting produces nothing at all.
+rushing it by not waiting produces nothing at all. (Pass `qa` the architect's plan too: it checks
+the diff against the plan as well as the issue.)
 
 ## Step 3.5 — record QA's verdict where it can be audited
 

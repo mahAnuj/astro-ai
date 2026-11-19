@@ -169,7 +169,7 @@ app never imports from `evals/`.
 
 ## How the agent team works
 
-This repo ships itself. Fifteen agents and nineteen workflows take an issue
+This repo ships itself. Fourteen agents and nineteen workflows take an issue
 from a cron trigger to a merged, production-verified fix with **nobody inside the
 loop** — and no agent anywhere in it holds the authority to merge.
 
@@ -198,7 +198,7 @@ flowchart TD
     end
 
     subgraph BUILD["02 · build it"]
-        DL["dev-lead"] --> AR["architect"] --> EN["engineer"] --> QA["qa"]
+        DL["dev-lead"] --> AR["architect"] --> EN["backend / frontend engineer"] --> QA["qa"]
         QA -. "FAIL → findings" .-> EN
     end
 

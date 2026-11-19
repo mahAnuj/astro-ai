@@ -75,7 +75,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            Act as `infra-lead`. Read .claude/agents/infra-lead.md first and
+            Act as `infra-reviewer`. Read .claude/agents/infra-reviewer.md first and
             follow it — it defines your remit and your constraints.
 
             measurements/sync/chief-guidance.md is chief's twice-weekly review of

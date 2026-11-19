@@ -369,11 +369,15 @@ Why and history: docs/claude-md-history.md#architecture
 
 ## The agent team
 
-`.claude/agents/` holds **15** roles. For implementation: `project-manager` (what next, across
-the backlog), `product-manager` (what this one thing should be), `architect` (shape, free tier,
-subtasks), `dev-lead` (coordinates one issue, commits locally), `engineer` (writes it, exercises
-it, hands it back unpushed), `qa` (verifies independently by execution, traces claims to
-`knowledge/*.md` and `data/`), `astro-auditor` (are the astrological RULES correct), and
+`.claude/agents/` holds **14** roles. For implementation: `project-manager` (what next, across
+the backlog), `product-manager` (what this one feature should be — first on any feature without a
+spec), `architect` (**plans every build change** before any engineer: steps, the established
+pattern, robustness, reliability, scalability, security — owner, 2026-11-19), `dev-lead`
+(coordinates one issue, commits locally), `backend-engineer` and `frontend-engineer` (the build
+team: write it following the plan, exercise it, hand it back unpushed), `qa` (verifies
+independently by execution, against the issue and the plan, traces claims to `knowledge/*.md` and
+`data/`), `astro-auditor` and `numerologist` (are the RULES correct — dispatched first on any
+rule-file change), `seo-growth` (search and funnels, first step of Monday's `/discover`), and
 `steward` (woken only by `scripts/detect_stalls.py`; may not merge, close, push, apply a QA
 verdict, or edit its own rules). The rest run on their own workflows or are called by chief.
 Every agent file needs a card in `agent_status.AGENTS` (`tests/test_agent_status.py`).
@@ -394,7 +398,7 @@ at the end is a **paid-tier safety net**, not free and not a capacity plan.
 **Every role owes the same answer before work lands: does this fit in the free tier, and what
 is the number?** `product-manager`: a feature over budget is **unbuildable as specified**.
 `architect`: state tokens per call and per day; put the shared prompt prefix first.
-`engineer`: measure, before and after, as numbers. `qa`: an unmeasured token claim is a FAIL.
+`backend-engineer` / `frontend-engineer`: measure, before and after, as numbers. `qa`: an unmeasured token claim is a FAIL.
 `dev-lead`: nothing passes without the number.
 
 ### When it does not fit, say so — do not silently spend
