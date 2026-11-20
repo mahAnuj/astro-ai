@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-20T16:41:06Z",
+ "generated_at": "2026-11-20T17:53:18Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-20",
@@ -129,14 +129,9 @@
    "issue": 1261,
    "title": "infra: cap Cloud Run instances, and stop a query string bypassing the CDN cache on public endpoints (/api/agents/status)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1305,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44724731272,
