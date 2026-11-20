@@ -253,3 +253,33 @@ def test_the_json_route_is_public_cached_and_cors_scoped(monkeypatch: pytest.Mon
     assert res.headers["access-control-allow-origin"] == "https://anujmahajan.com"
     assert "max-age=60" in res.headers["cache-control"]
     assert len(res.json()["agents"]) == len(agent_status.AGENTS)
+
+
+@pytest.mark.parametrize("query", ["x=1", "x=1&y=2", "="])
+def test_a_query_string_is_redirected_before_snapshot_runs(monkeypatch: pytest.MonkeyPatch, query: str):
+    # #1261: the endpoint reads no parameter, so every ?x=N is the same document under a
+    # fresh CDN key. The redirect must come before snapshot() and keep the CORS pair.
+    from fastapi.testclient import TestClient
+
+    from astro_ai.main import app
+
+    def boom():
+        raise AssertionError("snapshot() ran for a query-string request")
+
+    monkeypatch.setattr(agent_status, "snapshot", boom)
+    res = TestClient(app).get(f"/api/agents/status?{query}", follow_redirects=False)
+    assert res.status_code == 301
+    assert res.headers["location"] == "/api/agents/status"
+    assert res.headers["access-control-allow-origin"] == "https://anujmahajan.com"
+    assert res.headers["vary"] == "Origin"
+    assert "max-age=3600" in res.headers["cache-control"]
+
+
+def test_the_bare_path_is_still_served_when_the_redirect_exists(monkeypatch: pytest.MonkeyPatch):
+    from fastapi.testclient import TestClient
+
+    from astro_ai.main import app
+
+    monkeypatch.setattr(agent_status, "snapshot", lambda: agent_status.build([], [], LOOPS, now=NOW))
+    res = TestClient(app).get("/api/agents/status", follow_redirects=False)
+    assert res.status_code == 200
