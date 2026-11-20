@@ -324,8 +324,18 @@ def test_an_unreadable_head_starts_the_round_rather_than_dropping_it():
 HEAD_694 = "6" * 40
 
 
-def _run(status, conclusion=None, at="2026-11-18T10:00:00Z", name="PR gates"):
-    return {"name": name, "status": status, "conclusion": conclusion, "created_at": at}
+def _run(status, conclusion=None, at="2026-11-18T10:00:00Z", name="PR gates", id=1):
+    return {"id": id, "name": name, "status": status, "conclusion": conclusion, "created_at": at}
+
+
+def _build(status="completed", conclusion="success", at="2026-11-18T10:00:00Z", id=2):
+    """The other REQUIRED workflow, `verify-build` (check `build-gates`)."""
+    return _run(status, conclusion, at=at, name="verify-build", id=id)
+
+
+def _both(*pr_gates, build=None):
+    """PR gates runs plus a green verify-build, unless a test says otherwise."""
+    return list(pr_gates) + [build or _build()]
 
 
 def _issue_431(mergeable="true", ref="issue/431-prefix-row-known-shapes", pr_labels="qa-pass,qa:in-cycle",
@@ -733,27 +743,45 @@ def test_a_BLOCKED_PR_whose_latest_gates_run_is_still_RUNNING_is_waiting_to_merg
     """2026-11-18, PR #1227 (#1226): `qa-pass` bound to the head, `blocked` only
     because a second `gates` run was in progress. The drain started a cycle that
     stood down in under 90s, and the carrier read that as a dead run (#1207)."""
-    _blocked_dropped(_issue_431(mergeable="blocked", gates=[_run("in_progress")]))
-    _blocked_dropped(_issue_431(mergeable="blocked", gates=[_run("queued")]))
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=_both(_run("in_progress"))))
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=_both(_run("queued"))))
 
 
 def test_a_BLOCKED_PR_whose_latest_gates_run_PASSED_is_waiting_to_merge():
-    _blocked_dropped(_issue_431(mergeable="blocked", gates=[_run("completed", "success")]))
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=_both(_run("completed", "success"))))
 
 
 def test_only_the_NEWEST_gates_run_counts():
     """An older red run is the one the push superseded; the latest decides."""
-    old = _run("completed", "failure", at="2026-11-18T09:00:00Z")
-    _blocked_dropped(_issue_431(mergeable="blocked", gates=[old, _run("in_progress", at="2026-11-18T10:00:00Z")]))
-    _blocked_dropped(_issue_431(mergeable="blocked", gates=[_run("completed", "success", at="2026-11-18T10:00:00Z"), old]))
+    old = _run("completed", "failure", at="2026-11-18T09:00:00Z", id=1)
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=_both(
+        old, _run("in_progress", at="2026-11-18T10:00:00Z", id=3))))
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=_both(
+        _run("completed", "success", at="2026-11-18T10:00:00Z", id=3), old)))
     # and the reverse: an older green run does not excuse a newer red one
-    green = _run("completed", "success", at="2026-11-18T09:00:00Z")
-    _blocked_started(_issue_431(mergeable="blocked", gates=[green, _run("completed", "failure", at="2026-11-18T10:00:00Z")]))
+    green = _run("completed", "success", at="2026-11-18T09:00:00Z", id=1)
+    _blocked_started(_issue_431(mergeable="blocked", gates=_both(
+        green, _run("completed", "failure", at="2026-11-18T10:00:00Z", id=3))))
+
+
+@pytest.mark.parametrize("listed_first", ["red", "green"])
+def test_two_runs_created_in_the_same_second_are_ordered_by_id(listed_first):
+    """`sort_by(.created_at) | last` took the older run on a tie, so a newer red
+    run beside an older green one read as waiting. The API lists in no promised
+    order, so both orders are tried."""
+    red = _run("completed", "failure", id=9)
+    green = _run("completed", "success", id=8)
+    runs = [red, green] if listed_first == "red" else [green, red]
+    _blocked_started(_issue_431(mergeable="blocked", gates=_both(*runs)))
+    # and the other way round: the newer run is green, so the PR is waiting
+    red, green = _run("completed", "failure", id=8), _run("completed", "success", id=9)
+    runs = [red, green] if listed_first == "red" else [green, red]
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=_both(*runs)))
 
 
 @pytest.mark.parametrize("conclusion", ["failure", "timed_out", "startup_failure", "cancelled"])
 def test_a_BLOCKED_PR_whose_latest_gates_run_is_RED_is_still_started(conclusion):
-    _blocked_started(_issue_431(mergeable="blocked", gates=[_run("completed", conclusion)]))
+    _blocked_started(_issue_431(mergeable="blocked", gates=_both(_run("completed", conclusion))))
 
 
 def test_a_BLOCKED_PR_with_NO_gates_run_is_still_started():
@@ -767,37 +795,67 @@ def test_a_BLOCKED_PR_whose_gates_runs_are_UNREADABLE_is_still_started():
 
 def test_a_BLOCKED_PR_with_a_SKIPPED_gates_run_is_still_started():
     """Neither running nor green: the PR is blocked by something else."""
-    _blocked_started(_issue_431(mergeable="blocked", gates=[_run("completed", "skipped")]))
+    _blocked_started(_issue_431(mergeable="blocked", gates=_both(_run("completed", "skipped"))))
 
 
-def test_a_running_run_of_ANOTHER_workflow_is_not_the_gates_run():
-    """Only `PR gates` decides; an in-progress `Agent merge` run says nothing."""
+# verify-build (check `build-gates`) is REQUIRED beside pr-gates (check `gates`),
+# and scripts/collect_gate_failures.py already counts both. QA on PR #1271: a
+# QA-passed PR with `PR gates` green and `verify-build` red is `blocked`, a
+# cycle has a fix to make, and reading only `PR gates` dropped it (#1165's shape).
+
+def test_PR_gates_green_but_verify_build_RED_is_still_started():
+    _blocked_started(_issue_431(mergeable="blocked", gates=_both(
+        _run("completed", "success"), build=_build("completed", "failure"))))
+
+
+def test_PR_gates_RUNNING_and_verify_build_RED_is_still_started():
+    _blocked_started(_issue_431(mergeable="blocked", gates=_both(
+        _run("in_progress"), build=_build("completed", "failure"))))
+
+
+@pytest.mark.parametrize("status,conclusion", [("in_progress", None), ("queued", None), ("completed", "success")])
+def test_PR_gates_green_and_verify_build_running_or_green_is_waiting_to_merge(status, conclusion):
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=_both(
+        _run("completed", "success"), build=_build(status, conclusion))))
+
+
+def test_a_MISSING_verify_build_run_is_uncertainty_so_the_cycle_starts():
+    """verify-build has no `paths:` filter (a measurements-only diff still runs it
+    and concludes success), so an absent run is a run not yet created, never 'not
+    needed'. Same for an absent `PR gates` beside a green verify-build."""
+    _blocked_started(_issue_431(mergeable="blocked", gates=[_run("completed", "success")]))
+    _blocked_started(_issue_431(mergeable="blocked", gates=[_build()]))
+
+
+def test_a_running_run_of_ANOTHER_workflow_is_not_a_gates_run():
+    """Only the two required workflows decide; an in-progress `Agent merge` run
+    says nothing, and without a `PR gates` run there is nothing to wait for."""
     gates = [_run("completed", "failure", at="2026-11-18T09:00:00Z"),
-             _run("in_progress", at="2026-11-18T10:00:00Z", name="verify-build")]
-    _blocked_started(_issue_431(mergeable="blocked", gates=gates))
+             _run("in_progress", at="2026-11-18T10:00:00Z", name="Agent merge", id=5)]
+    _blocked_started(_issue_431(mergeable="blocked", gates=_both(*gates)))
 
 
-def test_a_failing_run_of_ANOTHER_workflow_is_ignored():
-    gates = [_run("completed", "success", at="2026-11-18T09:00:00Z"),
-             _run("completed", "failure", at="2026-11-18T10:00:00Z", name="verify-build")]
+def test_a_failing_run_of_an_UNRELATED_workflow_is_ignored():
+    gates = _both(_run("completed", "success", at="2026-11-18T09:00:00Z"))
+    gates.append(_run("completed", "failure", at="2026-11-18T10:00:00Z", name="Agent merge", id=5))
     _blocked_dropped(_issue_431(mergeable="blocked", gates=gates))
 
 
 def test_a_BLOCKED_PR_whose_PASS_names_an_OLDER_commit_is_still_started_whatever_gates_say():
-    _blocked_started(_issue_431(mergeable="blocked", pass_at="2" * 40, gates=[_run("in_progress")]))
+    _blocked_started(_issue_431(mergeable="blocked", pass_at="2" * 40, gates=_both(_run("in_progress"))))
 
 
 @pytest.mark.parametrize("state", ["false", "null", "behind", "unstable"])
 def test_only_BLOCKED_reads_the_gates_run(state):
     """dirty/unknown/behind/unstable have their own cause, a cycle is the step,
     and a green or running gates run does not make them wait."""
-    gh = _issue_431(mergeable=state, gates=[_run("in_progress")])
+    gh = _issue_431(mergeable=state, gates=_both(_run("in_progress")))
     _blocked_started(gh)
     assert not any("/actions/runs" in " ".join(c) for c in gh.calls)
 
 
 def test_a_CLEAN_PR_does_not_read_the_gates_run():
-    gh = _issue_431(mergeable="true", gates=[_run("completed", "failure")])
+    gh = _issue_431(mergeable="true", gates=_both(_run("completed", "failure")))
     _blocked_dropped(gh)
     assert not any("/actions/runs" in " ".join(c) for c in gh.calls)
 
@@ -809,10 +867,25 @@ def test_gates_red_never_interpolates_a_sha_that_is_not_40_hex():
     assert gh.calls == []
 
 
-def test_GATES_WORKFLOW_is_the_name_pr_gates_declares():
+def test_the_gate_workflow_names_are_the_names_the_workflow_files_declare():
     """A rename would make every PR read as 'no gates run' and quietly restore
-    the drain-into-a-stand-down loop, so the string is pinned to the file."""
+    the drain-into-a-stand-down loop, so the strings are pinned to the files and
+    to the set scripts/collect_gate_failures.py counts as the required gates."""
     assert cq.GATES_WORKFLOW == _wf("pr-gates.yml")["name"]
+    assert cq.BUILD_WORKFLOW == _wf("verify-build.yml")["name"]
+    spec = importlib.util.spec_from_file_location("collect_gate_failures",
+                                                  ROOT / "scripts" / "collect_gate_failures.py")
+    cgf = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cgf)
+    assert set(cq.GATE_WORKFLOWS) == set(cgf.GATE_WORKFLOWS)
+
+
+def test_verify_build_is_not_path_filtered():
+    """The reason a missing verify-build run is treated as uncertainty: it runs on
+    every PR. If it ever gains `paths:`, absence would become legitimate and the
+    rule in `_gates_red` must be revisited."""
+    on = _wf("verify-build.yml").get("on") or _wf("verify-build.yml").get(True)
+    assert "paths" not in on["pull_request"] and "paths-ignore" not in on["pull_request"]
 
 
 # ----------------------------------------- #1207: a green run that wrote nothing

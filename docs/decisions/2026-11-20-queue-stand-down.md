@@ -24,12 +24,19 @@ required check is still running, so the second kind started a cycle with nothing
 ## Decided
 
 1. **Waiting = a `QA: PASS` bound to the current head, `mergeable_state` `blocked`, and the
-   latest `PR gates` run on that head not red** (still running, queued, or `success`).
-   `_gates_red` reads it through `repos/{repo}/actions/runs?head_sha=<sha>&event=pull_request`
-   and takes the newest run named `PR gates`. Only a clear "not red" answer drops the entry: a
-   red or cancelled run, no run, an unreadable answer, `dirty`, `behind`, `unknown` and
-   `unstable` all still start the cycle, because a wasted stand-down costs a minute and a
-   wrongly dropped entry is permanent. `GATES_WORKFLOW` is pinned to `pr-gates.yml`'s `name:`.
+   latest run of EACH required gates workflow on that head not red** (running, queued, or
+   `success`). The required workflows are `PR gates` (check `gates`) and `verify-build` (check
+   `build-gates`), the same pair `scripts/collect_gate_failures.py` counts. `_gates_red` reads
+   them through `repos/{repo}/actions/runs?head_sha=<sha>&event=pull_request`, takes each
+   workflow's newest run by `[created_at, id]` (a same-second tie otherwise picks the older), and
+   answers True if either is red, False only when both are present and not red. Anything else
+   starts the cycle: a red or cancelled run in either workflow, a MISSING run of either (neither
+   workflow is path-filtered, so absence is a run not yet created, not "not needed"; a test pins
+   that `verify-build` has no `paths:`), a skipped run, an unreadable answer, `dirty`, `behind`,
+   `unknown` and `unstable`, because a wasted stand-down costs a minute and a wrongly dropped
+   entry is permanent. `GATES_WORKFLOW` and `BUILD_WORKFLOW` are pinned to their files' `name:`.
+   QA on PR #1271 found the first version read `PR gates` only, which would drop a PR whose
+   `verify-build` is red, the #1165 shape.
 2. **A carrier failure that says the run `concluded 'success'` is dropped, not retried.**
    A green run that wrote nothing repeats itself on the same state. It still turns the drain
    red once, so the stand-down is seen. A `concluded 'failure'` run keeps its two retries.

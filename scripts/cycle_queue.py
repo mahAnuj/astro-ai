@@ -311,41 +311,64 @@ def mark(gh: Runner, repo: str, e: Entry, state: str, note: str) -> None:
 _OWNED_BRANCH = re.compile(r"^(?:issue|partial|fix)/(\d+)-")
 
 
-#: The workflow whose run decides `blocked`. tests/test_cycle_queue.py pins it
-#: to `name:` in pr-gates.yml, because a rename would make every PR read as
-#: "no gates run" and quietly restore the drain-into-a-stand-down loop.
+#: The workflows whose runs decide `blocked`: `pr-gates` (check `gates`) and
+#: `verify-build` (check `build-gates`) are BOTH required, so a PR is waiting only
+#: when neither is red. tests/test_cycle_queue.py pins both names to `name:` in
+#: their workflow files and the pair to scripts/collect_gate_failures.py's
+#: `GATE_WORKFLOWS`, because a rename would make every PR read as "no gates run"
+#: and quietly restore the drain-into-a-stand-down loop. Neither workflow is
+#: path-filtered (verify-build's `on:` has no `paths:`; a measurements-only diff
+#: still runs the job and concludes success), so a MISSING run is uncertainty,
+#: not "nothing to wait for".
 GATES_WORKFLOW = "PR gates"
+BUILD_WORKFLOW = "verify-build"
+GATE_WORKFLOWS = (GATES_WORKFLOW, BUILD_WORKFLOW)
 _SHA = re.compile(r"[0-9a-f]{40}")
 #: Conclusions of a COMPLETED gates run that leave the PR nothing to wait for.
 _RED = ("failure", "timed_out", "startup_failure", "cancelled")
 
 
 def _gates_red(gh: Runner, repo: str, sha: str) -> bool | None:
-    """Is the LATEST `PR gates` run on `sha` finished and red? True: red, so a
-    cycle has a fix to make. False: still running/queued, or green, so
-    `blocked` is only GitHub waiting for the merge. None: no run, or unreadable.
-    The caller treats ONLY False as waiting.
+    """Are the required gates on `sha` red? Reads the LATEST run of each workflow
+    in GATE_WORKFLOWS. True: either is finished and red, so a cycle has a fix to
+    make. False: both are present and each is running/queued or green, so
+    `blocked` is only GitHub waiting for the merge. None: a run is missing, one
+    ended some other way (skipped), or the answer is unreadable. The caller
+    treats ONLY False as waiting.
 
     Read through the Actions API, as scripts/collect_gate_failures.py does --
     not `commits/<sha>/check-runs`, which needs a `checks` scope `agent-queue`
     does not hold. `event=pull_request` keeps a push-triggered run of the same
-    name off the answer."""
+    name off the answer. The newest run is picked by `[created_at, id]`: two runs
+    created in the same second tie on the first key, and `last` would otherwise
+    take whichever the API listed first."""
     if not _SHA.fullmatch(sha or ""):
         return None
-    jq = (f'[.workflow_runs[] | select(.name == "{GATES_WORKFLOW}")] | sort_by(.created_at) '
-          f'| last // empty | "\\(.status) \\(.conclusion)"')
+    jq = ('.workflow_runs | group_by(.name)[] | sort_by([.created_at, .id]) | last '
+          '| "\\(.status) \\(.conclusion) \\(.name)"')
     try:
         raw = gh(["api", f"repos/{repo}/actions/runs?head_sha={sha}&event=pull_request&per_page=50",
                   "--jq", jq])
     except RuntimeError:
         return None
-    parts = raw.split()
-    if len(parts) != 2:
-        return None
-    status, conclusion = parts
-    if status != "completed" or conclusion == "success":
-        return False
-    return True if conclusion in _RED else None
+    latest: dict[str, tuple[str, str]] = {}
+    for line in raw.splitlines():
+        parts = line.split(" ", 2)
+        if len(parts) == 3:
+            latest[parts[2]] = (parts[0], parts[1])
+    verdicts: list[bool | None] = []
+    for workflow in GATE_WORKFLOWS:
+        if workflow not in latest:
+            verdicts.append(None)
+            continue
+        status, conclusion = latest[workflow]
+        if status != "completed" or conclusion == "success":
+            verdicts.append(False)
+        else:
+            verdicts.append(True if conclusion in _RED else None)
+    if True in verdicts:
+        return True
+    return None if None in verdicts else False
 
 
 def _mergeable_passed_pr(gh: Runner, repo: str, issue: int) -> int | None:
@@ -383,8 +406,9 @@ def _mergeable_passed_pr(gh: Runner, repo: str, issue: int) -> int | None:
             mergeable = "true" if state in ("clean", "has_hooks") else state
             # `blocked` is not one thing (#1207). It is red gates -- a cycle has a
             # fix to make -- but also a required check still RUNNING, which is a PR
-            # waiting to merge. Only a latest gates run that is running or green
-            # counts as waiting; no run, an unreadable one, or a red one starts it.
+            # waiting to merge. Only when BOTH required workflows' latest runs are
+            # running or green does it count as waiting; a red one (either), a
+            # missing one or an unreadable answer starts the cycle.
             if state == "blocked" and _gates_red(gh, repo, pr.get("sha") or "") is False:
                 mergeable = "true"
         except RuntimeError:
@@ -467,7 +491,7 @@ def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
         if pr is None:
             return None
         return (f"issue #{e.target}'s PR #{pr} carries `qa-pass` and is mergeable (or "
-                f"blocked only on a gates run that is not red); it is waiting to merge, "
+                f"blocked only on required gates that are not red); it is waiting to merge, "
                 f"and a cycle would re-decide passed work.")
     # A round that has ALREADY ruled on the current head since this entry was
     # queued. The case QA round 1 on #675 exposed: once a busy loop is no
