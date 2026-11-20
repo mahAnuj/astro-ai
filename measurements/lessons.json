@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-20T11:46:55Z",
+ "generated_at": "2026-11-20T16:43:01Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1093,6 +1093,13 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/1271#issuecomment-7027875566",
     "summary": "QA: FAIL \u2014 verified at `a5f74408d569c37fd22a7b7012f779f8cec59133` DEFECT 1: _gates_red reads only 'PR gates'; a red 'verify-build' (build-gates, also required, scripts/collect_gate_failures.py GATE_WORKFLOWS) with PR gates green/running is dropped as 'waiting to merge' -> #1165 shape reintroduced; r",
     "themes": []
+   },
+   {
+    "number": 1280,
+    "at": "2026-11-20T15:22:07Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1280#issuecomment-7043275471",
+    "summary": "QA: FAIL \u2014 verified at `efc75aa00c251dfaa7ab095d6f18748336bb0ae8` DEFECT: freshest() overwrites generated_at with now, so a stale log reading bypasses the 36h QUOTA_MAX_AGE guard. The PR body says \"every existing guard is unchanged: ... file age\"; that is false. REPRODUCED (python, scripts/chain_cyc",
+    "themes": []
    }
   ],
   "reverts": [],
@@ -1143,7 +1150,15 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": []
+  "ops_findings": [
+   {
+    "kind": "loop-starved",
+    "level": "amber",
+    "title": "2 of the last 4 build cycles built nothing",
+    "detail": "Empty cycles started 2026-11-20T03:53, 2026-11-20T15:23. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
+    "where": "/admin/ops"
+   }
+  ]
  },
  "error_themes": {
   "regression": 32,
