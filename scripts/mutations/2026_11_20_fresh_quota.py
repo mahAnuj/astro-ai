@@ -17,4 +17,9 @@ MUTATIONS = [
      "    if not got or got.get(\"seven_day\") is None:\n        return None\n",
      "    if not got or got.get(\"seven_day\") is None or got.get(\"status\") != \"allowed\":\n        return None\n",
      "test_a_fresh_warning_still_blocks_even_when_the_file_says_allowed"),
+    ("fresh quota: a fresh reading is stamped with now, bypassing the age guard",
+     "scripts/chain_cycle.py",
+     "\"generated_at\": fresh[\"at\"], \"latest\": fresh}",
+     "\"generated_at\": now.strftime(\"%Y-%m-%dT%H:%M:%SZ\"), \"latest\": fresh}",
+     "test_a_stale_fresh_reading_still_trips_the_age_guard"),
 ]

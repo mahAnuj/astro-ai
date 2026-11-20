@@ -192,3 +192,14 @@ def test_an_older_fresh_reading_never_replaces_a_newer_file():
                                                                  "at": "2026-11-06T11:45:00Z"}}
     older = {"seven_day": 0.01, "status": "allowed", "at": "2026-11-06T09:00:00Z"}
     assert cc.freshest(usage, older, NOW) is usage
+
+
+def test_a_stale_fresh_reading_still_trips_the_age_guard():
+    """QA on #1280: freshest() stamped generated_at with now, so a 45h-old log reading made
+    quota_reason() answer None (free) -- the 36h guard was bypassed."""
+    usage = {"generated_at": "2026-11-04T10:00:00Z",
+             "latest": {"seven_day": 0.9, "status": "allowed_warning", "at": "2026-11-04T10:00:00Z"}}
+    old = {"seven_day": 0.1, "status": "allowed", "at": "2026-11-04T15:00:00Z"}   # 45h before NOW
+    assert cc.quota_reason(cc.freshest(usage, old, NOW), NOW).endswith("h old")
+    recent = {**old, "at": "2026-11-06T11:00:00Z"}
+    assert cc.quota_reason(cc.freshest(usage, recent, NOW), NOW) is None

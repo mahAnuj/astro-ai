@@ -147,7 +147,9 @@ def freshest(usage: dict | None, fresh: dict | None, now: datetime) -> dict | No
         newer = True
     if not newer:
         return usage
-    return {**(usage or {}), "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "latest": fresh}
+    # The age is the READING's, never now's: stamping now made a 45h-old log reading (an
+    # hourly tick after missed cron slots) pass the QUOTA_MAX_AGE guard as if it were fresh.
+    return {**(usage or {}), "generated_at": fresh["at"], "latest": fresh}
 
 
 def build_runs_today(gh: Runner, repo: str, now: datetime) -> int:
