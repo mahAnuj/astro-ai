@@ -8,8 +8,10 @@ house", 4 and 7 were undated "ephemeris-dependent" placeholders, 8 ran a month l
 ended on Apr 28 where Cheiro says 19/26 Apr. Nothing in the held corpus supports the
 planetary reasoning those strings carried.
 
-Numbers 1 (Johari §4-sourced) and 3, 5, 6 (agree with §14.6 to about a day) are deliberately
-untouched, so they are not pinned here.
+Number 1 (Johari §4-sourced) and 3, 5, 6 are deliberately untouched, so they are not pinned
+here. 3, 5 and 6 are NOT exact vs §14.6: LP3 starts both windows 1 day late (Nov 22 vs 21,
+Feb 20 vs 19); LP5 and LP6 start their 2nd window 2 days late (Aug 23 vs 21, Sep 23 vs 21);
+window ends sit on or inside Cheiro's "20/27".
 
 `weak_months` for 2-9 has no held source at all (only number 1's, Johari §4:200). It is left
 as written and the page labels it editorial; these tests pin the label, not the dates.
@@ -34,7 +36,7 @@ FORBIDDEN = ("Moon-in-Cancer", "ephemeris", "full-moon periods", "Ketu-friendly"
              "Rahu's own", "Mars's own sign", "Saturn's own signs", "Sun-in-Scorpio",
              "Sun-in-Aries", "Apr 28")
 
-CAPTION = "Editorial guidance, not a dated rule from the classical text we follow."
+CAPTION = "Editorial guidance, not a dated rule from a classical text."
 
 
 @pytest.mark.parametrize("number, windows", sorted(CHEIRO.items()))
