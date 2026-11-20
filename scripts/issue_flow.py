@@ -273,6 +273,231 @@ def summarise(items: list[dict], prs: list[dict], closers: dict[int, str], *,
             "closed_rows": sorted(closed_rows, key=lambda r: r["number"])}
 
 
+# --------------------------------------------------------------- PR merge time
+
+#: Owner, 2026-11-19: "i think we should also track the max time a PR took to merge, this
+#: would help understand how the loop is performing". Measured that day over 125 PRs merged
+#: since 2026-11-13: median 0.5h, p90 7.4h, max 46.6h (#1121). The tail is QA-fail loops and
+#: trust-boundary holds; the median says nothing about it, so the block reports the max too.
+#:
+#: Counted: PRs merged in the window, open -> merge. Not counted: the automated measurement
+#: and report PRs (`publish_measurements.sh`), which merge themselves in about a minute and
+#: would drag every number toward zero.
+PR_WINDOWS = (7, 28)
+SLOWEST_SHOWN = 5
+_AUTOMATED_TITLE = re.compile(r"^(measurement|sync report|infra report|discover report|"
+                              r"prioritise report|design report)\b", re.I)
+
+
+def _automated(pr: dict) -> bool:
+    return ((pr.get("head") or {}).get("ref") or "").startswith("measurements/") or \
+        bool(_AUTOMATED_TITLE.match(pr.get("title") or ""))
+
+
+def _pct(sorted_hours: list[float], p: float) -> float | None:
+    if not sorted_hours:
+        return None
+    return round(sorted_hours[min(len(sorted_hours) - 1, int(p * len(sorted_hours)))], 1)
+
+
+def waiting_on(labels: list[str]) -> str:
+    """What an open PR is waiting for, read from its labels."""
+    if "qa-fail" in labels:
+        return "a fix after QA failed"
+    if "needs-human-review" in labels:
+        return "chief (trust boundary)"
+    if "qa-pass" in labels:
+        return "merge"
+    return "gates / QA"
+
+
+def pr_flow(merged: list[dict], open_prs: list[dict], now: datetime) -> dict:
+    """Merge-time stats from closed-PR and open-PR listings (REST `pulls` shape). Pure."""
+    rows = []
+    for pr in merged:
+        c, m = _ts(pr.get("created_at")), _ts(pr.get("merged_at"))
+        if c is None or m is None or _automated(pr):
+            continue
+        rows.append({"number": pr["number"], "title": (pr.get("title") or "")[:90],
+                     "author": (pr.get("user") or {}).get("login"), "merged_at": pr["merged_at"],
+                     "hours": round((m - c).total_seconds() / 3600, 1)})
+    windows = {}
+    for days in PR_WINDOWS:
+        floor = now - timedelta(days=days)
+        sel = sorted((r for r in rows if _ts(r["merged_at"]) >= floor), key=lambda r: r["hours"])
+        hs = [r["hours"] for r in sel]
+        windows[f"{days}d"] = {"merged": len(sel), "median_h": _pct(hs, 0.5), "p90_h": _pct(hs, 0.9),
+                               "max_h": hs[-1] if hs else None,
+                               "slowest": [dict(r) for r in sel[::-1][:SLOWEST_SHOWN]]}
+    start = (now - timedelta(days=PR_WINDOWS[-1] - 1)).date()
+    by_day = {(start + timedelta(days=i)).isoformat(): [] for i in range(PR_WINDOWS[-1])}
+    for r in rows:
+        d = r["merged_at"][:10]
+        if d in by_day:
+            by_day[d].append(r["hours"])
+    days_out = [{"date": d, "merged": len(h), "median_h": _pct(sorted(h), 0.5),
+                 "max_h": max(h) if h else None} for d, h in by_day.items()]
+    open_rows = []
+    for pr in open_prs:
+        c = _ts(pr.get("created_at"))
+        if c is None or _automated(pr):
+            continue
+        labels = [l.get("name") for l in pr.get("labels") or []]
+        open_rows.append({"number": pr["number"], "title": (pr.get("title") or "")[:90],
+                          "age_h": round((now - c).total_seconds() / 3600, 1),
+                          "waiting_on": waiting_on(labels)})
+    open_rows.sort(key=lambda r: -r["age_h"])
+    return {"windows": windows, "days": days_out, "open": open_rows}
+
+
+# --- why a PR was slow (owner, 2026-11-19: "also capture top one liner reasons, explaining why
+# it is being delayed" -- "this should be dynamic"). Not a fixed list of causes: each PR's own
+# record is replayed as a timeline -- every push, each gates run on each commit, each QA
+# verdict, each label -- and the time between events is charged to the STATE the PR was in.
+# The one-liner names whichever states actually dominated, so a fix loop, a stalled queue and
+# a held PR read differently. For the slowest and the open PRs only (EXPLAIN_MAX), with at most
+# CHECKED_COMMITS commits' check runs read each.
+EXPLAIN_MAX = 10
+CHECKED_COMMITS = 6
+GATE_NAMES = ("gates", "build-gates")
+#: state -> its phrase. Priority order when several hold at once: the first wins.
+STATES = (
+    ("held", "held for chief (trust boundary)"),
+    ("qa_fail", "waiting for a fix after QA failed"),
+    ("gates_red", "gates red"),
+    ("gates_running", "gates running"),
+    ("no_gates", "waiting for gates to start"),
+    ("awaiting_qa", "waiting for a QA round"),
+    ("awaiting_merge", "QA passed, waiting for the merge"),
+)
+_PHRASE = dict(STATES)
+
+
+def _timeline(created: datetime, end: datetime, commits: list[dict], checks: dict,
+              comments: list[dict], events: list[dict]) -> dict[str, float]:
+    """Hours per state between `created` and `end`. Pure. `commits` [{sha, at}], `checks`
+    sha -> [{name, started_at, completed_at, conclusion}], `comments` and `events` in the
+    REST shape."""
+    marks: list[tuple[datetime, str, object]] = []
+    for c in commits:
+        if _ts(c.get("at")):
+            marks.append((_ts(c["at"]), "push", c["sha"]))
+    for sha, runs in checks.items():
+        for r in runs:
+            if r.get("name") not in GATE_NAMES:
+                continue
+            if _ts(r.get("started_at")):
+                marks.append((_ts(r["started_at"]), "run_start", (sha, r["name"])))
+            if _ts(r.get("completed_at")):
+                marks.append((_ts(r["completed_at"]), "run_end", (sha, r["name"], r.get("conclusion"))))
+    for c in comments:
+        body = c.get("body") or ""
+        if body.startswith(("QA: PASS", "QA: FAIL")) and _ts(c.get("created_at")):
+            marks.append((_ts(c["created_at"]), "verdict", body.startswith("QA: PASS")))
+    for e in events:
+        name = (e.get("label") or {}).get("name")
+        if name in ("qa-fail", "needs-human-review") and e.get("event") in ("labeled", "unlabeled") \
+                and _ts(e.get("created_at")):
+            marks.append((_ts(e["created_at"]), e["event"], name))
+    marks = sorted((m for m in marks if created <= m[0] <= end), key=lambda m: m[0])
+    head, runs, labels, verdict = None, {}, set(), None    # runs: name -> running|green|red for head
+    hours: dict[str, float] = {}
+
+    def state() -> str:
+        if "needs-human-review" in labels:
+            return "held"
+        if "qa-fail" in labels:
+            return "qa_fail"
+        if any(v == "red" for v in runs.values()):
+            return "gates_red"
+        if any(v == "running" for v in runs.values()):
+            return "gates_running"
+        if not runs:
+            return "no_gates"
+        return "awaiting_merge" if verdict else "awaiting_qa"
+
+    t = created
+    for at, kind, val in marks:
+        st = state()
+        hours[st] = hours.get(st, 0.0) + (at - t).total_seconds() / 3600
+        t = at
+        if kind == "push":
+            # A push after a QA FAIL is the fix arriving: `qa-fail` stays on the PR until the next
+            # QA round clears it, but from here the PR waits on gates and QA, not on a fix.
+            head, runs, verdict = val, {}, None
+            labels.discard("qa-fail")
+        elif kind == "run_start" and val[0] == head:
+            runs[val[1]] = "running"
+        elif kind == "run_end" and val[0] == head:
+            runs[val[1]] = "green" if val[2] == "success" else "red"
+        elif kind == "verdict":
+            # Each verdict sets the state itself: the `qa-fail` LABEL goes on once and stays
+            # through later rounds (#1212: labelled once, five FAILs), so a FAIL starts a new
+            # wait for a fix and a PASS ends it, whatever the label events say.
+            verdict = val
+            if val:
+                labels.discard("qa-fail")
+            else:
+                labels.add("qa-fail")
+        elif kind == "labeled":
+            labels.add(val)
+        elif kind == "unlabeled":
+            labels.discard(val)
+    st = state()
+    hours[st] = hours.get(st, 0.0) + (end - t).total_seconds() / 3600
+    return {k: round(v, 1) for k, v in hours.items() if v > 0}
+
+
+def delay_reason(created: datetime, end: datetime, commits: list[dict], checks: dict,
+                 comments: list[dict], events: list[dict]) -> dict:
+    """The per-state hours and the one-liner for one PR. Pure."""
+    hours = _timeline(created, end, commits, checks, comments, events)
+    total = max(sum(hours.values()), 0.1)
+    fails = sum((c.get("body") or "").startswith("QA: FAIL") for c in comments)
+    top = [(k, v) for k, v in sorted(hours.items(), key=lambda kv: -kv[1]) if v >= 0.5 and v >= 0.1 * total][:2]
+    parts = []
+    for k, v in top:
+        phrase = _PHRASE[k]
+        if k == "qa_fail" and fails:
+            phrase += f" ({fails} QA FAIL{'' if fails == 1 else 's'})"
+        parts.append(f"{v}h {phrase}")
+    extra = f"; {len(commits)} pushes" if len(commits) >= 4 else ""
+    return {"reason": ("; ".join(parts) or "no single wait stood out") + extra,
+            "primary": top[0][0] if top else "other", "hours": hours,
+            "qa_fails": fails, "pushes": len(commits)}
+
+
+def explain(gh: Runner, repo: str, prs: list[dict], now: datetime) -> None:
+    """Add `why` to each row in place. A failed read gives `why: null`, never a guess."""
+    for r in prs[:EXPLAIN_MAX]:
+        try:
+            n = r["number"]
+            pr = json.loads(gh(["api", f"repos/{repo}/pulls/{n}"]))
+            raw = json.loads(gh(["api", f"repos/{repo}/pulls/{n}/commits?per_page=100"]))
+            commits = [{"sha": c["sha"], "at": (c.get("commit") or {}).get("committer", {}).get("date")}
+                       for c in raw]
+            checks = {}
+            for c in commits[-CHECKED_COMMITS:]:
+                checks[c["sha"]] = json.loads(gh(["api", f"repos/{repo}/commits/{c['sha']}/check-runs?per_page=100"])).get("check_runs") or []
+            comments = json.loads(gh(["api", f"repos/{repo}/issues/{n}/comments?per_page=100"]))
+            events = json.loads(gh(["api", f"repos/{repo}/issues/{n}/events?per_page=100"]))
+            created, end = _ts(pr.get("created_at")), _ts(pr.get("merged_at")) or now
+            r["why"] = delay_reason(created, end, commits, checks, comments, events)
+        except (RuntimeError, ValueError, KeyError, TypeError, AttributeError):
+            r["why"] = None
+
+
+def top_reasons(rows: list[dict]) -> list[dict]:
+    """How many of these PRs each state was the biggest wait for, most common first."""
+    counts: dict[str, int] = {}
+    for r in rows:
+        k = (r.get("why") or {}).get("primary")
+        if k:
+            counts[k] = counts.get(k, 0) + 1
+    return [{"reason": _PHRASE.get(k, "no single wait stood out"), "prs": v}
+            for k, v in sorted(counts.items(), key=lambda kv: -kv[1])]
+
+
 def collect(gh: Runner, repo: str, now: datetime, *, open_issues: list[dict],
             prior: dict | None = None) -> dict:
     """Fetch and summarise. `open_issues` is the backlog the collector already
@@ -316,4 +541,25 @@ def collect(gh: Runner, repo: str, now: datetime, *, open_issues: list[dict],
                     owner=owner, now=now)
     doc["timelines_read"] = read
     doc["truncated"] = truncated
+    # One extra read: the open PRs, for their ages. A failure here leaves the rest of the block.
+    try:
+        open_prs = json.loads(gh(["api", f"repos/{repo}/pulls?state=open&per_page=100"]))
+    except (RuntimeError, ValueError):
+        open_prs = []
+        truncated.append("open-prs")
+    doc["pr_flow"] = pf = pr_flow(prs, open_prs if isinstance(open_prs, list) else [], now)
+    # Why the slow ones were slow, and why the open ones are waiting: the 7-day slowest first,
+    # then the 28-day slowest not already read, then the open PRs, up to EXPLAIN_MAX in all.
+    seen, todo = set(), []
+    for row in (pf["windows"]["7d"]["slowest"] + pf["windows"]["28d"]["slowest"] + pf["open"]):
+        if row["number"] not in seen:
+            seen.add(row["number"]); todo.append(row)
+    explain(gh, repo, todo, now)
+    whys = {r["number"]: r.get("why") for r in todo}
+    for w in pf["windows"].values():
+        for r in w["slowest"]:
+            r["why"] = whys.get(r["number"])
+        w["top_reasons"] = top_reasons(w["slowest"])
+    for r in pf["open"]:
+        r["why"] = whys.get(r["number"])
     return doc
