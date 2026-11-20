@@ -1,35 +1,28 @@
 {
- "generated_at": "2026-11-20T17:53:18Z",
+ "generated_at": "2026-11-20T19:07:54Z",
  "target": 0.6,
  "week": "2026-W47",
- "today_date": "2026-11-20",
+ "today_date": "2026-11-21",
  "today": {
-  "growth": 0,
-  "other": 5,
+  "growth": 1,
+  "other": 0,
   "exempt": 0,
-  "share": 0.0
+  "share": 1.0
  },
  "this_week": {
-  "growth": 13,
+  "growth": 16,
   "other": 55,
   "exempt": 0,
-  "share": 0.191
+  "share": 0.225
  },
  "this_month": {
-  "growth": 16,
+  "growth": 19,
   "other": 220,
   "exempt": 0,
-  "share": 0.068
+  "share": 0.079
  },
  "must_pick_growth": true,
  "days": [
-  {
-   "date": "2026-11-07",
-   "growth": 0,
-   "other": 11,
-   "exempt": 0,
-   "share": 0.0
-  },
   {
    "date": "2026-11-08",
    "growth": 0,
@@ -116,13 +109,63 @@
   },
   {
    "date": "2026-11-20",
-   "growth": 0,
+   "growth": 2,
    "other": 5,
    "exempt": 0,
-   "share": 0.0
+   "share": 0.286
+  },
+  {
+   "date": "2026-11-21",
+   "growth": 1,
+   "other": 0,
+   "exempt": 0,
+   "share": 1.0
   }
  ],
  "cycles": [
+  {
+   "run": 44797856801,
+   "started": "2026-11-20T18:59:01Z",
+   "issue": 1302,
+   "title": "QA follow-up: kundali-matching article links with the raw text '/matching tool'",
+   "class": "growth",
+   "outcome": "pr open",
+   "pr": 1310,
+   "agents": {
+    "architect": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44788136062,
+   "started": "2026-11-20T17:57:05Z",
+   "issue": 1301,
+   "title": "QA follow-up: numerology caption says 'the classical text we follow' though the page mixes two sources; a code comment says 'to about a day' where two differ by 2 days",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1308,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 44775691097,
+   "started": "2026-11-20T16:40:16Z",
+   "issue": 1301,
+   "title": "QA follow-up: numerology caption says 'the classical text we follow' though the page mixes two sources; a code comment says 'to about a day' where two differ by 2 days",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1308,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "numerologist": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
   {
    "run": 44768005421,
    "started": "2026-11-20T15:54:43Z",
@@ -582,47 +625,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 44047430376,
-   "started": "2026-11-17T08:31:14Z",
-   "issue": 1159,
-   "title": "privacy: /subscribe/lookup tells anyone whether an email is subscribed, with its city and rashi (#908 item 2)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1162,
-   "agents": {
-    "engineer": 1,
-    "project-manager": 1,
-    "qa": 2
-   }
-  },
-  {
-   "run": 44041420072,
-   "started": "2026-11-17T07:47:32Z",
-   "issue": 1160,
-   "title": "privacy: share-link ids are 4 random bytes \u2014 make new ids 16 bytes, keep old ids readable (#908 item 3)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1161,
-   "agents": {
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44035519931,
-   "started": "2026-11-17T07:01:31Z",
-   "issue": 1068,
-   "title": "analytics: kundli_generated and ask_answered fire on every re-render (/kundli revisit, /r/ snapshot, /ask?q= reload), not on completion",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1157,
-   "agents": {
-    "engineer": 2,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -867,22 +869,22 @@
   "ga4_new_users_28d": 648,
   "ga4_sessions_28d": 784,
   "objective_top5": 1,
-  "growth_share_today": 0.0,
-  "growth_share_week": 0.191,
-  "growth_share_month": 0.068
+  "growth_share_today": 1.0,
+  "growth_share_week": 0.225,
+  "growth_share_month": 0.079
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
-   "period": "2026-11-20",
-   "progress": 0.0,
-   "detail": "0 of 5 cycles on growth, target 60%",
+   "period": "2026-11-21",
+   "progress": 1.0,
+   "detail": "1 of 1 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W47",
-   "progress": 0.178,
+   "progress": 0.211,
    "detail": "4 goals, 4 measurable",
    "goals": [
     {
@@ -893,8 +895,8 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.191,
-     "progress": 0.0,
+     "current": 0.225,
+     "progress": 0.132,
      "basis": "growth_share_week"
     },
     {
@@ -948,7 +950,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.049,
+   "progress": 0.067,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -991,8 +993,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.068,
-     "progress": 0.0,
+     "current": 0.079,
+     "progress": 0.055,
      "basis": "growth_share_month"
     }
    ]
@@ -1113,7 +1115,6 @@
   1076,
   1107,
   1300,
-  1301,
   1302
  ]
 }

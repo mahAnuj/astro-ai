@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-20T17:52:29Z",
+  "generated_at": "2026-11-20T19:06:58Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 149,
+  "open": 148,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 63,
+    "UNCLASSIFIED": 62,
     "INFRA": 16,
     "REDESIGN": 10,
     "OPS": 8,
@@ -33,7 +33,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 43,
+    "bug": 42,
     "untyped": 37,
     "enhancement": 30,
     "chore": 22,
@@ -45,7 +45,7 @@
     "unset": 86,
     "medium": 28,
     "high": 21,
-    "low": 14
+    "low": 13
   },
   "blocked": 9,
   "rows": [
@@ -108,29 +108,13 @@
         "bug",
         "content",
         "priority:low",
-        "qa"
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-20T16:03:19Z",
-      "updated": "2026-11-20T16:03:19Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1301,
-      "title": "QA follow-up: numerology caption says 'the classical text we follow' though the page mixes two sources; a code comment says 'to about a day' where two differ by 2 days",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "low",
-      "labels": [
-        "bug",
-        "content",
-        "priority:low",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-20T16:03:18Z",
-      "updated": "2026-11-20T17:24:23Z",
+      "updated": "2026-11-20T19:06:14Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2439,9 +2423,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-20T17:52:29Z",
+    "generated_at": "2026-11-20T19:06:58Z",
     "window_days": 28,
-    "open_now": 149,
+    "open_now": 148,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2849,15 +2833,15 @@
       {
         "date": "2026-11-20",
         "opened": 29,
-        "closed": 4,
-        "net": 25,
-        "open_end": 149,
+        "closed": 5,
+        "net": 24,
+        "open_end": 148,
         "opened_by": {
           "audit": 22,
           "loop": 7
         },
         "closed_by": {
-          "close-on-evidence": 2,
+          "close-on-evidence": 3,
           "prioritise": 1,
           "main-red-report": 1
         }
@@ -4129,6 +4113,11 @@
         "number": 1277,
         "closed_at": "2026-11-20T11:56:05Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1301,
+        "closed_at": "2026-11-20T18:27:56Z",
+        "closer": "close-on-evidence"
       }
     ],
     "timelines_read": 1,
@@ -4136,7 +4125,7 @@
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 124,
+          "merged": 125,
           "median_h": 0.5,
           "p90_h": 8.1,
           "max_h": 46.6,
@@ -4260,7 +4249,7 @@
           ]
         },
         "28d": {
-          "merged": 321,
+          "merged": 322,
           "median_h": 0.6,
           "p90_h": 17.3,
           "max_h": 122.1,
@@ -4551,17 +4540,17 @@
         },
         {
           "date": "2026-11-20",
-          "merged": 7,
-          "median_h": 0.6,
+          "merged": 8,
+          "median_h": 0.9,
           "max_h": 13.6
         }
       ],
       "open": [
         {
-          "number": 1308,
-          "title": "numerology: Cautious-months caption and 3/5/6 comment state the sources as they are (#1301",
-          "age_h": 0.5,
-          "waiting_on": "gates / QA",
+          "number": 1310,
+          "title": "learn: kundali-matching article uses descriptive anchor text (#1302)",
+          "age_h": 0.0,
+          "waiting_on": "merge",
           "why": null
         }
       ]
