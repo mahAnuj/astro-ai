@@ -25,6 +25,16 @@ window and would hit the 1000-row limit the main report already reports
 truncation against -- and the page wants one number per day, not per day per
 page.
 
+--daily ALSO ASKS TWO OPTIONAL THINGS, EACH ITS OWN REQUEST (#1277, #1070)
+------------------------------------------------------------------------
+`returning_users` per day (`activeUsers` x `newVsReturning`, the `returning` value; NOT
+`activeUsers - newUsers`, a different quantity) and `admin_sessions` per day (sessions
+landing on /admin, which #735 stopped tagging on 2026-11-12, so a later nonzero day is
+a leak). Each fails alone: an `ApiError` of any status voids only that field (null,
+with a status naming the HTTP code) and the base series survives; the first request
+stays fatal, as before. Returning counts are user-days, not people: someone active on
+three days counts three times.
+
 --events IS A THIRD SEPARATE REQUEST SET (#782)
 -----------------------------------------------
 `cta_click` (#570, emitted by static/analytics.js with `from_path` / `to_path`)
@@ -97,6 +107,8 @@ LIMIT = 1000
 API = "https://analyticsdata.googleapis.com/v1beta/properties/{pid}:runReport"
 CTA_EVENT = "cta_click"
 NOT_SET = "(not set)"
+# --daily admin landings (#1277): /admin, /admin/..., /admin?... but not /administer.
+ADMIN_LANDING_RE = "/admin([/?].*)?"
 # The event is emitted from PR #688, merged 2026-11-03 04:42Z; before that a zero is
 # not a measurement of anything.
 CTA_SINCE = "2026-11-03"
@@ -131,7 +143,7 @@ JOURNEY_SPLITS = (
 
 
 def daily(args, start: str, end: str, bearer: str) -> int:
-    """One row per day: active users, sessions, new users.
+    """One row per day: active users, sessions, new users, returning users, admin landings.
 
     `activeUsers` is the headline, not `sessions`: a single visitor reloading a
     kundli produces several sessions and one user, and the question this page
@@ -160,14 +172,58 @@ def daily(args, start: str, end: str, bearer: str) -> int:
                     "sessions": int(r["metricValues"][1]["value"]),
                     "new_users": int(r["metricValues"][2]["value"])}
 
+    def _iso(raw: str) -> str:
+        return f"{raw[0:4]}-{raw[4:6]}-{raw[6:8]}" if len(raw) == 8 else raw
+
+    # Extra requests: ApiError subclasses SystemExit, so `except Exception` would miss it.
+    # Any status voids only its own field; network timeouts still propagate as for the
+    # first request.
+    returning, ret_status = {}, "ok"
+    try:
+        rdata = post(API.format(pid=args.property), {
+            "dateRanges": [{"startDate": start, "endDate": end}],
+            "dimensions": [{"name": "date"}, {"name": "newVsReturning"}],
+            "metrics": [{"name": "activeUsers"}],
+            "limit": 1200,
+        }, bearer)
+        for r in rdata.get("rows", []):
+            if r["dimensionValues"][1]["value"] == "returning":
+                returning[_iso(r["dimensionValues"][0]["value"])] = int(r["metricValues"][0]["value"])
+    except ApiError as e:
+        ret_status = f"unavailable (HTTP {e.status})"
+
+    admin, admin_status = {}, "ok"
+    try:
+        adata = post(API.format(pid=args.property), {
+            "dateRanges": [{"startDate": start, "endDate": end}],
+            "dimensions": [{"name": "date"}],
+            "metrics": [{"name": "sessions"}],
+            "dimensionFilter": {"filter": {
+                "fieldName": "landingPagePlusQueryString",
+                "stringFilter": {"matchType": "FULL_REGEXP", "value": ADMIN_LANDING_RE}}},
+            "limit": 400,
+        }, bearer)
+        for r in adata.get("rows", []):
+            admin[_iso(r["dimensionValues"][0]["value"])] = int(r["metricValues"][0]["value"])
+    except ApiError as e:
+        admin_status = f"unavailable (HTTP {e.status})"
+
+    # A day with no `returning` row is 0 only when the request succeeded; on failure it is
+    # unknown, and 0 would read as "nobody came back".
+    ok_ret, ok_admin = ret_status == "ok", admin_status == "ok"
     rows, d = [], datetime.strptime(start, "%Y-%m-%d").date()
     last = datetime.strptime(end, "%Y-%m-%d").date()
     while d <= last:
         iso = d.isoformat()
-        rows.append(got.get(iso, {"date": iso, "active_users": 0,
-                                  "sessions": 0, "new_users": 0, "no_data": True}))
+        row = dict(got.get(iso, {"date": iso, "active_users": 0,
+                                 "sessions": 0, "new_users": 0, "no_data": True}))
+        row["returning_users"] = returning.get(iso, 0) if ok_ret else None
+        row["admin_sessions"] = admin.get(iso, 0) if ok_admin else None
+        rows.append(row)
         d += timedelta(days=1)
 
+    ret_days = sum(r["returning_users"] for r in rows) if ok_ret else None
+    total_users = sum(r["active_users"] for r in rows)
     print(json.dumps({
         "source": "ga4", "property": args.property, "window": [start, end],
         "dimensions": ["date"],
@@ -176,6 +232,20 @@ def daily(args, start: str, end: str, bearer: str) -> int:
                 "gap in collection is visible rather than drawn as a flat line.",
         "days": len(rows),
         "days_with_traffic": sum(1 for r in rows if not r.get("no_data")),
+        "returning": {
+            "status": ret_status,
+            "user_days": ret_days,
+            "share_pct": (round(100 * ret_days / total_users, 1)
+                          if ok_ret and total_users else None),
+            "note": "User-days, not unique people: a person active on three days counts "
+                    "three times, so the share is of daily active users who were "
+                    "returning, not of visitors. Rows whose newVsReturning is "
+                    "(not set) are excluded.",
+        },
+        "admin_status": admin_status,
+        "admin_note": "admin_sessions counts sessions landing on /admin*. #735 stopped "
+                      "analytics on /admin/* on 2026-11-12, so a nonzero day from then "
+                      "on is internal traffic leaking into the property.",
         "rows": rows,
     }, indent=2))
     return 0
