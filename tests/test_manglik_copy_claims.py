@@ -140,8 +140,14 @@ def test_manglik_remedies_summary_carries_the_clause(client):
     assert art is not None
     assert _CLAUSE in art.summary
     assert "classical tradition flags" not in art.summary
+    assert "tradition flags" not in art.summary
     # summary renders in the article header and the Article JSON-LD description
     assert _text(client, "/learn/manglik-remedies/").count(_CLAUSE) >= 2
+    # #1300: the page's own intro callout no longer attributes the house list to "classical tradition"
+    page = _text(client, "/learn/manglik-remedies/")
+    assert "tradition flags for marriage friction" not in page
+    assert "classical tradition flags" not in page
+    assert "the modern books we work from link to marriage friction" in page
 
 
 def test_manglik_dosh_keypoints_carry_the_clause():
