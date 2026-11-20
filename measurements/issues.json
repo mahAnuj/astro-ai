@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-20T02:07:44Z",
+  "generated_at": "2026-11-20T04:00:02Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 127,
@@ -261,12 +261,12 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa-fail",
+        "qa-pass",
         "provenance:trusted",
         "qa:in-cycle"
       ],
       "created": "2026-11-18T02:05:15Z",
-      "updated": "2026-11-20T01:51:54Z",
+      "updated": "2026-11-20T03:59:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -748,7 +748,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-19T23:24:20Z",
+      "updated": "2026-11-20T02:08:42Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2058,7 +2058,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-20T02:07:44Z",
+    "generated_at": "2026-11-20T04:00:02Z",
     "window_days": 28,
     "open_now": 127,
     "merged_open_hours": 24,
@@ -2467,14 +2467,16 @@
       },
       {
         "date": "2026-11-20",
-        "opened": 3,
-        "closed": 0,
+        "opened": 4,
+        "closed": 1,
         "net": 3,
         "open_end": 127,
         "opened_by": {
-          "loop": 3
+          "loop": 4
         },
-        "closed_by": {}
+        "closed_by": {
+          "main-red-report": 1
+        }
       }
     ],
     "merged_open": [],
@@ -3722,6 +3724,11 @@
       {
         "number": 1249,
         "closed_at": "2026-11-19T07:48:33Z",
+        "closer": "main-red-report"
+      },
+      {
+        "number": 1274,
+        "closed_at": "2026-11-20T02:34:43Z",
         "closer": "main-red-report"
       }
     ],
