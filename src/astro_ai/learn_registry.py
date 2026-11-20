@@ -2995,7 +2995,7 @@ ARTICLES: tuple[Article, ...] = (
     ),
     Article(
         slug="manglik-remedies", title="Manglik Remedies: Classical Practices to Soften Mars in Marriage Charts",
-        summary="Manglik Dosh (Mangal Dosh) remedies focus on softening Mars's placement in the six qualifying houses (1, 2, 4, 7, 8, 12; the sources we work from list five and treat the 1st as an optional addition, which Shubh Bhagya counts) that the tradition flags for marriage friction. The most powerful remedies are Hanuman worship (Mars's presiding deity), Tuesday practices, Kumbh Vivah for severe cases, and Ashtakoot matching. This guide walks the seven classically-cited remedies with the honest note that cancellation rules often mean no remedy is even needed.",
+        summary="Manglik Dosh (Mangal Dosh) remedies focus on softening Mars's placement in the six qualifying houses (1, 2, 4, 7, 8, 12; the sources we work from list five and treat the 1st as an optional addition, which Shubh Bhagya counts) that the modern books we work from link to marriage friction, though they disagree on how much weight the dosha deserves. The most powerful remedies are Hanuman worship (Mars's presiding deity), Tuesday practices, Kumbh Vivah for severe cases, and Ashtakoot matching. This guide walks the seven classically-cited remedies with the honest note that cancellation rules often mean no remedy is even needed.",
         seo_title="Manglik Remedies: Hanuman Worship, Kumbh Vivah, Matching",
         seo_description="Classical Manglik Dosh remedies — Hanuman Chalisa, Tuesday practices, Kumbh Vivah, matching another Manglik. Check cancellation rules first.",
         category="Doshas", hero_image="/static/learn/manglik-remedies/hero.svg", read_time="9 min", last_updated="2026-07",

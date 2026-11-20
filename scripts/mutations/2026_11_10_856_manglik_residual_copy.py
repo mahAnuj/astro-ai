@@ -27,7 +27,7 @@ MUTATIONS = [
      "test_manglik_dosh_keypoints_carry_the_clause"),
     ("#856: manglik-remedies summary says classical tradition flags the six houses again",
      "src/astro_ai/learn_registry.py",
-     f"(1, 2, 4, 7, 8, 12; {_C}) that the tradition flags for marriage friction.",
+     f"(1, 2, 4, 7, 8, 12; {_C}) that the modern books we work from link to marriage friction, though they disagree on how much weight the dosha deserves.",
      "(1, 2, 4, 7, 8, 12) that classical tradition flags for marriage friction.",
      "test_manglik_remedies_summary_carries_the_clause"),
     ("#856: Mars article keypoints state the six houses flatly again",
