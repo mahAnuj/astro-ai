@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-20T19:07:54Z",
+ "generated_at": "2026-11-20T22:44:18Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-21",
  "today": {
-  "growth": 1,
-  "other": 0,
+  "growth": 2,
+  "other": 3,
   "exempt": 0,
-  "share": 1.0
+  "share": 0.4
  },
  "this_week": {
-  "growth": 16,
-  "other": 55,
+  "growth": 17,
+  "other": 58,
   "exempt": 0,
-  "share": 0.225
+  "share": 0.227
  },
  "this_month": {
-  "growth": 19,
-  "other": 220,
+  "growth": 20,
+  "other": 223,
   "exempt": 0,
-  "share": 0.079
+  "share": 0.082
  },
  "must_pick_growth": true,
  "days": [
@@ -116,27 +116,80 @@
   },
   {
    "date": "2026-11-21",
-   "growth": 1,
-   "other": 0,
+   "growth": 2,
+   "other": 3,
    "exempt": 0,
-   "share": 1.0
+   "share": 0.4
   }
  ],
  "cycles": [
   {
-   "run": 44797856801,
-   "started": "2026-11-20T18:59:01Z",
-   "issue": 1302,
-   "title": "QA follow-up: kundali-matching article links with the raw text '/matching tool'",
-   "class": "growth",
+   "run": 44825462844,
+   "started": "2026-11-20T22:01:57Z",
+   "issue": 1294,
+   "title": "QA follow-up: the-9-grahas-overview gives Rahu and Ketu exaltation on two different schemes",
+   "class": "other",
    "outcome": "pr open",
-   "pr": 1310,
+   "pr": 1316,
    "agents": {
     "architect": 1,
     "frontend-engineer": 1,
     "project-manager": 1,
     "qa": 1
    }
+  },
+  {
+   "run": 44817503104,
+   "started": "2026-11-20T21:07:34Z",
+   "issue": 1292,
+   "title": "QA follow-up: /account/delete does not revoke the user's other sessions, so another device stays signed in",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1314,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 44806805035,
+   "started": "2026-11-20T19:56:37Z",
+   "issue": 1292,
+   "title": "QA follow-up: /account/delete does not revoke the user's other sessions, so another device stays signed in",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1314,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44799139462,
+   "started": "2026-11-20T19:07:11Z",
+   "issue": 1300,
+   "title": "QA follow-up: manglik-remedies.html line 7 still says 'that classical tradition flags for marriage friction'",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1312,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44797856801,
+   "started": "2026-11-20T18:59:01Z",
+   "issue": 1302,
+   "title": "QA follow-up: kundali-matching article links with the raw text '/matching tool'",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1310,
+   "agents": null
   },
   {
    "run": 44788136062,
@@ -569,62 +622,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 44068915395,
-   "started": "2026-11-17T10:53:06Z",
-   "issue": 1105,
-   "title": "privacy: no code path deletes personal data \u2014 add account deletion, delete a chart's readings, and enforce retention in the bucket",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1173,
-   "agents": {
-    "engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44060961645,
-   "started": "2026-11-17T10:01:37Z",
-   "issue": 1167,
-   "title": "ask: audit saved /ask answers weekly for astrological correctness (grounded in knowledge/, prompt contract, safety) without publishing user questions",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1170,
-   "agents": {
-    "engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44054007037,
-   "started": "2026-11-17T09:16:05Z",
-   "issue": 1106,
-   "title": "security: sessions never expire server-side and sign-out cannot revoke them; /auth/google has no CSRF check",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1168,
-   "agents": {
-    "architect": 1,
-    "engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44052519976,
-   "started": "2026-11-17T09:06:33Z",
-   "issue": 1041,
-   "title": "knowledge: vedic_reference.md 29.9 and the 29 closing note still say the nitya-yoga blocker is 'narrower than its source' (stale after #1023)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1164,
-   "agents": {
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -869,22 +866,22 @@
   "ga4_new_users_28d": 648,
   "ga4_sessions_28d": 784,
   "objective_top5": 1,
-  "growth_share_today": 1.0,
-  "growth_share_week": 0.225,
-  "growth_share_month": 0.079
+  "growth_share_today": 0.4,
+  "growth_share_week": 0.227,
+  "growth_share_month": 0.082
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-21",
-   "progress": 1.0,
-   "detail": "1 of 1 cycles on growth, target 60%",
+   "progress": 0.667,
+   "detail": "2 of 5 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W47",
-   "progress": 0.211,
+   "progress": 0.214,
    "detail": "4 goals, 4 measurable",
    "goals": [
     {
@@ -895,8 +892,8 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.225,
-     "progress": 0.132,
+     "current": 0.227,
+     "progress": 0.146,
      "basis": "growth_share_week"
     },
     {
@@ -950,7 +947,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.067,
+   "progress": 0.073,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -993,8 +990,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.079,
-     "progress": 0.055,
+     "current": 0.082,
+     "progress": 0.072,
      "basis": "growth_share_month"
     }
    ]
@@ -1113,8 +1110,6 @@
  "open_growth": [
   1065,
   1076,
-  1107,
-  1300,
-  1302
+  1107
  ]
 }
