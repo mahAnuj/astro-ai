@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-19T23:24:25Z",
+ "generated_at": "2026-11-20T02:08:03Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-20",
@@ -129,14 +129,9 @@
    "issue": 1236,
    "title": "analytics: anomaly breakdown skips every day under the spike bar \u2014 5 elevated days in 28 have no named source (4 reports in a row)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1266,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44455237313,

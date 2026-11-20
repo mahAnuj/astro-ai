@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-19T23:24:11Z",
+  "generated_at": "2026-11-20T02:07:44Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 125,
+  "open": 127,
   "with_ask": 45,
   "by_area": {
     "UNCLASSIFIED": 42,
@@ -16,6 +16,7 @@
     "TOKENS": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "UI": 2,
     "PRIVACY": 2,
     "MEASURE": 2,
     "MATCHING": 2,
@@ -36,16 +37,62 @@
     "chore": 22,
     "bug": 20,
     "correctness": 11,
-    "design": 4
+    "design": 5,
+    "ui": 1
   },
   "by_priority": {
-    "unset": 83,
+    "unset": 85,
     "medium": 23,
     "high": 18,
     "low": 1
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1272,
+      "title": "analytics: no export carries the server-side kundli submission count — #1068 cannot be scored (3 reports in a row)",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-20T02:04:36Z",
+      "updated": "2026-11-20T02:04:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1269,
+      "title": "[UI] Mobile: test dropping Name autofocus on / and /matching at <=640px (keyboard covers the form and H1)",
+      "ask": "",
+      "area": "UI",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "design-proposal"
+      ],
+      "created": "2026-11-20T01:31:13Z",
+      "updated": "2026-11-20T01:31:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1268,
+      "title": "[UI] /matching: card-in-card double border wastes ~40px of width at 375px; inputs 257px wide",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-11-20T01:31:11Z",
+      "updated": "2026-11-20T01:31:11Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1261,
       "title": "infra: cap Cloud Run instances, and stop a query string bypassing the CDN cache on public endpoints (/api/agents/status)",
@@ -160,23 +207,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1236,
-      "title": "analytics: anomaly breakdown skips every day under the spike bar — 5 elevated days in 28 have no named source (4 reports in a row)",
-      "ask": "",
-      "area": "ANALYTICS",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-19T02:17:38Z",
-      "updated": "2026-11-19T23:23:28Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1221,
       "title": "[INFRA] main-red-report never fires for the dispatched pr-gates runs agent-merge starts, so a green main does not close its sentinel and a red one would not report (#1216 open 5h after green)",
       "ask": "The fix is in .github/workflows/ (either report from the dispatching step, or have the agent-merge dispatch carry the report, or add a trigger that does fire).",
@@ -230,10 +260,13 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa-fail",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-18T02:05:15Z",
-      "updated": "2026-11-19T01:21:07Z",
+      "updated": "2026-11-20T01:51:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -715,7 +748,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-19T20:13:16Z",
+      "updated": "2026-11-19T23:24:20Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2025,26 +2058,11 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-19T23:24:11Z",
+    "generated_at": "2026-11-20T02:07:44Z",
     "window_days": 28,
-    "open_now": 125,
+    "open_now": 127,
     "merged_open_hours": 24,
     "days": [
-      {
-        "date": "2026-10-23",
-        "opened": 6,
-        "closed": 2,
-        "net": 4,
-        "open_end": 118,
-        "opened_by": {
-          "audit": 2,
-          "loop": 4
-        },
-        "closed_by": {
-          "prioritise": 1,
-          "owner": 1
-        }
-      },
       {
         "date": "2026-10-24",
         "opened": 7,
@@ -2434,18 +2452,29 @@
       {
         "date": "2026-11-19",
         "opened": 11,
-        "closed": 6,
-        "net": 5,
-        "open_end": 125,
+        "closed": 7,
+        "net": 4,
+        "open_end": 124,
         "opened_by": {
           "audit": 4,
           "loop": 7
         },
         "closed_by": {
-          "close-on-evidence": 3,
+          "close-on-evidence": 4,
           "main-red-report": 2,
           "owner": 1
         }
+      },
+      {
+        "date": "2026-11-20",
+        "opened": 3,
+        "closed": 0,
+        "net": 3,
+        "open_end": 127,
+        "opened_by": {
+          "loop": 3
+        },
+        "closed_by": {}
       }
     ],
     "merged_open": [],
@@ -2726,11 +2755,6 @@
         "closer": "close-on-evidence"
       },
       {
-        "number": 493,
-        "closed_at": "2026-10-23T04:52:54Z",
-        "closer": "owner"
-      },
-      {
         "number": 495,
         "closed_at": "2026-10-27T17:37:19Z",
         "closer": "other"
@@ -2738,11 +2762,6 @@
       {
         "number": 503,
         "closed_at": "2026-11-10T08:55:08Z",
-        "closer": "prioritise"
-      },
-      {
-        "number": 505,
-        "closed_at": "2026-10-23T23:53:06Z",
         "closer": "prioritise"
       },
       {
@@ -3691,6 +3710,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1236,
+        "closed_at": "2026-11-19T23:41:48Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1247,
         "closed_at": "2026-11-19T07:45:58Z",
         "closer": "owner"
@@ -3701,7 +3725,7 @@
         "closer": "main-red-report"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 1,
     "truncated": []
   }
 }

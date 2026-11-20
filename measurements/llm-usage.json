@@ -1,26 +1,26 @@
 {
- "generated_at": "2026-11-19T07:54:44Z",
+ "generated_at": "2026-11-20T01:59:37Z",
  "days": 7,
- "total_calls": 180,
- "cache_hits": 138,
- "cache_misses": 42,
- "hit_rate_pct": 76,
- "total_input_tokens": 137410,
- "total_output_tokens": 26917,
- "peak_day_tokens": 6849,
- "peak_day": "2026-11-13",
+ "total_calls": 171,
+ "cache_hits": 136,
+ "cache_misses": 35,
+ "hit_rate_pct": 79,
+ "total_input_tokens": 112190,
+ "total_output_tokens": 20431,
+ "peak_day_tokens": 6529,
+ "peak_day": "2026-11-18",
  "peak_day_measured_tokens": 43421,
  "peak_day_measured": "2026-11-18",
  "by_route": [
   {
    "route": "natal",
-   "calls": 121,
-   "hits": 110,
-   "hit_rate_pct": 90,
-   "input_tokens": 72135,
-   "output_tokens": 13203,
-   "measured_calls": 11,
-   "tokens_per_call": 6557
+   "calls": 116,
+   "hits": 107,
+   "hit_rate_pct": 92,
+   "input_tokens": 58617,
+   "output_tokens": 10840,
+   "measured_calls": 9,
+   "tokens_per_call": 6513
   },
   {
    "route": "rashifal",
@@ -34,43 +34,33 @@
   },
   {
    "route": "ask",
-   "calls": 26,
+   "calls": 22,
    "hits": 0,
    "hit_rate_pct": 0,
-   "input_tokens": 55742,
-   "output_tokens": 7134,
-   "measured_calls": 26,
-   "tokens_per_call": 2143
+   "input_tokens": 45734,
+   "output_tokens": 5976,
+   "measured_calls": 22,
+   "tokens_per_call": 2078
   },
   {
    "route": "today",
-   "calls": 2,
-   "hits": 0,
-   "hit_rate_pct": 0,
-   "input_tokens": 3823,
-   "output_tokens": 764,
-   "measured_calls": 2,
-   "tokens_per_call": 1911
+   "calls": 4,
+   "hits": 1,
+   "hit_rate_pct": 25,
+   "input_tokens": 5764,
+   "output_tokens": 1124,
+   "measured_calls": 3,
+   "tokens_per_call": 1921
   },
   {
    "route": "monthly",
-   "calls": 2,
-   "hits": 0,
-   "hit_rate_pct": 0,
-   "input_tokens": 4218,
-   "output_tokens": 1356,
-   "measured_calls": 2,
-   "tokens_per_call": 2109
-  },
-  {
-   "route": "dasha_deep_dive",
    "calls": 1,
    "hits": 0,
    "hit_rate_pct": 0,
-   "input_tokens": 1492,
-   "output_tokens": 1413,
+   "input_tokens": 2075,
+   "output_tokens": 683,
    "measured_calls": 1,
-   "tokens_per_call": 1492
+   "tokens_per_call": 2075
   }
  ]
 }
