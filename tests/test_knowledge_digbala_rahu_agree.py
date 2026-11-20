@@ -8,6 +8,10 @@ Gemini in Rao's Table 6 and Taurus in Raman's Astrology for Beginners (two held 
 and two pages disagreed with each other. Both now lead with Gemini and mark the entry CONTESTED.
 
 The page tests read the rendered route or the registry fields the route renders, so JSON-LD and page cannot disagree.
+
+#1294: Ketu card follows. The 9-grahas overview's Ketu card said "Exalted Scorpio (disputed) / Debilitated Taurus
+(disputed)" beside a Rahu card on Rao's Table 6 (Gemini / Sagittarius), mixing two schemes on one page. Ketu is
+exalted in Sagittarius and debilitated in Gemini on that table (some say Scorpio / Taurus), mirroring Rahu.
 """
 from __future__ import annotations
 
@@ -149,6 +153,19 @@ def test_rahu_pages_lead_with_gemini_and_say_the_texts_disagree(client):
     k = _plain(client.get("/learn/kaal-sarp-dosh/").text)
     assert "or Taurus on some reckonings" not in k
     assert "though some texts say Taurus" in k
+
+
+def test_ketu_card_matches_the_held_scheme_and_mirrors_rahu(client):
+    t = _plain(client.get("/learn/the-9-grahas-overview/").text)
+    assert "Exalted in: Sagittarius (some say Scorpio)" in t
+    assert "Debilitated in: Gemini (some say Taurus)" in t
+    assert "Exalted in: Scorpio (disputed)" not in t
+    assert "Debilitated in: Taurus (disputed)" not in t
+    card = t[t.index("9. Ketu") : t.index("A quick note on Rahu and Ketu")]
+    # the only Scorpio / Taurus left in the Ketu card are the hedged "some say" alternatives
+    assert card.count("Scorpio") == card.count("some say Scorpio") == 1
+    assert card.count("Taurus") == card.count("some say Taurus") == 1
+    assert "Exalted in: Scorpio" not in card and "Exalted in: Taurus" not in card
 
 
 # a flat 'Rahu is exalted in Taurus' (or Ketu in Scorpio/Taurus-reckoned) with no hedge in the same sentence
