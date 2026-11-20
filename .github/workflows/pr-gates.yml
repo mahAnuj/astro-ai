@@ -154,34 +154,22 @@ permissions:
   contents: read
 
 jobs:
-  gates:
+  # PARALLEL SINCE 2026-11-19 (owner: "there is no way to speed the gates?"). Until then one
+  # job ran everything in sequence on one 4-core runner: measured median ~14 min per PR, 28-45
+  # min for a full sweep (run 44447057327: mutation step 1881s). Now `scope` decides once, and
+  # `suite`, four `mutants` shards and `verify` run side by side; `gates` -- the one REQUIRED
+  # check name, with its permissions unchanged -- waits for all of them and fails unless every
+  # one succeeded. Jobs never skip as a whole: agent-merge counts a `skipped` check as not
+  # green, so on a docs-only change their steps skip and the job still reports success.
+  scope:
     runs-on: ubuntu-latest
-    # 35, not 20. Measured on run 39053584241 (PR #410, 2026-10-17): the job was
-    # killed at 20m10s *inside* the verification sweep, having already spent
-    #   behaviour suite        16s
-    #   mutation sweep     15m46s   <- 178 rows at ~5.3s each
-    #   verification gates  2m32s   (21 of 25 reached, then the axe)
-    # The previous head of that same PR passed at 19m58s — two seconds of
-    # margin — so every branch in the repo was sitting on this cliff, not just
-    # the one that fell off. main's own sweep is 13m31s (run 39086177280).
-    #
-    # Raising a timeout is not relaxing a gate. A gate killed by the clock does
-    # not FAIL, it never RUNS, which is this file's own "exit 2 is skipped, not
-    # passed" hazard arriving by a different road: the four gates after
-    # verify_numerology_reduction asserted nothing and nobody could tell.
-    # agent-merge blocks on `cancelled` correctly, so the PR stayed shut — the
-    # defect is that the evidence was never produced, not that it was ignored.
-    #
-    # The sweep is the cost and it is a real one; 178 mutations have to run the
-    # suite 178 times. The durable fix is to shard it into a parallel job. This
-    # buys the room to do that deliberately instead of under a red PR.
-    #
-    # 60 since 2026-11-13, for PROMPT EVALUATION (below) and only on PRs that
-    # change src/astro_ai/prompts/: measured that day, one prompt costs ~5 min
-    # (8 charts x 2 versions through Claude Code at ~17-49 s a call, then 16
-    # judge calls), and an ask.txt change evaluates four prompts. Every other
-    # PR skips those steps and finishes where it did.
-    timeout-minutes: 60
+    timeout-minutes: 10
+    # `{}`: grants nothing, so verify_workflow_permissions passes this job (a new job may not
+    # gain any scope), and a gate that holds no token scope cannot relax anything. The repo is
+    # public, so the checkout needs none.
+    permissions: {}
+    outputs:
+      code: ${{ steps.scope.outputs.code }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -296,6 +284,19 @@ jobs:
       - name: Merge-conflict markers in tracked files
         run: python3 scripts/verify_conflict_markers.py
 
+  suite:
+    needs: scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # `{}`: grants nothing, so verify_workflow_permissions passes this job (a new job may not
+    # gain any scope), and a gate that holds no token scope cannot relax anything. The repo is
+    # public, so the checkout needs none.
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # needed to diff against the base branch
+
       # enable-cache MUST be an explicit false. The action defaults to `auto`,
       # which turns caching on for hosted runners, so merely deleting
       # `enable-cache: true` left it on — and its POST step kept exiting 2 while
@@ -303,11 +304,11 @@ jobs:
       # gates on this workflow concluding success, so that flake would block
       # every agent PR after the work was already done.
       - uses: astral-sh/setup-uv@v5
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
         with:
           enable-cache: false
       - uses: actions/setup-node@v4
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
         with:
           node-version: "22"
           cache: npm
@@ -318,101 +319,78 @@ jobs:
       # mutation self-test cannot go red — it reports "mutation did not turn the
       # gate red", which is the gate correctly refusing to vouch for itself.
       - name: System packages
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
         run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
 
       - name: Install
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
         run: |
           uv sync --all-groups
           npm ci
 
-      # PROMPT EVALUATION (2026-11-13, owner: "ensuring every prompt change is
-      # properly evaluated"). On a PR that changes src/astro_ai/prompts/*.txt,
-      # scripts/eval_prompts.py runs each changed prompt's base and head
-      # versions on 8 fixture charts and has a judge compare the readings
-      # (prompteval, pairwise, both orders). It FAILS this job only when the
-      # new version is measurably worse (--gate-mode significant), so a worse
-      # prompt cannot merge: agent-merge requires `gates` green. Models: Claude
-      # through Claude Code on the loop's own subscription token (owner's
-      # decision), Haiku writing and Sonnet judging. Steps, not a new job, on
-      # purpose: a new job fails verify_workflow_permissions closed, and these
-      # need nothing beyond this job's `contents: read`. The datasets are
-      # re-captured at THIS commit from the real routes, so a PR that also
-      # changes a message builder is evaluated on what it would send.
-      #
-      # ON EVERY EVENT, not only `pull_request` (QA FAIL on PR #1000). This
-      # step was gated on `github.event_name == 'pull_request'`, so a #322
-      # `workflow_dispatch` run -- agent-work's rescue net, for a PR opened
-      # with GITHUB_TOKEN -- skipped the eval silently and `gates` went green;
-      # agent-merge reads the latest `gates` check per head SHA whatever its
-      # event, so that green counted. The clause bought nothing: on a push to
-      # or a schedule of `main` the diff below is empty anyway. A dispatch
-      # checks out the branch itself, so `origin/main...HEAD` is that branch's
-      # whole prompt diff. A diff that cannot be computed reads as changed,
-      # and eval_prompts.py then exits 2 on the missing merge base: closed.
-      - name: Prompts changed?
-        id: prompts
-        if: steps.scope.outputs.code == 'true'
-        run: |
-          if git diff --quiet origin/main...HEAD -- src/astro_ai/prompts/; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"; echo "no prompt changed"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            git diff --name-only origin/main...HEAD -- src/astro_ai/prompts/
-          fi
-
-      - name: Install Claude Code and prompteval
-        if: steps.prompts.outputs.changed == 'true'
-        run: |
-          npm install -g @anthropic-ai/claude-code@2.1.312
-          uv tool install prompteval-delta==0.3.0
-
-      - name: Capture the eval datasets at this commit
-        if: steps.prompts.outputs.changed == 'true'
-        run: PYTHONPATH=tests uv run pytest -p conftest -p no:cacheprovider -q evals/capture_datasets.py
-
-      - name: Evaluate the changed prompts
-        if: steps.prompts.outputs.changed == 'true'
-        timeout-minutes: 30
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        run: |
-          set +e
-          python3 scripts/eval_prompts.py --base origin/main --out eval-report.md
-          rc=$?
-          cat eval-report.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "no report written" >> "$GITHUB_STEP_SUMMARY"
-          exit $rc
-
-      - name: Keep the prompt evaluation report
-        if: always() && steps.prompts.outputs.changed == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: prompt-eval
-          path: |
-            eval-report.md
-            .prompteval/
-          retention-days: 30
-
       # verify_css_build skips without this, and a skip is not a pass.
       - name: Build CSS
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
         run: npm run build:css
 
-      # verify_lang_switch_browser drives a real browser.
-      - name: Playwright browser
-        if: steps.scope.outputs.code == 'true'
-        run: uv run playwright install --with-deps chromium
-
       - name: Syntax sweep
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
         run: |
           find src scripts -name '*.py' -print0 \
             | xargs -0 -n1 uv run python -c 'import ast,sys; ast.parse(open(sys.argv[1]).read())'
 
       - name: Behaviour suite
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
         run: uv run pytest -q
+
+  # The sweep, split four ways (`--shard I/4`: every 4th row, each shard with its own CONTROL).
+  mutants:
+    needs: scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # `{}`: grants nothing, so verify_workflow_permissions passes this job (a new job may not
+    # gain any scope), and a gate that holds no token scope cannot relax anything. The repo is
+    # public, so the checkout needs none.
+    permissions: {}
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # needed to diff against the base branch
+
+      # enable-cache MUST be an explicit false. The action defaults to `auto`,
+      # which turns caching on for hosted runners, so merely deleting
+      # `enable-cache: true` left it on — and its POST step kept exiting 2 while
+      # pruning, failing a job whose every real step had passed. agent-merge
+      # gates on this workflow concluding success, so that flake would block
+      # every agent PR after the work was already done.
+      - uses: astral-sh/setup-uv@v5
+        if: needs.scope.outputs.code == 'true'
+        with:
+          enable-cache: false
+      - uses: actions/setup-node@v4
+        if: needs.scope.outputs.code == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+
+      # verify_rule_citations shells out to pdftotext to read the corpus PDFs
+      # and check that a cited line range actually contains the quotation. The
+      # runner has no poppler, so without this the gate fails AND its own
+      # mutation self-test cannot go red — it reports "mutation did not turn the
+      # gate red", which is the gate correctly refusing to vouch for itself.
+      - name: System packages
+        if: needs.scope.outputs.code == 'true'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
+      - name: Install
+        if: needs.scope.outputs.code == 'true'
+        run: |
+          uv sync --all-groups
+          npm ci
 
       # A suite that cannot go red proves nothing. #141 and #146 are why.
       # SCOPED ON A PR, EVERY ROW ON main. Measured on this repo's own run: 545s
@@ -433,17 +411,73 @@ jobs:
       # Measured against real diff shapes: one route file 10/467 rows, this
       # whole PR minus the harness 40/467, a template- or docs-only change 0.
       - name: Prove the suite can fail
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
+        env:
+          SHARD: ${{ matrix.shard }}
         run: |
           set -euo pipefail
           BASE="${{ github.event.pull_request.base.sha }}"
           if [ -n "$BASE" ]; then
             echo "pull request -> scoping to the diff against $BASE"
-            uv run python scripts/mutate_behaviour_suite.py --changed-since "$BASE"
+            uv run python scripts/mutate_behaviour_suite.py --changed-since "$BASE" --shard "$SHARD/4"
           else
             echo "not a pull request -> every row"
-            uv run python scripts/mutate_behaviour_suite.py
+            uv run python scripts/mutate_behaviour_suite.py --shard "$SHARD/4"
           fi
+
+  verify:
+    needs: scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # `{}`: grants nothing, so verify_workflow_permissions passes this job (a new job may not
+    # gain any scope), and a gate that holds no token scope cannot relax anything. The repo is
+    # public, so the checkout needs none.
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # needed to diff against the base branch
+
+      # enable-cache MUST be an explicit false. The action defaults to `auto`,
+      # which turns caching on for hosted runners, so merely deleting
+      # `enable-cache: true` left it on — and its POST step kept exiting 2 while
+      # pruning, failing a job whose every real step had passed. agent-merge
+      # gates on this workflow concluding success, so that flake would block
+      # every agent PR after the work was already done.
+      - uses: astral-sh/setup-uv@v5
+        if: needs.scope.outputs.code == 'true'
+        with:
+          enable-cache: false
+      - uses: actions/setup-node@v4
+        if: needs.scope.outputs.code == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+
+      # verify_rule_citations shells out to pdftotext to read the corpus PDFs
+      # and check that a cited line range actually contains the quotation. The
+      # runner has no poppler, so without this the gate fails AND its own
+      # mutation self-test cannot go red — it reports "mutation did not turn the
+      # gate red", which is the gate correctly refusing to vouch for itself.
+      - name: System packages
+        if: needs.scope.outputs.code == 'true'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
+      - name: Install
+        if: needs.scope.outputs.code == 'true'
+        run: |
+          uv sync --all-groups
+          npm ci
+
+      # verify_css_build skips without this, and a skip is not a pass.
+      - name: Build CSS
+        if: needs.scope.outputs.code == 'true'
+        run: npm run build:css
+
+      # verify_lang_switch_browser drives a real browser.
+      - name: Playwright browser
+        if: needs.scope.outputs.code == 'true'
+        run: uv run playwright install --with-deps chromium
 
       # Same rule, applied to the workflow gate. `verify_workflows.py` already
       # runs via the `scripts/verify_*.py` sweep below, but running is not the
@@ -458,12 +492,12 @@ jobs:
       # Cheap, unlike the behaviour-suite mutations: no sandboxed test runs, just
       # the gate re-executed over temp copies of .github/workflows.
       - name: Prove the workflow gate can fail
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
         run: uv run python scripts/mutate_verify_workflows.py
 
       # verify_devanagari_serif needs a live server on 127.0.0.1:8000.
       - name: Start the app
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
         run: |
           uv run astro-ai > /tmp/app.log 2>&1 &
           for i in $(seq 1 40); do
@@ -473,7 +507,7 @@ jobs:
           echo "app did not start"; tail -40 /tmp/app.log; exit 1
 
       - name: Verification gates
-        if: steps.scope.outputs.code == 'true'
+        if: needs.scope.outputs.code == 'true'
         run: |
           # GitHub runs `run:` under `bash -e`, so a failing gate would kill this
           # step before the exit code is even read — no notice, no summary, just
@@ -568,23 +602,163 @@ jobs:
             exit 1
           fi
 
-      # THE REPORTER READS THIS STEP BY NAME (#461). Everything above is
-      # `if: steps.scope.outputs.code == 'true'`, so a docs- or
-      # measurements-only push SKIPS every gate and the job still concludes
-      # `success` -- indistinguishable, from outside, from a run in which all
-      # 21 gates passed. Measured 2026-10-31: 26 of the last 40 commits on
-      # `main` were that shape.
-      #
-      # `main-red-report.yml` therefore asks the jobs API for this step's
-      # conclusion rather than trusting the run's. `success` here means the
-      # gates really executed; `skipped` means the run asserted nothing and so
-      # must neither open a sentinel nor close one. Renaming this step without
-      # updating the reporter silently restores the bug, which is why the
-      # reporter fails loudly when it cannot find the step at all.
-      - name: GATES ASSERTED
-        if: steps.scope.outputs.code == 'true'
-        run: echo "the suite and every gate ran against this commit"
-
       - name: App log on failure
         if: failure()
         run: tail -60 /tmp/app.log || true
+
+  gates:
+    needs: [scope, suite, mutants, verify]
+    # always(): a failed job must still produce a red `gates`, never a skipped one.
+    if: always()
+    runs-on: ubuntu-latest
+    # 35, not 20. Measured on run 39053584241 (PR #410, 2026-10-17): the job was
+    # killed at 20m10s *inside* the verification sweep, having already spent
+    #   behaviour suite        16s
+    #   mutation sweep     15m46s   <- 178 rows at ~5.3s each
+    #   verification gates  2m32s   (21 of 25 reached, then the axe)
+    # The previous head of that same PR passed at 19m58s — two seconds of
+    # margin — so every branch in the repo was sitting on this cliff, not just
+    # the one that fell off. main's own sweep is 13m31s (run 39086177280).
+    #
+    # Raising a timeout is not relaxing a gate. A gate killed by the clock does
+    # not FAIL, it never RUNS, which is this file's own "exit 2 is skipped, not
+    # passed" hazard arriving by a different road: the four gates after
+    # verify_numerology_reduction asserted nothing and nobody could tell.
+    # agent-merge blocks on `cancelled` correctly, so the PR stayed shut — the
+    # defect is that the evidence was never produced, not that it was ignored.
+    #
+    # The sweep is the cost and it is a real one; 178 mutations have to run the
+    # suite 178 times. The durable fix is to shard it into a parallel job. This
+    # buys the room to do that deliberately instead of under a red PR.
+    #
+    # 60 since 2026-11-13, for PROMPT EVALUATION (below) and only on PRs that
+    # change src/astro_ai/prompts/: measured that day, one prompt costs ~5 min
+    # (8 charts x 2 versions through Claude Code at ~17-49 s a call, then 16
+    # judge calls), and an ask.txt change evaluates four prompts. Every other
+    # PR skips those steps and finishes where it did.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # needed to diff against the base branch
+
+      # PROMPT EVALUATION (2026-11-13, owner: "ensuring every prompt change is
+      # properly evaluated"). On a PR that changes src/astro_ai/prompts/*.txt,
+      # scripts/eval_prompts.py runs each changed prompt's base and head
+      # versions on 8 fixture charts and has a judge compare the readings
+      # (prompteval, pairwise, both orders). It FAILS this job only when the
+      # new version is measurably worse (--gate-mode significant), so a worse
+      # prompt cannot merge: agent-merge requires `gates` green. Models: Claude
+      # through Claude Code on the loop's own subscription token (owner's
+      # decision), Haiku writing and Sonnet judging. Steps, not a new job, on
+      # purpose: a new job fails verify_workflow_permissions closed, and these
+      # need nothing beyond this job's `contents: read`. The datasets are
+      # re-captured at THIS commit from the real routes, so a PR that also
+      # changes a message builder is evaluated on what it would send.
+      #
+      # ON EVERY EVENT, not only `pull_request` (QA FAIL on PR #1000). This
+      # step was gated on `github.event_name == 'pull_request'`, so a #322
+      # `workflow_dispatch` run -- agent-work's rescue net, for a PR opened
+      # with GITHUB_TOKEN -- skipped the eval silently and `gates` went green;
+      # agent-merge reads the latest `gates` check per head SHA whatever its
+      # event, so that green counted. The clause bought nothing: on a push to
+      # or a schedule of `main` the diff below is empty anyway. A dispatch
+      # checks out the branch itself, so `origin/main...HEAD` is that branch's
+      # whole prompt diff. A diff that cannot be computed reads as changed,
+      # and eval_prompts.py then exits 2 on the missing merge base: closed.
+      - name: Prompts changed?
+        id: prompts
+        if: needs.scope.outputs.code == 'true'
+        run: |
+          if git diff --quiet origin/main...HEAD -- src/astro_ai/prompts/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"; echo "no prompt changed"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --name-only origin/main...HEAD -- src/astro_ai/prompts/
+          fi
+
+      # enable-cache MUST be an explicit false. The action defaults to `auto`,
+      # which turns caching on for hosted runners, so merely deleting
+      # `enable-cache: true` left it on — and its POST step kept exiting 2 while
+      # pruning, failing a job whose every real step had passed. agent-merge
+      # gates on this workflow concluding success, so that flake would block
+      # every agent PR after the work was already done.
+      - uses: astral-sh/setup-uv@v5
+        if: steps.prompts.outputs.changed == 'true'
+        with:
+          enable-cache: false
+      - uses: actions/setup-node@v4
+        if: steps.prompts.outputs.changed == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+
+      # verify_rule_citations shells out to pdftotext to read the corpus PDFs
+      # and check that a cited line range actually contains the quotation. The
+      # runner has no poppler, so without this the gate fails AND its own
+      # mutation self-test cannot go red — it reports "mutation did not turn the
+      # gate red", which is the gate correctly refusing to vouch for itself.
+      - name: System packages
+        if: steps.prompts.outputs.changed == 'true'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
+      - name: Install
+        if: steps.prompts.outputs.changed == 'true'
+        run: |
+          uv sync --all-groups
+          npm ci
+
+      - name: Install Claude Code and prompteval
+        if: steps.prompts.outputs.changed == 'true'
+        run: |
+          npm install -g @anthropic-ai/claude-code@2.1.312
+          uv tool install prompteval-delta==0.3.0
+
+      - name: Capture the eval datasets at this commit
+        if: steps.prompts.outputs.changed == 'true'
+        run: PYTHONPATH=tests uv run pytest -p conftest -p no:cacheprovider -q evals/capture_datasets.py
+
+      - name: Evaluate the changed prompts
+        if: steps.prompts.outputs.changed == 'true'
+        timeout-minutes: 30
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          set +e
+          python3 scripts/eval_prompts.py --base origin/main --out eval-report.md
+          rc=$?
+          cat eval-report.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "no report written" >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
+
+      - name: Keep the prompt evaluation report
+        if: always() && steps.prompts.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-eval
+          path: |
+            eval-report.md
+            .prompteval/
+          retention-days: 30
+
+      # THE ONE REQUIRED CHECK. Every parallel job must have SUCCEEDED -- a failed, cancelled or
+      # skipped one fails `gates`, so nothing here can turn green on a job that did not run.
+      - name: Every gate job succeeded
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS" | python3 -c '
+          import json, sys
+          needs = json.load(sys.stdin)
+          for k, v in sorted(needs.items()):
+              print("  %s: %s" % (k, v["result"]))
+          bad = {k: v["result"] for k, v in needs.items() if v["result"] != "success"}
+          if bad:
+              print("::error::not every gate job succeeded: %s" % bad)
+              sys.exit(1)'
+
+      # main-red-report.yml reads THIS step by name (across all jobs) to tell a real green from a
+      # scope-skipped one, so it keeps its meaning: success only when code changed AND every job
+      # above succeeded; skipped on a docs-only change.
+      - name: GATES ASSERTED
+        if: needs.scope.outputs.code == 'true'
+        run: echo "the suite, every mutation shard and every gate ran against this commit"

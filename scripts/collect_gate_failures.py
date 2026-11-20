@@ -51,7 +51,9 @@ Runner = Callable[[list[str]], str]
 
 #: The check runs that execute the behaviour suite: `pr-gates`' `gates` job and
 #: `verify-build`'s `build-gates` job.
-GATE_CHECKS = {"gates", "build-gates"}
+# `suite` since pr-gates went parallel (2026-11-19): the pytest summary lines are in that
+# job's log now; `gates` only aggregates (QA on #1262).
+GATE_CHECKS = {"gates", "build-gates", "suite"}
 GATE_WORKFLOWS = {"PR gates", "verify-build"}
 MAX_PRS = 40
 #: GitHub prefixes every log line with an ISO timestamp.

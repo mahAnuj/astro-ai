@@ -5585,6 +5585,20 @@ if _scope_base:
 else:
     _rows = list(MUTATIONS)
 
+# `--shard I/N` (2026-11-19): pr-gates runs the sweep as N parallel jobs, each taking every
+# N-th row (by position after scoping, so the split is deterministic and every row lands in
+# exactly one shard). Every shard runs the CONTROL: it proves THAT sandbox measures something,
+# and a shard without it could report CAUGHT for everything unnoticed.
+_shard = next((sys.argv[_i + 1] for _i, _a in enumerate(sys.argv) if _a == "--shard" and _i + 1 < len(sys.argv)), "")
+if _shard:
+    _m = re.fullmatch(r"(\d+)/(\d+)", _shard)
+    if not _m or not (0 <= int(_m.group(1)) < int(_m.group(2))):
+        print(f"--shard must be I/N with 0 <= I < N, got {_shard!r}")
+        raise SystemExit(2)
+    _si, _sn = int(_m.group(1)), int(_m.group(2))
+    _rows = [r for _k, r in enumerate(_rows) if _k % _sn == _si]
+    print(f"shard {_si}/{_sn}: {len(_rows)} row(s) of this run's selection")
+
 _work = [_CONTROL] + _rows
 _verdicts: dict[int, tuple[str, str]] = {}
 

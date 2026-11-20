@@ -61,7 +61,7 @@ def test_the_full_mutation_sweep_runs_when_there_is_no_pull_request_base():
     # this test split the raw YAML on a sentinel phrase that also appears in
     # the `on:` block's own comment, so it asserted against a comment.
     doc = yaml.safe_load(WF.read_text())
-    steps = doc["jobs"]["gates"]["steps"]
+    steps = [s for j in doc["jobs"].values() for s in j["steps"]]   # parallel jobs since 2026-11-19
     step = next((x for x in steps if x.get("name") == "Prove the suite can fail"), None)
     assert step is not None, "the step that proves the suite can fail is gone (#461)"
     run = step["run"]
