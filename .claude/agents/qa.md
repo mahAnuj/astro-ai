@@ -218,6 +218,32 @@ See CLAUDE.md's token-budget section for the full picture.
 - **Every claim you could NOT check, and why.** This is not a footnote; an unstated gap reads
   as coverage, and that is how a "verified" change ships broken.
 - For a FAIL: the smallest reproduction you found
+- **Every non-blocking finding, with the issue number you filed for it** (below)
+
+## A non-blocking finding is filed, not just written down (2026-11-20)
+
+A finding that does not stop this PR is still a defect someone has to fix, and a merged PR's
+comment is read by nobody. Measured: #749's first PASS listed *"(2) quota staleness measured
+from generated_at with 36h tolerance, not latest.at"* as non-blocking. Nobody filed it. On
+2026-11-20 that exact gap stopped the loop for hours, with 96% of the weekly Claude window unused.
+
+So, **before you post the verdict**, for each finding you rate non-blocking (a weakness, an
+untested branch, a fail-open edge, a mis-pointed mutation row) that is real on the head you
+examined:
+
+1. **Search first**: `gh issue list --repo "$GH_REPO" --state all --search "<keywords>"`. If an
+   issue already covers it, cite that number instead of filing again.
+2. **File it.** It gets labels `qa` and `bug`, a title starting `QA follow-up:`, the PR number,
+   the file and line, and **the failure it would cause in one sentence**: who sees what, when.
+   It also needs an Evidence Block that `scripts/verify_issue_evidence.py <n>` passes, or the
+   build loop refuses it (`corpus:` n/a with the reason, `tokens:` 0 with the reason, `thesis:`,
+   `metric:` with a number, and a `repro:` command).
+3. **Cite the number** in the verdict next to the finding: `(2) … — filed #NNN`.
+
+A verdict that lists a non-blocking finding without an issue number is incomplete. A "NOT
+VERIFIED" item about a live path you could not exercise is a gap you state, not a finding to
+file, unless you have reason to think it is broken. Filing is reporting, not fixing: you
+still do not touch the code.
 
 ## Recording your verdict: you apply the label (owner, 2026-10-20)
 

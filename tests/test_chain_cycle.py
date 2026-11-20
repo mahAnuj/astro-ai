@@ -203,3 +203,86 @@ def test_a_stale_fresh_reading_still_trips_the_age_guard():
     assert cc.quota_reason(cc.freshest(usage, old, NOW), NOW).endswith("h old")
     recent = {**old, "at": "2026-11-06T11:00:00Z"}
     assert cc.quota_reason(cc.freshest(usage, recent, NOW), NOW) is None
+# --- an expired reading, and an idle lane (2026-11-20) --------------------------------------
+
+def _epoch(s):
+    return int(datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp())
+
+
+def test_a_reading_whose_windows_have_both_reset_no_longer_refuses():
+    """The 2026-11-20 reading: 88%, allowed_warning, seven-day reset 06:00Z, five-hour 04:40Z;
+    judged at 11:43Z."""
+    latest = {"seven_day": 0.88, "status": "allowed_warning",
+              "resets": {"five_hour": _epoch("2026-11-06T04:40:00Z"),
+                         "seven_day": _epoch("2026-11-06T06:00:00Z")}}
+    assert cc.quota_reason({**USAGE, "latest": latest}, NOW) is None
+
+
+def test_a_reading_with_one_window_still_open_still_refuses():
+    latest = {"seven_day": 0.88, "status": "allowed_warning",
+              "resets": {"five_hour": _epoch("2026-11-06T04:40:00Z"),
+                         "seven_day": _epoch("2026-11-06T18:00:00Z")}}
+    assert "allowed_warning" in cc.quota_reason({**USAGE, "latest": latest}, NOW)
+    nores = {"seven_day": 0.88, "status": "allowed_warning"}
+    assert "allowed_warning" in cc.quota_reason({**USAGE, "latest": nores}, NOW)
+
+
+class IdleGh(FakeGh):
+    """FakeGh plus the finished agent-work runs `last_build_run` reads."""
+
+    def __init__(self, finished, **kw):
+        super().__init__(**kw)
+        self.finished = finished
+
+    def __call__(self, args):
+        url = next((a for a in args if a.startswith("repos/")), "")
+        if args[0] == "api" and "agent-work.yml/runs?status=completed&per_page=20" in url:
+            return json.dumps({"workflow_runs": self.finished})
+        if args[0] == "api" and "agent-work.yml/runs?status=completed&per_page=1" in url:
+            return json.dumps({"workflow_runs": []})
+        return super().__call__(args)
+
+
+def _build(started, ended, title="Agent work"):
+    return {"display_title": title, "run_started_at": started, "updated_at": ended}
+
+
+def test_an_idle_lane_restarts_after_an_hour():
+    gh = IdleGh([_build("2026-11-06T10:20:00Z", "2026-11-06T10:50:00Z")],
+                prs=[{"user": {"login": "claude[bot]"}, "updated_at": "2026-11-06T10:45:00Z"}])
+    assert cc.idle_reason(gh, REPO, USAGE, NOW) is None
+
+
+def test_an_idle_lane_waits_out_the_hour_and_a_qa_round_is_not_a_build_run():
+    gh = IdleGh([_build("2026-11-06T11:40:00Z", "2026-11-06T11:55:00Z", "QA round: PR #9"),
+                 _build("2026-11-06T11:00:00Z", "2026-11-06T11:30:00Z")],
+                prs=[{"user": {"login": "claude[bot]"}, "updated_at": "2026-11-06T11:20:00Z"}])
+    assert "30m ago" in cc.idle_reason(gh, REPO, USAGE, NOW)
+
+
+def test_after_an_empty_cycle_an_idle_lane_waits_four_hours():
+    gh = IdleGh([_build("2026-11-06T09:00:00Z", "2026-11-06T09:30:00Z")],
+                prs=[{"user": {"login": "claude[bot]"}, "updated_at": "2026-11-06T08:00:00Z"}])
+    assert "restarts after 240m" in cc.idle_reason(gh, REPO, USAGE, NOW)
+
+
+def test_an_idle_restart_keeps_the_quota_busy_and_cap_guards():
+    old = [_build("2026-11-06T08:00:00Z", "2026-11-06T08:30:00Z")]
+    hot = {**USAGE, "latest": {"seven_day": 0.75, "status": "allowed"}}
+    assert "70%" in cc.idle_reason(IdleGh(old), REPO, hot, NOW)
+    assert "busy" in cc.idle_reason(IdleGh(old, running=["Agent work"]), REPO, USAGE, NOW)
+    full = ["Agent work"] * cc.MAX_BUILD_RUNS_PER_DAY
+    assert "cap" in cc.idle_reason(IdleGh(old, today=full), REPO, USAGE, NOW)
+
+
+def test_a_run_with_no_finished_cycle_restarts_an_idle_lane_through_main(tmp_path, monkeypatch, capsys):
+    p = tmp_path / "u.json"
+    p.write_text(json.dumps(USAGE))
+    monkeypatch.setenv("GH_REPO", REPO)
+    for k in RUN:
+        monkeypatch.setenv(f"WR_{k.upper()}", "")
+    gh = IdleGh([_build("2026-11-06T08:00:00Z", "2026-11-06T08:30:00Z")],
+                prs=[{"user": {"login": "claude[bot]"}, "updated_at": "2026-11-06T08:20:00Z"}])
+    assert cc.main(["x"], gh=gh, now=NOW, usage_path=p) == 0
+    assert [a for a in gh.calls if a[:2] == ["workflow", "run"]] == [["workflow", "run", "agent-work.yml", "--repo", REPO]]
+    assert "restarted:" in capsys.readouterr().out
