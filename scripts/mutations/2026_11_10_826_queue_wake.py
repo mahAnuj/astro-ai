@@ -32,9 +32,10 @@ MUTATIONS = [
      "test_a_run_that_never_completes_times_out_rather_than_chaining"),
     ("#826: a woken run is never chained off",
      ".github/workflows/agent-queue.yml",
-     # Re-anchored 2026-11-17: the hourly backstop (#1186) added a schedule leg.
-     "        if: always() && (github.event_name == 'workflow_run' || github.event_name == 'schedule' || env.WAKE_NAME != '')\n",
-     "        if: always() && (github.event_name == 'workflow_run' || github.event_name == 'schedule')\n",
+     # Re-anchored 2026-11-17: the hourly backstop (#1186) added a schedule leg;
+     # 2026-11-20: the heartbeat added its own.
+     "        if: always() && (github.event_name == 'workflow_run' || github.event_name == 'schedule' || inputs.heartbeat == 'true' || env.WAKE_NAME != '')\n",
+     "        if: always() && (github.event_name == 'workflow_run' || github.event_name == 'schedule' || inputs.heartbeat == 'true')\n",
      "test_agent_queue_waits_before_draining_and_chains_off_the_woken_run"),
     ("#826: AFTER_RUN is passed through unvalidated",
      "scripts/wait_for_run.py",
