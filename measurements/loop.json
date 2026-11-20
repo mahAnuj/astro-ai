@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-20T16:39:58Z",
+  "generated_at": "2026-11-20T17:52:19Z",
   "rows": [
     {
-      "owner_helped": null,
+      "owner_helped": false,
       "run": 44768005421,
       "workflow": "agent-work",
       "date": "2026-11-20",
@@ -12,23 +12,17 @@
       "minutes": 45.1,
       "issue": 1261,
       "pr": 1305,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked",
+      "turns": 16,
       "tokens_input": 151,
       "tokens_output": 50879,
       "tokens_cache_read": 3647121,
       "tokens_cache_write": 345007,
       "cost_list_usd": 1.8596,
-      "model": "claude-sonnet-5-5",
-      "turns": 16,
-      "agents_called": {
-        "architect": 1,
-        "backend-engineer": 1,
-        "project-manager": 1,
-        "qa": 1
-      }
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": null,
@@ -13013,8 +13007,8 @@
     "days": 7,
     "cycles": 216,
     "minutes_by_outcome": {
-      "shipped": 4042.9,
-      "pr open": 45.1,
+      "shipped": 4088.0,
+      "pr open": 0.0,
       "judged": 628.5,
       "nothing": 128.0,
       "failed": 0.0,
@@ -13023,7 +13017,7 @@
     "minutes_total": 4844.5,
     "minutes_without_result": 128.0,
     "share_without_result": 0.026,
-    "shipped_prs": 90,
+    "shipped_prs": 91,
     "build_idle_hours": 100.0,
     "build_idle_share": 0.595
   },
@@ -13041,14 +13035,9 @@
     },
     "median_by_outcome": {
       "shipped": {
-        "runs": 116,
-        "tokens": 6520983,
-        "cost_list_usd": 2.21
-      },
-      "pr open": {
-        "runs": 1,
-        "tokens": 4043158,
-        "cost_list_usd": 1.86
+        "runs": 117,
+        "tokens": 6503914,
+        "cost_list_usd": 2.19
       },
       "judged": {
         "runs": 71,
@@ -13063,28 +13052,28 @@
     },
     "median_cycle": 5350419,
     "median_qa_round": 1165947,
-    "merged_prs": 90,
-    "per_merged_pr": 10118480,
-    "cost_list_usd_per_merged_pr": 3.41,
+    "merged_prs": 91,
+    "per_merged_pr": 10007288,
+    "cost_list_usd_per_merged_pr": 3.38,
     "previous": {
-      "runs": 156,
-      "measured": 154,
-      "merged_prs": 73,
-      "per_merged_pr": 9841806
+      "runs": 155,
+      "measured": 153,
+      "merged_prs": 72,
+      "per_merged_pr": 9813136
     }
   },
   "agents": {
     "runs_read": {
-      "7d": 211,
-      "30d": 392
+      "7d": 210,
+      "30d": 391
     },
     "by_agent": {
       "architect": {
-        "7d": 6,
-        "30d": 8,
-        "last_run": 44768005421,
-        "last_started": "2026-11-20T15:54:43Z",
-        "last_issue": 1261
+        "7d": 5,
+        "30d": 7,
+        "last_run": 44650736678,
+        "last_started": "2026-11-20T01:03:39Z",
+        "last_issue": 1207
       },
       "astro-auditor": {
         "7d": 1,
@@ -13094,11 +13083,11 @@
         "last_issue": 1022
       },
       "backend-engineer": {
-        "7d": 3,
-        "30d": 3,
-        "last_run": 44768005421,
-        "last_started": "2026-11-20T15:54:43Z",
-        "last_issue": 1261
+        "7d": 2,
+        "30d": 2,
+        "last_run": 44670749184,
+        "last_started": "2026-11-20T03:53:39Z",
+        "last_issue": null
       },
       "chief": {
         "7d": 1,
@@ -13143,18 +13132,18 @@
         "last_issue": 818
       },
       "project-manager": {
-        "7d": 87,
-        "30d": 169,
-        "last_run": 44768005421,
-        "last_started": "2026-11-20T15:54:43Z",
-        "last_issue": 1261
+        "7d": 86,
+        "30d": 168,
+        "last_run": 44670749184,
+        "last_started": "2026-11-20T03:53:39Z",
+        "last_issue": null
       },
       "qa": {
-        "7d": 110,
-        "30d": 217,
-        "last_run": 44768005421,
-        "last_started": "2026-11-20T15:54:43Z",
-        "last_issue": 1261
+        "7d": 109,
+        "30d": 216,
+        "last_run": 44658677640,
+        "last_started": "2026-11-20T02:08:42Z",
+        "last_issue": 1207
       }
     }
   }
