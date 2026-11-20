@@ -137,7 +137,7 @@ def test_failed_tests_reads_the_short_summary_only():
     assert col.failed_tests(LOG) == [TEST]
 
 
-def _fake_gh(prs: dict[int, list[str] | None], unreadable: set[int] = frozenset()):
+def _fake_gh(prs: dict[int, list[str] | None], unreadable: set[int] = frozenset(), job="gates"):
     """prs: number -> failing node ids (None = green). Job id == PR number."""
     def gh(args):
         url = args[1]
@@ -154,7 +154,7 @@ def _fake_gh(prs: dict[int, list[str] | None], unreadable: set[int] = frozenset(
         if m:
             n = int(m.group(1))
             assert n < 9000, "only gate workflows' jobs may be read"
-            return json.dumps({"jobs": [{"id": n, "name": "gates", "conclusion": "failure"}]})
+            return json.dumps({"jobs": [{"id": n, "name": job, "conclusion": "failure"}]})
         m = re.search(r"jobs/(\d+)/logs", url)
         if m:
             n = int(m.group(1))
@@ -172,6 +172,13 @@ def test_collect_tallies_tests_across_prs_and_counts_unreadable_logs():
     assert doc["by_test"][0] == {"test": TEST, "prs": [1, 2]}
     assert {"test": "tests/a.py::own", "prs": [2]} in doc["by_test"]
     assert doc["fetch_failed"] == 1 and doc["logs_fetched"] == 2
+
+
+def test_a_failed_parallel_suite_job_is_tallied():
+    """pr-gates went parallel (2026-11-19): the pytest summary is in `suite`'s log, and `gates`
+    only aggregates (QA on #1262). A collector reading `gates` alone went blind."""
+    doc = col.collect(_fake_gh({1: [TEST], 2: [TEST]}, job="suite"), "o/r", NOW)
+    assert doc["by_test"][0] == {"test": TEST, "prs": [1, 2]}
 
 
 def _find(tmp_path, monkeypatch, gates: dict | None):

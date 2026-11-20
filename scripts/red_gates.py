@@ -118,6 +118,12 @@ def decide(gh: Runner, env: dict) -> dict:
         return {"action": "none", "why": f"#{num} moved past {sha[:7]}"}
 
     jobs = failed_jobs(gh, repo, run_id)
+    # `gates` only RESTATES its siblings since pr-gates went parallel (2026-11-19): its log is
+    # the aggregator's "not every gate job succeeded", never a flake. Judging it beside a real
+    # flake in `suite`, `verify` or a `mutants` shard turned every runner hiccup into a fix
+    # cycle at code that is fine (QA on #1262). Judge the jobs that did the work; `gates`
+    # alone (a failed prompt evaluation, say) is still judged.
+    jobs = [j for j in jobs if j.get("name") != "gates"] or jobs
     logs = []
     for j in jobs:
         try:

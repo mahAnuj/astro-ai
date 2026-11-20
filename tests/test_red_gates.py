@@ -34,17 +34,18 @@ def env(branch="issue/889-matching-positions-line", attempt="1"):
 
 class Gh:
     def __init__(self, *, branch="issue/889-matching-positions-line", login="claude[bot]",
-                 head=SHA, logs=(REAL,), comments=(), files=("src/astro_ai/x.py",)):
+                 head=SHA, logs=(REAL,), comments=(), files=("src/astro_ai/x.py",), names=None):
         self.pr = {"number": 892, "user": {"login": login},
                    "head": {"ref": branch, "sha": head}}
         self.logs, self.comments, self.files = list(logs), list(comments), list(files)
+        self.names = list(names) if names else [f"job{i}" for i in range(len(self.logs))]
 
     def __call__(self, args):
         url = args[-1]          # the URL is last; a flag may precede it
         if url.startswith("repos/o/r/pulls?state=open"):
             return json.dumps([self.pr])
         if url == "repos/o/r/actions/runs/77/jobs":
-            return json.dumps({"jobs": [{"id": i, "name": f"job{i}", "conclusion": "failure"}
+            return json.dumps({"jobs": [{"id": i, "name": self.names[i], "conclusion": "failure"}
                                         for i in range(len(self.logs))]})
         if url.startswith("repos/o/r/actions/jobs/"):
             log = self.logs[int(url.split("/")[5])]
@@ -213,3 +214,24 @@ def test_any_other_log_error_is_not_swallowed_into_a_retry():
     except RuntimeError:
         return
     raise AssertionError("a 410 must surface so decide() treats the log as unreadable")
+
+
+# --- pr-gates is parallel (2026-11-19): `gates` only restates its siblings (QA on #1262) ---
+
+AGGREGATOR = "2026-11-19T18:20:40.0Z ::error::not every gate job succeeded: {'suite': 'failure'}\n"
+
+
+def test_a_flake_in_a_parallel_job_is_re_run_although_gates_aggregated_it():
+    d = rg.decide(Gh(logs=(APT_FLAKE, AGGREGATOR), names=("suite", "gates")), env())
+    assert d["action"] == "rerun", d
+
+
+def test_a_real_failure_in_a_parallel_job_is_still_fixed():
+    d = rg.decide(Gh(logs=(FLAKY_BUT_JUDGED, AGGREGATOR), names=("suite", "gates")), env())
+    assert d["action"] == "fix", d
+
+
+def test_gates_failing_alone_is_still_judged():
+    """A failed prompt evaluation fails `gates` with no sibling red: never silently dropped."""
+    d = rg.decide(Gh(logs=(REAL,), names=("gates",)), env())
+    assert d["action"] == "fix", d
