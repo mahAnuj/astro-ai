@@ -198,7 +198,7 @@ timestamp and are read by the old serializer until `LEGACY_COOKIE_CUTOFF`
 (2027-11-17 UTC, a literal), then as `{}`.
 
 Identity has its own bounds, both read off `user.since`: 90 days fixed (`SIGNIN_MAX_AGE`),
-and `revocation.revoked_before(sub)`, written by `/auth/logout` into the small blob
+and `revocation.revoked_before(sub)`, written by `/auth/logout` and `/account/delete` (#1292) into the small blob
 `session_revocations.json` and read through `hot_cache.get_or_refresh` (0 GCS reads when
 warm; at most one read per 300 s per instance; never blocks the loop). Sign-out
 therefore ends every cookie that user holds that was issued before it. Another
