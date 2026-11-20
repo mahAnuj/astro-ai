@@ -163,7 +163,9 @@ def test_the_default_and_daily_reports_keep_their_request_bodies(monkeypatch, ca
     run(monkeypatch, capsys, fake, "--daily")
     assert [d["name"] for d in calls[0]["dimensions"]] == ["date"]
     assert [m["name"] for m in calls[0]["metrics"]] == ["activeUsers", "sessions", "newUsers"]
-    assert len(calls) == 1
+    assert "dimensionFilter" not in calls[0]
+    # Requests 2 and 3 (#1277) are optional extras; the first body above is unchanged.
+    assert len(calls) == 3
 
 
 def test_events_and_daily_together_are_refused(monkeypatch, capsys):
