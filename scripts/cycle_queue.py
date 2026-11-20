@@ -311,10 +311,48 @@ def mark(gh: Runner, repo: str, e: Entry, state: str, note: str) -> None:
 _OWNED_BRANCH = re.compile(r"^(?:issue|partial|fix)/(\d+)-")
 
 
+#: The workflow whose run decides `blocked`. tests/test_cycle_queue.py pins it
+#: to `name:` in pr-gates.yml, because a rename would make every PR read as
+#: "no gates run" and quietly restore the drain-into-a-stand-down loop.
+GATES_WORKFLOW = "PR gates"
+_SHA = re.compile(r"[0-9a-f]{40}")
+#: Conclusions of a COMPLETED gates run that leave the PR nothing to wait for.
+_RED = ("failure", "timed_out", "startup_failure", "cancelled")
+
+
+def _gates_red(gh: Runner, repo: str, sha: str) -> bool | None:
+    """Is the LATEST `PR gates` run on `sha` finished and red? True: red, so a
+    cycle has a fix to make. False: still running/queued, or green, so
+    `blocked` is only GitHub waiting for the merge. None: no run, or unreadable.
+    The caller treats ONLY False as waiting.
+
+    Read through the Actions API, as scripts/collect_gate_failures.py does --
+    not `commits/<sha>/check-runs`, which needs a `checks` scope `agent-queue`
+    does not hold. `event=pull_request` keeps a push-triggered run of the same
+    name off the answer."""
+    if not _SHA.fullmatch(sha or ""):
+        return None
+    jq = (f'[.workflow_runs[] | select(.name == "{GATES_WORKFLOW}")] | sort_by(.created_at) '
+          f'| last // empty | "\\(.status) \\(.conclusion)"')
+    try:
+        raw = gh(["api", f"repos/{repo}/actions/runs?head_sha={sha}&event=pull_request&per_page=50",
+                  "--jq", jq])
+    except RuntimeError:
+        return None
+    parts = raw.split()
+    if len(parts) != 2:
+        return None
+    status, conclusion = parts
+    if status != "completed" or conclusion == "success":
+        return False
+    return True if conclusion in _RED else None
+
+
 def _mergeable_passed_pr(gh: Runner, repo: str, issue: int) -> int | None:
     """An open PR for `issue` that carries `qa-pass`, whose `QA: PASS` names its
-    CURRENT head, and that GitHub reports `mergeable: true`, or None. Any read
-    failure answers None (start the cycle).
+    CURRENT head, and that GitHub reports `mergeable: true` -- or is `blocked`
+    only while a `gates` run is still going or has passed (#1207) -- or None.
+    Any read failure answers None (start the cycle).
 
     The head check is 2026-11-15: PR #1058 held `qa-pass` from 274e42f while its
     head was 98f14fb with `gates` red. red_gates.py queued `issue=1027` to fix
@@ -343,6 +381,12 @@ def _mergeable_passed_pr(gh: Runner, repo: str, issue: int) -> int | None:
             # actually waiting to merge; anything else starts the cycle.
             state = gh(["api", f"repos/{repo}/pulls/{pr['number']}", "--jq", ".mergeable_state"]).strip()
             mergeable = "true" if state in ("clean", "has_hooks") else state
+            # `blocked` is not one thing (#1207). It is red gates -- a cycle has a
+            # fix to make -- but also a required check still RUNNING, which is a PR
+            # waiting to merge. Only a latest gates run that is running or green
+            # counts as waiting; no run, an unreadable one, or a red one starts it.
+            if state == "blocked" and _gates_red(gh, repo, pr.get("sha") or "") is False:
+                mergeable = "true"
         except RuntimeError:
             continue
         if mergeable == "true":
@@ -389,7 +433,13 @@ def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
     conflicting PR by design, #403), and a `partial/` PR that merged with work
     still open. An unknown `mergeable` (GitHub still computing) also starts
     the cycle: a wasted stand-down costs ~35s, a wrongly dropped entry is
-    permanent."""
+    permanent.
+
+    Measured 2026-11-18 (#1207): PR #1227 for #1226 held `qa-pass` and was
+    `blocked` while a second `gates` run was in progress; the entry was drained
+    anyway, the cycle stood down in under 90s and the carrier read that as a
+    dead run. PR #1199 (#1163) merged 14 minutes after its drain, and
+    `agent-queue` had gone red three times in between."""
     try:
         labels = gh(["api", f"repos/{repo}/issues/{e.target}", "--jq", "[.labels[].name] | join(\",\")"])
     except RuntimeError:
@@ -416,8 +466,9 @@ def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
         pr = _mergeable_passed_pr(gh, repo, e.target) if passed else None
         if pr is None:
             return None
-        return (f"issue #{e.target}'s PR #{pr} carries `qa-pass` and is mergeable; it is "
-                f"waiting to merge, and a cycle would re-decide passed work.")
+        return (f"issue #{e.target}'s PR #{pr} carries `qa-pass` and is mergeable (or "
+                f"blocked only on a gates run that is not red); it is waiting to merge, "
+                f"and a cycle would re-decide passed work.")
     # A round that has ALREADY ruled on the current head since this entry was
     # queued. The case QA round 1 on #675 exposed: once a busy loop is no
     # reason to hold back, the steward can queue a round for the very PR the
@@ -755,6 +806,20 @@ def drain(gh: Runner, repo: str, carrier: Carrier = run_carrier, now: datetime |
             print(f"started {e.kind}={e.target} as run {run_id} ({lane} lane)")
             busy_lanes.add(lane)
             _fold(gh, repo, e, run_id, queue, handled)
+            continue
+        if rc == 1 and any(t in out for t in TRANSIENT) and "concluded 'success'" in out:
+            # The run SUCCEEDED and left no trace on the target (#1207): the cycle
+            # found nothing to do and stood down. A retry is the same cycle on the
+            # same state, so it repeats itself -- measured 2026-11-17, three cycles
+            # on #1163. A `failure` is a dead run and keeps its two retries below.
+            restate(gh, repo, e.comment_id, body, "claimed", "dropped",
+                    "the run succeeded and left no trace on the target; not retried, because "
+                    "a green run that wrote nothing repeats itself.")
+            print(f"::error::{e.kind}={e.target}: the dispatched run concluded 'success' and "
+                  f"left no trace on the target. Dropped, not retried; see the carrier output above.")
+            failed = True
+            busy_lanes.add(lane)
+            settled.discard(g)
             continue
         if rc == 1 and any(t in out for t in TRANSIENT) and retries < MAX_RETRIES:
             # The carrier ACCEPTED the ruling and the run did not survive -- the

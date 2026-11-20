@@ -36,13 +36,14 @@ class FakeGh:
     """Answers exactly the calls cycle_queue.py makes, and records them."""
 
     def __init__(self, *, busy="0", busy_qa=None, labels=None, heads=None, fail_patch_after=None,
-                 open_prs=None):
+                 open_prs=None, gates=None):
         self.comments: list[dict] = []
         self.busy = busy                    # build lane (and the QA lane unless busy_qa given)
         self.busy_qa = busy if busy_qa is None else busy_qa
         self.labels = labels or {}          # target -> "a,b"
         self.heads = heads or {}            # pr -> head sha
         self.open_prs = open_prs or {}      # pr -> (head ref, "a,b" labels, mergeable "true"/"false"/"null")
+        self.gates = gates or {}            # head sha -> list of Actions runs, or "error" to raise
         self.fail_patch_after = fail_patch_after   # PATCH calls allowed before failing
         self.patches = 0
         self.calls: list[list[str]] = []
@@ -69,6 +70,17 @@ class FakeGh:
             return "\n".join(f"{c['created_at']} {c['body'].splitlines()[0]}"
                              for c in self.comments
                              if c["on"] == n and c["body"].startswith("QA: "))
+        if args[0] == "api" and "/actions/runs?head_sha=" in args[1]:
+            sha = args[1].split("head_sha=")[1].split("&")[0]
+            runs = self.gates.get(sha, [])
+            if runs == "error":
+                raise RuntimeError("gh api failed")
+            # The REAL jq runs over the fake runs, so the name filter and the
+            # newest-run pick are exercised, not reimplemented here.
+            p = subprocess.run(["jq", "-r", args[args.index("--jq") + 1]], capture_output=True,
+                               text=True, input=json.dumps({"workflow_runs": runs}), timeout=30)
+            assert p.returncode == 0, p.stderr
+            return p.stdout
         if args[0] == "api" and "/pulls?state=open" in args[1]:
             return "\n".join(json.dumps({"number": n, "ref": ref, "sha": self.heads.get(n, ""),
                                          "labels": [l for l in labs.split(",") if l]})
@@ -312,10 +324,15 @@ def test_an_unreadable_head_starts_the_round_rather_than_dropping_it():
 HEAD_694 = "6" * 40
 
 
+def _run(status, conclusion=None, at="2026-11-18T10:00:00Z", name="PR gates"):
+    return {"name": name, "status": status, "conclusion": conclusion, "created_at": at}
+
+
 def _issue_431(mergeable="true", ref="issue/431-prefix-row-known-shapes", pr_labels="qa-pass,qa:in-cycle",
-               pass_at=HEAD_694):
+               pass_at=HEAD_694, gates=None):
     gh = FakeGh(labels={431: "bug,qa-pass,qa:in-cycle"}, heads={694: HEAD_694},
-                open_prs={694: (ref, pr_labels, mergeable), 650: ("issue/43-other", "qa-pass", "true")})
+                open_prs={694: (ref, pr_labels, mergeable), 650: ("issue/43-other", "qa-pass", "true")},
+                gates={HEAD_694: gates} if gates is not None else None)
     gh.add(entry("issue", 431))
     if pass_at:
         gh.add(f"QA: PASS — verified at `{pass_at}`", login="claude[bot]", on=694)
@@ -690,7 +707,135 @@ def test_an_ISSUE_entry_whose_PR_passed_QA_but_went_RED_on_the_same_head_is_stil
     """2026-11-17: #1121, #1127, #1136, #1138 -- QA PASS bound to the head, gates
     then red on that head, GitHub `blocked`. The red-gates fix was dropped as
     'waiting to merge' each time and the PRs sat for a day."""
-    gh = _issue_431(mergeable="blocked")
+    gh = _issue_431(mergeable="blocked", gates=[_run("completed", "failure")])
     car = FakeCarrier([(0, "1")])
     cq.drain(gh, REPO, car)
     assert car.calls and car.calls[0][0] == "issue=431"
+
+
+# ----------------------------------------- #1207: blocked while gates run is waiting
+
+def _blocked_dropped(gh):
+    car = FakeCarrier([])
+    cq.drain(gh, REPO, car)
+    assert car.calls == []
+    assert "waiting to merge" in gh.comments[0]["body"]
+    assert f"{cq.MARK}-dropped: " in gh.comments[0]["body"]
+
+
+def _blocked_started(gh):
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls and car.calls[0][0] == "issue=431"
+
+
+def test_a_BLOCKED_PR_whose_latest_gates_run_is_still_RUNNING_is_waiting_to_merge():
+    """2026-11-18, PR #1227 (#1226): `qa-pass` bound to the head, `blocked` only
+    because a second `gates` run was in progress. The drain started a cycle that
+    stood down in under 90s, and the carrier read that as a dead run (#1207)."""
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=[_run("in_progress")]))
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=[_run("queued")]))
+
+
+def test_a_BLOCKED_PR_whose_latest_gates_run_PASSED_is_waiting_to_merge():
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=[_run("completed", "success")]))
+
+
+def test_only_the_NEWEST_gates_run_counts():
+    """An older red run is the one the push superseded; the latest decides."""
+    old = _run("completed", "failure", at="2026-11-18T09:00:00Z")
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=[old, _run("in_progress", at="2026-11-18T10:00:00Z")]))
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=[_run("completed", "success", at="2026-11-18T10:00:00Z"), old]))
+    # and the reverse: an older green run does not excuse a newer red one
+    green = _run("completed", "success", at="2026-11-18T09:00:00Z")
+    _blocked_started(_issue_431(mergeable="blocked", gates=[green, _run("completed", "failure", at="2026-11-18T10:00:00Z")]))
+
+
+@pytest.mark.parametrize("conclusion", ["failure", "timed_out", "startup_failure", "cancelled"])
+def test_a_BLOCKED_PR_whose_latest_gates_run_is_RED_is_still_started(conclusion):
+    _blocked_started(_issue_431(mergeable="blocked", gates=[_run("completed", conclusion)]))
+
+
+def test_a_BLOCKED_PR_with_NO_gates_run_is_still_started():
+    """Nothing is running, so nothing is about to unblock it."""
+    _blocked_started(_issue_431(mergeable="blocked", gates=[]))
+
+
+def test_a_BLOCKED_PR_whose_gates_runs_are_UNREADABLE_is_still_started():
+    _blocked_started(_issue_431(mergeable="blocked", gates="error"))
+
+
+def test_a_BLOCKED_PR_with_a_SKIPPED_gates_run_is_still_started():
+    """Neither running nor green: the PR is blocked by something else."""
+    _blocked_started(_issue_431(mergeable="blocked", gates=[_run("completed", "skipped")]))
+
+
+def test_a_running_run_of_ANOTHER_workflow_is_not_the_gates_run():
+    """Only `PR gates` decides; an in-progress `Agent merge` run says nothing."""
+    gates = [_run("completed", "failure", at="2026-11-18T09:00:00Z"),
+             _run("in_progress", at="2026-11-18T10:00:00Z", name="verify-build")]
+    _blocked_started(_issue_431(mergeable="blocked", gates=gates))
+
+
+def test_a_failing_run_of_ANOTHER_workflow_is_ignored():
+    gates = [_run("completed", "success", at="2026-11-18T09:00:00Z"),
+             _run("completed", "failure", at="2026-11-18T10:00:00Z", name="verify-build")]
+    _blocked_dropped(_issue_431(mergeable="blocked", gates=gates))
+
+
+def test_a_BLOCKED_PR_whose_PASS_names_an_OLDER_commit_is_still_started_whatever_gates_say():
+    _blocked_started(_issue_431(mergeable="blocked", pass_at="2" * 40, gates=[_run("in_progress")]))
+
+
+@pytest.mark.parametrize("state", ["false", "null", "behind", "unstable"])
+def test_only_BLOCKED_reads_the_gates_run(state):
+    """dirty/unknown/behind/unstable have their own cause, a cycle is the step,
+    and a green or running gates run does not make them wait."""
+    gh = _issue_431(mergeable=state, gates=[_run("in_progress")])
+    _blocked_started(gh)
+    assert not any("/actions/runs" in " ".join(c) for c in gh.calls)
+
+
+def test_a_CLEAN_PR_does_not_read_the_gates_run():
+    gh = _issue_431(mergeable="true", gates=[_run("completed", "failure")])
+    _blocked_dropped(gh)
+    assert not any("/actions/runs" in " ".join(c) for c in gh.calls)
+
+
+def test_gates_red_never_interpolates_a_sha_that_is_not_40_hex():
+    gh = FakeGh()
+    assert cq._gates_red(gh, REPO, "abc; rm -rf /") is None
+    assert cq._gates_red(gh, REPO, "") is None
+    assert gh.calls == []
+
+
+def test_GATES_WORKFLOW_is_the_name_pr_gates_declares():
+    """A rename would make every PR read as 'no gates run' and quietly restore
+    the drain-into-a-stand-down loop, so the string is pinned to the file."""
+    assert cq.GATES_WORKFLOW == _wf("pr-gates.yml")["name"]
+
+
+# ----------------------------------------- #1207: a green run that wrote nothing
+
+def test_a_run_that_SUCCEEDED_and_left_no_trace_is_dropped_not_retried():
+    """2026-11-17, #1163: three cycles on one target, each standing down in under
+    90s. A retry is the same cycle on the same state; it repeats itself."""
+    gh = FakeGh()
+    gh.add(entry("pr", 649))
+    car = FakeCarrier([(1, None, "agent-work run 9 concluded 'success' within 90s of dispatch "
+                                 "at pr #649 -- it did not run a cycle. See #421.")])
+    assert cq.drain(gh, REPO, car) == 1, "red once, so the stand-down is seen"
+    assert len(car.calls) == 1
+    assert cq.pending(gh, REPO) == []
+    assert f"{cq.MARK}-dropped: " in gh.comments[0]["body"]
+    assert "repeats itself" in gh.comments[0]["body"]
+
+
+def test_a_run_that_FAILED_still_keeps_its_retries():
+    """Control for the test above: a dead run says nothing about the ruling."""
+    gh = FakeGh()
+    gh.add(entry("pr", 649))
+    car = FakeCarrier([(1, None, "agent-work run 9 concluded 'failure' within 90s of dispatch "
+                                 "at pr #649 -- it did not run a cycle. See #421.")])
+    assert cq.drain(gh, REPO, car) == 1
+    assert [e.target for e in cq.pending(gh, REPO)] == [649]
