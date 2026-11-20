@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-20",
-    "2026-11-16"
+    "2026-10-21",
+    "2026-11-17"
   ],
   "dimensions": [
     "eventName"
@@ -18,35 +18,35 @@
     },
     {
       "event": "user_identified",
-      "count": 799
-    },
-    {
-      "event": "feature_view",
-      "count": 782
+      "count": 797
     },
     {
       "event": "session_start",
-      "count": 777
+      "count": 781
+    },
+    {
+      "event": "feature_view",
+      "count": 780
     },
     {
       "event": "first_visit",
-      "count": 640
+      "count": 648
     },
     {
       "event": "user_engagement",
-      "count": 323
+      "count": 325
     },
     {
       "event": "scroll",
-      "count": 197
+      "count": 195
     },
     {
       "event": "form_start",
-      "count": 137
+      "count": 135
     },
     {
       "event": "ask_answered",
-      "count": 130
+      "count": 126
     },
     {
       "event": "kundli_generated",
@@ -81,7 +81,7 @@
       "count": 1
     }
   ],
-  "events_total": 5222,
+  "events_total": 5224,
   "coverage_note": "cta_click: 17 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
     "count": 17,

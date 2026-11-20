@@ -2,10 +2,11 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-20",
-    "2026-11-16"
+    "2026-10-21",
+    "2026-11-17"
   ],
   "rule": "active users >= max(2 x median, median + 10, 15)",
+  "watch_rule": "active users >= median + 10, not a spike",
   "days_checked": 28,
   "spikes": [
     {
@@ -13,6 +14,7 @@
       "active_users": 57,
       "median": 22,
       "threshold": 44,
+      "tier": "spike",
       "explanation": "top source (direct) / (none) (6 sessions) landing on /rashifal/aries; MIXED: 19 of 50 sessions had zero engagement ((not set)/desktop/United States 10, Chrome/desktop/United States 6, Chrome/mobile/United States 3) and look automated; the rest look like real readers; mostly (not set) on desktop in United States",
       "by_source": [
         {
@@ -234,6 +236,7 @@
       "active_users": 51,
       "median": 22,
       "threshold": 44,
+      "tier": "spike",
       "explanation": "top source google / organic (6 sessions) landing on /learn/rahu-mahadasha-ketu-antardasha/; engaged rate 30%, 52.9s average: looks like real readers; google/organic with flat Search Console clicks usually means Google Discover; compare gsc-discover.json for that date; mostly Chrome on mobile in India",
       "by_source": [
         {
@@ -450,5 +453,1048 @@
         }
       ]
     }
-  ]
+  ],
+  "watch": [
+    {
+      "date": "2026-11-10",
+      "active_users": 40,
+      "median": 22,
+      "threshold": 32,
+      "tier": "watch",
+      "explanation": "top source (direct) / (none) (5 sessions) landing on /matching; MIXED: 21 of 35 sessions had zero engagement ((not set)/desktop/United States 9, Chrome/desktop/United States 8, Edge/desktop/United States 2) and look automated; the rest look like real readers; mostly (not set) on desktop in United States",
+      "by_source": [
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/matching",
+          "sessions": 5,
+          "new_users": 5,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 2.2
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/numerology",
+          "sessions": 4,
+          "new_users": 4,
+          "engaged_rate": 0.25,
+          "avg_engagement_seconds": 3.2
+        },
+        {
+          "sessionSourceMedium": "bing / organic",
+          "landingPagePlusQueryString": "/numerology",
+          "sessions": 4,
+          "new_users": 4,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/",
+          "sessions": 2,
+          "new_users": 1,
+          "engaged_rate": 0.5,
+          "avg_engagement_seconds": 167.5
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/gochar-2026-planetary-transits/?hl=en-IN",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.5,
+          "avg_engagement_seconds": 17.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "(not set)",
+          "sessions": 1,
+          "new_users": 0,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/about",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/hi/rashifal/aquarius",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/hi/rashifal/aries",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/hi/rashifal/libra",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/dhana-yoga-wealth-combinations/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/financial-struggles/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/gochar-2026-planetary-transits/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/muhurat/business",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/muhurat/namkaran",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        }
+      ],
+      "by_tech": [
+        {
+          "browser": "(not set)",
+          "deviceCategory": "desktop",
+          "country": "United States",
+          "sessions": 9,
+          "new_users": 9,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "United States",
+          "sessions": 8,
+          "new_users": 8,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "mobile",
+          "country": "India",
+          "sessions": 8,
+          "new_users": 5,
+          "engaged_rate": 0.5,
+          "avg_engagement_seconds": 169.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "(not set)",
+          "sessions": 2,
+          "new_users": 1,
+          "engaged_rate": 0.5,
+          "avg_engagement_seconds": 9.0
+        },
+        {
+          "browser": "Edge",
+          "deviceCategory": "desktop",
+          "country": "United States",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Firefox",
+          "deviceCategory": "desktop",
+          "country": "United States",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 3.0
+        },
+        {
+          "browser": "Android Webview",
+          "deviceCategory": "mobile",
+          "country": "China",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "India",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 25.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "Japan",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 215.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "mobile",
+          "country": "Canada",
+          "sessions": 1,
+          "new_users": 0,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        }
+      ]
+    },
+    {
+      "date": "2026-10-23",
+      "active_users": 34,
+      "median": 22,
+      "threshold": 32,
+      "tier": "watch",
+      "explanation": "top source (direct) / (none) (6 sessions) landing on /; engaged rate 23%, 20.5s average: looks like real readers; mostly Chrome on mobile in United States",
+      "by_source": [
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/",
+          "sessions": 6,
+          "new_users": 5,
+          "engaged_rate": 0.33,
+          "avg_engagement_seconds": 58.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/kundli",
+          "sessions": 6,
+          "new_users": 6,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 3.8
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/matching",
+          "sessions": 5,
+          "new_users": 5,
+          "engaged_rate": 0.2,
+          "avg_engagement_seconds": 5.8
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/numerology",
+          "sessions": 5,
+          "new_users": 5,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 3.4
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/",
+          "sessions": 3,
+          "new_users": 3,
+          "engaged_rate": 0.33,
+          "avg_engagement_seconds": 9.3
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/rahu-mahadasha-ketu-antardasha/",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 1.5
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/admin/ops",
+          "sessions": 1,
+          "new_users": 0,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 2.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/10th-lord-in-6th-house-career/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/rahu-mahadasha-ketu-antardasha/?hl=en-IN",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 12.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/saturn-in-10th-house-career/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/mars-remedies/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/rahu-mahadasha-ketu-antardasha/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 192.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/muhurat/griha-pravesh",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 42.0
+        }
+      ],
+      "by_tech": [
+        {
+          "browser": "Chrome",
+          "deviceCategory": "mobile",
+          "country": "United States",
+          "sessions": 26,
+          "new_users": 26,
+          "engaged_rate": 0.12,
+          "avg_engagement_seconds": 4.5
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "mobile",
+          "country": "India",
+          "sessions": 5,
+          "new_users": 3,
+          "engaged_rate": 0.8,
+          "avg_engagement_seconds": 77.4
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "Singapore",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Firefox",
+          "deviceCategory": "desktop",
+          "country": "India",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 192.0
+        }
+      ]
+    },
+    {
+      "date": "2026-11-12",
+      "active_users": 34,
+      "median": 22,
+      "threshold": 32,
+      "tier": "watch",
+      "explanation": "top source google / organic (4 sessions) landing on /muhurat/griha-pravesh; engaged rate 38%, 52.8s average: looks like real readers; google/organic with flat Search Console clicks usually means Google Discover; compare gsc-discover.json for that date; mostly Chrome on mobile in India",
+      "by_source": [
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/muhurat/griha-pravesh",
+          "sessions": 4,
+          "new_users": 4,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 205.2
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/panch-mahapurush-yoga/",
+          "sessions": 3,
+          "new_users": 3,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 1.3
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/panch-mahapurush-yoga/",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/saturn-in-10th-house-career/",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/chronic-health-issues-kundli/",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/gochar-2026-planetary-transits/",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 149.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/planets-in-7th-house-marriage/",
+          "sessions": 2,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/rahu-mahadasha-ketu-antardasha/",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 31.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/",
+          "sessions": 1,
+          "new_users": 0,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 170.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/about",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/kundli",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/2026-gochar-planetary-transits/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/planets-in-7th-house-marriage/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "(not set)",
+          "sessions": 1,
+          "new_users": 0,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 17.0
+        }
+      ],
+      "by_tech": [
+        {
+          "browser": "Chrome",
+          "deviceCategory": "mobile",
+          "country": "India",
+          "sessions": 14,
+          "new_users": 12,
+          "engaged_rate": 0.71,
+          "avg_engagement_seconds": 90.8
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "United States",
+          "sessions": 4,
+          "new_users": 4,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Safari",
+          "deviceCategory": "desktop",
+          "country": "India",
+          "sessions": 4,
+          "new_users": 2,
+          "engaged_rate": 0.25,
+          "avg_engagement_seconds": 28.2
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "Singapore",
+          "sessions": 3,
+          "new_users": 3,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "India",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.5,
+          "avg_engagement_seconds": 11.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "Australia",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 138.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "Brazil",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 30.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "Canada",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "Germany",
+          "sessions": 1,
+          "new_users": 0,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 5.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "Nepal",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        }
+      ]
+    },
+    {
+      "date": "2026-11-09",
+      "active_users": 32,
+      "median": 22,
+      "threshold": 32,
+      "tier": "watch",
+      "explanation": "top source google / organic (5 sessions) landing on /learn/jupiter-in-10th-house-career/; engaged rate 53%, 126.7s average: looks like real readers; google/organic with flat Search Console clicks usually means Google Discover; compare gsc-discover.json for that date; mostly Chrome on mobile in India",
+      "by_source": [
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/jupiter-in-10th-house-career/",
+          "sessions": 5,
+          "new_users": 3,
+          "engaged_rate": 0.4,
+          "avg_engagement_seconds": 90.2
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/rahu-mahadasha-ketu-antardasha/",
+          "sessions": 5,
+          "new_users": 4,
+          "engaged_rate": 0.8,
+          "avg_engagement_seconds": 208.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/muhurat/griha-pravesh",
+          "sessions": 5,
+          "new_users": 5,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 101.4
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/10th-lord-in-6th-house-career/",
+          "sessions": 3,
+          "new_users": 2,
+          "engaged_rate": 0.33,
+          "avg_engagement_seconds": 419.7
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/admin/ops",
+          "sessions": 2,
+          "new_users": 0,
+          "engaged_rate": 0.5,
+          "avg_engagement_seconds": 2.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/7th-lord-placement-marriage-guide/",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/chronic-health-issues-kundli/",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/muhurat",
+          "sessions": 2,
+          "new_users": 0,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/panchang/2026-11-10",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.5,
+          "avg_engagement_seconds": 7.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/",
+          "sessions": 1,
+          "new_users": 0,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 680.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/debilitated-sun-career/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/gochar-2026-planetary-transits/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "duckduckgo / organic",
+          "landingPagePlusQueryString": "/muhurat/griha-pravesh",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 35.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/diwali-muhurat-2026/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 16.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/kaal-sarp-dosh/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 300.0
+        }
+      ],
+      "by_tech": [
+        {
+          "browser": "Chrome",
+          "deviceCategory": "mobile",
+          "country": "India",
+          "sessions": 15,
+          "new_users": 9,
+          "engaged_rate": 0.53,
+          "avg_engagement_seconds": 126.2
+        },
+        {
+          "browser": "Safari",
+          "deviceCategory": "mobile",
+          "country": "India",
+          "sessions": 4,
+          "new_users": 4,
+          "engaged_rate": 0.75,
+          "avg_engagement_seconds": 157.0
+        },
+        {
+          "browser": "(not set)",
+          "deviceCategory": "desktop",
+          "country": "(not set)",
+          "sessions": 3,
+          "new_users": 3,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Safari",
+          "deviceCategory": "mobile",
+          "country": "France",
+          "sessions": 3,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "India",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.5,
+          "avg_engagement_seconds": 99.5
+        },
+        {
+          "browser": "Safari",
+          "deviceCategory": "desktop",
+          "country": "United Kingdom",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.5,
+          "avg_engagement_seconds": 629.5
+        },
+        {
+          "browser": "Safari",
+          "deviceCategory": "mobile",
+          "country": "United States",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.5,
+          "avg_engagement_seconds": 70.5
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "United States",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "mobile",
+          "country": "United Kingdom",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 89.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "mobile",
+          "country": "United States",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 16.0
+        }
+      ]
+    },
+    {
+      "date": "2026-11-14",
+      "active_users": 32,
+      "median": 22,
+      "threshold": 32,
+      "tier": "watch",
+      "explanation": "top source google / organic (10 sessions) landing on /learn/rahu-mahadasha-ketu-antardasha/; engaged rate 51%, 111.2s average: looks like real readers; google/organic with flat Search Console clicks usually means Google Discover; compare gsc-discover.json for that date; mostly Chrome on mobile in India",
+      "by_source": [
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/rahu-mahadasha-ketu-antardasha/",
+          "sessions": 10,
+          "new_users": 7,
+          "engaged_rate": 0.4,
+          "avg_engagement_seconds": 79.9
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/chronic-health-issues-kundli/",
+          "sessions": 5,
+          "new_users": 1,
+          "engaged_rate": 0.2,
+          "avg_engagement_seconds": 28.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/",
+          "sessions": 4,
+          "new_users": 0,
+          "engaged_rate": 0.75,
+          "avg_engagement_seconds": 385.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/10th-lord-in-6th-house-career/",
+          "sessions": 3,
+          "new_users": 1,
+          "engaged_rate": 0.67,
+          "avg_engagement_seconds": 6.3
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/7th-lord-placement-marriage-guide/",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/learn/gochar-2026-planetary-transits/",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 38.5
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/muhurat",
+          "sessions": 2,
+          "new_users": 0,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 323.0
+        },
+        {
+          "sessionSourceMedium": "google / organic",
+          "landingPagePlusQueryString": "/muhurat/griha-pravesh",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 144.5
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/",
+          "sessions": 1,
+          "new_users": 0,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 576.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/festivals",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/kundli",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/chronic-health-issues-kundli/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 9.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/financial-struggles/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/gochar-2026-planetary-transits/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 18.0
+        },
+        {
+          "sessionSourceMedium": "(direct) / (none)",
+          "landingPagePlusQueryString": "/learn/griha-pravesh-muhurat-2026-2027/",
+          "sessions": 1,
+          "new_users": 1,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        }
+      ],
+      "by_tech": [
+        {
+          "browser": "Chrome",
+          "deviceCategory": "mobile",
+          "country": "India",
+          "sessions": 11,
+          "new_users": 8,
+          "engaged_rate": 0.82,
+          "avg_engagement_seconds": 146.5
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "mobile",
+          "country": "Indonesia",
+          "sessions": 9,
+          "new_users": 1,
+          "engaged_rate": 0.67,
+          "avg_engagement_seconds": 186.4
+        },
+        {
+          "browser": "Safari",
+          "deviceCategory": "tablet",
+          "country": "India",
+          "sessions": 5,
+          "new_users": 1,
+          "engaged_rate": 0.2,
+          "avg_engagement_seconds": 28.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "India",
+          "sessions": 4,
+          "new_users": 4,
+          "engaged_rate": 0.75,
+          "avg_engagement_seconds": 139.2
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "United States",
+          "sessions": 3,
+          "new_users": 3,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Safari",
+          "deviceCategory": "desktop",
+          "country": "United States",
+          "sessions": 3,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 1.7
+        },
+        {
+          "browser": "Safari",
+          "deviceCategory": "mobile",
+          "country": "India",
+          "sessions": 3,
+          "new_users": 3,
+          "engaged_rate": 0.67,
+          "avg_engagement_seconds": 146.7
+        },
+        {
+          "browser": "(not set)",
+          "deviceCategory": "desktop",
+          "country": "(not set)",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Chrome",
+          "deviceCategory": "desktop",
+          "country": "Singapore",
+          "sessions": 2,
+          "new_users": 2,
+          "engaged_rate": 0.0,
+          "avg_engagement_seconds": 0.0
+        },
+        {
+          "browser": "Safari (in-app)",
+          "deviceCategory": "mobile",
+          "country": "India",
+          "sessions": 2,
+          "new_users": 0,
+          "engaged_rate": 1.0,
+          "avg_engagement_seconds": 0.0
+        }
+      ]
+    }
+  ],
+  "watch_omitted": 0
 }

@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-19T23:26:22Z)
+# Lessons — last 30 days (generated 2026-11-20T02:10:26Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -21,16 +21,16 @@ deterministic, no LLM.
 
 ## Our errors
 
-- QA FAIL verdicts: 119
+- QA FAIL verdicts: 120
 - reverted commits on main: 0
 - failed verify-production runs: 9
 - ops findings now: 2
-  - [amber] claude-quota: Claude weekly quota 87% used
+  - [amber] claude-quota: Claude weekly quota 88% used
   - [amber] loop-starved: 3 of the last 4 build cycles built nothing
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 17, UNSCOREABLE 10
+counts: HIT 1, MISS 1, OTHER 2, PARTIAL 1, PASS 5, PENDING 18, UNSCOREABLE 10
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: OTHER — BAR MET, not attributable to the CTA
 - #311: MISS — MISS
@@ -56,16 +56,19 @@ counts: MISS 1, OTHER 1, PARTIAL 1, PASS 5, PENDING 17, UNSCOREABLE 10
 - #835: PENDING — pending — scoreable from 2026-12-14
 - #843: UNSCOREABLE — not scoreable from GA4/GSC
 - #1066: PENDING — pending — scoreable from 2026-12-16; the metric needs an export that does not exist
+- #1069: PENDING — pending — scoreable from 2026-12-20
 - #1073: PENDING — pending — scoreable from 2026-12-17
 - #1074: PENDING — pending — scoreable from 2026-12-17; floor at risk
 - #1075: PENDING — pending — scoreable from 2026-12-17
 - #1080: UNSCOREABLE — not scoreable from GA4/GSC
 - #1083: UNSCOREABLE — not scoreable from GA4/GSC
 - #1093: PENDING — pending — scoreable from 2026-12-16; the metric needs an export that does not exist
+- #1115: OTHER — NOT MET yet — 1 window, not 2; blocked on #1205
 - #1178: UNSCOREABLE — not scoreable from GA4/GSC
 - #1217: PENDING — pending — scoreable from 2026-12-19
 - #1226: PENDING — pending — scoreable from 2026-12-19
 - #1229: PENDING — pending — scoreable from 2026-12-19
+- #1236: HIT — HIT, 7 of 7
 
 A MISS is the most useful line here: before proposing work of the same kind, say why this time differs, or do not propose it.
 

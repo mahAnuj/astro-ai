@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-19T23:26:22Z",
+ "generated_at": "2026-11-20T02:10:26Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1086,6 +1086,13 @@
     "themes": [
      "regression"
     ]
+   },
+   {
+    "number": 1271,
+    "at": "2026-11-20T01:51:56Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1271#issuecomment-7027875566",
+    "summary": "QA: FAIL \u2014 verified at `a5f74408d569c37fd22a7b7012f779f8cec59133` DEFECT 1: _gates_red reads only 'PR gates'; a red 'verify-build' (build-gates, also required, scripts/collect_gate_failures.py GATE_WORKFLOWS) with PR gates green/running is dropped as 'waiting to merge' -> #1165 shape reintroduced; r",
+    "themes": []
    }
   ],
   "reverts": [],
@@ -1140,7 +1147,7 @@
    {
     "kind": "claude-quota",
     "level": "amber",
-    "title": "Claude weekly quota 87% used",
+    "title": "Claude weekly quota 88% used",
     "detail": "Every agent shares one Claude Max subscription. 0 run(s) in the sample hit a limit. Levers, cheapest first: stop dispatching ranked (`/agent-cycle`) cycles that end in nothing; space out the weekly agent loops; keep QA rounds to one per head. Do not add a parallel build lane until it resets.",
     "where": "/admin/ops"
    },
@@ -1148,7 +1155,7 @@
     "kind": "loop-starved",
     "level": "amber",
     "title": "3 of the last 4 build cycles built nothing",
-    "detail": "Empty cycles started 2026-11-19T16:17, 2026-11-19T16:54, 2026-11-19T19:23. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
+    "detail": "Empty cycles started 2026-11-19T16:54, 2026-11-19T19:23, 2026-11-19T23:24. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
     "where": "/admin/ops"
    }
   ]
@@ -1350,6 +1357,13 @@
    "url": "https://github.com/mahAnuj/astro-ai/issues/1066#issuecomment-6937201708"
   },
   {
+   "number": 1069,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-20",
+   "at": "2026-11-20T02:04:20Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1069#issuecomment-7028068840"
+  },
+  {
    "number": 1073,
    "verdict": "PENDING",
    "headline": "pending \u2014 scoreable from 2026-12-17",
@@ -1392,6 +1406,13 @@
    "url": "https://github.com/mahAnuj/astro-ai/issues/1093#issuecomment-6937202015"
   },
   {
+   "number": 1115,
+   "verdict": "OTHER",
+   "headline": "NOT MET yet \u2014 1 window, not 2; blocked on #1205",
+   "at": "2026-11-20T02:04:19Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1115#issuecomment-7028068592"
+  },
+  {
    "number": 1178,
    "verdict": "UNSCOREABLE",
    "headline": "not scoreable from GA4/GSC",
@@ -1418,15 +1439,23 @@
    "headline": "pending \u2014 scoreable from 2026-12-19",
    "at": "2026-11-19T02:18:02Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/1229#issuecomment-6997657571"
+  },
+  {
+   "number": 1236,
+   "verdict": "HIT",
+   "headline": "HIT, 7 of 7",
+   "at": "2026-11-20T02:04:17Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1236#issuecomment-7028068342"
   }
  ],
  "outcome_counts": {
   "MISS": 1,
-  "OTHER": 1,
+  "OTHER": 2,
   "UNSCOREABLE": 10,
   "PASS": 5,
   "PARTIAL": 1,
-  "PENDING": 17
+  "PENDING": 18,
+  "HIT": 1
  },
  "competitor_patterns": [
   {
