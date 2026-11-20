@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-20T11:43:50Z",
+  "generated_at": "2026-11-20T16:40:12Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 128,
-  "with_ask": 45,
+  "open": 149,
+  "with_ask": 44,
   "by_area": {
-    "UNCLASSIFIED": 43,
-    "INFRA": 16,
+    "UNCLASSIFIED": 63,
+    "INFRA": 17,
     "REDESIGN": 10,
     "OPS": 8,
     "FEATURE": 7,
@@ -32,37 +32,413 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "untyped": 38,
-    "enhancement": 31,
-    "chore": 22,
-    "bug": 20,
+    "bug": 42,
+    "untyped": 37,
+    "enhancement": 30,
+    "chore": 23,
     "correctness": 11,
     "design": 5,
     "ui": 1
   },
   "by_priority": {
-    "unset": 86,
-    "medium": 23,
-    "high": 18,
-    "low": 1
+    "unset": 85,
+    "medium": 29,
+    "high": 21,
+    "low": 14
   },
   "blocked": 9,
   "rows": [
     {
-      "number": 1277,
-      "title": "analytics (#1070 slice 4): the daily GA4 export carries returning users and a per-day admin-landing count",
+      "number": 1304,
+      "title": "infra: read and set Cloud Run --max-instances, record it in docs/decisions (split from #1261)",
       "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
+      "area": "INFRA",
+      "type": "chore",
       "priority": "unset",
       "labels": [
-        "enhancement",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
+        "chore"
       ],
-      "created": "2026-11-20T11:15:09Z",
-      "updated": "2026-11-20T11:43:05Z",
+      "created": "2026-11-20T16:17:14Z",
+      "updated": "2026-11-20T16:17:14Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1303,
+      "title": "QA follow-up: comments still cite 'agent-cycle.md Step 4', which now lives in build.md",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "documentation",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:20Z",
+      "updated": "2026-11-20T16:03:20Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1302,
+      "title": "QA follow-up: kundali-matching article links with the raw text '/matching tool'",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "content",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:19Z",
+      "updated": "2026-11-20T16:03:19Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1301,
+      "title": "QA follow-up: numerology caption says 'the classical text we follow' though the page mixes two sources; a code comment says 'to about a day' where two differ by 2 days",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "content",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:18Z",
+      "updated": "2026-11-20T16:03:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1300,
+      "title": "QA follow-up: manglik-remedies.html line 7 still says 'that classical tradition flags for marriage friction'",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "content",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:17Z",
+      "updated": "2026-11-20T16:03:17Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1299,
+      "title": "QA follow-up: close-on-evidence turns a failed compare call into a silent exit 0",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:17Z",
+      "updated": "2026-11-20T16:03:17Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1298,
+      "title": "QA follow-up: hourly_due.py crashes with AttributeError on an unexpected API shape instead of answering due",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:16Z",
+      "updated": "2026-11-20T16:03:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1297,
+      "title": "QA follow-up: issue_flow.explain does not catch subprocess.TimeoutExpired, so one slow gh call blanks the whole trend",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:15Z",
+      "updated": "2026-11-20T16:03:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1296,
+      "title": "QA follow-up: issue_flow.closer_of counts any closing comment that quotes CANNOT-REPRODUCE, whoever wrote it",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:14Z",
+      "updated": "2026-11-20T16:03:14Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1295,
+      "title": "QA follow-up: the Hindi rashifal suffix asks for Sanskrit terms while the prompt asks for everyday, non-Sanskrit-heavy Hindi",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:13Z",
+      "updated": "2026-11-20T16:03:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1294,
+      "title": "QA follow-up: the-9-grahas-overview gives Rahu and Ketu exaltation on two different schemes",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-20T16:03:13Z",
+      "updated": "2026-11-20T16:03:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1293,
+      "title": "QA follow-up: account deletion leaves per-instance SQLite cache entries, and erases blobs with blocking calls inside async routes",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:12Z",
+      "updated": "2026-11-20T16:03:12Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1292,
+      "title": "QA follow-up: /account/delete does not revoke the user's other sessions, so another device stays signed in",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:11Z",
+      "updated": "2026-11-20T16:03:11Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1291,
+      "title": "QA follow-up: ask_audit_post --issue accepts any issue number; the 5-issue cap is prompt-only",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:10Z",
+      "updated": "2026-11-20T16:03:10Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1290,
+      "title": "QA follow-up: qa-on-green's concurrency key includes the workflow name, so two green workflows on one head can each dispatch",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:10Z",
+      "updated": "2026-11-20T16:03:10Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1289,
+      "title": "QA follow-up: dispatch_cycle.sh reads LOOP_PAUSED case-sensitively, so 'True' pauses the jobs but still dispatches",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:09Z",
+      "updated": "2026-11-20T16:03:09Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1288,
+      "title": "QA follow-up: unpaginated comment and file reads in pr_fix_after_qa.py, red_gates.py and agent-merge's chief-wake marker",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:08Z",
+      "updated": "2026-11-20T16:03:08Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1287,
+      "title": "QA follow-up: chief_clear.py accepts a QA PASS only from claude[bot] and reads one page of comments",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:07Z",
+      "updated": "2026-11-20T16:03:07Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1286,
+      "title": "QA follow-up: an API hiccup in agent-merge strips a valid chief-cleared label",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:06Z",
+      "updated": "2026-11-20T16:03:06Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1285,
+      "title": "QA follow-up: qa_verdict.sh labels before it comments, and accepts an abbreviated --sha that then does not bind",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:06Z",
+      "updated": "2026-11-20T16:03:06Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1284,
+      "title": "QA follow-up: main-red-report files [main-red] for runs GitHub cancelled as a replaced pending run",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:05Z",
+      "updated": "2026-11-20T16:03:05Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1283,
+      "title": "QA follow-up: a rename from src/ into measurements/ reads as measurements-only, so build gates skip while the deletion deploys",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:04Z",
+      "updated": "2026-11-20T16:03:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1282,
+      "title": "QA follow-up: chain_cycle quota guard fails open on NaN, negative or future-dated readings",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "qa"
+      ],
+      "created": "2026-11-20T16:03:03Z",
+      "updated": "2026-11-20T16:03:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -88,12 +464,13 @@
       "priority": "unset",
       "labels": [
         "ui",
-        "design-proposal"
+        "design-proposal",
+        "needs-evidence"
       ],
       "created": "2026-11-20T01:31:13Z",
-      "updated": "2026-11-20T01:31:13Z",
+      "updated": "2026-11-20T15:30:14Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 1268,
@@ -107,7 +484,7 @@
         "skill:ui-fixer"
       ],
       "created": "2026-11-20T01:31:11Z",
-      "updated": "2026-11-20T01:31:11Z",
+      "updated": "2026-11-20T15:30:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -122,10 +499,13 @@
         "priority:medium",
         "effort:s",
         "risk:medium",
-        "chore"
+        "chore",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-19T17:21:28Z",
-      "updated": "2026-11-19T17:21:28Z",
+      "updated": "2026-11-20T16:39:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -142,7 +522,7 @@
         "chore"
       ],
       "created": "2026-11-19T09:54:32Z",
-      "updated": "2026-11-19T09:54:32Z",
+      "updated": "2026-11-20T15:27:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -159,7 +539,7 @@
         "chore"
       ],
       "created": "2026-11-19T09:53:21Z",
-      "updated": "2026-11-19T09:53:21Z",
+      "updated": "2026-11-20T15:28:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -173,12 +553,13 @@
       "labels": [
         "priority:high",
         "effort:m",
-        "chore"
+        "chore",
+        "needs-evidence"
       ],
       "created": "2026-11-19T09:53:08Z",
-      "updated": "2026-11-19T09:53:08Z",
+      "updated": "2026-11-20T15:28:11Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 1246,
@@ -188,12 +569,13 @@
       "type": "untyped",
       "priority": "unset",
       "labels": [
+        "needs-evidence",
         "weekly-goals"
       ],
       "created": "2026-11-19T07:40:12Z",
-      "updated": "2026-11-19T07:52:11Z",
+      "updated": "2026-11-20T15:29:23Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 1243,
@@ -207,7 +589,7 @@
         "chore"
       ],
       "created": "2026-11-19T04:43:24Z",
-      "updated": "2026-11-19T04:43:24Z",
+      "updated": "2026-11-20T15:27:12Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -645,7 +1027,7 @@
         "chore"
       ],
       "created": "2026-11-13T03:30:48Z",
-      "updated": "2026-11-19T20:13:15Z",
+      "updated": "2026-11-20T16:04:22Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -677,21 +1059,6 @@
       "updated": "2026-11-13T15:34:30Z",
       "blocked": false,
       "needs_evidence": false
-    },
-    {
-      "number": 929,
-      "title": "agent-research opens its corpus PR with github.token: pull_request suites are held in action_required, PR #915 has no gates (10h)",
-      "ask": "Mint the publisher token in agent-research.yml exactly as agent-work.yml does and use it for push and gh pr create.",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "needs-evidence"
-      ],
-      "created": "2026-11-12T11:14:01Z",
-      "updated": "2026-11-14T14:12:51Z",
-      "blocked": false,
-      "needs_evidence": true
     },
     {
       "number": 925,
@@ -766,7 +1133,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-20T02:08:42Z",
+      "updated": "2026-11-20T16:04:24Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2076,9 +2443,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-20T11:43:50Z",
+    "generated_at": "2026-11-20T16:40:12Z",
     "window_days": 28,
-    "open_now": 128,
+    "open_now": 149,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2485,14 +2852,17 @@
       },
       {
         "date": "2026-11-20",
-        "opened": 5,
-        "closed": 1,
-        "net": 4,
-        "open_end": 128,
+        "opened": 28,
+        "closed": 3,
+        "net": 25,
+        "open_end": 149,
         "opened_by": {
-          "loop": 5
+          "audit": 22,
+          "loop": 6
         },
         "closed_by": {
+          "close-on-evidence": 1,
+          "prioritise": 1,
           "main-red-report": 1
         }
       }
@@ -3215,6 +3585,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 929,
+        "closed_at": "2026-11-20T15:28:45Z",
+        "closer": "prioritise"
+      },
+      {
         "number": 935,
         "closed_at": "2026-11-12T17:53:05Z",
         "closer": "main-red-report"
@@ -3748,14 +4123,19 @@
         "number": 1274,
         "closed_at": "2026-11-20T02:34:43Z",
         "closer": "main-red-report"
+      },
+      {
+        "number": 1277,
+        "closed_at": "2026-11-20T11:56:05Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 2,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 122,
+          "merged": 123,
           "median_h": 0.5,
           "p90_h": 8.1,
           "max_h": 46.6,
@@ -3879,7 +4259,7 @@
           ]
         },
         "28d": {
-          "merged": 317,
+          "merged": 320,
           "median_h": 0.6,
           "p90_h": 18.8,
           "max_h": 122.1,
@@ -4170,16 +4550,16 @@
         },
         {
           "date": "2026-11-20",
-          "merged": 3,
-          "median_h": 1.0,
+          "merged": 6,
+          "median_h": 0.9,
           "max_h": 13.6
         }
       ],
       "open": [
         {
-          "number": 1278,
-          "title": "analytics: daily GA4 export carries returning users and per-day admin landings (#1277)",
-          "age_h": 0.1,
+          "number": 1305,
+          "title": "agents/status: 301 any query string to the bare path (#1261)",
+          "age_h": 0.4,
           "waiting_on": "merge",
           "why": null
         }

@@ -1,26 +1,26 @@
 {
- "generated_at": "2026-11-20T11:46:32Z",
+ "generated_at": "2026-11-20T16:42:42Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-13T11:46:32Z",
-  "end": "2026-11-20T11:46:32Z",
-  "loop_comments": 1245,
-  "on_prs": 728,
-  "prs": 123,
-  "on_issues": 517,
-  "issues": 151,
-  "comments_per_pr": 5.92,
-  "comments_per_issue": 3.42,
-  "duplicates": 63,
+  "start": "2026-11-13T16:42:42Z",
+  "end": "2026-11-20T16:42:42Z",
+  "loop_comments": 1260,
+  "on_prs": 746,
+  "prs": 124,
+  "on_issues": 514,
+  "issues": 153,
+  "comments_per_pr": 6.02,
+  "comments_per_issue": 3.36,
+  "duplicates": 64,
   "duplicate_rate_pct": 5.1,
   "sent_by_kind": {
    "growth-goals": 3,
    "growth-goals-issue": 2,
-   "ops-finding": 11,
+   "ops-finding": 13,
    "ops-finding-issue": 1
   },
-  "via_outbox": 17,
+  "via_outbox": 19,
   "top_threads": [
    {
     "on": "pr",
@@ -49,7 +49,7 @@
    }
   ],
   "owner_touched": {
-   "prs": 123,
+   "prs": 124,
    "owner_commented": 10,
    "pct": 8
   },
@@ -60,24 +60,24 @@
   }
  },
  "previous": {
-  "start": "2026-11-06T11:46:32Z",
-  "end": "2026-11-13T11:46:32Z",
-  "loop_comments": 970,
-  "on_prs": 572,
-  "prs": 103,
-  "on_issues": 398,
-  "issues": 102,
-  "comments_per_pr": 5.55,
-  "comments_per_issue": 3.9,
-  "duplicates": 42,
-  "duplicate_rate_pct": 4.3,
+  "start": "2026-11-06T16:42:42Z",
+  "end": "2026-11-13T16:42:42Z",
+  "loop_comments": 978,
+  "on_prs": 564,
+  "prs": 104,
+  "on_issues": 414,
+  "issues": 108,
+  "comments_per_pr": 5.42,
+  "comments_per_issue": 3.83,
+  "duplicates": 40,
+  "duplicate_rate_pct": 4.1,
   "sent_by_kind": {},
   "via_outbox": 0,
   "top_threads": [
    {
     "on": "pr",
     "number": 747,
-    "comments": 26
+    "comments": 20
    },
    {
     "on": "pr",
@@ -97,13 +97,13 @@
    {
     "on": "issue",
     "number": 402,
-    "comments": 12
+    "comments": 13
    }
   ],
   "owner_touched": {
-   "prs": 105,
+   "prs": 106,
    "owner_commented": 9,
-   "pct": 9
+   "pct": 8
   }
  },
  "kinds": {
