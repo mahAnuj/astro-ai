@@ -130,3 +130,65 @@ def test_the_queue_runs_the_chain_after_the_drain_and_only_on_workflow_run():
     # Since #826 a woken run (agent-queue dispatched with after_run) supplies
     # WAKE_STARTED instead; the workflow_run payload still comes first.
     assert step["env"]["WR_STARTED"].startswith("${{ github.event.workflow_run.run_started_at ||")
+
+
+# --- the freshest quota reading (2026-11-20) ------------------------------------------------
+
+def _rate_block(seven, status):
+    body = json.dumps({"rate_limit_info": {"status": status, "unifiedWindows": {
+        "five_hour": {"utilization": 0.3, "status": status},
+        "seven_day": {"utilization": seven, "status": status}}}}, indent=2)
+    inner = body.split("\n", 1)[1].rsplit("\n", 1)[0]
+    return "\n".join(f"2026-11-06T11:40:00.0000000Z {l}" for l in inner.splitlines()) + "\n"
+
+
+class FreshGh(FakeGh):
+    """FakeGh plus the newest finished agent-work run and its job log."""
+
+    def __init__(self, log, **kw):
+        super().__init__(**kw)
+        self.log = log
+
+    def __call__(self, args):
+        url = next((a for a in args if a.startswith("repos/")), "")
+        if args[0] == "api" and "agent-work.yml/runs?status=completed&per_page=1" in url:
+            return json.dumps({"workflow_runs": [{"id": 91, "run_started_at": "2026-11-06T11:30:00Z"}]})
+        if args[0] == "api" and url.endswith("/actions/runs/91/jobs"):
+            return json.dumps({"jobs": [{"id": 7}]})
+        if args[0] == "api" and url.endswith("/actions/jobs/7/logs"):
+            return self.log
+        return super().__call__(args)
+
+
+def test_a_stale_warning_does_not_block_a_chain_the_fresh_reading_allows(tmp_path, monkeypatch):
+    """2026-11-20 11:43Z: claude_usage.json still said 'allowed_warning' (88%, from 03:53Z)
+    while the 11:05Z cycle had logged 4% -- the weekly window reset at ~06:00Z -- and the loop
+    stood down with 96% of the week unused."""
+    p = tmp_path / "u.json"
+    p.write_text(json.dumps({"generated_at": "2026-11-06T11:00:00Z",
+                             "latest": {"seven_day": 0.88, "status": "allowed_warning",
+                                        "at": "2026-11-06T04:00:00Z"}}))
+    monkeypatch.setenv("GH_REPO", REPO)
+    for k, v in RUN.items():
+        monkeypatch.setenv(f"WR_{k.upper()}", v)
+    gh = FreshGh(_rate_block(0.04, "allowed"))
+    assert cc.main(["x"], gh=gh, now=NOW, usage_path=p) == 0
+    assert [a for a in gh.calls if a[:2] == ["workflow", "run"]] == [["workflow", "run", "agent-work.yml", "--repo", REPO]]
+
+
+def test_a_fresh_warning_still_blocks_even_when_the_file_says_allowed(tmp_path, monkeypatch):
+    p = tmp_path / "u.json"
+    p.write_text(json.dumps({**USAGE, "latest": {**USAGE["latest"], "at": "2026-11-06T04:00:00Z"}}))
+    monkeypatch.setenv("GH_REPO", REPO)
+    for k, v in RUN.items():
+        monkeypatch.setenv(f"WR_{k.upper()}", v)
+    gh = FreshGh(_rate_block(0.91, "allowed_warning"))
+    assert cc.main(["x"], gh=gh, now=NOW, usage_path=p) == 0
+    assert not [a for a in gh.calls if a[:3] == ["workflow", "run", "agent-work.yml"]]
+
+
+def test_an_older_fresh_reading_never_replaces_a_newer_file():
+    usage = {"generated_at": "2026-11-06T11:50:00Z", "latest": {"seven_day": 0.5, "status": "allowed",
+                                                                 "at": "2026-11-06T11:45:00Z"}}
+    older = {"seven_day": 0.01, "status": "allowed", "at": "2026-11-06T09:00:00Z"}
+    assert cc.freshest(usage, older, NOW) is usage
