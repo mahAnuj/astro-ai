@@ -50,6 +50,9 @@
 # one entry in each; the next is started when THAT cycle completes and fires
 # this again.
 name: Agent queue
+# A heartbeat run (scripts/heartbeat.py) is named apart so the Actions list shows
+# which runs were the loop keeping itself awake. Nothing keys on this title.
+run-name: ${{ inputs.heartbeat == 'true' && 'Agent queue heartbeat' || 'Agent queue' }}
 
 on:
   workflow_run:
@@ -64,6 +67,10 @@ on:
         description: "An agent-work run id: wait for it to complete, then drain and chain off it (#826)"
         required: false
         default: ""
+      heartbeat:
+        description: "Doze first, then drain and restart an idle lane (scripts/heartbeat.py). Dispatched by the loop itself."
+        required: false
+        default: "false"
 
 # Every scope here is one an existing dispatcher already holds, and the hourly
 # steps (#1186, #1187) needed none beyond them:
@@ -88,9 +95,23 @@ jobs:
     # skipped runs. The first agent-work completion after resume drains them.
     if: vars.LOOP_PAUSED != 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 15    # 10 of them for wait_for_run.py at most
+    # 10 of them for wait_for_run.py at most, or heartbeat.DOZE_MIN (20) on a
+    # heartbeat run -- never both, they key on different inputs.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+
+      # THE HEARTBEAT (2026-11-20). GitHub dropped 24 of 27 hourly slots in the
+      # day before this, and when the events stop the cron is all that is left.
+      # A heartbeat run sleeps here, yielding the moment another agent-queue run
+      # is waiting, then does everything below like any other run.
+      - name: Doze until the next heartbeat
+        if: inputs.heartbeat == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          THIS_RUN: ${{ github.run_id }}
+        run: python3 scripts/heartbeat.py doze
 
       - name: Wait for the waking cycle to finish
         if: github.event_name == 'workflow_dispatch' && inputs.after_run != ''
@@ -141,9 +162,10 @@ jobs:
       # guard and its measurement is in scripts/chain_cycle.py's header.
       - name: Chain the next ranked cycle
         # A woken run (above) supplies WAKE_* instead of the event payload. An
-        # hourly run has no finished cycle, so chain_cycle.py declines to chain
-        # and only weighs the evidence retrofit (6h cooldown, quota-gated).
-        if: always() && (github.event_name == 'workflow_run' || github.event_name == 'schedule' || env.WAKE_NAME != '')
+        # hourly or heartbeat run has no finished cycle, so chain_cycle.py asks
+        # instead whether the build lane has sat IDLE long enough to restart
+        # (idle_reason, 2026-11-20), and otherwise weighs the evidence retrofit.
+        if: always() && (github.event_name == 'workflow_run' || github.event_name == 'schedule' || inputs.heartbeat == 'true' || env.WAKE_NAME != '')
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -173,3 +195,14 @@ jobs:
             exit 0
           fi
           python3 scripts/file_ops_findings.py --repo "$GH_REPO" --findings /tmp/liveness.json --scope liveness
+
+      # REARM LAST, whatever happened above. Dispatches the next heartbeat only
+      # when no other agent-queue run is waiting: dispatching over a pending
+      # run would cancel it (one pending run per concurrency group).
+      - name: Keep the heartbeat alive
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          THIS_RUN: ${{ github.run_id }}
+        run: python3 scripts/heartbeat.py rearm
