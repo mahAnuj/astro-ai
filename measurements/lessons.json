@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-20T04:02:22Z",
+ "generated_at": "2026-11-20T11:46:55Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1143,22 +1143,7 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": [
-   {
-    "kind": "claude-quota",
-    "level": "amber",
-    "title": "Claude weekly quota 88% used",
-    "detail": "Every agent shares one Claude Max subscription. 0 run(s) in the sample hit a limit. Levers, cheapest first: stop dispatching ranked (`/agent-cycle`) cycles that end in nothing; space out the weekly agent loops; keep QA rounds to one per head. Do not add a parallel build lane until it resets.",
-    "where": "/admin/ops"
-   },
-   {
-    "kind": "loop-starved",
-    "level": "amber",
-    "title": "2 of the last 4 build cycles built nothing",
-    "detail": "Empty cycles started 2026-11-19T23:24, 2026-11-20T03:53. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
-    "where": "/admin/ops"
-   }
-  ]
+  "ops_findings": []
  },
  "error_themes": {
   "regression": 32,

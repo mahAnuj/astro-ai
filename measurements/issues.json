@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-20T04:00:02Z",
+  "generated_at": "2026-11-20T11:43:50Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 127,
+  "open": 128,
   "with_ask": 45,
   "by_area": {
-    "UNCLASSIFIED": 42,
+    "UNCLASSIFIED": 43,
     "INFRA": 16,
     "REDESIGN": 10,
     "OPS": 8,
@@ -33,7 +33,7 @@
   },
   "by_type": {
     "untyped": 38,
-    "enhancement": 30,
+    "enhancement": 31,
     "chore": 22,
     "bug": 20,
     "correctness": 11,
@@ -41,13 +41,31 @@
     "ui": 1
   },
   "by_priority": {
-    "unset": 85,
+    "unset": 86,
     "medium": 23,
     "high": 18,
     "low": 1
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1277,
+      "title": "analytics (#1070 slice 4): the daily GA4 export carries returning users and a per-day admin-landing count",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-20T11:15:09Z",
+      "updated": "2026-11-20T11:43:05Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1272,
       "title": "analytics: no export carries the server-side kundli submission count — #1068 cannot be scored (3 reports in a row)",
@@ -444,7 +462,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-18T22:31:06Z",
+      "updated": "2026-11-20T11:15:16Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2058,9 +2076,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-20T04:00:02Z",
+    "generated_at": "2026-11-20T11:43:50Z",
     "window_days": 28,
-    "open_now": 127,
+    "open_now": 128,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2467,12 +2485,12 @@
       },
       {
         "date": "2026-11-20",
-        "opened": 4,
+        "opened": 5,
         "closed": 1,
-        "net": 3,
-        "open_end": 127,
+        "net": 4,
+        "open_end": 128,
         "opened_by": {
-          "loop": 4
+          "loop": 5
         },
         "closed_by": {
           "main-red-report": 1
@@ -3732,7 +3750,440 @@
         "closer": "main-red-report"
       }
     ],
-    "timelines_read": 1,
-    "truncated": []
+    "timelines_read": 0,
+    "truncated": [],
+    "pr_flow": {
+      "windows": {
+        "7d": {
+          "merged": 122,
+          "median_h": 0.5,
+          "p90_h": 8.1,
+          "max_h": 46.6,
+          "slowest": [
+            {
+              "number": 1121,
+              "title": "10th-lord-in-6th guide: Jupiter is not debilitated in Scorpio; unsourced 'classical' claim",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-18T02:13:43Z",
+              "hours": 46.6,
+              "why": {
+                "reason": "45.1h gates red; 4 pushes",
+                "primary": "gates_red",
+                "hours": {
+                  "no_gates": 0.2,
+                  "gates_running": 0.5,
+                  "gates_red": 45.1,
+                  "awaiting_qa": 0.0,
+                  "awaiting_merge": 0.7
+                },
+                "qa_fails": 0,
+                "pushes": 4
+              }
+            },
+            {
+              "number": 1000,
+              "title": "Every prompt change is evaluated: base vs head, judged pairwise; a worse prompt cannot mer",
+              "author": "mahAnuj",
+              "merged_at": "2026-11-15T15:09:27Z",
+              "hours": 34.8,
+              "why": {
+                "reason": "33.1h held for chief (trust boundary); 4 pushes",
+                "primary": "held",
+                "hours": {
+                  "no_gates": 1.2,
+                  "gates_running": 0.3,
+                  "awaiting_qa": 0.2,
+                  "awaiting_merge": 0.0,
+                  "held": 33.1
+                },
+                "qa_fails": 2,
+                "pushes": 4
+              }
+            },
+            {
+              "number": 1127,
+              "title": "muhurat: Namkaran sets and day claim follow Raman and Rao (#1060)",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-17T13:27:42Z",
+              "hours": 30.9,
+              "why": {
+                "reason": "26.3h gates red; 5 pushes",
+                "primary": "gates_red",
+                "hours": {
+                  "no_gates": 0.6,
+                  "gates_running": 0.6,
+                  "gates_red": 26.3,
+                  "awaiting_qa": 0.4,
+                  "awaiting_merge": 3.0
+                },
+                "qa_fails": 0,
+                "pushes": 5
+              }
+            },
+            {
+              "number": 1002,
+              "title": "Watch the live app's health after every cycle and file it as issues",
+              "author": "mahAnuj",
+              "merged_at": "2026-11-15T11:17:54Z",
+              "hours": 30.8,
+              "why": {
+                "reason": "29.7h held for chief (trust boundary); 4 pushes",
+                "primary": "held",
+                "hours": {
+                  "no_gates": 0.2,
+                  "qa_fail": 0.6,
+                  "gates_running": 0.2,
+                  "awaiting_qa": 0.1,
+                  "awaiting_merge": 0.0,
+                  "held": 29.7
+                },
+                "qa_fails": 3,
+                "pushes": 4
+              }
+            },
+            {
+              "number": 1212,
+              "title": "close-on-evidence: close every PR the live, verified commit contains, not only its own",
+              "author": "mahAnuj",
+              "merged_at": "2026-11-19T03:03:32Z",
+              "hours": 23.3,
+              "why": {
+                "reason": "19.9h waiting for a fix after QA failed (5 QA FAILs); 6 pushes",
+                "primary": "qa_fail",
+                "hours": {
+                  "no_gates": 0.6,
+                  "qa_fail": 19.9,
+                  "gates_running": 2.1,
+                  "awaiting_qa": 0.4,
+                  "awaiting_merge": 0.0,
+                  "held": 0.3
+                },
+                "qa_fails": 5,
+                "pushes": 6
+              }
+            }
+          ],
+          "top_reasons": [
+            {
+              "reason": "gates red",
+              "prs": 2
+            },
+            {
+              "reason": "held for chief (trust boundary)",
+              "prs": 2
+            },
+            {
+              "reason": "waiting for a fix after QA failed",
+              "prs": 1
+            }
+          ]
+        },
+        "28d": {
+          "merged": 317,
+          "median_h": 0.6,
+          "p90_h": 18.8,
+          "max_h": 122.1,
+          "slowest": [
+            {
+              "number": 550,
+              "title": "Gate `main` itself, and make a red `main` reach a person",
+              "author": "mahAnuj",
+              "merged_at": "2026-10-31T19:39:01Z",
+              "hours": 122.1,
+              "why": {
+                "reason": "86.0h waiting for a fix after QA failed (5 QA FAILs); 22.6h waiting for a QA round; 12 pushes",
+                "primary": "qa_fail",
+                "hours": {
+                  "no_gates": 7.8,
+                  "qa_fail": 86.0,
+                  "gates_running": 0.6,
+                  "awaiting_qa": 22.6,
+                  "awaiting_merge": 0.0,
+                  "held": 5.1
+                },
+                "qa_fails": 5,
+                "pushes": 12
+              }
+            },
+            {
+              "number": 552,
+              "title": "A gate greps every tracked file for merge-conflict markers",
+              "author": "mahAnuj",
+              "merged_at": "2026-10-30T16:58:20Z",
+              "hours": 95.4,
+              "why": {
+                "reason": "52.7h waiting for a QA round; 36.4h waiting for a fix after QA failed (1 QA FAIL); 6 pushes",
+                "primary": "awaiting_qa",
+                "hours": {
+                  "no_gates": 0.5,
+                  "qa_fail": 36.4,
+                  "gates_running": 0.3,
+                  "gates_red": 0.0,
+                  "awaiting_qa": 52.7,
+                  "awaiting_merge": 0.0,
+                  "held": 5.6
+                },
+                "qa_fails": 1,
+                "pushes": 6
+              }
+            },
+            {
+              "number": 564,
+              "title": "docs: an explained DAG of the agent cycle, in the README and as a page",
+              "author": "mahAnuj",
+              "merged_at": "2026-10-31T08:25:41Z",
+              "hours": 86.4,
+              "why": {
+                "reason": "60.0h waiting for a fix after QA failed (5 QA FAILs); 22.0h waiting for gates to start; 7 pushes",
+                "primary": "qa_fail",
+                "hours": {
+                  "no_gates": 22.0,
+                  "qa_fail": 60.0,
+                  "gates_running": 0.7,
+                  "awaiting_qa": 3.7,
+                  "awaiting_merge": 0.0
+                },
+                "qa_fails": 5,
+                "pushes": 7
+              }
+            },
+            {
+              "number": 706,
+              "title": "/ask carries the slow-planet transit block; ask.txt stops committing to yes/no (refs #402)",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-06T22:16:29Z",
+              "hours": 58.9,
+              "why": {
+                "reason": "32.2h held for chief (trust boundary); 20.4h waiting for a QA round; 6 pushes",
+                "primary": "held",
+                "hours": {
+                  "no_gates": 0.6,
+                  "qa_fail": 3.1,
+                  "gates_running": 0.5,
+                  "awaiting_merge": 2.2,
+                  "held": 32.2,
+                  "awaiting_qa": 20.4
+                },
+                "qa_fails": 2,
+                "pushes": 6
+              }
+            },
+            {
+              "number": 574,
+              "title": "Dispatch pr-gates only when the head SHA has no gates run (refs #573)",
+              "author": "mahAnuj",
+              "merged_at": "2026-10-30T15:12:27Z",
+              "hours": 57.0,
+              "why": {
+                "reason": "52.5h waiting for a QA round",
+                "primary": "awaiting_qa",
+                "hours": {
+                  "no_gates": 0.1,
+                  "gates_running": 0.3,
+                  "awaiting_qa": 52.5,
+                  "awaiting_merge": 0.0,
+                  "held": 4.2
+                },
+                "qa_fails": 0,
+                "pushes": 3
+              }
+            }
+          ],
+          "top_reasons": [
+            {
+              "reason": "waiting for a fix after QA failed",
+              "prs": 2
+            },
+            {
+              "reason": "waiting for a QA round",
+              "prs": 2
+            },
+            {
+              "reason": "held for chief (trust boundary)",
+              "prs": 1
+            }
+          ]
+        }
+      },
+      "days": [
+        {
+          "date": "2026-10-24",
+          "merged": 7,
+          "median_h": 2.3,
+          "max_h": 22.0
+        },
+        {
+          "date": "2026-10-25",
+          "merged": 5,
+          "median_h": 3.2,
+          "max_h": 31.2
+        },
+        {
+          "date": "2026-10-26",
+          "merged": 4,
+          "median_h": 12.8,
+          "max_h": 27.2
+        },
+        {
+          "date": "2026-10-27",
+          "merged": 4,
+          "median_h": 2.7,
+          "max_h": 22.0
+        },
+        {
+          "date": "2026-10-28",
+          "merged": 4,
+          "median_h": 27.5,
+          "max_h": 41.6
+        },
+        {
+          "date": "2026-10-29",
+          "merged": 1,
+          "median_h": 13.8,
+          "max_h": 13.8
+        },
+        {
+          "date": "2026-10-30",
+          "merged": 5,
+          "median_h": 21.3,
+          "max_h": 95.4
+        },
+        {
+          "date": "2026-10-31",
+          "merged": 9,
+          "median_h": 6.0,
+          "max_h": 122.1
+        },
+        {
+          "date": "2026-11-01",
+          "merged": 15,
+          "median_h": 2.7,
+          "max_h": 13.4
+        },
+        {
+          "date": "2026-11-02",
+          "merged": 13,
+          "median_h": 7.7,
+          "max_h": 35.7
+        },
+        {
+          "date": "2026-11-03",
+          "merged": 7,
+          "median_h": 0.5,
+          "max_h": 6.2
+        },
+        {
+          "date": "2026-11-04",
+          "merged": 5,
+          "median_h": 0.2,
+          "max_h": 1.3
+        },
+        {
+          "date": "2026-11-05",
+          "merged": 5,
+          "median_h": 0.2,
+          "max_h": 1.3
+        },
+        {
+          "date": "2026-11-06",
+          "merged": 9,
+          "median_h": 0.5,
+          "max_h": 58.9
+        },
+        {
+          "date": "2026-11-07",
+          "merged": 16,
+          "median_h": 0.3,
+          "max_h": 23.6
+        },
+        {
+          "date": "2026-11-08",
+          "merged": 11,
+          "median_h": 0.3,
+          "max_h": 47.2
+        },
+        {
+          "date": "2026-11-09",
+          "merged": 17,
+          "median_h": 3.7,
+          "max_h": 11.9
+        },
+        {
+          "date": "2026-11-10",
+          "merged": 17,
+          "median_h": 0.4,
+          "max_h": 5.0
+        },
+        {
+          "date": "2026-11-11",
+          "merged": 18,
+          "median_h": 0.4,
+          "max_h": 10.5
+        },
+        {
+          "date": "2026-11-12",
+          "merged": 15,
+          "median_h": 9.5,
+          "max_h": 27.1
+        },
+        {
+          "date": "2026-11-13",
+          "merged": 12,
+          "median_h": 0.3,
+          "max_h": 2.7
+        },
+        {
+          "date": "2026-11-14",
+          "merged": 23,
+          "median_h": 0.3,
+          "max_h": 2.4
+        },
+        {
+          "date": "2026-11-15",
+          "merged": 21,
+          "median_h": 0.4,
+          "max_h": 34.8
+        },
+        {
+          "date": "2026-11-16",
+          "merged": 12,
+          "median_h": 0.3,
+          "max_h": 3.7
+        },
+        {
+          "date": "2026-11-17",
+          "merged": 30,
+          "median_h": 0.6,
+          "max_h": 30.9
+        },
+        {
+          "date": "2026-11-18",
+          "merged": 14,
+          "median_h": 2.5,
+          "max_h": 46.6
+        },
+        {
+          "date": "2026-11-19",
+          "merged": 12,
+          "median_h": 0.9,
+          "max_h": 23.3
+        },
+        {
+          "date": "2026-11-20",
+          "merged": 3,
+          "median_h": 1.0,
+          "max_h": 13.6
+        }
+      ],
+      "open": [
+        {
+          "number": 1278,
+          "title": "analytics: daily GA4 export carries returning users and per-day admin landings (#1277)",
+          "age_h": 0.1,
+          "waiting_on": "merge",
+          "why": null
+        }
+      ]
+    }
   }
 }

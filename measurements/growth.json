@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-20T04:00:19Z",
+ "generated_at": "2026-11-20T11:44:48Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-20",
  "today": {
   "growth": 0,
-  "other": 3,
+  "other": 4,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 13,
-  "other": 53,
+  "other": 54,
   "exempt": 0,
-  "share": 0.197
+  "share": 0.194
  },
  "this_month": {
   "growth": 16,
-  "other": 218,
+  "other": 219,
   "exempt": 0,
   "share": 0.068
  },
@@ -117,12 +117,27 @@
   {
    "date": "2026-11-20",
    "growth": 0,
-   "other": 3,
+   "other": 4,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
+  {
+   "run": 44724731272,
+   "started": "2026-11-20T11:05:48Z",
+   "issue": 1277,
+   "title": "analytics (#1070 slice 4): the daily GA4 export carries returning users and a per-day admin-landing count",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1278,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
   {
    "run": 44658677640,
    "started": "2026-11-20T02:08:42Z",
@@ -617,20 +632,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 44020807802,
-   "started": "2026-11-17T04:58:33Z",
-   "issue": 1067,
-   "title": "analytics: kundli_generated, ask_answered and dasha_deep_dive_viewed throw 'Analytics is not defined' on full page loads (inline script runs before deferred analytics.js)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1150,
-   "agents": {
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 3
-   }
   }
  ],
  "goals": {
@@ -876,7 +877,7 @@
   "ga4_sessions_28d": 784,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.197,
+  "growth_share_week": 0.194,
   "growth_share_month": 0.068
  },
  "meters": {
@@ -884,7 +885,7 @@
    "label": "Today: growth share of build cycles",
    "period": "2026-11-20",
    "progress": 0.0,
-   "detail": "0 of 3 cycles on growth, target 60%",
+   "detail": "0 of 4 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
@@ -901,7 +902,7 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.197,
+     "current": 0.194,
      "progress": 0.0,
      "basis": "growth_share_week"
     },
