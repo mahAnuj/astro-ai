@@ -63,6 +63,7 @@ from typing import Callable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cycle_queue import QA_TITLE, busy, run_gh  # noqa: E402
+import collect_claude_usage as ccu  # noqa: E402
 
 Runner = Callable[[list[str]], str]
 
@@ -105,6 +106,50 @@ def quota_reason(usage: dict | None, now: datetime) -> str | None:
     if used >= QUOTA_CEILING:
         return f"weekly Claude window at {used:.0%}, ceiling {QUOTA_CEILING:.0%}"
     return None
+
+
+def fresh_reading(gh: Runner, repo: str) -> dict | None:
+    """The quota as the newest COMPLETED agent-work run logged it, or None.
+
+    WHY (2026-11-20): measurements/claude_usage.json is refreshed by agent-measure, which
+    runs AFTER the cycle that wakes this. Measured that day: at 11:43Z the chain declined on
+    "the latest Claude reading says 'allowed_warning'" -- the 03:53Z reading at 88% weekly --
+    while the 11:05Z cycle had already logged 4%: the weekly window had reset at ~06:00Z. The
+    committed file caught up at 11:45Z, two minutes too late, and the loop then sat idle for
+    3h+ with 96% of the week unused. The finished cycle's own log is the freshest reading
+    there is, and parsing it is the collector's own code (collect_claude_usage)."""
+    try:
+        runs = json.loads(gh(["api", f"repos/{repo}/actions/workflows/agent-work.yml/runs"
+                              "?status=completed&per_page=1"])).get("workflow_runs") or []
+        if not runs:
+            return None
+        run = runs[0]
+        jobs = json.loads(gh(["api", f"repos/{repo}/actions/runs/{run['id']}/jobs"])).get("jobs") or []
+        blocks: list[dict] = []
+        for j in jobs:
+            blocks += ccu.parse_blocks(ccu.fetch_log(gh, repo, j["id"]))
+        got = ccu.summarise(blocks)
+    except (RuntimeError, ValueError, KeyError, TypeError):
+        return None
+    if not got or got.get("seven_day") is None:
+        return None
+    return {**got, "at": run.get("run_started_at") or run.get("created_at"), "run": run.get("id")}
+
+
+def freshest(usage: dict | None, fresh: dict | None, now: datetime) -> dict | None:
+    """The committed usage, with its `latest` replaced by `fresh` when `fresh` is newer."""
+    if not fresh or not fresh.get("at"):
+        return usage
+    latest_at = ((usage or {}).get("latest") or {}).get("at")
+    try:
+        newer = latest_at is None or _ts(fresh["at"]) > _ts(latest_at)
+    except (TypeError, ValueError):
+        newer = True
+    if not newer:
+        return usage
+    # The age is the READING's, never now's: stamping now made a 45h-old log reading (an
+    # hourly tick after missed cron slots) pass the QUOTA_MAX_AGE guard as if it were fresh.
+    return {**(usage or {}), "generated_at": fresh["at"], "latest": fresh}
 
 
 def build_runs_today(gh: Runner, repo: str, now: datetime) -> int:
@@ -223,6 +268,11 @@ def main(argv: list[str], gh: Runner = run_gh, now: datetime | None = None,
     except (OSError, ValueError):
         usage = None
     now = now or datetime.now(timezone.utc)
+    fresh = fresh_reading(gh, repo)
+    usage = freshest(usage, fresh, now)
+    if fresh and usage and usage.get("latest") is fresh:
+        print(f"quota: the newest finished cycle's own reading (run {fresh.get('run')}, "
+              f"{fresh['seven_day']:.0%} weekly, {fresh['status']}) -- newer than claude_usage.json.")
     try:
         reason = decide(gh, repo, run, usage, now)
     except (RuntimeError, ValueError, KeyError) as exc:
