@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-20T19:06:58Z",
+  "generated_at": "2026-11-20T22:43:20Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 148,
+  "open": 146,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 62,
+    "UNCLASSIFIED": 61,
     "INFRA": 16,
     "REDESIGN": 10,
     "OPS": 8,
@@ -24,7 +24,6 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "MAIN-RED": 1,
     "KNOWLEDGE": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
@@ -33,7 +32,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 42,
+    "bug": 40,
     "untyped": 37,
     "enhancement": 30,
     "chore": 22,
@@ -42,25 +41,42 @@
     "ui": 1
   },
   "by_priority": {
-    "unset": 86,
+    "unset": 87,
     "medium": 28,
-    "high": 21,
-    "low": 13
+    "high": 20,
+    "low": 11
   },
   "blocked": 9,
   "rows": [
     {
-      "number": 1307,
-      "title": "[main-red] pr-gates did not pass on main at f74812f",
+      "number": 1315,
+      "title": "QA follow-up: privacy page does not list the session-revocation record kept up to 90 days after account deletion (PR #1314)",
       "ask": "",
-      "area": "MAIN-RED",
+      "area": "UNCLASSIFIED",
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa"
       ],
-      "created": "2026-11-20T16:47:02Z",
-      "updated": "2026-11-20T16:47:02Z",
+      "created": "2026-11-20T21:17:04Z",
+      "updated": "2026-11-20T21:17:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1313,
+      "title": "QA follow-up: manglik-remedies intro and summary still say 'seven classically-cited remedies' (PR #1312)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-20T19:54:57Z",
+      "updated": "2026-11-20T19:54:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -94,45 +110,6 @@
       ],
       "created": "2026-11-20T16:03:20Z",
       "updated": "2026-11-20T16:03:20Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1302,
-      "title": "QA follow-up: kundali-matching article links with the raw text '/matching tool'",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "low",
-      "labels": [
-        "bug",
-        "content",
-        "priority:low",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-20T16:03:19Z",
-      "updated": "2026-11-20T19:06:14Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1300,
-      "title": "QA follow-up: manglik-remedies.html line 7 still says 'that classical tradition flags for marriage friction'",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "low",
-      "labels": [
-        "bug",
-        "content",
-        "priority:low",
-        "qa"
-      ],
-      "created": "2026-11-20T16:03:17Z",
-      "updated": "2026-11-20T16:03:17Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -232,10 +209,13 @@
         "bug",
         "priority:medium",
         "qa",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-20T16:03:13Z",
-      "updated": "2026-11-20T16:03:13Z",
+      "updated": "2026-11-20T22:42:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -253,23 +233,6 @@
       ],
       "created": "2026-11-20T16:03:12Z",
       "updated": "2026-11-20T16:03:12Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1292,
-      "title": "QA follow-up: /account/delete does not revoke the user's other sessions, so another device stays signed in",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "qa"
-      ],
-      "created": "2026-11-20T16:03:11Z",
-      "updated": "2026-11-20T16:03:11Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1113,7 +1076,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-20T17:35:25Z",
+      "updated": "2026-11-20T19:07:08Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2423,9 +2386,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-20T19:06:58Z",
+    "generated_at": "2026-11-20T22:43:20Z",
     "window_days": 28,
-    "open_now": 148,
+    "open_now": 146,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2832,18 +2795,19 @@
       },
       {
         "date": "2026-11-20",
-        "opened": 29,
-        "closed": 5,
-        "net": 24,
-        "open_end": 148,
+        "opened": 31,
+        "closed": 9,
+        "net": 22,
+        "open_end": 146,
         "opened_by": {
           "audit": 22,
-          "loop": 7
+          "loop": 9
         },
         "closed_by": {
-          "close-on-evidence": 3,
-          "prioritise": 1,
-          "main-red-report": 1
+          "close-on-evidence": 5,
+          "prioritise": 2,
+          "main-red-report": 1,
+          "other": 1
         }
       }
     ],
@@ -4115,12 +4079,32 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1292,
+        "closed_at": "2026-11-20T21:31:41Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1300,
+        "closed_at": "2026-11-20T20:07:26Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1301,
         "closed_at": "2026-11-20T18:27:56Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1302,
+        "closed_at": "2026-11-20T19:12:06Z",
+        "closer": "other"
+      },
+      {
+        "number": 1307,
+        "closed_at": "2026-11-20T21:43:14Z",
+        "closer": "prioritise"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 4,
     "truncated": [],
     "pr_flow": {
       "windows": {
@@ -4249,7 +4233,7 @@
           ]
         },
         "28d": {
-          "merged": 322,
+          "merged": 325,
           "median_h": 0.6,
           "p90_h": 17.3,
           "max_h": 122.1,
@@ -4540,16 +4524,16 @@
         },
         {
           "date": "2026-11-20",
-          "merged": 8,
-          "median_h": 0.9,
+          "merged": 11,
+          "median_h": 0.6,
           "max_h": 13.6
         }
       ],
       "open": [
         {
-          "number": 1310,
-          "title": "learn: kundali-matching article uses descriptive anchor text (#1302)",
-          "age_h": 0.0,
+          "number": 1316,
+          "title": "learn: 9-grahas overview Ketu card follows Rao Table 6, mirroring Rahu (#1294)",
+          "age_h": 0.3,
           "waiting_on": "merge",
           "why": null
         }
