@@ -218,6 +218,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .f-opened{fill:var(--open);background:var(--open)}
 .f-closed{fill:var(--shipped);background:var(--shipped)}
 .dchart .pr-median{fill:var(--ink)}
+.pr-why{font-size:12px;margin-top:2px}
 .dchart .f-line{fill:none;stroke:var(--ink);stroke-width:1.5}
 .f-line-key{background:var(--ink);height:2px!important;vertical-align:3px!important}
 .flow-reading{margin:0 0 12px;font-size:14px;max-width:90ch}
@@ -1959,7 +1960,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
       {% endfor %}
         <div><div class="lbl">Open now, oldest first · {{ PF.open|length }}</div>
           {% if PF.open %}<table class="flow-t"><tbody>
-          {% for r in PF.open[:8] %}<tr><td><a href="https://github.com/mahAnuj/astro-ai/pull/{{ r.number }}">#{{ r.number }}</a> {{ r.title[:48] }} <span class="lbl">waiting on {{ r.waiting_on }}</span></td><td class="n">{{ r.age_h }}h</td></tr>{% endfor %}
+          {% for r in PF.open[:8] %}<tr><td><a href="https://github.com/mahAnuj/astro-ai/pull/{{ r.number }}">#{{ r.number }}</a> {{ r.title[:48] }} <span class="lbl">waiting on {{ r.waiting_on }}</span>{% if r.why %}<div class="sub pr-why">{{ r.why.reason }}</div>{% endif %}</td><td class="n">{{ r.age_h }}h</td></tr>{% endfor %}
           </tbody></table>{% else %}<p class="sub">None open.</p>{% endif %}
         </div>
       </div>
@@ -1977,11 +1978,14 @@ a{color:#1f5fae} a:hover{color:#174a88}
         </g>{% endfor %}
       </svg>
       {% endif %}
+      {% set TR = PF.windows["7d"].top_reasons or [] %}
+      {% if TR %}<div class="lbl" style="margin-top:12px">Top delay reasons · biggest wait of each of the 7-day slowest</div>
+      <table class="flow-t"><tbody>{% for x in TR %}<tr><td>{{ x.reason }}</td><td class="n">{{ x.prs }} PR{{ '' if x.prs == 1 else 's' }}</td></tr>{% endfor %}</tbody></table>{% endif %}
       <div class="lbl" style="margin-top:12px">Slowest merges, last 7 days</div>
       <div class="tscroll" role="region" aria-label="Slowest merges"><table class="loops">
-        <thead><tr><th>PR</th><th>Open → merge</th><th>Author</th></tr></thead>
+        <thead><tr><th>PR</th><th>Open → merge</th><th>Why it took that long</th></tr></thead>
         <tbody>{% for r in PF.windows["7d"].slowest %}
-          <tr><td><a href="https://github.com/mahAnuj/astro-ai/pull/{{ r.number }}">#{{ r.number }}</a> {{ r.title[:70] }}</td><td class="c">{{ r.hours }}h</td><td>{{ r.author }}</td></tr>
+          <tr><td><a href="https://github.com/mahAnuj/astro-ai/pull/{{ r.number }}">#{{ r.number }}</a> {{ r.title[:60] }}</td><td class="c">{{ r.hours }}h</td><td>{{ r.why.reason if r.why else "not read" }}</td></tr>
         {% else %}<tr><td colspan="3">No PR merged in the last 7 days.</td></tr>{% endfor %}</tbody>
       </table></div>
     {% else %}

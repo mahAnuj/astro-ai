@@ -418,10 +418,13 @@ def test_the_ops_page_shows_merge_time_and_the_slowest(page):
     t = _collect()[0]
     t["pr_flow"] = flow.pr_flow([_merged(3, "2026-11-16T00:00:00Z", "2026-11-18T00:00:00Z", title="slow one")],
                                 [], PR_NOW)
+    t["pr_flow"]["windows"]["7d"]["slowest"][0]["why"] = {"reason": "45.5h gates red", "primary": "gates_red"}
+    t["pr_flow"]["windows"]["7d"]["top_reasons"] = flow.top_reasons(t["pr_flow"]["windows"]["7d"]["slowest"])
     html = page(_backlog(t))
     i = html.index('id="pr-merge-time"')
     s = html[i: html.index("</section>", i)]
     assert "48.0h" in s and "slow one" in s and "Slowest" in s and "pr-median" in s
+    assert "45.5h gates red" in s and "Top delay reasons" in s and "1 PR" in s
 
 
 def test_the_ops_page_survives_a_malformed_pr_flow(page):
@@ -431,3 +434,65 @@ def test_the_ops_page_survives_a_malformed_pr_flow(page):
     # Past the shape check, broken inside: a day whose date is not a string.
     t["pr_flow"] = {"windows": {}, "days": [{"date": 20261119, "merged": 1, "max_h": 2.0, "median_h": 1.0}]}
     assert "Not collected yet" in page(_backlog(t))
+
+
+# ---- why a PR was slow: each PR's own timeline, replayed (owner: "this should be dynamic") ----
+
+T0 = datetime(2026, 11, 18, 0, 0, tzinfo=timezone.utc)
+
+
+def _at(h):
+    return iso(T0 + timedelta(hours=h))
+
+
+def _run(h0, h1, conclusion, name="gates"):
+    return {"name": name, "started_at": _at(h0), "completed_at": _at(h1), "conclusion": conclusion}
+
+
+def _verdict(h, ok):
+    return {"created_at": _at(h), "body": ("QA: PASS" if ok else "QA: FAIL") + " — verified at x"}
+
+
+def _why(end_h, commits, checks, comments=(), events=()):
+    return flow.delay_reason(T0, T0 + timedelta(hours=end_h), commits, checks, list(comments), list(events))
+
+
+def test_red_gates_that_sat_unfixed_are_named():
+    """#1121: 45h with gates red after its push."""
+    w = _why(46, [{"sha": "a", "at": _at(0)}], {"a": [_run(0.1, 0.5, "failure")]})
+    assert w["primary"] == "gates_red" and w["reason"].startswith("45.5h gates red")
+
+
+def test_a_fail_loop_counts_each_wait_for_a_fix_although_the_label_went_on_once():
+    """#1212: `qa-fail` labelled once, five FAILs. Each FAIL starts a wait for a fix; each push
+    ends it and the PR waits on gates and QA again."""
+    commits = [{"sha": "a", "at": _at(0)}, {"sha": "b", "at": _at(10)}, {"sha": "c", "at": _at(20)}]
+    checks = {"a": [_run(0.1, 0.5, "success")], "b": [_run(10.1, 10.5, "success")],
+              "c": [_run(20.1, 20.5, "success")]}
+    comments = [_verdict(1, False), _verdict(11, False), _verdict(21, True)]
+    events = [{"event": "labeled", "created_at": _at(1), "label": {"name": "qa-fail"}}]
+    w = _why(21.5, commits, checks, comments, events)
+    assert w["hours"]["qa_fail"] == 18.0 and w["qa_fails"] == 2
+    assert w["reason"].startswith("18.0h waiting for a fix after QA failed (2 QA FAILs)")
+
+
+def test_a_held_pr_is_held_whatever_else_is_true():
+    commits = [{"sha": "a", "at": _at(0)}]
+    checks = {"a": [_run(0.1, 0.5, "success")]}
+    events = [{"event": "labeled", "created_at": _at(1), "label": {"name": "needs-human-review"}}]
+    w = _why(31, commits, checks, [_verdict(0.8, True)], events)
+    assert w["primary"] == "held" and "30.0h held for chief" in w["reason"]
+
+
+def test_a_quick_pr_has_no_dominant_wait():
+    w = _why(0.3, [{"sha": "a", "at": _at(0)}], {"a": [_run(0.0, 0.2, "success")]}, [_verdict(0.25, True)])
+    assert w["reason"] == "no single wait stood out"
+
+
+def test_an_unreadable_pr_gets_no_reason_rather_than_a_guess():
+    rows = [{"number": 5}]
+
+    def down(args):
+        raise RuntimeError("HTTP 502")
+    flow.explain(down, "o/r", rows, PR_NOW)
+    assert rows[0]["why"] is None
