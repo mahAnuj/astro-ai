@@ -18,8 +18,9 @@ MUTATIONS = [
      "test_only_a_successful_build_cycle_chains"),
     ("chain: a busy build lane is ignored",
      "scripts/chain_cycle.py",
-     '    if busy(gh, repo, "build"):\n',
-     '    if False:\n',
+     # Re-anchored 2026-11-20: idle_reason has its own busy check (its own row).
+     '    if busy(gh, repo, "build"):\n        return "the build lane is busy (the queue',
+     '    if False:\n        return "the build lane is busy (the queue',
      "test_a_busy_build_lane_stops_it_but_a_running_qa_round_does_not"),
     ("chain: the daily cap counts QA rounds as build runs",
      "scripts/chain_cycle.py",

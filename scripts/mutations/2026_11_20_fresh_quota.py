@@ -58,4 +58,9 @@ MUTATIONS = [
      '        if waiting:\n            return f"another',
      '        if False:\n            return f"another',
      "test_doze_yields_as_soon_as_another_run_waits"),
+    ("idle lane: a busy build lane is restarted over",
+     "scripts/chain_cycle.py",
+     '    if busy(gh, repo, "build"):\n        return "the build lane is busy"\n',
+     '    if False:\n        return "the build lane is busy"\n',
+     "test_an_idle_restart_keeps_the_quota_busy_and_cap_guards"),
 ]
