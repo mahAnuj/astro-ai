@@ -25,7 +25,7 @@ MUTATIONS = [
      "test_strong_months_match_cheiro_14_6"),
     ("#583: the editorial caption on 'Cautious months' is removed",
      "src/astro_ai/templates/numerology.html",
-     "{% if prof.number != 1 %}<div class=\"text-xs text-bhagya-muted mt-1 italic\">Editorial guidance, not a dated rule from the classical text we follow.</div>{% endif %}",
+     "{% if prof.number != 1 %}<div class=\"text-xs text-bhagya-muted mt-1 italic\">Editorial guidance, not a dated rule from a classical text.</div>{% endif %}",
      "",
      "test_page_renders_cheiro_window_and_editorial_caption"),
     ("#583: the editorial caption is shown for Life Path 1 too (its months ARE sourced)",

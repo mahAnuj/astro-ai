@@ -1028,8 +1028,11 @@ _PROFILES: dict[int, LifePathProfile] = {
         peak_period="Slow blooming; steady influence across life. No sharp peak — more a long even glow.",
         # #583: strong_months for 2/4/7/8/9 are Cheiro's "Strong periods" column
         # (knowledge/numerology.md §14.6), his "20/27" uncertainty kept as written.
-        # 1 is Johari §4-sourced; 3/5/6 agree with §14.6 to about a day, so they
-        # were left as they were. weak_months for 2-9 has NO held source (only 1's
+        # 1 is Johari §4-sourced; 3/5/6 were left as they were and are NOT exact vs
+        # §14.6 (L1203/L1205/L1206): LP3 starts both windows 1 day late (Nov 22 vs
+        # 21, Feb 20 vs 19); LP5 and LP6 start their 2nd window 2 days late (Aug 23
+        # vs 21, Sep 23 vs 21); window ends sit on or inside Cheiro's "20/27".
+        # weak_months for 2-9 has NO held source (only 1's
         # is Johari §4:200); the page labels it editorial instead (numerology.html).
         strong_months="Jun 20 – Jul 27 (the Chaldean tradition's strong period for this number)",
         weak_months="New-moon periods and Krishna Paksha late-week may feel draining",
