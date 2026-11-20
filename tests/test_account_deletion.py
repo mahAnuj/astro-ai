@@ -334,7 +334,11 @@ def test_delete_chart_still_redirects_when_reading_cleanup_raises(signed_in, fak
 # That must change NOTHING: before the fix the mutators returned None, the real
 # update_json wrote `null`, and the next write rebuilt users.json as empty
 # (QA on PR #1173: Bob's record gone).
-def _delete_alice_on_device_one(client, fake_store):
+def _delete_alice_on_device_one(client, fake_store, monkeypatch):
+    # Since #1292 the delete revokes device 2's cookie. This scenario is the window
+    # where it has not yet taken effect (another instance learns of a revocation
+    # within one cache TTL), so revocation is made a no-op to keep device 2 signed in.
+    monkeypatch.setattr("astro_ai.revocation.revoke", lambda sub: None)
     client.cookies.set(S.COOKIE_NAME, _cookie())
     resp = client.post("/account/delete", data={"confirm": "DELETE"},
                        follow_redirects=False)
@@ -342,10 +346,13 @@ def _delete_alice_on_device_one(client, fake_store):
     assert _subs_of(fake_store) == [BOB["sub"]]
 
 
-def test_stale_device_delete_chart_after_account_delete_keeps_other_users(client, fake_store):
-    _delete_alice_on_device_one(client, fake_store)
+def test_stale_device_delete_chart_after_account_delete_keeps_other_users(client, fake_store,
+                                                                          monkeypatch):
+    _delete_alice_on_device_one(client, fake_store, monkeypatch)
     before = copy.deepcopy(fake_store.blobs[users.USERS_KEY])
     client.cookies.set(S.COOKIE_NAME, _cookie())  # device 2: same cookie, never cleared
+    assert client.get("/account", follow_redirects=False).status_code == 200, \
+        "device 2 must still be signed in, or this test no longer reaches the stale path"
     resp = client.post("/delete-chart", data={"chart_id": CHART_A2["id"]},
                        follow_redirects=False)
     assert resp.status_code == 303
@@ -364,6 +371,57 @@ def test_save_charts_and_save_reading_for_a_missing_user_change_nothing(fake_sto
     # and a present user still saves and reports True
     assert users.save_reading(BOB["sub"], "natal", CHART_A["id"], "t", "body") is True
     assert users.save_charts(BOB["sub"], coll) is True
+
+
+# -- #1292: deleting the account signs the other devices out too --------------
+# A cookie is self-contained and valid for 90 days wherever it was copied, so
+# clearing only the clicking device left a second device signed in to a deleted
+# account (and able to write a fresh record back). `/account/delete` revokes like
+# `/auth/logout` does.
+def _second_device(signed_in):
+    other = TestClient(signed_in.app)
+    other.cookies.set(S.COOKIE_NAME, signed_in.cookies.get(S.COOKIE_NAME))
+    return other
+
+
+def test_account_delete_revokes_a_copied_cookie_on_another_device(signed_in, fake_store):
+    stolen = _second_device(signed_in)
+    assert stolen.get("/account", follow_redirects=False).status_code == 200
+    resp = signed_in.post("/account/delete", data={"confirm": "DELETE"},
+                          follow_redirects=False)
+    assert resp.status_code == 303
+    assert stolen.get("/account", follow_redirects=False).status_code == 303
+
+
+def test_account_delete_503_never_revokes_and_the_retry_does(signed_in, fake_store):
+    from astro_ai import revocation
+
+    stolen = _second_device(signed_in)
+    fake_store.down.add(users.USERS_KEY)
+    resp = signed_in.post("/account/delete", data={"confirm": "DELETE"},
+                          follow_redirects=False)
+    assert resp.status_code == 503
+    assert revocation._LOCAL == {}, "a failed erasure must not sign anyone out"
+    assert stolen.get("/account", follow_redirects=False).status_code == 200
+    assert signed_in.get("/account", follow_redirects=False).status_code == 200
+    fake_store.down.clear()
+    retry = signed_in.post("/account/delete", data={"confirm": "DELETE"},
+                           follow_redirects=False)
+    assert retry.status_code == 303
+    assert stolen.get("/account", follow_redirects=False).status_code == 303
+
+
+def test_account_delete_still_completes_when_revocation_raises(signed_in, fake_store,
+                                                              monkeypatch):
+    def boom(sub):
+        raise RuntimeError("revocation store exploded")
+
+    monkeypatch.setattr("astro_ai.revocation.revoke", boom)
+    resp = signed_in.post("/account/delete", data={"confirm": "DELETE"},
+                          follow_redirects=False)
+    assert resp.status_code == 303 and resp.headers["location"] == "/"
+    assert _session_cookie_cleared(resp)
+    assert _subs_of(fake_store) == [BOB["sub"]], "the erasure had already finished"
 
 
 # -- storage.delete -----------------------------------------------------------

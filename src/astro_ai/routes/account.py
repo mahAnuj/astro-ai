@@ -234,7 +234,8 @@ async def account_delete(
     The session cookie is cleared ONLY when every store confirmed: clearing it
     after a partial failure would sign the user out of the one place that can
     retry, leaving data behind with no way to ask again. Every step is
-    idempotent, so a retry is safe. Nothing here logs the email or name.
+    idempotent, so a retry is safe. Nothing here logs the email or name. Once
+    everything is confirmed, every other device's cookie is revoked too (#1292).
     """
     user = load_user(request)
     if user is None:
@@ -261,6 +262,11 @@ async def account_delete(
             "please try again in a few minutes.",
             status_code=503,
         )
+    try:
+        # Other devices' cookies are self-contained and stay valid until revoked (#1292).
+        await run_in_threadpool(revocation.revoke, user.sub)
+    except Exception:  # noqa: BLE001 - the erasure is finished; never turn it into a 503
+        log.exception("revocation failed after account deletion")
     response = RedirectResponse("/", status_code=303)
     clear_collection(response)  # drops the whole __session: user, charts, lang
     return response
