@@ -118,8 +118,9 @@ ANY_ENTRY = re.compile(r"<!-- agent-work-queue(?:-(claimed|taken|dropped|folded)
 _KEY = re.compile(r"[A-Za-z0-9_.:-]+")
 _HEAD = re.compile(r"[0-9a-f]{40}")
 #: A claim older than this belongs to a drain that died: the job's own
-#: timeout is 15 minutes, so a live drain never holds a claim this long.
-CLAIM_TTL = timedelta(minutes=20)
+#: timeout is 30 minutes (15 before the 2026-11-20 heartbeat doze), so a live
+#: drain never holds a claim this long.
+CLAIM_TTL = timedelta(minutes=31)
 _BY = re.compile(r"[^A-Za-z0-9_.-]+")
 CARRIER = Path(__file__).resolve().parent / "dispatch_cycle.sh"
 #: The carrier's two rc=1 messages that mean "the ruling was fine, the RUN

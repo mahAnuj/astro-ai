@@ -105,7 +105,9 @@ permission from the top-level session to the loop. What has NOT changed:
   fix before a QA request. Only `github-actions[bot]` entries count; never drain from inside
   `agent-work`; the queue writes no label and needs no new permission. **An hourly backstop**
   (#1186) fires due timers into the queue (`scripts/timers.py`, #1187), drains, chains, and files
-  `scripts/liveness.py` findings. Lanes are told apart by the run title "QA round: PR #<n>" —
+  `scripts/liveness.py` findings. **A heartbeat keeps one `agent-queue` run always on its way**
+  (`scripts/heartbeat.py`, 2026-11-20): GitHub's cron is not a clock, so never rely on it to
+  restart an idle lane. **A rearm never dispatches over a waiting run** — that would cancel it. Lanes are told apart by the run title "QA round: PR #<n>" —
   change it only with all three copies (`tests/test_cycle_queue.py`).
   `docs/decisions/2026-11-17-always-on-inbox-timers.md`.
 - **At least 60% of build cycles go to growth, against goals chief sets** (owner, 2026-11-19:
