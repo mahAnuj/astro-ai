@@ -373,3 +373,61 @@ def test_the_panel_says_so_when_the_trend_or_the_file_is_missing(page):
 def test_the_panel_shows_a_recorded_collector_error(page):
     s = _section(page(_backlog({"error": "RuntimeError: gh api: HTTP 502"})))
     assert "could not be collected" in s and "HTTP 502" in s and "<polyline" not in s
+
+
+# ---- PR merge time (owner, 2026-11-19: "track the max time a PR took to merge") ----------
+
+PR_NOW = datetime(2026, 11, 20, 6, 0, tzinfo=timezone.utc)
+
+
+def _merged(n, created, merged, title="fix: thing", ref="issue/1-x"):
+    return {"number": n, "title": title, "user": {"login": "claude[bot]"},
+            "created_at": created, "merged_at": merged, "head": {"ref": ref}}
+
+
+def test_pr_flow_reports_median_p90_and_the_max_and_names_the_slowest():
+    merged = [_merged(1, "2026-11-19T00:00:00Z", "2026-11-19T00:30:00Z"),
+              _merged(2, "2026-11-18T00:00:00Z", "2026-11-18T02:00:00Z"),
+              _merged(3, "2026-11-16T00:00:00Z", "2026-11-18T00:00:00Z"),   # 48h, the slowest
+              _merged(4, "2026-11-01T00:00:00Z", "2026-11-03T00:00:00Z")]   # outside 7d, inside 28d
+    w = flow.pr_flow(merged, [], PR_NOW)["windows"]
+    assert w["7d"]["merged"] == 3 and w["7d"]["max_h"] == 48.0 and w["7d"]["median_h"] == 2.0
+    assert w["7d"]["slowest"][0]["number"] == 3
+    assert w["28d"]["merged"] == 4
+
+
+def test_pr_flow_excludes_the_automated_measurement_prs():
+    merged = [_merged(1, "2026-11-19T00:00:00Z", "2026-11-19T00:01:00Z", ref="measurements/9-1"),
+              _merged(2, "2026-11-19T00:00:00Z", "2026-11-19T00:01:00Z", title="sync report 2026-11-19"),
+              _merged(3, "2026-11-19T00:00:00Z", "2026-11-19T05:00:00Z")]
+    w = flow.pr_flow(merged, [], PR_NOW)["windows"]["7d"]
+    assert w["merged"] == 1 and w["median_h"] == 5.0
+
+
+def test_open_prs_are_listed_oldest_first_with_what_they_wait_on():
+    op = [{"number": 7, "title": "a", "created_at": "2026-11-19T18:00:00Z", "head": {"ref": "x"},
+           "labels": [{"name": "qa-fail"}]},
+          {"number": 8, "title": "b", "created_at": "2026-11-18T06:00:00Z", "head": {"ref": "y"},
+           "labels": [{"name": "needs-human-review"}, {"name": "qa-pass"}]}]
+    o = flow.pr_flow([], op, PR_NOW)["open"]
+    assert [r["number"] for r in o] == [8, 7] and o[0]["age_h"] == 48.0
+    assert o[0]["waiting_on"] == "chief (trust boundary)" and o[1]["waiting_on"] == "a fix after QA failed"
+
+
+def test_the_ops_page_shows_merge_time_and_the_slowest(page):
+    t = _collect()[0]
+    t["pr_flow"] = flow.pr_flow([_merged(3, "2026-11-16T00:00:00Z", "2026-11-18T00:00:00Z", title="slow one")],
+                                [], PR_NOW)
+    html = page(_backlog(t))
+    i = html.index('id="pr-merge-time"')
+    s = html[i: html.index("</section>", i)]
+    assert "48.0h" in s and "slow one" in s and "Slowest" in s and "pr-median" in s
+
+
+def test_the_ops_page_survives_a_malformed_pr_flow(page):
+    t = _collect()[0]
+    t["pr_flow"] = {"windows": "x"}
+    assert "Not collected yet" in page(_backlog(t))
+    # Past the shape check, broken inside: a day whose date is not a string.
+    t["pr_flow"] = {"windows": {}, "days": [{"date": 20261119, "merged": 1, "max_h": 2.0, "median_h": 1.0}]}
+    assert "Not collected yet" in page(_backlog(t))

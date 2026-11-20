@@ -217,6 +217,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 /* Issue flow (2026-11-18): opened vs closed bars, open-count line on its own scale. */
 .f-opened{fill:var(--open);background:var(--open)}
 .f-closed{fill:var(--shipped);background:var(--shipped)}
+.dchart .pr-median{fill:var(--ink)}
 .dchart .f-line{fill:none;stroke:var(--ink);stroke-width:1.5}
 .f-line-key{background:var(--ink);height:2px!important;vertical-align:3px!important}
 .flow-reading{margin:0 0 12px;font-size:14px;max-width:90ch}
@@ -1941,6 +1942,54 @@ a{color:#1f5fae} a:hover{color:#174a88}
      scripts/issue_flow.py from the backlog collector; always the committed
      snapshot, never the live backlog (ops_data._issue_flow_view says why). #}
   {% set F = ops.issue_flow %}
+  {# ── PR merge time (owner, 2026-11-19). issues.json trend.pr_flow, scripts/issue_flow.py. ── #}
+  {% set PF = ops.pr_flow %}
+  <section class="panel" id="pr-merge-time">
+    <h2>PR merge time <span class="lbl">open → merge · automated measurement PRs excluded</span></h2>
+    <div class="body">
+    {% if PF %}
+      <div class="flow-grid">
+      {% for key in ["7d", "28d"] %}{% set w = PF.windows[key] %}
+        <div><div class="lbl">Last {{ key[:-1] }} days · {{ w.merged }} merged</div>
+          <table class="flow-t"><tbody>
+            <tr><td>Median</td><td class="n">{{ '–' if w.median_h is none else w.median_h ~ 'h' }}</td></tr>
+            <tr><td>90th percentile</td><td class="n">{{ '–' if w.p90_h is none else w.p90_h ~ 'h' }}</td></tr>
+            <tr><td><b>Slowest</b></td><td class="n"><b>{{ '–' if w.max_h is none else w.max_h ~ 'h' }}</b></td></tr>
+          </tbody></table></div>
+      {% endfor %}
+        <div><div class="lbl">Open now, oldest first · {{ PF.open|length }}</div>
+          {% if PF.open %}<table class="flow-t"><tbody>
+          {% for r in PF.open[:8] %}<tr><td><a href="https://github.com/mahAnuj/astro-ai/pull/{{ r.number }}">#{{ r.number }}</a> {{ r.title[:48] }} <span class="lbl">waiting on {{ r.waiting_on }}</span></td><td class="n">{{ r.age_h }}h</td></tr>{% endfor %}
+          </tbody></table>{% else %}<p class="sub">None open.</p>{% endif %}
+        </div>
+      </div>
+      {% if PF.chart %}{% set G = PF.chart %}
+      <div class="lbl" style="margin-top:14px">Slowest PR merged each day (bar) and the median (dot) · square-root scale, top {{ G.top }}h</div>
+      <svg class="dchart" viewBox="0 0 {{ G.w }} {{ G.h }}" role="img"
+           aria-label="The slowest and median open-to-merge time of PRs merged each day, last {{ G.cols|length }} days. The slowest PRs are listed below.">
+        <line class="grid" x1="{{ G.left }}" x2="{{ G.right_x }}" y1="{{ G.plot_h }}" y2="{{ G.plot_h }}"/>
+        <text class="ax" x="{{ G.left - 6 }}" y="{{ G.plot_h }}" text-anchor="end" dy="0.32em">0</text>
+        <text class="ax" x="{{ G.left - 6 }}" y="1" text-anchor="end" dy="0.7em">{{ G.top }}h</text>
+        {% for c in G.cols %}<g><title>{{ c.tip }}</title>
+          {% if c.h %}<rect class="f-opened" x="{{ c.x }}" y="{{ c.y }}" width="{{ c.w }}" height="{{ c.h }}" rx="1"/>{% endif %}
+          {% if c.my is not none %}<circle class="pr-median" cx="{{ c.cx }}" cy="{{ c.my }}" r="2.5"/>{% endif %}
+          {% if c.show_label %}<text class="ax day" x="{{ c.cx }}" y="{{ G.label_y }}" text-anchor="middle">{{ c.label }}</text>{% endif %}
+        </g>{% endfor %}
+      </svg>
+      {% endif %}
+      <div class="lbl" style="margin-top:12px">Slowest merges, last 7 days</div>
+      <div class="tscroll" role="region" aria-label="Slowest merges"><table class="loops">
+        <thead><tr><th>PR</th><th>Open → merge</th><th>Author</th></tr></thead>
+        <tbody>{% for r in PF.windows["7d"].slowest %}
+          <tr><td><a href="https://github.com/mahAnuj/astro-ai/pull/{{ r.number }}">#{{ r.number }}</a> {{ r.title[:70] }}</td><td class="c">{{ r.hours }}h</td><td>{{ r.author }}</td></tr>
+        {% else %}<tr><td colspan="3">No PR merged in the last 7 days.</td></tr>{% endfor %}</tbody>
+      </table></div>
+    {% else %}
+      <p class="none">Not collected yet: the next <code>agent-measure</code> run writes <code>pr_flow</code> into <code>measurements/issues.json</code>.</p>
+    {% endif %}
+    </div>
+  </section>
+
   <section class="panel" id="issue-flow">
     <h2>Issue flow <span class="lbl">UTC days · last {{ F.window_days if F and F.window_days else 28 }}{% if F %} · {{ F.age.text }}{% endif %}</span></h2>
     <div class="body">

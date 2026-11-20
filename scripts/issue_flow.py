@@ -273,6 +273,83 @@ def summarise(items: list[dict], prs: list[dict], closers: dict[int, str], *,
             "closed_rows": sorted(closed_rows, key=lambda r: r["number"])}
 
 
+# --------------------------------------------------------------- PR merge time
+
+#: Owner, 2026-11-19: "i think we should also track the max time a PR took to merge, this
+#: would help understand how the loop is performing". Measured that day over 125 PRs merged
+#: since 2026-11-13: median 0.5h, p90 7.4h, max 46.6h (#1121). The tail is QA-fail loops and
+#: trust-boundary holds; the median says nothing about it, so the block reports the max too.
+#:
+#: Counted: PRs merged in the window, open -> merge. Not counted: the automated measurement
+#: and report PRs (`publish_measurements.sh`), which merge themselves in about a minute and
+#: would drag every number toward zero.
+PR_WINDOWS = (7, 28)
+SLOWEST_SHOWN = 5
+_AUTOMATED_TITLE = re.compile(r"^(measurement|sync report|infra report|discover report|"
+                              r"prioritise report|design report)\b", re.I)
+
+
+def _automated(pr: dict) -> bool:
+    return ((pr.get("head") or {}).get("ref") or "").startswith("measurements/") or \
+        bool(_AUTOMATED_TITLE.match(pr.get("title") or ""))
+
+
+def _pct(sorted_hours: list[float], p: float) -> float | None:
+    if not sorted_hours:
+        return None
+    return round(sorted_hours[min(len(sorted_hours) - 1, int(p * len(sorted_hours)))], 1)
+
+
+def waiting_on(labels: list[str]) -> str:
+    """What an open PR is waiting for, read from its labels."""
+    if "qa-fail" in labels:
+        return "a fix after QA failed"
+    if "needs-human-review" in labels:
+        return "chief (trust boundary)"
+    if "qa-pass" in labels:
+        return "merge"
+    return "gates / QA"
+
+
+def pr_flow(merged: list[dict], open_prs: list[dict], now: datetime) -> dict:
+    """Merge-time stats from closed-PR and open-PR listings (REST `pulls` shape). Pure."""
+    rows = []
+    for pr in merged:
+        c, m = _ts(pr.get("created_at")), _ts(pr.get("merged_at"))
+        if c is None or m is None or _automated(pr):
+            continue
+        rows.append({"number": pr["number"], "title": (pr.get("title") or "")[:90],
+                     "author": (pr.get("user") or {}).get("login"), "merged_at": pr["merged_at"],
+                     "hours": round((m - c).total_seconds() / 3600, 1)})
+    windows = {}
+    for days in PR_WINDOWS:
+        floor = now - timedelta(days=days)
+        sel = sorted((r for r in rows if _ts(r["merged_at"]) >= floor), key=lambda r: r["hours"])
+        hs = [r["hours"] for r in sel]
+        windows[f"{days}d"] = {"merged": len(sel), "median_h": _pct(hs, 0.5), "p90_h": _pct(hs, 0.9),
+                               "max_h": hs[-1] if hs else None,
+                               "slowest": [dict(r) for r in sel[::-1][:SLOWEST_SHOWN]]}
+    start = (now - timedelta(days=PR_WINDOWS[-1] - 1)).date()
+    by_day = {(start + timedelta(days=i)).isoformat(): [] for i in range(PR_WINDOWS[-1])}
+    for r in rows:
+        d = r["merged_at"][:10]
+        if d in by_day:
+            by_day[d].append(r["hours"])
+    days_out = [{"date": d, "merged": len(h), "median_h": _pct(sorted(h), 0.5),
+                 "max_h": max(h) if h else None} for d, h in by_day.items()]
+    open_rows = []
+    for pr in open_prs:
+        c = _ts(pr.get("created_at"))
+        if c is None or _automated(pr):
+            continue
+        labels = [l.get("name") for l in pr.get("labels") or []]
+        open_rows.append({"number": pr["number"], "title": (pr.get("title") or "")[:90],
+                          "age_h": round((now - c).total_seconds() / 3600, 1),
+                          "waiting_on": waiting_on(labels)})
+    open_rows.sort(key=lambda r: -r["age_h"])
+    return {"windows": windows, "days": days_out, "open": open_rows}
+
+
 def collect(gh: Runner, repo: str, now: datetime, *, open_issues: list[dict],
             prior: dict | None = None) -> dict:
     """Fetch and summarise. `open_issues` is the backlog the collector already
@@ -316,4 +393,11 @@ def collect(gh: Runner, repo: str, now: datetime, *, open_issues: list[dict],
                     owner=owner, now=now)
     doc["timelines_read"] = read
     doc["truncated"] = truncated
+    # One extra read: the open PRs, for their ages. A failure here leaves the rest of the block.
+    try:
+        open_prs = json.loads(gh(["api", f"repos/{repo}/pulls?state=open&per_page=100"]))
+    except (RuntimeError, ValueError):
+        open_prs = []
+        truncated.append("open-prs")
+    doc["pr_flow"] = pr_flow(prs, open_prs if isinstance(open_prs, list) else [], now)
     return doc

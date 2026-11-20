@@ -2258,6 +2258,42 @@ def _flow_chart(days: list[dict], *, width: int = 700, plot_h: int = 120) -> dic
             "points": " ".join(pts), "cols": cols}
 
 
+def _pr_merge_chart(days: list[dict], *, width: int = 700, plot_h: int = 110) -> dict:
+    """SVG geometry: one bar per UTC day for the slowest PR merged that day, a dot for the
+    median. Square-root scale, so a 46-hour outlier does not flatten every 1-hour day."""
+    left, right = 34, 8
+    slot = (width - left - right) / max(len(days), 1)
+    bar_w = max(min(slot * 0.55, 14), 2)
+    top = max([d.get("max_h") or 0 for d in days] + [1.0])
+    scale = lambda h: (h / top) ** 0.5 * plot_h
+    cols = []
+    for i, d in enumerate(days):
+        cx = left + i * slot + slot / 2
+        mx, md = d.get("max_h"), d.get("median_h")
+        bh = scale(mx) if mx else 0
+        cols.append({"cx": round(cx, 2), "x": round(cx - bar_w / 2, 2), "w": round(bar_w, 2),
+                     "y": round(plot_h - bh, 2), "h": round(bh, 2),
+                     "my": round(plot_h - scale(md), 2) if md is not None else None,
+                     "label": d["date"][5:], "show_label": i % 4 == (len(days) - 1) % 4,
+                     "tip": (f"{d['date']}: {d['merged']} merged" + (f", slowest {mx}h, median {md}h" if mx else ""))})
+    return {"w": width, "h": plot_h + 24, "plot_h": plot_h, "left": left, "right_x": width - right,
+            "top": round(top, 1), "label_y": plot_h + 17, "cols": cols}
+
+
+def _pr_flow_view(t: dict | None) -> dict | None:
+    """The `pr_flow` block of issues.json's trend (scripts/issue_flow.py, 2026-11-19): how long
+    PRs took from open to merge, the slowest ones, and the open ones by age. Never raises."""
+    try:
+        pf = (t or {}).get("pr_flow")
+        if not isinstance(pf, dict) or not isinstance(pf.get("windows"), dict):
+            return None
+        return {"windows": pf["windows"], "open": pf.get("open") or [],
+                "chart": _pr_merge_chart(pf.get("days") or []) if pf.get("days") else None}
+    except (TypeError, ValueError, KeyError, AttributeError) as exc:
+        log.warning("pr_flow unreadable for the ops panel: %s", exc)
+        return None
+
+
 def _issue_flow_view(doc: dict | None, now: datetime) -> dict | None:
     """issues.json `trend` (scripts/issue_flow.py, 2026-11-18): opened against
     closed, who did each, and the fixes that shipped without closing their issue.
@@ -2567,6 +2603,7 @@ def snapshot(now: datetime | None = None,
         "outbox": _outbox_view(_fetch("outbox.json"), now),
         # The committed snapshot, never the live backlog: see _issue_flow_view.
         "issue_flow": _issue_flow_view(snap_doc, now),
+        "pr_flow": _pr_flow_view(((snap_doc or {}).get("trend") if isinstance(snap_doc, dict) else None)),
         "growth": _growth_view(_fetch("growth.json"), loop_doc, today_ist, now),
         "issues": issues,
         "cost": cost,
