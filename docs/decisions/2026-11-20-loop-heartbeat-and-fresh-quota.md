@@ -1,7 +1,7 @@
 # The loop keeps itself awake, reads its freshest quota, and QA files what it lets through
 
 - **Date:** 2026-11-20
-- **PR / issue:** #1280
+- **PR / issue:** #1280 (fresh reading), #1281 (the rest)
 
 ## Why, measured
 
