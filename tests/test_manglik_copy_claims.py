@@ -150,6 +150,27 @@ def test_manglik_remedies_summary_carries_the_clause(client):
     assert "the modern books we work from link to marriage friction" in page
 
 
+def test_manglik_remedies_does_not_call_the_seven_remedies_classically_cited(client):
+    """#1313: of the seven practices only matching another Manglik traces to a held source as a
+    Manglik antidote (grahas.md 12.4, Raman); the rest are Mars propitiation or folk practice."""
+    from astro_ai.learn_registry import get_article
+
+    art = get_article("manglik-remedies")
+    assert art is not None
+    page = _text(client, "/learn/manglik-remedies/")
+    for banned in ("classically-cited", "seven classical", "Classical Practices to Soften"):
+        assert banned not in page, banned
+        assert banned not in art.summary, banned
+    # Each surface says the one sourced antidote, so deleting it from either turns this red.
+    assert "Of the seven practices below, only one is a Manglik antidote in a book we hold" in page
+    assert "only matching another Manglik is a Manglik antidote in a book we hold" in art.summary
+    assert "Classical" not in art.title
+    # The ranking and the "most cancelled" frequency have no held source (ruling on #1313).
+    assert "The strongest Manglik remedy" not in page
+    assert "Most 'Manglik' charts are actually cancelled" not in " ".join(f["a"] for f in art.faqs)
+    assert "STRONGEST REMEDY" not in art.llm_summary
+
+
 def test_manglik_dosh_keypoints_carry_the_clause():
     from astro_ai.learn_registry import get_article
 
