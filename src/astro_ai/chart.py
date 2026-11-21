@@ -4012,24 +4012,26 @@ class DailyPanchang:
     daylight_ordinary: bool = True
 
 
-# In-process cache keyed by (date, rounded lat, rounded lon, tz name). Two
-# subscribers in the same city on the same day share one compute — the
-# per-request panchang_cache dict in the send loop already dedups within a
-# batch; this cache extends dedup across the whole process's lifetime.
+# In-process cache keyed by (date, lat, lon, tz name), the coordinates rounded to
+# 4 decimals (~11 m). Two subscribers in the same city on the same day share one
+# compute — the per-request panchang_cache dict in the send loop already dedups
+# within a batch; this cache extends dedup across the whole process's lifetime.
 #
-# Rounded to ~55km (0.5deg). This is NOT "a few seconds", which is what this
-# comment used to claim. Measured 2026-08-26 on each cell's SW-NE corner pair
-# (where the annual sunrise maximum falls) over 365 days of 2026: sunrise
-# differs by up to 3.37 min in the Srinagar cell (mean 2.05, over 1 min on
-# 296/365 days) and 3.18 min in the Delhi cell (mean 2.04, 313/365) — no
-# calendar-day flip in either, but a 2 min MEAN is not seconds. For scale,
-# that 3.37 is 84% of scripts/verify_panchang_angas.py's
-# SUNRISE_TOLERANCE_MIN = 4; that gate builds one chart for one city, so it
-# cannot itself see cache error — the comparison is of magnitude only.
-# Moon rise/set deliberately does NOT come through here — compute_moon_rise_set
-# computes at the exact coordinates, because at 0.5deg the printed DATE flips.
-# Cache is bounded by the small number of cities in the subscriber base, so we
-# don't LRU-cap it.
+# EXACT coordinates, not a grid cell (#1338). This used to be keyed on a 0.5deg
+# cell (~55 km), so the FIRST caller in a cell decided the value for everyone in
+# it. The muhurat landing page asks for "New Delhi, India" and the finder takes
+# "Delhi": same cell, ~5 s apart at sunset, which the truncated %H:%M display
+# turned into a whole printed minute — and which of the two was printed depended
+# on which had run first in the process (measured on 30 dates: Rahu Kaal 4,
+# Abhijit 2, choghadiya 15). The rounding had been called "a few
+# seconds" and then measured at up to 3.37 min (Srinagar) / 3.18 min (Delhi) for
+# sunrise over 2026; either way a cache must not change the answer. Moon
+# rise/set was moved off the grid for the same reason (compute_moon_rise_set),
+# and is the precedent for this key. Cost: two nearby free-text cities no longer
+# share an entry; one compute is ~0.2 ms, so the lost sharing is not a cost.
+# Free-text city input can mint new keys, so the dict is cleared when it reaches
+# _PANCHANG_CACHE_MAX; a refill costs only that 0.2 ms per entry.
+_PANCHANG_CACHE_MAX = 20000
 _PANCHANG_CACHE: dict[tuple, "DailyPanchang"] = {}
 
 
@@ -4193,11 +4195,12 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
     """
     tz, today = _local_day(natal, when)
 
-    # Cache key: date + coarse coords + tz. ~55km radius shares one entry.
+    # Cache key: date + exact coords (4 dp, ~11 m) + tz. Never a coarser cell: see
+    # the comment above _PANCHANG_CACHE (#1338).
     cache_key = (
         today.isoformat(),
-        round(natal.birth_lat * 2) / 2,
-        round(natal.birth_lon * 2) / 2,
+        round(natal.birth_lat, 4),
+        round(natal.birth_lon, 4),
         natal.birth_tz,
     )
     cached = _PANCHANG_CACHE.get(cache_key)
@@ -4299,6 +4302,8 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
         gulika_end=gk_end,
         daylight_ordinary=daylight_ordinary,
     )
+    if len(_PANCHANG_CACHE) >= _PANCHANG_CACHE_MAX:
+        _PANCHANG_CACHE.clear()
     _PANCHANG_CACHE[cache_key] = result
     return result
 
@@ -4333,14 +4338,13 @@ def compute_moon_rise_set(
     and a later `/panchang` hitting one would render "no moonrise today" —
     indistinguishable from the genuine absence the None exists to express.
 
-    Computed at the EXACT birth coordinates, not `_PANCHANG_CACHE`'s 0.5° grid
-    point — which is why it does not go through that cache. The moon lands near
-    midnight often enough that the grid offset flips the printed CALENDAR DAY on
-    2 of 365 days in the Srinagar cell; the worst is 2026-12-17, moonset
-    17-Dec 00:00:42 at the true point vs 18-Dec 00:59:21 at the grid point. Off
-    the grid, that flip cannot happen. Sunrise/sunset do not need this
-    — measured across the same cell corner pairs over 2026, they move at most
-    3.37 min (Srinagar) / 3.18 min (Delhi) and flip no calendar day at either.
+    Computed at the EXACT birth coordinates. `_PANCHANG_CACHE` was keyed on a 0.5°
+    grid cell when this was written, which is why it did not go through that
+    cache; it is exact-keyed now (#1338), and this stays uncached for the
+    lunar-less-entry reason above, not for a coordinate reason. The grid flipped
+    the printed CALENDAR DAY of the moon on 2 of 365 days in the Srinagar cell;
+    the worst was 2026-12-17, moonset 17-Dec 00:00:42 at the true point vs
+    18-Dec 00:59:21 at the grid point.
     """
     tz, today = _local_day(natal, when)
     return (
