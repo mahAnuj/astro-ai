@@ -1,0 +1,26 @@
+{#- #1017 R3: the once-per-page legend for the "Why this date" lists. Reads `auspicious_candidates` and
+   `selected_event` from the including template. Each factor sentence a row on this page uses appears
+   here once, with its status; sentences are never in a title= attribute. Collapsed, English only,
+   no |safe. Tag classes are whole pairs, as in _muhurat_why.html. -#}
+{% set legend = muhurat_why_legend(auspicious_candidates, selected_event) %}
+{% if legend %}
+{% set why_tags = {
+     'sourced': ['sourced', 'bg-emerald-100 text-emerald-800'],
+     'site_convention': ['site convention', 'bg-bhagya-cream-2 text-bhagya-ink-soft'],
+     'contested': ['traditions differ', 'bg-amber-100 text-amber-800']} %}
+<details class="mt-4 rounded border border-bhagya-line bg-bhagya-cream-2 p-3">
+  <summary class="cursor-pointer text-sm font-semibold text-bhagya-ink-soft hover:text-bhagya-sindoor">What these labels mean</summary>
+  <div class="mt-3 text-xs text-bhagya-muted space-y-2">
+    {% if legend.noon %}<p>{{ legend.noon }}</p>{% endif %}
+    <ul class="space-y-2">
+      {% for e in legend.entries %}
+      <li>
+        <span class="font-semibold text-bhagya-ink-soft">{{ e.label }}</span>
+        <span class="inline-block px-1.5 py-0.5 rounded {{ why_tags[e.status][1] }}">{{ why_tags[e.status][0] }}</span>
+        <div>{{ e.sentence }}</div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</details>
+{% endif %}
