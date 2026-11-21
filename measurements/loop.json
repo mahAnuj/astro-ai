@@ -1,8 +1,67 @@
 {
-  "generated_at": "2026-11-20T22:43:02Z",
+  "generated_at": "2026-11-21T02:03:38Z",
   "rows": [
     {
-      "owner_helped": null,
+      "owner_helped": false,
+      "run": 44843936407,
+      "workflow": "agent-work",
+      "date": "2026-11-21",
+      "started": "2026-11-21T00:27:27Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 52.0,
+      "issue": 1322,
+      "pr": 1323,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 199,
+      "tokens_output": 73934,
+      "tokens_cache_read": 6021726,
+      "tokens_cache_write": 569389,
+      "cost_list_usd": 2.9384,
+      "model": "claude-sonnet-5-5",
+      "turns": 26,
+      "agents_called": {
+        "architect": 1,
+        "backend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
+    },
+    {
+      "owner_helped": false,
+      "run": 44839329355,
+      "workflow": "agent-work",
+      "date": "2026-11-20",
+      "started": "2026-11-20T23:47:22Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 39.1,
+      "issue": 1313,
+      "pr": 1319,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt",
+      "kind": "ranked",
+      "tokens_input": 156,
+      "tokens_output": 66099,
+      "tokens_cache_read": 4153884,
+      "tokens_cache_write": 437444,
+      "cost_list_usd": 2.3195,
+      "model": "claude-sonnet-5-5",
+      "turns": 22,
+      "agents_called": {
+        "architect": 1,
+        "astro-auditor": 1,
+        "backend-engineer": 1,
+        "project-manager": 1,
+        "qa": 1
+      }
+    },
+    {
+      "owner_helped": false,
       "run": 44825462844,
       "workflow": "agent-work",
       "date": "2026-11-20",
@@ -12,23 +71,17 @@
       "minutes": 40.9,
       "issue": 1294,
       "pr": 1316,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt",
       "kind": "ranked",
+      "turns": 18,
       "tokens_input": 138,
       "tokens_output": 41681,
       "tokens_cache_read": 3265807,
       "tokens_cache_write": 323363,
       "cost_list_usd": 1.6635,
-      "model": "claude-sonnet-5-5",
-      "turns": 18,
-      "agents_called": {
-        "architect": 1,
-        "frontend-engineer": 1,
-        "project-manager": 1,
-        "qa": 1
-      }
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": false,
@@ -13198,44 +13251,39 @@
   ],
   "waste": {
     "days": 7,
-    "cycles": 213,
+    "cycles": 208,
     "minutes_by_outcome": {
-      "shipped": 4030.5,
-      "pr open": 40.9,
+      "shipped": 3941.9,
+      "pr open": 0.0,
       "judged": 610.8,
       "nothing": 128.0,
       "failed": 0.0,
       "unknown": 0.0
     },
-    "minutes_total": 4810.2,
+    "minutes_total": 4680.7,
     "minutes_without_result": 128.0,
     "share_without_result": 0.027,
-    "shipped_prs": 89,
-    "build_idle_hours": 99.9,
-    "build_idle_share": 0.595
+    "shipped_prs": 85,
+    "build_idle_hours": 101.8,
+    "build_idle_share": 0.606
   },
   "tokens": {
     "days": 7,
-    "runs": 213,
-    "measured": 213,
+    "runs": 208,
+    "measured": 208,
     "total": {
-      "tokens": 869345474,
-      "input": 21047,
-      "output": 7072099,
-      "cache_read": 814770739,
-      "cache_write": 47481589,
-      "cost_list_usd": 297.72
+      "tokens": 826579464,
+      "input": 20177,
+      "output": 6780406,
+      "cache_read": 773936502,
+      "cache_write": 45842379,
+      "cost_list_usd": 285.83
     },
     "median_by_outcome": {
       "shipped": {
-        "runs": 116,
-        "tokens": 6031570,
-        "cost_list_usd": 2.13
-      },
-      "pr open": {
-        "runs": 1,
-        "tokens": 3630989,
-        "cost_list_usd": 1.66
+        "runs": 112,
+        "tokens": 5906006,
+        "cost_list_usd": 2.02
       },
       "judged": {
         "runs": 68,
@@ -13248,44 +13296,44 @@
         "cost_list_usd": 0.28
       }
     },
-    "median_cycle": 4757978,
+    "median_cycle": 4222562,
     "median_qa_round": 1165521,
-    "merged_prs": 89,
-    "per_merged_pr": 9767927,
-    "cost_list_usd_per_merged_pr": 3.35,
+    "merged_prs": 85,
+    "per_merged_pr": 9724464,
+    "cost_list_usd_per_merged_pr": 3.36,
     "previous": {
-      "runs": 162,
-      "measured": 160,
-      "merged_prs": 76,
-      "per_merged_pr": 10017724
+      "runs": 167,
+      "measured": 165,
+      "merged_prs": 83,
+      "per_merged_pr": 9701141
     }
   },
   "agents": {
     "runs_read": {
-      "7d": 206,
-      "30d": 397
+      "7d": 200,
+      "30d": 398
     },
     "by_agent": {
       "architect": {
-        "7d": 8,
-        "30d": 11,
-        "last_run": 44825462844,
-        "last_started": "2026-11-20T22:01:57Z",
-        "last_issue": 1294
+        "7d": 9,
+        "30d": 12,
+        "last_run": 44843936407,
+        "last_started": "2026-11-21T00:27:27Z",
+        "last_issue": 1322
       },
       "astro-auditor": {
-        "7d": 2,
-        "30d": 5,
-        "last_run": 44799139462,
-        "last_started": "2026-11-20T19:07:11Z",
-        "last_issue": 1300
+        "7d": 3,
+        "30d": 6,
+        "last_run": 44839329355,
+        "last_started": "2026-11-20T23:47:22Z",
+        "last_issue": 1313
       },
       "backend-engineer": {
-        "7d": 4,
-        "30d": 4,
-        "last_run": 44806805035,
-        "last_started": "2026-11-20T19:56:37Z",
-        "last_issue": 1292
+        "7d": 6,
+        "30d": 6,
+        "last_run": 44843936407,
+        "last_started": "2026-11-21T00:27:27Z",
+        "last_issue": 1322
       },
       "chief": {
         "7d": 1,
@@ -13295,18 +13343,18 @@
         "last_issue": 1163
       },
       "engineer": {
-        "7d": 39,
+        "7d": 34,
         "30d": 74,
         "last_run": 44378576254,
         "last_started": "2026-11-18T19:15:28Z",
         "last_issue": 1226
       },
       "frontend-engineer": {
-        "7d": 8,
-        "30d": 21,
-        "last_run": 44825462844,
-        "last_started": "2026-11-20T22:01:57Z",
-        "last_issue": 1294
+        "7d": 7,
+        "30d": 20,
+        "last_run": 44799139462,
+        "last_started": "2026-11-20T19:07:11Z",
+        "last_issue": 1300
       },
       "general-purpose": {
         "7d": 2,
@@ -13330,18 +13378,18 @@
         "last_issue": 818
       },
       "project-manager": {
-        "7d": 83,
-        "30d": 172,
-        "last_run": 44825462844,
-        "last_started": "2026-11-20T22:01:57Z",
-        "last_issue": 1294
+        "7d": 77,
+        "30d": 173,
+        "last_run": 44843936407,
+        "last_started": "2026-11-21T00:27:27Z",
+        "last_issue": 1322
       },
       "qa": {
-        "7d": 107,
-        "30d": 222,
-        "last_run": 44825462844,
-        "last_started": "2026-11-20T22:01:57Z",
-        "last_issue": 1294
+        "7d": 101,
+        "30d": 223,
+        "last_run": 44843936407,
+        "last_started": "2026-11-21T00:27:27Z",
+        "last_issue": 1322
       }
     }
   }

@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-21",
-    "2026-11-17"
+    "2026-10-22",
+    "2026-11-18"
   ],
   "dimensions": [
     "eventName"
@@ -14,47 +14,47 @@
   "rows": [
     {
       "event": "page_view",
-      "count": 1355
+      "count": 1374
     },
     {
       "event": "user_identified",
-      "count": 797
+      "count": 798
     },
     {
       "event": "session_start",
-      "count": 781
+      "count": 789
     },
     {
       "event": "feature_view",
-      "count": 780
+      "count": 783
     },
     {
       "event": "first_visit",
-      "count": 648
+      "count": 661
     },
     {
       "event": "user_engagement",
-      "count": 325
+      "count": 326
     },
     {
       "event": "scroll",
-      "count": 195
-    },
-    {
-      "event": "form_start",
-      "count": 135
+      "count": 194
     },
     {
       "event": "ask_answered",
-      "count": 126
+      "count": 130
+    },
+    {
+      "event": "form_start",
+      "count": 128
     },
     {
       "event": "kundli_generated",
-      "count": 52
+      "count": 54
     },
     {
       "event": "cta_click",
-      "count": 17
+      "count": 18
     },
     {
       "event": "click",
@@ -81,10 +81,10 @@
       "count": 1
     }
   ],
-  "events_total": 5224,
-  "coverage_note": "cta_click: 17 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "events_total": 5268,
+  "coverage_note": "cta_click: 18 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
-    "count": 17,
+    "count": 18,
     "split_available": true,
     "rows": [
       {
@@ -115,6 +115,11 @@
       {
         "from_path": "/learn/name-numerology-explained/",
         "to_path": "/numerology",
+        "count": 1
+      },
+      {
+        "from_path": "/learn/rahu-mahadasha-career-problems/",
+        "to_path": "/dasha",
         "count": 1
       },
       {
