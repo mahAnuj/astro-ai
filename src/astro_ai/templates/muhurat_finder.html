@@ -3,6 +3,12 @@
 {% block title %}Muhurat Finder — Vivah, Griha Pravesh, Namkaran Auspicious Dates{% endblock %}
 {% block meta_description %}Free Muhurat Finder for Vivah, Griha Pravesh, Namkaran, Vidyarambh and Business. Tithi, nakshatra, Panchak, Bhadra, Nitya Yogas per B.V. Raman's Muhurtha.{% endblock %}
 
+{#- #1336: a GET result (via_get) is a URL anyone can craft, so it is noindex and points its canonical at the
+    event's landing page, which is the indexable page for this topic. A bare GET and every POST keep the
+    base defaults. `via_get` is undefined when a test renders this template directly: that is falsy. -#}
+{% block meta_robots %}{% if via_get %}noindex, follow{% else %}index, follow{% endif %}{% endblock %}
+{% block canonical %}{% if via_get and selected_event in (event_types | map(attribute=0) | list) %}<link rel="canonical" href="{{ site_url }}/muhurat/{{ selected_event | replace('_', '-') }}">{% elif via_get %}<link rel="canonical" href="{{ site_url }}/muhurat">{% else %}{{ super() }}{% endif %}{% endblock %}
+
 {% block content %}
 {% set active_page = "" %}
 {% set breadcrumbs = [('Home', '/'), ('Muhurat Finder', '/muhurat')] %}
@@ -188,6 +194,7 @@
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
     <div class="flex items-start justify-between gap-3 flex-wrap mb-2">
       <h2 class="font-marcellus text-xl text-bhagya-ink">{{ event_label or 'Muhurat' }} candidates for {{ city }}</h2>
+      {% if share_url %}<a href="{{ share_url }}" class="text-xs text-bhagya-muted underline">Share these dates</a>{% endif %}
       {% with pdf_filename_hint = ((event_label or 'Muhurat') + ' - ' + (city or 'Search')) %}
         {% include "_pdf_download_button.html" %}
       {% endwith %}
@@ -238,6 +245,12 @@
     {% if not auspicious_candidates %}
     <div class="p-4 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-900">
       No auspicious dates found in this window — every day was excluded (usually by Chaturmas, Kharmas, Panchak, Dagdha, or eclipse rules) or scored only caution. Dates marked caution, if any, are listed below; restricted dates are in the "restricted dates" section further down. Try a longer range or move the start date past the next restriction period.
+      {#- #1336 (#1017 R8): named by the route's forward scan, which runs only on this zero path. `next_valid.link` is empty outside basic mode, so the date is then plain text. -#}
+      {% if next_valid %}
+      <span class="block mt-2 font-semibold">The next auspicious date after this range is {% if next_valid.link %}<a href="{{ next_valid.link }}" class="underline">{{ next_valid.weekday }}, {{ next_valid.d.strftime('%b %d, %Y') }}</a>{% else %}{{ next_valid.weekday }}, {{ next_valid.d.strftime('%b %d, %Y') }}{% endif %}.</span>
+      {% elif scanned_until %}
+      <span class="block mt-2 font-semibold">No auspicious date found in the following {{ next_scan_days }} days (until {{ scanned_until.strftime('%b %d, %Y') }}).</span>
+      {% endif %}
     </div>
     {% endif %}
     {% if listed_candidates %}
