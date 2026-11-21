@@ -136,7 +136,7 @@ src/astro_ai/
   chart.py         5,051  Swiss Ephemeris, panchang, dashas, gochar, combustion
   learn_registry.py 3,107  /learn article metadata
   numerology.py    1,910  Chaldean + Lo Shu calculators
-  festival_registry.py 1,666
+  festival_registry.py 1,672
   muhurat.py       1,475  electional scoring; shares angas with panchang
   ask_transit.py     103  /ask's slow-planet transit block (four movers from the natal Moon), the pinned
                         moment and the `tr` cache-key fingerprint (#402)

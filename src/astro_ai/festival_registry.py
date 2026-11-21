@@ -1321,8 +1321,12 @@ _DECLARED: tuple[Festival, ...] = (
     # tithi computation (Lahiri, Delhi) agrees on all three years. The rule names the
     # SAME night twice: Margashirsha Krishna Ashtami in the purnimanta reckoning this
     # file uses is Kartika Krishna Ashtami in the amanta one (cf. the Diwali note in
-    # the module header). The date is the day Ashtami prevails from pradosh through
-    # nishita, not at sunrise. Dates typed from that reading.
+    # the module header). Each date is the day Ashtami is running at some point after
+    # sunset, and not on the adjacent evening (pyswisseph, Lahiri, Delhi: 2026-12-01
+    # ends 23:13, so not running at midnight; 2027-11-20 19:16 -> next day 17:19;
+    # 2028-11-09 15:39 -> next day 14:02). Which Ashtami a temple counts (pradosh,
+    # nishita or midnight) is NOT sourced in knowledge/*.md and is not asserted here.
+    # Dates typed from that reading.
     Festival(
         slug="kalabhairav-jayanti",
         name_en="Kalabhairav Jayanti",
@@ -1331,19 +1335,21 @@ _DECLARED: tuple[Festival, ...] = (
         note_hi="भैरव प्राकट्य दिवस — रात्रि में भैरव की पूजा, दीप और जागरण के साथ।",
         dates={2026: "2026-12-01", 2027: "2027-11-20", 2028: "2028-11-09"},
         rule="Margashirsha Krishna Ashtami (purnimanta) = Kartika Krishna Ashtami (amanta)",
-        observance_window="pradosh to nishita, Ashtami prevailing",
+        observance_window="evening, Ashtami running after sunset",
         significance=(
             "Kalabhairav Jayanti marks the day Bhairava, the fierce form of Shiva, is held "
             "to have appeared. It falls on the eighth tithi of the waning fortnight that "
             "North Indian (purnimanta) almanacs call Margashirsha and amanta almanacs call "
-            "Kartika: the same night under two month names. Because Bhairava is a deity of "
-            "the night, the tithi that counts is the one running from dusk to midnight, "
-            "not the one at sunrise."
+            "Kartika: the same night under two month names. The date given here is the day "
+            "on which Ashtami is running in the evening, after sunset, as the Drik Panchang "
+            "for New Delhi prints it. That is not always the day Ashtami is current at "
+            "sunrise, and in some years Ashtami ends before midnight, so a locality or "
+            "temple that keeps the midnight tithi may observe a day either side."
         ),
         observance=(
             "Bhairava temples, among them the Kal Bhairav temple at Ujjain and the "
             "Kal Bhairav shrine at Varanasi, hold a night-time puja. Devotees keep a fast "
-            "through the day and stay awake for the evening and midnight worship, "
+            "through the day and stay awake for the evening and night worship, "
             "offering a lamp and flowers. Reciting the Bhairava Ashtakam is a common "
             "practice."
         ),
