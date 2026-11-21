@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-20T22:46:29Z",
+ "generated_at": "2026-11-21T04:42:12Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1438,15 +1438,29 @@
    "headline": "HIT, 7 of 7",
    "at": "2026-11-20T02:04:17Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/1236#issuecomment-7028068342"
+  },
+  {
+   "number": 1277,
+   "verdict": "OTHER",
+   "headline": "MET",
+   "at": "2026-11-21T02:00:04Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1277#issuecomment-7055553483"
+  },
+  {
+   "number": 1322,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-22",
+   "at": "2026-11-21T02:00:03Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1322#issuecomment-7055553267"
   }
  ],
  "outcome_counts": {
+  "OTHER": 3,
   "MISS": 1,
-  "OTHER": 2,
   "UNSCOREABLE": 10,
   "PASS": 5,
   "PARTIAL": 1,
-  "PENDING": 18,
+  "PENDING": 19,
   "HIT": 1
  },
  "competitor_patterns": [

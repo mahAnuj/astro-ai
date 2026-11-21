@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-20T22:43:20Z",
+  "generated_at": "2026-11-21T04:39:36Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 146,
+  "open": 151,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 61,
+    "UNCLASSIFIED": 65,
     "INFRA": 16,
     "REDESIGN": 10,
     "OPS": 8,
@@ -24,6 +24,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "NOTIFY": 1,
     "KNOWLEDGE": 1,
     "AGENT-MEASURE": 1,
     "AGENT-MERGE": 1,
@@ -32,22 +33,140 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 40,
+    "bug": 44,
     "untyped": 37,
-    "enhancement": 30,
+    "enhancement": 31,
     "chore": 22,
     "correctness": 11,
     "design": 5,
     "ui": 1
   },
   "by_priority": {
-    "unset": 87,
-    "medium": 28,
+    "unset": 92,
+    "medium": 27,
     "high": 20,
-    "low": 11
+    "low": 12
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1332,
+      "title": "lunar_observances emits Drik's Gauna Ekadashi date for 2027-01 and 2028-11; shukla_tithi_date mis-resolves Margashirsha 2027",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-21T03:23:19Z",
+      "updated": "2026-11-21T03:23:19Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1331,
+      "title": "QA follow-up: kalabhairav-jayanti copy says Ashtami runs dusk to midnight, but on 2026-12-01 it ends 23:14 (PR #1329)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-21T03:22:19Z",
+      "updated": "2026-11-21T04:38:52Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1330,
+      "title": "QA follow-up: a one-day typo repeated in registry and expected JSON passes every festival gate for non-Purnima/Ekadashi rows (PR #1329)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T03:22:10Z",
+      "updated": "2026-11-21T03:22:10Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1325,
+      "title": "muhurat landing pages show the next 5 valid dates for New Delhi, plus today/tomorrow check (slice 6 of #1017, R9)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle",
+        "growth"
+      ],
+      "created": "2026-11-21T01:25:06Z",
+      "updated": "2026-11-21T03:31:53Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1324,
+      "title": "notify: muhurat_computed says 'N auspicious of M days' with the non-avoid count, which now over-counts versus the finder page (follow-up to #1322)",
+      "ask": "",
+      "area": "NOTIFY",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low"
+      ],
+      "created": "2026-11-21T01:18:50Z",
+      "updated": "2026-11-21T03:58:21Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1321,
+      "title": "QA follow-up: manglik-remedies headings and FAQ 4 still say 'presiding deity', 'classical grain', 'truest' (PR #1319)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T00:25:36Z",
+      "updated": "2026-11-21T00:25:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1320,
+      "title": "QA follow-up: /manglik-check card still calls manglik-remedies 'Classical practices' (PR #1319)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T00:25:35Z",
+      "updated": "2026-11-21T00:25:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1315,
       "title": "QA follow-up: privacy page does not list the session-revocation record kept up to 90 days after account deletion (PR #1314)",
@@ -61,22 +180,6 @@
       ],
       "created": "2026-11-20T21:17:04Z",
       "updated": "2026-11-20T21:17:04Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1313,
-      "title": "QA follow-up: manglik-remedies intro and summary still say 'seven classically-cited remedies' (PR #1312)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa"
-      ],
-      "created": "2026-11-20T19:54:57Z",
-      "updated": "2026-11-20T19:54:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -195,27 +298,6 @@
       ],
       "created": "2026-11-20T16:03:13Z",
       "updated": "2026-11-20T16:03:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1294,
-      "title": "QA follow-up: the-9-grahas-overview gives Rahu and Ketu exaltation on two different schemes",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-20T16:03:13Z",
-      "updated": "2026-11-20T22:42:33Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -368,7 +450,7 @@
         "qa"
       ],
       "created": "2026-11-20T16:03:05Z",
-      "updated": "2026-11-20T16:03:05Z",
+      "updated": "2026-11-20T23:47:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -891,10 +973,11 @@
       "type": "enhancement",
       "priority": "unset",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "provenance:trusted"
       ],
       "created": "2026-11-14T13:09:28Z",
-      "updated": "2026-11-15T10:15:03Z",
+      "updated": "2026-11-21T00:31:05Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -925,7 +1008,7 @@
         "chore"
       ],
       "created": "2026-11-13T23:25:59Z",
-      "updated": "2026-11-14T04:43:36Z",
+      "updated": "2026-11-20T23:47:55Z",
       "blocked": true,
       "needs_evidence": false
     },
@@ -2386,25 +2469,11 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-20T22:43:20Z",
+    "generated_at": "2026-11-21T04:39:36Z",
     "window_days": 28,
-    "open_now": 146,
+    "open_now": 151,
     "merged_open_hours": 24,
     "days": [
-      {
-        "date": "2026-10-24",
-        "opened": 7,
-        "closed": 2,
-        "net": 5,
-        "open_end": 123,
-        "opened_by": {
-          "audit": 6,
-          "loop": 1
-        },
-        "closed_by": {
-          "owner": 2
-        }
-      },
       {
         "date": "2026-10-25",
         "opened": 0,
@@ -2796,18 +2865,31 @@
       {
         "date": "2026-11-20",
         "opened": 31,
-        "closed": 9,
-        "net": 22,
-        "open_end": 146,
+        "closed": 10,
+        "net": 21,
+        "open_end": 145,
         "opened_by": {
           "audit": 22,
           "loop": 9
         },
         "closed_by": {
-          "close-on-evidence": 5,
+          "close-on-evidence": 6,
           "prioritise": 2,
           "main-red-report": 1,
           "other": 1
+        }
+      },
+      {
+        "date": "2026-11-21",
+        "opened": 9,
+        "closed": 3,
+        "net": 6,
+        "open_end": 151,
+        "opened_by": {
+          "loop": 9
+        },
+        "closed_by": {
+          "close-on-evidence": 3
         }
       }
     ],
@@ -2922,11 +3004,6 @@
         "number": 361,
         "closed_at": "2026-11-06T06:14:55Z",
         "closer": "prioritise"
-      },
-      {
-        "number": 362,
-        "closed_at": "2026-10-24T00:00:50Z",
-        "closer": "owner"
       },
       {
         "number": 366,
@@ -3117,11 +3194,6 @@
         "number": 514,
         "closed_at": "2026-11-01T21:01:56Z",
         "closer": "prioritise"
-      },
-      {
-        "number": 515,
-        "closed_at": "2026-10-24T09:22:10Z",
-        "closer": "owner"
       },
       {
         "number": 518,
@@ -4084,6 +4156,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1294,
+        "closed_at": "2026-11-20T22:55:20Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1300,
         "closed_at": "2026-11-20T20:07:26Z",
         "closer": "close-on-evidence"
@@ -4102,16 +4179,31 @@
         "number": 1307,
         "closed_at": "2026-11-20T21:43:14Z",
         "closer": "prioritise"
+      },
+      {
+        "number": 1313,
+        "closed_at": "2026-11-21T00:39:33Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1322,
+        "closed_at": "2026-11-21T01:30:28Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1326,
+        "closed_at": "2026-11-21T03:34:11Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 4,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 125,
+          "merged": 116,
           "median_h": 0.5,
-          "p90_h": 8.1,
+          "p90_h": 11.0,
           "max_h": 46.6,
           "slowest": [
             {
@@ -4233,9 +4325,9 @@
           ]
         },
         "28d": {
-          "merged": 325,
-          "median_h": 0.6,
-          "p90_h": 17.3,
+          "merged": 324,
+          "median_h": 0.5,
+          "p90_h": 16.5,
           "max_h": 122.1,
           "slowest": [
             {
@@ -4360,12 +4452,6 @@
         }
       },
       "days": [
-        {
-          "date": "2026-10-24",
-          "merged": 7,
-          "median_h": 2.3,
-          "max_h": 22.0
-        },
         {
           "date": "2026-10-25",
           "merged": 5,
@@ -4524,15 +4610,28 @@
         },
         {
           "date": "2026-11-20",
-          "merged": 11,
+          "merged": 12,
           "median_h": 0.6,
           "max_h": 13.6
+        },
+        {
+          "date": "2026-11-21",
+          "merged": 3,
+          "median_h": 0.2,
+          "max_h": 0.3
         }
       ],
       "open": [
         {
-          "number": 1316,
-          "title": "learn: 9-grahas overview Ketu card follows Rao Table 6, mirroring Rahu (#1294)",
+          "number": 1328,
+          "title": "issue/1325 muhurat landing dates",
+          "age_h": 2.1,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1333,
+          "title": "kalabhairav-jayanti: stop asserting an unsourced Ashtami window (#1331)",
           "age_h": 0.3,
           "waiting_on": "merge",
           "why": null

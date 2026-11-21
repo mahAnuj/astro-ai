@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-20T22:44:18Z",
+ "generated_at": "2026-11-21T04:40:18Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-21",
  "today": {
-  "growth": 2,
-  "other": 3,
+  "growth": 6,
+  "other": 5,
   "exempt": 0,
-  "share": 0.4
+  "share": 0.545
  },
  "this_week": {
-  "growth": 17,
-  "other": 58,
+  "growth": 21,
+  "other": 60,
   "exempt": 0,
-  "share": 0.227
+  "share": 0.259
  },
  "this_month": {
-  "growth": 20,
-  "other": 223,
+  "growth": 24,
+  "other": 225,
   "exempt": 0,
-  "share": 0.082
+  "share": 0.096
  },
  "must_pick_growth": true,
  "days": [
@@ -116,27 +116,111 @@
   },
   {
    "date": "2026-11-21",
-   "growth": 2,
-   "other": 3,
+   "growth": 6,
+   "other": 5,
    "exempt": 0,
-   "share": 0.4
+   "share": 0.545
   }
  ],
  "cycles": [
+  {
+   "run": 44863097138,
+   "started": "2026-11-21T03:49:56Z",
+   "issue": 1331,
+   "title": "QA follow-up: kalabhairav-jayanti copy says Ashtami runs dusk to midnight, but on 2026-12-01 it ends 23:14 (PR #1329)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1333,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44860923821,
+   "started": "2026-11-21T03:24:02Z",
+   "issue": 1325,
+   "title": "muhurat landing pages show the next 5 valid dates for New Delhi, plus today/tomorrow check (slice 6 of #1017, R9)",
+   "class": "growth",
+   "outcome": "pr open",
+   "pr": 1328,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 44856777487,
+   "started": "2026-11-21T02:35:59Z",
+   "issue": 1326,
+   "title": "festival registry: no festival dated 2026-11-22 to 2027-01-14 \u2014 54 days the daily email, rashifal and /festivals have nothing to show",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1329,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44845187680,
+   "started": "2026-11-21T00:38:42Z",
+   "issue": 1325,
+   "title": "muhurat landing pages show the next 5 valid dates for New Delhi, plus today/tomorrow check (slice 6 of #1017, R9)",
+   "class": "growth",
+   "outcome": "pr open",
+   "pr": 1328,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 44843936407,
+   "started": "2026-11-21T00:27:27Z",
+   "issue": 1322,
+   "title": "muhurat finder: headline counts caution days as auspicious; results name no timezone or sunrise (#1017 slice 2: R2 + R5)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1323,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44839329355,
+   "started": "2026-11-20T23:47:22Z",
+   "issue": 1313,
+   "title": "QA follow-up: manglik-remedies intro and summary still say 'seven classically-cited remedies' (PR #1312)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1319,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
   {
    "run": 44825462844,
    "started": "2026-11-20T22:01:57Z",
    "issue": 1294,
    "title": "QA follow-up: the-9-grahas-overview gives Rahu and Ketu exaltation on two different schemes",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1316,
-   "agents": {
-    "architect": 1,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44817503104,
@@ -547,81 +631,6 @@
    "outcome": "shipped",
    "pr": 1168,
    "agents": {}
-  },
-  {
-   "run": 44146060830,
-   "started": "2026-11-17T18:16:31Z",
-   "issue": 1167,
-   "title": "ask: audit saved /ask answers weekly for astrological correctness (grounded in knowledge/, prompt contract, safety) without publishing user questions",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1170,
-   "agents": {}
-  },
-  {
-   "run": 44128302969,
-   "started": "2026-11-17T16:39:46Z",
-   "issue": 1177,
-   "title": "seo: no-chart nav links (/today /monthly /yearly /ask) must not 303 (#1107 criterion 4)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1182,
-   "agents": {
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44097953603,
-   "started": "2026-11-17T13:57:34Z",
-   "issue": 1105,
-   "title": "privacy: no code path deletes personal data \u2014 add account deletion, delete a chart's readings, and enforce retention in the bucket",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1173,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44088452354,
-   "started": "2026-11-17T13:00:28Z",
-   "issue": 1105,
-   "title": "privacy: no code path deletes personal data \u2014 add account deletion, delete a chart's readings, and enforce retention in the bucket",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1173,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44087825162,
-   "started": "2026-11-17T12:56:24Z",
-   "issue": 1041,
-   "title": "knowledge: vedic_reference.md 29.9 and the 29 closing note still say the nitya-yoga blocker is 'narrower than its source' (stale after #1023)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1164,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44075422963,
-   "started": "2026-11-17T11:35:38Z",
-   "issue": 1175,
-   "title": "seo: tool pages link specific articles and every article has an in-body inbound link (#1107 criteria 1-2)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1179,
-   "agents": {
-    "architect": 1,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -860,28 +869,28 @@
   "previous_score": null
  },
  "metrics": {
-  "gsc_clicks_28d": 389,
-  "gsc_impressions_28d": 29253,
-  "ga4_users_28d": 698,
-  "ga4_new_users_28d": 648,
-  "ga4_sessions_28d": 784,
+  "gsc_clicks_28d": 394,
+  "gsc_impressions_28d": 29632,
+  "ga4_users_28d": 707,
+  "ga4_new_users_28d": 661,
+  "ga4_sessions_28d": 791,
   "objective_top5": 1,
-  "growth_share_today": 0.4,
-  "growth_share_week": 0.227,
-  "growth_share_month": 0.082
+  "growth_share_today": 0.545,
+  "growth_share_week": 0.259,
+  "growth_share_month": 0.096
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-21",
-   "progress": 0.667,
-   "detail": "2 of 5 cycles on growth, target 60%",
+   "progress": 0.908,
+   "detail": "6 of 11 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W47",
-   "progress": 0.214,
+   "progress": 0.434,
    "detail": "4 goals, 4 measurable",
    "goals": [
     {
@@ -892,8 +901,8 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.227,
-     "progress": 0.146,
+     "current": 0.259,
+     "progress": 0.368,
      "basis": "growth_share_week"
     },
     {
@@ -907,8 +916,8 @@
       1076,
       1107
      ],
-     "current": 389,
-     "progress": 0.5,
+     "current": 394,
+     "progress": 0.917,
      "basis": "gsc_clicks_28d"
     },
     {
@@ -922,8 +931,8 @@
       1076,
       1107
      ],
-     "current": 29253,
-     "progress": 0.212,
+     "current": 29632,
+     "progress": 0.451,
      "basis": "gsc_impressions_28d"
     },
     {
@@ -947,7 +956,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.073,
+   "progress": 0.157,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -962,8 +971,8 @@
       1107,
       1071
      ],
-     "current": 29253,
-     "progress": 0.082,
+     "current": 29632,
+     "progress": 0.175,
      "basis": "gsc_impressions_28d"
     },
     {
@@ -978,8 +987,8 @@
       1073,
       1075
      ],
-     "current": 698,
-     "progress": 0.064,
+     "current": 707,
+     "progress": 0.147,
      "basis": "ga4_users_28d"
     },
     {
@@ -990,8 +999,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.082,
-     "progress": 0.072,
+     "current": 0.096,
+     "progress": 0.149,
      "basis": "growth_share_month"
     }
    ]
@@ -999,7 +1008,7 @@
   "quarterly": {
    "label": "Quarterly goals",
    "period": "2026-Q4",
-   "progress": 0.017,
+   "progress": 0.036,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1029,8 +1038,8 @@
       1071,
       1072
      ],
-     "current": 389,
-     "progress": 0.028,
+     "current": 394,
+     "progress": 0.051,
      "basis": "gsc_clicks_28d"
     },
     {
@@ -1041,8 +1050,8 @@
      "baseline": 640,
      "target": 1000,
      "issues": [],
-     "current": 648,
-     "progress": 0.022,
+     "current": 661,
+     "progress": 0.058,
      "basis": "ga4_new_users_28d"
     }
    ]
@@ -1055,27 +1064,27 @@
    "queries": [
     {
      "query": "rahu mahadasha ketu antardasha",
-     "impressions": 410,
-     "position": 6.6
+     "impressions": 397,
+     "position": 6.5
     },
     {
      "query": "sun debilitated in which sign",
-     "impressions": 323,
+     "impressions": 338,
      "position": 7.4
     },
     {
      "query": "sun is debilitated in which sign",
-     "impressions": 143,
-     "position": 6.6
+     "impressions": 149,
+     "position": 6.5
     },
     {
      "query": "jupiter in 10th house",
-     "impressions": 113,
-     "position": 11.1
+     "impressions": 116,
+     "position": 11.0
     },
     {
      "query": "yes",
-     "impressions": 105,
+     "impressions": 108,
      "position": 3.6
     },
     {
@@ -1085,12 +1094,12 @@
     },
     {
      "query": "sun debilitated sign",
-     "impressions": 84,
+     "impressions": 86,
      "position": 5.9
     },
     {
      "query": "sun debilitated",
-     "impressions": 78,
+     "impressions": 79,
      "position": 8.9
     },
     {
@@ -1100,8 +1109,8 @@
     },
     {
      "query": "rahu mahadasha and ketu antardasha",
-     "impressions": 66,
-     "position": 7.1
+     "impressions": 67,
+     "position": 7.0
     }
    ],
    "goals": []
@@ -1110,6 +1119,7 @@
  "open_growth": [
   1065,
   1076,
-  1107
+  1107,
+  1325
  ]
 }
