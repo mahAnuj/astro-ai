@@ -176,7 +176,7 @@ This is the most misunderstood part of the system. Layers, outermost first:
 |---|---|---|---|
 | `hot_cache` | in-process, TTL + stale-while-revalidate | no | homepage trust bar; the sign-out revocation map (`session:revoked`, 300 s); the muhurat landing's next-auspicious-dates list (`muhurat:landing:<event>:<IST date>`, 86400 s, `get_or_compute` so a cold key still renders, run in the threadpool, 0 GCS ops, 0 tokens, #1325). Four events, 90-day window, so at most 4 computes per instance per IST day. Measured 2026-11-21 (auspicious / caution in the window): griha_pravesh 16/1, vidyarambh 21/5, namkaran 19/0, business 11/2; 0.14-0.15 s per event warm, 0.59 s first call. These counts rot daily; re-measure before quoting. |
 | `lru_cache` (stdlib) | in-process, per-function | no | geocode, lunar dates, sankranti |
-| `_PANCHANG_CACHE`, `_PANCHANG_STRIP_CACHE` | in-process dicts | no | panchang by (date, coarse lat/lon) and by (date, city) |
+| `_PANCHANG_CACHE`, `_PANCHANG_STRIP_CACHE` | in-process dicts | no | panchang by (date, lat, lon at 4 dp, tz), exact to ~11 m, cleared at 20,000 entries (#1338; was a 0.5° cell, where the first caller in the cell decided the value for the rest), and by (date, city) |
 | `daily_cache` | **file** on the instance | no | per-rashi readings, keyed `(namespace, slug-lang, date)` |
 | `cache` (SQLite) | `/tmp/bhagya.db`, **tmpfs** | no | per-chart LLM output, keyed by fingerprint |
 | `storage` (GCS) | bucket | **yes** | the only cross-instance layer; also the durable tier behind SQLite (below) |
@@ -654,20 +654,19 @@ follow for any prompt change:
   rule`. Each was falsifiable by one counterexample and none was tested by anything. What
   belongs here is the mechanism and one dated instance; the counts live in #227, where
   they can be checked against the code that produces them.
-- **`_PANCHANG_CACHE`'s 0.5° key rounding merges points up to ~3.4 min apart.** Measured
-  2026-08-26 over 365 days of 2026 on each cell's SW–NE corner pair, where the annual
-  sunrise maximum falls: sunrise differs by at most 3.37 min in the Srinagar cell (mean
-  2.05, over 1 min on 296/365 days) and 3.18 min in the Delhi cell (mean 2.04, 313/365),
-  with **no calendar-day flip in either**. `chart.py`'s adjacent comment used to call this
-  "a few seconds"; a 2 min *mean* is not seconds, so the comment now carries these numbers.
-  For scale, that 3.37 is 84% of `scripts/verify_panchang_angas.py`'s
-  `SUNRISE_TOLERANCE_MIN = 4` — a comparison of magnitude only, not a finding about the
-  gate, which builds one chart for one city and so cannot itself see cache error.
-  The rounding was *not* safe for the moon: in the Srinagar cell the exact coordinates
-  versus the grid centre flip the printed calendar day on 2 of 365 days, worst on
-  2026-12-17 (moonset `17-Dec 00:00:42` exact vs `18-Dec 00:59:21` at the grid point).
-  That hazard is now gone rather than documented — `compute_moon_rise_set` computes at the
-  **exact** birth coordinates and does not go through this cache.
+- **`_PANCHANG_CACHE`'s 0.5° key rounding merged points up to ~3.4 min apart — fixed in
+  #1338; the key is now exact (4 dp, ~11 m).** Measured 2026-08-26 over 365 days of 2026 on
+  each cell's SW–NE corner pair, where the annual sunrise maximum falls: sunrise differed by
+  at most 3.37 min in the Srinagar cell (mean 2.05) and 3.18 min in the Delhi cell (mean
+  2.04), with no calendar-day flip in either. Moon rise/set had already moved off the grid
+  (`compute_moon_rise_set`, exact coordinates: at the grid point the Srinagar moonset flips
+  the printed day on 2 of 365 days, worst 2026-12-17, `17-Dec 00:00:42` vs `18-Dec 00:59:21`).
+  The sunrise/sunset half was left on the grid until #1338 showed the cost was not the size of
+  the error but its **order dependence**: the first caller in the cell decided the value for
+  the rest, so `muhurat.find_candidates('namkaran', 'Delhi', …)` printed different Rahu Kaal,
+  Abhijit and choghadiya minutes depending on whether the muhurat landing page (which asks
+  for "New Delhi, India", ~5 s from "Delhi" at sunset) had rendered earlier in the process.
+  See `docs/decisions/2026-11-21-panchang-cache-exact-key.md`.
 - **Combustion orbs are per-planet, and Mercury/Venus tighten by exactly one degree when
   retrograde** (14→13, 10→9). A flat 8° orb under-reported on 30% of charts. The
   retrograde values were invented at 10 and 8 before being sourced properly.
