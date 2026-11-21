@@ -115,15 +115,34 @@ def natal_blob_keys(details: BirthDetails) -> list[str]:
     return [_natal_cache_keys(details, lang=lang)[1] for lang in sorted(SUPPORTED_LANGS)]
 
 
+def natal_sqlite_keys(details: BirthDetails) -> list[str]:
+    """The per-instance SQLite rows holding the same readings as `natal_blob_keys`
+    (#1293), derived from the same `_natal_cache_keys` call for the same reason."""
+    return [_natal_cache_keys(details, lang=lang)[0] for lang in sorted(SUPPORTED_LANGS)]
+
+
 def erase_natal_blobs(charts) -> bool:
     """Delete the natal reading blobs for `charts` (SavedChart-like). True only if
     every delete confirmed -- an absent blob counts, a failure does not (#1105).
 
     Keeps going after a failure so one bad key does not shield the others. Logs no
     key: it embeds hashes of birth data and the seeker's name.
+
+    Blocking (up to 20 sequential GCS deletes): async callers run it in a threadpool
+    (#1293). The SQLite rows go LAST and always (`finally`): evicting first would let
+    a concurrent view re-warm the row from the blob still in the bucket
+    (`_cached` backfills SQLite after a durable hit). This clears only the instance
+    that serves the delete; other instances keep their rows (cache.py docstring).
     """
     keys = {k for c in charts for k in natal_blob_keys(c.to_birth_details())}
-    results = [storage.delete(k) for k in sorted(keys)]
+    sqlite_keys = {k for c in charts for k in natal_sqlite_keys(c.to_birth_details())}
+    try:
+        results = [storage.delete(k) for k in sorted(keys)]
+    finally:
+        try:
+            cache.delete_many(sorted(sqlite_keys))
+        except Exception:  # noqa: BLE001 - a cache error must not change the verdict
+            log.warning("erase_natal_blobs: could not evict the SQLite cache rows")
     return all(results)
 
 

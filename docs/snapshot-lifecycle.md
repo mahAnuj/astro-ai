@@ -67,6 +67,8 @@ and GCS treats each rewrite as a new object generation, so a day's blob is delet
   is part of the path, `storage.py` has no prefix listing, so a blob written under
   an earlier prompt version cannot be found and remains. So does a blob written
   under a name the chart no longer carries. Neither is claimed as erased.
+  The same call evicts the matching SQLite rows on the instance that serves the
+  delete (#1293); other instances' rows are not reachable.
 - Adding `llm/natal/` to the 30-day rule would close that gap, and would also make
   every natal reading regenerate after 30 days: about 7.8k Groq tokens each,
   against the free-tier 8,000 TPM per-model and daily limits (CLAUDE.md, token
