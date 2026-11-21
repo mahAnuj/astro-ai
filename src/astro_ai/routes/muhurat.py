@@ -28,6 +28,7 @@ import logging
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
+from astro_ai import chart as _chart
 from astro_ai import notify
 from astro_ai.chart import compute_chart, reading_today
 from astro_ai.routes.deps import _lang, templates
@@ -199,8 +200,19 @@ async def muhurat_finder_compute(
             status_code=500,
         )
     event_label = _muhurat.EVENT_RULES[event_type]["label"]
+    # The zone the finder's clock times are local to (#1322, #1017 R5). find_candidates already
+    # geocoded this city (lru_cached), so this is a cache hit, not a second lookup. Module
+    # attribute access, not a from-import, so a test that patches chart.geocode_place applies.
+    # "" means the page omits the line rather than guess a zone.
+    try:
+        search_tz = _chart.geocode_place(city)[2]
+    except Exception:  # noqa: BLE001
+        search_tz = ""
     try:
         _u = load_user(request)
+        # Every non-avoid date, caution included. The page headline now counts only
+        # excellent/good/acceptable (#1322), so this deliberately differs from it: it keeps the
+        # #1218 baseline meaning rather than silently moving it.
         _good_count = sum(1 for c in candidates if c.rating != "avoid")
         notify.muhurat_computed(
             event_type=event_label, city=city, days_range=int(days),
@@ -214,7 +226,9 @@ async def muhurat_finder_compute(
     # personal + couple), so the order is fixed: the most specific input wins.
     # Namkaran means the child's chart was computed, not merely that event_type is
     # namkaran (event_type is its own param). `days` is what was searched, as the
-    # page's own "N-day search" line counts it; `valid_count` is the non-avoid dates.
+    # page's own "N-day search" line counts it; `valid_count` is the non-avoid dates. Since #1322
+    # the headline counts only excellent/good/acceptable, so valid_count >= headline: caution
+    # dates stay in valid_count to keep the #1218 baseline meaning.
     analytics_mode = ("couple" if (bride_chart is not None and groom_chart is not None)
                       else "namkaran" if child_first_letter
                       else "personal" if personal_chart is not None
@@ -228,6 +242,7 @@ async def muhurat_finder_compute(
         request, "muhurat_finder.html",
         {"candidates": candidates, "city": city, "start_date": start_date,
          "muhurat_searched": muhurat_searched,
+         "search_tz": search_tz,
          "prefill_city": city, "prefill_start": start_date,
          "error": (personal_chart_error or couple_error) or None,
          "event_types": event_types, "selected_event": event_type,

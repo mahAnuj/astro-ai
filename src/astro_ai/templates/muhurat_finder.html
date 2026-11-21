@@ -142,7 +142,12 @@
   </section>
 
   {% if candidates %}
-  {% set good_candidates = candidates | rejectattr('rating', 'equalto', 'avoid') | list %}
+  {#- #1322 (#1017 R2): the headline counts only what the finder calls auspicious. `caution` is the
+      lowest tier that passed no hard exclusion; it stays visible in its own group and is not counted
+      as auspicious. `listed_candidates` is every non-avoid row, in the sorted order the table shows. -#}
+  {% set auspicious_candidates = candidates | selectattr('rating', 'in', ['excellent', 'good', 'acceptable']) | list %}
+  {% set caution_candidates = candidates | selectattr('rating', 'equalto', 'caution') | list %}
+  {% set listed_candidates = candidates | rejectattr('rating', 'equalto', 'avoid') | list %}
   {% set avoid_candidates = candidates | selectattr('rating', 'equalto', 'avoid') | list %}
   {# #1217 muhurat_searched (#1017 F1): declared only here, where a search found candidates. The route builds the values (an event key, two integers, a mode enum; no city, name or birth data) and each is spelt out here so tests/test_pii_egress_analytics.py reviews every one; a caller that passes none, as the tests that render this template directly do, declares nothing. #}
   {% if muhurat_searched %}
@@ -188,10 +193,21 @@
       {% endwith %}
     </div>
     <p class="text-sm text-bhagya-muted mb-4">
-      <span class="font-semibold text-bhagya-sindoor">{{ good_candidates | length }} auspicious dates</span> found in {{ candidates | length }}-day search from {{ start_date }}
-      · {{ avoid_candidates | length }} restricted (see below)
+      <span class="font-semibold text-bhagya-sindoor">{{ auspicious_candidates | length }} auspicious {{ 'date' if auspicious_candidates | length == 1 else 'dates' }}</span> found in {{ candidates | length }}-day search from {{ start_date }}
+      · {{ avoid_candidates | length }} restricted (see below){% if caution_candidates %}
+      · {{ caution_candidates | length }} use with caution{% endif %}
       {% if personal_active %}· <span class="text-bhagya-sindoor font-semibold">personal chart matching active</span>{% endif %}
     </p>
+    {#- #1322 (#1017 R5): every clock time below is local to the geocoded city. The sunrise is read from
+        the first row the table prints (auspicious group first, else caution), so the line can say which
+        date it is for. Shown only when the route resolved a zone; empty sunrise = polar date (#228). -#}
+    {% if search_tz and listed_candidates %}
+    {% set anchor = listed_candidates[0] %}
+    <p class="text-xs text-bhagya-muted mb-4">
+      Times are local to {{ city }} ({{ search_tz }}).
+      {% if anchor.sunrise %}Sunrise on the first listed date, {{ anchor.d.strftime('%b %d, %Y') }}: {{ anchor.sunrise }}.{% else %}First listed date, {{ anchor.d.strftime('%b %d, %Y') }}: no ordinary sunrise on this date at this latitude.{% endif %}
+    </p>
+    {% endif %}
 
     {% if child_first_letter %}
     <div class="mb-4 p-4 bg-bhagya-cream-2 border border-bhagya-line rounded">
@@ -208,22 +224,31 @@
     </div>
     {% endif %}
 
-    {% if personal_active and good_candidates and good_candidates[0].personal and good_candidates[0].personal.notes %}
+    {% if personal_active and listed_candidates and listed_candidates[0].personal and listed_candidates[0].personal.notes %}
     <div class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-900">
       <div class="font-semibold mb-1">Chart-level cautions for your search range:</div>
       <ul class="list-disc list-inside space-y-0.5">
-        {% for note in good_candidates[0].personal.notes %}
+        {% for note in listed_candidates[0].personal.notes %}
         <li>{{ note }}</li>
         {% endfor %}
       </ul>
     </div>
     {% endif %}
 
-    {% if not good_candidates %}
+    {% if not auspicious_candidates %}
     <div class="p-4 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-900">
-      No auspicious dates found in this window — every day was excluded (usually by Chaturmas, Kharmas, Panchak, Dagdha, or eclipse rules). Try a longer range or move the start date past the next restriction period. Details in the "restricted dates" section below.
+      No auspicious dates found in this window — every day was excluded (usually by Chaturmas, Kharmas, Panchak, Dagdha, or eclipse rules) or scored only caution. Dates marked caution, if any, are listed below; restricted dates are in the "restricted dates" section further down. Try a longer range or move the start date past the next restriction period.
     </div>
-    {% else %}
+    {% endif %}
+    {% if listed_candidates %}
+    {#- ONE row body for both groups: the outer loop renders the auspicious table, then the caution table,
+        skipping an empty group. Do not copy the row markup into a second loop (#1322). -#}
+    {% for group_key, group_rows in [('auspicious', auspicious_candidates), ('caution', caution_candidates)] %}
+    {% if group_rows %}
+    {% if group_key == 'caution' %}
+    <h3 class="text-amber-800 font-semibold text-sm mt-6 mb-1">Use with caution</h3>
+    <p class="text-xs text-bhagya-muted mb-2">These dates passed no hard exclusion but scored lowest on this finder's own criteria. They are not counted as auspicious above.</p>
+    {% endif %}
     <table class="w-full text-sm mu-cards">
       <thead>
         <tr class="text-left text-xs uppercase text-bhagya-muted border-b border-bhagya-line">
@@ -239,7 +264,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for c in good_candidates %}
+        {% for c in group_rows %}
         {#- These carry the WHOLE class pair, not a family name. The old
             bg-VAR-100/text-VAR-800 shape needed every family to have -100/-800
             stops, which forced the middle case onto stone — a cool near-white
@@ -365,6 +390,8 @@
         {% endfor %}
       </tbody>
     </table>
+    {% endif %}
+    {% endfor %}
     <p class="text-xs text-bhagya-muted mt-2 italic">
       <span class="text-emerald-800">✓</span> Abhijit Muhurta = the midday muhurta, a fifteenth of daylight centred on solar noon; <span class="text-emerald-800">✓</span> means it lies clear of Rahu Kaal and Bhadra that day, and <span class="text-amber-800">~</span> means it overlaps one of them, with the overlap named on the row. The finder holds no source that calls Abhijit the most auspicious window or ranks it above either. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Days under Atiganda, Shula, Ganda, Vyatipata or Vaidhriti are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present. These weekday-nakshatra booster tables are this finder&rsquo;s own convention: Raman&rsquo;s <em>Muhurtha</em> has a similar Siddha Yoga list, but these are not the same tables.
     </p>
