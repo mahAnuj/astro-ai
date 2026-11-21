@@ -62,10 +62,12 @@ exit 0 or 1. It is deliberately structured like `scripts/verify_festivals.py`.
       A perfectly intact — i.e. it is invisible to every other gate here.
 
       A vriddhi **Ekadashi** must be emitted on the SECOND day of the run
-      (*dashami-viddha*: the run necessarily begins shortly before the first
-      sunrise, so Dashami pierces that morning and the fast moves on). A vriddhi
-      **Purnima or Amavasya** must be emitted on the FIRST — the viddha test is
-      specific to the Ekadashi fast and must not leak. Both directions are
+      (an empirical Drik almanac convention, 5 of 5 Drik readings, UNSOURCED in
+      the corpus — the old name *dashami-viddha* is kept below only as a label,
+      because no Dashami test exists in the engine: the tithi sampled at the
+      first sunrise is already Ekadashi). A vriddhi **Purnima or Amavasya** must
+      be emitted on the FIRST — the second-day pick is specific to the Ekadashi
+      fast and must not leak. Both directions are
       checked, against `DRIK_VRIDDHI` below: every vriddhi run over 2024-2032,
       with the day drikpanchang.com actually prints, read off the year calendar
       on 2026-08-07. The table reaches outside DATA_YEARS on purpose — the
@@ -109,8 +111,9 @@ SPAN_END = date(max(YEARS), 12, 31)
 #
 # All five vriddhi Ekadashis land on the SECOND day of the run, and every
 # reachable vriddhi Purnima and Amavasya on the FIRST. That asymmetry is the
-# dashami-viddha rule and this table is the evidence for it; see the RESOLVED
-# DISAGREEMENT section of lunar_observances.py.
+# second-day rule (labelled dashami-viddha for history only — a misnomer) and
+# this table is the evidence for it, 5 of 5 Drik readings and unsourced in the
+# corpus; see the RESOLVED DISAGREEMENT section of lunar_observances.py.
 #
 # One run is missing here and its absence is not an oversight: the vriddhi
 # Amavasya of 2025-12-19 carries no festival name, and Drik's year calendar
@@ -126,6 +129,34 @@ DRIK_VRIDDHI: tuple[tuple[str, str, str, str], ...] = (
     ("2027-06-18", "purnima", "2027-06-18", "Jyeshtha Purnima"),
     ("2028-12-01", "purnima", "2028-12-01", "Margashirsha Purnima"),
     ("2029-10-17", "ekadashi", "2029-10-18", "Papankusha Ekadashi"),
+)
+
+# Single-sunrise Ekadashis where Drik Panchang (New Delhi) prints the day BEFORE
+# the one a plain sunrise scan lands on (#1332). Entries are (the day a sunrise
+# scan lands on, Drik's day, the name Drik gives it, is_shifted).
+#
+# Read from drikpanchang.com (New Delhi) in the #1332 cycle by astro-auditor: of
+# the 74 Ekadashis the engine emitted over 2026-2028, exactly 3 differ from Drik,
+# and each is a day EARLIER. In all three the sunrise indices at D-1, D, D+1 are
+# t-1, t, t+2 (t = 10 or 25): Dwadashi is skipped, no sunrise falls inside it.
+# That is the rule; it is an UNSOURCED-IN-CORPUS Drik almanac convention (3 of 3 Drik readings, the other 71 unchanged) — knowledge/
+# vedic_reference.md §29.6 does not decide it and is not cited as support. The
+# vriddhi "second sunrise" rule above is empirical in the same way.
+#
+# The two is_shifted=False rows are negative controls, one per condition of the
+# rule (tithi indices at the sunrises D-1, D, D+1; Ekadashi is 10 or 25):
+#   2027-10-25  23, 25, 26 - Dashami was skipped at D-1, so the t-1 test fails.
+#   2028-08-16  24, 25, 26 - Dwadashi is running at D+1, so the t+2 test fails.
+# Drik prints both on the sunrise day. They are also why the rule is NOT strict
+# arunodaya, which would regress both. Do not put these rows in DRIK_VRIDDHI:
+# `_emitted_for_run` there only looks at offsets 0..+1 and its failure text says
+# dashami-viddha, which is the wrong diagnosis for a day-earlier shift.
+DRIK_SINGLE_SUNRISE: tuple[tuple[str, str, str, bool], ...] = (
+    ("2027-01-19", "2027-01-18", "Putrada Ekadashi", True),
+    ("2028-02-07", "2028-02-06", "Jaya Ekadashi", True),
+    ("2028-11-13", "2028-11-12", "Utpanna Ekadashi", True),
+    ("2027-10-25", "2027-10-25", "negative control: t-1 test", False),
+    ("2028-08-16", "2028-08-16", "negative control: t+2 test", False),
 )
 
 
@@ -317,16 +348,57 @@ def gate_b_registry_cross_check(rows: list[tuple[date, lo.Observance]]) -> list[
 # Gate C - edge-case census (vriddhi / kshaya), re-derived independently
 # --------------------------------------------------------------------------
 
-def _emitted_for_run(first: date, kind: str) -> date | None:
-    """Which day of the vriddhi run starting `first` the engine emitted `kind` on.
+def _emitted_for_run(
+    first: date, kind: str, lo_off: int = 0, hi_off: int = 1
+) -> date | None:
+    """Which day of the run starting `first` the engine emitted `kind` on.
 
-    A run offers exactly two candidate days, `first` and `first + 1`, and two
-    observances of the same kind are never less than 13 days apart, so a hit on
-    either day is unambiguously this run's.
+    A vriddhi run offers exactly two candidate days, `first` and `first + 1`
+    (the default offsets 0..+1), and two observances of the same kind are never
+    less than 13 days apart, so a hit on either day is unambiguously this run's.
+    The single-sunrise day-earlier rule (#1332) looks at -1..0 instead.
     """
-    window = lo.observances_between(first - timedelta(days=1), first + timedelta(days=2))
-    hits = [d for d, o in window if _kind(o.slug) == kind and 0 <= (d - first).days <= 1]
+    window = lo.observances_between(
+        first + timedelta(days=lo_off - 1), first + timedelta(days=hi_off + 1)
+    )
+    hits = [
+        d for d, o in window
+        if _kind(o.slug) == kind and lo_off <= (d - first).days <= hi_off
+    ]
     return hits[0] if len(hits) == 1 else None
+
+
+def gate_c_drik_single_sunrise() -> list[str]:
+    """Assert the day-earlier single-sunrise rule against Drik, both directions."""
+    failures: list[str] = []
+    for engine_iso, drik_iso, label, shifted in DRIK_SINGLE_SUNRISE:
+        engine_day = date.fromisoformat(engine_iso)
+        expected = date.fromisoformat(drik_iso)
+        got = _emitted_for_run(engine_day, "ekadashi", lo_off=-1, hi_off=0)
+        what = "day-earlier rule" if shifted else "stays on the sunrise day"
+        if got is None:
+            failures.append(
+                f"single-sunrise Ekadashi {engine_iso} ({label}): the engine emits "
+                f"no Ekadashi on {engine_iso} or the day before"
+            )
+            print(f"  FAIL ekadashi sunrise {engine_iso} -> (nothing emitted)   "
+                  f"Drik {drik_iso}  {label}")
+            continue
+        ok = got == expected
+        print(f"  {'ok  ' if ok else 'FAIL'} ekadashi sunrise {engine_iso} -> "
+              f"{got.isoformat()}   Drik {drik_iso}  {label} [{what}]")
+        if not ok:
+            failures.append(
+                f"Ekadashi whose sunrise scan lands on {engine_iso} ({label}) emitted "
+                f"on {got.isoformat()}, Drik prints {drik_iso} "
+                + ("(single sunrise, Dwadashi skipped at D+1 - Drik prints the day "
+                   "BEFORE; unsourced-in-corpus Drik convention, #1332)"
+                   if shifted else
+                   "(negative control - the day-earlier rule must not fire here)")
+            )
+    print(f"  {len(DRIK_SINGLE_SUNRISE)} single-sunrise Ekadashi(s) checked against "
+          "drikpanchang.com (3 shifted, 2 negative controls)")
+    return failures
 
 
 def gate_c_drik_vriddhi() -> list[str]:
@@ -358,14 +430,14 @@ def gate_c_drik_vriddhi() -> list[str]:
             failures.append(
                 f"dashami-viddha REGRESSION: vriddhi Ekadashi run starting {first_iso} "
                 f"({label}) emitted on {got.isoformat()}, Drik prints {drik_iso}. A "
-                "vriddhi Ekadashi takes the SECOND day of the run — the run begins "
-                "shortly before the first sunrise, so Dashami pierces that morning."
+                "vriddhi Ekadashi takes the SECOND day of the run (a Drik almanac "
+                "convention, 5 of 5 readings, unsourced in the corpus)."
             )
         else:
             failures.append(
                 f"dashami-viddha LEAKED into {kind}: vriddhi run starting {first_iso} "
                 f"({label}) emitted on {got.isoformat()}, Drik prints {drik_iso}. The "
-                "viddha test is specific to the Ekadashi fast; Purnima and Amavasya "
+                "second-day pick is specific to the Ekadashi fast; Purnima and Amavasya "
                 "are reckoned at sunrise and take the FIRST day of the run."
             )
     print(f"  {len(DRIK_VRIDDHI)} vriddhi run(s) checked against drikpanchang.com "
@@ -418,6 +490,37 @@ def gate_c_edge_cases() -> tuple[list[str], list[tuple[date, str, str]]]:
                    if obs_kind == "ekadashi"
                    else "(FIRST day — the viddha test does not apply outside Ekadashi)")
             )
+
+    # Single-sunrise Ekadashis (#1332): re-derive the day-earlier filter from the
+    # sample indices alone, for EVERY sunrise-sampled Ekadashi in span, so the
+    # Drik table above is not the only thing holding the rule. Index at D-1 is
+    # t-1 (not a vriddhi run), D is t, D+1 is >= t+2 (Dwadashi skipped), with
+    # t = 10 or 25; the engine must emit D-1. Everything else emits D.
+    shifted_days: list[date] = []
+    checked_ekadashi = 0
+    for i in range(1, len(samples) - 1):
+        d, idx = samples[i]
+        if idx not in (10, 25) or not (SPAN_START <= d <= SPAN_END):
+            continue
+        prev_idx, next_idx = samples[i - 1][1], samples[i + 1][1]
+        if prev_idx == idx or next_idx == idx:
+            continue  # vriddhi run - the second-day rule above owns it
+        checked_ekadashi += 1
+        shift = prev_idx == idx - 1 and (next_idx - idx) % 30 >= 2
+        want = d - timedelta(days=1) if shift else d
+        got = _emitted_for_run(d, "ekadashi", lo_off=-1, hi_off=0)
+        if shift:
+            shifted_days.append(d)
+        if got != want:
+            failures.append(
+                f"single-sunrise Ekadashi on sunrise day {d.isoformat()} "
+                f"(indices {prev_idx},{idx},{next_idx}): engine emits "
+                f"{got.isoformat() if got else '(nothing)'}, rule says "
+                f"{want.isoformat()}"
+            )
+    print(f"  {checked_ekadashi} single-sunrise Ekadashi(s) re-derived; "
+          f"{len(shifted_days)} take the day before: "
+          f"{[x.isoformat() for x in shifted_days]}")
 
     for year in YEARS:
         for kind in ("vriddhi", "kshaya"):
@@ -492,6 +595,7 @@ def main() -> int:
         failures, census = gate_c_edge_cases()
         census_holder.extend(census)
         failures.extend(gate_c_drik_vriddhi())
+        failures.extend(gate_c_drik_single_sunrise())
         return failures
 
     gates = [

@@ -71,12 +71,18 @@ passes exactly, `_VIDDHA_TITHIS = {10, 25}` included:
 
   * **vriddhi** — a tithi spanning two consecutive sunrises gives two candidate
     days. Take the FIRST, except for Ekadashi (tithi index 10 or 25), which takes
-    the SECOND under the classical *dashami-viddha* rule. That restriction is
+    the SECOND — an empirical Drik convention, unsourced in the corpus (5 of 5
+    Drik readings; "dashami-viddha" is a misnomer for it). That restriction is
     load-bearing and has been shipped wrong here once already: applied as a
     general vriddhi tie-break it silently moved three Purnimas and an Amavasya a
     day late while every count-based check stayed green. See
     `lunar_observances`' "HOW THAT WENT WRONG ONCE" section. **Do not widen
     `_VIDDHA_TITHIS`.**
+  * **single-sunrise Ekadashi, Dwadashi skipped** — Ekadashi seen at exactly one
+    sunrise D, with the previous sunrise at index t-1 and the next at t+2 or
+    more, takes D-1 (#1332): another empirical, UNSOURCED-IN-CORPUS Drik
+    convention (3 of 3 Drik readings over 2026-2028). Copied from
+    `lunar_observances`, which carries the evidence.
   * **kshaya** — a tithi that begins after one sunrise and ends before the next,
     so no sunrise falls inside it and the naive scan does not mislabel it, it
     drops it. Assign it to the day it **begins** on. This is not exotic: Drik's
@@ -128,7 +134,8 @@ _UTC = ZoneInfo("UTC")
 # from 2027; see the module docstring, which works both years through.
 _MADHYAHNA_START_FRACTION = 2 / 5
 
-# The only tithi indices the *dashami-viddha* second-day pick applies to: Shukla
+# The only tithi indices the empirical Drik Ekadashi day-picks apply to (the
+# vriddhi second day, and the single-sunrise day-earlier shift of #1332): Shukla
 # Ekadashi (10) and Krishna Ekadashi (25), 0-based as `chart._tithi_at` returns
 # them. Copied from `lunar_observances._VIDDHA_TITHIS`, which carries the
 # evidence — five vriddhi Ekadashis read off Drik, all five on the second day,
@@ -145,8 +152,29 @@ _SAMPLE_BEFORE = 1
 _SAMPLE_AFTER = 20
 
 
+def _nija_months(year: int, name: str) -> tuple[adhik_maas.LunarMonth, ...]:
+    """Every **nija** lunar month called `name` overlapping `year`, ascending.
+
+    Usually one. TWO for a month that straddles a year boundary at both ends of
+    the same Gregorian year: `lunar_months(2027)` holds the Margashirsha that
+    opens 2026-12-09 *and* the one that opens in late November 2027, and Pausha
+    likewise (#1332). Callers that need a date in `year` must look at all of them.
+    """
+    return tuple(
+        m for m in adhik_maas.lunar_months(year) if m.name == name and m.kind == "nija"
+    )
+
+
 def nija_month(year: int, name: str) -> adhik_maas.LunarMonth | None:
-    """The **nija** (true) lunar month called `name` overlapping `year`, or None.
+    """The FIRST **nija** (true) lunar month called `name` overlapping `year`, or None.
+
+    This is a kshaya-month detector, NOT a year resolver. For a month that
+    straddles a year boundary it returns the earlier of the two overlapping
+    months, so `nija_month(2027, "Margashirsha")` is the 2026-12-09 month and its
+    shukla tithis fall in 2026. `verify_muhurat_tables.py` Gate 3(c) and Gate 1's
+    Bhadli Navami check rely on that behaviour (None exactly when the month is
+    kshaya); to find a date IN a year use `shukla_tithi_date`, which considers
+    every overlapping month and keeps those landing in `year` (#1332).
 
     THE `kind == "nija"` TEST IS THE ENTIRE ADHIK MAAS CORRECTION, and it reads
     like a no-op because in most years there is only one candidate. In an Adhik
@@ -164,10 +192,8 @@ def nija_month(year: int, name: str) -> adhik_maas.LunarMonth | None:
     Returns None for a kshaya month — a month name deleted from that year's
     reckoning has no nija occurrence, and inventing one would be a guess.
     """
-    for m in adhik_maas.lunar_months(year):
-        if m.name == name and m.kind == "nija":
-            return m
-    return None
+    months = _nija_months(year, name)
+    return months[0] if months else None
 
 
 def _tithi_index_at_madhyahna(day: date) -> int:
@@ -201,8 +227,10 @@ def _pick_day(samples: list[tuple[date, int]], idx: int) -> tuple[date | None, s
     """
     # Pass 1 — runs. Consecutive days sharing an index are a vriddhi tithi.
     # Purnima/Amavasya/everything else takes the run's FIRST day; Ekadashi takes
-    # the SECOND (dashami-viddha). The `idx in _VIDDHA_TITHIS` guard is the whole
-    # rule and is NOT redundant — see the module docstring.
+    # the SECOND (empirical Drik convention), or D-1 when it is a single-sunrise
+    # Ekadashi with Dwadashi skipped (#1332; indices t-1, t, >=t+2 at D-1, D,
+    # D+1). Identical to `lunar_observances` pass 1. The `idx in _VIDDHA_TITHIS`
+    # guard is the whole rule and is NOT redundant — see the module docstring.
     i = 0
     while i < len(samples):
         run_idx = samples[i][1]
@@ -213,6 +241,14 @@ def _pick_day(samples: list[tuple[date, int]], idx: int) -> tuple[date | None, s
             pick = i
             if run_end > i and idx in _VIDDHA_TITHIS:
                 pick = i + 1
+            elif (
+                idx in _VIDDHA_TITHIS
+                and 0 < i
+                and i + 1 < len(samples)
+                and samples[i - 1][1] == idx - 1
+                and (samples[i + 1][1] - idx) % 30 >= 2
+            ):
+                pick = i - 1
             return samples[pick][0], "run"
         i = run_end + 1
 
@@ -244,9 +280,12 @@ def shukla_tithi_date(
     day in roughly one year in three; see the module docstring for the two
     Akshaya Tritiya cases that pin the rule down.
 
-    Returns None when the month does not exist in that year (kshaya month) or
-    when the tithi cannot be located in the sample window. Callers degrade rather
-    than guessing; nothing here raises on an ordinary miss.
+    Returns None when the month does not exist in that year (kshaya month), when
+    no occurrence of it puts the tithi inside `year` (Pausha 2026 — its Shukla
+    Ekadashi is 2025-12-30), or when the tithi cannot be located in the sample
+    window. Callers degrade rather than guessing; nothing here raises on an
+    ordinary miss. Where two occurrences of the month both land in `year` (Pausha
+    2028) the earlier is returned.
 
     Cached per (year, month, tithi, reckoning): a 365-day muhurat scan asks for
     the same handful of dates once per candidate day, and each miss costs ~22
@@ -257,10 +296,26 @@ def shukla_tithi_date(
     if reckoning not in ("sunrise", "madhyahna"):
         raise ValueError(f"reckoning must be 'sunrise' or 'madhyahna', got {reckoning!r}")
 
-    m = nija_month(year, month)
-    if m is None:
-        return None
+    # A month name can overlap `year` twice (Margashirsha and Pausha straddle the
+    # boundary at both ends), and the first one's tithi may fall in the previous
+    # year — `nija_month(2027, "Margashirsha")` is the 2026-12-09 month. Pick in
+    # every candidate, keep the dates that land in `year`, take the earliest. Zero
+    # in-year dates (e.g. Pausha 2026, whose Ekadashi is 2025-12-30) is None: the
+    # module's degrade-don't-guess rule, never the neighbouring year's date.
+    dates = [
+        d
+        for m in _nija_months(year, month)
+        if (d := _shukla_pick(m, tithi, reckoning)) is not None and d.year == year
+    ]
+    return min(dates) if dates else None
 
+
+def _shukla_pick(m: adhik_maas.LunarMonth, tithi: int, reckoning: str) -> date | None:
+    """Civil date of shukla `tithi` in the one lunar month `m`, or None.
+
+    The window-and-pick body of `shukla_tithi_date`, for a single month; the
+    caller decides which of a name's candidate months lands in the wanted year.
+    """
     # `_tithi_at` is 0-based (0 = Shukla Pratipada .. 29 = Amavasya), while the
     # classical tithi number is 1-based. Shukla N -> index N-1.
     idx = tithi - 1
