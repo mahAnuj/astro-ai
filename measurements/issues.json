@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-21T02:03:51Z",
+  "generated_at": "2026-11-21T04:39:36Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 149,
+  "open": 151,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 63,
+    "UNCLASSIFIED": 65,
     "INFRA": 16,
     "REDESIGN": 10,
     "OPS": 8,
@@ -33,8 +33,8 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 41,
-    "untyped": 38,
+    "bug": 44,
+    "untyped": 37,
     "enhancement": 31,
     "chore": 22,
     "correctness": 11,
@@ -42,7 +42,7 @@
     "ui": 1
   },
   "by_priority": {
-    "unset": 90,
+    "unset": 92,
     "medium": 27,
     "high": 20,
     "low": 12
@@ -50,17 +50,52 @@
   "blocked": 9,
   "rows": [
     {
-      "number": 1326,
-      "title": "festival registry: no festival dated 2026-11-22 to 2027-01-14 — 54 days the daily email, rashifal and /festivals have nothing to show",
+      "number": 1332,
+      "title": "lunar_observances emits Drik's Gauna Ekadashi date for 2027-01 and 2028-11; shukla_tithi_date mis-resolves Margashirsha 2027",
       "ask": "",
       "area": "UNCLASSIFIED",
-      "type": "untyped",
+      "type": "bug",
       "priority": "unset",
       "labels": [
-        "growth"
+        "bug"
       ],
-      "created": "2026-11-21T02:00:21Z",
-      "updated": "2026-11-21T02:00:27Z",
+      "created": "2026-11-21T03:23:19Z",
+      "updated": "2026-11-21T03:23:19Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1331,
+      "title": "QA follow-up: kalabhairav-jayanti copy says Ashtami runs dusk to midnight, but on 2026-12-01 it ends 23:14 (PR #1329)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-21T03:22:19Z",
+      "updated": "2026-11-21T04:38:52Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1330,
+      "title": "QA follow-up: a one-day typo repeated in registry and expected JSON passes every festival gate for non-Purnima/Ekadashi rows (PR #1329)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T03:22:10Z",
+      "updated": "2026-11-21T03:22:10Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -74,11 +109,13 @@
       "labels": [
         "enhancement",
         "seo",
+        "qa-pass",
         "provenance:trusted",
+        "qa:in-cycle",
         "growth"
       ],
       "created": "2026-11-21T01:25:06Z",
-      "updated": "2026-11-21T01:29:36Z",
+      "updated": "2026-11-21T03:31:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -94,7 +131,7 @@
         "priority:low"
       ],
       "created": "2026-11-21T01:18:50Z",
-      "updated": "2026-11-21T01:18:50Z",
+      "updated": "2026-11-21T03:58:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2432,9 +2469,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-21T02:03:51Z",
+    "generated_at": "2026-11-21T04:39:36Z",
     "window_days": 28,
-    "open_now": 149,
+    "open_now": 151,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2844,15 +2881,15 @@
       },
       {
         "date": "2026-11-21",
-        "opened": 6,
-        "closed": 2,
-        "net": 4,
-        "open_end": 149,
+        "opened": 9,
+        "closed": 3,
+        "net": 6,
+        "open_end": 151,
         "opened_by": {
-          "loop": 6
+          "loop": 9
         },
         "closed_by": {
-          "close-on-evidence": 2
+          "close-on-evidence": 3
         }
       }
     ],
@@ -4152,14 +4189,19 @@
         "number": 1322,
         "closed_at": "2026-11-21T01:30:28Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1326,
+        "closed_at": "2026-11-21T03:34:11Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 3,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 119,
+          "merged": 116,
           "median_h": 0.5,
           "p90_h": 11.0,
           "max_h": 46.6,
@@ -4283,7 +4325,7 @@
           ]
         },
         "28d": {
-          "merged": 323,
+          "merged": 324,
           "median_h": 0.5,
           "p90_h": 16.5,
           "max_h": 122.1,
@@ -4574,12 +4616,27 @@
         },
         {
           "date": "2026-11-21",
-          "merged": 2,
-          "median_h": 0.3,
+          "merged": 3,
+          "median_h": 0.2,
           "max_h": 0.3
         }
       ],
-      "open": []
+      "open": [
+        {
+          "number": 1328,
+          "title": "issue/1325 muhurat landing dates",
+          "age_h": 2.1,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1333,
+          "title": "kalabhairav-jayanti: stop asserting an unsourced Ashtami window (#1331)",
+          "age_h": 0.3,
+          "waiting_on": "merge",
+          "why": null
+        }
+      ]
     }
   }
 }
