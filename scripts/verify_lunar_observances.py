@@ -62,10 +62,12 @@ exit 0 or 1. It is deliberately structured like `scripts/verify_festivals.py`.
       A perfectly intact — i.e. it is invisible to every other gate here.
 
       A vriddhi **Ekadashi** must be emitted on the SECOND day of the run
-      (*dashami-viddha*: the run necessarily begins shortly before the first
-      sunrise, so Dashami pierces that morning and the fast moves on). A vriddhi
-      **Purnima or Amavasya** must be emitted on the FIRST — the viddha test is
-      specific to the Ekadashi fast and must not leak. Both directions are
+      (an empirical Drik almanac convention, 5 of 5 Drik readings, UNSOURCED in
+      the corpus — the old name *dashami-viddha* is kept below only as a label,
+      because no Dashami test exists in the engine: the tithi sampled at the
+      first sunrise is already Ekadashi). A vriddhi **Purnima or Amavasya** must
+      be emitted on the FIRST — the second-day pick is specific to the Ekadashi
+      fast and must not leak. Both directions are
       checked, against `DRIK_VRIDDHI` below: every vriddhi run over 2024-2032,
       with the day drikpanchang.com actually prints, read off the year calendar
       on 2026-08-07. The table reaches outside DATA_YEARS on purpose — the
@@ -109,8 +111,9 @@ SPAN_END = date(max(YEARS), 12, 31)
 #
 # All five vriddhi Ekadashis land on the SECOND day of the run, and every
 # reachable vriddhi Purnima and Amavasya on the FIRST. That asymmetry is the
-# dashami-viddha rule and this table is the evidence for it; see the RESOLVED
-# DISAGREEMENT section of lunar_observances.py.
+# second-day rule (labelled dashami-viddha for history only — a misnomer) and
+# this table is the evidence for it, 5 of 5 Drik readings and unsourced in the
+# corpus; see the RESOLVED DISAGREEMENT section of lunar_observances.py.
 #
 # One run is missing here and its absence is not an oversight: the vriddhi
 # Amavasya of 2025-12-19 carries no festival name, and Drik's year calendar
@@ -427,14 +430,14 @@ def gate_c_drik_vriddhi() -> list[str]:
             failures.append(
                 f"dashami-viddha REGRESSION: vriddhi Ekadashi run starting {first_iso} "
                 f"({label}) emitted on {got.isoformat()}, Drik prints {drik_iso}. A "
-                "vriddhi Ekadashi takes the SECOND day of the run — the run begins "
-                "shortly before the first sunrise, so Dashami pierces that morning."
+                "vriddhi Ekadashi takes the SECOND day of the run (a Drik almanac "
+                "convention, 5 of 5 readings, unsourced in the corpus)."
             )
         else:
             failures.append(
                 f"dashami-viddha LEAKED into {kind}: vriddhi run starting {first_iso} "
                 f"({label}) emitted on {got.isoformat()}, Drik prints {drik_iso}. The "
-                "viddha test is specific to the Ekadashi fast; Purnima and Amavasya "
+                "second-day pick is specific to the Ekadashi fast; Purnima and Amavasya "
                 "are reckoned at sunrise and take the FIRST day of the run."
             )
     print(f"  {len(DRIK_VRIDDHI)} vriddhi run(s) checked against drikpanchang.com "
