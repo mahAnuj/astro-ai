@@ -8,6 +8,7 @@ exercises through the real finder and routes. One area file, a literal list
 
 _M = "src/astro_ai/muhurat.py"
 _R = "src/astro_ai/routes/muhurat.py"
+_T = "src/astro_ai/templates/muhurat_finder.html"
 
 MUTATIONS = [
     ("#1341: the sort drops the score, so the earliest excellent day wins whatever it scored",
@@ -67,4 +68,32 @@ MUTATIONS = [
          "             \"via_get\": via_get},\n"
          "            status_code=400,\n        )\n    # Before any geocode",
      "test_error_re_renders_keep_the_requested_days"),
+    ("#1339: the Range select hard-codes 60 as the selected option again",
+     _T, "{% if o == sel %} selected{% endif %}", "{% if o == 60 %} selected{% endif %}",
+     "test_the_range_select_shows_the_days_searched"),
+    ("#1339: a searched value that is already a standard option is listed twice",
+     _T, "([] if sel in [30, 60, 90, 180] else [sel])", "[sel]",
+     "test_the_range_select_shows_the_days_searched"),
+    ("#1339: an out-of-range value on an error re-render is offered as an option",
+     _T, "{% if sel < 1 or sel > 365 %}{% set sel = 60 %}{% endif %}", "",
+     "test_a_bad_request_re_render_keeps_the_searched_days_selected"),
+    ("#1341: the Top pick card drops the astro-auditor's disclosure",
+     _T, "Among dates of the same grade, this card goes first", "Among dates of the same tier, this card goes first",
+     "test_the_disclosure_is_always_in_the_card"),
+    ("#1341: the Top pick card is headed with a superlative",
+     _T, 'mb-1">Top pick</h3>', 'mb-1">Best pick</h3>',
+     "test_the_card_never_prints_the_score_and_never_says_best"),
+    ("#1341: the card hides that the pick won on order alone",
+     _T, "{% if tp_ties > 0 %}", "{% if false %}",
+     "test_a_pick_that_won_on_order_alone_says_so"),
+    ("#1341: the card is shown for a window with no auspicious date",
+     _T, "{% if top_pick %}\n    {% set tp = top_pick %}",
+     "{% if top_pick or candidates %}\n    {% set tp = top_pick %}",
+     "test_no_card_for_a_window_with_no_auspicious_date"),
+    ("#1341: the couple card drops the not-an-endorsement line",
+     _T, " It is not a classical endorsement for your two charts.", "",
+     "test_a_couple_search_shows_the_verdict_and_the_not_an_endorsement_line"),
+    ("#1341: an all-couple-avoid window shows no explanation",
+     _T, "{% elif auspicious_candidates and couple_active %}", "{% elif false %}",
+     "test_every_date_couple_avoid_says_so_and_shows_no_card"),
 ]

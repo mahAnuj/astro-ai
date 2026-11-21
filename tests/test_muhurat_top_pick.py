@@ -16,6 +16,8 @@ scripts/mutations/2026_11_21_1341_muhurat_top_pick.py.
 from __future__ import annotations
 
 import dataclasses
+import html as _htmllib
+import re
 from datetime import date, timedelta
 from types import SimpleNamespace
 
@@ -292,3 +294,235 @@ def test_a_bare_form_has_no_pick(client, ctx):
     r = client.get("/muhurat")
     assert r.status_code == 200
     assert "top_pick" not in ctx[-1]
+
+
+# --- the template: the card and the Range select as the visitor gets them (#1341, #1339) --------
+
+DISCLOSURE = ("Among dates of the same grade, this card goes first to the one with the most points "
+              "under this site's own point count: the classical rules fix which dates qualify, but "
+              "the tradition we follow gives no weighting between them.")
+COUPLE = {"bride_name": "Sita Verma", "bride_dob": "1995-03-04", "bride_time": "06:30",
+          "bride_place": "Jaipur, India", "groom_name": "Ram Verma", "groom_dob": "1993-07-19",
+          "groom_time": "11:15", "groom_place": "Lucknow, India"}
+
+
+def _fmt(d: date) -> str:
+    return d.strftime("%b %d, %Y")
+
+
+def _get(client, event="vidyarambh", days=90, start=START, **extra):
+    return client.get("/muhurat", params={"event": event, "city": CITY, "start": start.isoformat(),
+                                          "days": days, **extra})
+
+
+def _post(client, event="vidyarambh", days=90, start=START, **extra):
+    return client.post("/muhurat", data={"event_type": event, "city": CITY,
+                                         "start_date": start.isoformat(), "days": str(days), **extra})
+
+
+def _card(h: str) -> str:
+    m = re.search(r'<div id="top-pick".*?</p>\s*</div>', h, re.S)
+    return m.group(0) if m else ""
+
+
+def _card_text(h: str) -> str:
+    return re.sub(r"\s+", " ", _htmllib.unescape(re.sub(r"<[^>]+>", " ", _card(h)))).strip()
+
+
+def _first_table_date(h: str) -> str:
+    table = re.search(r"<table.*?</table>", h, re.S).group(0)
+    return re.search(r'data-label="Date"[^>]*>([^<]+)<', table).group(1).strip()
+
+
+def _days_options(h: str) -> list[tuple[str, bool, str]]:
+    sel = re.search(r'<select name="days" id="days".*?</select>', h, re.S).group(0)
+    return [(v, "selected" in attrs, label.strip())
+            for v, attrs, label in re.findall(r'<option value="(\d+)"([^>]*)>([^<]*)</option>', sel)]
+
+
+@pytest.mark.parametrize("how", [_get, _post])
+@pytest.mark.parametrize("event", EVENTS)
+def test_the_rendered_top_pick_is_the_ranked_head_and_the_first_table_row(client, how, event):
+    r = how(client, event)
+    assert r.status_code == 200
+    rows = muhurat.find_candidates(event, CITY, START, 90)
+    pick, _ties = top_pick(rows)
+    card = _card_text(r.text)
+    assert card.startswith("Top pick"), card
+    assert f"{pick.weekday}, {_fmt(pick.d)}" in card
+    assert _first_table_date(r.text) == _fmt(pick.d)
+    assert r.text.count('id="top-pick"') == 1
+
+
+def test_the_card_names_tithi_paksha_nakshatra_rating_and_reason(client):
+    r = _get(client)
+    pick, _ = top_pick(muhurat.find_candidates("vidyarambh", CITY, START, 90))
+    card = _card_text(r.text)
+    reason = pick.reason[:1].upper() + pick.reason[1:] + "."
+    for needle in (f"{pick.tithi_paksha} {pick.tithi}", pick.nakshatra, pick.rating, reason):
+        assert needle in card, needle
+
+
+def test_the_card_never_prints_the_score_and_never_says_best(client):
+    r = _get(client)
+    card = _card(r.text)
+    pick, _ = top_pick(muhurat.find_candidates("vidyarambh", CITY, START, 90))
+    assert "best" not in card.lower()
+    assert "score" not in card.lower()
+    assert not re.search(rf"\b{pick.score}\s*(points|pts)", _card_text(r.text))
+
+
+@pytest.mark.parametrize("event", EVENTS)
+def test_the_disclosure_is_always_in_the_card(client, event):
+    assert DISCLOSURE in _card_text(_get(client, event).text)
+
+
+@pytest.mark.parametrize("event", EVENTS)
+def test_the_tie_line_is_the_route_count_and_only_when_there_are_ties(client, ctx, event):
+    r = _get(client, event)
+    ties = ctx[-1]["top_pick_ties"]
+    card = _card_text(r.text)
+    if ties:
+        word = "date" if ties == 1 else "dates"
+        assert f"Tied on points with {ties} other {word}; earliest first." in card
+    else:
+        assert "Tied on points" not in card
+
+
+def test_a_pick_that_won_on_order_alone_says_so(client, ctx):
+    # griha_pravesh over 90 days: every excellent day scores 5 (decision doc), so the pick ties.
+    r = _get(client, "griha_pravesh")
+    assert ctx[-1]["top_pick_ties"] > 0, "premise: the pick has tied days"
+    assert "earliest first" in _card_text(r.text)
+
+
+def test_a_booster_pick_shows_the_boost_badge(client, ctx):
+    for event in EVENTS:
+        r = _get(client, event, 180)
+        pick = ctx[-1]["top_pick"]
+        if pick.boosters:
+            assert "★ boost" in _card(r.text)
+            return
+    pytest.skip("no event's pick carries a booster in this window")
+
+
+def test_no_card_for_a_window_with_no_auspicious_date(client):
+    r = _get(client, "griha_pravesh", 20, start=date(2026, 12, 20))
+    assert r.status_code == 200
+    assert "No auspicious dates found in this window" in r.text
+    assert 'id="top-pick"' not in r.text and "Top pick" not in r.text
+    assert "no top pick is shown" not in r.text
+
+
+def test_no_card_on_the_bare_form(client):
+    r = client.get("/muhurat")
+    assert 'id="top-pick"' not in r.text and "Top pick" not in r.text
+
+
+def _all_couple_avoid(monkeypatch):
+    real = muhurat.find_candidates
+
+    def fake(*a, **k):
+        return [dataclasses.replace(c, couple=dataclasses.replace(c.couple, combined_verdict="avoid"))
+                if c.couple else c for c in real(*a, **k)]
+
+    monkeypatch.setattr(muhurat, "find_candidates", fake)
+
+
+def test_a_couple_search_shows_the_verdict_and_the_not_an_endorsement_line(client):
+    r = _post(client, "vivah", 180, **COUPLE)
+    assert "Couple</th>" in r.text, "premise: couple mode was active"
+    card = _card_text(r.text)
+    assert "Couple verdict:" in card
+    assert "It is not a classical endorsement for your two charts." in card
+    assert "own both-partners rule (explained below)" in card
+    assert "Dates marked avoid for the couple are skipped here" in card
+    assert DISCLOSURE in card
+    # The pick is the first table row whose couple verdict is not "avoid": a couple-avoid row
+    # stays in the table, so it may sit above the pick (Nov 25 does here, and says so).
+    table = re.search(r"<table.*?</table>", r.text, re.S).group(0)
+    rows = re.findall(r'data-label="Date"[^>]*>([^<]+)<.*?title="Combined bride\+groom verdict">'
+                      r'\s*([^<]+?)\s*<', table, re.S)
+    first_ok = next(d for d, verdict in rows if verdict != "avoid")
+    assert first_ok in card
+
+
+def test_a_basic_search_has_no_couple_line(client):
+    assert "Couple verdict" not in _card_text(_get(client, "vivah", 180).text)
+
+
+def test_every_date_couple_avoid_says_so_and_shows_no_card(client, monkeypatch):
+    _all_couple_avoid(monkeypatch)
+    r = _post(client, "vivah", 180, **COUPLE)
+    assert "Couple</th>" in r.text, "premise: couple mode was active"
+    assert "Every date in this range is marked avoid for the couple, so no top pick is shown." in r.text
+    assert 'id="top-pick"' not in r.text and "Top pick" not in r.text
+
+
+# --- the Range select (#1339) ----------------------------------------------------------------
+
+
+@pytest.mark.parametrize("how", [_get, _post])
+@pytest.mark.parametrize("days", [14, 30, 60, 90, 180, 365, 1000])
+def test_the_range_select_shows_the_days_searched(client, how, days):
+    opts = _days_options(how(client, "vidyarambh", days).text)
+    chosen = [v for v, sel, _ in opts if sel]
+    assert chosen == [str(min(days, 365))]
+    values = [v for v, _, _ in opts]
+    assert len(values) == len(set(values)), "a standard value is listed twice"
+    assert values == sorted(values, key=int)
+    assert {"30", "60", "90", "180"} <= set(values)
+
+
+def test_the_standard_labels_are_unchanged_and_an_odd_value_is_labelled_in_days(client):
+    labels = {v: label for v, _, label in _days_options(_get(client, "vidyarambh", 14).text)}
+    assert labels == {"14": "14 days", "30": "30 days", "60": "60 days", "90": "90 days",
+                      "180": "6 months"}
+    assert {v: label for v, _, label in _days_options(_get(client, "vidyarambh", 1).text)}["1"] == "1 day"
+
+
+def test_a_bare_form_defaults_to_sixty(client):
+    opts = _days_options(client.get("/muhurat").text)
+    assert [(v, label) for v, sel, label in opts if sel] == [("60", "60 days")]
+    assert [v for v, _, _ in opts] == ["30", "60", "90", "180"]
+
+
+def test_the_next_date_link_lands_on_a_form_that_shows_the_same_range(client):
+    start = date(2026, 12, 20)
+    r = _get(client, "griha_pravesh", 20, start=start)
+    link = re.search(r'href="([^"]+)" class="underline">[A-Z][a-z]+, ', r.text)
+    assert link, "premise: the zero-result page links the next auspicious date"
+    from urllib.parse import parse_qs, urlparse
+    q = parse_qs(urlparse(_htmllib.unescape(link.group(1))).query)
+    assert q["days"] == ["20"]
+    followed = client.get(_htmllib.unescape(link.group(1)))
+    chosen = [v for v, sel, _ in _days_options(followed.text) if sel]
+    assert chosen == ["20"]
+
+
+def test_an_error_re_render_keeps_the_searched_days_selected(client, monkeypatch):
+    from astro_ai.routes import muhurat as route
+
+    def boom(*a, **k):
+        raise ValueError("no such city")
+
+    monkeypatch.setattr(muhurat, "find_candidates", boom)
+    for how in (_get, _post):
+        r = how(client, "vidyarambh", 14)
+        assert r.status_code == 500
+        assert [v for v, sel, _ in _days_options(r.text) if sel] == ["14"]
+    assert route  # the route module is the one the client drives
+
+
+def test_a_bad_request_re_render_keeps_the_searched_days_selected(client):
+    r = _get(client, "nope", 90 * 2)
+    assert r.status_code == 400
+    assert [v for v, sel, _ in _days_options(r.text) if sel] == ["180"]
+    r = client.get("/muhurat", params={"event": "vivah", "city": CITY, "start": "bad", "days": 14})
+    assert r.status_code == 400
+    assert [v for v, sel, _ in _days_options(r.text) if sel] == ["14"]
+    r = client.get("/muhurat", params={"event": "nope", "city": CITY, "start": START.isoformat(), "days": 1000})
+    assert r.status_code == 400
+    # Out of range on an error re-render (the route does not clamp there): the form falls back to 60.
+    assert [(v, label) for v, sel, label in _days_options(r.text) if sel] == [("60", "60 days")]
+    assert [v for v, _, _ in _days_options(r.text)] == ["30", "60", "90", "180"]
