@@ -5,8 +5,8 @@ Each row re-breaks one property and names the test that must go red."""
 MUTATIONS = [
     ("#463: manglik-remedies gets its 187-char tail back, so a description is over 160 decoded",
      "src/astro_ai/learn_registry.py",
-     "matching another Manglik. Check cancellation rules first.\"",
-     "matching another Manglik. Check cancellation rules first — most 'Manglik' charts are actually cancelled.\"",
+     "What the sources hold, and what is tradition.\"",
+     "What the sources hold, and what is tradition — most 'Manglik' charts are actually cancelled and need no remedy at all.\"",
      "test_no_registered_description_exceeds_160_decoded_characters"),
     ("#463: the gate counts the raw source, where &mdash; is seven characters and one decoded",
      "scripts/verify_seo_copy.py",
