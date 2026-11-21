@@ -253,7 +253,7 @@ async def account_delete(
     # subscription is removed regardless, so one outage does not leave it behind
     # for a retry that may never come.
     charts = [*load_collection(request).charts, *users.load_charts(user.sub).charts]
-    removed_blobs = erase_natal_blobs(charts)
+    removed_blobs = await run_in_threadpool(erase_natal_blobs, charts)
     removed_user = removed_blobs and users.delete_user(user.sub)  # False => 503 below
     removed_sub, _msg = subscribers.unsubscribe(user.email)
     if not (removed_user and removed_sub):

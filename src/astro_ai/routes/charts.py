@@ -20,6 +20,7 @@ import logging
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import RedirectResponse
+from starlette.concurrency import run_in_threadpool
 
 from astro_ai import users
 from astro_ai.routes.deps import _safe_redirect_target, _save_collection_synced
@@ -59,7 +60,7 @@ async def delete_chart(
     # birth data) shares the blob; deleting a cache blob is harmless, the next
     # view regenerates it.
     try:
-        erase_natal_blobs([c for c in before.charts if c.id == chart_id])
+        await run_in_threadpool(erase_natal_blobs, [c for c in before.charts if c.id == chart_id])
     except Exception:
         log.warning("delete-chart: could not remove the cached natal reading")
     # A reading is personal data about that chart's birth details; removing

@@ -185,12 +185,16 @@ This is the most misunderstood part of the system. Layers, outermost first:
 | `lru_cache` (stdlib) | in-process, per-function | no | geocode, lunar dates, sankranti |
 | `_PANCHANG_CACHE`, `_PANCHANG_STRIP_CACHE` | in-process dicts | no | panchang by (date, lat, lon at 4 dp, tz), exact to ~11 m, cleared at 20,000 entries (#1338; was a 0.5° cell, where the first caller in the cell decided the value for the rest), and by (date, city) |
 | `daily_cache` | **file** on the instance | no | per-rashi readings, keyed `(namespace, slug-lang, date)` |
-| `cache` (SQLite) | `/tmp/bhagya.db`, **tmpfs** | no | per-chart LLM output, keyed by fingerprint |
+| `cache` (SQLite) | `/tmp/bhagya.db`, **tmpfs** | no | per-chart LLM output, keyed by fingerprint. Natal erasure evicts its rows on the serving instance only (`cache.delete_many`, #1293) |
 | `storage` (GCS) | bucket | **yes** | the only cross-instance layer; also the durable tier behind SQLite (below) |
 
 **Every layer except GCS is per-instance and dies with the container.** `minScale=0`
 means containers come and go constantly. If two requests must share a result, GCS is the
 only thing that gets them there — this is why `/admin/warm-rashifal` works at all.
+The one exception is deletion: natal erasure (`/account/delete`, `/delete-chart`) evicts the
+SQLite rows of the instance that serves the request, and cannot reach the other instances'
+(up to 5, each its own `/tmp`), which can serve a deleted reading until the row is evicted or
+the instance recycles (#1293).
 
 ### The `__session` cookie is bounded and revocable on the server (#1106)
 
@@ -255,6 +259,13 @@ It exists because "per-chart output gains nothing from GCS" was wrong. Natal is 
 regenerated once per instance, once per cold start and once per deploy — each a full
 ~7,800-token natal call against an 8,000 TPM per-model bucket. GCS's value to a per-chart
 route is not sharing between users, it is **surviving the container**.
+
+Erasure runs the other way (#1293): `erase_natal_blobs` deletes the GCS blobs first and the
+SQLite rows (`cache.delete_many`) last, in a `finally`, because evicting first lets a
+concurrent view re-warm the row from the blob still in the bucket. It runs in a threadpool
+from the async handlers (up to 20 sequential deletes). A SQLite error during eviction is
+logged and does not change the result. Other instances' rows are out of reach.
+`docs/decisions/2026-11-21-natal-erasure-evicts-sqlite.md`.
 
 What it does not do: it does not raise the ceiling. A chart nobody has asked for still
 costs full price and the site still serves on the order of 20–30 fresh natal readings a

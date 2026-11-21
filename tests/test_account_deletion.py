@@ -13,20 +13,31 @@ faked too: it returns False for a key in `fake.blob_down` and True otherwise
 (including for an absent key, like the real one), and removes the key from
 `fake.natal` so a test can see what survived.
 
+#1293: erasure also evicts the per-instance SQLite rows (after the GCS delete) and
+runs its blocking deletes off the event loop. The SQLite rows are real (`cache`
+writes to a tmp DB under conftest); only `storage.delete` is faked.
+
 Mutation rows: scripts/mutations/account_deletion.py.
 """
 from __future__ import annotations
 
+import asyncio
 import copy
 import json
 
 import pytest
 from fastapi.testclient import TestClient
 
+from astro_ai import cache
 from astro_ai import session as S
 from astro_ai import storage, subscribers, users
 from astro_ai.llm import BirthDetails
-from astro_ai.routes.kundli import _natal_cache_keys, natal_blob_keys
+from astro_ai.routes.kundli import (
+    _natal_cache_keys,
+    erase_natal_blobs,
+    natal_blob_keys,
+    natal_sqlite_keys,
+)
 
 ALICE = {"sub": "sub-alice", "email": "alice@example.test", "name": "Alice"}
 BOB = {"sub": "sub-bob", "email": "bob@example.test", "name": "Bob"}
@@ -241,6 +252,13 @@ def test_account_delete_retry_finds_the_blobs_from_the_record_alone(client, fake
                        follow_redirects=False)
     assert resp.status_code == 303
     assert sorted(fake_store.natal) == sorted(_blob_keys(CHART_NAMESAKE))
+
+
+def test_natal_sqlite_keys_are_the_keys_the_render_path_writes():
+    """Same drift guard as the blob one below, for the SQLite half (#1293)."""
+    details = _details(CHART_A)
+    written = {_natal_cache_keys(details, lang=lang)[0] for lang in ("en", "hi")}
+    assert set(natal_sqlite_keys(details)) == written and len(written) == 2
 
 
 def test_natal_erasure_keys_are_the_keys_the_render_path_writes():
@@ -461,3 +479,136 @@ def test_storage_delete_success_404_and_failure(monkeypatch):
 def test_storage_delete_unconfigured_is_false(monkeypatch):
     monkeypatch.delenv(storage._BUCKET_ENV, raising=False)
     assert storage.delete("k") is False
+
+
+# -- #1293: the per-instance SQLite cache and the event loop -------------------
+def _sqlite_keys(chart):
+    # Built from `_natal_cache_keys`, not `natal_sqlite_keys`: a test that asks the
+    # code under test for its keys cannot see that code dropping one.
+    return [_natal_cache_keys(_details(chart), lang=lang)[0] for lang in ("en", "hi")]
+
+
+def _natal_body(_n: int = 0) -> str:
+    filler = "The chart favours patient, deliberate work this season. "
+    return "## Personality\n" + filler * 10 + "\n\n## Career\n" + filler * 10 + "\n"
+
+
+def _warm(client, chart):
+    """Render `chart`'s natal reading in both languages so the SQLite rows are
+    written by the real render path, not seeded by the test."""
+    assert client.post("/switch", data={"chart_id": chart["id"]},
+                       follow_redirects=False).status_code == 303
+    for lang in ("en", "hi"):
+        assert client.get(f"/kundli?lang={lang}").status_code == 200
+    keys = _sqlite_keys(chart)
+    assert all(cache.get(k) for k in keys), "the render did not write the SQLite rows"
+
+
+def test_cache_delete_many_removes_only_the_named_keys_and_returns_count():
+    for k in ("k1", "k2", "k3"):
+        cache.put(k, "text", route="natal")
+    assert cache.delete_many(["k1", "k2", "absent"]) == 2
+    assert cache.get("k1") is None and cache.get("k2") is None
+    assert cache.get("k3") == "text"
+    assert cache.delete_many([]) == 0
+    assert cache.get("k3") == "text"
+
+
+def test_delete_chart_evicts_the_natal_reading_from_the_sqlite_cache(signed_in, fake_store,
+                                                                     stub_llm):
+    stub_llm(_natal_body)
+    _warm(signed_in, CHART_A)
+    _warm(signed_in, CHART_A2)
+    resp = signed_in.post("/delete-chart", data={"chart_id": CHART_A["id"]},
+                          follow_redirects=False)
+    assert resp.status_code == 303
+    assert not any(cache.get(k) for k in _sqlite_keys(CHART_A)), \
+        "a warm instance still serves the deleted chart's reading"
+    assert all(cache.get(k) for k in _sqlite_keys(CHART_A2)), "another chart's row must stay"
+
+
+def test_account_delete_evicts_every_charts_natal_reading(signed_in, fake_store, stub_llm):
+    stub_llm(_natal_body)
+    _warm(signed_in, CHART_A)
+    _warm(signed_in, CHART_A2)
+    # A different name on the same birth data is another seeker's reading.
+    for k in _sqlite_keys(CHART_NAMESAKE):
+        cache.put(k, _natal_body(), route="natal")
+    resp = signed_in.post("/account/delete", data={"confirm": "DELETE"},
+                          follow_redirects=False)
+    assert resp.status_code == 303
+    for chart in (CHART_A, CHART_A2):
+        assert not any(cache.get(k) for k in _sqlite_keys(chart))
+    assert all(cache.get(k) for k in _sqlite_keys(CHART_NAMESAKE))
+
+
+def test_erase_natal_blobs_evicts_even_when_a_blob_delete_raises(fake_store, monkeypatch):
+    for k in _sqlite_keys(CHART_A):
+        cache.put(k, "text", route="natal")
+
+    def boom(key):
+        raise RuntimeError("storage exploded")
+
+    monkeypatch.setattr(storage, "delete", boom)
+    with pytest.raises(RuntimeError):
+        erase_natal_blobs([S.SavedChart(**CHART_A)])
+    assert not any(cache.get(k) for k in _sqlite_keys(CHART_A))
+
+
+def test_erase_deletes_the_blob_before_it_evicts_the_row(fake_store, monkeypatch):
+    """Evicting first lets a concurrent view re-warm the row from the blob that is
+    still in the bucket, so the order is the property."""
+    keys = _sqlite_keys(CHART_A)
+    for k in keys:
+        cache.put(k, "text", route="natal")
+    present_at_delete: list[bool] = []
+
+    def delete(key):
+        present_at_delete.append(all(cache.get(k) for k in keys))
+        return True
+
+    monkeypatch.setattr(storage, "delete", delete)
+    assert erase_natal_blobs([S.SavedChart(**CHART_A)]) is True
+    assert present_at_delete == [True, True]
+    assert not any(cache.get(k) for k in keys)
+
+
+def test_a_sqlite_error_during_eviction_does_not_change_the_result(fake_store, monkeypatch):
+    def boom(keys):
+        raise RuntimeError("database is locked")
+
+    monkeypatch.setattr(cache, "delete_many", boom)
+    assert erase_natal_blobs([S.SavedChart(**CHART_A)]) is True
+    fake_store.blob_down.update(_blob_keys(CHART_A))
+    assert erase_natal_blobs([S.SavedChart(**CHART_A)]) is False
+
+
+@pytest.mark.parametrize("handler", ["account", "charts"])
+def test_natal_erasure_deletes_run_off_the_event_loop(signed_in, fake_store, monkeypatch,
+                                                      handler):
+    """20 sequential cross-continent deletes must not stall the loop. In a threadpool
+    worker `asyncio.get_running_loop()` raises; on the loop it returns."""
+    on_loop: list[str] = []
+    ran: list[str] = []
+    real = storage.delete
+
+    def delete(key):
+        ran.append(key)
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            pass
+        else:
+            on_loop.append(key)
+        return real(key)
+
+    monkeypatch.setattr(storage, "delete", delete)
+    if handler == "account":
+        resp = signed_in.post("/account/delete", data={"confirm": "DELETE"},
+                              follow_redirects=False)
+    else:
+        resp = signed_in.post("/delete-chart", data={"chart_id": CHART_A["id"]},
+                              follow_redirects=False)
+    assert resp.status_code == 303
+    assert len(ran) >= 2, "no blob delete ran, so this proves nothing"
+    assert on_loop == [], "storage.delete ran on the event loop"
