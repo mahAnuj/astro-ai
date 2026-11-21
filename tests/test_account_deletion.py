@@ -254,6 +254,13 @@ def test_account_delete_retry_finds_the_blobs_from_the_record_alone(client, fake
     assert sorted(fake_store.natal) == sorted(_blob_keys(CHART_NAMESAKE))
 
 
+def test_natal_sqlite_keys_are_the_keys_the_render_path_writes():
+    """Same drift guard as the blob one below, for the SQLite half (#1293)."""
+    details = _details(CHART_A)
+    written = {_natal_cache_keys(details, lang=lang)[0] for lang in ("en", "hi")}
+    assert set(natal_sqlite_keys(details)) == written and len(written) == 2
+
+
 def test_natal_erasure_keys_are_the_keys_the_render_path_writes():
     """Drift guard: erasure must be derived from `_natal_cache_keys`, the one
     builder both /kundli and the snapshot path write their blob with."""
@@ -476,7 +483,9 @@ def test_storage_delete_unconfigured_is_false(monkeypatch):
 
 # -- #1293: the per-instance SQLite cache and the event loop -------------------
 def _sqlite_keys(chart):
-    return natal_sqlite_keys(_details(chart))
+    # Built from `_natal_cache_keys`, not `natal_sqlite_keys`: a test that asks the
+    # code under test for its keys cannot see that code dropping one.
+    return [_natal_cache_keys(_details(chart), lang=lang)[0] for lang in ("en", "hi")]
 
 
 def _natal_body(_n: int = 0) -> str:
