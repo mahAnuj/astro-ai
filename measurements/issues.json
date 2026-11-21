@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-21T19:44:54Z",
+  "generated_at": "2026-11-21T21:43:22Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 158,
+  "open": 160,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 68,
+    "UNCLASSIFIED": 70,
     "INFRA": 16,
     "OPS": 10,
     "REDESIGN": 10,
@@ -34,7 +34,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 48,
+    "bug": 50,
     "untyped": 39,
     "enhancement": 30,
     "chore": 24,
@@ -43,13 +43,45 @@
     "ui": 1
   },
   "by_priority": {
-    "unset": 97,
+    "unset": 99,
     "medium": 28,
     "high": 21,
     "low": 12
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1361,
+      "title": "QA follow-up: natal erasure key-count bound says 20, /account/delete can pass 40 (PR #1360)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T21:41:55Z",
+      "updated": "2026-11-21T21:42:00Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1359,
+      "title": "QA follow-up: festival pages still call Devuthani an abujha muhurat 'auspicious the whole day through' while the finder rates it avoid (PR #1357)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T20:12:55Z",
+      "updated": "2026-11-21T20:12:59Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1355,
       "title": "QA follow-up: dark-half tithi credit and mixed-status avoid_tithi are labelled unevenly across events (PR #1350)",
@@ -92,7 +124,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-21T16:30:36Z",
-      "updated": "2026-11-21T16:30:36Z",
+      "updated": "2026-11-21T19:46:55Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -138,10 +170,12 @@
       "labels": [
         "bug",
         "astrology-correctness",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-21T11:10:53Z",
-      "updated": "2026-11-21T18:11:02Z",
+      "updated": "2026-11-21T20:14:50Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -423,10 +457,11 @@
       "labels": [
         "bug",
         "priority:medium",
-        "qa"
+        "qa",
+        "provenance:trusted"
       ],
       "created": "2026-11-20T16:03:12Z",
-      "updated": "2026-11-20T16:03:12Z",
+      "updated": "2026-11-21T20:51:20Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -926,7 +961,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-15T20:41:37Z",
-      "updated": "2026-11-19T22:35:02Z",
+      "updated": "2026-11-21T20:48:22Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2584,9 +2619,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-21T19:44:54Z",
+    "generated_at": "2026-11-21T21:43:22Z",
     "window_days": 28,
-    "open_now": 158,
+    "open_now": 160,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2996,12 +3031,12 @@
       },
       {
         "date": "2026-11-21",
-        "opened": 21,
+        "opened": 23,
         "closed": 8,
-        "net": 13,
-        "open_end": 158,
+        "net": 15,
+        "open_end": 160,
         "opened_by": {
-          "loop": 19,
+          "loop": 21,
           "ops": 2
         },
         "closed_by": {
@@ -4342,7 +4377,7 @@
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 113,
+          "merged": 112,
           "median_h": 0.6,
           "p90_h": 11.0,
           "max_h": 46.6,
@@ -4766,21 +4801,28 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 14.5,
+          "age_h": 16.5,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 11.5,
+          "age_h": 13.4,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 0.0,
+          "age_h": 2.0,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1360,
+          "title": "Natal erasure evicts the per-instance SQLite rows and runs its deletes off the event loop ",
+          "age_h": 0.3,
           "waiting_on": "gates / QA",
           "why": null
         }
