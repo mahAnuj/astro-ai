@@ -222,6 +222,10 @@ class MuhuratCandidate:
     # Bhadra, e.g. "Abhijit and Rahu Kaal overlap 11:45-12:06". () when it overlaps neither.
     # No rating reads it: the finder holds no source that ranks one window above the other.
     abhijit_overlaps: tuple[str, ...] = ()
+    # The soft-scoring points behind `rating` (#1341, R1), so the ranked list can order days WITHIN a
+    # tier. LAST and defaulted so every existing construction (tests, fixtures) still works. A
+    # booster- or Abujha-lifted day carries its tier's floor (`_RATING_MIN_SCORE`), an avoid day 0.
+    score: int = 0
 
 
 # The ratings the site calls "auspicious" (#1322). "caution" is the lowest tier that passed no hard
@@ -230,6 +234,50 @@ class MuhuratCandidate:
 # `muhurat_auspicious_ratings`) and by the landing pages' next-dates list (#1325), so the two
 # cannot drift apart.
 AUSPICIOUS_RATINGS = ("excellent", "good", "acceptable")
+
+# Minimum soft-scoring points for each rating, BEST FIRST (#1341). One table is read by both
+# `score_event` (points -> rating) and `find_candidates` (a lifted day's score floor), so the cut-offs
+# and the floors cannot drift apart. Dict order is load-bearing: the first floor a score clears wins.
+# The weights (+2 tithi, +2 nakshatra, +1 weekday, +1 peak day, -1 avoid weekday) and these cut-offs
+# are THIS SITE'S OWN CONVENTION, not a classical figure (astro-auditor 2026-11-21: the sources in
+# knowledge/vedic_reference.md §29.11 and §29.13 name the factors, not their weights; the
+# `peak_day` Thursday for Vidyarambh is CONTESTED). In-grade order is therefore a point count, and the
+# results page says so.
+#
+# BOOSTER FLOOR DECISION: a day a booster (Amrit/Sarvartha Siddhi, Ravi Yoga) or an Abujha date lifts
+# carries its tier's floor as its score. The floor adds NO weight to the booster and moves NO rating:
+# the rating is what `score_event` already returned. It only lets the lifted day sort beside the plain
+# days of its tier (a lifted day ties with plain 5s, earliest first; a plain 6 beats it) instead of
+# at the top or the bottom of it. Sorting boosters first, or on a raw score that a booster never
+# touched, were both rejected: docs/decisions/2026-11-21-muhurat-top-pick.md.
+_RATING_MIN_SCORE = {"excellent": 5, "good": 4, "acceptable": 3}
+
+# Tier order for the ranked list; "avoid" last. A module constant so `rank_key` and the sort share it.
+_TIER_ORDER = {"excellent": 0, "good": 1, "acceptable": 2, "caution": 3, "avoid": 4}
+
+
+def rank_key(c: MuhuratCandidate) -> tuple[int, int, date]:
+    """Sort key of the ranked list: tier, then HIGHER score first, then earlier date (#1341).
+    Deterministic, so `top_pick` and the page's order can never disagree."""
+    return (_TIER_ORDER.get(c.rating, 99), -c.score, c.d)
+
+
+def top_pick(candidates: list[MuhuratCandidate]) -> tuple[MuhuratCandidate | None, int]:
+    """The best valid day of a result, and how many OTHER valid days tie it on (rating, score).
+
+    Valid means an auspicious rating (never caution or avoid) and, in couple mode, a combined
+    verdict that is not "avoid": a day the pair's own factors reject is never the headline. Those
+    rows stay in the list. `(None, 0)` when nothing qualifies. A tie is broken by date, so the pick
+    is the earliest of its ties and the count lets the page say so honestly."""
+    eligible = [c for c in candidates
+                if c.rating in AUSPICIOUS_RATINGS
+                and not (c.couple and c.couple.combined_verdict == "avoid")]
+    if not eligible:
+        return None, 0
+    best = min(eligible, key=rank_key)
+    ties = sum(1 for c in eligible
+               if c is not best and (c.rating, c.score) == (best.rating, best.score))
+    return best, ties
 
 
 # ─── Chaturmas (Devshayani Ekadashi → Devuthani Ekadashi) ────────────
@@ -1600,6 +1648,38 @@ _VIVAH_FIRST_PADA_REASON = (
 )
 
 
+def _soft_scoring(rules: dict, tithi_name: str, nakshatra: str,
+                  weekday_name: str) -> tuple[int, list[str], list[str]]:
+    """(points, reasons, flags) of the soft factors, in the order `score_event` has always shown
+    them. One body for the points and the words, so a reason can never describe a score the
+    ranking did not use (#1341)."""
+    score = 0
+    reasons: list[str] = []
+    flags: list[str] = []
+    if tithi_name in rules["good_tithis"]:
+        score += 2
+        reasons.append(f"good tithi ({tithi_name})")
+    if nakshatra in rules["good_nakshatras"]:
+        score += 2
+        reasons.append(f"good nakshatra ({nakshatra})")
+    if weekday_name in rules["good_days"]:
+        score += 1
+        reasons.append(f"good weekday ({weekday_name})")
+        if rules.get("peak_day") == weekday_name:
+            score += 1
+            reasons.append("peak-day for this event")
+    elif weekday_name in rules["avoid_days"]:
+        score -= 1
+        reasons.append(f"avoid weekday ({weekday_name})")
+        flags.append("avoid_weekday")
+    return score, reasons, flags
+
+
+def _soft_points(rules: dict, tithi_name: str, nakshatra: str, weekday_name: str) -> int:
+    """The soft-scoring points alone: what `find_candidates` stores as `MuhuratCandidate.score`."""
+    return _soft_scoring(rules, tithi_name, nakshatra, weekday_name)[0]
+
+
 def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
                 is_panchak: bool, is_chaturmas: bool,
                 kharmas_reason: str, eclipse_reason: str,
@@ -1636,7 +1716,6 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
         return "avoid", f"Unknown event type: {event_type}", ()
 
     flags: list[str] = []
-    reasons: list[str] = []
 
     # ─── Hard exclusions (universal + per-event) ────────────────────
     # Adhik Maas is the top-priority universal blocker.
@@ -1703,32 +1782,11 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
         return "avoid", reason, tuple(flags)
 
     # ─── Soft scoring ───────────────────────────────────────────────
-    score = 0
-    if panchang.tithi_name in rules["good_tithis"]:
-        score += 2
-        reasons.append(f"good tithi ({panchang.tithi_name})")
-    if nakshatra in rules["good_nakshatras"]:
-        score += 2
-        reasons.append(f"good nakshatra ({nakshatra})")
-    if weekday_name in rules["good_days"]:
-        score += 1
-        reasons.append(f"good weekday ({weekday_name})")
-        if rules.get("peak_day") == weekday_name:
-            score += 1
-            reasons.append("peak-day for this event")
-    elif weekday_name in rules["avoid_days"]:
-        score -= 1
-        reasons.append(f"avoid weekday ({weekday_name})")
-        flags.append("avoid_weekday")
+    score, reasons, soft_flags = _soft_scoring(
+        rules, panchang.tithi_name, nakshatra, weekday_name)
+    flags.extend(soft_flags)
 
-    if score >= 5:
-        rating = "excellent"
-    elif score == 4:
-        rating = "good"
-    elif score == 3:
-        rating = "acceptable"
-    else:
-        rating = "caution"
+    rating = next((r for r, floor in _RATING_MIN_SCORE.items() if score >= floor), "caution")
 
     # ─── Universal boosters override caution/acceptable → excellent ─
     # Amrit Siddhi, Sarvartha Siddhi, Ravi Yoga are classical universal-
@@ -1926,6 +1984,7 @@ def find_candidates(event_type: str, city: str, start: date,
                 tithi=t_name, tithi_paksha=t_paksha,
                 nakshatra=nakshatra,
                 rating="excellent",
+                score=_RATING_MIN_SCORE["excellent"],
                 reason=f"Abujha Muhurat — {abujha_name} (universally auspicious)",
                 flags=("abujha_muhurat",),
                 personal=personal, couple=couple,
@@ -1943,11 +2002,16 @@ def find_candidates(event_type: str, city: str, start: date,
             nitya_yoga=nitya_yoga, nitya_blocks=nitya_blocks,
             boosters=boosters, moon_pada=moon_pada,
         )
+        # The soft points behind the rating. A lifted day (booster) never scores below its tier's
+        # floor; an avoid day scores 0 (an unknown event has no rules to read either).
+        score = 0 if rating == "avoid" else max(
+            _soft_points(EVENT_RULES[event_type], t_name, nakshatra, p.weekday),
+            _RATING_MIN_SCORE.get(rating, 0))
         candidates.append(MuhuratCandidate(
             d=d, weekday=p.weekday,
             tithi=t_name, tithi_paksha=t_paksha,
             nakshatra=nakshatra,
-            rating=rating, reason=reason, flags=flags,
+            rating=rating, reason=reason, flags=flags, score=score,
             personal=personal, couple=couple,
             rahu_kaal=rk_str, abhijit_muhurta=ab_str, sunrise=sunrise_str,
             nitya_yoga=nitya_yoga, boosters=boosters,
@@ -1955,8 +2019,7 @@ def find_candidates(event_type: str, city: str, start: date,
             abhijit_overlaps=abhijit_overlaps,
         ))
 
-    tier_order = {"excellent": 0, "good": 1, "acceptable": 2, "caution": 3, "avoid": 4}
-    candidates.sort(key=lambda c: (tier_order.get(c.rating, 99), c.d))
+    candidates.sort(key=rank_key)
     return candidates
 
 
