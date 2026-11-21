@@ -141,11 +141,13 @@ def test_real_scan_the_soft_factors_equal_what_score_event_counted(scans):
     for event, rows in scans.items():
         assert len(rows) >= 150, (event, len(rows))  # a few days may be skipped on an exception
         for c in rows:
-            if c.rating == "avoid" or "abujha_muhurat" in c.flags:
+            if c.rating == "avoid":
                 continue
             seen += 1
+            # An Abujha lift is a booster since #1346: it raises the rating the way Sarvartha does.
+            boosted = bool(c.boosters) or "abujha_muhurat" in c.flags
             _compare(event, c.tithi, c.tithi_paksha, c.nakshatra, c.weekday, c.rating,
-                     c.reason, bool(c.boosters))
+                     c.reason, boosted)
     assert seen > 100, "the real scan stopped producing scored rows"
 
 
@@ -155,7 +157,7 @@ def test_real_scan_explain_agrees_with_the_reason_on_every_auspicious_row(scans)
     rows = 0
     for event, cands in scans.items():
         for c in cands:
-            if c.rating not in m.AUSPICIOUS_RATINGS or "abujha_muhurat" in c.flags:
+            if c.rating not in m.AUSPICIOUS_RATINGS:
                 continue
             rows += 1
             soft = [(i.key, i.text.split(": ", 1)[1] if ": " in i.text else "")

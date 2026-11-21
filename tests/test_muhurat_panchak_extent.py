@@ -50,15 +50,16 @@ def test_the_finder_flags_panchak_only_from_dhanishta_pada_3():
     the old rule over-flagged), 11-18 Shatabhisha, 11-19 Purva Bhadrapada,
     11-20 Uttara Bhadrapada, 11-21 Revati, 11-22 Ashwini.
 
-    11-20 is Devuthani Ekadashi, an abujha day, and score_event returns on the
-    abujha rating before it reaches the Panchak check, so its flags carry
-    "abujha_muhurat" and not "panchak" even though the Moon is in Panchak. 11-17
+    11-20 is Devuthani Ekadashi, an abujha day. Until #1346 the finder rated it
+    on the abujha rule before the Panchak check, so its flags carried
+    "abujha_muhurat" and not "panchak" though the Moon is in Panchak; Abujha is
+    now a booster applied after the exclusions, so it carries "panchak". 11-17
     is still "avoid" -- for Chaturmas, which is checked after Panchak and so was
     hidden behind the over-flag -- but no longer for Panchak."""
     got = {c.d: c for c in find_candidates("griha_pravesh", "Delhi", date(2026, 11, 15), 8)}
     assert got[date(2026, 11, 17)].nakshatra == "Dhanishta"
     assert "panchak" not in got[date(2026, 11, 17)].flags
-    for day in (18, 19, 21):
+    for day in (18, 19, 20, 21):
         assert "panchak" in got[date(2026, 11, day)].flags, got[date(2026, 11, day)].nakshatra
     assert "panchak" not in got[date(2026, 11, 22)].flags
 
