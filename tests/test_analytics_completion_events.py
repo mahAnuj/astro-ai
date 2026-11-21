@@ -338,4 +338,12 @@ def test_a_forged_unknown_flag_key_is_ignored():
 
 def test_a_tampered_cookie_carries_no_flag():
     good = _signed({"ev": {"kundli_generated": int(time.time()) + 60}})
-    assert not S.event_flag_present(_req(good[:-2] + "xx"), "kundli_generated")
+    # Flip a character in the MIDDLE of the signature. Overwriting the last two
+    # characters ("xx") was flaky at ~1 in 1,000: a 20-byte HMAC is 27 base64
+    # characters and the last one carries 2 spare bits, so a signature already
+    # ending in "x" + one of w/x/y/z decodes to the same bytes and still verifies
+    # (6 of 6,000 timestamps, measured 2026-11-21; failed pr-gates run 44889420359).
+    i = len(good) - 10
+    tampered = good[:i] + ("A" if good[i] != "A" else "B") + good[i + 1 :]
+    assert tampered != good
+    assert not S.event_flag_present(_req(tampered), "kundli_generated")
