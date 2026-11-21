@@ -881,8 +881,9 @@ def panchang_strip_for_city(city: str) -> tuple:
     the homepage strip and the rashifal pages both need the reader's own
     Rahu Kaal / Abhijit. It is the single place those windows are obtained
     for a page — nothing may recompute sunrise, Rahu Kaal or Abhijit for
-    itself. compute_panchang has its own (date, coarse lat/lon, tz) cache
-    underneath, so two cities in the same 55km bucket also share one solve.
+    itself. compute_panchang has its own (date, lat/lon at 4 dp, tz) cache
+    underneath, keyed on exact coordinates (#1338), so two nearby cities do
+    not share an entry; a solve is ~0.2 ms, so nothing is lost.
 
     The key carries the server's UTC date, which only BOUNDS an entry's life;
     it is not the day the strip shows. The strip is solved at the real moment

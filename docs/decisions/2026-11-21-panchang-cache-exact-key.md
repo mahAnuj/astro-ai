@@ -7,8 +7,8 @@
 
 `muhurat.find_candidates('namkaran', 'Delhi', date(2026, 12, 1), 30)` depended on process
 history. After `routes.muhurat._landing_upcoming('griha_pravesh', date(2026, 11, 21))` had run,
-Rahu Kaal, Abhijit and choghadiya differed by one printed minute on 6 of 30 dates (choghadiya
-on 20). Two processes, same input: finder hash `81276ed5` cold, `5d5bf372` after the landing
+Rahu Kaal, Abhijit and choghadiya differed by one printed minute (of 30 dates: Rahu Kaal 4,
+Abhijit 2, choghadiya 15). Two processes, same input: finder hash `81276ed5` cold, `5d5bf372` after the landing
 call. After the fix both give `81276ed5`.
 
 Cause: `_PANCHANG_CACHE` was keyed on `(date, round(lat*2)/2, round(lon*2)/2, tz)`, a ~55 km

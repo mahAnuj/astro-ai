@@ -4022,8 +4022,8 @@ class DailyPanchang:
 # it. The muhurat landing page asks for "New Delhi, India" and the finder takes
 # "Delhi": same cell, ~5 s apart at sunset, which the truncated %H:%M display
 # turned into a whole printed minute — and which of the two was printed depended
-# on which had run first in the process (6 of 30 dates for Rahu Kaal and
-# Abhijit, 20 of 30 for choghadiya). The rounding had been called "a few
+# on which had run first in the process (measured on 30 dates: Rahu Kaal 4,
+# Abhijit 2, choghadiya 15). The rounding had been called "a few
 # seconds" and then measured at up to 3.37 min (Srinagar) / 3.18 min (Delhi) for
 # sunrise over 2026; either way a cache must not change the answer. Moon
 # rise/set was moved off the grid for the same reason (compute_moon_rise_set),
