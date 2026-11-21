@@ -3,8 +3,8 @@ New Delhi, computed by `muhurat.find_candidates` at render time and cached per I
 
 What is pinned here is what a visitor and a crawler get, not what the cache does inside:
 the dates, their order, the provenance label, once-per-(event, IST day) computation, the
-today/tomorrow line, vivah left alone, and a page that still renders when the computation
-or the geocode fails.
+today/tomorrow line, vivah's Abujha filter and disclosure (#1017 slice 8), and a page that
+still renders when the computation or the geocode fails.
 
 ORDER (the one judgement call): `find_candidates` returns best-tier-first, so the issue's
 "same order" read literally would list the five best-RATED dates of the window, possibly
@@ -13,10 +13,13 @@ in date order (the finder's own tie-break inside a tier). `test_landing_lists_ex
 five_earliest...` pins that and asserts its own premise: that the two orders differ.
 
 No network (geocoding is stubbed to New Delhi) and no LLM. Mutation rows:
-scripts/mutations/2026_11_21_1325_landing_dates.py.
+scripts/mutations/2026_11_21_1325_landing_dates.py and
+scripts/mutations/2026_11_21_1017_vivah_landing_dates.py.
 """
 from __future__ import annotations
 
+import dataclasses
+import html as html_lib
 import logging
 import re
 from datetime import date
@@ -196,25 +199,193 @@ def test_today_tomorrow_line_agrees_with_find_candidates_for_both_dates(client, 
     assert str(escape(caution.reason)) in html
 
 
-@pytest.mark.parametrize("slug", ["vidyarambh", "namkaran", "business"])
+@pytest.mark.parametrize("slug", ["vidyarambh", "namkaran", "business", "vivah"])
 def test_today_tomorrow_only_on_griha_pravesh(client, slug):
     r = client.get(f"/muhurat/{slug}")
     assert "Next 5 auspicious" in r.text
     assert "Today and tomorrow" not in r.text
 
 
-def test_vivah_landing_unchanged_and_never_computes(client, calls):
-    from astro_ai.muhurat import EVENT_LANDING
+def _vivah_expected(rows, n: int = 5):
+    """The earliest `n` auspicious non-Abujha rows, as printed. Independent of the route's filter."""
+    from astro_ai.muhurat import AUSPICIOUS_RATINGS
+
+    keep = [c for c in rows if c.rating in AUSPICIOUS_RATINGS and "abujha_muhurat" not in c.flags]
+    return [_fmt(c.d) for c in sorted(keep, key=lambda c: c.d)[:n]]
+
+
+def _disclosure(html: str) -> str:
+    """The vivah caveat paragraph, unescaped, whitespace-collapsed ('' when absent)."""
+    m = re.search(r"<p[^>]*>\s*It checks the day only.*?</p>", _section(html), flags=re.S)
+    return html_lib.unescape(_text(m.group(0))).strip() if m else ""
+
+
+def test_vivah_landing_lists_the_earliest_five_non_abujha_auspicious_dates(client):
+    """#1017 slice 8: vivah lists the five earliest auspicious dates with the finder's Abujha rows
+    dropped BEFORE the slice (so five, not four). Premises are asserted: an auspicious Abujha row
+    sits before the fifth listed date, or the filter would be untested."""
+    from astro_ai.muhurat import AUSPICIOUS_RATINGS
+
+    rows = _rows("vivah")
+    expected = _vivah_expected(rows)
+    assert len(expected) == 5, "premise: five non-Abujha auspicious dates in the window"
+    abujha = [c for c in rows if c.rating in AUSPICIOUS_RATINGS and "abujha_muhurat" in c.flags]
+    fifth = sorted((c for c in rows if c.rating in AUSPICIOUS_RATINGS
+                    and "abujha_muhurat" not in c.flags), key=lambda c: c.d)[4].d
+    assert any(c.d < fifth for c in abujha), "premise: an Abujha row would have been listed"
 
     r = client.get("/muhurat/vivah")
     assert r.status_code == 200
-    assert calls == []
-    assert "Computed by this site's Muhurat Finder" not in r.text
-    assert 'id="next-dates"' not in r.text
+    assert _listed(r.text) == expected
+    from astro_ai.muhurat import EVENT_LANDING, EVENT_RULES
+
+    assert f"Next 5 auspicious {EVENT_RULES['vivah']['label']} dates" in _text(r.text)
+    # Carried over from the deleted test_vivah_landing_unchanged_and_never_computes (chief's ruling
+    # on PR #1348): the page's own hero and first criteria line must still render, and the form must
+    # still post to /muhurat. Those were the only render-level checks of the vivah copy.
     landing = EVENT_LANDING["vivah"]
     assert str(escape(landing["hero_title"])) in r.text
     assert str(escape(landing["rules_summary"][0])) in r.text
     assert 'action="/muhurat"' in r.text
+
+
+def test_vivah_landing_never_shows_an_abujha_row(client):
+    """No Abujha-flagged date is printed in the list, and the section never names Abujha Muhurat or
+    Tulsi Vivah (the finder's reason text for that row)."""
+    rows = _rows("vivah")
+    flagged = [c for c in rows if "abujha_muhurat" in c.flags]
+    assert flagged, "premise: the window holds Abujha rows"
+    html = client.get("/muhurat/vivah").text
+    block = re.search(r"<ol.*?</ol>", _section(html), flags=re.S).group(0)
+    for c in flagged:
+        assert _fmt(c.d) not in block, f"Abujha date {c.d} is listed"
+    assert "Abujha Muhurat" not in _section(html)
+    assert "Tulsi" not in _section(html)
+
+
+def test_a_monkeypatched_abujha_row_is_dropped_from_the_vivah_list(client, monkeypatch):
+    """A row swapped to carry the Abujha flag disappears and the sixth real date moves up; a row
+    carrying a booster flag (not Abujha) stays; and a window whose only auspicious rows are Abujha
+    gives a 200 with no section and no disclosure."""
+    from astro_ai import muhurat
+    from astro_ai.routes import muhurat as route
+
+    rows = _rows("vivah")
+    keep = sorted((c for c in rows if c.rating in muhurat.AUSPICIOUS_RATINGS
+                   and "abujha_muhurat" not in c.flags), key=lambda c: c.d)
+    assert len(keep) >= 6, "premise: a sixth date exists to move up"
+    swapped, booster = keep[0], keep[1]
+    patched = [
+        dataclasses.replace(c, flags=("abujha_muhurat",), rating="excellent") if c is swapped
+        else dataclasses.replace(c, flags=("sarvartha_siddhi",)) if c is booster
+        else c
+        for c in rows]
+    monkeypatch.setattr(muhurat, "find_candidates", lambda *a, **k: patched)
+    html = client.get("/muhurat/vivah").text
+    listed = _listed(html)
+    assert _fmt(swapped.d) not in listed
+    assert _fmt(booster.d) in listed
+    assert len(listed) == 5
+    assert listed == [_fmt(c.d) for c in keep[1:6]]
+
+    only_abujha = [dataclasses.replace(c, flags=("abujha_muhurat",))
+                   if c.rating in muhurat.AUSPICIOUS_RATINGS else c for c in rows]
+    monkeypatch.setattr(muhurat, "find_candidates", lambda *a, **k: only_abujha)
+    monkeypatch.setattr(route, "reading_today", lambda: date(2026, 11, 22))  # a fresh cache key
+    r = client.get("/muhurat/vivah")
+    assert r.status_code == 200
+    assert 'id="next-dates"' not in r.text
+    assert "It checks the day only" not in r.text
+    assert 'action="/muhurat"' in r.text
+
+
+def test_vivah_landing_carries_the_disclosure_beside_the_list(client):
+    """The auditor's R9 disclosure sits in the list's section, after the provenance line, in this
+    order. The Rao quote is tied to its corpus source so it cannot be reworded off-corpus, and the
+    paragraph never says 'classical' (test_muhurat_classical_copy.py would fail on it)."""
+    html = client.get("/muhurat/vivah").text
+    text = html_lib.unescape(_text(_section(html)))
+    needles = [
+        "Computed by this site's Muhurat Finder for New Delhi, India (Asia/Kolkata)",
+        "on Nov 21, 2026",
+        "It checks the day only",
+        "does not read the rising sign (lagna) or the state of the 7th house",
+        "merely guidelines and not final recommendations",
+        "planetary strength matters more than the thumb-rules",
+        "not from the texts this site is built on",
+        "a starting point to take to a priest, not a confirmed muhurat",
+    ]
+    at = -1
+    for needle in needles:
+        nxt = text.find(needle, at + 1)
+        assert nxt > at, f"{needle!r} missing or out of order"
+        at = nxt
+    ref = (SRC / "knowledge" / "vedic_reference.md").read_text()
+    assert "merely guidelines and not final recommendations" in re.sub(r"\s+", " ", ref)
+    para = _disclosure(html)
+    assert para and "classical" not in para.lower()
+
+
+def test_the_disclosure_is_vivah_only(client):
+    """The other four events' rules were sourced in #1058; the vivah caveats are not theirs."""
+    for slug, _event in EVENTS:
+        assert "It checks the day only" not in client.get(f"/muhurat/{slug}").text, slug
+
+
+def test_vivah_landing_failure_still_renders_200(client, monkeypatch):
+    """A failed compute omits the section and the caveat with it (nothing to disclaim)."""
+    from astro_ai import muhurat
+
+    def boom(*a, **k):
+        raise ValueError("compute failed")
+
+    monkeypatch.setattr(muhurat, "find_candidates", boom)
+    r = client.get("/muhurat/vivah")
+    assert r.status_code == 200
+    assert 'action="/muhurat"' in r.text and "Criteria checked" in r.text
+    assert 'id="next-dates"' not in r.text and "<ol" not in r.text
+    assert "It checks the day only" not in r.text
+
+
+def test_vivah_computes_once_per_ist_day_in_the_threadpool(client, monkeypatch):
+    """Three GETs make one find_candidates call, with the fixed city, the IST day and the 90-day
+    window, and no chart: nothing personal can reach a public landing page."""
+    from astro_ai import hot_cache, muhurat
+    from astro_ai.routes import muhurat as route
+
+    real = muhurat.find_candidates
+    seen: list[tuple] = []
+
+    def spy(*a, **k):
+        seen.append((a, k))
+        return real(*a, **k)
+
+    monkeypatch.setattr(muhurat, "find_candidates", spy)
+    awaited: list[tuple] = []
+    real_pool = route.run_in_threadpool
+
+    async def pool_spy(fn, *args, **kwargs):
+        awaited.append((fn, args))
+        return await real_pool(fn, *args, **kwargs)
+
+    monkeypatch.setattr(route, "run_in_threadpool", pool_spy)
+    for _ in range(3):
+        assert client.get("/muhurat/vivah").status_code == 200
+    assert seen == [(("vivah", CITY, TODAY, 90), {})]
+    assert all(fn is hot_cache.get_or_compute for fn, _ in awaited)
+    assert awaited[0][1][0] == "muhurat:landing:vivah:2026-11-21"
+
+
+def test_the_abujha_exclusion_is_vivah_only(client, monkeypatch):
+    """Pins the auditor's 'the other four are unchanged': an Abujha-flagged griha-pravesh row is
+    STILL listed. The #1346 fix (finder precedence) changes this test deliberately."""
+    from astro_ai import muhurat
+
+    rows = _rows("griha_pravesh")
+    first = _auspicious_earliest(rows, 1)[0]
+    patched = [dataclasses.replace(c, flags=("abujha_muhurat",)) if c is first else c for c in rows]
+    monkeypatch.setattr(muhurat, "find_candidates", lambda *a, **k: patched)
+    assert _listed(client.get("/muhurat/griha-pravesh").text)[0] == _fmt(first.d)
 
 
 def test_no_auspicious_dates_in_window_shows_no_section(client, monkeypatch):
