@@ -334,6 +334,11 @@ RULING2 = [
     ("avoid_weekday_soft", "vivah", None, "contested", "### 29.9 ",
      "Traditions differ on Saturday: one passage says avoid it for all auspicious work, another "
      "calls it middling, so this finder deducts a point instead of excluding it."),
+    ("avoid_weekday_soft", "vidyarambh", None, "sourced", "#### Vidyarambh",
+     "The Muhurtha tradition says avoid; this finder deducts a point."),
+    ("avoid_weekday_soft", "business", None, "site_convention", "#### Business start",
+     "This finder deducts a point for Saturday; the Muhurtha tradition calls it passable for "
+     "buying and middling for selling, and gives no rule for a business start."),
     ("avoid_tithi", "vivah", None, "sourced", "### 29.9 ",
      "These tithis are rejected for auspicious work in the Muhurtha tradition. Purnima is "
      "contested: the Vedic table lists it, while the Muhurtha tradition's general list rejects "
