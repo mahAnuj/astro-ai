@@ -10,7 +10,7 @@
 {# meta robots — pages override to opt out of indexing. Snapshot pages
    (/r/{id}) use "noindex, nofollow" because they contain PII and expire. #}
 <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
-<link rel="canonical" href="{{ site_url }}{{ request.url.path }}">
+{% block canonical %}<link rel="canonical" href="{{ site_url }}{{ request.url.path }}">{% endblock %}
 {# hreflang — emitted ONLY for the 13 pages with a real Hindi version (#124).
    The English URL and its /hi/ twin render the SAME three tags: Google
    validates reciprocity by comparing the two pages' annotation sets, so they
