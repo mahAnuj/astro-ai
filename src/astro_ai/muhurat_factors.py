@@ -68,8 +68,12 @@ S, C, SC = "sourced", "contested", "site_convention"
 _H97, _H914, _H913, _H96 = "### 29.9 ", "### 29.14 ", "### 29.13 ", "### 29.6 "
 _BIZ = "#### Business start"
 _NAK = "#### Namkaran"
+_VD = "#### Vidyarambh"
 
-_BIZ_LIST = "site convention, not sourced: this finder's own {what} list for a new venture."
+_BIZ_LIST = "Site convention, not sourced: this finder's own {what} list for a new venture."
+
+
+_VIVAH_NO_ASK = " The two wedding lists the books give do not ask for it."
 
 
 def _combust(planet: str, orb: str) -> str:
@@ -87,6 +91,10 @@ REGISTRY: dict[str, dict[str, Any]] = {
                          "favourable for {event}."),
         "events": {
             "business": _vr(SC, _BIZ_LIST.format(what="tithi"), _BIZ),
+            # Second ruling: only one table lists it, so "and the Muhurtha tradition list it"
+            # would overclaim; the other source gives an avoid list only.
+            "namkaran": _vr(S, "This tithi is on the Vedic table's list for naming a child, and "
+                               "the Muhurtha tradition does not reject it.", _NAK),
         },
         "when": {
             # Worded here from the ruling's "rests only on Rao's paksha-less row"; status
@@ -109,10 +117,29 @@ REGISTRY: dict[str, dict[str, Any]] = {
                             "Vedic tables for {event}.", _H914),
             "business": _vr(SC, _BIZ_LIST.format(what="star"), _BIZ),
         },
+        # Second ruling: "listed by one tradition, not both" is false for Rohini (the Muhurtha
+        # tradition holds it neutral), so each star has its own sentence. Pushya is sourced to
+        # Raman's list alone: "and the Vedic tables" overclaims for it. Namkaran Chitra is
+        # contested, not sourced: one table lists it, the other leaves it out.
         "when": {
-            "vidyarambh": {n: _vr(C, "This star is on a favourable list for {event}, but listed "
-                                     "by one tradition, not both.", "#### Vidyarambh")
-                           for n in ("Rohini", "Revati", "Anuradha")},
+            "vidyarambh": {
+                "Rohini": _vr(C, "The Muhurtha tradition holds this star neutral, not favourable, "
+                                 "for learning the alphabet, and the Vedic table does not list "
+                                 "it; the credit is this finder's.", _VD),
+                "Revati": _vr(C, "The Vedic table lists this star for learning the alphabet; the "
+                                 "Muhurtha tradition holds it neutral, not favourable, so the "
+                                 "two differ.", _VD),
+                "Anuradha": _vr(C, "The Vedic table lists this star for learning the alphabet; "
+                                   "the Muhurtha tradition's list leaves it out, so the two "
+                                   "differ.", _VD),
+                "Pushya": _vr(S, "This star is on the favourable list in B.V. Raman's Muhurtha "
+                                 "for {event}; the Vedic table does not list it.", _VD),
+            },
+            "namkaran": {
+                "Chitra": _vr(C, "The Vedic table lists this star for naming a child; the "
+                                 "Muhurtha tradition's list leaves it out, so the two differ.",
+                              _NAK),
+            },
         },
     },
     "good_weekday": {
@@ -120,8 +147,15 @@ REGISTRY: dict[str, dict[str, Any]] = {
         "default": _r(S, "This weekday is favoured for {event} in the Muhurtha tradition."),
         "events": {
             "vivah": _vr(S, "This weekday is favoured for {event} in the Muhurtha tradition.", _H97),
+            # Second ruling: Raman only rejects Tuesday, Saturday and Sunday for study; the four
+            # good days are the Vedic table's list, so "in the Muhurtha tradition" overclaims.
+            "vidyarambh": _vr(S, "This weekday is on the Vedic table's list for {event}; the "
+                                 "Muhurtha tradition rejects only Tuesday, Saturday and Sunday.",
+                              _VD),
             "namkaran": _vr(C, "Traditions differ on weekdays.", _NAK),
-            "business": _vr(SC, "site convention, not sourced: this finder's own weekday list for "
+            # Worded here: the ruling's convention label plus the Sunday/Friday facts of the
+            # `#### Business start` section.
+            "business": _vr(SC, "Site convention, not sourced: this finder's own weekday list for "
                                 "a new venture; the books we hold give Sunday no support and call "
                                 "Friday unpropitious for selling.", _BIZ),
         },
@@ -142,17 +176,30 @@ REGISTRY: dict[str, dict[str, Any]] = {
                           "auspicious work, another calls it middling, so this finder deducts a "
                           "point instead of excluding it.", _H97),
         "events": {
+            # True for Saturday and for Sunday: one sentence serves both.
             "vidyarambh": _vr(S, "The Muhurtha tradition says avoid; this finder deducts a "
-                                 "point.", "#### Vidyarambh"),
+                                 "point.", _VD),
+            # Second ruling: the default is Vivah's story ("another calls it middling" is false
+            # for these two), so each gets its own.
+            "griha_pravesh": _vr(C, "Traditions differ on Saturday: the Muhurtha tradition says "
+                                    "avoid it in general, but one passage notes some writers "
+                                    "recommend it for house entry, with a risk of theft, and the "
+                                    "Vedic table does not list it. This finder deducts a point "
+                                    "instead of excluding it.", "#### Griha Pravesh"),
+            "namkaran": _vr(C, "Traditions differ on Saturday: the Muhurtha tradition does not "
+                               "count it good for naming a child, and the Vedic table lists it. "
+                               "This finder deducts a point instead of excluding it.", _NAK),
             # Worded here: the ruling rules the penalty a site convention for business without
             # giving a sentence; the facts are knowledge/ Business start (Saturday "passable",
-            # "middling").
-            "business": _vr(SC, "This finder deducts a point for Saturday; the books we hold call "
-                                "it passable for buying and middling for selling, and give no "
-                                "rule for a business start.", _BIZ),
+            # "middling"). "The Muhurtha tradition" is the second ruling's optional wording.
+            "business": _vr(SC, "This finder deducts a point for Saturday; the Muhurtha tradition "
+                                "calls it passable for buying and middling for selling, and gives "
+                                "no rule for a business start.", _BIZ),
         },
     },
     # ─── boosters ───────────────────────────────────────────────────
+    # The closing clause ("Whether and how this finder lifts a grade ...") is worded here, so the
+    # page never claims the grade rose; the rest is the ruling's sentence.
     "amrit_siddhi": {
         "label": "Amrit Siddhi present",
         "default": _vr(C, "A weekday-and-star pairing. The Muhurtha tradition has a similar "
@@ -222,6 +269,8 @@ REGISTRY: dict[str, dict[str, Any]] = {
         "label": "Guru not combust",
         "default": _gr(SC, _combust("Guru", "11°"), "### 12.5 "),
         "events": {
+            # Second ruling (optional sourced addition): the two wedding lists do not ask for it.
+            "vivah": _gr(SC, _combust("Guru", "11°") + _VIVAH_NO_ASK, "### 12.5 "),
             "griha_pravesh": _vr(C, _combust("Guru", "11°") + " The tradition asks for strong "
                                     "Guru and Shukra at house entry.", _H913),
             "vidyarambh": _vr(SC, _combust("Guru", "11°"), _H913),
@@ -230,6 +279,10 @@ REGISTRY: dict[str, dict[str, Any]] = {
     "venus_combust": {
         "label": "Shukra not combust",
         "default": _gr(SC, _combust("Shukra", "10° (9° when retrograde)"), "### 12.5 "),
+        "events": {
+            "vivah": _gr(SC, _combust("Shukra", "10° (9° when retrograde)") + _VIVAH_NO_ASK,
+                         "### 12.5 "),
+        },
     },
     "mercury_combust": {
         "label": "Budh not combust",
@@ -260,13 +313,14 @@ REGISTRY: dict[str, dict[str, Any]] = {
                          "tradition."),
         "events": {
             "vivah": _vr(S, "These tithis are rejected for auspicious work in the Muhurtha "
-                            "tradition. Purnima is the exception: the books differ on it.", _H97),
+                            "tradition. Purnima is contested: the Vedic table lists it, while "
+                            "the Muhurtha tradition's general list rejects it.", _H97),
             "griha_pravesh": _vr(S, "These tithis are rejected for auspicious work in the "
                                     "Muhurtha tradition. Navami is this finder's own addition.",
                                  "#### Griha Pravesh"),
             "namkaran": _vr(S, "These tithis are rejected for auspicious work in the Muhurtha "
-                               "tradition. Navami is the exception: the books differ on it.",
-                            _NAK),
+                               "tradition. Navami is contested: the figure for it in the Muhurtha "
+                               "text is unclear, and the Vedic table does not list it.", _NAK),
             "business": _vr(S, "These tithis are rejected for auspicious work in the Muhurtha "
                                "tradition. Navami is this finder's own addition.", _H97),
         },
@@ -283,13 +337,16 @@ REGISTRY: dict[str, dict[str, Any]] = {
         "default": _vr(S, "Tuesday is rejected for auspicious work in the Muhurtha tradition.",
                        _H97),
         "events": {
+            # Worded here; matches muhurat._NAMKARAN_TUESDAY_EXCEPTION.
             "namkaran": _vr(S, "Tuesday is rejected for auspicious work in the Muhurtha "
                                "tradition. It allows a Tuesday on the child's 10th, 12th or 16th "
                                "day after birth; this finder has no birth date, so it cannot "
                                "apply that exception.", _H97),
         },
     },
-    # One note, not a per-factor weight claim (ruling, "Aggregate scoring weights").
+    # One note, not a per-factor weight claim (ruling, "Aggregate scoring weights"). The list of
+    # weights and tiers after the ruling's sentence is worded here; it matches score_event
+    # (tests/test_muhurat_factor_parity.py pins +2, +2, +1, +1, -1 and the 5/4/3 tiers).
     "soft_scoring_weights": {
         "label": "How the grade is counted",
         "default": _vr(SC, "The grade is a point count this finder chose; the books list "

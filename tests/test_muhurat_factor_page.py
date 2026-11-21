@@ -264,6 +264,13 @@ def test_guru_combustion_for_griha_pravesh_and_vidyarambh_is_the_finders_own_cho
         assert "this finder's own convention" in entry[:400], event
 
 
+def test_the_vidyarambh_legend_carries_the_second_ruling_wording(client):
+    leg = _text(_legend(_page(client, "vidyarambh", 180)))
+    assert "not both" not in leg
+    assert "the Muhurtha tradition rejects only Tuesday, Saturday and Sunday" in leg
+    assert "Vedic table's list for Vidyarambh (Starting Education)" in leg
+
+
 def test_no_source_reference_reaches_the_rendered_lists_or_legend(client):
     for event, days in (("vivah", 180), ("griha_pravesh", 60), ("vidyarambh", 180),
                         ("business", 60), ("namkaran", 60)):

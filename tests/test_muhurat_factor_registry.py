@@ -292,10 +292,128 @@ def test_the_qualifiers_reach_the_item_they_belong_to():
     dwa = {i.key: i for i in mf.explain(
         _cand(tithi="Dwadashi", weekday="Monday"), "vidyarambh").scored}["good_tithi"]
     assert (dwa.qual, dwa.status) == ("Dwadashi", "contested")
-    for star, qual in (("Rohini", "Rohini"), ("Pushya", "")):
+    # Hasta carries no qualifier; Pushya's qualifier (second ruling) keeps it sourced, to Raman alone.
+    for star, qual, status in (("Rohini", "Rohini", "contested"), ("Pushya", "Pushya", "sourced"),
+                               ("Hasta", "", "sourced")):
         it = {i.key: i for i in mf.explain(_cand(nakshatra=star), "vidyarambh").scored
               }["good_nakshatra"]
-        assert it.qual == qual and it.status == ("contested" if qual else "sourced"), star
+        assert (it.qual, it.status) == (qual, status), star
+
+
+# The astro-auditor's second ruling (#1017 R3, 2026-11-21): (key, event, value) -> (status, heading,
+# sentence), verbatim (`{event}` where the ruling has it). A sentence reverting to the shared one, or a status drifting, goes red here.
+RULING2 = [
+    ("good_nakshatra", "vidyarambh", "Rohini", "contested", "#### Vidyarambh",
+     "The Muhurtha tradition holds this star neutral, not favourable, for learning the alphabet, "
+     "and the Vedic table does not list it; the credit is this finder's."),
+    ("good_nakshatra", "vidyarambh", "Revati", "contested", "#### Vidyarambh",
+     "The Vedic table lists this star for learning the alphabet; the Muhurtha tradition holds it "
+     "neutral, not favourable, so the two differ."),
+    ("good_nakshatra", "vidyarambh", "Anuradha", "contested", "#### Vidyarambh",
+     "The Vedic table lists this star for learning the alphabet; the Muhurtha tradition's list "
+     "leaves it out, so the two differ."),
+    ("good_nakshatra", "vidyarambh", "Pushya", "sourced", "#### Vidyarambh",
+     "This star is on the favourable list in B.V. Raman's Muhurtha for {event}; the "
+     "Vedic table does not list it."),
+    ("good_nakshatra", "namkaran", "Chitra", "contested", "#### Namkaran",
+     "The Vedic table lists this star for naming a child; the Muhurtha tradition's list leaves it "
+     "out, so the two differ."),
+    ("good_tithi", "namkaran", None, "sourced", "#### Namkaran",
+     "This tithi is on the Vedic table's list for naming a child, and the Muhurtha tradition does "
+     "not reject it."),
+    ("good_weekday", "vidyarambh", None, "sourced", "#### Vidyarambh",
+     "This weekday is on the Vedic table's list for {event}; the Muhurtha tradition "
+     "rejects only Tuesday, Saturday and Sunday."),
+    ("avoid_weekday_soft", "griha_pravesh", None, "contested", "#### Griha Pravesh",
+     "Traditions differ on Saturday: the Muhurtha tradition says avoid it in general, but one "
+     "passage notes some writers recommend it for house entry, with a risk of theft, and the Vedic "
+     "table does not list it. This finder deducts a point instead of excluding it."),
+    ("avoid_weekday_soft", "namkaran", None, "contested", "#### Namkaran",
+     "Traditions differ on Saturday: the Muhurtha tradition does not count it good for naming a "
+     "child, and the Vedic table lists it. This finder deducts a point instead of excluding it."),
+    ("avoid_weekday_soft", "vivah", None, "contested", "### 29.9 ",
+     "Traditions differ on Saturday: one passage says avoid it for all auspicious work, another "
+     "calls it middling, so this finder deducts a point instead of excluding it."),
+    ("avoid_tithi", "vivah", None, "sourced", "### 29.9 ",
+     "These tithis are rejected for auspicious work in the Muhurtha tradition. Purnima is "
+     "contested: the Vedic table lists it, while the Muhurtha tradition's general list rejects "
+     "it."),
+    ("avoid_tithi", "namkaran", None, "sourced", "#### Namkaran",
+     "These tithis are rejected for auspicious work in the Muhurtha tradition. Navami is "
+     "contested: the figure for it in the Muhurtha text is unclear, and the Vedic table does not "
+     "list it."),
+    ("avoid_tithi", "griha_pravesh", None, "sourced", "#### Griha Pravesh",
+     "These tithis are rejected for auspicious work in the Muhurtha tradition. Navami is this "
+     "finder's own addition."),
+    ("avoid_tithi", "business", None, "sourced", "### 29.9 ",
+     "These tithis are rejected for auspicious work in the Muhurtha tradition. Navami is this "
+     "finder's own addition."),
+    ("good_tithi", "business", None, "site_convention", "#### Business start",
+     "Site convention, not sourced: this finder's own tithi list for a new venture."),
+    ("good_weekday", "business", None, "site_convention", "#### Business start",
+     "Site convention, not sourced: this finder's own weekday list for a new venture; the books we "
+     "hold give Sunday no support and call Friday unpropitious for selling."),
+    ("jupiter_combust", "vivah", None, "site_convention", "### 12.5 ",
+     "Guru within 11\u00b0 of the Sun counts as combust (orb from the Muhurtha tradition). "
+     "Treating that as a veto for {event} is this finder's own convention. The two wedding "
+     "lists the books give do not ask for it."),
+    ("venus_combust", "vivah", None, "site_convention", "### 12.5 ",
+     "Shukra within 10\u00b0 (9\u00b0 when retrograde) of the Sun counts as combust (orb from the "
+     "Muhurtha tradition). Treating that as a veto for {event} is this finder's own convention. "
+     "The two wedding lists the books give do not ask for it."),
+    ("jupiter_combust", "vidyarambh", None, "site_convention", "### 29.13 ",
+     "Guru within 11\u00b0 of the Sun counts as combust (orb from the Muhurtha tradition). "
+     "Treating that as a veto for {event} is this finder's own convention."),
+]
+
+
+@pytest.mark.parametrize("key,event,value,status,heading,sentence", RULING2,
+                         ids=[f"{r[0]}-{r[1]}-{r[2]}" for r in RULING2])
+def test_each_second_ruling_override_resolves_to_the_auditors_status_and_sentence(
+        key, event, value, status, heading, sentence):
+    got = mf.resolve(key, event, value)
+    assert got[0] == status
+    assert got[2] == heading
+    # `{event}` is the event's own label, filled by resolve.
+    assert got[3] == sentence.format(event=m.EVENT_RULES[event]["label"])
+
+
+def test_second_ruling_overrides_reach_the_row_for_their_own_event_only():
+    def scored(event, **kw):
+        return {i.key: i for i in mf.explain(_cand(**kw), event).scored}
+
+    chitra = scored("namkaran", nakshatra="Chitra")["good_nakshatra"]
+    assert (chitra.qual, chitra.status) == ("Chitra", "contested")
+    # the same star is a plain sourced credit for an event with no ruling on it
+    assert scored("griha_pravesh", nakshatra="Chitra")["good_nakshatra"].status == "sourced"
+    for event, status in (("griha_pravesh", "contested"), ("namkaran", "contested"),
+                          ("vivah", "contested"), ("business", "site_convention")):
+        it = scored(event, weekday="Saturday")["avoid_weekday_soft"]
+        assert (it.status, it.against) == (status, True), event
+    assert scored("vidyarambh", weekday="Sunday")["avoid_weekday_soft"].status == "sourced"
+    assert scored("namkaran")["good_tithi"].status == "sourced"
+    assert scored("vidyarambh", weekday="Monday")["good_weekday"].status == "sourced"
+
+
+def test_no_vidyarambh_star_is_called_listed_by_one_tradition_not_both():
+    """False for Rohini (the Muhurtha tradition holds it neutral); the second ruling gave each of
+    the four stars its own sentence."""
+    for _key, event, val in _all_resolutions():
+        for key in ("good_nakshatra", "good_tithi"):
+            assert "not both" not in mf.resolve(key, event, val)[3], (key, event, val)
+    texts = {n: mf.resolve("good_nakshatra", "vidyarambh", n)[3]
+             for n in ("Rohini", "Revati", "Anuradha", "Pushya")}
+    assert len(set(texts.values())) == 4
+
+
+def test_a_qualified_star_is_its_own_legend_entry_with_its_own_sentence():
+    rows = [_cand(nakshatra="Rohini", weekday="Monday"), _cand(nakshatra="Pushya")]
+    lg = mf.legend(rows, "vidyarambh")
+    by_label = {e.label: e for e in lg.entries}
+    assert by_label["Good star (Rohini)"].status == "contested"
+    assert by_label["Good star (Pushya)"].status == "sourced"
+    assert "Good star" not in by_label, "no unqualified star was shown on this page"
+    assert "neutral" in by_label["Good star (Rohini)"].sentence
 
 
 def test_boosters_are_listed_as_present_and_never_as_a_raise():
