@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-21T16:28:05Z",
+  "generated_at": "2026-11-21T16:50:17Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 155,
+  "open": 158,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 66,
+    "UNCLASSIFIED": 68,
     "INFRA": 16,
     "OPS": 10,
     "REDESIGN": 10,
@@ -16,6 +16,7 @@
     "TOKENS": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "AGENT-MERGE": 2,
     "UI": 2,
     "PRIVACY": 2,
     "MEASURE": 2,
@@ -28,14 +29,13 @@
     "NOTIFY": 1,
     "KNOWLEDGE": 1,
     "AGENT-MEASURE": 1,
-    "AGENT-MERGE": 1,
     "ASK": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 46,
-    "untyped": 38,
+    "bug": 48,
+    "untyped": 39,
     "enhancement": 30,
     "chore": 24,
     "correctness": 11,
@@ -43,13 +43,58 @@
     "ui": 1
   },
   "by_priority": {
-    "unset": 94,
+    "unset": 97,
     "medium": 28,
     "high": 21,
     "low": 12
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1355,
+      "title": "QA follow-up: dark-half tithi credit and mixed-status avoid_tithi are labelled unevenly across events (PR #1350)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T16:48:27Z",
+      "updated": "2026-11-21T16:48:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1354,
+      "title": "QA follow-up: Abujha finder row says \"universally auspicious\" beside a disclosure that no book names it (PR #1350)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T16:48:26Z",
+      "updated": "2026-11-21T16:48:26Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1352,
+      "title": "agent-merge: a failed sibling `merge` run and an orphan cancelled `mutants` check vote forever on #1335, and the sweep never reaches #1342",
+      "ask": "",
+      "area": "AGENT-MERGE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-21T16:30:36Z",
+      "updated": "2026-11-21T16:30:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1351,
       "title": "[OPS] Loop comment noise rose: duplicate rate 3.5% -> 5.5%",
@@ -62,7 +107,7 @@
         "chore"
       ],
       "created": "2026-11-21T16:27:59Z",
-      "updated": "2026-11-21T16:27:59Z",
+      "updated": "2026-11-21T16:38:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -94,7 +139,7 @@
         "astrology-correctness"
       ],
       "created": "2026-11-21T11:10:53Z",
-      "updated": "2026-11-21T11:42:01Z",
+      "updated": "2026-11-21T16:28:22Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1045,7 +1090,7 @@
         "growth"
       ],
       "created": "2026-11-14T13:09:28Z",
-      "updated": "2026-11-21T15:19:14Z",
+      "updated": "2026-11-21T16:49:16Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1211,7 +1256,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-11T21:59:55Z",
-      "updated": "2026-11-18T02:05:25Z",
+      "updated": "2026-11-21T16:30:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2537,9 +2582,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-21T16:28:05Z",
+    "generated_at": "2026-11-21T16:50:17Z",
     "window_days": 28,
-    "open_now": 155,
+    "open_now": 158,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2547,7 +2592,7 @@
         "opened": 0,
         "closed": 0,
         "net": 0,
-        "open_end": 124,
+        "open_end": 123,
         "opened_by": {},
         "closed_by": {}
       },
@@ -2556,7 +2601,7 @@
         "opened": 2,
         "closed": 0,
         "net": 2,
-        "open_end": 126,
+        "open_end": 125,
         "opened_by": {
           "audit": 1,
           "loop": 1
@@ -2568,7 +2613,7 @@
         "opened": 4,
         "closed": 1,
         "net": 3,
-        "open_end": 129,
+        "open_end": 128,
         "opened_by": {
           "loop": 4
         },
@@ -2581,7 +2626,7 @@
         "opened": 8,
         "closed": 2,
         "net": 6,
-        "open_end": 135,
+        "open_end": 134,
         "opened_by": {
           "audit": 2,
           "loop": 6
@@ -2595,7 +2640,7 @@
         "opened": 5,
         "closed": 0,
         "net": 5,
-        "open_end": 140,
+        "open_end": 139,
         "opened_by": {
           "loop": 5
         },
@@ -2606,7 +2651,7 @@
         "opened": 5,
         "closed": 8,
         "net": -3,
-        "open_end": 137,
+        "open_end": 136,
         "opened_by": {
           "audit": 3,
           "loop": 2
@@ -2622,7 +2667,7 @@
         "opened": 4,
         "closed": 12,
         "net": -8,
-        "open_end": 129,
+        "open_end": 128,
         "opened_by": {
           "audit": 3,
           "loop": 1
@@ -2639,7 +2684,7 @@
         "opened": 8,
         "closed": 4,
         "net": 4,
-        "open_end": 133,
+        "open_end": 132,
         "opened_by": {
           "audit": 6,
           "loop": 2
@@ -2654,7 +2699,7 @@
         "opened": 3,
         "closed": 5,
         "net": -2,
-        "open_end": 131,
+        "open_end": 130,
         "opened_by": {
           "loop": 3
         },
@@ -2668,7 +2713,7 @@
         "opened": 2,
         "closed": 4,
         "net": -2,
-        "open_end": 129,
+        "open_end": 128,
         "opened_by": {
           "loop": 1,
           "ops": 1
@@ -2682,7 +2727,7 @@
         "opened": 3,
         "closed": 3,
         "net": 0,
-        "open_end": 129,
+        "open_end": 128,
         "opened_by": {
           "loop": 3
         },
@@ -2696,7 +2741,7 @@
         "opened": 7,
         "closed": 2,
         "net": 5,
-        "open_end": 134,
+        "open_end": 133,
         "opened_by": {
           "loop": 6,
           "ops": 1
@@ -2711,7 +2756,7 @@
         "opened": 12,
         "closed": 23,
         "net": -11,
-        "open_end": 123,
+        "open_end": 122,
         "opened_by": {
           "audit": 7,
           "loop": 5
@@ -2727,7 +2772,7 @@
         "opened": 5,
         "closed": 12,
         "net": -7,
-        "open_end": 116,
+        "open_end": 115,
         "opened_by": {
           "loop": 5
         },
@@ -2742,7 +2787,7 @@
         "opened": 5,
         "closed": 5,
         "net": 0,
-        "open_end": 116,
+        "open_end": 115,
         "opened_by": {
           "loop": 4,
           "ops": 1
@@ -2757,7 +2802,7 @@
         "opened": 8,
         "closed": 12,
         "net": -4,
-        "open_end": 112,
+        "open_end": 111,
         "opened_by": {
           "audit": 1,
           "loop": 6,
@@ -2773,7 +2818,7 @@
         "opened": 7,
         "closed": 11,
         "net": -4,
-        "open_end": 108,
+        "open_end": 107,
         "opened_by": {
           "audit": 1,
           "loop": 5,
@@ -2790,7 +2835,7 @@
         "opened": 12,
         "closed": 17,
         "net": -5,
-        "open_end": 103,
+        "open_end": 102,
         "opened_by": {
           "audit": 1,
           "loop": 10,
@@ -2808,7 +2853,7 @@
         "opened": 11,
         "closed": 11,
         "net": 0,
-        "open_end": 103,
+        "open_end": 102,
         "opened_by": {
           "audit": 1,
           "loop": 8,
@@ -2825,7 +2870,7 @@
         "opened": 13,
         "closed": 10,
         "net": 3,
-        "open_end": 106,
+        "open_end": 105,
         "opened_by": {
           "loop": 12,
           "ops": 1
@@ -2840,7 +2885,7 @@
         "opened": 34,
         "closed": 22,
         "net": 12,
-        "open_end": 118,
+        "open_end": 117,
         "opened_by": {
           "audit": 14,
           "loop": 20
@@ -2856,7 +2901,7 @@
         "opened": 44,
         "closed": 23,
         "net": 21,
-        "open_end": 139,
+        "open_end": 138,
         "opened_by": {
           "audit": 33,
           "loop": 11
@@ -2872,7 +2917,7 @@
         "opened": 3,
         "closed": 10,
         "net": -7,
-        "open_end": 132,
+        "open_end": 131,
         "opened_by": {
           "loop": 2,
           "ops": 1
@@ -2883,16 +2928,16 @@
       },
       {
         "date": "2026-11-17",
-        "opened": 23,
-        "closed": 25,
+        "opened": 22,
+        "closed": 24,
         "net": -2,
-        "open_end": 130,
+        "open_end": 129,
         "opened_by": {
           "audit": 9,
-          "loop": 14
+          "loop": 13
         },
         "closed_by": {
-          "close-on-evidence": 14,
+          "close-on-evidence": 13,
           "prioritise": 2,
           "main-red-report": 3,
           "owner": 6
@@ -2903,7 +2948,7 @@
         "opened": 10,
         "closed": 19,
         "net": -9,
-        "open_end": 121,
+        "open_end": 120,
         "opened_by": {
           "loop": 9,
           "ops": 1
@@ -2919,7 +2964,7 @@
         "opened": 11,
         "closed": 7,
         "net": 4,
-        "open_end": 125,
+        "open_end": 124,
         "opened_by": {
           "audit": 4,
           "loop": 7
@@ -2935,7 +2980,7 @@
         "opened": 31,
         "closed": 10,
         "net": 21,
-        "open_end": 146,
+        "open_end": 145,
         "opened_by": {
           "audit": 22,
           "loop": 9
@@ -2949,13 +2994,13 @@
       },
       {
         "date": "2026-11-21",
-        "opened": 17,
+        "opened": 21,
         "closed": 8,
-        "net": 9,
-        "open_end": 155,
+        "net": 13,
+        "open_end": 158,
         "opened_by": {
-          "loop": 16,
-          "ops": 1
+          "loop": 19,
+          "ops": 2
         },
         "closed_by": {
           "close-on-evidence": 8
@@ -4120,11 +4165,6 @@
         "closer": "close-on-evidence"
       },
       {
-        "number": 1177,
-        "closed_at": "2026-11-17T17:38:17Z",
-        "closer": "close-on-evidence"
-      },
-      {
         "number": 1178,
         "closed_at": "2026-11-18T03:41:45Z",
         "closer": "close-on-evidence"
@@ -4295,12 +4335,12 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 0,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 113,
+          "merged": 114,
           "median_h": 0.6,
           "p90_h": 11.0,
           "max_h": 46.6,
@@ -4424,7 +4464,7 @@
           ]
         },
         "28d": {
-          "merged": 325,
+          "merged": 326,
           "median_h": 0.5,
           "p90_h": 16.5,
           "max_h": 122.1,
@@ -4715,7 +4755,7 @@
         },
         {
           "date": "2026-11-21",
-          "merged": 9,
+          "merged": 10,
           "median_h": 0.4,
           "max_h": 2.5
         }
@@ -4724,22 +4764,15 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 11.3,
+          "age_h": 11.6,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 8.2,
+          "age_h": 8.6,
           "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1350,
-          "title": "partial/1017 r3 factor registry",
-          "age_h": 0.0,
-          "waiting_on": "gates / QA",
           "why": null
         }
       ]
