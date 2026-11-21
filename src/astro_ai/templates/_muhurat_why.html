@@ -1,0 +1,48 @@
+{#- #1017 R3: "Why this date" for one finder row. Reads `c` (the row) and `selected_event` from the
+   including template's context, and renders nothing when muhurat_why() has nothing to say (an avoid
+   or caution row, an unknown event). Items come from src/astro_ai/muhurat_factors.py; every one
+   carries a status, and a tag shows whenever the status is not "sourced", so no factor reaches the
+   page unlabelled. The sentence behind each label is in the page legend, once, never in a title=
+   attribute (no hover on a phone). English only, like the surrounding block. No |safe.
+
+   The tag classes are whole pairs, not a colour-family name, and this partial does not read the
+   including template's `colors` variable (it moves in #1342). -#}
+{%- macro why_list(items, tags) -%}
+<ul class="list-disc pl-4 space-y-0.5">
+{%- for it in items %}
+<li>{{ it.text }}
+{%- if it.against %} <span class="inline-block px-1.5 py-0.5 rounded {{ tags['against'][1] }}">{{ tags['against'][0] }}</span>{% endif -%}
+{%- if it.status in tags %} <span class="inline-block px-1.5 py-0.5 rounded {{ tags[it.status][1] }}">{{ tags[it.status][0] }}</span>{% endif -%}
+</li>
+{%- endfor %}
+</ul>
+{%- endmacro -%}
+{%- set why = muhurat_why(c, selected_event) -%}
+{%- if why -%}
+{%- set why_tags = {
+     'site_convention': ['site convention', 'bg-bhagya-cream-2 text-bhagya-ink-soft'],
+     'contested': ['traditions differ', 'bg-amber-100 text-amber-800'],
+     'against': ['counted against', 'bg-rose-100 text-rose-800']} -%}
+<details class="mt-1">
+<summary class="cursor-pointer text-bhagya-sindoor text-xs font-semibold">Why this date ▼</summary>
+<div class="mt-1 space-y-1 text-bhagya-ink-soft">
+{%- if why.note %}
+<p>{{ why.note }}</p>
+{%- endif %}
+<div>
+<div class="font-semibold">{{ why.scored_heading }}</div>
+{%- if why.scored %}
+{{ why_list(why.scored, why_tags) }}
+{%- else %}
+<p>{{ why.no_points }}</p>
+{%- endif %}
+</div>
+{%- if why.cleared %}
+<div>
+<div class="font-semibold">{{ why.cleared_heading }}</div>
+{{ why_list(why.cleared, why_tags) }}
+</div>
+{%- endif %}
+</div>
+</details>
+{%- endif -%}

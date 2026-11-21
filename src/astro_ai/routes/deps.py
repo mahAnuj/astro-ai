@@ -255,6 +255,22 @@ def _muhurat_auspicious_ratings() -> tuple[str, ...]:
 
 
 templates.env.globals["muhurat_auspicious_ratings"] = _muhurat_auspicious_ratings
+
+
+def _muhurat_why(candidate, event_type: str):
+    """What scored and what was checked for one finder row (#1017 R3). Lazy for the same reason."""
+    from astro_ai.muhurat_factors import explain
+    return explain(candidate, event_type)
+
+
+def _muhurat_why_legend(candidates, event_type: str):
+    """The once-per-page legend for those rows' factor labels (#1017 R3)."""
+    from astro_ai.muhurat_factors import legend
+    return legend(candidates, event_type)
+
+
+templates.env.globals["muhurat_why"] = _muhurat_why
+templates.env.globals["muhurat_why_legend"] = _muhurat_why_legend
 # current_year used by nav labels like "Horoscope 2026" — auto-updates yearly.
 templates.env.globals["current_year"] = lambda: date.today().year
 # Astrology-term Devanagari lookups — templates call e.g.

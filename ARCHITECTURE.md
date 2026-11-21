@@ -138,6 +138,13 @@ src/astro_ai/
   numerology.py    1,910  Chaldean + Lo Shu calculators
   festival_registry.py 1,672
   muhurat.py       1,966  electional scoring; shares angas with panchang
+  muhurat_factors.py 525  why a finder row rated as it did: REGISTRY of factor/exclusion keys, each
+                        sourced | contested | site_convention with a knowledge heading and a page sentence;
+                        explain() and legend() are pure functions (0 tokens, 0 I/O) behind the Jinja globals
+                        `muhurat_why` / `muhurat_why_legend` (routes/deps.py) and the partials
+                        `_muhurat_why.html` / `_muhurat_why_legend.html`. Soft factors are recomputed from
+                        EVENT_RULES and pinned to score_event by tests/test_muhurat_factor_parity.py
+                        (#1017 R3, docs/decisions/2026-11-21-muhurat-factor-registry.md)
   ask_transit.py     103  /ask's slow-planet transit block (four movers from the natal Moon), the pinned
                         moment and the `tr` cache-key fingerprint (#402)
   llm.py           1,566  prompt assembly, rashifal fan-out (re-measured 2026-11-06)

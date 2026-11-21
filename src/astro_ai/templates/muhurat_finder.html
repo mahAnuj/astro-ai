@@ -398,13 +398,14 @@
                is unaffected and belongs outside. #}
             {% if c.bhadra_window %}<div class="text-xs text-bhagya-sindoor mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
           </td>
-          <td data-label="Notes" data-span class="py-2 text-xs text-bhagya-muted">{{ c.reason }}</td>
+          <td data-label="Notes" data-span class="py-2 text-xs text-bhagya-muted">{{ c.reason }}{% include "_muhurat_why.html" %}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
     {% endif %}
     {% endfor %}
+    {% include "_muhurat_why_legend.html" %}
     <p class="text-xs text-bhagya-muted mt-2 italic">
       <span class="text-emerald-800">✓</span> Abhijit Muhurta = the midday muhurta, a fifteenth of daylight centred on solar noon; <span class="text-emerald-800">✓</span> means it lies clear of Rahu Kaal and Bhadra that day, and <span class="text-amber-800">~</span> means it overlaps one of them, with the overlap named on the row. The finder holds no source that calls Abhijit the most auspicious window or ranks it above either. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Days under Atiganda, Shula, Ganda, Vyatipata or Vaidhriti are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present. These weekday-nakshatra booster tables are this finder&rsquo;s own convention: Raman&rsquo;s <em>Muhurtha</em> has a similar Siddha Yoga list, but these are not the same tables.
     </p>
