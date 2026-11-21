@@ -43,9 +43,14 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 # Landing pages show the next auspicious dates for one fixed city (#1325, slice 6 of #1017).
-# Allow-list, not "every event but vivah": a new event type is opt-in. The four are the events
-# whose rules #1058 sourced; vivah stays as it was until #1026.
-LANDING_DATES_EVENTS = frozenset({"griha_pravesh", "vidyarambh", "namkaran", "business"})
+# Allow-list, not "every event but X": a new event type is opt-in. Four are the events whose rules
+# #1058 sourced; vivah joined in #1017 (slice 8) on the auditor's ruling, with a disclosure in the
+# template and the Abujha filter below.
+LANDING_DATES_EVENTS = frozenset({"griha_pravesh", "vidyarambh", "namkaran", "business", "vivah"})
+# Display filter only, interim (#1346): the finder's Abujha override skips every hard exclusion
+# (Panchak, a rejected tithi), so the landing drops those rows for vivah. The other four stay
+# unfiltered, their behaviour must not change. Delete the entry when #1346 is fixed in muhurat.py.
+LANDING_EXCLUDE_FLAGS = {"vivah": frozenset({"abujha_muhurat"})}
 LANDING_CITY = "New Delhi, India"
 # 90 days, not 60: measured on 2026-11-21, 60 days gave `business` exactly five auspicious dates
 # with no slack, and 90 gave 11 (griha_pravesh 16, vidyarambh 21, namkaran 19). Compute is ~0.15 s.
@@ -140,7 +145,8 @@ def _landing_upcoming(event_key: str, today: date) -> dict | None:
     The five EARLIEST auspicious dates, printed in date order. `find_candidates` returns its rows
     best-tier-first, so reading "the finder's order" literally would list the five best-rated dates
     of the window, possibly 80 days out; this page is headed "next", so it sorts by date, which is
-    the finder's own tie-break inside a tier (#1325).
+    the finder's own tie-break inside a tier (#1325). Rows carrying a LANDING_EXCLUDE_FLAGS flag
+    are dropped before the slice, so the page still shows five.
     """
     from astro_ai import muhurat as _muhurat
     from astro_ai.muhurat import AUSPICIOUS_RATINGS
@@ -149,6 +155,8 @@ def _landing_upcoming(event_key: str, today: date) -> dict | None:
     # Read after find_candidates so it is an lru hit, and raise (section omitted) rather than
     # cache a result that cannot name its zone.
     zone = _chart.geocode_place(LANDING_CITY)[2]
+    skip = LANDING_EXCLUDE_FLAGS.get(event_key, frozenset())
+    rows = [c for c in rows if not skip.intersection(c.flags)]
     upcoming = sorted((c for c in rows if c.rating in AUSPICIOUS_RATINGS), key=lambda c: c.d)
     if not upcoming:
         return None

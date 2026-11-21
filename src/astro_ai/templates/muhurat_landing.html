@@ -67,6 +67,17 @@
       Computed by this site's Muhurat Finder for {{ upcoming.city }} ({{ upcoming.zone }}) on {{ upcoming.computed.strftime('%b %d, %Y') }},
       searching the next {{ upcoming.days }} days. Dates and times differ by location: enter your city below.
     </p>
+    {# Vivah only (#1017 slice 8, auditor's ruling). Static text on purpose: no interpolation to escape. #}
+    {% if event_key == 'vivah' %}
+    <p class="text-xs text-bhagya-muted">
+      It checks the day only (weekday, tithi, nakshatra, nitya yoga, Panchak and a few almanac conventions) and does not read
+      the rising sign (lagna) or the state of the 7th house. Rao's table of muhurta guidelines, weddings included, says
+      "These are merely guidelines and not final recommendations", and planetary strength matters more than the thumb-rules.
+      Some almanac conventions the finder applies (Chaturmas, Kharmas, Dagdha, Abujha days, Sarvartha Siddhi) come from
+      common almanac practice, not from the texts this site is built on. A date on this list is a starting point to take to a
+      priest, not a confirmed muhurat.
+    </p>
+    {% endif %}
   </section>
   {% endif %}
 
