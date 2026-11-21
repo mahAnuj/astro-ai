@@ -237,9 +237,16 @@ def test_vivah_landing_lists_the_earliest_five_non_abujha_auspicious_dates(clien
     r = client.get("/muhurat/vivah")
     assert r.status_code == 200
     assert _listed(r.text) == expected
-    from astro_ai.muhurat import EVENT_RULES
+    from astro_ai.muhurat import EVENT_LANDING, EVENT_RULES
 
     assert f"Next 5 auspicious {EVENT_RULES['vivah']['label']} dates" in _text(r.text)
+    # Carried over from the deleted test_vivah_landing_unchanged_and_never_computes (chief's ruling
+    # on PR #1348): the page's own hero and first criteria line must still render, and the form must
+    # still post to /muhurat. Those were the only render-level checks of the vivah copy.
+    landing = EVENT_LANDING["vivah"]
+    assert str(escape(landing["hero_title"])) in r.text
+    assert str(escape(landing["rules_summary"][0])) in r.text
+    assert 'action="/muhurat"' in r.text
 
 
 def test_vivah_landing_never_shows_an_abujha_row(client):
