@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-21",
-    "2026-11-17"
+    "2026-10-22",
+    "2026-11-18"
   ],
   "dimensions": [
     "date"
@@ -11,174 +11,238 @@
   "note": "window excludes the last 3 days - GA4 standard reports lag 24-48h. A day absent from the API is emitted as 0 with no_data=true, so a gap in collection is visible rather than drawn as a flat line.",
   "days": 28,
   "days_with_traffic": 28,
+  "returning": {
+    "status": "ok",
+    "user_days": 84,
+    "share_pct": 11.9,
+    "note": "User-days, not unique people: a person active on three days counts three times, so the share is of daily active users who were returning, not of visitors. Rows whose newVsReturning is (not set) are excluded."
+  },
+  "admin_status": "ok",
+  "admin_note": "admin_sessions counts sessions landing on /admin*. #735 stopped analytics on /admin/* on 2026-11-12, so a nonzero day from then on is internal traffic leaking into the property.",
   "rows": [
-    {
-      "date": "2026-10-21",
-      "active_users": 11,
-      "sessions": 14,
-      "new_users": 8
-    },
     {
       "date": "2026-10-22",
       "active_users": 11,
       "sessions": 11,
-      "new_users": 11
+      "new_users": 11,
+      "returning_users": 0,
+      "admin_sessions": 0
     },
     {
       "date": "2026-10-23",
       "active_users": 34,
       "sessions": 34,
-      "new_users": 32
+      "new_users": 32,
+      "returning_users": 2,
+      "admin_sessions": 1
     },
     {
       "date": "2026-10-24",
       "active_users": 12,
       "sessions": 16,
-      "new_users": 9
+      "new_users": 9,
+      "returning_users": 4,
+      "admin_sessions": 1
     },
     {
       "date": "2026-10-25",
       "active_users": 16,
       "sessions": 22,
-      "new_users": 14
+      "new_users": 14,
+      "returning_users": 5,
+      "admin_sessions": 3
     },
     {
       "date": "2026-10-26",
       "active_users": 22,
       "sessions": 26,
-      "new_users": 21
+      "new_users": 21,
+      "returning_users": 3,
+      "admin_sessions": 2
     },
     {
       "date": "2026-10-27",
       "active_users": 23,
       "sessions": 27,
-      "new_users": 22
+      "new_users": 22,
+      "returning_users": 5,
+      "admin_sessions": 0
     },
     {
       "date": "2026-10-28",
       "active_users": 19,
       "sessions": 25,
-      "new_users": 18
+      "new_users": 18,
+      "returning_users": 5,
+      "admin_sessions": 1
     },
     {
       "date": "2026-10-29",
       "active_users": 15,
       "sessions": 18,
-      "new_users": 13
+      "new_users": 13,
+      "returning_users": 4,
+      "admin_sessions": 0
     },
     {
       "date": "2026-10-30",
       "active_users": 19,
       "sessions": 22,
-      "new_users": 18
+      "new_users": 18,
+      "returning_users": 2,
+      "admin_sessions": 0
     },
     {
       "date": "2026-10-31",
       "active_users": 19,
       "sessions": 21,
-      "new_users": 19
+      "new_users": 19,
+      "returning_users": 2,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-01",
       "active_users": 18,
       "sessions": 18,
-      "new_users": 16
+      "new_users": 16,
+      "returning_users": 2,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-02",
       "active_users": 20,
       "sessions": 21,
-      "new_users": 18
+      "new_users": 18,
+      "returning_users": 2,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-03",
       "active_users": 21,
       "sessions": 21,
-      "new_users": 20
+      "new_users": 20,
+      "returning_users": 1,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-04",
       "active_users": 29,
       "sessions": 32,
-      "new_users": 25
+      "new_users": 25,
+      "returning_users": 4,
+      "admin_sessions": 2
     },
     {
       "date": "2026-11-05",
       "active_users": 24,
       "sessions": 29,
-      "new_users": 22
+      "new_users": 22,
+      "returning_users": 4,
+      "admin_sessions": 3
     },
     {
       "date": "2026-11-06",
       "active_users": 57,
       "sessions": 59,
-      "new_users": 53
+      "new_users": 53,
+      "returning_users": 4,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-07",
       "active_users": 22,
       "sessions": 23,
-      "new_users": 21
+      "new_users": 21,
+      "returning_users": 2,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-08",
       "active_users": 23,
       "sessions": 30,
-      "new_users": 22
+      "new_users": 22,
+      "returning_users": 4,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-09",
       "active_users": 32,
       "sessions": 37,
-      "new_users": 28
+      "new_users": 28,
+      "returning_users": 6,
+      "admin_sessions": 2
     },
     {
       "date": "2026-11-10",
       "active_users": 40,
       "sessions": 43,
-      "new_users": 38
+      "new_users": 38,
+      "returning_users": 3,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-11",
       "active_users": 30,
       "sessions": 31,
-      "new_users": 28
+      "new_users": 28,
+      "returning_users": 3,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-12",
       "active_users": 34,
       "sessions": 37,
-      "new_users": 32
+      "new_users": 32,
+      "returning_users": 3,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-13",
       "active_users": 30,
       "sessions": 30,
-      "new_users": 29
+      "new_users": 29,
+      "returning_users": 1,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-14",
       "active_users": 32,
       "sessions": 47,
-      "new_users": 31
+      "new_users": 31,
+      "returning_users": 5,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-15",
       "active_users": 51,
       "sessions": 56,
-      "new_users": 47
+      "new_users": 47,
+      "returning_users": 6,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-16",
       "active_users": 14,
       "sessions": 14,
-      "new_users": 13
+      "new_users": 13,
+      "returning_users": 1,
+      "admin_sessions": 0
     },
     {
       "date": "2026-11-17",
       "active_users": 20,
       "sessions": 20,
-      "new_users": 20
+      "new_users": 20,
+      "returning_users": 0,
+      "admin_sessions": 0
+    },
+    {
+      "date": "2026-11-18",
+      "active_users": 20,
+      "sessions": 21,
+      "new_users": 21,
+      "returning_users": 1,
+      "admin_sessions": 0
     }
   ]
 }
