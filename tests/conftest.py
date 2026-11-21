@@ -129,6 +129,32 @@ def _clear_session_revocations():
 
 
 @pytest.fixture(autouse=True)
+def _clear_muhurat_landing_cache():
+    """Drop the muhurat landing's `hot_cache` entries around EVERY test (#1325).
+
+    `hot_cache` is a module global that outlives a test. The landing caches its next-dates
+    list per (event, IST day), so a page rendered by any earlier test -- under a different
+    geocode stub or pinned date -- would be served to a later one and the failure would depend
+    on test order. Prefix only: `hot_cache.clear()` would also drop other tests' warmed entries.
+    """
+    from astro_ai import hot_cache
+
+    def _empty():
+        with hot_cache._LOCK:
+            for key in [k for k in hot_cache._CACHE if k.startswith("muhurat:landing:")]:
+                hot_cache._drop_locked(key)
+            for table in (hot_cache._RETRY_AFTER, hot_cache._KEY_LOCKS):
+                for key in [k for k in table if k.startswith("muhurat:landing:")]:
+                    table.pop(key, None)
+            for key in [k for k in hot_cache._INFLIGHT if k.startswith("muhurat:landing:")]:
+                hot_cache._INFLIGHT.discard(key)
+
+    _empty()
+    yield
+    _empty()
+
+
+@pytest.fixture(autouse=True)
 def _token_bucket_off_and_empty(monkeypatch):
     """Switch the per-model token bucket OFF and empty its registry, every test.
 

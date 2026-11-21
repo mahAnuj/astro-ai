@@ -9,7 +9,7 @@ MUTATIONS = [
 
     ("#798: /muhurat/<event> pre-fills the start date from the server's UTC date again",
      "src/astro_ai/routes/muhurat.py",
-     "         \"prefill_city\": prefill_city,\n         \"prefill_start\": reading_today().isoformat(),\n         \"has_saved_chart\"",
+     "         \"prefill_city\": prefill_city,\n         \"prefill_start\": today.isoformat(),\n         \"has_saved_chart\"",
      "         \"prefill_city\": prefill_city,\n         \"prefill_start\": __import__(\"datetime\").date.today().isoformat(),\n         \"has_saved_chart\"",
      "test_muhurat_prefills_the_ist_day"),
 
