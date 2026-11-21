@@ -1,35 +1,28 @@
 {
- "generated_at": "2026-11-21T16:51:08Z",
+ "generated_at": "2026-11-21T19:45:37Z",
  "target": 0.6,
  "week": "2026-W47",
- "today_date": "2026-11-21",
+ "today_date": "2026-11-22",
  "today": {
-  "growth": 15,
-  "other": 10,
+  "growth": 0,
+  "other": 0,
   "exempt": 0,
-  "share": 0.6
+  "share": null
  },
  "this_week": {
   "growth": 30,
-  "other": 65,
+  "other": 66,
   "exempt": 0,
-  "share": 0.316
+  "share": 0.312
  },
  "this_month": {
   "growth": 33,
-  "other": 230,
+  "other": 231,
   "exempt": 0,
   "share": 0.125
  },
  "must_pick_growth": true,
  "days": [
-  {
-   "date": "2026-11-08",
-   "growth": 0,
-   "other": 11,
-   "exempt": 0,
-   "share": 0.0
-  },
   {
    "date": "2026-11-09",
    "growth": 0,
@@ -117,12 +110,36 @@
   {
    "date": "2026-11-21",
    "growth": 15,
-   "other": 10,
+   "other": 11,
    "exempt": 0,
-   "share": 0.6
+   "share": 0.577
+  },
+  {
+   "date": "2026-11-22",
+   "growth": 0,
+   "other": 0,
+   "exempt": 0,
+   "share": null
   }
  ],
  "cycles": [
+  {
+   "run": 44932543511,
+   "started": "2026-11-21T17:54:01Z",
+   "issue": 1346,
+   "title": "muhurat: the Abujha override skips Panchak, tithi and nakshatra hard exclusions (vivah 2026-11-21 Revati rated excellent)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1357,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "backend-engineer": 2,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
   {
    "run": 44925310927,
    "started": "2026-11-21T16:34:27Z",
@@ -592,18 +609,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 44304393801,
-   "started": "2026-11-18T12:29:23Z",
-   "issue": 1217,
-   "title": "analytics: completion events for matching, numerology, muhurat and the dosha checks (#1070 rows 3-6)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1218,
-   "agents": {
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -848,22 +853,21 @@
   "ga4_new_users_28d": 661,
   "ga4_sessions_28d": 791,
   "objective_top5": 1,
-  "growth_share_today": 0.6,
-  "growth_share_week": 0.316,
+  "growth_share_week": 0.312,
   "growth_share_month": 0.125
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
-   "period": "2026-11-21",
-   "progress": 1.0,
-   "detail": "15 of 25 cycles on growth, target 60%",
+   "period": "2026-11-22",
+   "progress": null,
+   "detail": "0 of 0 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W47",
-   "progress": 0.533,
+   "progress": 0.526,
    "detail": "4 goals, 4 measurable",
    "goals": [
     {
@@ -874,8 +878,8 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.316,
-     "progress": 0.764,
+     "current": 0.312,
+     "progress": 0.736,
      "basis": "growth_share_week"
     },
     {
