@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-21T12:15:20Z",
+ "generated_at": "2026-11-21T16:30:58Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1107,6 +1107,15 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/1340#issuecomment-7059125783",
     "summary": "QA: FAIL \u2014 verified at `c6db1e09a65f1907ac156a84b21abd6323b8e111` Root-cause fix verified by execution: main gives 2 hashes (81276ed5 cold vs 5d5bf372 after landing call), branch gives 1 (81276ed5) across 4 call orders; new test 6/7 fail on main, 7/7 pass on branch; 4/4 mutation rows killed by hand;",
     "themes": []
+   },
+   {
+    "number": 1345,
+    "at": "2026-11-21T12:47:18Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1345#issuecomment-7062807749",
+    "summary": "QA: FAIL \u2014 verified at `e166c126ee6423a52b78a215dafe857353e939f9` QA:in-cycle. Behaviour verified by execution: repro prints 2027-01-18; 2026-2028 sweep 74 rows, 71 unchanged, 3 move (2027-01-19->18, 2028-02-07->06, 2028-11-13->12); 2000-2100 97/2499 move, all one day earlier; shukla_tithi_date Marg",
+    "themes": [
+     "grounding"
+    ]
    }
   ],
   "reverts": [],
@@ -1157,19 +1166,11 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": [
-   {
-    "kind": "outbox-noise",
-    "level": "amber",
-    "title": "Loop comment noise rose: duplicate rate 3.5% -> 5.5%",
-    "detail": "1174 loop comments in the last 7d against 1113 the window before; busiest threads #1212 (33), #1058 (22), #1132 (21). 20 went through scripts/outbox.py. Read the busiest thread first: a repeat there is a poster with no change rule. Lever: route that poster through outbox.py (dedupe + daily cap), or lower its kind's cap in KINDS. Never raise a cap to quiet this finding.",
-    "where": "/admin/ops"
-   }
-  ]
+  "ops_findings": []
  },
  "error_themes": {
+  "grounding": 32,
   "regression": 32,
-  "grounding": 31,
   "tests": 29,
   "tokens": 21,
   "copy": 20,
