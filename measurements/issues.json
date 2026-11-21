@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-21T16:50:17Z",
+  "generated_at": "2026-11-21T19:44:54Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 158,
@@ -75,10 +75,11 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "provenance:trusted"
       ],
       "created": "2026-11-21T16:48:26Z",
-      "updated": "2026-11-21T16:48:26Z",
+      "updated": "2026-11-21T18:10:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -136,10 +137,11 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "provenance:trusted"
       ],
       "created": "2026-11-21T11:10:53Z",
-      "updated": "2026-11-21T16:28:22Z",
+      "updated": "2026-11-21T18:11:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2582,7 +2584,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-21T16:50:17Z",
+    "generated_at": "2026-11-21T19:44:54Z",
     "window_days": 28,
     "open_now": 158,
     "merged_open_hours": 24,
@@ -4340,7 +4342,7 @@
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 114,
+          "merged": 113,
           "median_h": 0.6,
           "p90_h": 11.0,
           "max_h": 46.6,
@@ -4764,15 +4766,22 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 11.6,
+          "age_h": 14.5,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 8.6,
+          "age_h": 11.5,
           "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1357,
+          "title": "issue/1346 abujha booster not bypass",
+          "age_h": 0.0,
+          "waiting_on": "gates / QA",
           "why": null
         }
       ]
