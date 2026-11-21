@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-21T16:28:51Z",
+ "generated_at": "2026-11-21T16:51:08Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-21",
  "today": {
-  "growth": 14,
+  "growth": 15,
   "other": 10,
   "exempt": 0,
-  "share": 0.583
+  "share": 0.6
  },
  "this_week": {
-  "growth": 29,
+  "growth": 30,
   "other": 65,
   "exempt": 0,
-  "share": 0.309
+  "share": 0.316
  },
  "this_month": {
-  "growth": 32,
+  "growth": 33,
   "other": 230,
   "exempt": 0,
-  "share": 0.122
+  "share": 0.125
  },
  "must_pick_growth": true,
  "days": [
@@ -116,30 +116,34 @@
   },
   {
    "date": "2026-11-21",
-   "growth": 14,
+   "growth": 15,
    "other": 10,
    "exempt": 0,
-   "share": 0.583
+   "share": 0.6
   }
  ],
  "cycles": [
+  {
+   "run": 44925310927,
+   "started": "2026-11-21T16:34:27Z",
+   "issue": 1017,
+   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1350,
+   "agents": {
+    "qa": 1
+   }
+  },
   {
    "run": 44917254081,
    "started": "2026-11-21T15:04:56Z",
    "issue": 1017,
    "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
    "class": "growth",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1350,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 2,
-    "backend-engineer": 2,
-    "dev-lead": 1,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44905954944,
@@ -600,20 +604,6 @@
    "agents": {
     "qa": 1
    }
-  },
-  {
-   "run": 44293904656,
-   "started": "2026-11-18T11:21:09Z",
-   "issue": 1217,
-   "title": "analytics: completion events for matching, numerology, muhurat and the dosha checks (#1070 rows 3-6)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1218,
-   "agents": {
-    "engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -858,22 +848,22 @@
   "ga4_new_users_28d": 661,
   "ga4_sessions_28d": 791,
   "objective_top5": 1,
-  "growth_share_today": 0.583,
-  "growth_share_week": 0.309,
-  "growth_share_month": 0.122
+  "growth_share_today": 0.6,
+  "growth_share_week": 0.316,
+  "growth_share_month": 0.125
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-21",
-   "progress": 0.972,
-   "detail": "14 of 24 cycles on growth, target 60%",
+   "progress": 1.0,
+   "detail": "15 of 25 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W47",
-   "progress": 0.521,
+   "progress": 0.533,
    "detail": "4 goals, 4 measurable",
    "goals": [
     {
@@ -884,8 +874,8 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.309,
-     "progress": 0.715,
+     "current": 0.316,
+     "progress": 0.764,
      "basis": "growth_share_week"
     },
     {
@@ -939,7 +929,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.205,
+   "progress": 0.21,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -982,8 +972,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.122,
-     "progress": 0.293,
+     "current": 0.125,
+     "progress": 0.309,
      "basis": "growth_share_month"
     }
    ]
