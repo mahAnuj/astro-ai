@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-11-21T04:39:36Z",
+  "generated_at": "2026-11-21T12:12:33Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 151,
+  "open": 155,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 65,
+    "UNCLASSIFIED": 67,
     "INFRA": 16,
     "REDESIGN": 10,
-    "OPS": 8,
+    "OPS": 9,
     "FEATURE": 7,
     "ANALYTICS": 5,
     "SEO": 4,
@@ -24,6 +24,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "MUHURAT": 1,
     "NOTIFY": 1,
     "KNOWLEDGE": 1,
     "AGENT-MEASURE": 1,
@@ -33,22 +34,121 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 44,
-    "untyped": 37,
-    "enhancement": 31,
-    "chore": 22,
+    "bug": 47,
+    "untyped": 38,
+    "enhancement": 30,
+    "chore": 23,
     "correctness": 11,
     "design": 5,
     "ui": 1
   },
   "by_priority": {
-    "unset": 92,
+    "unset": 95,
     "medium": 27,
-    "high": 20,
+    "high": 21,
     "low": 12
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1347,
+      "title": "[OPS] 1 PR(s) ready but unmerged after 6h",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "high",
+      "labels": [
+        "priority:high",
+        "chore"
+      ],
+      "created": "2026-11-21T11:29:41Z",
+      "updated": "2026-11-21T11:29:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1346,
+      "title": "muhurat: the Abujha override skips Panchak, tithi and nakshatra hard exclusions (vivah 2026-11-21 Revati rated excellent)",
+      "ask": "",
+      "area": "MUHURAT",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-21T11:10:53Z",
+      "updated": "2026-11-21T11:42:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1344,
+      "title": "QA follow-up: #1342 couple-mode Top pick can be a 'mixed' verdict while a 'good-for-both' day of the same grade exists",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T09:23:25Z",
+      "updated": "2026-11-21T09:23:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1343,
+      "title": "QA follow-up: #1342 leaves two comments and an ARCHITECTURE.md line count describing the pre-#1341 in-tier order",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T09:23:15Z",
+      "updated": "2026-11-21T09:23:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1341,
+      "title": "muhurat finder: top-pick card ranked by (tier, -score, date), score carried on MuhuratCandidate; Range select reflects searched days (R1 of #1017, closes #1339)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "seo",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle",
+        "growth"
+      ],
+      "created": "2026-11-21T07:29:31Z",
+      "updated": "2026-11-21T10:09:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1339,
+      "title": "QA follow-up: muhurat finder range select ignores the searched days, misleading on a shared link (found in PR #1337)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-21T05:58:28Z",
+      "updated": "2026-11-21T05:58:28Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1332,
       "title": "lunar_observances emits Drik's Gauna Ekadashi date for 2027-01 and 2028-11; shukla_tithi_date mis-resolves Margashirsha 2027",
@@ -57,29 +157,11 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "provenance:trusted"
       ],
       "created": "2026-11-21T03:23:19Z",
-      "updated": "2026-11-21T03:23:19Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1331,
-      "title": "QA follow-up: kalabhairav-jayanti copy says Ashtami runs dusk to midnight, but on 2026-12-01 it ends 23:14 (PR #1329)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-21T03:22:19Z",
-      "updated": "2026-11-21T04:38:52Z",
+      "updated": "2026-11-21T09:50:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -96,26 +178,6 @@
       ],
       "created": "2026-11-21T03:22:10Z",
       "updated": "2026-11-21T03:22:10Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1325,
-      "title": "muhurat landing pages show the next 5 valid dates for New Delhi, plus today/tomorrow check (slice 6 of #1017, R9)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "seo",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle",
-        "growth"
-      ],
-      "created": "2026-11-21T01:25:06Z",
-      "updated": "2026-11-21T03:31:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -160,10 +222,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-21T00:25:35Z",
-      "updated": "2026-11-21T00:25:35Z",
+      "updated": "2026-11-21T05:12:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -974,10 +1039,11 @@
       "priority": "unset",
       "labels": [
         "enhancement",
-        "provenance:trusted"
+        "provenance:trusted",
+        "growth"
       ],
       "created": "2026-11-14T13:09:28Z",
-      "updated": "2026-11-21T00:31:05Z",
+      "updated": "2026-11-21T11:47:37Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2469,9 +2535,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-21T04:39:36Z",
+    "generated_at": "2026-11-21T12:12:33Z",
     "window_days": 28,
-    "open_now": 151,
+    "open_now": 155,
     "merged_open_hours": 24,
     "days": [
       {
@@ -2881,15 +2947,16 @@
       },
       {
         "date": "2026-11-21",
-        "opened": 9,
-        "closed": 3,
-        "net": 6,
-        "open_end": 151,
+        "opened": 17,
+        "closed": 7,
+        "net": 10,
+        "open_end": 155,
         "opened_by": {
-          "loop": 9
+          "loop": 16,
+          "ops": 1
         },
         "closed_by": {
-          "close-on-evidence": 3
+          "close-on-evidence": 7
         }
       }
     ],
@@ -4191,18 +4258,38 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1325,
+        "closed_at": "2026-11-21T05:02:17Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1326,
         "closed_at": "2026-11-21T03:34:11Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1331,
+        "closed_at": "2026-11-21T04:50:51Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1336,
+        "closed_at": "2026-11-21T06:12:27Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1338,
+        "closed_at": "2026-11-21T07:31:18Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 4,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 116,
-          "median_h": 0.5,
+          "merged": 112,
+          "median_h": 0.6,
           "p90_h": 11.0,
           "max_h": 46.6,
           "slowest": [
@@ -4325,7 +4412,7 @@
           ]
         },
         "28d": {
-          "merged": 324,
+          "merged": 323,
           "median_h": 0.5,
           "p90_h": 16.5,
           "max_h": 122.1,
@@ -4616,24 +4703,38 @@
         },
         {
           "date": "2026-11-21",
-          "merged": 3,
-          "median_h": 0.2,
-          "max_h": 0.3
+          "merged": 7,
+          "median_h": 0.3,
+          "max_h": 2.3
         }
       ],
       "open": [
         {
-          "number": 1328,
-          "title": "issue/1325 muhurat landing dates",
-          "age_h": 2.1,
+          "number": 1335,
+          "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
+          "age_h": 7.0,
           "waiting_on": "merge",
           "why": null
         },
         {
-          "number": 1333,
-          "title": "kalabhairav-jayanti: stop asserting an unsourced Ashtami window (#1331)",
-          "age_h": 0.3,
+          "number": 1342,
+          "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
+          "age_h": 3.9,
           "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1345,
+          "title": "Ekadashi: emit Drik's primary day when Dwadashi has no sunrise; shukla_tithi_date resolves",
+          "age_h": 1.7,
+          "waiting_on": "gates / QA",
+          "why": null
+        },
+        {
+          "number": 1348,
+          "title": "muhurat landing: /muhurat/vivah lists the next five auspicious dates, Abujha rows dropped ",
+          "age_h": 0.5,
+          "waiting_on": "gates / QA",
           "why": null
         }
       ]
