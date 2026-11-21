@@ -224,6 +224,14 @@ class MuhuratCandidate:
     abhijit_overlaps: tuple[str, ...] = ()
 
 
+# The ratings the site calls "auspicious" (#1322). "caution" is the lowest tier that passed no hard
+# exclusion and is NOT auspicious: it stays visible, in its own group, and is never counted or
+# listed as a good date. One definition, read by the finder's headline count (via the Jinja global
+# `muhurat_auspicious_ratings`) and by the landing pages' next-dates list (#1325), so the two
+# cannot drift apart.
+AUSPICIOUS_RATINGS = ("excellent", "good", "acceptable")
+
+
 # ─── Chaturmas (Devshayani Ekadashi → Devuthani Ekadashi) ────────────
 # Vishnu's four-month sleep, traditionally weddings-restricted. The window
 # runs from Ashadha Shukla Ekadashi to Kartika Shukla Ekadashi — four lunar

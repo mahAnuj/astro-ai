@@ -8,7 +8,7 @@ file, a literal list (test_mutation_tables.py requires it)."""
 MUTATIONS = [
     ("#1322: the headline counts every non-avoid date again (caution counted as auspicious)",
      "src/astro_ai/templates/muhurat_finder.html",
-     "{% set auspicious_candidates = candidates | selectattr('rating', 'in', ['excellent', 'good', 'acceptable']) | list %}",
+     "{% set auspicious_candidates = candidates | selectattr('rating', 'in', muhurat_auspicious_ratings()) | list %}",
      "{% set auspicious_candidates = candidates | rejectattr('rating', 'equalto', 'avoid') | list %}",
      "test_headline_counts_only_excellent_good_acceptable"),
     ("#1322: muhurat.py names a sunrise on a date with no ordinary sunrise (polar guard dropped)",
