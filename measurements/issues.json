@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-11-21T12:12:33Z",
+  "generated_at": "2026-11-21T16:28:05Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 155,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 67,
+    "UNCLASSIFIED": 66,
     "INFRA": 16,
+    "OPS": 10,
     "REDESIGN": 10,
-    "OPS": 9,
     "FEATURE": 7,
     "ANALYTICS": 5,
     "SEO": 4,
@@ -34,22 +34,38 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 47,
+    "bug": 46,
     "untyped": 38,
     "enhancement": 30,
-    "chore": 23,
+    "chore": 24,
     "correctness": 11,
     "design": 5,
     "ui": 1
   },
   "by_priority": {
-    "unset": 95,
-    "medium": 27,
+    "unset": 94,
+    "medium": 28,
     "high": 21,
     "low": 12
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1351,
+      "title": "[OPS] Loop comment noise rose: duplicate rate 3.5% -> 5.5%",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "chore"
+      ],
+      "created": "2026-11-21T16:27:59Z",
+      "updated": "2026-11-21T16:27:59Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1347,
       "title": "[OPS] 1 PR(s) ready but unmerged after 6h",
@@ -146,22 +162,6 @@
       ],
       "created": "2026-11-21T05:58:28Z",
       "updated": "2026-11-21T05:58:28Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1332,
-      "title": "lunar_observances emits Drik's Gauna Ekadashi date for 2027-01 and 2028-11; shukla_tithi_date mis-resolves Margashirsha 2027",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-21T03:23:19Z",
-      "updated": "2026-11-21T09:50:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1039,11 +1039,13 @@
       "priority": "unset",
       "labels": [
         "enhancement",
+        "qa-pass",
         "provenance:trusted",
+        "qa:in-cycle",
         "growth"
       ],
       "created": "2026-11-14T13:09:28Z",
-      "updated": "2026-11-21T11:47:37Z",
+      "updated": "2026-11-21T15:19:14Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2535,7 +2537,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-21T12:12:33Z",
+    "generated_at": "2026-11-21T16:28:05Z",
     "window_days": 28,
     "open_now": 155,
     "merged_open_hours": 24,
@@ -2545,7 +2547,7 @@
         "opened": 0,
         "closed": 0,
         "net": 0,
-        "open_end": 123,
+        "open_end": 124,
         "opened_by": {},
         "closed_by": {}
       },
@@ -2554,7 +2556,7 @@
         "opened": 2,
         "closed": 0,
         "net": 2,
-        "open_end": 125,
+        "open_end": 126,
         "opened_by": {
           "audit": 1,
           "loop": 1
@@ -2566,7 +2568,7 @@
         "opened": 4,
         "closed": 1,
         "net": 3,
-        "open_end": 128,
+        "open_end": 129,
         "opened_by": {
           "loop": 4
         },
@@ -2579,7 +2581,7 @@
         "opened": 8,
         "closed": 2,
         "net": 6,
-        "open_end": 134,
+        "open_end": 135,
         "opened_by": {
           "audit": 2,
           "loop": 6
@@ -2593,7 +2595,7 @@
         "opened": 5,
         "closed": 0,
         "net": 5,
-        "open_end": 139,
+        "open_end": 140,
         "opened_by": {
           "loop": 5
         },
@@ -2604,7 +2606,7 @@
         "opened": 5,
         "closed": 8,
         "net": -3,
-        "open_end": 136,
+        "open_end": 137,
         "opened_by": {
           "audit": 3,
           "loop": 2
@@ -2620,7 +2622,7 @@
         "opened": 4,
         "closed": 12,
         "net": -8,
-        "open_end": 128,
+        "open_end": 129,
         "opened_by": {
           "audit": 3,
           "loop": 1
@@ -2637,7 +2639,7 @@
         "opened": 8,
         "closed": 4,
         "net": 4,
-        "open_end": 132,
+        "open_end": 133,
         "opened_by": {
           "audit": 6,
           "loop": 2
@@ -2652,7 +2654,7 @@
         "opened": 3,
         "closed": 5,
         "net": -2,
-        "open_end": 130,
+        "open_end": 131,
         "opened_by": {
           "loop": 3
         },
@@ -2666,7 +2668,7 @@
         "opened": 2,
         "closed": 4,
         "net": -2,
-        "open_end": 128,
+        "open_end": 129,
         "opened_by": {
           "loop": 1,
           "ops": 1
@@ -2680,7 +2682,7 @@
         "opened": 3,
         "closed": 3,
         "net": 0,
-        "open_end": 128,
+        "open_end": 129,
         "opened_by": {
           "loop": 3
         },
@@ -2694,7 +2696,7 @@
         "opened": 7,
         "closed": 2,
         "net": 5,
-        "open_end": 133,
+        "open_end": 134,
         "opened_by": {
           "loop": 6,
           "ops": 1
@@ -2709,7 +2711,7 @@
         "opened": 12,
         "closed": 23,
         "net": -11,
-        "open_end": 122,
+        "open_end": 123,
         "opened_by": {
           "audit": 7,
           "loop": 5
@@ -2725,7 +2727,7 @@
         "opened": 5,
         "closed": 12,
         "net": -7,
-        "open_end": 115,
+        "open_end": 116,
         "opened_by": {
           "loop": 5
         },
@@ -2740,7 +2742,7 @@
         "opened": 5,
         "closed": 5,
         "net": 0,
-        "open_end": 115,
+        "open_end": 116,
         "opened_by": {
           "loop": 4,
           "ops": 1
@@ -2755,7 +2757,7 @@
         "opened": 8,
         "closed": 12,
         "net": -4,
-        "open_end": 111,
+        "open_end": 112,
         "opened_by": {
           "audit": 1,
           "loop": 6,
@@ -2771,7 +2773,7 @@
         "opened": 7,
         "closed": 11,
         "net": -4,
-        "open_end": 107,
+        "open_end": 108,
         "opened_by": {
           "audit": 1,
           "loop": 5,
@@ -2788,7 +2790,7 @@
         "opened": 12,
         "closed": 17,
         "net": -5,
-        "open_end": 102,
+        "open_end": 103,
         "opened_by": {
           "audit": 1,
           "loop": 10,
@@ -2806,7 +2808,7 @@
         "opened": 11,
         "closed": 11,
         "net": 0,
-        "open_end": 102,
+        "open_end": 103,
         "opened_by": {
           "audit": 1,
           "loop": 8,
@@ -2823,7 +2825,7 @@
         "opened": 13,
         "closed": 10,
         "net": 3,
-        "open_end": 105,
+        "open_end": 106,
         "opened_by": {
           "loop": 12,
           "ops": 1
@@ -2838,7 +2840,7 @@
         "opened": 34,
         "closed": 22,
         "net": 12,
-        "open_end": 117,
+        "open_end": 118,
         "opened_by": {
           "audit": 14,
           "loop": 20
@@ -2854,7 +2856,7 @@
         "opened": 44,
         "closed": 23,
         "net": 21,
-        "open_end": 138,
+        "open_end": 139,
         "opened_by": {
           "audit": 33,
           "loop": 11
@@ -2870,7 +2872,7 @@
         "opened": 3,
         "closed": 10,
         "net": -7,
-        "open_end": 131,
+        "open_end": 132,
         "opened_by": {
           "loop": 2,
           "ops": 1
@@ -2881,16 +2883,16 @@
       },
       {
         "date": "2026-11-17",
-        "opened": 22,
-        "closed": 24,
+        "opened": 23,
+        "closed": 25,
         "net": -2,
-        "open_end": 129,
+        "open_end": 130,
         "opened_by": {
           "audit": 9,
-          "loop": 13
+          "loop": 14
         },
         "closed_by": {
-          "close-on-evidence": 13,
+          "close-on-evidence": 14,
           "prioritise": 2,
           "main-red-report": 3,
           "owner": 6
@@ -2901,7 +2903,7 @@
         "opened": 10,
         "closed": 19,
         "net": -9,
-        "open_end": 120,
+        "open_end": 121,
         "opened_by": {
           "loop": 9,
           "ops": 1
@@ -2917,7 +2919,7 @@
         "opened": 11,
         "closed": 7,
         "net": 4,
-        "open_end": 124,
+        "open_end": 125,
         "opened_by": {
           "audit": 4,
           "loop": 7
@@ -2933,7 +2935,7 @@
         "opened": 31,
         "closed": 10,
         "net": 21,
-        "open_end": 145,
+        "open_end": 146,
         "opened_by": {
           "audit": 22,
           "loop": 9
@@ -2948,15 +2950,15 @@
       {
         "date": "2026-11-21",
         "opened": 17,
-        "closed": 7,
-        "net": 10,
+        "closed": 8,
+        "net": 9,
         "open_end": 155,
         "opened_by": {
           "loop": 16,
           "ops": 1
         },
         "closed_by": {
-          "close-on-evidence": 7
+          "close-on-evidence": 8
         }
       }
     ],
@@ -4118,6 +4120,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1177,
+        "closed_at": "2026-11-17T17:38:17Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1178,
         "closed_at": "2026-11-18T03:41:45Z",
         "closer": "close-on-evidence"
@@ -4273,6 +4280,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1332,
+        "closed_at": "2026-11-21T13:03:10Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1336,
         "closed_at": "2026-11-21T06:12:27Z",
         "closer": "close-on-evidence"
@@ -4283,12 +4295,12 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 4,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 112,
+          "merged": 113,
           "median_h": 0.6,
           "p90_h": 11.0,
           "max_h": 46.6,
@@ -4412,7 +4424,7 @@
           ]
         },
         "28d": {
-          "merged": 323,
+          "merged": 325,
           "median_h": 0.5,
           "p90_h": 16.5,
           "max_h": 122.1,
@@ -4703,37 +4715,30 @@
         },
         {
           "date": "2026-11-21",
-          "merged": 7,
-          "median_h": 0.3,
-          "max_h": 2.3
+          "merged": 9,
+          "median_h": 0.4,
+          "max_h": 2.5
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 7.0,
+          "age_h": 11.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 3.9,
+          "age_h": 8.2,
           "waiting_on": "merge",
           "why": null
         },
         {
-          "number": 1345,
-          "title": "Ekadashi: emit Drik's primary day when Dwadashi has no sunrise; shukla_tithi_date resolves",
-          "age_h": 1.7,
-          "waiting_on": "gates / QA",
-          "why": null
-        },
-        {
-          "number": 1348,
-          "title": "muhurat landing: /muhurat/vivah lists the next five auspicious dates, Abujha rows dropped ",
-          "age_h": 0.5,
+          "number": 1350,
+          "title": "partial/1017 r3 factor registry",
+          "age_h": 0.0,
           "waiting_on": "gates / QA",
           "why": null
         }

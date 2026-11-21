@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-21T12:13:23Z",
+ "generated_at": "2026-11-21T16:28:51Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-21",
  "today": {
-  "growth": 12,
-  "other": 9,
+  "growth": 14,
+  "other": 10,
   "exempt": 0,
-  "share": 0.571
+  "share": 0.583
  },
  "this_week": {
-  "growth": 27,
-  "other": 64,
+  "growth": 29,
+  "other": 65,
   "exempt": 0,
-  "share": 0.297
+  "share": 0.309
  },
  "this_month": {
-  "growth": 30,
-  "other": 229,
+  "growth": 32,
+  "other": 230,
   "exempt": 0,
-  "share": 0.116
+  "share": 0.122
  },
  "must_pick_growth": true,
  "days": [
@@ -116,29 +116,64 @@
   },
   {
    "date": "2026-11-21",
-   "growth": 12,
-   "other": 9,
+   "growth": 14,
+   "other": 10,
    "exempt": 0,
-   "share": 0.571
+   "share": 0.583
   }
  ],
  "cycles": [
+  {
+   "run": 44917254081,
+   "started": "2026-11-21T15:04:56Z",
+   "issue": 1017,
+   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
+   "class": "growth",
+   "outcome": "pr open",
+   "pr": 1350,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 2,
+    "backend-engineer": 2,
+    "dev-lead": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 44905954944,
+   "started": "2026-11-21T12:51:20Z",
+   "issue": 1017,
+   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1348,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 44902743294,
+   "started": "2026-11-21T12:12:30Z",
+   "issue": 1332,
+   "title": "lunar_observances emits Drik's Gauna Ekadashi date for 2027-01 and 2028-11; shukla_tithi_date mis-resolves Margashirsha 2027",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1345,
+   "agents": {
+    "qa": 2
+   }
+  },
   {
    "run": 44895992203,
    "started": "2026-11-21T10:47:22Z",
    "issue": 1017,
    "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
    "class": "growth",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1348,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "chief": 2,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44890430479,
@@ -146,16 +181,9 @@
    "issue": 1332,
    "title": "lunar_observances emits Drik's Gauna Ekadashi date for 2027-01 and 2028-11; shukla_tithi_date mis-resolves Margashirsha 2027",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1345,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44889993023,
@@ -165,7 +193,7 @@
    "class": "growth",
    "outcome": "pr open",
    "pr": 1342,
-   "agents": {}
+   "agents": null
   },
   {
    "run": 44886410798,
@@ -175,9 +203,7 @@
    "class": "growth",
    "outcome": "pr open",
    "pr": 1342,
-   "agents": {
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44879675820,
@@ -187,14 +213,7 @@
    "class": "growth",
    "outcome": "pr open",
    "pr": 1342,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44878585998,
@@ -247,13 +266,7 @@
    "class": "other",
    "outcome": "pr open",
    "pr": 1335,
-   "agents": {
-    "architect": 1,
-    "dev-lead": 1,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44867228276,
@@ -601,42 +614,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 44250725457,
-   "started": "2026-11-18T06:21:25Z",
-   "issue": 1105,
-   "title": "privacy: no code path deletes personal data \u2014 add account deletion, delete a chart's readings, and enforce retention in the bucket",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1214,
-   "agents": {}
-  },
-  {
-   "run": 44245481709,
-   "started": "2026-11-18T05:37:00Z",
-   "issue": 1065,
-   "title": "seo: track index status per sitemap URL (URL Inspection API), flag pages changed after Google's last crawl, and list which to request indexing for",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1210,
-   "agents": {
-    "qa": 3
-   }
-  },
-  {
-   "run": 44234677262,
-   "started": "2026-11-18T04:03:40Z",
-   "issue": 1105,
-   "title": "privacy: no code path deletes personal data \u2014 add account deletion, delete a chart's readings, and enforce retention in the bucket",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1214,
-   "agents": {
-    "engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -881,22 +858,22 @@
   "ga4_new_users_28d": 661,
   "ga4_sessions_28d": 791,
   "objective_top5": 1,
-  "growth_share_today": 0.571,
-  "growth_share_week": 0.297,
-  "growth_share_month": 0.116
+  "growth_share_today": 0.583,
+  "growth_share_week": 0.309,
+  "growth_share_month": 0.122
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-21",
-   "progress": 0.952,
-   "detail": "12 of 21 cycles on growth, target 60%",
+   "progress": 0.972,
+   "detail": "14 of 24 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W47",
-   "progress": 0.5,
+   "progress": 0.521,
    "detail": "4 goals, 4 measurable",
    "goals": [
     {
@@ -907,8 +884,8 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.297,
-     "progress": 0.632,
+     "current": 0.309,
+     "progress": 0.715,
      "basis": "growth_share_week"
     },
     {
@@ -962,7 +939,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.194,
+   "progress": 0.205,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1005,8 +982,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.116,
-     "progress": 0.26,
+     "current": 0.122,
+     "progress": 0.293,
      "basis": "growth_share_month"
     }
    ]
