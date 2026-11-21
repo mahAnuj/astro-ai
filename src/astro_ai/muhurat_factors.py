@@ -46,10 +46,13 @@ SCORED_HEADING = "What counted for this date"
 NO_POINTS = "No tithi, star or weekday point scored for this date"
 NOON_NOTE = ("Checked at local noon on this date; the Moon's star, the tithi and the yoga can "
              "change later in the day, so confirm the exact hour with your priest.")
-# The auditor's wording, verbatim. The code's own "universally auspicious" is never echoed.
+# The auditor's wording, verbatim (#1346). The code's own "universally auspicious" is never echoed.
+# Before #1346 this said the exclusion checks were NOT run, because the Abujha branch skipped them;
+# they now run first, and an Abujha date that fails one is an ordinary `avoid` row with no note.
 ABUJHA_NOTE = ("Listed as an Abujha date, a regional almanac custom this finder includes; no "
-               "book it holds names it. The usual exclusion checks were not run for this date, "
-               "so confirm the tithi, star and Panchak with your priest or panchang.")
+               "book it holds names it. The finder's usual exclusion checks were run for this "
+               "date and none excluded it. Confirm the tithi, star and Panchak with your priest "
+               "or panchang.")
 
 
 def _r(status: str, sentence: str, file: str | None = None, heading: str | None = None) -> dict:
@@ -487,19 +490,20 @@ def explain(candidate, event_type: str) -> Explanation:
     rules = EVENT_RULES.get(event_type)
     if rules is None or candidate.rating not in AUSPICIOUS_RATINGS:
         return Explanation()
+    # An Abujha row went through `score_event` like any other (#1346): the flag is set only after
+    # every hard exclusion passed, so the cleared list below is true for it. Abujha is listed first,
+    # as the lift that applied, then the soft points, then the Siddha/Ravi boosters.
+    scored: list[Item] = []
     if "abujha_muhurat" in candidate.flags:
-        # The Abujha branch of find_candidates skips every hard exclusion and every booster, so
-        # nothing was cleared and nothing scored. Keyed on the flag: when that branch changes
-        # (#1346) the cleared list follows what ran. tests pin this against today's branch.
-        return Explanation(scored=(_item("abujha_muhurat", event_type),), cleared=(),
-                           note=resolve("abujha_muhurat", event_type)[3])
-    scored = _soft_items(event_type, rules, candidate.tithi, candidate.tithi_paksha,
-                         candidate.nakshatra, candidate.weekday)
+        scored.append(_item("abujha_muhurat", event_type))
+    scored += _soft_items(event_type, rules, candidate.tithi, candidate.tithi_paksha,
+                          candidate.nakshatra, candidate.weekday)
     for prefix, key in _BOOSTERS:
         if any(b.startswith(prefix) for b in candidate.boosters):
             scored.append(_item(key, event_type))
     cleared = [_item(k, event_type) for k in _applied_hard(rules, candidate.nakshatra)]
-    return Explanation(scored=tuple(scored), cleared=tuple(cleared))
+    note = resolve("abujha_muhurat", event_type)[3] if "abujha_muhurat" in candidate.flags else ""
+    return Explanation(scored=tuple(scored), cleared=tuple(cleared), note=note)
 
 
 def legend(candidates, event_type: str) -> Legend:
@@ -511,6 +515,8 @@ def legend(candidates, event_type: str) -> Legend:
         ex = explain(c, event_type)
         used.update((i.key, i.qual) for i in ex.scored + ex.cleared)
         cleared_shown = cleared_shown or bool(ex.cleared)
+        # The weights entry explains tithi/star/weekday points; an Abujha item alone is a lift,
+        # not a weighted point, so it must not switch that entry on.
         scored_shown = scored_shown or any(i.key != "abujha_muhurat" for i in ex.scored)
     if scored_shown:
         used.add(("soft_scoring_weights", ""))

@@ -55,8 +55,8 @@ AUDITOR_A = {
 }
 ABUJHA_SENTENCE = (
     "Listed as an Abujha date, a regional almanac custom this finder includes; no book it holds "
-    "names it. The usual exclusion checks were not run for this date, so confirm the tithi, star "
-    "and Panchak with your priest or panchang.")
+    "names it. The finder's usual exclusion checks were run for this date and none excluded it. "
+    "Confirm the tithi, star and Panchak with your priest or panchang.")
 
 
 def _cand(event="vivah", **kw):
@@ -434,46 +434,77 @@ def test_boosters_are_listed_as_present_and_never_as_a_raise():
 
 
 # ─── the Abujha row ───────────────────────────────────────────────────────────────────────────
-def test_an_abujha_row_scores_only_itself_clears_nothing_and_has_no_boosters():
+def test_an_abujha_row_lists_abujha_first_then_a_real_cleared_list_and_the_real_boosters():
+    # An Abujha row now went through every hard exclusion (#1346), so its cleared list is the
+    # same derived list any other row gets, and the boosters shown are the real Siddha/Ravi ones.
     c = _cand(flags=("abujha_muhurat",), boosters=("Amrit Siddhi Yoga (x)", "Ravi Yoga (z)"),
-              reason="Abujha Muhurat - x (universally auspicious)")
+              reason="Abujha date, x: a regional almanac custom")
     for event in EVENTS:
         ex = mf.explain(c, event)
-        assert [i.key for i in ex.scored] == ["abujha_muhurat"], event
-        assert ex.cleared == (), event
-        assert ex.note == ABUJHA_SENTENCE, event
+        keys = [i.key for i in ex.scored]
+        assert keys[0] == "abujha_muhurat", (event, keys)
+        assert keys[-2:] == ["amrit_siddhi", "ravi_yoga"], (event, keys)
         assert ex.scored[0].status == "site_convention"
+        applied = _applied_for(event)
+        assert applied, event
+        assert [i.key for i in ex.cleared] == applied, event
+        assert ex.note == ABUJHA_SENTENCE, event
         assert "universally" not in ex.note
+        assert "were not run" not in ex.note
+    plain = mf.explain(_cand(flags=(), boosters=("Amrit Siddhi Yoga (x)",)), "vivah")
+    assert plain.note == "" and "abujha_muhurat" not in [i.key for i in plain.scored]
 
 
-def test_the_abujha_override_is_pinned_to_the_branch_that_skips_every_exclusion(monkeypatch):
-    """vivah 2026-11-21 (Moon in Revati = Panchak, Dwadashi, Saturday) is rated excellent as an
-    Abujha date because that branch of `find_candidates` runs no hard exclusion (#1346). The
-    explanation therefore may not list any cleared check. When #1346 changes the branch this
-    test goes red on purpose: revisit `explain`'s Abujha override, do not just edit the date."""
+def _applied_for(event: str) -> list[str]:
+    return mf._applied_hard(m.EVENT_RULES[event], "Hasta")
+
+
+def test_the_abujha_item_alone_does_not_switch_on_the_weights_legend_entry():
+    # Abujha sorts first among the scored items; the weights entry explains tithi/star/weekday
+    # points, so it appears only when one of those (or a Siddha/Ravi item) is on the page.
+    only = _cand(flags=("abujha_muhurat",), tithi="Pratipada", nakshatra="Rohini",
+                 weekday="Monday")
+    ex = mf.explain(only, "business")
+    assert [i.key for i in ex.scored] == ["abujha_muhurat"], "premise: no soft point scored"
+    keys = {e.key for e in mf.legend([only], "business").entries}
+    assert "abujha_muhurat" in keys and "soft_scoring_weights" not in keys, keys
+    with_point = _cand(flags=("abujha_muhurat",), tithi="Dashami", nakshatra="Rohini",
+                       weekday="Monday")
+    assert "soft_scoring_weights" in {e.key for e in mf.legend([with_point], "business").entries}
+
+
+def test_the_abujha_branch_is_reachable_on_a_real_date_and_explains_what_ran(monkeypatch):
+    """2028-04-27 (Akshaya Tritiya, business) is a real date that clears every exclusion: the
+    row is lifted and its explanation lists the checks that ran. The date is read from the rule
+    table, never typed twice; when a rule change moves it, this test says so."""
     monkeypatch.setattr(chart, "geocode_place", lambda place: DELHI)
-    [c] = m.find_candidates("vivah", "Delhi, India", date(2026, 11, 21), 1)
+    d = next(day for day, entries in m._abujha_days(2028).items()
+             if any(n == "Akshaya Tritiya" and "business" in ev for n, ev in entries))
+    assert d == date(2028, 4, 27), "premise: the date the rule table computes"
+    [c] = m.find_candidates("business", "Delhi, India", d, 1)
     assert "abujha_muhurat" in c.flags and c.rating == "excellent", (c.flags, c.rating)
-    assert m._is_panchak(c.nakshatra, 4) or c.nakshatra == "Revati", c.nakshatra
-    ex = mf.explain(c, "vivah")
-    assert ex.cleared == () and [i.key for i in ex.scored] == ["abujha_muhurat"]
-    # and the finder's code still does not run the checks, which is why:
-    score = m.score_event("vivah", m._MuhurtaInstant(c.tithi, c.tithi_paksha), c.weekday,
-                          c.nakshatra, True, False, "", "", {})
-    assert score[0] == "avoid" and "panchak" in score[2]
+    ex = mf.explain(c, "business")
+    assert ex.scored[0].key == "abujha_muhurat" and ex.note == ABUJHA_SENTENCE
+    assert [i.key for i in ex.cleared] == _applied_for("business") and ex.cleared
+    # the exclusion list shown is exactly what the scorer ran: re-score the same inputs bare
+    score = m.score_event("business", m._MuhurtaInstant(c.tithi, c.tithi_paksha), c.weekday,
+                          c.nakshatra, False, False, "", "", {})
+    assert score[0] != "avoid"
 
 
 # ─── (e) the cleared list is derived from the rules, and equals what the scorer applies ───────
 def _drive(event: str, **over):
     a = dict(tithi="Dwitiya", paksha="Shukla", weekday="Wednesday", nakshatra="Hasta",
              is_panchak=False, is_chaturmas=False, kharmas_reason="", eclipse_reason="",
-             combust={}, adhik_reason="", nitya_yoga="", nitya_blocks=False, moon_pada=0)
+             combust={}, adhik_reason="", nitya_yoga="", nitya_blocks=False, moon_pada=0,
+             abujha_name="")
     a.update(over)
     return m.score_event(
         event, m._MuhurtaInstant(a["tithi"], a["paksha"]), a["weekday"], a["nakshatra"],
         a["is_panchak"], a["is_chaturmas"], a["kharmas_reason"], a["eclipse_reason"],
         a["combust"], adhik_reason=a["adhik_reason"], nitya_yoga=a["nitya_yoga"],
-        nitya_blocks=a["nitya_blocks"], moon_pada=a["moon_pada"])
+        nitya_blocks=a["nitya_blocks"], moon_pada=a["moon_pada"],
+        abujha_name=a["abujha_name"])
 
 
 # One trigger per hard key. The dagdha pair is the table's own first row, not a restated one.
@@ -517,6 +548,23 @@ def test_the_cleared_list_equals_what_score_event_actually_checks():
         for key, trig in TRIGGERS.items():
             rating, _reason, flags = _drive(event, **trig)
             assert (key in flags) == (key in applied), (event, key, flags, sorted(applied))
+
+
+@pytest.mark.parametrize("key", list(TRIGGERS))
+def test_an_abujha_name_never_clears_any_hard_trigger(key):
+    """For every hard exclusion, an Abujha name changes neither the verdict nor its flag and
+    reason, and no `abujha_muhurat` flag appears (#1346). Skipped events are those that do not
+    run this check; at least one event per trigger must, or the test proves nothing."""
+    fired = 0
+    for event in EVENTS:
+        bare = _drive(event, **TRIGGERS[key])
+        named = _drive(event, abujha_name="Tulsi Vivah", **TRIGGERS[key])
+        if bare[0] != "avoid":
+            continue
+        fired += 1
+        assert named == bare, (event, key, named, bare)
+        assert "abujha_muhurat" not in named[2]
+    assert fired, f"no event applies {key}: the trigger never fired"
 
 
 def test_the_cleared_list_is_derived_not_static():
