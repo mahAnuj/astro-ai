@@ -24,16 +24,39 @@ Ekadashi is emitted on D-1. Nothing else moves; the 2026-2028 list differs in ex
 three dates and the total stays 149 (74 Ekadashis). The census gate re-derives the filter from
 the sunrise indices alone and finds the same three, so it does not rest on the typed table.
 
-**The rule is an UNSOURCED-IN-CORPUS Drik almanac convention.** It is 3 of 3 Drik readings, made by
-`astro-auditor`; it is not read from `knowledge/`. The issue's `corpus:` line says
-`knowledge/vedic_reference.md` §29.6 settles it — it does not: §29.6 is the sunrise rule for
-assigning a tithi to a day, which is what the engine already did, and says nothing about a
-skipped Dwadashi. No source in `knowledge/` is cited for the rule anywhere in the code. The
-existing "second sunrise on vriddhi" rule is empirical in the same way (5 of 5 Drik readings),
-and the old name *dashami-viddha* for it was a misnomer; the comments now say so. No
-user-facing astrological sentence is added or changed — `_TARGETS`' `rule` strings are
-untouched — only the computed date moves. `data/` is absent in this checkout, so no corpus
-search was run.
+**The rule is an UNSOURCED-IN-CORPUS Drik almanac convention, and it departs from §29.6.** It
+is 3 of 3 Drik readings, made by `astro-auditor`; it is not read from `knowledge/`. The issue's
+`corpus:` line says `knowledge/vedic_reference.md` §29.6 settles it — it does not, and the
+honest framing is the opposite: §29.6 is the *literal sunrise rule* for assigning a tithi to a
+day, which argues **against** a D-1 pick (on D-1 the tithi at sunrise is Dashami). The rule
+**departs from §29.6's sunrise rule and is adopted as Drik Panchang's published practice**
+(Drik year pages for 2027, 2028, 2029 and 2025 confirm the primary and Gauna dates; those
+readings come from `astro-auditor` and QA and were not re-read in this fix). No source in
+`knowledge/` is cited for the rule anywhere in the code. The existing "second sunrise on
+vriddhi" rule is empirical in the same way (5 of 5 Drik readings), and the old name
+*dashami-viddha* for it was a misnomer (the tithi sampled at the first sunrise is already
+Ekadashi); the comments now say so.
+
+**One user-facing sentence was reworded: the `/festivals` reckoning note.** The earlier
+statement said Ekadashi takes the second day of a vriddhi run "since a tithi that long is
+already pierced by the preceding Dashami at the first sunrise". After this change three rows
+(2027-01-18, 2028-02-06, 2028-11-12) fall on days when Dashami is running at sunrise, and the
+code's own comments call *dashami-viddha* a misnomer, so the note asserted a mechanism the
+change disproves. `_festival_reckoning.html` now says the second day follows Drik Panchang's
+published practice, states the third pick plainly (a single-sunrise Ekadashi whose Dwadashi has
+no sunrise of its own is listed the day before, as Drik prints it), and says these Ekadashi
+day-picks follow Drik's convention for New Delhi rather than a single sunrise rule alone.
+Pinned by `tests/test_lunar_ekadashi_drik.py` and two mutation rows. `_TARGETS`' per-row `rule`
+strings ("... at sunrise") are untouched: they are shared by the row dedup and the heading
+split in `festivals_index.html`, and qualifying them is not a one-word change. Plain template
+copy; no `t(lang, ...)`/`i18n.py` entry exists for it, and no Tailwind class changed, so no CSS
+rebuild. `data/` is absent in this checkout, so no corpus search was run.
+
+**Latent: the D-1 rule also applies under madhyahna.** `lunar_dates._pick_day` is shared with
+the `reckoning="madhyahna"` path, so a tithi-10/25 target sampled at madhyahna would take the
+D-1 pick on madhyahna samples too, which nothing validates. No caller reaches it (every
+Ekadashi caller uses sunrise reckoning; the madhyahna callers ask for Tritiya and Panchami).
+Do not add a madhyahna Ekadashi caller without a Drik reading for it.
 
 **Not strict arunodaya.** A stricter reading (Dwadashi begins before sunrise) would also move
 2027-10-25 and 2028-08-16, which Drik prints on the engine dates. Those two are kept in
@@ -54,8 +77,16 @@ overlapping month, 2026-12-09..2027-01-07, so `shukla_tithi_date(2027, "Margashi
 came back as the December 2026 date. `lunar_months(year)` can hold two months of one name when
 the name straddles the boundary at both ends. Over 2000-2100 `shukla_tithi_date(y, month, 11)`
 was wrong for **Margashirsha in 48 of 101 years** and for **Pausha in 15**; the other ten
-month names are identical before and after in 101 of 101 years (diffed against the code before
-this change). Now: every candidate month is picked, only dates with `d.year == year` are kept,
+month names are identical to the straddle fix *without* the day-earlier rule in 101 of 101
+years. With the day-earlier rule, **39** other-month entries move, every one by exactly -1 day
+(e.g. Kartika 2025 and 2006, Ashadha 2004 and 2005, Magha 2028; Kartika 2025 is Devuthani,
+1 November). I diffed `shukla_tithi_date(y, month, 11)` over 2000-2100 and all twelve months
+for `main`'s `lunar_dates.py`, for this branch, and for this branch with the day-earlier guard
+forced off, each in a scratch copy outside the working tree: main vs this branch differ in 108
+entries (39 other-month entries, all -1 day, and 69 in Margashirsha or Pausha); main vs the
+no-day-earlier variant differ in 63, all Margashirsha or Pausha (the straddle fix alone), and in
+0 other months; the day-earlier rule itself changes 9 Margashirsha or Pausha entries and the 39
+others, 48 in all, each by -1 day. Now: every candidate month is picked, only dates with `d.year == year` are kept,
 and the earliest is returned. Results: Margashirsha 2027 = 2027-12-09, Pausha 2027 = 2027-01-18,
 Pausha 2026 = None (its Shukla Ekadashi is 2025-12-30), Pausha 2028 = 2028-01-08 of two
 in-year candidates (2028-01-08 and 2028-12-27). Pausha has **0** in-year candidates in 15 of

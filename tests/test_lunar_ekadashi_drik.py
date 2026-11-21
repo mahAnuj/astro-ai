@@ -176,3 +176,31 @@ def test_nija_month_is_still_the_first_overlapping_month():
 
 def test_an_ordinary_month_is_unchanged():
     assert ld.shukla_tithi_date(2027, "Ashadha", 11) == date(2027, 7, 14)
+
+
+# --- the /festivals reckoning note must say what the engine does (#1332 QA) ----------------
+
+def _reckoning_note(client) -> str:
+    import html
+    import re
+
+    resp = client.get("/festivals")
+    assert resp.status_code == 200
+    m = re.search(r'<section id="festival-reckoning".*?</section>', resp.text, re.S)
+    assert m, "the reckoning section is missing from /festivals"
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", m.group(0))))
+
+
+def test_festivals_note_states_the_drik_dwadashi_day_earlier_pick(client):
+    note = _reckoning_note(client)
+    assert (
+        "an Ekadashi seen at a single sunrise whose Dwadashi has no sunrise of its own is "
+        "listed on the day before, as Drik Panchang prints it"
+    ) in note
+    assert "follow Drik Panchang’s convention for New Delhi" in note
+
+
+def test_festivals_note_no_longer_claims_the_dashami_piercing_mechanism(client):
+    note = _reckoning_note(client)
+    assert "pierced by the preceding Dashami" not in note
+    assert "already pierced" not in note

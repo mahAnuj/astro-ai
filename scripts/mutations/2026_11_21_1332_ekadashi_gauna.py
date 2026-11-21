@@ -5,6 +5,7 @@ tests/test_lunar_ekadashi_drik.py."""
 
 _LO = "src/astro_ai/lunar_observances.py"
 _LD = "src/astro_ai/lunar_dates.py"
+_TPL = "src/astro_ai/templates/_festival_reckoning.html"
 
 _GUARD = "                idx in _VIDDHA_TITHIS\n                and 0 < i\n"
 _PREV = "                and samples[i - 1][1] == idx - 1\n"
@@ -40,4 +41,12 @@ MUTATIONS = [
      _LD, "for m in _nija_months(year, month)\n        if (d := _shukla_pick",
      "for m in _nija_months(year, month)[:1]\n        if (d := _shukla_pick",
      "test_margashirsha_2027_is_the_2027_month_not_the_december_2026_one"),
+    ("#1332: the /festivals note drops the Drik Dwadashi day-earlier sentence",
+     _TPL, "There is a third pick: an Ekadashi\n    seen at a single sunrise whose Dwadashi has no sunrise of its own is listed on the day\n    before, as Drik Panchang prints it. ",
+     "",
+     "test_festivals_note_states_the_drik_dwadashi_day_earlier_pick"),
+    ("#1332: the /festivals note reinstates the Dashami-piercing justification",
+     _TPL, "following Drik Panchang&rsquo;s published practice.",
+     "since a tithi that long is already pierced by the preceding Dashami at the first sunrise.",
+     "test_festivals_note_no_longer_claims_the_dashami_piercing_mechanism"),
 ]
