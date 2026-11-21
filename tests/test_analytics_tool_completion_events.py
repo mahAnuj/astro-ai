@@ -135,8 +135,18 @@ def test_muhurat_search_with_candidates_carries_counts_and_mode(client):
     assert p["event_type"] == "griha_pravesh" and p["mode"] == "basic"
     assert p["days"] == 14 and isinstance(p["valid_count"], int)
     assert 0 <= p["valid_count"] <= p["days"]
-    # the same number the page shows, not a second count
-    assert f"{p['valid_count']} auspicious dates" in r.text
+    # #1322: the headline counts only excellent/good/acceptable; valid_count keeps the #1218
+    # meaning (every non-avoid date, caution included), so it can only be >= the headline.
+    from datetime import date
+
+    from astro_ai import muhurat as MU
+    rows = MU.find_candidates("griha_pravesh", PLACE_A, date(2026, 12, 1), 14)
+    auspicious = sum(c.rating in ("excellent", "good", "acceptable") for c in rows)
+    shown = re.search(r"(\d+) auspicious dates?</span>", r.text)
+    assert shown, "the headline count did not render"
+    assert int(shown.group(1)) == auspicious
+    assert p["valid_count"] >= int(shown.group(1))
+    assert p["valid_count"] == sum(c.rating != "avoid" for c in rows)
 
 
 def test_muhurat_modes_are_derived_from_the_inputs_actually_used(client):

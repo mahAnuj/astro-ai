@@ -210,6 +210,9 @@ class MuhuratCandidate:
     # Empty means "this date has no such window", never "not computed yet".
     rahu_kaal: str = ""       # "13:30–15:00"; "" if no daylight span
     abhijit_muhurta: str = "" # "11:48–12:36"; "" if no daylight span
+    # Local sunrise "06:58", for the results page's "Times are local to ..." line (#1322). Empty on a
+    # date with no ordinary sunrise (#228) for the same reason as rahu_kaal: there is no sunrise to name.
+    sunrise: str = ""
     nitya_yoga: str = ""      # e.g. "Siddhi", "Vyatipata"
     boosters: tuple[str, ...] = ()  # Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga names
     # Phase B additions — sub-day precision
@@ -1867,8 +1870,9 @@ def find_candidates(event_type: str, city: str, start: date,
             if p.daylight_ordinary:
                 rk_str = f"{p.rahu_kaal_start.strftime('%H:%M')}-{p.rahu_kaal_end.strftime('%H:%M')}"
                 ab_str = f"{p.abhijit_start.strftime('%H:%M')}-{p.abhijit_end.strftime('%H:%M')}"
+                sunrise_str = p.sunrise.strftime('%H:%M')
             else:
-                rk_str = ab_str = ""
+                rk_str = ab_str = sunrise_str = ""
             # Phase B — Bhadra / Vishti karana window + Choghadiya table
             bhadra_spans = _bhadra_spans_for_day(base_chart, when)
             bhadra_window = _bhadra_window_for_day(
@@ -1917,7 +1921,7 @@ def find_candidates(event_type: str, city: str, start: date,
                 reason=f"Abujha Muhurat — {abujha_name} (universally auspicious)",
                 flags=("abujha_muhurat",),
                 personal=personal, couple=couple,
-                rahu_kaal=rk_str, abhijit_muhurta=ab_str,
+                rahu_kaal=rk_str, abhijit_muhurta=ab_str, sunrise=sunrise_str,
                 nitya_yoga=nitya_yoga, boosters=boosters,
                 bhadra_window=bhadra_window, choghadiya=choghadiya,
                 abhijit_overlaps=abhijit_overlaps,
@@ -1937,7 +1941,7 @@ def find_candidates(event_type: str, city: str, start: date,
             nakshatra=nakshatra,
             rating=rating, reason=reason, flags=flags,
             personal=personal, couple=couple,
-            rahu_kaal=rk_str, abhijit_muhurta=ab_str,
+            rahu_kaal=rk_str, abhijit_muhurta=ab_str, sunrise=sunrise_str,
             nitya_yoga=nitya_yoga, boosters=boosters,
             bhadra_window=bhadra_window, choghadiya=choghadiya,
             abhijit_overlaps=abhijit_overlaps,
