@@ -307,7 +307,7 @@
     "kalabhairav-jayanti": {
       "name_en": "Kalabhairav Jayanti",
       "rule": "Margashirsha Krishna Ashtami (purnimanta) = Kartika Krishna Ashtami (amanta)",
-      "observance_window": "pradosh to nishita, Ashtami prevailing",
+      "observance_window": "evening, Ashtami running after sunset",
       "tithi_based": true,
       "dates": {"2026": "2026-12-01", "2027": "2027-11-20", "2028": "2028-11-09"}
     },
