@@ -245,6 +245,16 @@ def _muhurta_instant_hour() -> int:
 
 
 templates.env.globals["muhurta_instant_hour"] = _muhurta_instant_hour
+
+
+def _muhurat_auspicious_ratings() -> tuple[str, ...]:
+    """The ratings the finder and the landing pages call "auspicious" (#1322, #1325), so a
+    template filters on the same set Python does. Lazy for the same reason as above."""
+    from astro_ai.muhurat import AUSPICIOUS_RATINGS
+    return AUSPICIOUS_RATINGS
+
+
+templates.env.globals["muhurat_auspicious_ratings"] = _muhurat_auspicious_ratings
 # current_year used by nav labels like "Horoscope 2026" — auto-updates yearly.
 templates.env.globals["current_year"] = lambda: date.today().year
 # Astrology-term Devanagari lookups — templates call e.g.

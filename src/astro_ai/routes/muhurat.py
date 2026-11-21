@@ -24,20 +24,74 @@ confusing AttributeError rather than an ImportError. Nothing here may import
 from __future__ import annotations
 
 import logging
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
+from starlette.concurrency import run_in_threadpool
 
 from astro_ai import chart as _chart
-from astro_ai import notify
+from astro_ai import hot_cache, notify
 from astro_ai.chart import compute_chart, reading_today
-from astro_ai.routes.deps import _lang, templates
+from astro_ai.routes.deps import _lang, _no_cdn_cache, templates
 from astro_ai.routes.llm_support import _fire_error_alert
 from astro_ai.session import load_collection, load_user
 
 log = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# Landing pages show the next auspicious dates for one fixed city (#1325, slice 6 of #1017).
+# Allow-list, not "every event but vivah": a new event type is opt-in. The four are the events
+# whose rules #1058 sourced; vivah stays as it was until #1026.
+LANDING_DATES_EVENTS = frozenset({"griha_pravesh", "vidyarambh", "namkaran", "business"})
+LANDING_CITY = "New Delhi, India"
+# 90 days, not 60: measured on 2026-11-21, 60 days gave `business` exactly five auspicious dates
+# with no slack, and 90 gave 11 (griha_pravesh 16, vidyarambh 21, namkaran 19). Compute is ~0.15 s.
+LANDING_WINDOW_DAYS = 90
+LANDING_SHOW = 5
+LANDING_TTL_S = 86400.0
+
+
+def _landing_upcoming(event_key: str, today: date) -> dict | None:
+    """The next auspicious dates for one event, from the finder itself (never typed in).
+
+    Runs in a worker thread (blocking: ephemeris plus one Nominatim geocode per process) and is
+    cached by the caller. Returns a small plain dict, not the candidates: their choghadiya tables
+    are dead weight on a landing page. `None` when the window holds no auspicious date.
+
+    The five EARLIEST auspicious dates, printed in date order. `find_candidates` returns its rows
+    best-tier-first, so reading "the finder's order" literally would list the five best-rated dates
+    of the window, possibly 80 days out; this page is headed "next", so it sorts by date, which is
+    the finder's own tie-break inside a tier (#1325).
+    """
+    from astro_ai import muhurat as _muhurat
+    from astro_ai.muhurat import AUSPICIOUS_RATINGS
+
+    rows = _muhurat.find_candidates(event_key, LANDING_CITY, today, LANDING_WINDOW_DAYS)
+    # Read after find_candidates so it is an lru hit, and raise (section omitted) rather than
+    # cache a result that cannot name its zone.
+    zone = _chart.geocode_place(LANDING_CITY)[2]
+    upcoming = sorted((c for c in rows if c.rating in AUSPICIOUS_RATINGS), key=lambda c: c.d)
+    if not upcoming:
+        return None
+    today_tomorrow = []
+    if event_key == "griha_pravesh":
+        # Same rows as the list: the window starts today, so no second computation.
+        by_date = {c.d: c for c in rows}
+        for d in (today, today + timedelta(days=1)):
+            c = by_date.get(d)
+            if c is not None:
+                today_tomorrow.append({
+                    "d": c.d, "weekday": c.weekday, "rating": c.rating,
+                    "valid": c.rating in AUSPICIOUS_RATINGS, "reason": c.reason})
+    return {
+        "city": LANDING_CITY, "zone": zone, "computed": today, "days": LANDING_WINDOW_DAYS,
+        "dates": [{"d": c.d, "weekday": c.weekday, "tithi": c.tithi, "paksha": c.tithi_paksha,
+                   "nakshatra": c.nakshatra, "rating": c.rating}
+                  for c in upcoming[:LANDING_SHOW]],
+        "today_tomorrow": today_tomorrow,
+    }
 
 
 @router.get("/muhurat/{event_slug}", response_class=HTMLResponse)
@@ -58,15 +112,33 @@ async def muhurat_landing(request: Request, event_slug: str) -> HTMLResponse:
         raise HTTPException(status_code=404, detail=f"Unknown event type: {event_slug}")
     saved = load_collection(request).active
     prefill_city = saved.birth_place if saved else ""
-    return templates.TemplateResponse(
+    today = reading_today()  # read once: the cache key and the window must name the same IST day
+    upcoming = None
+    if event_key in LANDING_DATES_EVENTS:
+        try:
+            # get_or_compute, not get_or_refresh: a cold key would hand the first visitor (and a
+            # crawler) no list, which is the page this exists to improve. The IST day is in the
+            # KEY, so rollover needs no TTL; date.today() is UTC on Cloud Run and lags 5.5 h (#794).
+            upcoming = await run_in_threadpool(
+                hot_cache.get_or_compute,
+                f"muhurat:landing:{event_key}:{today.isoformat()}", LANDING_TTL_S,
+                lambda: _landing_upcoming(event_key, today))
+        except Exception:
+            # A panel must never 500 the page. No _fire_error_alert: a public crawled page and a
+            # Nominatim hiccup would page the owner repeatedly; hot_cache collapses repeats.
+            log.warning("muhurat landing dates unavailable for %s", event_key, exc_info=True)
+            upcoming = None
+    # The page now names today and tomorrow, so it is date-dependent (see _no_cdn_cache).
+    return _no_cdn_cache(templates.TemplateResponse(
         request, "muhurat_landing.html",
         {"landing": landing, "event_key": event_key,
          "event_label": rules["label"],
          "prefill_city": prefill_city,
-         "prefill_start": reading_today().isoformat(),
+         "prefill_start": today.isoformat(),
          "has_saved_chart": saved is not None,
+         "upcoming": upcoming,
          "lang": _lang(request)},
-    )
+    ))
 
 
 @router.get("/muhurat", response_class=HTMLResponse)

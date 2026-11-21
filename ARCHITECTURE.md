@@ -137,7 +137,7 @@ src/astro_ai/
   learn_registry.py 3,107  /learn article metadata
   numerology.py    1,910  Chaldean + Lo Shu calculators
   festival_registry.py 1,672
-  muhurat.py       1,475  electional scoring; shares angas with panchang
+  muhurat.py       1,966  electional scoring; shares angas with panchang
   ask_transit.py     103  /ask's slow-planet transit block (four movers from the natal Moon), the pinned
                         moment and the `tr` cache-key fingerprint (#402)
   llm.py           1,566  prompt assembly, rashifal fan-out (re-measured 2026-11-06)
@@ -174,7 +174,7 @@ This is the most misunderstood part of the system. Layers, outermost first:
 
 | layer | scope | survives | used for |
 |---|---|---|---|
-| `hot_cache` | in-process, TTL + stale-while-revalidate | no | homepage trust bar; the sign-out revocation map (`session:revoked`, 300 s) |
+| `hot_cache` | in-process, TTL + stale-while-revalidate | no | homepage trust bar; the sign-out revocation map (`session:revoked`, 300 s); the muhurat landing's next-auspicious-dates list (`muhurat:landing:<event>:<IST date>`, 86400 s, `get_or_compute` so a cold key still renders, run in the threadpool, 0 GCS ops, 0 tokens, #1325). Four events, 90-day window, so at most 4 computes per instance per IST day. Measured 2026-11-21 (auspicious / caution in the window): griha_pravesh 16/1, vidyarambh 21/5, namkaran 19/0, business 11/2; 0.14-0.15 s per event warm, 0.59 s first call. These counts rot daily; re-measure before quoting. |
 | `lru_cache` (stdlib) | in-process, per-function | no | geocode, lunar dates, sankranti |
 | `_PANCHANG_CACHE`, `_PANCHANG_STRIP_CACHE` | in-process dicts | no | panchang by (date, coarse lat/lon) and by (date, city) |
 | `daily_cache` | **file** on the instance | no | per-rashi readings, keyed `(namespace, slug-lang, date)` |

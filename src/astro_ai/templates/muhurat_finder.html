@@ -145,7 +145,7 @@
   {#- #1322 (#1017 R2): the headline counts only what the finder calls auspicious. `caution` is the
       lowest tier that passed no hard exclusion; it stays visible in its own group and is not counted
       as auspicious. `listed_candidates` is every non-avoid row, in the sorted order the table shows. -#}
-  {% set auspicious_candidates = candidates | selectattr('rating', 'in', ['excellent', 'good', 'acceptable']) | list %}
+  {% set auspicious_candidates = candidates | selectattr('rating', 'in', muhurat_auspicious_ratings()) | list %}
   {% set caution_candidates = candidates | selectattr('rating', 'equalto', 'caution') | list %}
   {% set listed_candidates = candidates | rejectattr('rating', 'equalto', 'avoid') | list %}
   {% set avoid_candidates = candidates | selectattr('rating', 'equalto', 'avoid') | list %}

@@ -36,6 +36,40 @@
     {% endfor %}
   </section>
 
+  {# ─── Next auspicious dates for New Delhi (#1325); omitted when upcoming is empty or failed ─── #}
+  {% if upcoming %}
+  <section id="next-dates" class="bg-white border border-bhagya-line p-6 sm:p-8 space-y-4">
+    <h2 class="font-marcellus text-xl text-bhagya-ink">Next {{ upcoming.dates | length }} auspicious {{ event_label }} {{ 'date' if upcoming.dates | length == 1 else 'dates' }}</h2>
+    <ol class="list-decimal pl-5 space-y-2 text-bhagya-ink-soft">
+      {% for item in upcoming.dates %}
+      <li>
+        <span class="font-semibold text-bhagya-ink">{{ item.weekday }}, {{ item.d.strftime('%b %d, %Y') }}</span>
+        · {{ item.paksha }} {{ item.tithi }} · {{ item.nakshatra }} ·
+        <span class="text-bhagya-sindoor">{{ item.rating | capitalize }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+    {% if upcoming.today_tomorrow %}
+    <div class="border-t border-bhagya-line pt-4">
+      <h3 class="font-marcellus text-base text-bhagya-ink mb-2">Today and tomorrow</h3>
+      <ul class="space-y-2 text-sm text-bhagya-ink-soft">
+        {% for day in upcoming.today_tomorrow %}
+        <li>
+          <span class="font-semibold text-bhagya-ink">{{ day.weekday }}, {{ day.d.strftime('%b %d, %Y') }}:</span>
+          {{ 'auspicious' if day.valid else ('use with caution' if day.rating == 'caution' else 'not auspicious') }}.
+          {% if not day.valid %}<span class="text-bhagya-muted">The finder's note: {{ day.reason }}</span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    <p class="text-xs text-bhagya-muted">
+      Computed by this site's Muhurat Finder for {{ upcoming.city }} ({{ upcoming.zone }}) on {{ upcoming.computed.strftime('%b %d, %Y') }},
+      searching the next {{ upcoming.days }} days. Dates and times differ by location: enter your city below.
+    </p>
+  </section>
+  {% endif %}
+
   {# ─── Embedded finder form (pre-selected to this event) ─── #}
   <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Find your auspicious dates</h2>
