@@ -135,6 +135,37 @@ def _surfaces() -> list[tuple[str, str]]:
     return out
 
 
+# #1369 QA round 2: two sentences gave the Manglik-with-Manglik cancellation a MECHANISM and a
+# matchmaker preference ("meets itself", "the evenness of the match does the neutralising",
+# "traditional matchmakers prefer") that no held book states. They never say "comparable", so
+# `_TRIGGER` never fired on them. This family is scanned on every surface, trigger or not.
+_MECHANISM = re.compile(
+    r"meets itself|evenness of the match|does the neutralising|matchmakers prefer", re.I)
+
+
+def mechanism_in_text(text: str) -> list[str]:
+    return [s for s in _sentences(text) if _MECHANISM.search(s)]
+
+
+_OLD_MECHANISM_SENTENCES = [
+    'The dosha "meets itself" and neutralises, and it is the evenness of the match that does '
+    "the neutralising; a mild Manglik paired with a severe one is not the same thing, and "
+    "tradition does not promise it cancels.",
+    "The dosha \u201cmeets itself\u201d and neutralises, which is why traditional matchmakers "
+    "prefer Manglik-with-Manglik pairings.",
+]
+
+
+@pytest.mark.parametrize("sentence", _OLD_MECHANISM_SENTENCES)
+def test_the_mechanism_scan_flags_the_old_wording(sentence):
+    assert mechanism_in_text(sentence), sentence
+
+
+def test_no_surface_invents_a_mechanism_for_mutual_manglik_cancellation():
+    found = [f"{name}: {s}" for name, text in _surfaces() for s in mechanism_in_text(text)]
+    assert not found, "\n".join(found)
+
+
 def test_scan_reaches_the_surfaces_it_claims_to():
     """A scan that silently finds nothing passes forever."""
     names = [n for n, _ in _surfaces()]
