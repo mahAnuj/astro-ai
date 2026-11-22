@@ -5,6 +5,10 @@ a classical ranking (#1321 ruled the wording on manglik-remedies, commit 0eaf9bd
 still said "<Planet>'s classical grain". The ruled wording names no source in reader-facing text:
 "the grain a modern textbook's table gives <Planet>".
 
+#1380: three more wordings of the same overclaim, on /learn/sade-sati ("a classical Saturn grain"),
+/learn/career-during-sade-sati ("Saturn's grain in the classical remedy tables") and
+/learn/rahu-remedies ("Classical charity items for Rahu"); _BAD now matches all three shapes.
+
 A phrase test: it catches the wording it names, not every possible rewording.
 """
 from __future__ import annotations
@@ -16,7 +20,8 @@ import re
 import pytest
 
 _SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "astro_ai"
-_BAD = re.compile(r"classical\s+grain", re.I)
+_BAD = re.compile(
+    r"classical\s+(?:\w+\s+)?grain|grain\s+in\s+the\s+classical|classical\s+charity", re.I)
 
 _PAGES = (
     ("/learn/mars-remedies/", "Mars"),
@@ -24,6 +29,8 @@ _PAGES = (
     ("/learn/jupiter-remedies/", "Jupiter"),
     ("/learn/rahu-remedies/", "Rahu"),
     ("/learn/mangal-mars-in-vedic-astrology/", "Mars"),
+    ("/learn/sade-sati/", "Saturn"),
+    ("/learn/career-during-sade-sati/", "Saturn"),
 )
 
 
