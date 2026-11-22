@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22T16:43:33Z",
+  "generated_at": "2026-11-22T17:13:39Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 163,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 72,
+    "UNCLASSIFIED": 71,
     "INFRA": 16,
     "OPS": 11,
     "REDESIGN": 10,
@@ -24,6 +24,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "DETECT_STALLS": 1,
     "MUHURAT": 1,
     "NOTIFY": 1,
     "UI": 1,
@@ -42,13 +43,45 @@
     "design": 5
   },
   "by_priority": {
-    "unset": 103,
-    "medium": 28,
+    "unset": 104,
+    "medium": 27,
     "high": 20,
     "low": 12
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1387,
+      "title": "detect_stalls: mergeable-but-open PRs starved by a ruled blocked-on-owner workflow defect still oblige an action, waking chief every steward run",
+      "ask": "",
+      "area": "DETECT_STALLS",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-22T16:58:26Z",
+      "updated": "2026-11-22T16:58:26Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1386,
+      "title": "QA follow-up: 'classical remedies tables we hold' still labels Rao's single-textbook wheat table (PR #1382)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-22T16:55:15Z",
+      "updated": "2026-11-22T17:02:23Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1384,
       "title": "QA follow-up: ask-audit prompt does not say what the new --issue and cap refusals mean (PR #1383)",
@@ -62,23 +95,6 @@
       ],
       "created": "2026-11-22T16:42:08Z",
       "updated": "2026-11-22T16:42:08Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1380,
-      "title": "QA follow-up: #1378 left 'classical Saturn grain' and 'Classical charity items for Rahu' on Rao-table grains",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-22T12:45:41Z",
-      "updated": "2026-11-22T14:38:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -238,7 +254,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-21T16:30:36Z",
-      "updated": "2026-11-21T22:45:28Z",
+      "updated": "2026-11-22T16:58:51Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -542,26 +558,6 @@
       ],
       "created": "2026-11-20T16:03:13Z",
       "updated": "2026-11-20T16:03:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1291,
-      "title": "QA follow-up: ask_audit_post --issue accepts any issue number; the 5-issue cap is prompt-only",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-20T16:03:10Z",
-      "updated": "2026-11-22T16:42:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2669,7 +2665,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-22T16:43:33Z",
+    "generated_at": "2026-11-22T17:13:39Z",
     "window_days": 28,
     "open_now": 163,
     "merged_open_hours": 24,
@@ -3086,15 +3082,15 @@
       },
       {
         "date": "2026-11-22",
-        "opened": 9,
-        "closed": 6,
+        "opened": 11,
+        "closed": 8,
         "net": 3,
         "open_end": 163,
         "opened_by": {
-          "loop": 9
+          "loop": 11
         },
         "closed_by": {
-          "close-on-evidence": 5,
+          "close-on-evidence": 7,
           "prioritise": 1
         }
       }
@@ -4367,6 +4363,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1291,
+        "closed_at": "2026-11-22T16:55:52Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1292,
         "closed_at": "2026-11-20T21:31:41Z",
         "closer": "close-on-evidence"
@@ -4460,16 +4461,21 @@
         "number": 1373,
         "closed_at": "2026-11-22T05:05:01Z",
         "closer": "prioritise"
+      },
+      {
+        "number": 1380,
+        "closed_at": "2026-11-22T17:08:10Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 2,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 100,
+          "merged": 102,
           "median_h": 0.6,
-          "p90_h": 11.0,
+          "p90_h": 8.1,
           "max_h": 46.6,
           "slowest": [
             {
@@ -4590,9 +4596,9 @@
           ]
         },
         "28d": {
-          "merged": 330,
+          "merged": 331,
           "median_h": 0.5,
-          "p90_h": 16.3,
+          "p90_h": 15.1,
           "max_h": 122.1,
           "slowest": [
             {
@@ -4881,7 +4887,7 @@
         },
         {
           "date": "2026-11-22",
-          "merged": 6,
+          "merged": 8,
           "median_h": 1.2,
           "max_h": 1.7
         }
@@ -4890,42 +4896,28 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 35.5,
+          "age_h": 36.0,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 32.5,
+          "age_h": 33.0,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 21.0,
+          "age_h": 21.5,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 6.8,
-          "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1382,
-          "title": "Three learn lines stop calling a Rao-table grain classical in other wording (#1380)",
-          "age_h": 1.2,
-          "waiting_on": "gates / QA",
-          "why": null
-        },
-        {
-          "number": 1383,
-          "title": "ask_audit_post: --issue and the new-issue cap are enforced from gh, not the prompt (#1291)",
-          "age_h": 0.2,
+          "age_h": 7.3,
           "waiting_on": "merge",
           "why": null
         }
