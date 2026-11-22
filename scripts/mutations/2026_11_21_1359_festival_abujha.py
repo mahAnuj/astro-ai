@@ -1,0 +1,56 @@
+"""#1359: festival copy stops presenting abujha as a day that needs no muhurat check.
+
+Each row restores one pre-fix defect in src/astro_ai/festival_registry.py and names the test that must go red."""
+
+_REG = "src/astro_ai/festival_registry.py"
+_FORBID = "test_no_festival_copy_says_a_day_needs_no_muhurat"
+_MARKERS = "test_abujha_copy_names_the_almanac_custom_and_panchak"
+_PINS = "test_the_unsourced_astrology_stays_out_of_the_pinned_entries"
+
+MUTATIONS = [
+    ("#1359: Devuthani note_en says the day is auspicious the whole day through again",
+     _REG,
+     "Vishnu wakes and Chaturmas ends: the wedding season reopens. Regional almanac custom calls the day abujha; confirm the tithi, star and Panchak for any wedding or griha pravesh.",
+     "Vishnu wakes and Chaturmas ends — the wedding season reopens on an abujha muhurat, auspicious the whole day through.",
+     _FORBID),
+    ("#1359: Devuthani significance says the day needs no muhurat looked up at all again",
+     _REG,
+     "almanac custom lists it among the abujha days, taken as favourable; no book this ",
+     "almanac custom lists it among the abujha days, which needs no muhurat looked up at all; no book this ",
+     _FORBID),
+    ("#1359: Ugadi regains the unsourced 'three and a half abujha muhurats' count",
+     _REG,
+     "to have begun creation. Regional almanac custom also lists it as an abujha ",
+     "to have begun creation, and it is one of the three and a half abujha muhurats ",
+     _FORBID),
+    ("#1359: Akshaya Tritiya regains the Moon-in-Taurus reason (true in 1 year of 3)",
+     _REG,
+     "A reason often given is the Sun's exaltation in Aries. The ",
+     "The astrological reason usually given is that the Sun is exalted in Aries and the Moon in Taurus around this window. The ",
+     _PINS),
+    ("#1359: Dussehra significance regains 'auspicious throughout'",
+     _REG,
+     "a day taken as favourable; no book this site holds names it, so confirm the tithi, ",
+     "auspicious throughout; no book this site holds names it, so confirm the tithi, ",
+     _FORBID),
+    ("#1359: Dussehra observance regains 'needs no further muhurat check' (no 'abujha' word in it)",
+     _REG,
+     "Many begin a journey, a business or something new on this day by custom; for a ",
+     "Beginning a journey, a business or any new undertaking today needs no further muhurat check; for a ",
+     _FORBID),
+    ("#1359: Vasant Panchami names the almanac custom but drops Panchak",
+     _REG,
+     "Panchak with your priest or panchang. Children are ",
+     "the priest or panchang. Children are ",
+     _MARKERS),
+    ("#1359: Devuthani note_hi calls the day abujha but drops the Hindi Panchak (पंचक)",
+     _REG,
+     "तिथि, नक्षत्र और पंचक जाँचें।",
+     "तिथि और नक्षत्र जाँचें।",
+     _MARKERS),
+    ("#1359: Ugadi says 'Classically' Brahma began creation again (Puranic, not in knowledge/)",
+     _REG,
+     "In Puranic tradition it is the day Brahma is held ",
+     "Classically it is the day Brahma is held ",
+     _FORBID),
+]
