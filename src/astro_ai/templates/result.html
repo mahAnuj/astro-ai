@@ -555,13 +555,13 @@
       {% else %}
       <div>
         <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1.5">{{ t(lang, 'manglik_cancel_label') }}</div>
-        {# Mutual Manglik-Manglik cancellation is conditional on comparable severity, and
-           this page holds only one chart — so it cannot be evaluated here. The band is
+        {# Mutual Manglik-Manglik cancellation carries Bhagya's own comparable-severity condition
+           (the one held antidote list names none, #1369), and this page holds only one chart — so it cannot be evaluated here. The band is
            defined once, in matching.py: _SEVERITY_GRADING_SENTENCE and
            _COMPARABILITY_BAND_SENTENCE. That is the source of truth; the sentences below
            are the same rule in this page's shorter result-prose voice. If the band moves
            there, move it here too. #}
-        <p class="text-base text-bhagya-ink-soft leading-relaxed">No classical cancellation rules apply to this chart. Matching with another Manglik partner can still cancel the dosha mutually — but classical texts require the two partners to be of comparable severity, and they do not define the band, so Bhagya treats equal or adjacent grades as comparable and a low-versus-high pairing as not. That comparison needs both charts, so it is decided on the <a href="/matching" class="text-bhagya-sindoor hover:text-bhagya-sindoor underline">compatibility check</a>, not here. Consult a knowledgeable astrologer before relying on remedies.</p>
+        <p class="text-base text-bhagya-ink-soft leading-relaxed">No classical cancellation rules apply to this chart. Matching with another Manglik partner can still cancel the dosha mutually — but one held antidote list names no severity condition; comparable severity is Bhagya's own condition, not scripture, so Bhagya treats equal or adjacent grades as comparable and a low-versus-high pairing as not. That comparison needs both charts, so it is decided on the <a href="/matching" class="text-bhagya-sindoor hover:text-bhagya-sindoor underline">compatibility check</a>, not here. Consult a knowledgeable astrologer before relying on remedies.</p>
       </div>
       {% endif %}
 
