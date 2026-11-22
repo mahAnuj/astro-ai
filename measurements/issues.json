@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-22T20:01:12Z",
+  "generated_at": "2026-11-22T22:38:18Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 163,
@@ -59,10 +59,11 @@
       "priority": "unset",
       "labels": [
         "enhancement",
+        "provenance:trusted",
         "growth"
       ],
       "created": "2026-11-22T18:39:33Z",
-      "updated": "2026-11-22T18:39:33Z",
+      "updated": "2026-11-22T20:08:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -106,10 +107,11 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "provenance:trusted"
       ],
       "created": "2026-11-22T10:54:03Z",
-      "updated": "2026-11-22T11:18:49Z",
+      "updated": "2026-11-22T21:16:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -790,7 +792,7 @@
         "weekly-goals"
       ],
       "created": "2026-11-19T07:40:12Z",
-      "updated": "2026-11-20T15:29:23Z",
+      "updated": "2026-11-22T21:09:26Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -2665,7 +2667,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-22T20:01:12Z",
+    "generated_at": "2026-11-22T22:38:18Z",
     "window_days": 28,
     "open_now": 163,
     "merged_open_hours": 24,
@@ -4473,12 +4475,12 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 0,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 102,
+          "merged": 100,
           "median_h": 0.6,
           "p90_h": 8.1,
           "max_h": 46.6,
@@ -4901,35 +4903,42 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 38.8,
+          "age_h": 41.4,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 35.7,
+          "age_h": 38.4,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 24.3,
+          "age_h": 26.9,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 10.1,
+          "age_h": 12.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1391,
           "title": "numerology and numerology_compat declare tool_error {tool, kind} on a refused or failed su",
-          "age_h": 0.0,
+          "age_h": 2.6,
+          "waiting_on": "gates / QA",
+          "why": null
+        },
+        {
+          "number": 1394,
+          "title": "Manglik pairing copy attributes the both-Manglik antidote instead of asserting it (#1377)",
+          "age_h": 0.6,
           "waiting_on": "gates / QA",
           "why": null
         }
