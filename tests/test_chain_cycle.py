@@ -28,11 +28,12 @@ USAGE = {"generated_at": "2026-11-06T09:00:00Z",
 
 
 class FakeGh:
-    def __init__(self, running=(), today=(), prs=None):
+    def __init__(self, running=(), today=(), prs=None, comments=()):
         self.running = list(running)          # displayTitles of non-completed runs
         self.today = list(today)              # display_titles of today's runs
         self.prs = prs if prs is not None else [
             {"user": {"login": "claude[bot]"}, "updated_at": "2026-11-06T11:50:00Z"}]
+        self.comments = list(comments)       # repo-wide issue comments since the run started
         self.calls: list[list[str]] = []
 
     def __call__(self, args):
@@ -45,6 +46,8 @@ class FakeGh:
             return f"{n}\n"
         if args[0] == "api" and "/actions/workflows/agent-work.yml/runs" in args[1]:
             return json.dumps({"workflow_runs": [{"display_title": t} for t in self.today]})
+        if args[0] == "api" and "/issues/comments?since=" in args[1]:
+            return json.dumps(self.comments)
         if args[0] == "api" and "/pulls?" in args[1]:
             return json.dumps(self.prs)
         if args[:2] == ["workflow", "run"]:
@@ -348,3 +351,24 @@ def test_a_run_with_no_finished_cycle_restarts_an_idle_lane_through_main(tmp_pat
     assert cc.main(["x"], gh=gh, now=NOW, usage_path=p) == 0
     assert [a for a in gh.calls if a[:2] == ["workflow", "run"]] == [["workflow", "run", "agent-work.yml", "--repo", REPO]]
     assert "restarted:" in capsys.readouterr().out
+
+
+# --- a QA verdict is output (2026-11-22) ------------------------------------------------------
+
+def _verdict(login="claude[bot]", body="QA: PASS — verified at `abc`", at="2026-11-06T11:45:00Z"):
+    return {"user": {"login": login}, "body": body, "created_at": at}
+
+
+def test_a_cycle_that_passed_an_adopted_pr_counts_as_output():
+    """Run 45023409764, 2026-11-22: adopted PR #1378, posted its QA PASS, pushed nothing,
+    and the idle restart waited 240 min."""
+    stale = [{"user": {"login": "claude[bot]"}, "updated_at": "2026-11-06T10:00:00Z"}]
+    assert decide(FakeGh(prs=stale, comments=[_verdict()])) is None
+    assert decide(FakeGh(prs=stale, comments=[_verdict(body="QA: FAIL — verified at `abc`")])) is None
+
+
+def test_a_verdict_by_someone_else_or_before_the_run_or_any_other_comment_is_not_output():
+    stale = [{"user": {"login": "claude[bot]"}, "updated_at": "2026-11-06T10:00:00Z"}]
+    for c in (_verdict(login="mahAnuj"), _verdict(at="2026-11-06T11:00:00Z"),
+              _verdict(body="steward -- kind=no-qa-verdict")):
+        assert "no PR" in decide(FakeGh(prs=stale, comments=[c]))

@@ -266,6 +266,30 @@ def produced_something(gh: Runner, repo: str, since: datetime) -> bool:
             return True
         if p.get("number") and _head_pushed_since(gh, repo, p["number"], since):
             return True
+    return gave_a_verdict(gh, repo, since)
+
+
+#: The first line `scripts/qa_verdict.sh` writes on every verdict comment.
+VERDICT_PREFIXES = ("QA: PASS", "QA: FAIL")
+
+
+def gave_a_verdict(gh: Runner, repo: str, since: datetime) -> bool:
+    """Did the loop post a QA verdict at or after `since`?
+
+    A cycle that ADOPTS an earlier cycle's PR and passes or fails it pushes
+    nothing and opens nothing, yet it moved a PR toward merge. Measured
+    2026-11-22: run 45023409764 adopted PR #1378 and recorded its QA PASS, was
+    scored "produced nothing", and the idle restart then waited 240 min; the
+    04:03-08:34Z gap the same morning had the same shape. One repo-wide read.
+    """
+    out = gh(["api", f"repos/{repo}/issues/comments?since={since:%Y-%m-%dT%H:%M:%SZ}&per_page=100"])
+    for c in json.loads(out):
+        if (c.get("user") or {}).get("login") not in LOOP_AUTHORS:
+            continue
+        if _ts(c.get("created_at") or "1970-01-01T00:00:00Z") < since:
+            continue
+        if (c.get("body") or "").lstrip().startswith(VERDICT_PREFIXES):
+            return True
     return False
 
 
