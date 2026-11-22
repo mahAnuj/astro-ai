@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-21T21:44:03Z",
+ "generated_at": "2026-11-22T01:01:07Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-22",
  "today": {
   "growth": 0,
-  "other": 2,
+  "other": 3,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 30,
-  "other": 68,
+  "other": 69,
   "exempt": 0,
-  "share": 0.306
+  "share": 0.303
  },
  "this_month": {
   "growth": 33,
-  "other": 233,
+  "other": 234,
   "exempt": 0,
   "share": 0.124
  },
@@ -117,26 +117,33 @@
   {
    "date": "2026-11-22",
    "growth": 0,
-   "other": 2,
+   "other": 3,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
   {
+   "run": 44952995661,
+   "started": "2026-11-21T21:43:16Z",
+   "issue": 1293,
+   "title": "QA follow-up: account deletion leaves per-instance SQLite cache entries, and erases blobs with blocking calls inside async routes",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1360,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
    "run": 44947635737,
    "started": "2026-11-21T20:41:47Z",
    "issue": 1293,
    "title": "QA follow-up: account deletion leaves per-instance SQLite cache entries, and erases blobs with blocking calls inside async routes",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1360,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44943150153,
@@ -146,10 +153,7 @@
    "class": "other",
    "outcome": "pr open",
    "pr": 1357,
-   "agents": {
-    "chief": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 44932543511,
@@ -591,18 +595,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 44391751946,
-   "started": "2026-11-18T20:30:33Z",
-   "issue": 1226,
-   "title": "analytics: tool_submitted event and fetch_ga4.py --journeys (#1070 slice 2)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1227,
-   "agents": {
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -848,7 +840,7 @@
   "ga4_sessions_28d": 791,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.306,
+  "growth_share_week": 0.303,
   "growth_share_month": 0.124
  },
  "meters": {
@@ -856,13 +848,13 @@
    "label": "Today: growth share of build cycles",
    "period": "2026-11-22",
    "progress": 0.0,
-   "detail": "0 of 2 cycles on growth, target 60%",
+   "detail": "0 of 3 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W47",
-   "progress": 0.515,
+   "progress": 0.511,
    "detail": "4 goals, 4 measurable",
    "goals": [
     {
@@ -873,8 +865,8 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.306,
-     "progress": 0.694,
+     "current": 0.303,
+     "progress": 0.674,
      "basis": "growth_share_week"
     },
     {
