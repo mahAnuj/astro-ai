@@ -368,8 +368,8 @@ _DECLARED: tuple[Festival, ...] = (
         slug="akshaya-tritiya",
         name_en="Akshaya Tritiya",
         name_hi="अक्षय तृतीया",
-        note_en="Whatever is begun or given today is held never to diminish. A day that is its own muhurat.",
-        note_hi="आज जो आरम्भ या दान किया जाए वह कभी क्षीण नहीं होता। यह दिन स्वयं मुहूर्त है।",
+        note_en="Whatever is begun or given today is held never to diminish. Regional almanac custom calls the day abujha; confirm the tithi, star and Panchak for any wedding or griha pravesh.",
+        note_hi="आज जो आरम्भ या दान किया जाए वह कभी क्षीण नहीं होता। क्षेत्रीय पंचांग-प्रथा इसे अबूझ कहती है; विवाह या गृहप्रवेश के लिए तिथि, नक्षत्र और पंचक जाँचें।",
         dates={2026: "2026-04-19", 2027: "2027-05-09", 2028: "2028-04-27"},
         rule="Vaishakha Shukla Tritiya",
         observance_window="sunrise to madhyahna, Tritiya prevailing",
@@ -385,8 +385,9 @@ _DECLARED: tuple[Festival, ...] = (
             "about giving; buying gold is a later commercial custom laid over that."
         ),
         observance=(
-            "Begin what has been waiting — a business, a build, a marriage, a course of "
-            "study — without checking a muhurat, since the day is one. Daan is the "
+            "Many begin what has been waiting on this day by custom — a business, a build, "
+            "a course of study; for a wedding or griha pravesh still confirm the tithi, star "
+            "and Panchak. Daan is the "
             "prescribed act, and the traditional list is seasonal and unglamorous: water, "
             "a pot, curd-rice, sattu, grain, an umbrella, footwear, a fan. Lakshmi-Narayana "
             "are worshipped with tulsi and yellow flowers, many keeping a light fast until "

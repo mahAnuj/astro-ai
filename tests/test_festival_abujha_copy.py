@@ -35,8 +35,10 @@ _FORBIDDEN_EN = (
     r"in their entirety",
     r"swayamsiddha",
     r"classically it is the day brahma",
+    r"its own muhurat",
+    r"without checking a muhurat",
 )
-_FORBIDDEN_HI = (r"पूरा दिन शुभ", r"पूरे दिन", r"साढ़े तीन")
+_FORBIDDEN_HI = (r"पूरा दिन शुभ", r"पूरे दिन", r"साढ़े तीन", r"स्वयं मुहूर्त")
 
 # Slugs whose copy claimed abujha when #1359 was filed; the markers test must see them, or it is vacuous.
 _ABUJHA_SLUGS = {"vasant-panchami", "ugadi-gudi-padwa", "akshaya-tritiya", "dussehra", "devuthani-ekadashi"}

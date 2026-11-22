@@ -136,7 +136,7 @@ src/astro_ai/
   chart.py         5,051  Swiss Ephemeris, panchang, dashas, gochar, combustion
   learn_registry.py 3,107  /learn article metadata
   numerology.py    1,910  Chaldean + Lo Shu calculators
-  festival_registry.py 1,677
+  festival_registry.py 1,678
   muhurat.py       1,966  electional scoring; shares angas with panchang
   muhurat_factors.py 525  why a finder row rated as it did: REGISTRY of factor/exclusion keys, each
                         sourced | contested | site_convention with a knowledge heading and a page sentence;
