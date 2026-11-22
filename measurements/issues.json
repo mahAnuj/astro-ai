@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22T01:00:13Z",
+  "generated_at": "2026-11-22T04:01:07Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 161,
+  "open": 162,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 69,
+    "UNCLASSIFIED": 70,
     "INFRA": 16,
     "OPS": 11,
     "REDESIGN": 10,
@@ -34,7 +34,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 49,
+    "bug": 50,
     "untyped": 40,
     "enhancement": 30,
     "chore": 25,
@@ -43,13 +43,44 @@
     "ui": 1
   },
   "by_priority": {
-    "unset": 100,
+    "unset": 101,
     "medium": 28,
     "high": 21,
     "low": 12
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1370,
+      "title": "Mars 'classical grain' label on mars-remedies, mangal-mars article and numerology fasting-day string (follow-up to #1321)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-22T04:00:25Z",
+      "updated": "2026-11-22T04:00:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1369,
+      "title": "QA follow-up: manglik-dosh article and registry FAQs still call comparable severity classical, against manglik-remedies (PR #1368)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-22T03:59:44Z",
+      "updated": "2026-11-22T03:59:44Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1364,
       "title": "analytics: no export sizes automated traffic — the Direct channel (311 sessions, 19% engaged) cannot be split into bots and readers",
@@ -92,23 +123,6 @@
       ],
       "created": "2026-11-21T21:41:55Z",
       "updated": "2026-11-21T21:42:00Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1359,
-      "title": "QA follow-up: festival pages still call Devuthani an abujha muhurat 'auspicious the whole day through' while the finder rates it avoid (PR #1357)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-21T20:12:55Z",
-      "updated": "2026-11-21T23:52:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -319,10 +333,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-21T00:25:36Z",
-      "updated": "2026-11-21T00:25:36Z",
+      "updated": "2026-11-22T04:00:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -642,10 +659,11 @@
       "labels": [
         "bug",
         "priority:high",
-        "qa"
+        "qa",
+        "provenance:trusted"
       ],
       "created": "2026-11-20T16:03:03Z",
-      "updated": "2026-11-20T16:03:03Z",
+      "updated": "2026-11-22T01:33:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1141,7 +1159,7 @@
         "growth"
       ],
       "created": "2026-11-14T13:09:28Z",
-      "updated": "2026-11-21T16:49:16Z",
+      "updated": "2026-11-22T01:33:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2633,9 +2651,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-22T01:00:13Z",
+    "generated_at": "2026-11-22T04:01:07Z",
     "window_days": 28,
-    "open_now": 161,
+    "open_now": 162,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3050,14 +3068,16 @@
       },
       {
         "date": "2026-11-22",
-        "opened": 1,
-        "closed": 0,
-        "net": 1,
-        "open_end": 161,
+        "opened": 3,
+        "closed": 1,
+        "net": 2,
+        "open_end": 162,
         "opened_by": {
-          "loop": 1
+          "loop": 3
         },
-        "closed_by": {}
+        "closed_by": {
+          "close-on-evidence": 1
+        }
       }
     ],
     "merged_open": [],
@@ -4391,6 +4411,11 @@
         "number": 1338,
         "closed_at": "2026-11-21T07:31:18Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1359,
+        "closed_at": "2026-11-22T03:16:51Z",
+        "closer": "close-on-evidence"
       }
     ],
     "timelines_read": 1,
@@ -4398,9 +4423,9 @@
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 112,
+          "merged": 109,
           "median_h": 0.6,
-          "p90_h": 11.0,
+          "p90_h": 12.4,
           "max_h": 46.6,
           "slowest": [
             {
@@ -4522,8 +4547,8 @@
           ]
         },
         "28d": {
-          "merged": 327,
-          "median_h": 0.5,
+          "merged": 328,
+          "median_h": 0.6,
           "p90_h": 16.5,
           "max_h": 122.1,
           "slowest": [
@@ -4813,30 +4838,44 @@
         },
         {
           "date": "2026-11-22",
-          "merged": 0,
-          "median_h": null,
-          "max_h": null
+          "merged": 1,
+          "median_h": 1.7,
+          "max_h": 1.7
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 19.8,
+          "age_h": 22.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 16.7,
+          "age_h": 19.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 5.3,
+          "age_h": 8.3,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1367,
+          "title": "chain_cycle quota guard fails closed on malformed readings (#1282)",
+          "age_h": 1.3,
+          "waiting_on": "gates / QA",
+          "why": null
+        },
+        {
+          "number": 1368,
+          "title": "Manglik remedies headings and FAQ 4 stop claiming a classical ranking (#1321)",
+          "age_h": 0.1,
           "waiting_on": "merge",
           "why": null
         }
