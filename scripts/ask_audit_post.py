@@ -23,7 +23,20 @@ before anything is posted:
   3. the body's Evidence Block must pass `verify_issue_evidence.check()`, the
      gate `/agent-cycle` step 1 applies to every issue it works -- for a
      comment too, so an update carries this week's count as a checkable repro;
-  4. every label must be on ALLOWED_LABELS.
+  4. every label must be on ALLOWED_LABELS;
+  5. the target is one of the audit's own issues (#1291). The agent reads
+     untrusted questions, and a bare `--issue N` would let a prompt injection
+     comment on and label `provenance:outsider` ANY issue, the loop's own
+     included -- the label alone turns a trusted issue unworkable. So `--issue N`
+     is accepted only when `gh issue view` shows ALL of: an author that is this
+     repository's own App (`resolve_provenance.is_self_app`, `is_bot` a real
+     bool), the `provenance:outsider` label, and the hidden
+     `<!-- ask-audit-class: <class> -->` line in the body. The author is the part
+     an outsider cannot forge; label and line are defence in depth that exclude
+     issues the loop filed for itself. A new issue (no --issue) must carry the
+     line, and is capped at ISSUE_CAP per WINDOW, COUNTED FROM `gh` on every call
+     (no process memory, no search index: `gh issue list --state all`, which is
+     read-your-writes). The cap covers new issues only, never comments.
 
 And it ALWAYS adds `provenance:outsider` (to the new issue, or to issue N when
 commenting). The text came from an outsider's question by way of an LLM
@@ -33,25 +46,32 @@ OUTSIDER for an issue `claude[bot]` filed, so the loop never builds from it.
 It never prints the body, the title or any matched text: its output lands in
 the same public log as the guard's.
 
-EXIT CODES: 0 posted   1 refused (a quote, or a failing Evidence Block)
+EXIT CODES: 0 posted   1 refused (a quote, a failing Evidence Block, an --issue
+              that is not an audit issue, a new issue without the class line,
+              or the cap reached)
             2 could not run (bad arguments, no sample, a path outside WORK_DIR,
-              a gh failure) -- NOT a pass, and nothing was posted unless the
-              message says so
+              a gh failure, a gh answer that is malformed or cannot be trusted
+              -- a truncated cap listing included) -- NOT a pass, and nothing
+              was posted unless the message says so. Every gh READ in step 5
+              happens before the first write, so a refusal writes nothing.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import ask_audit_guard  # noqa: E402
+from resolve_provenance import is_self_app, normalise_login  # noqa: E402
 from verify_issue_evidence import check  # noqa: E402
 
 WORK_DIR = Path("/tmp/ask-work")
@@ -61,6 +81,12 @@ LABEL_OUTSIDER = "provenance:outsider"
 # from here (the resolver ignores a bot's application of it anyway, but it is
 # not this script's to try).
 ALLOWED_LABELS = frozenset({"astrology-correctness", "bug", "layer:prompt", LABEL_OUTSIDER})
+# #1291: the prompt said "at most five new issues"; a prompt is not a control for an
+# agent that reads outsiders' text. 5 per rolling 24h, counted from gh each time.
+ISSUE_CAP = 5
+WINDOW = timedelta(hours=24)
+LIST_LIMIT = 100          # `gh issue list --limit`; a full page cannot prove the count
+MARKER_RE = re.compile(r"^<!-- ask-audit-class: [a-z0-9-]+ -->\r?$", re.MULTILINE)
 
 
 @dataclass
@@ -90,6 +116,106 @@ def _under(path: Path, root: Path) -> bool:
         return True
     except (OSError, ValueError):
         return False
+
+
+def _is_audit_issue(view) -> bool | None:
+    """Is this `gh issue view|list --json author,labels,body` row an audit issue?
+
+    True/False when the shape is sound; None when it is not, which the caller turns
+    into exit 2 -- "could not tell" is never a yes and never a quiet no. All three
+    must hold: a self-app author (the unforgeable part: an outsider's issue is filed
+    by the outsider), the outsider label, and the class line.
+    """
+    if not isinstance(view, dict):
+        return None
+    author, labels, body = view.get("author"), view.get("labels"), view.get("body")
+    if not isinstance(author, dict) or not isinstance(labels, list) or not isinstance(body, str):
+        return None
+    # `is True` below: a string "false" is truthy, and gh's field is a JSON bool.
+    if not isinstance(author.get("is_bot"), bool):
+        return None
+    login = normalise_login(author.get("login"))
+    if login is None:
+        return None
+    names = []
+    for lab in labels:
+        if not isinstance(lab, dict) or not isinstance(lab.get("name"), str):
+            return None
+        names.append(lab["name"])
+    return (author["is_bot"] is True and is_self_app(login)
+            and LABEL_OUTSIDER in names and MARKER_RE.search(body) is not None)
+
+
+def _gh_json(gh: Gh, args: list, what: str):
+    """(value, None) or (None, message). Never raises on a bad gh answer."""
+    r = gh(args)
+    if r.rc != 0:
+        return None, f"{what} failed (gh exit {r.rc})"
+    try:
+        return json.loads(r.out), None
+    except ValueError:
+        return None, f"{what} returned invalid JSON"
+
+
+def _check_target(gh: Gh, issue: int) -> int | None:
+    """None to proceed, else the exit code. Reads only."""
+    view, err = _gh_json(gh, ["issue", "view", str(issue), "--json", "author,labels,body"],
+                         f"reading #{issue}")
+    if err:
+        print(f"COULD NOT POST (exit 2) -- {err}. Nothing posted.")
+        return 2
+    ok = _is_audit_issue(view)
+    if ok is None:
+        print(f"COULD NOT POST (exit 2) -- #{issue} came back in a shape that cannot be trusted. Nothing posted.")
+        return 2
+    if not ok:
+        print(f"REFUSED #{issue} is not an issue this audit filed (needs its own App as author, "
+              f"{LABEL_OUTSIDER} and the class line). Nothing posted.")
+        return 1
+    return None
+
+
+def _check_cap(gh: Gh, body: str) -> int | None:
+    """None to proceed, else the exit code. Reads only; counts from gh, not memory."""
+    if not MARKER_RE.search(body):
+        print("REFUSED a new issue must carry the `<!-- ask-audit-class: <class> -->` line. Nothing posted.")
+        return 1
+    # No --search: the search index is eventually consistent, so an issue filed a
+    # minute ago can be missing from it and the cap would undercount.
+    rows, err = _gh_json(gh, ["issue", "list", "--state", "all", "--label", LABEL_OUTSIDER,
+                              "--limit", str(LIST_LIMIT), "--json", "number,author,labels,createdAt,body"],
+                         "listing recent audit issues")
+    if err:
+        print(f"COULD NOT POST (exit 2) -- {err}. Nothing posted.")
+        return 2
+    if not isinstance(rows, list):
+        print("COULD NOT POST (exit 2) -- the issue listing is not a list. Nothing posted.")
+        return 2
+    cutoff = datetime.now(timezone.utc) - WINDOW
+    count, oldest = 0, None
+    for row in rows:
+        ok = _is_audit_issue(row)
+        try:
+            made = datetime.fromisoformat(str(row["createdAt"]).replace("Z", "+00:00"))
+        except (KeyError, TypeError, ValueError):
+            made = None
+        if ok is None or made is None or made.tzinfo is None:
+            print("COULD NOT POST (exit 2) -- a listed issue is malformed; the count cannot be trusted. "
+                  "Nothing posted.")
+            return 2
+        oldest = made if oldest is None else min(oldest, made)
+        if ok and made >= cutoff:
+            count += 1
+    if count >= ISSUE_CAP:
+        print(f"REFUSED cap reached: {count} audit issues in the last 24h (cap {ISSUE_CAP}); "
+              "comment on one instead. Nothing posted.")
+        return 1
+    if len(rows) >= LIST_LIMIT and oldest >= cutoff:
+        # A full page that never leaves the window: older-than-page rows may be inside it.
+        print("COULD NOT POST (exit 2) -- the listing is full and still inside the window; "
+              "the count cannot be trusted. Nothing posted.")
+        return 2
+    return None
 
 
 def main(argv: list, gh: Gh = run_gh) -> int:
@@ -139,6 +265,12 @@ def main(argv: list, gh: Gh = run_gh) -> int:
             print(f"  {line}")
         print(f"REFUSED {body_path}: Evidence Block. Nothing posted.")
         return 1
+
+    # Every gh READ before the first write (#1291): a refusal leaves nothing behind,
+    # not even the label.
+    refused = _check_target(gh, a.issue) if a.issue is not None else _check_cap(gh, body)
+    if refused is not None:
+        return refused
 
     # Idempotent: create, or refresh the description of the existing label.
     r = gh(["label", "create", LABEL_OUTSIDER, "--force", "--color", "d93f0b",
