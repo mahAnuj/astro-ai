@@ -95,7 +95,7 @@ rule-set. Each rule is tagged **cancels** (dosha is fully nullified) or
 
 | # | Rule | Effect | Primary source |
 |---|---|---|---|
-| 20 | **Both partners are Manglik** of comparable severity | cancels for the marriage match | Classical compatibility rule |
+| 20 | **Both partners are Manglik** | cancels for the marriage match | One held antidote list (Raman, `grahas.md` §12.4, line 3642): both partners Manglik cancels, **no severity condition**. The comparable-severity condition is Shubh Bhagya's own (`matching._severity_comparable`), not scripture |
 
 #### F. EXPLICITLY REJECTED — folk myth, NOT classical
 
@@ -120,7 +120,7 @@ rule-set. Each rule is tagged **cancels** (dosha is fully nullified) or
 
 ### 1.5 Practical / remedial guidance (classical)
 
-- **Match with another Manglik of comparable severity** — the most commonly cited classical remedy; it neutralizes the dosha mutually (see rule 20).
+- **Match with another Manglik** — one held antidote list (Raman, `grahas.md` §12.4, line 3642) says the dosha is cancelled when both partners carry it, with no severity condition (see rule 20). Shubh Bhagya adds its own comparable-severity condition; it is our convention, not scripture.
 - **Recitation of Hanuman Chalisa / Mangal stotra** — Mars's adhidevata. Traditional, low-risk, devotional.
 - **Donation on Tuesday** — toor daal (a dark yellow lentil), Rao's grain for Mars (§34.3, line 19341, plain `pdftotext`). **The earlier "red lentils (masoor dal)" was UNSOURCED** — `red lentil` and `masoor` are 0 hits across all 94,019 lines of the 14-book corpus (#398); red cloth and sweets are likewise not in Rao and stay unsourced. The weekday is also not Rao's: he ties a planet's own weekday to mantra recitation and first wearing a gemstone, not to charity (`remedies.md` §12 row 11).
 - **Coral (moonga) gemstone** — ONLY after a competent astrologer reviews the whole chart. Wearing coral without analysis can amplify Mars if Mars is not actually benefic for the chart. Default LLM stance: suggest consultation, do not prescribe.
