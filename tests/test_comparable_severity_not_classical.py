@@ -16,7 +16,8 @@ learn_registry.py) is covered without a request:
   * templates: tags and Jinja comments stripped, entities decoded, whitespace collapsed;
   * knowledge/vedic_reference.md: per LINE, because rule 20's cells are one table row.
 
-THE RULE, per sentence (split on `. ; : ! ?` + whitespace, bullets and newlines): a
+THE RULE, per sentence (split on `. ; ! ?` + whitespace, bullets and newlines; NOT on `:`, which
+separates a lead-in such as "classical texts include ..." from the list it introduces): a
 sentence that mentions comparability (`comparab`, `similarly strong/afflicted`) is
 checked.
 
@@ -80,7 +81,10 @@ _DISCLOSURE = [
     re.compile(r"Shubh Bhagya (?:grades|sets|treats)", re.I),
 ]
 
-_SPLIT = re.compile(r"[.;:!?]\s|•|\n")
+# NOT on `:` -- #1369 QA round 1: "classical texts include several conditions most calculators
+# ignore: ... both partners are Manglik of comparable severity" shipped through the first
+# version of this gate because the colon put "classical" and "comparable" in different fragments.
+_SPLIT = re.compile(r"[.;!?]\s|•|\n")
 
 
 def _sentences(text: str) -> list[str]:
@@ -175,6 +179,14 @@ _OLD_SENTENCES = [
     "the rule asks for two doshas of comparable severity: it is the symmetry that cancels.",
     "The cancellation rests on the two charts being similarly afflicted, as the classical "
     "recommendation says.",
+    # learn_registry.py marriage-delayed FAQ (1243): the colon used to hide the lead-in
+    "Manglik Dosh is present when Mars is in the 1st, 2nd, 4th, 7th, 8th, or 12th house "
+    "counted from Lagna, Moon, or Venus (the sources we work from list the 2nd, 4th, 7th, "
+    "8th and 12th and treat the 1st as an optional addition, which Shubh Bhagya counts) — "
+    "but classical texts include several cancellation conditions most calculators ignore: "
+    "Cancer or Leo Ascendant (Mars is Yogakaraka), Mars in own sign (Aries/Scorpio) or "
+    "exalted (Capricorn), Jupiter aspecting or conjunct Mars, and mutual Manglik matching "
+    "where both partners are Manglik of comparable severity",
 ]
 
 

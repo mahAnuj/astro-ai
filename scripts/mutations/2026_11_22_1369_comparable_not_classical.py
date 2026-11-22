@@ -48,4 +48,9 @@ MUTATIONS = [
      "| 20 | **Both partners are Manglik** | cancels for the marriage match | One held antidote list (Raman, `grahas.md` §12.4, line 3642): both partners Manglik cancels, **no severity condition**. The comparable-severity condition is Shubh Bhagya's own (`matching._severity_comparable`), not scripture |",
      "| 20 | **Both partners are Manglik** of comparable severity | cancels for the marriage match | Classical compatibility rule |",
      "test_no_surface_calls_comparable_severity_classical"),
+    ("#1369 QA: the marriage-delayed FAQ lists comparable severity among the classical cancellations again",
+     "src/astro_ai/learn_registry.py",
+     "and mutual Manglik matching (one held antidote list cancels the dosha when both partners carry it and names no severity condition; comparable strength is Shubh Bhagya's own condition, not scripture). See our dedicated",
+     "and mutual Manglik matching where both partners are Manglik of comparable severity. See our dedicated",
+     "test_no_surface_calls_comparable_severity_classical"),
 ]
