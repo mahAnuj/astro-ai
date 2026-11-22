@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-22T12:26:11Z",
+ "generated_at": "2026-11-22T16:44:16Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-22",
  "today": {
   "growth": 0,
-  "other": 12,
+  "other": 16,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 30,
-  "other": 78,
+  "other": 82,
   "exempt": 0,
-  "share": 0.278
+  "share": 0.268
  },
  "this_month": {
   "growth": 33,
-  "other": 243,
+  "other": 247,
   "exempt": 0,
-  "share": 0.12
+  "share": 0.118
  },
  "must_pick_growth": true,
  "days": [
@@ -117,26 +117,73 @@
   {
    "date": "2026-11-22",
    "growth": 0,
-   "other": 12,
+   "other": 16,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
   {
-   "run": 45014704447,
-   "started": "2026-11-22T10:54:42Z",
-   "issue": 1370,
-   "title": "Mars 'classical grain' label on mars-remedies, mangal-mars article and numerology fasting-day string (follow-up to #1321)",
+   "run": 45036010068,
+   "started": "2026-11-22T15:01:51Z",
+   "issue": 1291,
+   "title": "QA follow-up: ask_audit_post --issue accepts any issue number; the 5-issue cap is prompt-only",
    "class": "other",
    "outcome": "pr open",
-   "pr": 1378,
+   "pr": 1383,
    "agents": {
     "architect": 1,
     "backend-engineer": 1,
     "project-manager": 1,
     "qa": 1
    }
+  },
+  {
+   "run": 45033334321,
+   "started": "2026-11-22T14:32:05Z",
+   "issue": 1380,
+   "title": "QA follow-up: #1378 left 'classical Saturn grain' and 'Classical charity items for Rahu' on Rao-table grains",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1382,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45023409764,
+   "started": "2026-11-22T12:39:24Z",
+   "issue": 1370,
+   "title": "Mars 'classical grain' label on mars-remedies, mangal-mars article and numerology fasting-day string (follow-up to #1321)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1378,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45022234599,
+   "started": "2026-11-22T12:25:53Z",
+   "issue": 1369,
+   "title": "QA follow-up: manglik-dosh article and registry FAQs still call comparable severity classical, against manglik-remedies (PR #1368)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1375,
+   "agents": {}
+  },
+  {
+   "run": 45014704447,
+   "started": "2026-11-22T10:54:42Z",
+   "issue": 1370,
+   "title": "Mars 'classical grain' label on mars-remedies, mangal-mars article and numerology fasting-day string (follow-up to #1321)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1378,
+   "agents": null
   },
   {
    "run": 45012592400,
@@ -146,9 +193,7 @@
    "class": "other",
    "outcome": "pr open",
    "pr": 1375,
-   "agents": {
-    "qa": 2
-   }
+   "agents": null
   },
   {
    "run": 45005976684,
@@ -158,14 +203,7 @@
    "class": "other",
    "outcome": "pr open",
    "pr": 1375,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 3,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45003411930,
@@ -559,60 +597,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 44799139462,
-   "started": "2026-11-20T19:07:11Z",
-   "issue": 1300,
-   "title": "QA follow-up: manglik-remedies.html line 7 still says 'that classical tradition flags for marriage friction'",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1312,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44797856801,
-   "started": "2026-11-20T18:59:01Z",
-   "issue": 1302,
-   "title": "QA follow-up: kundali-matching article links with the raw text '/matching tool'",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1310,
-   "agents": null
-  },
-  {
-   "run": 44788136062,
-   "started": "2026-11-20T17:57:05Z",
-   "issue": 1301,
-   "title": "QA follow-up: numerology caption says 'the classical text we follow' though the page mixes two sources; a code comment says 'to about a day' where two differ by 2 days",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1308,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44775691097,
-   "started": "2026-11-20T16:40:16Z",
-   "issue": 1301,
-   "title": "QA follow-up: numerology caption says 'the classical text we follow' though the page mixes two sources; a code comment says 'to about a day' where two differ by 2 days",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1308,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "numerologist": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -858,21 +842,21 @@
   "ga4_sessions_28d": 803,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.278,
-  "growth_share_month": 0.12
+  "growth_share_week": 0.268,
+  "growth_share_month": 0.118
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-22",
    "progress": 0.0,
-   "detail": "0 of 12 cycles on growth, target 60%",
+   "detail": "0 of 16 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W47",
-   "progress": 0.535,
+   "progress": 0.518,
    "detail": "4 goals, 4 measurable",
    "goals": [
     {
@@ -883,8 +867,8 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.278,
-     "progress": 0.5,
+     "current": 0.268,
+     "progress": 0.431,
      "basis": "growth_share_week"
     },
     {
@@ -938,7 +922,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.253,
+   "progress": 0.249,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -981,8 +965,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.12,
-     "progress": 0.282,
+     "current": 0.118,
+     "progress": 0.271,
      "basis": "growth_share_month"
     }
    ]
