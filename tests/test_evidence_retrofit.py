@@ -93,6 +93,8 @@ class FakeGh:
         if "/commits?" in url:
             n = int(url.split("/pulls/")[1].split("/")[0])
             return json.dumps([{"commit": {"committer": {"date": self.heads[n]}}}])
+        if "/issues/comments?since=" in url:      # chain_cycle.gave_a_verdict (2026-11-22)
+            return "[]"
         if "/pulls?" in url:
             return json.dumps(self.prs)
         if args[:2] == ["workflow", "run"]:
