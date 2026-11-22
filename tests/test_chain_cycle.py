@@ -6,9 +6,10 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -225,6 +226,67 @@ def test_a_reading_with_one_window_still_open_still_refuses():
     assert "allowed_warning" in cc.quota_reason({**USAGE, "latest": latest}, NOW)
     nores = {"seven_day": 0.88, "status": "allowed_warning"}
     assert "allowed_warning" in cc.quota_reason({**USAGE, "latest": nores}, NOW)
+
+
+# --- a malformed reading fails closed (#1282) -----------------------------------------------
+
+def _iso(dt):
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf"), -0.1, 1.5, "nan"])
+def test_a_malformed_seven_day_reading_stops_the_chain(bad):
+    """`NaN >= 0.70` is False, so a NaN reading used to pass the ceiling and open the chain."""
+    u = {**USAGE, "latest": {"seven_day": bad, "status": "allowed"}}
+    assert "seven_day" in cc.quota_reason(u, NOW)
+    assert isinstance(decide(FakeGh(), usage=u), str)
+
+
+def test_a_nan_reading_with_expired_windows_still_stops_it():
+    """Validation runs before windows_reset: `resets` is in the same file, so a NaN reading
+    must not be able to claim its windows have ended."""
+    latest = {"seven_day": float("nan"), "status": "allowed",
+              "resets": {"five_hour": _epoch("2026-11-06T04:40:00Z"),
+                         "seven_day": _epoch("2026-11-06T06:00:00Z")}}
+    assert "seven_day" in cc.quota_reason({**USAGE, "latest": latest}, NOW)
+
+
+def test_a_future_generated_at_stops_it():
+    """A future stamp is a negative age, which passes `age > 36h`."""
+    ahead = {**USAGE, "generated_at": _iso(NOW + timedelta(minutes=10))}
+    assert "generated_at is 10m in the future" in cc.quota_reason(ahead, NOW)
+    skewed = {**USAGE, "generated_at": _iso(NOW + timedelta(minutes=1))}
+    assert cc.quota_reason(skewed, NOW) is None
+
+
+def test_a_future_reading_at_stops_it():
+    def with_at(at):
+        return {**USAGE, "latest": {**USAGE["latest"], "at": at}}
+    assert "latest.at is 10m in the future" in cc.quota_reason(with_at(_iso(NOW + timedelta(minutes=10))), NOW)
+    assert cc.quota_reason(with_at(_iso(NOW + timedelta(minutes=1))), NOW) is None
+    assert "no usable seven_day reading" in cc.quota_reason(with_at("not a time"), NOW)
+
+
+def test_a_future_pinned_reading_does_not_shield_itself_from_a_real_one():
+    """quota_reason refuses a future-dated file reading; without this the same reading would
+    also win freshest() forever, so no genuine post-reset reading could replace it."""
+    future = _iso(NOW + timedelta(hours=2))
+    usage = {"generated_at": "2026-11-06T11:50:00Z",
+             "latest": {"seven_day": 0.5, "status": "allowed", "at": future}}
+    real = {"seven_day": 0.04, "status": "allowed", "at": _iso(NOW - timedelta(minutes=10))}
+    assert cc.freshest(usage, real, NOW)["latest"] is real
+
+
+def test_a_nan_file_dispatches_nothing_through_main(tmp_path, monkeypatch):
+    p = tmp_path / "u.json"
+    p.write_text('{"generated_at": "2026-11-06T09:00:00Z", '
+                 '"latest": {"seven_day": NaN, "status": "allowed"}}')
+    monkeypatch.setenv("GH_REPO", REPO)
+    for k, v in RUN.items():
+        monkeypatch.setenv(f"WR_{k.upper()}", v)
+    gh = FreshGh("")
+    assert cc.main(["x"], gh=gh, now=NOW, usage_path=p) == 0
+    assert not [a for a in gh.calls if a[:3] == ["workflow", "run", "agent-work.yml"]]
 
 
 class IdleGh(FakeGh):

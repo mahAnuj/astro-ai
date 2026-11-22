@@ -10,7 +10,8 @@ MUTATIONS = [
      "test_a_stale_warning_does_not_block_a_chain_the_fresh_reading_allows"),
     ("fresh quota: an older log reading overwrites a newer file",
      "scripts/chain_cycle.py",
-     "        newer = latest_at is None or _ts(fresh[\"at\"]) > _ts(latest_at)",
+     "        newer = (latest_at is None or _ts(latest_at) > now + QUOTA_FUTURE_SKEW\n"
+     "                 or _ts(fresh[\"at\"]) > _ts(latest_at))",
      "        newer = True",
      "test_an_older_fresh_reading_never_replaces_a_newer_file"),
     ("fresh quota: a fresh warning is ignored",

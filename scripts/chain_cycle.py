@@ -63,11 +63,23 @@ quota. Same scope as the chain: `actions: write`.
 mid-window as cycle output (QA on #841): both bumped `updated_at`, so an
 empty cycle read as productive and chained.
 
+A MALFORMED READING STOPS THE CHAIN (2026-11-22, #1282)
+-------------------------------------------------------
+`NaN >= 0.70` is False and a future `generated_at` makes a negative age that
+passes `age > 36h`, so a `claude_usage.json` carrying `seven_day: NaN` (Python's
+`json.loads` accepts the bare token) or a clock-ahead timestamp let the chain
+spend the shared subscription on no reading at all. `quota_reason` now refuses
+a non-finite or out-of-range `seven_day` and a `generated_at` or `latest.at`
+more than `QUOTA_FUTURE_SKEW` ahead, BEFORE `windows_reset`: `resets` is part
+of the same file, and a reading that cannot be bounded must not be able to
+claim it has expired.
+
 EXIT CODES: 0 decided (chained or not -- the reason is printed)   2 bad env
 """
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import sys
@@ -83,6 +95,11 @@ Runner = Callable[[list[str]], str]
 
 QUOTA_CEILING = 0.70
 QUOTA_MAX_AGE = timedelta(hours=36)
+#: How far ahead of `now` a reading's timestamp may sit before it is a clock error,
+#: not a reading (#1282). generated_at is stamped on one runner and judged on another,
+#: and latest.at is GitHub's created_at judged on the runner's clock: seconds of NTP
+#: skew, so 5 minutes absorbs that and is ~0.2% of QUOTA_MAX_AGE. Not measured.
+QUOTA_FUTURE_SKEW = timedelta(minutes=5)
 MAX_BUILD_RUNS_PER_DAY = 16
 #: An IDLE lane restarts (2026-11-20). A run with no finished cycle behind it --
 #: the hourly cron, or the heartbeat -- starts one ranked cycle once the last
@@ -134,10 +151,23 @@ def quota_reason(usage: dict | None, now: datetime) -> str | None:
         return "claude_usage.json unreadable -- an unread quota is not a free one"
     latest = usage.get("latest") or {}
     try:
-        age = now - _ts(usage["generated_at"])
+        generated = _ts(usage["generated_at"])
+        age = now - generated
         used = float(latest["seven_day"])
+        at = latest.get("at")
+        at_ts = _ts(at) if at is not None else None
+        at_ahead = at_ts - now if at_ts is not None else None
     except (KeyError, TypeError, ValueError):
         return "claude_usage.json has no usable seven_day reading"
+    # Validate BEFORE windows_reset: that returns None (chain allowed) ahead of every other
+    # check, and `resets` is in the same file, so a NaN reading with past resets would open.
+    if not math.isfinite(used) or not 0 <= used <= 1:
+        return (f"claude_usage.json seven_day reading {used!r} is not a number from 0 to 1"
+                " -- an unreadable quota is not a free one")
+    for what, ahead in (("generated_at", -age), ("latest.at", at_ahead)):
+        if ahead is not None and ahead > QUOTA_FUTURE_SKEW:
+            return (f"claude_usage.json {what} is {ahead.total_seconds() / 60:.0f}m in the future"
+                    " -- a clock error, not a reading")
     if age > QUOTA_MAX_AGE:
         return f"claude_usage.json is {age.total_seconds() / 3600:.0f}h old"
     if windows_reset(latest, now):
@@ -183,7 +213,10 @@ def freshest(usage: dict | None, fresh: dict | None, now: datetime) -> dict | No
         return usage
     latest_at = ((usage or {}).get("latest") or {}).get("at")
     try:
-        newer = latest_at is None or _ts(fresh["at"]) > _ts(latest_at)
+        # A file reading dated past the skew must not pin itself above a real one (#1282):
+        # quota_reason refuses it, so without this no genuine reading could ever replace it.
+        newer = (latest_at is None or _ts(latest_at) > now + QUOTA_FUTURE_SKEW
+                 or _ts(fresh["at"]) > _ts(latest_at))
     except (TypeError, ValueError):
         newer = True
     if not newer:
