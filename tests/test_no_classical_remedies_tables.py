@@ -7,9 +7,8 @@ hold". The ruled wording is the one /learn/surya-sun-remedies already uses: "one
 planet-by-planet remedy table".
 
 A phrase test: it catches the wording it names (English and Devanagari), not every possible rewording.
-It matches the plural "remedies tables" only. The singular shape, "the classical remedy tables" on
-/learn/career-during-sade-sati, is #1380's (open on its own branch, tests/test_classical_grain_label.py);
-widen this to remed(?:y|ies) once that has merged.
+It matches both "remedies tables" and the singular-modifier "remedy tables" (the shape #1380 retired on
+/learn/career-during-sade-sati, tests/test_classical_grain_label.py), once and for all, in any template.
 """
 from __future__ import annotations
 
@@ -21,7 +20,7 @@ import pytest
 
 _SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "astro_ai"
 _BAD = re.compile(
-    r"classical\s+(?:\w+\s+){0,2}remedies\s+tables?"
+    r"classical\s+(?:\w+\s+){0,2}remed(?:y|ies)\s+tables?"
     r"|शास्त्रीय\s+उपाय\s+(?:तालिका|सारणी)",
     re.I,
 )
