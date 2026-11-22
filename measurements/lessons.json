@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T04:03:37Z",
+ "generated_at": "2026-11-22T12:28:01Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1116,6 +1116,15 @@
     "themes": [
      "grounding"
     ]
+   },
+   {
+    "number": 1375,
+    "at": "2026-11-22T10:39:55Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1375#issuecomment-7077938056",
+    "summary": "QA: FAIL \u2014 verified at `4407c6da7908855e40d03097b4ecd624a1a118f8` DEFECT 1: templates/learn/manglik-remedies.html:87 still says 'it is the evenness of the match that does the neutralising; ... tradition does not promise it cancels' right after 'names no severity condition' - re-imports the severity ",
+    "themes": [
+     "grounding"
+    ]
    }
   ],
   "reverts": [],
@@ -1169,7 +1178,7 @@
   "ops_findings": []
  },
  "error_themes": {
-  "grounding": 32,
+  "grounding": 33,
   "regression": 32,
   "tests": 29,
   "tokens": 21,

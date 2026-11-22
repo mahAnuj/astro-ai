@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22T04:01:07Z",
+  "generated_at": "2026-11-22T12:25:27Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 162,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 70,
+    "UNCLASSIFIED": 71,
     "INFRA": 16,
     "OPS": 11,
     "REDESIGN": 10,
@@ -17,7 +17,6 @@
     "RETRIEVAL": 3,
     "CHORE": 3,
     "AGENT-MERGE": 2,
-    "UI": 2,
     "PRIVACY": 2,
     "MEASURE": 2,
     "MATCHING": 2,
@@ -27,6 +26,7 @@
     "BUG": 2,
     "MUHURAT": 1,
     "NOTIFY": 1,
+    "UI": 1,
     "KNOWLEDGE": 1,
     "AGENT-MEASURE": 1,
     "ASK": 1,
@@ -34,22 +34,69 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 50,
+    "bug": 51,
     "untyped": 40,
     "enhancement": 30,
     "chore": 25,
     "correctness": 11,
-    "design": 5,
-    "ui": 1
+    "design": 5
   },
   "by_priority": {
-    "unset": 101,
+    "unset": 102,
     "medium": 28,
-    "high": 21,
+    "high": 20,
     "low": 12
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1377,
+      "title": "QA follow-up: marriage-delayed.html:87 and trivia.py:55 still assert a Manglik-with-Manglik preference/mechanism no held book states (PR #1375, #1369)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-22T10:54:03Z",
+      "updated": "2026-11-22T11:18:49Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1376,
+      "title": "QA follow-up: matching.html still lists comparable severity among implemented cancellations; decision record misdescribes the gate split (PR #1375, #1369)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-22T10:39:20Z",
+      "updated": "2026-11-22T10:39:20Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1372,
+      "title": "QA follow-up: chain_cycle quota_reason crashes (AttributeError) on a non-string latest.at / generated_at (PR #1367)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-22T04:18:27Z",
+      "updated": "2026-11-22T04:18:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1370,
       "title": "Mars 'classical grain' label on mars-remedies, mangal-mars article and numerology fasting-day string (follow-up to #1321)",
@@ -58,10 +105,11 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "provenance:trusted"
       ],
       "created": "2026-11-22T04:00:25Z",
-      "updated": "2026-11-22T04:00:25Z",
+      "updated": "2026-11-22T11:01:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -74,10 +122,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-22T03:59:44Z",
-      "updated": "2026-11-22T03:59:44Z",
+      "updated": "2026-11-22T11:00:09Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -321,25 +372,6 @@
       ],
       "created": "2026-11-21T01:18:50Z",
       "updated": "2026-11-21T03:58:21Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1321,
-      "title": "QA follow-up: manglik-remedies headings and FAQ 4 still say 'presiding deity', 'classical grain', 'truest' (PR #1319)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-21T00:25:36Z",
-      "updated": "2026-11-22T04:00:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -650,24 +682,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1282,
-      "title": "QA follow-up: chain_cycle quota guard fails open on NaN, negative or future-dated readings",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-20T16:03:03Z",
-      "updated": "2026-11-22T01:33:26Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1272,
       "title": "analytics: no export carries the server-side kundli submission count — #1068 cannot be scored (3 reports in a row)",
       "ask": "",
@@ -696,22 +710,6 @@
       "updated": "2026-11-20T15:30:14Z",
       "blocked": false,
       "needs_evidence": true
-    },
-    {
-      "number": 1268,
-      "title": "[UI] /matching: card-in-card double border wastes ~40px of width at 375px; inputs 257px wide",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer"
-      ],
-      "created": "2026-11-20T01:31:11Z",
-      "updated": "2026-11-20T15:30:04Z",
-      "blocked": false,
-      "needs_evidence": false
     },
     {
       "number": 1256,
@@ -2651,7 +2649,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-22T04:01:07Z",
+    "generated_at": "2026-11-22T12:25:27Z",
     "window_days": 28,
     "open_now": 162,
     "merged_open_hours": 24,
@@ -3068,15 +3066,16 @@
       },
       {
         "date": "2026-11-22",
-        "opened": 3,
-        "closed": 1,
+        "opened": 7,
+        "closed": 5,
         "net": 2,
         "open_end": 162,
         "opened_by": {
-          "loop": 3
+          "loop": 7
         },
         "closed_by": {
-          "close-on-evidence": 1
+          "close-on-evidence": 4,
+          "prioritise": 1
         }
       }
     ],
@@ -4328,6 +4327,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1268,
+        "closed_at": "2026-11-22T09:18:55Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1274,
         "closed_at": "2026-11-20T02:34:43Z",
         "closer": "main-red-report"
@@ -4335,6 +4339,11 @@
       {
         "number": 1277,
         "closed_at": "2026-11-20T11:56:05Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1282,
+        "closed_at": "2026-11-22T04:25:25Z",
         "closer": "close-on-evidence"
       },
       {
@@ -4378,6 +4387,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1321,
+        "closed_at": "2026-11-22T04:13:38Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1322,
         "closed_at": "2026-11-21T01:30:28Z",
         "closer": "close-on-evidence"
@@ -4416,16 +4430,21 @@
         "number": 1359,
         "closed_at": "2026-11-22T03:16:51Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1373,
+        "closed_at": "2026-11-22T05:05:01Z",
+        "closer": "prioritise"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 4,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 109,
+          "merged": 102,
           "median_h": 0.6,
-          "p90_h": 12.4,
+          "p90_h": 11.0,
           "max_h": 46.6,
           "slowest": [
             {
@@ -4489,27 +4508,6 @@
               }
             },
             {
-              "number": 1002,
-              "title": "Watch the live app's health after every cycle and file it as issues",
-              "author": "mahAnuj",
-              "merged_at": "2026-11-15T11:17:54Z",
-              "hours": 30.8,
-              "why": {
-                "reason": "29.7h held for chief (trust boundary); 4 pushes",
-                "primary": "held",
-                "hours": {
-                  "no_gates": 0.2,
-                  "qa_fail": 0.6,
-                  "gates_running": 0.2,
-                  "awaiting_qa": 0.1,
-                  "awaiting_merge": 0.0,
-                  "held": 29.7
-                },
-                "qa_fails": 3,
-                "pushes": 4
-              }
-            },
-            {
               "number": 1212,
               "title": "close-on-evidence: close every PR the live, verified commit contains, not only its own",
               "author": "mahAnuj",
@@ -4529,6 +4527,25 @@
                 "qa_fails": 5,
                 "pushes": 6
               }
+            },
+            {
+              "number": 1136,
+              "title": "namkaran: cite Raman's first-letter table, drop the Muhurta Chintamani attribution, show R",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-17T18:12:20Z",
+              "hours": 21.1,
+              "why": {
+                "reason": "12.6h waiting for gates to start; 5.1h QA passed, waiting for the merge; 4 pushes",
+                "primary": "no_gates",
+                "hours": {
+                  "no_gates": 12.6,
+                  "gates_running": 0.5,
+                  "awaiting_qa": 3.0,
+                  "awaiting_merge": 5.1
+                },
+                "qa_fails": 0,
+                "pushes": 4
+              }
             }
           ],
           "top_reasons": [
@@ -4538,17 +4555,21 @@
             },
             {
               "reason": "held for chief (trust boundary)",
-              "prs": 2
+              "prs": 1
             },
             {
               "reason": "waiting for a fix after QA failed",
+              "prs": 1
+            },
+            {
+              "reason": "waiting for gates to start",
               "prs": 1
             }
           ]
         },
         "28d": {
-          "merged": 328,
-          "median_h": 0.6,
+          "merged": 329,
+          "median_h": 0.5,
           "p90_h": 16.5,
           "max_h": 122.1,
           "slowest": [
@@ -4838,8 +4859,8 @@
         },
         {
           "date": "2026-11-22",
-          "merged": 1,
-          "median_h": 1.7,
+          "merged": 4,
+          "median_h": 1.6,
           "max_h": 1.7
         }
       ],
@@ -4847,36 +4868,36 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 22.8,
+          "age_h": 31.2,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 19.7,
+          "age_h": 28.2,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 8.3,
+          "age_h": 16.7,
           "waiting_on": "merge",
           "why": null
         },
         {
-          "number": 1367,
-          "title": "chain_cycle quota guard fails closed on malformed readings (#1282)",
-          "age_h": 1.3,
+          "number": 1375,
+          "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
+          "age_h": 2.5,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1378,
+          "title": "Six strings stop calling a modern textbook's grain table classical (#1370)",
+          "age_h": 0.8,
           "waiting_on": "gates / QA",
-          "why": null
-        },
-        {
-          "number": 1368,
-          "title": "Manglik remedies headings and FAQ 4 stop claiming a classical ranking (#1321)",
-          "age_h": 0.1,
-          "waiting_on": "merge",
           "why": null
         }
       ]
