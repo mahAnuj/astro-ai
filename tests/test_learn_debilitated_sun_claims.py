@@ -39,7 +39,7 @@ BANNED = (
 # a 'classical'/'classically' in the same sentence as an unsourced remedy word, in any phrasing
 _CLASSICAL_REMEDY = re.compile(
     r"classical(ly)?[^.]{0,120}\b(arghya|jaggery|red cloth|copper|fast\b|safest)"
-    r"|\b(arghya|jaggery|red cloth|copper|fast\b|safest)[^.]{0,120}classical(ly)?(?! remedies tables)",
+    r"|\b(arghya|jaggery|red cloth|copper|fast\b|safest)[^.]{0,120}classical(ly)?",
     re.I,
 )
 
@@ -106,11 +106,18 @@ def test_llm_summary_states_digbala_and_the_sourced_versus_practice_split():
 
 def test_remedy_list_splits_sourced_items_from_common_practice(client):
     t = _text(client)
-    assert "Items marked sourced appear in the classical remedies tables we hold" in t
+    # #1386: the remedy tables are one modern textbook's, not a classical ranking
+    assert (
+        "Items marked sourced follow the remedies reference we hold, which rests on one modern textbook's "
+        "planet-by-planet remedy tables rather than a classical ranking"
+    ) in t
+    assert "classical remedies tables" not in t
     assert "We do not present the second kind as classical" in t
     # sourced items stay, and say they are sourced
     assert "Sourced: wheat, donated particularly on the Sun's weekday" in t
     assert "a count of 6,000 repetitions total" in t
+    assert "Sourced: the remedies table gives this mantra" not in t
+    assert "Sourced in part: the reference gives a count of 6,000 repetitions total" in t
     assert "Sourced in part: the sources we hold name the Aditya Hridayam as a Sun stotra" in t
     # unsourced items stay but are labelled
     assert "Common practice, not in the classical sources we hold" in t
@@ -124,7 +131,11 @@ def test_remedy_list_splits_sourced_items_from_common_practice(client):
 
 def test_faq_how_to_strengthen_carries_the_same_split_as_the_page():
     a = _faq("How to strengthen")
-    assert a.startswith("Sourced in the classical remedies tables we hold")
+    assert a.startswith("Sourced in one modern textbook's planet-by-planet remedy tables")
+    assert "classical remedies tables" not in a
+    # #1386: honouring the father is our own suggestion, not a table item, so it sits after the common-practice marker
+    assert "honour the father" not in a.split("Common practice")[0]
+    assert "honour the father and elders in your life (Sun is the karaka of the father; our own suggestion" in a
     assert "Common practice, not in those sources: offer arghya" in a
     assert "for which the tables give a count of 6,000 repetitions" in a
     assert "rajyapada lord (the 10th house pattern)" in a
@@ -147,6 +158,8 @@ def test_sourced_sentences_survive_the_fix(client):
 
 def test_json_ld_faq_carries_the_corrected_answers(client):
     raw = client.get(f"/learn/{SLUG}/").text
-    assert "Sourced in the classical remedies tables we hold" in raw
+    # tojson renders the apostrophe as \u0027, so the pinned phrase carries none
+    assert "planet-by-planet remedy tables" in raw
+    assert "classical remedies tables" not in raw
     assert "Safe universal classical practices" not in raw
     assert "Many senior judges" not in raw
