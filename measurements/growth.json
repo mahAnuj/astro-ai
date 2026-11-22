@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-22T16:44:16Z",
+ "generated_at": "2026-11-22T17:14:20Z",
  "target": 0.6,
  "week": "2026-W47",
  "today_date": "2026-11-22",
  "today": {
   "growth": 0,
-  "other": 16,
+  "other": 17,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 30,
-  "other": 82,
+  "other": 83,
   "exempt": 0,
-  "share": 0.268
+  "share": 0.265
  },
  "this_month": {
   "growth": 33,
-  "other": 247,
+  "other": 248,
   "exempt": 0,
-  "share": 0.118
+  "share": 0.117
  },
  "must_pick_growth": true,
  "days": [
@@ -117,26 +117,33 @@
   {
    "date": "2026-11-22",
    "growth": 0,
-   "other": 16,
+   "other": 17,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
   {
+   "run": 45045414591,
+   "started": "2026-11-22T16:43:24Z",
+   "issue": 1380,
+   "title": "QA follow-up: #1378 left 'classical Saturn grain' and 'Classical charity items for Rahu' on Rao-table grains",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1382,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
    "run": 45036010068,
    "started": "2026-11-22T15:01:51Z",
    "issue": 1291,
    "title": "QA follow-up: ask_audit_post --issue accepts any issue number; the 5-issue cap is prompt-only",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1383,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45033334321,
@@ -144,14 +151,9 @@
    "issue": 1380,
    "title": "QA follow-up: #1378 left 'classical Saturn grain' and 'Classical charity items for Rahu' on Rao-table grains",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1382,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45023409764,
@@ -173,7 +175,7 @@
    "class": "other",
    "outcome": "pr open",
    "pr": 1375,
-   "agents": {}
+   "agents": null
   },
   {
    "run": 45014704447,
@@ -582,21 +584,6 @@
    "agents": {
     "qa": 1
    }
-  },
-  {
-   "run": 44806805035,
-   "started": "2026-11-20T19:56:37Z",
-   "issue": 1292,
-   "title": "QA follow-up: /account/delete does not revoke the user's other sessions, so another device stays signed in",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1314,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -842,21 +829,21 @@
   "ga4_sessions_28d": 803,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.268,
-  "growth_share_month": 0.118
+  "growth_share_week": 0.265,
+  "growth_share_month": 0.117
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-22",
    "progress": 0.0,
-   "detail": "0 of 16 cycles on growth, target 60%",
+   "detail": "0 of 17 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W47",
-   "progress": 0.518,
+   "progress": 0.512,
    "detail": "4 goals, 4 measurable",
    "goals": [
     {
@@ -867,8 +854,8 @@
      "baseline": 0.206,
      "target": 0.35,
      "issues": [],
-     "current": 0.268,
-     "progress": 0.431,
+     "current": 0.265,
+     "progress": 0.41,
      "basis": "growth_share_week"
     },
     {
@@ -922,7 +909,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.249,
+   "progress": 0.247,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -965,8 +952,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.118,
-     "progress": 0.271,
+     "current": 0.117,
+     "progress": 0.265,
      "basis": "growth_share_month"
     }
    ]

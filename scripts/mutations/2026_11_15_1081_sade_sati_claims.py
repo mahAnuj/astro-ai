@@ -48,7 +48,7 @@ MUTATIONS = [
      "test_remedies_are_not_all_labelled_classical"),
     ("#1081: sade-sati lists mustard oil among the sourced remedies",
      _T,
-     "<strong>Donate sesame seeds</strong> — a classical Saturn grain.",
+     "<strong>Donate sesame seeds</strong> — the grain a modern textbook's table gives Saturn.",
      "<strong>Donate sesame seeds and mustard oil</strong> — classical Saturn grains.",
      "test_remedies_are_not_all_labelled_classical"),
     ("#1081: sade-sati effects are attributed to classical texts again",

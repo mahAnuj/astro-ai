@@ -132,7 +132,7 @@ def test_saturn_domains_list_is_not_stated_as_fact(client):
 def test_saturday_donations_are_split_between_sourced_and_custom(client):
     page = _page(client)
     assert "it is a classical structure" not in page
-    assert "Sesame seeds are Saturn's grain" in page and "common practice" in page
+    assert "Sesame seeds are the grain a modern textbook's table gives Saturn" in page and "common practice" in page
 
 
 def test_seo_description_does_not_promise_classical_guidance():
