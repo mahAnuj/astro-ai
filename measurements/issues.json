@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-21T21:43:22Z",
+  "generated_at": "2026-11-22T01:00:13Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 160,
+  "open": 161,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 70,
+    "UNCLASSIFIED": 69,
     "INFRA": 16,
-    "OPS": 10,
+    "OPS": 11,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "ANALYTICS": 5,
+    "ANALYTICS": 6,
     "SEO": 4,
     "CORPUS": 4,
     "TOKENS": 3,
@@ -34,22 +34,51 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 50,
-    "untyped": 39,
+    "bug": 49,
+    "untyped": 40,
     "enhancement": 30,
-    "chore": 24,
+    "chore": 25,
     "correctness": 11,
     "design": 5,
     "ui": 1
   },
   "by_priority": {
-    "unset": 99,
+    "unset": 100,
     "medium": 28,
     "high": 21,
     "low": 12
   },
   "blocked": 9,
   "rows": [
+    {
+      "number": 1364,
+      "title": "analytics: no export sizes automated traffic — the Direct channel (311 sessions, 19% engaged) cannot be split into bots and readers",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-22T00:57:54Z",
+      "updated": "2026-11-22T00:57:54Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1363,
+      "title": "[OPS] 1 red PR(s) with no live fix after 2h",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "chore"
+      ],
+      "created": "2026-11-21T22:43:25Z",
+      "updated": "2026-11-21T22:43:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1361,
       "title": "QA follow-up: natal erasure key-count bound says 20, /account/delete can pass 40 (PR #1360)",
@@ -75,10 +104,11 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "provenance:trusted"
       ],
       "created": "2026-11-21T20:12:55Z",
-      "updated": "2026-11-21T20:12:59Z",
+      "updated": "2026-11-21T23:52:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -122,11 +152,13 @@
       "area": "AGENT-MERGE",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "needs-evidence"
+      ],
       "created": "2026-11-21T16:30:36Z",
-      "updated": "2026-11-21T19:46:55Z",
+      "updated": "2026-11-21T22:45:28Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 1351,
@@ -444,24 +476,6 @@
       ],
       "created": "2026-11-20T16:03:13Z",
       "updated": "2026-11-20T16:03:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1293,
-      "title": "QA follow-up: account deletion leaves per-instance SQLite cache entries, and erases blobs with blocking calls inside async routes",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-20T16:03:12Z",
-      "updated": "2026-11-21T20:51:20Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2619,20 +2633,11 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-21T21:43:22Z",
+    "generated_at": "2026-11-22T01:00:13Z",
     "window_days": 28,
-    "open_now": 160,
+    "open_now": 161,
     "merged_open_hours": 24,
     "days": [
-      {
-        "date": "2026-10-25",
-        "opened": 0,
-        "closed": 0,
-        "net": 0,
-        "open_end": 123,
-        "opened_by": {},
-        "closed_by": {}
-      },
       {
         "date": "2026-10-26",
         "opened": 2,
@@ -3031,17 +3036,28 @@
       },
       {
         "date": "2026-11-21",
-        "opened": 23,
-        "closed": 8,
+        "opened": 24,
+        "closed": 9,
         "net": 15,
         "open_end": 160,
         "opened_by": {
           "loop": 21,
-          "ops": 2
+          "ops": 3
         },
         "closed_by": {
-          "close-on-evidence": 8
+          "close-on-evidence": 9
         }
+      },
+      {
+        "date": "2026-11-22",
+        "opened": 1,
+        "closed": 0,
+        "net": 1,
+        "open_end": 161,
+        "opened_by": {
+          "loop": 1
+        },
+        "closed_by": {}
       }
     ],
     "merged_open": [],
@@ -4307,6 +4323,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1293,
+        "closed_at": "2026-11-21T22:13:32Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1294,
         "closed_at": "2026-11-20T22:55:20Z",
         "closer": "close-on-evidence"
@@ -4372,7 +4393,7 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
@@ -4501,7 +4522,7 @@
           ]
         },
         "28d": {
-          "merged": 326,
+          "merged": 327,
           "median_h": 0.5,
           "p90_h": 16.5,
           "max_h": 122.1,
@@ -4628,12 +4649,6 @@
         }
       },
       "days": [
-        {
-          "date": "2026-10-25",
-          "merged": 5,
-          "median_h": 3.2,
-          "max_h": 31.2
-        },
         {
           "date": "2026-10-26",
           "merged": 4,
@@ -4792,38 +4807,37 @@
         },
         {
           "date": "2026-11-21",
-          "merged": 10,
+          "merged": 11,
           "median_h": 0.4,
           "max_h": 2.5
+        },
+        {
+          "date": "2026-11-22",
+          "merged": 0,
+          "median_h": null,
+          "max_h": null
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 16.5,
+          "age_h": 19.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 13.4,
+          "age_h": 16.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 2.0,
+          "age_h": 5.3,
           "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1360,
-          "title": "Natal erasure evicts the per-instance SQLite rows and runs its deletes off the event loop ",
-          "age_h": 0.3,
-          "waiting_on": "gates / QA",
           "why": null
         }
       ]
