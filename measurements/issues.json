@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-22T17:13:39Z",
+  "generated_at": "2026-11-22T20:01:12Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 163,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 71,
+    "UNCLASSIFIED": 70,
     "INFRA": 16,
     "OPS": 11,
     "REDESIGN": 10,
+    "ANALYTICS": 7,
     "FEATURE": 7,
-    "ANALYTICS": 6,
     "SEO": 4,
     "CORPUS": 4,
     "TOKENS": 3,
@@ -35,9 +35,9 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 52,
+    "bug": 51,
     "untyped": 40,
-    "enhancement": 30,
+    "enhancement": 31,
     "chore": 25,
     "correctness": 11,
     "design": 5
@@ -51,6 +51,22 @@
   "blocked": 9,
   "rows": [
     {
+      "number": 1390,
+      "title": "analytics: tool_error event for numerology and numerology-compat error branches (slice 5 of #1070)",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "growth"
+      ],
+      "created": "2026-11-22T18:39:33Z",
+      "updated": "2026-11-22T18:39:33Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
       "number": 1387,
       "title": "detect_stalls: mergeable-but-open PRs starved by a ruled blocked-on-owner workflow defect still oblige an action, waking chief every steward run",
       "ask": "",
@@ -61,24 +77,7 @@
         "bug"
       ],
       "created": "2026-11-22T16:58:26Z",
-      "updated": "2026-11-22T16:58:26Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1386,
-      "title": "QA follow-up: 'classical remedies tables we hold' still labels Rao's single-textbook wheat table (PR #1382)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-22T16:55:15Z",
-      "updated": "2026-11-22T17:02:23Z",
+      "updated": "2026-11-22T17:25:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -254,7 +253,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-21T16:30:36Z",
-      "updated": "2026-11-22T16:58:51Z",
+      "updated": "2026-11-22T17:26:07Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -723,7 +722,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-20T01:31:13Z",
-      "updated": "2026-11-20T15:30:14Z",
+      "updated": "2026-11-22T17:26:25Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -775,7 +774,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-19T09:53:08Z",
-      "updated": "2026-11-20T15:28:11Z",
+      "updated": "2026-11-22T17:26:23Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -1059,10 +1058,11 @@
       "labels": [
         "enhancement",
         "priority:high",
-        "provenance:trusted"
+        "provenance:trusted",
+        "growth"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-20T11:15:16Z",
+      "updated": "2026-11-22T18:38:37Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2665,7 +2665,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-22T17:13:39Z",
+    "generated_at": "2026-11-22T20:01:12Z",
     "window_days": 28,
     "open_now": 163,
     "merged_open_hours": 24,
@@ -3082,15 +3082,15 @@
       },
       {
         "date": "2026-11-22",
-        "opened": 11,
-        "closed": 8,
+        "opened": 12,
+        "closed": 9,
         "net": 3,
         "open_end": 163,
         "opened_by": {
-          "loop": 11
+          "loop": 12
         },
         "closed_by": {
-          "close-on-evidence": 7,
+          "close-on-evidence": 8,
           "prioritise": 1
         }
       }
@@ -4466,9 +4466,14 @@
         "number": 1380,
         "closed_at": "2026-11-22T17:08:10Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1386,
+        "closed_at": "2026-11-22T18:46:49Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 2,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
@@ -4887,8 +4892,8 @@
         },
         {
           "date": "2026-11-22",
-          "merged": 8,
-          "median_h": 1.2,
+          "merged": 9,
+          "median_h": 1.0,
           "max_h": 1.7
         }
       ],
@@ -4896,29 +4901,36 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 36.0,
+          "age_h": 38.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 33.0,
+          "age_h": 35.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 21.5,
+          "age_h": 24.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 7.3,
+          "age_h": 10.1,
           "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1391,
+          "title": "numerology and numerology_compat declare tool_error {tool, kind} on a refused or failed su",
+          "age_h": 0.0,
+          "waiting_on": "gates / QA",
           "why": null
         }
       ]
