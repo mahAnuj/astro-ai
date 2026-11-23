@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-23T04:33:31Z)
+# Lessons — last 30 days (generated 2026-11-23T14:40:51Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -24,8 +24,7 @@ deterministic, no LLM.
 - QA FAIL verdicts: 125
 - reverted commits on main: 0
 - failed verify-production runs: 9
-- ops findings now: 1
-  - [amber] outbox-noise: Loop comment noise rose: duplicate rate 3.4% -> 5.2%
+- ops findings now: 0
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
