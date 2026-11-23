@@ -90,6 +90,31 @@ false, until someone records the deploy.
 NOT WIRED INTO CI. Calling this from .github/workflows/agent-measure.yml is a
 workflow edit the App token cannot push (#421); it is a separate owner or session
 act, to bundle with #1205's step.
+
+--cohorts SIZES THE AUTOMATED SHARE OF EACH CHANNEL (#1364)
+----------------------------------------------------------
+The analyst said "not measured" for the automated share of Direct three reports running:
+the only browser / device / country breakdown is `--anomalies`, which covers the spike
+days (7 of 28), not the window. `--cohorts` asks the WHOLE window as two requests: (1)
+channel x browser x device x country with `sessions`, `engagedSessions` and
+`userEngagementDuration`, and (2) by channel alone, which is the exact denominator -- the
+cohort request can be truncated, the channel request cannot in practice. Either failing
+fails the run, as the default report does. It filters nothing and changes no other export.
+
+`zero_engagement` is a FLAG on a cohort, not a verdict: GA4 cannot prove automation, and
+a real cohort can also read zero engagement. A cohort is flagged at 20 or more sessions
+and zero engaged sessions. The threshold is a false-positive bound: Direct's engaged rate
+is 19% (#1364), so a cohort of 20 genuine readers is all-zero with probability
+0.81^20 ~= 1.5%; at 10 sessions it would be 12%. It is deliberately not `explain()`'s
+`dead` test, which has no minimum and judges one day's top-10 tech rows as a hint (rates
+rounded to 2 places), where this is a window-wide count meant to be quoted. Cohorts under
+20 sessions are never counted, so the headline is a LOWER BOUND on the automated share
+(`small_cohort_sessions` says how many sessions that leaves unjudged). `engaged_rate` is
+recomputed from sums, never averaged over cohorts.
+
+NOT WIRED INTO CI, like --journeys: `agent-measure.yml` does not call it, and that is a
+workflow edit the App token cannot push (#421). The analyst runs it itself
+(`.claude/agents/analyst.md`) when `/tmp/measure/ga4-cohorts.json` is absent.
 """
 
 from __future__ import annotations
@@ -721,6 +746,143 @@ def trend(args, start: str, end: str, bearer: str) -> int:
     return 0
 
 
+COHORT_DIMS = ("sessionDefaultChannelGroup", "browser", "deviceCategory", "country")
+COHORT_METRICS = ("sessions", "engagedSessions", "userEngagementDuration")
+# 20 sessions: see the --cohorts section of the module docstring (0.81^20 ~= 1.5%).
+MIN_COHORT_SESSIONS = 20
+COHORT_ROWS_SHOWN = 50
+# GA4 caps one runReport at 250000 rows; 10000 is far above the ~150 cohorts seen, and a
+# truncation is reported in coverage_note rather than assumed away.
+COHORT_LIMIT = 10000
+
+
+def parse_cohorts(raw_rows: list[dict]) -> list[dict]:
+    """GA4 cohort rows -> dicts. `(not set)` values stay: dropping them would hide the very
+    browserless cohort #1364 is about and make the totals stop adding up."""
+    out = []
+    for r in raw_rows:
+        d, m = r["dimensionValues"], r["metricValues"]
+        out.append({"channel": d[0]["value"], "browser": d[1]["value"],
+                    "device": d[2]["value"], "country": d[3]["value"],
+                    "sessions": int(float(m[0]["value"])),
+                    "engaged_sessions": int(float(m[1]["value"])),
+                    "engagement_seconds": int(float(m[2]["value"]))})
+    return out
+
+
+def zero_engagement(row: dict, min_sessions: int = MIN_COHORT_SESSIONS) -> bool:
+    """A flag, not a verdict: a cohort big enough that zero engaged sessions is not luck."""
+    return row["sessions"] >= min_sessions and row["engaged_sessions"] == 0
+
+
+def channel_summary(channel_totals: dict, rows: list[dict],
+                    min_sessions: int = MIN_COHORT_SESSIONS) -> list[dict]:
+    """Per channel: totals from the by-channel request, cohort counts from ALL fetched rows."""
+    totals = {c: dict(v) for c, v in channel_totals.items()}
+    for r in rows:
+        # A channel the denominator request lacks (inconsistent response): fall back to rows.
+        if r["channel"] not in channel_totals:
+            t = totals.setdefault(r["channel"], {"sessions": 0, "engaged_sessions": 0})
+            t["sessions"] += r["sessions"]
+            t["engaged_sessions"] += r["engaged_sessions"]
+    out = []
+    for ch, t in totals.items():
+        mine = [r for r in rows if r["channel"] == ch]
+        zero = [r for r in mine if zero_engagement(r, min_sessions)]
+        zero_sessions = sum(r["sessions"] for r in zero)
+        small = sum(r["sessions"] for r in mine if r["sessions"] < min_sessions)
+        n, eng = t["sessions"], t["engaged_sessions"]
+        if n:
+            statement = (f"{zero_sessions} of {n} {ch} sessions fall in {len(zero)} cohorts "
+                         f"with >={min_sessions} sessions and 0% engagement; {small} more "
+                         f"sit in cohorts under {min_sessions} sessions and are not judged")
+        else:
+            statement = f"no {ch} sessions in the window"
+        out.append({"channel": ch, "sessions": n, "engaged_sessions": eng,
+                    "engaged_rate": round(eng / n, 4) if n else None,
+                    "zero_cohorts": len(zero), "zero_cohort_sessions": zero_sessions,
+                    "zero_engagement_share": round(zero_sessions / n, 4) if n else None,
+                    "small_cohort_sessions": small, "statement": statement})
+    out.sort(key=lambda c: (-c["sessions"], c["channel"]))
+    return out
+
+
+def headline(summary: list[dict], channel: str = "Direct") -> str:
+    """The sentence the analyst quotes. Says so when the channel has no sessions."""
+    ch = next((c for c in summary if c["channel"] == channel), None)
+    if ch is None or not ch["sessions"]:
+        return f"no {channel} sessions in the window, so no automated share can be stated"
+    return (f"{ch['zero_cohort_sessions']} of {ch['sessions']} {channel} sessions fall in "
+            f"cohorts with >={MIN_COHORT_SESSIONS} sessions and 0% engagement")
+
+
+def cohorts(args, start: str, end: str, bearer: str) -> int:
+    """Channel x browser x device x country over the whole window (#1364). Two requests."""
+    url = API.format(pid=args.property)
+    ranges = [{"startDate": start, "endDate": end}]
+    metrics = [{"name": m} for m in COHORT_METRICS]
+    order = [{"metric": {"metricName": "sessions"}, "desc": True}]
+    data = post(url, {"dateRanges": ranges,
+                      "dimensions": [{"name": d} for d in COHORT_DIMS],
+                      "metrics": metrics, "orderBys": order, "limit": COHORT_LIMIT}, bearer)
+    by_ch = post(url, {"dateRanges": ranges,
+                       "dimensions": [{"name": COHORT_DIMS[0]}],
+                       "metrics": metrics, "orderBys": order, "limit": COHORT_LIMIT}, bearer)
+
+    raw_rows = data.get("rows") or []
+    rows = parse_cohorts(raw_rows)
+    row_count = data.get("rowCount", len(raw_rows))
+    truncated = len(raw_rows) < row_count
+    channel_totals = {}
+    for r in by_ch.get("rows") or []:
+        m = r["metricValues"]
+        channel_totals[r["dimensionValues"][0]["value"]] = {
+            "sessions": int(float(m[0]["value"])), "engaged_sessions": int(float(m[1]["value"]))}
+    total_sessions = sum(v["sessions"] for v in channel_totals.values())
+    rows_sessions = sum(r["sessions"] for r in rows)
+    coverage = round(rows_sessions / total_sessions * 100) if total_sessions else None
+    summary = channel_summary(channel_totals, rows)
+
+    rows.sort(key=lambda r: (-r["sessions"], r["channel"], r["browser"], r["device"],
+                             r["country"]))
+    shown = [{**{k: r[k] for k in ("channel", "browser", "device", "country", "sessions",
+                                   "engaged_sessions")},
+              "engaged_rate": round(r["engaged_sessions"] / r["sessions"], 4)
+              if r["sessions"] else None,
+              "engagement_seconds": r["engagement_seconds"],
+              "avg_engagement_seconds": round(r["engagement_seconds"] / r["sessions"], 1)
+              if r["sessions"] else None,
+              "zero_engagement": zero_engagement(r)}
+             for r in rows[:COHORT_ROWS_SHOWN]]
+
+    parts = ["zero_engagement is a FLAG on a cohort, not a verdict: GA4 cannot prove "
+             "automation, and the headline count is a lower bound because cohorts under "
+             f"{MIN_COHORT_SESSIONS} sessions are not counted (see small_cohort_sessions)"]
+    if coverage is not None and rows_sessions < total_sessions:
+        parts.append(f"cohort rows account for {coverage}% of the property's "
+                     f"{total_sessions} sessions")
+    if row_count > len(raw_rows):
+        parts.append(f"TRUNCATED: {len(raw_rows)} of {row_count} cohort rows returned")
+    if len(rows) > COHORT_ROWS_SHOWN:
+        parts.append(f"rows lists the top {COHORT_ROWS_SHOWN} cohorts of {len(rows)}; "
+                     "channel summaries use all of them")
+
+    print(json.dumps({
+        "source": "ga4", "property": args.property, "mode": "cohorts",
+        "window": [start, end], "dimensions": list(COHORT_DIMS),
+        "note": "window excludes the last 3 days — GA4 standard reports lag 24-48h",
+        "min_cohort_sessions": MIN_COHORT_SESSIONS,
+        "total_sessions": total_sessions, "rows_sessions": rows_sessions,
+        "coverage_pct": coverage, "row_count": row_count, "truncated": truncated,
+        "cohort_count": len(rows),
+        "headline": headline(summary),
+        "channels": summary,
+        "rows": shown, "rows_omitted": max(len(rows) - COHORT_ROWS_SHOWN, 0),
+        "coverage_note": "; ".join(parts),
+    }, indent=2))
+    return 0
+
+
 def _engagement(mv: list) -> dict:
     """engaged_sessions and engagement_seconds (total userEngagementDuration),
     or nothing if the response carried only the first four metrics."""
@@ -748,6 +910,9 @@ def main() -> int:
     ap.add_argument("--journeys", action="store_true",
                     help="landing x event rows for the #1070 funnel events plus tool / "
                          "event_type / mode splits (mutually exclusive with the other reports)")
+    ap.add_argument("--cohorts", action="store_true",
+                    help="channel x browser x device x country over the window, flagging "
+                         "zero-engagement cohorts (mutually exclusive with the other reports)")
     args = ap.parse_args()
     if args.journeys and (args.daily or args.events or args.anomalies or args.trend):
         sys.exit("--journeys is a separate report from --daily, --events, --anomalies and "
@@ -757,6 +922,9 @@ def main() -> int:
     if args.trend and (args.daily or args.events or args.anomalies):
         sys.exit("--trend is a separate report from --daily, --events and --anomalies; "
                  "run them one at a time")
+    if args.cohorts and (args.daily or args.events or args.anomalies or args.trend or args.journeys):
+        sys.exit("--cohorts is a separate report from --daily, --events, --anomalies, "
+                 "--trend and --journeys; run them one at a time")
     if not args.property.isdigit():
         sys.exit("GA4_PROPERTY_ID must be the numeric property id "
                  "(GA4 > Admin > Property Settings), not the G- measurement id")
@@ -774,6 +942,8 @@ def main() -> int:
         return journeys(args, start, end, bearer)
     if args.trend:
         return trend(args, start, end, bearer)
+    if args.cohorts:
+        return cohorts(args, start, end, bearer)
 
     body = {
         "dateRanges": [{"startDate": start, "endDate": end}],
