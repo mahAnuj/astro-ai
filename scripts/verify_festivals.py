@@ -17,7 +17,10 @@ exit 0 or 1. It runs five independent gates.
       must appear in tests/festival_dates_expected.json with byte-identical
       ISO dates for every shipped year. The JSON is a machine copy of the
       verified dataset; the registry is a hand transcription of the same
-      data, so the diff catches transcription slips. Primary gate.
+      data, so the diff catches transcription slips. Primary gate. A coordinated
+      typo in both (a late-year row shifted in registry and table together) is
+      invisible here; Gate E of `verify_lunar_observances.py` computes the tithi
+      for the five #1326 rows and catches it (#1330).
 
   Gate 2 - tithi-interval consistency.  Pure arithmetic on the dates: pairs
       of festivals whose classical rules fix the tithi count between them
