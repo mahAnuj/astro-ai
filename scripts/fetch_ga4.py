@@ -113,8 +113,9 @@ rounded to 2 places), where this is a window-wide count meant to be quoted. Coho
 recomputed from sums, never averaged over cohorts.
 
 NOT WIRED INTO CI, like --journeys: `agent-measure.yml` does not call it, and that is a
-workflow edit the App token cannot push (#421). The analyst runs it itself
-(`.claude/agents/analyst.md`) when `/tmp/measure/ga4-cohorts.json` is absent.
+workflow edit the App token cannot push (#421). Nor is it yet mentioned in
+`.claude/agents/analyst.md` (that edit was denied by the harness); both are follow-ups on #1364,
+so until then the analyst only has this export when someone runs it by hand.
 """
 
 from __future__ import annotations
