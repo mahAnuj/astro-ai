@@ -2,28 +2,21 @@
   "source": "gsc",
   "site": "sc-domain:shubhagya.com",
   "window": [
-    "2026-10-23",
-    "2026-11-19"
+    "2026-10-24",
+    "2026-11-20"
   ],
   "dimension": "date",
   "note": "window excludes the last 3 days \u2014 GSC data is not final before that",
-  "total_impressions": 29930,
-  "total_clicks": 399,
-  "rows_impressions": 29930,
+  "total_impressions": 30291,
+  "total_clicks": 403,
+  "rows_impressions": 30291,
   "coverage_pct": 100,
   "emitted_rows": 28,
-  "emitted_impressions": 29930,
+  "emitted_impressions": 30291,
   "emitted_coverage_pct": 100,
   "truncated": false,
-  "coverage_note": "rows account for 100% of the property's 29930 impressions",
+  "coverage_note": "rows account for 100% of the property's 30291 impressions",
   "rows": [
-    {
-      "date": "2026-10-23",
-      "impressions": 640,
-      "clicks": 7,
-      "ctr": 0.0109,
-      "position": 6.8
-    },
     {
       "date": "2026-10-24",
       "impressions": 757,
@@ -212,6 +205,13 @@
       "clicks": 8,
       "ctr": 0.0098,
       "position": 6.4
+    },
+    {
+      "date": "2026-11-20",
+      "impressions": 1001,
+      "clicks": 11,
+      "ctr": 0.011,
+      "position": 6.7
     }
   ]
 }

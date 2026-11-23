@@ -2,70 +2,70 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-23",
-    "2026-11-19"
+    "2026-10-24",
+    "2026-11-20"
   ],
   "dimensions": [
     "eventName"
   ],
   "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
-  "row_count": 18,
+  "row_count": 20,
   "truncated": false,
   "rows": [
     {
       "event": "page_view",
-      "count": 1401
+      "count": 1447
     },
     {
       "event": "session_start",
-      "count": 801
-    },
-    {
-      "event": "user_identified",
       "count": 792
     },
     {
+      "event": "user_identified",
+      "count": 758
+    },
+    {
       "event": "feature_view",
-      "count": 777
+      "count": 744
     },
     {
       "event": "first_visit",
-      "count": 668
+      "count": 650
     },
     {
       "event": "user_engagement",
-      "count": 328
+      "count": 319
     },
     {
       "event": "scroll",
-      "count": 192
+      "count": 201
     },
     {
       "event": "ask_answered",
-      "count": 128
+      "count": 129
     },
     {
       "event": "form_start",
-      "count": 123
+      "count": 117
     },
     {
       "event": "kundli_generated",
-      "count": 49
+      "count": 50
     },
     {
       "event": "cta_click",
-      "count": 19
+      "count": 20
     },
     {
       "event": "tool_submitted",
-      "count": 7
-    },
-    {
-      "event": "click",
-      "count": 4
+      "count": 16
     },
     {
       "event": "view_search_results",
+      "count": 5
+    },
+    {
+      "event": "click",
       "count": 4
     },
     {
@@ -77,7 +77,15 @@
       "count": 2
     },
     {
+      "event": "dosha_check_completed",
+      "count": 1
+    },
+    {
       "event": "form_submit",
+      "count": 1
+    },
+    {
+      "event": "matching_completed",
       "count": 1
     },
     {
@@ -85,10 +93,10 @@
       "count": 1
     }
   ],
-  "events_total": 5299,
-  "coverage_note": "cta_click: 19 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "events_total": 5260,
+  "coverage_note": "cta_click: 20 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
-    "count": 19,
+    "count": 20,
     "split_available": true,
     "rows": [
       {
@@ -129,6 +137,11 @@
       {
         "from_path": "/learn/rahu-mahadasha-ketu-antardasha/",
         "to_path": "/dasha",
+        "count": 1
+      },
+      {
+        "from_path": "/learn/sade-sati/",
+        "to_path": "/sade-sati-check",
         "count": 1
       },
       {

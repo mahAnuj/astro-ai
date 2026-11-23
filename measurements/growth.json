@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-22T22:39:00Z",
+ "generated_at": "2026-11-23T01:28:43Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-23",
  "today": {
   "growth": 1,
-  "other": 1,
+  "other": 2,
   "exempt": 0,
-  "share": 0.5
+  "share": 0.333
  },
  "this_week": {
   "growth": 1,
-  "other": 1,
+  "other": 2,
   "exempt": 0,
-  "share": 0.5
+  "share": 0.333
  },
  "this_month": {
   "growth": 35,
-  "other": 251,
+  "other": 252,
   "exempt": 0,
   "share": 0.122
  },
@@ -117,26 +117,33 @@
   {
    "date": "2026-11-23",
    "growth": 1,
-   "other": 1,
+   "other": 2,
    "exempt": 0,
-   "share": 0.5
+   "share": 0.333
   }
  ],
  "cycles": [
+  {
+   "run": 45078856360,
+   "started": "2026-11-22T22:38:30Z",
+   "issue": 1377,
+   "title": "QA follow-up: marriage-delayed.html:87 and trivia.py:55 still assert a Manglik-with-Manglik preference/mechanism no held book states (PR #1375, #1369)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1394,
+   "agents": {
+    "qa": 1
+   }
+  },
   {
    "run": 45068842346,
    "started": "2026-11-22T20:52:03Z",
    "issue": 1377,
    "title": "QA follow-up: marriage-delayed.html:87 and trivia.py:55 still assert a Manglik-with-Manglik preference/mechanism no held book states (PR #1375, #1369)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1394,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45064683747,
@@ -146,9 +153,7 @@
    "class": "growth",
    "outcome": "pr open",
    "pr": 1391,
-   "agents": {
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45054234061,
@@ -569,22 +574,6 @@
    "outcome": "shipped",
    "pr": 1328,
    "agents": null
-  },
-  {
-   "run": 44856777487,
-   "started": "2026-11-21T02:35:59Z",
-   "issue": 1326,
-   "title": "festival registry: no festival dated 2026-11-22 to 2027-01-14 \u2014 54 days the daily email, rashifal and /festivals have nothing to show",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1329,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -919,22 +908,22 @@
   "ga4_new_users_28d": 668,
   "ga4_sessions_28d": 803,
   "objective_top5": 1,
-  "growth_share_today": 0.5,
-  "growth_share_week": 0.5,
+  "growth_share_today": 0.333,
+  "growth_share_week": 0.333,
   "growth_share_month": 0.122
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-23",
-   "progress": 0.833,
-   "detail": "1 of 2 cycles on growth, target 60%",
+   "progress": 0.555,
+   "detail": "1 of 3 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.2,
+   "progress": 0.152,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -945,8 +934,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.5,
-     "progress": 1.0,
+     "current": 0.333,
+     "progress": 0.761,
      "basis": "growth_share_week"
     },
     {

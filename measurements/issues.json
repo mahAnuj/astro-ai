@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-22T22:38:18Z",
+  "generated_at": "2026-11-23T01:27:57Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 163,
@@ -51,6 +51,22 @@
   "blocked": 9,
   "rows": [
     {
+      "number": 1396,
+      "title": "QA follow-up: result.html:564 says classical texts require comparable severity for Manglik mutual cancellation (PR #1394, #1377)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-22T22:59:19Z",
+      "updated": "2026-11-22T22:59:19Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
       "number": 1390,
       "title": "analytics: tool_error event for numerology and numerology-compat error branches (slice 5 of #1070)",
       "ask": "",
@@ -63,7 +79,7 @@
         "growth"
       ],
       "created": "2026-11-22T18:39:33Z",
-      "updated": "2026-11-22T20:08:58Z",
+      "updated": "2026-11-22T23:39:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -95,23 +111,6 @@
       ],
       "created": "2026-11-22T16:42:08Z",
       "updated": "2026-11-22T16:42:08Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1377,
-      "title": "QA follow-up: marriage-delayed.html:87 and trivia.py:55 still assert a Manglik-with-Manglik preference/mechanism no held book states (PR #1375, #1369)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-22T10:54:03Z",
-      "updated": "2026-11-22T21:16:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -173,9 +172,11 @@
       "area": "ANALYTICS",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "provenance:trusted"
+      ],
       "created": "2026-11-22T00:57:54Z",
-      "updated": "2026-11-22T00:57:54Z",
+      "updated": "2026-11-23T00:05:55Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2667,23 +2668,11 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-22T22:38:18Z",
+    "generated_at": "2026-11-23T01:27:57Z",
     "window_days": 28,
     "open_now": 163,
     "merged_open_hours": 24,
     "days": [
-      {
-        "date": "2026-10-26",
-        "opened": 2,
-        "closed": 0,
-        "net": 2,
-        "open_end": 125,
-        "opened_by": {
-          "audit": 1,
-          "loop": 1
-        },
-        "closed_by": {}
-      },
       {
         "date": "2026-10-27",
         "opened": 4,
@@ -3084,17 +3073,27 @@
       },
       {
         "date": "2026-11-22",
-        "opened": 12,
-        "closed": 9,
+        "opened": 13,
+        "closed": 10,
         "net": 3,
         "open_end": 163,
         "opened_by": {
-          "loop": 12
+          "loop": 13
         },
         "closed_by": {
           "close-on-evidence": 8,
-          "prioritise": 1
+          "prioritise": 1,
+          "other": 1
         }
+      },
+      {
+        "date": "2026-11-23",
+        "opened": 0,
+        "closed": 0,
+        "net": 0,
+        "open_end": 163,
+        "opened_by": {},
+        "closed_by": {}
       }
     ],
     "merged_open": [],
@@ -4465,6 +4464,11 @@
         "closer": "prioritise"
       },
       {
+        "number": 1377,
+        "closed_at": "2026-11-22T23:05:54Z",
+        "closer": "other"
+      },
+      {
         "number": 1380,
         "closed_at": "2026-11-22T17:08:10Z",
         "closer": "close-on-evidence"
@@ -4475,7 +4479,7 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
@@ -4731,12 +4735,6 @@
       },
       "days": [
         {
-          "date": "2026-10-26",
-          "merged": 4,
-          "median_h": 12.8,
-          "max_h": 27.2
-        },
-        {
           "date": "2026-10-27",
           "merged": 4,
           "median_h": 2.7,
@@ -4894,51 +4892,50 @@
         },
         {
           "date": "2026-11-22",
-          "merged": 9,
-          "median_h": 1.0,
+          "merged": 10,
+          "median_h": 1.1,
           "max_h": 1.7
+        },
+        {
+          "date": "2026-11-23",
+          "merged": 0,
+          "median_h": null,
+          "max_h": null
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 41.4,
+          "age_h": 44.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 38.4,
+          "age_h": 41.2,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 26.9,
+          "age_h": 29.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 12.7,
+          "age_h": 15.5,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1391,
           "title": "numerology and numerology_compat declare tool_error {tool, kind} on a refused or failed su",
-          "age_h": 2.6,
-          "waiting_on": "gates / QA",
-          "why": null
-        },
-        {
-          "number": 1394,
-          "title": "Manglik pairing copy attributes the both-Manglik antidote instead of asserting it (#1377)",
-          "age_h": 0.6,
+          "age_h": 5.5,
           "waiting_on": "gates / QA",
           "why": null
         }
