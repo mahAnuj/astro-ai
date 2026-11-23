@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-23T04:30:23Z",
+  "generated_at": "2026-11-23T14:37:39Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 163,
@@ -35,8 +35,8 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 51,
-    "untyped": 40,
+    "bug": 52,
+    "untyped": 39,
     "enhancement": 31,
     "chore": 25,
     "correctness": 11,
@@ -48,41 +48,55 @@
     "high": 20,
     "low": 12
   },
-  "blocked": 9,
+  "blocked": 10,
   "rows": [
     {
-      "number": 1402,
-      "title": "analytics: tool_error on /ask and /panchang error branches (#1070 slice 6)",
+      "number": 1411,
+      "title": "analytics: tool_error marker on dosha_check_form.html (slice of #1070 row 8)",
       "ask": "",
       "area": "ANALYTICS",
       "type": "enhancement",
       "priority": "unset",
       "labels": [
         "enhancement",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle",
         "growth"
       ],
-      "created": "2026-11-23T03:41:57Z",
-      "updated": "2026-11-23T04:29:31Z",
+      "created": "2026-11-23T13:10:52Z",
+      "updated": "2026-11-23T13:12:59Z",
       "blocked": false,
       "needs_evidence": false
     },
     {
-      "number": 1400,
-      "title": "seo (sub-issue of #1065): re-capture `measurements/index-status.json` and diff it against the 2026-11-19 capture, so the analyst can say whether Google re-crawled the edited top pages",
+      "number": 1409,
+      "title": "QA follow-up: wire collect_kundli_submissions.py into agent-measure.yml (#1272 part 2, owner act #1)",
       "ask": "",
       "area": "UNCLASSIFIED",
-      "type": "untyped",
+      "type": "bug",
       "priority": "unset",
       "labels": [
-        "seo",
-        "provenance:trusted",
-        "growth"
+        "bug",
+        "qa",
+        "needs-human-review"
       ],
-      "created": "2026-11-23T02:49:55Z",
-      "updated": "2026-11-23T03:13:34Z",
+      "created": "2026-11-23T11:31:06Z",
+      "updated": "2026-11-23T11:31:06Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 1408,
+      "title": "QA follow-up: kundli-submissions totals.non_probe covers fewer days than fresh_generations (PR #1407)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-23T11:18:46Z",
+      "updated": "2026-11-23T11:39:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -400,22 +414,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1330,
-      "title": "QA follow-up: a one-day typo repeated in registry and expected JSON passes every festival gate for non-Purnima/Ekadashi rows (PR #1329)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa"
-      ],
-      "created": "2026-11-21T03:22:10Z",
-      "updated": "2026-11-21T03:22:10Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1324,
       "title": "notify: muhurat_computed says 'N auspicious of M days' with the non-avoid count, which now over-counts versus the finder page (follow-up to #1322)",
       "ask": "",
@@ -727,9 +725,13 @@
       "area": "ANALYTICS",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-11-20T02:04:36Z",
-      "updated": "2026-11-20T02:04:36Z",
+      "updated": "2026-11-23T11:37:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1073,7 +1075,7 @@
         "growth"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-23T03:42:03Z",
+      "updated": "2026-11-23T04:36:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2676,7 +2678,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-23T04:30:23Z",
+    "generated_at": "2026-11-23T14:37:39Z",
     "window_days": 28,
     "open_now": 163,
     "merged_open_hours": 24,
@@ -3096,15 +3098,15 @@
       },
       {
         "date": "2026-11-23",
-        "opened": 2,
-        "closed": 2,
+        "opened": 5,
+        "closed": 5,
         "net": 0,
         "open_end": 163,
         "opened_by": {
-          "loop": 2
+          "loop": 5
         },
         "closed_by": {
-          "close-on-evidence": 2
+          "close-on-evidence": 5
         }
       }
     ],
@@ -4446,6 +4448,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1330,
+        "closed_at": "2026-11-23T10:30:06Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1331,
         "closed_at": "2026-11-21T04:50:51Z",
         "closer": "close-on-evidence"
@@ -4499,15 +4506,25 @@
         "number": 1390,
         "closed_at": "2026-11-23T02:02:07Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1400,
+        "closed_at": "2026-11-23T04:43:08Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1402,
+        "closed_at": "2026-11-23T04:43:04Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 2,
+    "timelines_read": 3,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 99,
-          "median_h": 0.6,
+          "merged": 95,
+          "median_h": 0.7,
           "p90_h": 8.1,
           "max_h": 46.6,
           "slowest": [
@@ -4629,9 +4646,9 @@
           ]
         },
         "28d": {
-          "merged": 334,
-          "median_h": 0.6,
-          "p90_h": 15.1,
+          "merged": 335,
+          "median_h": 0.5,
+          "p90_h": 14.3,
           "max_h": 122.1,
           "slowest": [
             {
@@ -4920,8 +4937,8 @@
         },
         {
           "date": "2026-11-23",
-          "merged": 3,
-          "median_h": 1.1,
+          "merged": 6,
+          "median_h": 1.0,
           "max_h": 5.9
         }
       ],
@@ -4929,36 +4946,50 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 47.3,
+          "age_h": 57.4,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 44.2,
+          "age_h": 54.4,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 32.8,
+          "age_h": 42.9,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 18.6,
+          "age_h": 28.7,
           "waiting_on": "merge",
           "why": null
         },
         {
-          "number": 1403,
-          "title": "ask and panchang declare tool_error {tool, kind} on their error branch (#1402)",
-          "age_h": 0.5,
-          "waiting_on": "merge",
+          "number": 1405,
+          "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
+          "age_h": 7.3,
+          "waiting_on": "gates / QA",
+          "why": null
+        },
+        {
+          "number": 1410,
+          "title": "Name the days totals.non_probe covers (#1408)",
+          "age_h": 2.3,
+          "waiting_on": "gates / QA",
+          "why": null
+        },
+        {
+          "number": 1412,
+          "title": "dosha checks declare tool_error {tool, kind} on their error branch (closes #1411, refs #10",
+          "age_h": 0.0,
+          "waiting_on": "gates / QA",
           "why": null
         }
       ]

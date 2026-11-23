@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-23T04:33:31Z",
+ "generated_at": "2026-11-23T14:40:51Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1182,15 +1182,7 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": [
-   {
-    "kind": "outbox-noise",
-    "level": "amber",
-    "title": "Loop comment noise rose: duplicate rate 3.4% -> 5.2%",
-    "detail": "1096 loop comments in the last 7d against 1116 the window before; busiest threads #1212 (33), #1132 (21), #1170 (20). 26 went through scripts/outbox.py. Read the busiest thread first: a repeat there is a poster with no change rule. Lever: route that poster through outbox.py (dedupe + daily cap), or lower its kind's cap in KINDS. Never raise a cap to quiet this finding.",
-    "where": "/admin/ops"
-   }
-  ]
+  "ops_findings": []
  },
  "error_themes": {
   "grounding": 33,
@@ -1481,9 +1473,9 @@
   }
  ],
  "outcome_counts": {
-  "UNSCOREABLE": 9,
   "OTHER": 3,
   "MISS": 1,
+  "UNSCOREABLE": 9,
   "PENDING": 21,
   "PASS": 3,
   "HIT": 1
