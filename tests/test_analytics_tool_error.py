@@ -10,8 +10,9 @@ Params are exactly {tool, kind}, a fixed vocabulary. Never the error text: the
 `compute` message is `f"Couldn't compute: {err}"` and a rejected-date message
 echoes what was typed, so either would carry a name or a birth date into GA4.
 
-Only these two tools are wired. matching, muhurat and the dosha checks render
-their errors differently and are not covered here, and `llm_degraded` is not
+Only these two tools are wired here. The dosha checks (#1411) and matching (#1416) have
+their own files (tests/test_analytics_tool_error_dosha.py, ..._matching.py); muhurat is
+not wired. `llm_degraded` is not
 declared at all: both numerology pages are pure maths, no LLM, so it could never
 fire. Mutation rows: scripts/mutations/2026_11_22_1390_tool_error.py.
 """

@@ -11,6 +11,17 @@
 <div class="bg-rose-50 border border-rose-200 p-6 text-rose-900 text-sm leading-relaxed">
   {{ message }}
 </div>
+{# #1416: the failure half of matching_completed. error.html is shared by outlook, panchang,
+   ask, rashifal, dasha, today, subscribe, kundli and the main.py handlers, so this is opt-in:
+   only a route that sets `tool_error_tool` declares it (today only /matching). The kind is
+   re-checked against its one-word whitelist. Params are exactly {tool, kind}; never `message`
+   or `title` (they echo the typed place), the names or the birth data. Counts error RENDERS:
+   a reload re-fires it. #}
+{% if tool_error_tool == 'matching' %}
+{% from "_analytics_event.html" import analytics_event %}
+{% set _k = tool_error_kind if tool_error_kind in ['validation'] else 'validation' %}
+{{ analytics_event('tool_error', {'tool': 'matching', 'kind': _k}) }}
+{% endif %}
 
 <a href="/"
    class="inline-flex items-center gap-1 mt-6 text-bhagya-sindoor hover:text-bhagya-sindoor font-semibold text-sm">

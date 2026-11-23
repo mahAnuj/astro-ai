@@ -201,8 +201,10 @@ def test_error_renders_carry_no_marker(client, match_llm):
     # them the rule is "no COMPLETION marker, and tool_error is the only one" (the tool_error
     # contract itself is tests/test_analytics_tool_error.py). The rest still carry nothing.
     # #1411: the three dosha checks join them (tests/test_analytics_tool_error_dosha.py).
-    numerology_errors = [bad_numerology, bad_num_date, bad_compat, bad_compat_date, *bad_dosha]
-    others = [bad_matching, bad_event, bad_date]
+    # #1416: so does /matching (tests/test_analytics_tool_error_matching.py).
+    numerology_errors = [bad_numerology, bad_num_date, bad_compat, bad_compat_date,
+                         bad_matching, *bad_dosha]
+    others = [bad_event, bad_date]
     for r in [*numerology_errors, *others]:
         assert r.status_code >= 400, r.status_code
     for r in numerology_errors:
