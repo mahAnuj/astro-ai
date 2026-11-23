@@ -200,12 +200,14 @@ def test_error_renders_carry_no_marker(client, match_llm):
     # #1390: the two numerology tools now declare `tool_error` on a refused submit, so for
     # them the rule is "no COMPLETION marker, and tool_error is the only one" (the tool_error
     # contract itself is tests/test_analytics_tool_error.py). The rest still carry nothing.
-    numerology_errors = [bad_numerology, bad_num_date, bad_compat, bad_compat_date]
-    others = [bad_matching, bad_event, bad_date, *bad_dosha]
+    # #1411: the three dosha checks join them (tests/test_analytics_tool_error_dosha.py).
+    numerology_errors = [bad_numerology, bad_num_date, bad_compat, bad_compat_date, *bad_dosha]
+    others = [bad_matching, bad_event, bad_date]
     for r in [*numerology_errors, *others]:
         assert r.status_code >= 400, r.status_code
     for r in numerology_errors:
         assert markers(r, "numerology_completed") == [], "an error render declared a completion"
+        assert markers(r, "dosha_check_completed") == [], "an error render declared a completion"
         assert [n for n, _ in markers(r)] == ["tool_error"], markers(r)
     for r in others:
         assert markers(r) == [], f"an error render declared {markers(r)}"

@@ -30,14 +30,18 @@
   </header>
 
   <section class="bg-white border border-bhagya-line p-6 sm:p-8">
-    {% if error %}
-    <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
-    {% endif %}
-
     {# #1226: the analytics `tool` value, derived from form_action like _guides below.
        An unrecognised action emits no attribute, so analytics.js sends nothing. #}
     {% set _tool = {'/manglik-check': 'manglik', '/sade-sati-check': 'sade_sati',
                     '/kaal-sarp-check': 'kaal_sarp'}.get(form_action) %}
+    {% if error %}
+    <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
+    {# #1411: the failure half of dosha_check_completed. `error_kind` is the route's fixed word, re-checked here; params are exactly {tool, kind}; never the error text (it echoes the place), the name or the birth data. Counts error RENDERS: a reload re-fires it. #}
+    {% from "_analytics_event.html" import analytics_event %}
+    {% set _k = error_kind if error_kind in ['validation'] else 'validation' %}
+    {% if _tool %}{{ analytics_event('tool_error', {'tool': _tool, 'kind': _k}) }}{% endif %}
+    {% endif %}
+
     <form method="post" action="{{ form_action }}"{% if _tool %} data-tool="{{ _tool }}"{% endif %} class="space-y-4">
       <div>
         <label for="name" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Your name (optional)</label>
