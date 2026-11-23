@@ -73,6 +73,25 @@ SUPPRESSIBLE = frozenset({
 })
 
 
+def is_probe(request) -> bool:
+    """True when the request carries the verifier's exact probe header.
+
+    Split out of `suppresses_owner_alert` so a call site that is NOT an alert
+    (the `form_kundli` event, #1272) can mark a probe row without restating the
+    rule. The header is unauthenticated: a forged one only reclassifies a row as
+    a probe, which is harmless for a count and is why this may never gate
+    anything that carries PII. Never raises; anything unexpected is False.
+    """
+    try:
+        return request.headers.get(PROBE_HEADER) == PROBE_VALUE
+    except Exception:
+        # No `.headers`, a mapping that raises, `request` is None. A module
+        # that decides whether to notify must never be the reason a request
+        # 500s, and `notify` itself already log-and-swallows for the same
+        # reason.
+        return False
+
+
 def suppresses_owner_alert(request, event: str) -> bool:
     """True only when `event` is PII-free AND the request is a declared probe.
 
@@ -86,11 +105,4 @@ def suppresses_owner_alert(request, event: str) -> bool:
     """
     if event not in SUPPRESSIBLE:
         return False
-    try:
-        return request.headers.get(PROBE_HEADER) == PROBE_VALUE
-    except Exception:
-        # No `.headers`, a mapping that raises, `request` is None. A module
-        # that decides whether to notify must never be the reason a request
-        # 500s, and `notify` itself already log-and-swallows for the same
-        # reason.
-        return False
+    return is_probe(request)
