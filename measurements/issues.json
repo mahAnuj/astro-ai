@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-23T14:37:39Z",
+  "generated_at": "2026-11-23T19:32:27Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 163,
+  "open": 164,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 71,
+    "UNCLASSIFIED": 73,
     "INFRA": 16,
     "OPS": 11,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "ANALYTICS": 6,
+    "ANALYTICS": 5,
     "SEO": 4,
     "CORPUS": 4,
     "TOKENS": 3,
@@ -35,15 +35,15 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 52,
+    "bug": 54,
     "untyped": 39,
-    "enhancement": 31,
+    "enhancement": 30,
     "chore": 25,
     "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 104,
+    "unset": 105,
     "medium": 27,
     "high": 20,
     "low": 12
@@ -51,18 +51,50 @@
   "blocked": 10,
   "rows": [
     {
-      "number": 1411,
-      "title": "analytics: tool_error marker on dosha_check_form.html (slice of #1070 row 8)",
+      "number": 1419,
+      "title": "QA follow-up: vedic_reference.md rule 20 still calls comparable severity classical (PR #1418, #1376)",
       "ask": "",
-      "area": "ANALYTICS",
-      "type": "enhancement",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
       "priority": "unset",
       "labels": [
-        "enhancement",
-        "growth"
+        "bug",
+        "qa"
       ],
-      "created": "2026-11-23T13:10:52Z",
-      "updated": "2026-11-23T13:12:59Z",
+      "created": "2026-11-23T19:30:41Z",
+      "updated": "2026-11-23T19:30:49Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1415,
+      "title": "QA follow-up: agent-merge head_checks drops an older red gates while a newer same-SHA pr-gates run has no gates job yet (PR #1405)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-23T14:48:09Z",
+      "updated": "2026-11-23T14:48:09Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1413,
+      "title": "QA follow-up: agent-merge sweep exits on an unreadable head_checks instead of skipping (PR #1405)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-23T14:39:25Z",
+      "updated": "2026-11-23T14:39:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -81,23 +113,6 @@
       "created": "2026-11-23T11:31:06Z",
       "updated": "2026-11-23T11:31:06Z",
       "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 1408,
-      "title": "QA follow-up: kundli-submissions totals.non_probe covers fewer days than fresh_generations (PR #1407)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-23T11:18:46Z",
-      "updated": "2026-11-23T11:39:07Z",
-      "blocked": false,
       "needs_evidence": false
     },
     {
@@ -156,10 +171,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-22T10:39:20Z",
-      "updated": "2026-11-22T10:39:20Z",
+      "updated": "2026-11-23T19:31:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1075,7 +1093,7 @@
         "growth"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-23T04:36:57Z",
+      "updated": "2026-11-23T15:02:19Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2678,9 +2696,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-23T14:37:39Z",
+    "generated_at": "2026-11-23T19:32:27Z",
     "window_days": 28,
-    "open_now": 163,
+    "open_now": 164,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3098,15 +3116,16 @@
       },
       {
         "date": "2026-11-23",
-        "opened": 5,
-        "closed": 5,
-        "net": 0,
-        "open_end": 163,
+        "opened": 9,
+        "closed": 8,
+        "net": 1,
+        "open_end": 164,
         "opened_by": {
-          "loop": 5
+          "loop": 9
         },
         "closed_by": {
-          "close-on-evidence": 5
+          "close-on-evidence": 6,
+          "other": 2
         }
       }
     ],
@@ -4516,6 +4535,21 @@
         "number": 1402,
         "closed_at": "2026-11-23T04:43:04Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1408,
+        "closed_at": "2026-11-23T14:56:07Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1411,
+        "closed_at": "2026-11-23T14:54:57Z",
+        "closer": "other"
+      },
+      {
+        "number": 1416,
+        "closed_at": "2026-11-23T16:24:48Z",
+        "closer": "other"
       }
     ],
     "timelines_read": 3,
@@ -4523,7 +4557,7 @@
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 95,
+          "merged": 98,
           "median_h": 0.7,
           "p90_h": 8.1,
           "max_h": 46.6,
@@ -4646,8 +4680,8 @@
           ]
         },
         "28d": {
-          "merged": 335,
-          "median_h": 0.5,
+          "merged": 337,
+          "median_h": 0.6,
           "p90_h": 14.3,
           "max_h": 122.1,
           "slowest": [
@@ -4937,8 +4971,8 @@
         },
         {
           "date": "2026-11-23",
-          "merged": 6,
-          "median_h": 1.0,
+          "merged": 9,
+          "median_h": 0.6,
           "max_h": 5.9
         }
       ],
@@ -4946,50 +4980,43 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 57.4,
+          "age_h": 62.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 54.4,
+          "age_h": 59.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 42.9,
+          "age_h": 47.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 28.7,
+          "age_h": 33.6,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1405,
           "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 7.3,
-          "waiting_on": "gates / QA",
+          "age_h": 12.2,
+          "waiting_on": "merge",
           "why": null
         },
         {
-          "number": 1410,
-          "title": "Name the days totals.non_probe covers (#1408)",
-          "age_h": 2.3,
-          "waiting_on": "gates / QA",
-          "why": null
-        },
-        {
-          "number": 1412,
-          "title": "dosha checks declare tool_error {tool, kind} on their error branch (closes #1411, refs #10",
-          "age_h": 0.0,
-          "waiting_on": "gates / QA",
+          "number": 1418,
+          "title": "matching.html stops listing comparable-severity Manglik cancellation as a classical one (#",
+          "age_h": 0.3,
+          "waiting_on": "merge",
           "why": null
         }
       ]
