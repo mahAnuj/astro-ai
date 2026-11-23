@@ -103,6 +103,7 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
     from zoneinfo import ZoneInfo as _ZoneInfo
     resolved_city = (city or "").strip()
     error = False
+    error_kind = None  # #1402: fixed word for the tool_error marker, never the exception
     if not resolved_city:
         saved = load_collection(request).active
         resolved_city = (saved.birth_place if saved else "") or "Mumbai, India"
@@ -119,6 +120,7 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
         p = compute_panchang(chart_for_loc, when=_target_moment(chart_for_loc))
     except Exception:
         error = True
+        error_kind = "geocode"  # the requested city failed; a Mumbai fallback is tried below
         resolved_city = "Mumbai, India"
         try:
             chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
@@ -130,6 +132,7 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
         except Exception:
             p = None
             chart_for_loc = None
+            error_kind = "compute"  # the fallback failed too, so no panchang at all
     if target_date is None:
         # Nothing resolved at all, so there is no city timezone to ask. India
         # is the audience and the default city's zone, as `llm.today_anchor`
@@ -228,6 +231,7 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
             # both Makar Sankranti and Pongal; the singular lookup showed one.
             "festivals_on_date": festivals.festivals_for_date(target_date),
             "error": error,
+            "error_kind": error_kind,
             "lang": lang,
         },
     )
