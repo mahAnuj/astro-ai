@@ -150,6 +150,10 @@
 
     {% if error %}
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
+    {# #1402: the failure half of ask_answered. `error_kind` is the route's own fixed word and is re-checked here, so a stray value can only ever read as 'validation'; never the error text or the question. Params are exactly {tool, kind}. #}
+    {% from "_analytics_event.html" import analytics_event %}
+    {% set _k = error_kind if error_kind in ['validation', 'quota'] else 'validation' %}
+    {{ analytics_event('tool_error', {'tool': 'ask', 'kind': _k}) }}
     {% elif answer_expired %}
     {# #1087: the link carried a question but the saved answer is gone (answers
        are kept briefly and are cleared when the site updates). Not an error
