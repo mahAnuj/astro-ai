@@ -71,6 +71,7 @@ async def numerology_calculate(
                 "page_meta": "Free numerology calculator using the Chaldean system.",
                 "reading": None,
                 "error": "Please enter your full name (at least 2 characters).",
+                "error_kind": "validation",
                 "lang": _lang(request),
             },
             status_code=400,
@@ -104,6 +105,7 @@ async def numerology_calculate(
                 "page_meta": "Free numerology calculator using the Chaldean system.",
                 "reading": None,
                 "error": _msg,
+                "error_kind": "validation",
                 "lang": _lang(request),
             },
             status_code=400,
@@ -123,7 +125,8 @@ async def numerology_calculate(
             request, "numerology.html",
             {"page_title": "Free Numerology Calculator",
              "page_meta": "Free numerology calculator using the Chaldean system.",
-             "reading": None, "error": str(err), "lang": _lang(request)},
+             "reading": None, "error": str(err), "error_kind": "validation",
+             "lang": _lang(request)},
             status_code=400,
         )
     except Exception as err:  # noqa: BLE001
@@ -132,7 +135,8 @@ async def numerology_calculate(
             request, "numerology.html",
             {"page_title": "Free Numerology Calculator",
              "page_meta": "Free numerology calculator.", "reading": None,
-             "error": f"Couldn't compute: {err}", "lang": _lang(request)},
+             "error": f"Couldn't compute: {err}", "error_kind": "compute",
+             "lang": _lang(request)},
             status_code=400,
         )
     try:
@@ -208,6 +212,7 @@ async def numerology_compat_compute(
              "page_meta": "Free numerology compatibility check.",
              "compat": None,
              "error": "Please enter both names (at least 2 characters each).",
+             "error_kind": "validation",
              "lang": _lang(request)},
             status_code=400,
         )
@@ -226,6 +231,7 @@ async def numerology_compat_compute(
              "page_meta": "Free numerology compatibility check.",
              "compat": None,
              "error": f"Please enter {_which} in English letters — the Chaldean letter values are defined over the Latin alphabet, so a name written in Devanagari or another script can't be scored.",
+             "error_kind": "validation",
              "lang": _lang(request)},
             status_code=400,
         )
@@ -240,7 +246,8 @@ async def numerology_compat_compute(
             request, "numerology_compat.html",
             {"page_title": "Numerology Compatibility",
              "page_meta": "Free numerology compatibility check.",
-             "compat": None, "error": str(err), "lang": _lang(request)},
+             "compat": None, "error": str(err), "error_kind": "validation",
+             "lang": _lang(request)},
             status_code=400,
         )
     except Exception as err:  # noqa: BLE001
@@ -251,6 +258,7 @@ async def numerology_compat_compute(
              "page_meta": "Free numerology compatibility check.",
              "compat": None,
              "error": f"Couldn't compute: {err}",
+             "error_kind": "compute",
              "lang": _lang(request)},
             status_code=400,
         )

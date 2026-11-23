@@ -128,6 +128,10 @@ ALLOWED_CALL_EXPRESSIONS = frozenset({
     # in routes/muhurat.py. None is read from a form field as typed.
     "score_band", "muhurat_searched.event_type", "muhurat_searched.days",
     "muhurat_searched.valid_count", "muhurat_searched.mode",
+    # #1390: `_k` is set in numerology.html and numerology_compat.html to one of two
+    # literals ('validation' or 'compute'): the route's `error_kind` only if it is in that
+    # list, else 'compute'. It is never the error text, which can echo a name or a date.
+    "_k",
 })
 
 #: The same for the two inline blocks base.html builds for analytics.js.
