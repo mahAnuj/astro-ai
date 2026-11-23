@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-23T01:28:43Z",
+ "generated_at": "2026-11-23T04:31:18Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-23",
  "today": {
-  "growth": 1,
-  "other": 2,
+  "growth": 2,
+  "other": 5,
   "exempt": 0,
-  "share": 0.333
+  "share": 0.286
  },
  "this_week": {
-  "growth": 1,
-  "other": 2,
+  "growth": 2,
+  "other": 5,
   "exempt": 0,
-  "share": 0.333
+  "share": 0.286
  },
  "this_month": {
-  "growth": 35,
-  "other": 252,
+  "growth": 36,
+  "other": 255,
   "exempt": 0,
-  "share": 0.122
+  "share": 0.124
  },
  "must_pick_growth": true,
  "days": [
@@ -116,13 +116,69 @@
   },
   {
    "date": "2026-11-23",
-   "growth": 1,
-   "other": 2,
+   "growth": 2,
+   "other": 5,
    "exempt": 0,
-   "share": 0.333
+   "share": 0.286
   }
  ],
  "cycles": [
+  {
+   "run": 45106814394,
+   "started": "2026-11-23T03:34:52Z",
+   "issue": 1402,
+   "title": "analytics: tool_error on /ask and /panchang error branches (#1070 slice 6)",
+   "class": "growth",
+   "outcome": "pr open",
+   "pr": 1403,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45098144730,
+   "started": "2026-11-23T02:05:05Z",
+   "issue": 1364,
+   "title": "analytics: no export sizes automated traffic \u2014 the Direct channel (311 sessions, 19% engaged) cannot be split into bots and readers",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1398,
+   "agents": {
+    "qa": 2
+   }
+  },
+  {
+   "run": 45095501722,
+   "started": "2026-11-23T01:36:25Z",
+   "issue": 1208,
+   "title": "analytics: export LLM fallbacks (and reasons) in llm-usage.json \u2014 errors per route are unmeasured in three consecutive analyst reports",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1399,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45086210134,
+   "started": "2026-11-23T00:00:05Z",
+   "issue": 1364,
+   "title": "analytics: no export sizes automated traffic \u2014 the Direct channel (311 sessions, 19% engaged) cannot be split into bots and readers",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1398,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1
+   }
+  },
   {
    "run": 45078856360,
    "started": "2026-11-22T22:38:30Z",
@@ -151,7 +207,7 @@
    "issue": 1390,
    "title": "analytics: tool_error event for numerology and numerology-compat error branches (slice 5 of #1070)",
    "class": "growth",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1391,
    "agents": null
   },
@@ -161,7 +217,7 @@
    "issue": 1390,
    "title": "analytics: tool_error event for numerology and numerology-compat error branches (slice 5 of #1070)",
    "class": "growth",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1391,
    "agents": null
   },
@@ -531,49 +587,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 44868228537,
-   "started": "2026-11-21T04:53:03Z",
-   "issue": 1320,
-   "title": "QA follow-up: /manglik-check card still calls manglik-remedies 'Classical practices' (PR #1319)",
-   "class": "other",
-   "outcome": "pr open",
-   "pr": 1335,
-   "agents": null
-  },
-  {
-   "run": 44867228276,
-   "started": "2026-11-21T04:40:11Z",
-   "issue": 1325,
-   "title": "muhurat landing pages show the next 5 valid dates for New Delhi, plus today/tomorrow check (slice 6 of #1017, R9)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1328,
-   "agents": {
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44863097138,
-   "started": "2026-11-21T03:49:56Z",
-   "issue": 1331,
-   "title": "QA follow-up: kalabhairav-jayanti copy says Ashtami runs dusk to midnight, but on 2026-12-01 it ends 23:14 (PR #1329)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1333,
-   "agents": null
-  },
-  {
-   "run": 44860923821,
-   "started": "2026-11-21T03:24:02Z",
-   "issue": 1325,
-   "title": "muhurat landing pages show the next 5 valid dates for New Delhi, plus today/tomorrow check (slice 6 of #1017, R9)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1328,
-   "agents": null
   }
  ],
  "goals": {
@@ -902,28 +915,28 @@
   }
  },
  "metrics": {
-  "gsc_clicks_28d": 399,
-  "gsc_impressions_28d": 29930,
-  "ga4_users_28d": 716,
-  "ga4_new_users_28d": 668,
-  "ga4_sessions_28d": 803,
+  "gsc_clicks_28d": 403,
+  "gsc_impressions_28d": 30291,
+  "ga4_users_28d": 699,
+  "ga4_new_users_28d": 650,
+  "ga4_sessions_28d": 795,
   "objective_top5": 1,
-  "growth_share_today": 0.333,
-  "growth_share_week": 0.333,
-  "growth_share_month": 0.122
+  "growth_share_today": 0.286,
+  "growth_share_week": 0.286,
+  "growth_share_month": 0.124
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-23",
-   "progress": 0.555,
-   "detail": "1 of 3 cycles on growth, target 60%",
+   "progress": 0.477,
+   "detail": "2 of 7 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.152,
+   "progress": 0.203,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -934,8 +947,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.333,
-     "progress": 0.761,
+     "current": 0.286,
+     "progress": 0.593,
      "basis": "growth_share_week"
     },
     {
@@ -949,8 +962,8 @@
       1076,
       1107
      ],
-     "current": 399,
-     "progress": 0.0,
+     "current": 403,
+     "progress": 0.19,
      "basis": "gsc_clicks_28d"
     },
     {
@@ -964,8 +977,8 @@
       1076,
       1107
      ],
-     "current": 29930,
-     "progress": 0.0,
+     "current": 30291,
+     "progress": 0.23,
      "basis": "gsc_impressions_28d"
     },
     {
@@ -1004,7 +1017,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.257,
+   "progress": 0.238,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1019,8 +1032,8 @@
       1107,
       1071
      ],
-     "current": 29930,
-     "progress": 0.248,
+     "current": 30291,
+     "progress": 0.336,
      "basis": "gsc_impressions_28d"
     },
     {
@@ -1035,8 +1048,8 @@
       1073,
       1075
      ],
-     "current": 716,
-     "progress": 0.229,
+     "current": 699,
+     "progress": 0.073,
      "basis": "ga4_users_28d"
     },
     {
@@ -1047,8 +1060,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.122,
-     "progress": 0.293,
+     "current": 0.124,
+     "progress": 0.304,
      "basis": "growth_share_month"
     }
    ]
@@ -1056,7 +1069,7 @@
   "quarterly": {
    "label": "Quarterly goals",
    "period": "2026-Q4",
-   "progress": 0.051,
+   "progress": 0.04,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1086,8 +1099,8 @@
       1071,
       1072
      ],
-     "current": 399,
-     "progress": 0.074,
+     "current": 403,
+     "progress": 0.092,
      "basis": "gsc_clicks_28d"
     },
     {
@@ -1098,8 +1111,8 @@
      "baseline": 640,
      "target": 1000,
      "issues": [],
-     "current": 668,
-     "progress": 0.078,
+     "current": 650,
+     "progress": 0.028,
      "basis": "ga4_new_users_28d"
     }
    ]
@@ -1112,53 +1125,53 @@
    "queries": [
     {
      "query": "rahu mahadasha ketu antardasha",
-     "impressions": 389,
-     "position": 6.4
+     "impressions": 379,
+     "position": 6.3
     },
     {
      "query": "sun debilitated in which sign",
-     "impressions": 349,
-     "position": 7.4
+     "impressions": 352,
+     "position": 7.3
     },
     {
      "query": "sun is debilitated in which sign",
-     "impressions": 154,
-     "position": 6.4
+     "impressions": 156,
+     "position": 6.2
     },
     {
      "query": "jupiter in 10th house",
-     "impressions": 116,
-     "position": 11.0
+     "impressions": 118,
+     "position": 10.9
     },
     {
      "query": "yes",
-     "impressions": 111,
+     "impressions": 112,
      "position": 3.6
     },
     {
      "query": "10th lord in 6th house",
-     "impressions": 97,
-     "position": 8.6
+     "impressions": 99,
+     "position": 8.7
     },
     {
      "query": "sun debilitated sign",
-     "impressions": 86,
+     "impressions": 83,
      "position": 5.9
     },
     {
-     "query": "sun debilitated",
-     "impressions": 80,
-     "position": 8.9
-    },
-    {
      "query": "guru in 10th house",
-     "impressions": 79,
+     "impressions": 81,
      "position": 8.8
     },
     {
+     "query": "sun debilitated",
+     "impressions": 75,
+     "position": 8.9
+    },
+    {
      "query": "rahu mahadasha and ketu antardasha",
-     "impressions": 66,
-     "position": 7.0
+     "impressions": 64,
+     "position": 6.9
     }
    ],
    "goals": []
@@ -1171,6 +1184,7 @@
   1076,
   1107,
   1341,
-  1390
+  1400,
+  1402
  ]
 }

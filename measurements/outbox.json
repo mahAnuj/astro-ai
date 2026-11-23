@@ -1,26 +1,26 @@
 {
- "generated_at": "2026-11-23T01:30:38Z",
+ "generated_at": "2026-11-23T04:33:11Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-16T01:30:38Z",
-  "end": "2026-11-23T01:30:38Z",
-  "loop_comments": 1106,
-  "on_prs": 631,
-  "prs": 105,
-  "on_issues": 475,
-  "issues": 132,
+  "start": "2026-11-16T04:33:11Z",
+  "end": "2026-11-23T04:33:11Z",
+  "loop_comments": 1096,
+  "on_prs": 625,
+  "prs": 104,
+  "on_issues": 471,
+  "issues": 131,
   "comments_per_pr": 6.01,
   "comments_per_issue": 3.6,
-  "duplicates": 61,
-  "duplicate_rate_pct": 5.5,
+  "duplicates": 57,
+  "duplicate_rate_pct": 5.2,
   "sent_by_kind": {
    "growth-goals": 5,
    "growth-goals-issue": 2,
-   "ops-finding": 14,
+   "ops-finding": 15,
    "ops-finding-issue": 4
   },
-  "via_outbox": 25,
+  "via_outbox": 26,
   "top_threads": [
    {
     "on": "pr",
@@ -39,17 +39,17 @@
    },
    {
     "on": "pr",
-    "number": 1121,
-    "comments": 16
+    "number": 1169,
+    "comments": 15
    },
    {
     "on": "pr",
-    "number": 1169,
+    "number": 1173,
     "comments": 15
    }
   ],
   "owner_touched": {
-   "prs": 105,
+   "prs": 104,
    "owner_commented": 8,
    "pct": 8
   },
@@ -60,15 +60,15 @@
   }
  },
  "previous": {
-  "start": "2026-11-09T01:30:38Z",
-  "end": "2026-11-16T01:30:38Z",
-  "loop_comments": 1109,
+  "start": "2026-11-09T04:33:11Z",
+  "end": "2026-11-16T04:33:11Z",
+  "loop_comments": 1116,
   "on_prs": 647,
-  "prs": 121,
-  "on_issues": 462,
-  "issues": 134,
-  "comments_per_pr": 5.35,
-  "comments_per_issue": 3.45,
+  "prs": 124,
+  "on_issues": 469,
+  "issues": 138,
+  "comments_per_pr": 5.22,
+  "comments_per_issue": 3.4,
   "duplicates": 38,
   "duplicate_rate_pct": 3.4,
   "sent_by_kind": {},
@@ -86,11 +86,6 @@
    },
    {
     "on": "pr",
-    "number": 815,
-    "comments": 15
-   },
-   {
-    "on": "pr",
     "number": 1000,
     "comments": 15
    },
@@ -98,12 +93,17 @@
     "on": "pr",
     "number": 1002,
     "comments": 15
+   },
+   {
+    "on": "pr",
+    "number": 1063,
+    "comments": 14
    }
   ],
   "owner_touched": {
-   "prs": 121,
-   "owner_commented": 8,
-   "pct": 7
+   "prs": 124,
+   "owner_commented": 7,
+   "pct": 6
   }
  },
  "kinds": {
