@@ -1,35 +1,28 @@
 {
- "generated_at": "2026-11-23T14:38:35Z",
+ "generated_at": "2026-11-23T19:33:47Z",
  "target": 0.6,
  "week": "2026-W48",
- "today_date": "2026-11-23",
+ "today_date": "2026-11-24",
  "today": {
-  "growth": 3,
-  "other": 10,
+  "growth": 0,
+  "other": 1,
   "exempt": 0,
-  "share": 0.231
+  "share": 0.0
  },
  "this_week": {
-  "growth": 3,
-  "other": 10,
+  "growth": 6,
+  "other": 12,
   "exempt": 0,
-  "share": 0.231
+  "share": 0.333
  },
  "this_month": {
-  "growth": 37,
-  "other": 260,
+  "growth": 40,
+  "other": 262,
   "exempt": 0,
-  "share": 0.125
+  "share": 0.132
  },
  "must_pick_growth": true,
  "days": [
-  {
-   "date": "2026-11-10",
-   "growth": 0,
-   "other": 10,
-   "exempt": 0,
-   "share": 0.0
-  },
   {
    "date": "2026-11-11",
    "growth": 0,
@@ -116,26 +109,95 @@
   },
   {
    "date": "2026-11-23",
-   "growth": 3,
-   "other": 10,
+   "growth": 6,
+   "other": 11,
    "exempt": 0,
-   "share": 0.231
+   "share": 0.353
+  },
+  {
+   "date": "2026-11-24",
+   "growth": 0,
+   "other": 1,
+   "exempt": 0,
+   "share": 0.0
   }
  ],
  "cycles": [
+  {
+   "run": 45243851912,
+   "started": "2026-11-23T18:57:38Z",
+   "issue": 1376,
+   "title": "QA follow-up: matching.html still lists comparable severity among implemented cancellations; decision record misdescribes the gate split (PR #1375, #1369)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1418,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45212007413,
+   "started": "2026-11-23T16:02:46Z",
+   "issue": 1416,
+   "title": "analytics: tool_error marker on /matching error render (slice of #1070 row 8)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1417,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45199625786,
+   "started": "2026-11-23T14:56:31Z",
+   "issue": 1416,
+   "title": "analytics: tool_error marker on /matching error render (slice of #1070 row 8)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1417,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45197422578,
+   "started": "2026-11-23T14:44:25Z",
+   "issue": 1411,
+   "title": "analytics: tool_error marker on dosha_check_form.html (slice of #1070 row 8)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1412,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45196244694,
+   "started": "2026-11-23T14:37:43Z",
+   "issue": 1408,
+   "title": "QA follow-up: kundli-submissions totals.non_probe covers fewer days than fresh_generations (PR #1407)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1410,
+   "agents": {
+    "qa": 1
+   }
+  },
   {
    "run": 45170093706,
    "started": "2026-11-23T11:59:32Z",
    "issue": 1411,
    "title": "analytics: tool_error marker on dosha_check_form.html (slice of #1070 row 8)",
    "class": "growth",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1412,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1
-   }
+   "agents": null
   },
   {
    "run": 45166220020,
@@ -143,14 +205,9 @@
    "issue": 1408,
    "title": "QA follow-up: kundli-submissions totals.non_probe covers fewer days than fresh_generations (PR #1407)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1410,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 2
-   }
+   "agents": null
   },
   {
    "run": 45164212084,
@@ -538,60 +595,6 @@
    "agents": {
     "qa": 1
    }
-  },
-  {
-   "run": 44917254081,
-   "started": "2026-11-21T15:04:56Z",
-   "issue": 1017,
-   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1350,
-   "agents": null
-  },
-  {
-   "run": 44905954944,
-   "started": "2026-11-21T12:51:20Z",
-   "issue": 1017,
-   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1348,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44902743294,
-   "started": "2026-11-21T12:12:30Z",
-   "issue": 1332,
-   "title": "lunar_observances emits Drik's Gauna Ekadashi date for 2027-01 and 2028-11; shukla_tithi_date mis-resolves Margashirsha 2027",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1345,
-   "agents": {
-    "qa": 2
-   }
-  },
-  {
-   "run": 44895992203,
-   "started": "2026-11-21T10:47:22Z",
-   "issue": 1017,
-   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1348,
-   "agents": null
-  },
-  {
-   "run": 44890430479,
-   "started": "2026-11-21T09:37:04Z",
-   "issue": 1332,
-   "title": "lunar_observances emits Drik's Gauna Ekadashi date for 2027-01 and 2028-11; shukla_tithi_date mis-resolves Margashirsha 2027",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1345,
-   "agents": null
   }
  ],
  "goals": {
@@ -926,22 +929,22 @@
   "ga4_new_users_28d": 650,
   "ga4_sessions_28d": 795,
   "objective_top5": 1,
-  "growth_share_today": 0.231,
-  "growth_share_week": 0.231,
-  "growth_share_month": 0.125
+  "growth_share_today": 0.0,
+  "growth_share_week": 0.333,
+  "growth_share_month": 0.132
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
-   "period": "2026-11-23",
-   "progress": 0.385,
-   "detail": "3 of 13 cycles on growth, target 60%",
+   "period": "2026-11-24",
+   "progress": 0.0,
+   "detail": "0 of 1 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.163,
+   "progress": 0.236,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -952,8 +955,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.231,
-     "progress": 0.396,
+     "current": 0.333,
+     "progress": 0.761,
      "basis": "growth_share_week"
     },
     {
@@ -1022,7 +1025,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.239,
+   "progress": 0.252,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1065,8 +1068,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.125,
-     "progress": 0.309,
+     "current": 0.132,
+     "progress": 0.348,
      "basis": "growth_share_month"
     }
    ]
@@ -1188,7 +1191,6 @@
   1070,
   1076,
   1107,
-  1341,
-  1411
+  1341
  ]
 }
