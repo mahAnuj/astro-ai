@@ -79,6 +79,46 @@ exit 0 or 1. It is deliberately structured like `scripts/verify_festivals.py`.
       silently. Dates shared with a `festival_registry` festival are printed for
       information; they are expected (Guru Purnima IS a Purnima), not failures.
 
+  Gate E - independent per-row tithi check at each row's own window (#1330).
+      The five late-year rows #1326 added (kartika-purnima, kalabhairav-jayanti,
+      vivah-panchami, gita-jayanti, dattatreya-jayanti) were each shifted one day,
+      in the registry AND the expected table together, and the rest of the gates
+      stayed green: 19 of 30 shifted entries (15 entries x -1/+1) shipped. Gate 1
+      of `verify_festivals.py` compares two hand transcriptions with each other,
+      Gates 2/3 there are arithmetic on dates with no ephemeris, and Gate B above
+      reads only rules containing "Purnima" or "Amavasya" (so an Ekadashi row is
+      never looked at) and deliberately lets a later-window row sit one day EARLY
+      (so a dattatreya -1 passes). None of them can see the tithi.
+
+      This gate computes the tithi for each of the five rows at the row's own
+      `observance_window` and requires the computed day list to EQUAL the registry
+      date: exact, no +-1 band, no tie-break. The four shukla rows call
+      `lunar_dates.shukla_tithi_date`; dattatreya-jayanti is pinned to the sunrise
+      engine although its window is pradosh, because that holds 3 of 3 years today
+      and is what closes the Gate B -1 survivors - a future year where pradosh
+      legitimately picks the day before must fail loud and be adjudicated against
+      the almanac, not widened.
+
+      Kalabhairav Jayanti (Krishna Ashtami of purnimanta Margashirsha, i.e. amanta
+      Kartika) is the one row `lunar_dates` does not cover, so it is computed here.
+      "Evening" is read as SUNSET TO CIVIL MIDNIGHT of the day. THAT BOUND IS AN
+      UNSOURCED READING OF DRIK, NOT A RULE: knowledge/*.md does not rule on it
+      (consistent with #1331), and it is tuned only by 3 of 3 years agreeing with
+      the shipped dates. It is exact, and three cases pin it (pyswisseph, Lahiri,
+      New Delhi, 1-minute scan):
+        2026: Ashtami 12-01 00:13 -> 12-01 23:15. If "after sunset" ran to the next
+              sunrise, 2026-11-30 would qualify too (13 minutes inside that night).
+        2027: Ashtami 11-20 19:18 -> 11-21 17:21; sunset 11-21 17:25 - Ashtami ends
+              4 minutes BEFORE it, so 11-21 does not qualify.
+        2028: Ashtami 11-09 15:41 -> 11-10 14:04.
+      Two candidate evenings (a vriddhi Ashtami spanning two evenings, or a future
+      year) is a FAIL that prints both days: the registry rule does not pick between
+      them, read the almanac. A 4-minute margin is not flakiness if it flips: it is
+      the registry's own claim sitting on a knife edge.
+
+      If pyswisseph is absent the import above raises and the script exits non-zero.
+      Do not add an ImportError skip - a silent pass is the failure this guards.
+
 Note the counts printed by Gate A are OUTPUT, not targets. If a count disagrees
 with what you expected, report the disagreement — do not tune the engine to hit
 a number, and do not adjust the sunrise rule to make one date match.
@@ -90,15 +130,22 @@ from __future__ import annotations
 
 import sys
 from collections import Counter
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
+from typing import NamedTuple
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+# Gate E needs the ephemeris directly. A missing pyswisseph must raise here and
+# exit non-zero; never wrap this in a try/except ImportError.
+import swisseph as swe  # noqa: E402
+
 from astro_ai import festival_registry  # noqa: E402
+from astro_ai import lunar_dates as ld  # noqa: E402
 from astro_ai import lunar_observances as lo  # noqa: E402
+from astro_ai.chart import _sunrise_sunset, _tithi_at  # noqa: E402
 
 YEARS = list(festival_registry.DATA_YEARS)
 SPAN_START = date(min(YEARS), 1, 1)
@@ -578,6 +625,145 @@ def gate_d_slugs(rows: list[tuple[date, lo.Observance]]) -> list[str]:
 
 
 # --------------------------------------------------------------------------
+# Gate E - independent per-row tithi check at each row's own window (#1330)
+# --------------------------------------------------------------------------
+
+class IndependentRow(NamedTuple):
+    slug: str
+    window_prefix: str   # the registry's observance_window must still start with this
+    kind: str            # "shukla" (lunar_dates) or "krishna_evening" (computed below)
+    month: str           # nija month name, AMANTA (Kartika, not purnimanta Margashirsha)
+    tithi: int           # 1..15 within the paksha
+    reckoning: str       # "sunrise" / "madhyahna" for shukla; "evening" for krishna_evening
+
+
+# Tithi index 22 is Krishna Ashtami, 0-based as `chart._tithi_at` returns it
+# (0 = Shukla Pratipada .. 14 = Purnima, 15 + 7 = Krishna Ashtami).
+_KRISHNA_ASHTAMI = 22
+
+INDEPENDENT_ROWS: tuple[IndependentRow, ...] = (
+    IndependentRow("vivah-panchami", "madhyahna", "shukla", "Margashirsha", 5, "madhyahna"),
+    IndependentRow("gita-jayanti", "sunrise", "shukla", "Margashirsha", 11, "sunrise"),
+    IndependentRow("kartika-purnima", "sunrise", "shukla", "Kartika", 15, "sunrise"),
+    # Pinned to the sunrise engine although the window is pradosh: 3 of 3 years
+    # agree (2026 is the kshaya gap rule's begin-day = the registry's pradosh day).
+    # It closes the Gate B -1 survivors. A year where pradosh legitimately takes
+    # the day before must fail loud and go to the almanac, not widen this.
+    IndependentRow("dattatreya-jayanti", "pradosh", "shukla", "Margashirsha", 15, "sunrise"),
+    # Purnimanta Margashirsha = amanta Kartika; the rule text says so.
+    IndependentRow("kalabhairav-jayanti", "evening", "krishna_evening", "Kartika", 8, "evening"),
+)
+
+
+def _tithi_idx_at(instant: datetime) -> int:
+    ut = instant.astimezone(ld._UTC)
+    jd = swe.julday(ut.year, ut.month, ut.day, ut.hour + ut.minute / 60 + ut.second / 3600)
+    return _tithi_at(jd)[0]
+
+
+def _evening_samples(day: date) -> tuple[int, int]:
+    """Tithi index at sunset of `day`, and at 23:59 IST of `day`.
+
+    The evening is sunset to civil midnight (an UNSOURCED reading of Drik, see the
+    module docstring). Two end-point samples are exact, not an approximation: the
+    shortest tithi (~19 h) is longer than the evening window (< 8 h), so a tithi
+    running at any instant of the window is running at one of its two ends.
+    """
+    _sunrise, sunset = _sunrise_sunset(day, ld._DELHI_LAT, ld._DELHI_LON, ld._DELHI_TZ)
+    midnight = datetime.combine(day, time(23, 59), tzinfo=ld._DELHI_TZ)
+    return _tithi_idx_at(sunset), _tithi_idx_at(midnight)
+
+
+def _krishna_ashtami_in_evening(day: date) -> bool:
+    return _KRISHNA_ASHTAMI in _evening_samples(day)
+
+
+def _evening_ashtami_days(year: int, month: str) -> list[date]:
+    """Days of `year` whose evening carries Krishna Ashtami of nija amanta `month`.
+
+    Krishna Ashtami falls about 22 days into an amanta month, so the scan starts at
+    start + 13 and runs to the month's end. `lunar_dates` is not generalised to
+    Krishna (its docstring forbids it without a purnimanta/amanta argument).
+    """
+    days: list[date] = []
+    for m in ld._nija_months(year, month):
+        day = m.start + timedelta(days=13)
+        while day <= m.end:
+            if day.year == year and _krishna_ashtami_in_evening(day):
+                days.append(day)
+            day += timedelta(days=1)
+    return sorted(days)
+
+
+def _independent_days(row: IndependentRow, year: int) -> list[date]:
+    if row.kind == "krishna_evening":
+        return _evening_ashtami_days(year, row.month)
+    picked = ld.shukla_tithi_date(year, row.month, row.tithi, row.reckoning)
+    return [] if picked is None else [picked]
+
+
+def gate_e_independent_window_check() -> list[str]:
+    failures: list[str] = []
+    by_slug = {f.slug: f for f in festival_registry.FESTIVALS}
+
+    checked = 0
+    for row in INDEPENDENT_ROWS:
+        row_fest = by_slug.get(row.slug)
+        if row_fest is None:
+            # A renamed slug must fail, not silently stop being checked.
+            failures.append(f"{row.slug}: no such row in festival_registry")
+            continue
+        if not row_fest.observance_window.startswith(row.window_prefix):
+            failures.append(
+                f"{row.slug}: observance_window is now {row_fest.observance_window!r}, "
+                f"this gate recorded it as starting {row.window_prefix!r}. Re-derive "
+                "what the row is reckoned at before editing INDEPENDENT_ROWS."
+            )
+            continue
+        for year in YEARS:
+            iso = row_fest.dates.get(year)
+            if not iso:
+                failures.append(f"{row.slug} {year}: no date in the registry")
+                continue
+            try:
+                shipped = date.fromisoformat(iso)
+            except ValueError:
+                failures.append(f"{row.slug} {year}: unparseable date {iso!r}")
+                continue
+            checked += 1
+
+            computed = _independent_days(row, year)
+            ok = computed == [shipped]
+            shown = ", ".join(d.isoformat() for d in computed) or "(none)"
+            print(f"  {'ok  ' if ok else 'FAIL'} {row.slug:<20} {iso} -> computed "
+                  f"{shown}  [{row.reckoning}]")
+            if ok:
+                continue
+            if not computed:
+                failures.append(
+                    f"{row.slug} {year} ({iso}): the computation found no day "
+                    f"({row.month} tithi {row.tithi} at {row.reckoning}) - a kshaya "
+                    "month or tithi is a FAIL here, never a skip; read the almanac."
+                )
+            elif len(computed) > 1:
+                failures.append(
+                    f"{row.slug} {year} ({iso}): {len(computed)} candidate days "
+                    f"({shown}). The registry rule does not pick between them; read "
+                    "the almanac."
+                )
+            else:
+                failures.append(
+                    f"{row.slug} {year}: registry says {iso}, the tithi at the row's "
+                    f"own window ({row.reckoning}) lands on {shown}. Exact equality, "
+                    "no +-1 band; check the almanac before changing either."
+                )
+
+    print(f"  {checked} row-year(s) checked "
+          f"({len(INDEPENDENT_ROWS)} rows x {len(YEARS)} year(s))")
+    return failures
+
+
+# --------------------------------------------------------------------------
 
 def main() -> int:
     print("Lunar observance verification")
@@ -606,6 +792,8 @@ def main() -> int:
          _gate_c),
         ("Gate D - slug uniqueness and registry date collisions",
          lambda: gate_d_slugs(rows)),
+        ("Gate E - independent per-row tithi check at each row's own window",
+         gate_e_independent_window_check),
     ]
 
     all_failures: list[str] = []
