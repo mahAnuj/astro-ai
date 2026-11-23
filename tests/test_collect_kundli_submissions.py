@@ -87,6 +87,50 @@ def test_a_zero_sum_beside_an_unknown_day_is_unknown_not_zero():
 def test_semantics_says_what_the_number_is_not():
     s = _doc([_ev("2026-11-23", probe=False)])["semantics"]
     assert "FRESH" in s and "303" in s and "probe" in s and "NOT 1:1" in s
+    assert "non_probe_dates" in s
+
+
+def test_non_probe_dates_names_the_days_non_probe_sums_over():
+    """#1408: fresh covers both days, non_probe only the marked one; the dates say which."""
+    t = _doc([_ev("2026-11-22"), _ev("2026-11-23", probe=False)], days=2)["totals"]
+    assert t["non_probe_dates"] == ["2026-11-23"]
+    assert t["fresh_generations"] == 2 and t["non_probe"] == 1 and t["probe_days_unknown"] == 1
+
+
+def test_non_probe_dates_skips_unmarked_empty_and_capped_days(monkeypatch):
+    monkeypatch.setattr(ck, "_cap", lambda: 4)
+    evts = [_ev("2026-11-18", probe=False),                        # marked
+            # 11-19 has no events at all: unknown
+            _ev("2026-11-20", probe=True), _ev("2026-11-20", lang="en"),  # mixed: unknown split
+            _ev("2026-11-21", probe=True),                          # marked
+            *[_ev("2026-11-22", "page_view")] * 4,                  # at the cap: unknown
+            _ev("2026-11-23", "page_view")]                         # known zero kundli, marked (vacuously)
+    doc = _doc(evts, days=6)
+    assert doc["totals"]["non_probe_dates"] == ["2026-11-18", "2026-11-21", "2026-11-23"]
+
+
+def test_totals_probe_and_non_probe_are_exactly_the_sum_over_non_probe_dates():
+    doc = _doc([_ev("2026-11-21", probe=True), _ev("2026-11-21", probe=False),
+                _ev("2026-11-22", lang="en"),
+                _ev("2026-11-23", probe=False), _ev("2026-11-23", probe=False)], days=3)
+    t = doc["totals"]
+    listed = [_row(doc, d) for d in t["non_probe_dates"]]
+    assert t["non_probe_dates"] == ["2026-11-21", "2026-11-23"]
+    assert t["non_probe"] == sum(r["non_probe"] for r in listed) == 3
+    assert t["probe"] == sum(r["probe"] for r in listed) == 1
+    assert t["fresh_generations"] == 5  # the unmarked day is in this one and in neither of the others
+
+
+def test_no_marked_day_gives_empty_dates_and_null_totals():
+    t = _doc([_ev("2026-11-22", lang="en"), _ev("2026-11-23", lang="en")], days=2)["totals"]
+    assert t["non_probe_dates"] == []
+    assert t["probe"] is None and t["non_probe"] is None
+
+
+def test_the_analyst_definition_names_non_probe_dates():
+    """Drift guard: the reader of this file is the analyst; it must be told which days to use."""
+    md = (ROOT / ".claude/agents/analyst.md").read_text()
+    assert "non_probe_dates" in md
 
 
 def test_the_output_carries_no_email_identity_rashi_or_city(tmp_path):

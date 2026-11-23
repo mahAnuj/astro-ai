@@ -111,8 +111,17 @@ arrived yet. State the exact window on every number you report.
    second page. A step losing most of its traffic outranks a keyword opportunity.
    Read `measurements/kundli-submissions.json` when it exists (#1272): per-day FRESH kundli
    generations from the server's event log, with `probe` split once marked. Compare it to GA4
-   `kundli_generated` only via `non_probe`, quote its `semantics`, never call it a 303 count,
-   and put the ratio on #1068.
+   `kundli_generated` only over days listed in `totals.non_probe_dates` (#1408: `totals.non_probe`
+   and `totals.probe` sum only those days, while `totals.fresh_generations` sums every known day,
+   so a ratio taken from the wrong pair reads low with no failing check). `ga4-events.json` gives
+   `kundli_generated` as one total over its own window and nothing per day. Take the ratio only
+   when every date of that GA4 window is in `non_probe_dates`, and then sum `days[].non_probe`
+   over exactly that window. Otherwise write "ratio not computable" on #1068, naming the GA4
+   window and the marked dates. Do not promise a date it becomes possible. Compare the GA4
+   window's start with the collector file's `window.from`: the default GA4 events window is
+   28 days ending 3 days back, so it starts 30 days back, which is before `window.from` even
+   when the collector runs with `--days 30` (its maximum), so that window never fits. Never divide `totals.fresh_generations` by GA4. Quote `semantics`,
+   never call it a 303 count.
 
 ## Levers — report every one, every run (owner, 2026-11-15)
 

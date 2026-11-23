@@ -18,7 +18,10 @@ file as `semantics`, so a reader cannot take the count for something it is not.
 PROBES. verify-production sends `X-Bhagya-Probe` through `POST /reading` -> 303 -> GET
 /kundli, so each push adds one `form_kundli` row that GA4 never sees (curl runs no JS).
 Since #1272 the event carries `probe` (bool); days before that deploy have no marker, so
-their `probe` and `non_probe` are null, never a guess. Compare to GA4 only via `non_probe`.
+their `probe` and `non_probe` are null, never a guess. `totals.probe` and `totals.non_probe`
+cover ONLY the days listed in `totals.non_probe_dates` (days whose events all carry the
+marker), while `totals.fresh_generations` covers every known day (#1408), so never put one
+beside the other. Compare to GA4 only over days inside `non_probe_dates`.
 
 NULL IS UNKNOWN, NEVER 0. `storage.get` returns None for both "no blob" and "GCS error", so
 a day with no events of ANY type cannot be told from a read failure and is null. A day at
@@ -57,8 +60,13 @@ SEMANTICS = (
     "POST /reading 303) only on a FRESH, successful generation. It is NOT 1:1 with "
     "POST /reading 303 responses: it excludes cache hits (SQLite and durable GCS), "
     "re-views, failed generations and the snapshot route (#967). It includes "
-    "verify-production probes (X-Bhagya-Probe) unless `probe` is non-null; compare to GA4 "
-    "`kundli_generated` only via `non_probe`. Days are UTC. null = unknown, never 0 "
+    "verify-production probes (X-Bhagya-Probe) unless `probe` is non-null. `totals.probe` and "
+    "`totals.non_probe` cover ONLY the days listed in `totals.non_probe_dates` (days whose "
+    "events all carry the probe marker); `totals.fresh_generations` covers every known day, "
+    "so never put one beside the other. Compare to GA4 `kundli_generated` only over days "
+    "inside `non_probe_dates`; those two totals are null (not 0) when the listed days sum to 0 "
+    "and some other day is unknown, so use the sum of `days[].non_probe` over "
+    "`non_probe_dates`. Days are UTC. null = unknown, never 0 "
     "(no events of any type that day, or the day hit the per-day event cap, or the "
     "events predate the probe marker)."
 )
@@ -73,6 +81,8 @@ def _cap() -> int:
 
 
 def _read(days: int) -> list[dict]:
+    # Runs on UTC hosts (CI); `events.recent` windows on the host's LOCAL date, which the
+    # UTC day labels in `build` assume is the same day (#1408, accepted and documented).
     if not os.environ.get("BHAGYA_STORAGE_BUCKET"):
         raise RuntimeError("BHAGYA_STORAGE_BUCKET is unset")
     from astro_ai import events  # noqa: PLC0415 -- needs src/ on the path
@@ -123,6 +133,8 @@ def build(evts: list[dict], now: datetime, days: int) -> dict:
             "fresh_generations": _sum([r["fresh_generations"] for r in rows]),
             "probe": _sum([r["probe"] for r in rows]),
             "non_probe": _sum([r["non_probe"] for r in rows]),
+            # The days probe/non_probe sum over; fresh_generations sums every known day (#1408).
+            "non_probe_dates": [r["date"] for r in rows if r["non_probe"] is not None],
             "days_unknown": sum(1 for r in rows if r["fresh_generations"] is None),
             "probe_days_unknown": sum(1 for r in rows if r["probe"] is None),
         },
@@ -155,7 +167,8 @@ def main(argv: list[str], reader: Callable[[int], list[dict]] = _read,
     Path(a.out).write_text(json.dumps(doc, indent=1) + "\n")
     t = doc["totals"]
     print(f"kundli submissions {doc['window']['from']}..{doc['window']['to']}: "
-          f"fresh {t['fresh_generations']}, non-probe {t['non_probe']}, "
+          f"fresh {t['fresh_generations']}, non-probe {t['non_probe']} "
+          f"over {len(t['non_probe_dates'])} days, "
           f"days unknown {t['days_unknown']}, probe-unmarked days {t['probe_days_unknown']}")
     return 0
 
