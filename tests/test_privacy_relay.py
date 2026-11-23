@@ -212,7 +212,11 @@ _ALLOWED = {
                     # of a bool, ints and kind->count; the matched terms go to
                     # the log, never here, and the seeker's name is stripped
                     # before matching (tests/test_reading_quality.py).
-                    "q_ok", "q_sections", "q_banned", "q_words", "q_manglik"},
+                    "q_ok", "q_sections", "q_banned", "q_words", "q_manglik",
+                    # #1272: a bool, True when verify-production's probe header
+                    # was sent. Not identity; it lets the submissions export
+                    # separate probes from visitors.
+                    "probe"},
     "form_matching": {"groom_key", "bride_key", "total_score", "verdict", "lang", "model"},
 }
 _FORBIDDEN_IN_EVENT = [
