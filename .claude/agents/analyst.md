@@ -109,6 +109,10 @@ arrived yet. State the exact window on every number you report.
 
 5. **Funnel.** Where kundli, matching and numerology users drop out (#1070 instruments them). Landing → form → result →
    second page. A step losing most of its traffic outranks a keyword opportunity.
+   Read `measurements/kundli-submissions.json` when it exists (#1272): per-day FRESH kundli
+   generations from the server's event log, with `probe` split once marked. Compare it to GA4
+   `kundli_generated` only via `non_probe`, quote its `semantics`, never call it a 303 count,
+   and put the ratio on #1068.
 
 ## Levers — report every one, every run (owner, 2026-11-15)
 

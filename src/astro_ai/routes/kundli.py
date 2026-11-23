@@ -410,6 +410,10 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             data={
                 "identity": _id_full[:32],
                 "lang": lang, "model": _model,
+                # #1272: a non-PII bool, always written so key presence means
+                # "marked". verify-production's probe fires this event too and
+                # GA4 never sees curl, so the count exports split on it.
+                "probe": probe.is_probe(request),
                 "rashi_lagna": _lagna, "rashi_moon": _moon, "rashi_sun": _sun,
                 **coarse_profile(details.birth_date, details.birth_place),
                 **_q,
