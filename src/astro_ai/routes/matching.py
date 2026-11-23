@@ -87,7 +87,14 @@ async def matching_result(
         return templates.TemplateResponse(
             request,
             "error.html",
-            {"title": "Couldn't compute the charts", "message": str(err)},
+            {
+                "title": "Couldn't compute the charts", "message": str(err),
+                # #1416: opt-in for error.html's tool_error marker (the template is
+                # shared by a dozen routes). Fixed words, never str(err) -- it echoes
+                # the typed place. Every ChartError here is a refused input, so the
+                # one kind is `validation`.
+                "tool_error_tool": "matching", "tool_error_kind": "validation",
+            },
             status_code=400,
         )
 
