@@ -117,10 +117,10 @@ arrived yet. State the exact window on every number you report.
    `kundli_generated` as one total over its own window and nothing per day. Take the ratio only
    when every date of that GA4 window is in `non_probe_dates`, and then sum `days[].non_probe`
    over exactly that window. Otherwise write "ratio not computable" on #1068, naming the GA4
-   window and the marked dates. Do not promise a date it becomes possible: the default GA4
-   events window is 28 days ending 3 days back (it starts 30 days back), and the collector
-   holds 30 days ending today, so that window never fits inside it; only a GA4 window of 26
-   days or fewer can. Never divide `totals.fresh_generations` by GA4. Quote `semantics`,
+   window and the marked dates. Do not promise a date it becomes possible. Compare the GA4
+   window's start with the collector file's `window.from`: the default GA4 events window is
+   28 days ending 3 days back, so it starts 30 days back, which is before `window.from` even
+   when the collector runs with `--days 30` (its maximum), so that window never fits. Never divide `totals.fresh_generations` by GA4. Quote `semantics`,
    never call it a 303 count.
 
 ## Levers — report every one, every run (owner, 2026-11-15)

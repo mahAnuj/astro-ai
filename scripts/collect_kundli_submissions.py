@@ -64,8 +64,9 @@ SEMANTICS = (
     "`totals.non_probe` cover ONLY the days listed in `totals.non_probe_dates` (days whose "
     "events all carry the probe marker); `totals.fresh_generations` covers every known day, "
     "so never put one beside the other. Compare to GA4 `kundli_generated` only over days "
-    "inside `non_probe_dates`; those two totals are null while any day of the window is "
-    "unknown, so sum `days[].non_probe` over the listed days instead. Days are UTC. null = unknown, never 0 "
+    "inside `non_probe_dates`; those two totals are null (not 0) when the listed days sum to 0 "
+    "and some other day is unknown, so use the sum of `days[].non_probe` over "
+    "`non_probe_dates`. Days are UTC. null = unknown, never 0 "
     "(no events of any type that day, or the day hit the per-day event cap, or the "
     "events predate the probe marker)."
 )
