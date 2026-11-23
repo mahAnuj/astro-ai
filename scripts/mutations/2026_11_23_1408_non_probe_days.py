@@ -17,7 +17,8 @@ MUTATIONS = [
      '    "`totals.non_probe` cover ONLY the days listed in `totals.non_probe_dates` (days whose "\n'
      '    "events all carry the probe marker); `totals.fresh_generations` covers every known day, "\n'
      '    "so never put one beside the other. Compare to GA4 `kundli_generated` only over days "\n'
-     '    "inside `non_probe_dates`. Days are UTC. null = unknown, never 0 "\n',
+     '    "inside `non_probe_dates`; those two totals are null while any day of the window is "\n'
+     '    "unknown, so sum `days[].non_probe` over the listed days instead. Days are UTC. null = unknown, never 0 "\n',
      '    "verify-production probes (X-Bhagya-Probe) unless `probe` is non-null. "\n'
      '    "Days are UTC. null = unknown, never 0 "\n',
      "test_semantics_says_what_the_number_is_not"),
