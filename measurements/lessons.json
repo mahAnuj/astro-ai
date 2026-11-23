@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-23T01:30:56Z",
+ "generated_at": "2026-11-23T04:33:31Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1125,6 +1125,13 @@
     "themes": [
      "grounding"
     ]
+   },
+   {
+    "number": 1398,
+    "at": "2026-11-23T02:32:22Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1398#issuecomment-7090017082",
+    "summary": "QA: FAIL \u2014 verified at `c9a7c3397dfe6a72a8822b09c944b2e3cadfdba2` DEFECT: scripts/fetch_ga4.py --cohorts docstring says 'The analyst runs it itself (.claude/agents/analyst.md) when /tmp/measure/ga4-cohorts.json is absent' but analyst.md has no such instruction (grep cohorts = 0; the commit/PR body s",
+    "themes": []
    }
   ],
   "reverts": [],
@@ -1179,8 +1186,8 @@
    {
     "kind": "outbox-noise",
     "level": "amber",
-    "title": "Loop comment noise rose: duplicate rate 3.4% -> 5.5%",
-    "detail": "1106 loop comments in the last 7d against 1109 the window before; busiest threads #1212 (33), #1132 (21), #1170 (20). 25 went through scripts/outbox.py. Read the busiest thread first: a repeat there is a poster with no change rule. Lever: route that poster through outbox.py (dedupe + daily cap), or lower its kind's cap in KINDS. Never raise a cap to quiet this finding.",
+    "title": "Loop comment noise rose: duplicate rate 3.4% -> 5.2%",
+    "detail": "1096 loop comments in the last 7d against 1116 the window before; busiest threads #1212 (33), #1132 (21), #1170 (20). 26 went through scripts/outbox.py. Read the busiest thread first: a repeat there is a poster with no change rule. Lever: route that poster through outbox.py (dedupe + daily cap), or lower its kind's cap in KINDS. Never raise a cap to quiet this finding.",
     "where": "/admin/ops"
    }
   ]

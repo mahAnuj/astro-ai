@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-23T01:27:57Z",
+  "generated_at": "2026-11-23T04:30:23Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 163,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 70,
+    "UNCLASSIFIED": 71,
     "INFRA": 16,
     "OPS": 11,
     "REDESIGN": 10,
-    "ANALYTICS": 7,
     "FEATURE": 7,
+    "ANALYTICS": 6,
     "SEO": 4,
     "CORPUS": 4,
     "TOKENS": 3,
@@ -51,6 +51,42 @@
   "blocked": 9,
   "rows": [
     {
+      "number": 1402,
+      "title": "analytics: tool_error on /ask and /panchang error branches (#1070 slice 6)",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle",
+        "growth"
+      ],
+      "created": "2026-11-23T03:41:57Z",
+      "updated": "2026-11-23T04:29:31Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1400,
+      "title": "seo (sub-issue of #1065): re-capture `measurements/index-status.json` and diff it against the 2026-11-19 capture, so the analyst can say whether Google re-crawled the edited top pages",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "seo",
+        "provenance:trusted",
+        "growth"
+      ],
+      "created": "2026-11-23T02:49:55Z",
+      "updated": "2026-11-23T03:13:34Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
       "number": 1396,
       "title": "QA follow-up: result.html:564 says classical texts require comparable severity for Manglik mutual cancellation (PR #1394, #1377)",
       "ask": "",
@@ -63,23 +99,6 @@
       ],
       "created": "2026-11-22T22:59:19Z",
       "updated": "2026-11-22T22:59:19Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1390,
-      "title": "analytics: tool_error event for numerology and numerology-compat error branches (slice 5 of #1070)",
-      "ask": "",
-      "area": "ANALYTICS",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "provenance:trusted",
-        "growth"
-      ],
-      "created": "2026-11-22T18:39:33Z",
-      "updated": "2026-11-22T23:39:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -173,10 +192,12 @@
       "type": "untyped",
       "priority": "unset",
       "labels": [
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-22T00:57:54Z",
-      "updated": "2026-11-23T00:05:55Z",
+      "updated": "2026-11-23T02:40:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -272,7 +293,7 @@
         "chore"
       ],
       "created": "2026-11-21T16:27:59Z",
-      "updated": "2026-11-21T16:38:30Z",
+      "updated": "2026-11-23T01:36:12Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -860,19 +881,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1208,
-      "title": "analytics: export LLM fallbacks (and reasons) in llm-usage.json — errors per route are unmeasured in three consecutive analyst reports",
-      "ask": "",
-      "area": "ANALYTICS",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-11-18T02:46:01Z",
-      "updated": "2026-11-18T03:05:23Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1207,
       "title": "[INFRA] agent-queue drains into a cycle for a target another cycle just finished; the stand-down leaves no comment, so the carrier reports failure and retries",
       "ask": "",
@@ -1065,7 +1073,7 @@
         "growth"
       ],
       "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-22T18:38:37Z",
+      "updated": "2026-11-23T03:42:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1086,7 +1094,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T10:10:28Z",
-      "updated": "2026-11-19T22:35:03Z",
+      "updated": "2026-11-23T03:13:35Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2668,7 +2676,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-23T01:27:57Z",
+    "generated_at": "2026-11-23T04:30:23Z",
     "window_days": 28,
     "open_now": 163,
     "merged_open_hours": 24,
@@ -3088,12 +3096,16 @@
       },
       {
         "date": "2026-11-23",
-        "opened": 0,
-        "closed": 0,
+        "opened": 2,
+        "closed": 2,
         "net": 0,
         "open_end": 163,
-        "opened_by": {},
-        "closed_by": {}
+        "opened_by": {
+          "loop": 2
+        },
+        "closed_by": {
+          "close-on-evidence": 2
+        }
       }
     ],
     "merged_open": [],
@@ -4294,6 +4306,11 @@
         "closer": "prioritise"
       },
       {
+        "number": 1208,
+        "closed_at": "2026-11-23T02:18:17Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1211,
         "closed_at": "2026-11-18T03:44:54Z",
         "closer": "main-red-report"
@@ -4477,14 +4494,19 @@
         "number": 1386,
         "closed_at": "2026-11-22T18:46:49Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1390,
+        "closed_at": "2026-11-23T02:02:07Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 2,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 100,
+          "merged": 99,
           "median_h": 0.6,
           "p90_h": 8.1,
           "max_h": 46.6,
@@ -4607,8 +4629,8 @@
           ]
         },
         "28d": {
-          "merged": 331,
-          "median_h": 0.5,
+          "merged": 334,
+          "median_h": 0.6,
           "p90_h": 15.1,
           "max_h": 122.1,
           "slowest": [
@@ -4898,45 +4920,45 @@
         },
         {
           "date": "2026-11-23",
-          "merged": 0,
-          "median_h": null,
-          "max_h": null
+          "merged": 3,
+          "median_h": 1.1,
+          "max_h": 5.9
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 44.3,
+          "age_h": 47.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 41.2,
+          "age_h": 44.2,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 29.7,
+          "age_h": 32.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 15.5,
+          "age_h": 18.6,
           "waiting_on": "merge",
           "why": null
         },
         {
-          "number": 1391,
-          "title": "numerology and numerology_compat declare tool_error {tool, kind} on a refused or failed su",
-          "age_h": 5.5,
-          "waiting_on": "gates / QA",
+          "number": 1403,
+          "title": "ask and panchang declare tool_error {tool, kind} on their error branch (#1402)",
+          "age_h": 0.5,
+          "waiting_on": "merge",
           "why": null
         }
       ]
