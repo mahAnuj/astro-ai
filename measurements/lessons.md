@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-22T22:40:59Z)
+# Lessons — last 30 days (generated 2026-11-23T01:30:56Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -24,20 +24,18 @@ deterministic, no LLM.
 - QA FAIL verdicts: 124
 - reverted commits on main: 0
 - failed verify-production runs: 9
-- ops findings now: 2
-  - [amber] loop-last-run-failed: agent-prioritise.yml: last run failed
-  - [amber] outbox-noise: Loop comment noise rose: duplicate rate 3.6% -> 5.6%
+- ops findings now: 1
+  - [amber] outbox-noise: Loop comment noise rose: duplicate rate 3.4% -> 5.5%
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 1, MISS 1, OTHER 3, PASS 3, PENDING 21, UNSCOREABLE 10
+counts: HIT 1, MISS 1, OTHER 3, PASS 3, PENDING 21, UNSCOREABLE 9
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: OTHER — BAR MET, not attributable to the CTA
 - #311: MISS — MISS
 - #329: UNSCOREABLE — UNSCOREABLE at this traffic: 3 vs 10
 - #338: PASS — PASS
 - #426: PENDING — pending — scoreable from 2026-12-03
-- #493: UNSCOREABLE — UNSCORED — the measured event has not happened yet
 - #508: PENDING — pending — scoreable from 2026-12-04
 - #513: UNSCOREABLE — unscoreable at this traffic
 - #514: UNSCOREABLE — unscoreable at this traffic

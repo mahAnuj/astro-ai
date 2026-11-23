@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T22:40:59Z",
+ "generated_at": "2026-11-23T01:30:56Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1177,17 +1177,10 @@
   ],
   "ops_findings": [
    {
-    "kind": "loop-last-run-failed",
-    "level": "amber",
-    "title": "agent-prioritise.yml: last run failed",
-    "detail": "The schedule verdict is fine, so `agents.json` raised no alert, but the most recent run of each loop named here was red. A weekly loop is not re-run before its next slot, so nothing else will notice. Check whether a fix has landed since; if one has, dispatch the workflow.",
-    "where": "/admin/ops"
-   },
-   {
     "kind": "outbox-noise",
     "level": "amber",
-    "title": "Loop comment noise rose: duplicate rate 3.6% -> 5.6%",
-    "detail": "1114 loop comments in the last 7d against 1131 the window before; busiest threads #1212 (33), #1132 (21), #1170 (20). 25 went through scripts/outbox.py. Read the busiest thread first: a repeat there is a poster with no change rule. Lever: route that poster through outbox.py (dedupe + daily cap), or lower its kind's cap in KINDS. Never raise a cap to quiet this finding.",
+    "title": "Loop comment noise rose: duplicate rate 3.4% -> 5.5%",
+    "detail": "1106 loop comments in the last 7d against 1109 the window before; busiest threads #1212 (33), #1132 (21), #1170 (20). 25 went through scripts/outbox.py. Read the busiest thread first: a repeat there is a poster with no change rule. Lever: route that poster through outbox.py (dedupe + daily cap), or lower its kind's cap in KINDS. Never raise a cap to quiet this finding.",
     "where": "/admin/ops"
    }
   ]
@@ -1254,13 +1247,6 @@
    "headline": "pending \u2014 scoreable from 2026-12-03",
    "at": "2026-11-08T00:12:31Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/426#issuecomment-6714891661"
-  },
-  {
-   "number": 493,
-   "verdict": "UNSCOREABLE",
-   "headline": "UNSCORED \u2014 the measured event has not happened yet",
-   "at": "2026-10-23T23:46:57Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/493#issuecomment-6377014633"
   },
   {
    "number": 508,
@@ -1488,11 +1474,11 @@
   }
  ],
  "outcome_counts": {
+  "UNSCOREABLE": 9,
   "OTHER": 3,
   "MISS": 1,
-  "UNSCOREABLE": 10,
-  "PASS": 3,
   "PENDING": 21,
+  "PASS": 3,
   "HIT": 1
  },
  "competitor_patterns": [
