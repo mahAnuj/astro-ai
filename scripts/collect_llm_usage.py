@@ -22,6 +22,16 @@ BHAGYA_STORAGE_BUCKET and GCS read access; on any failure it writes nothing and
 exits 1, so the previous file stands and the detector reports it as stale rather
 than as zero.
 
+FALLBACKS (#1208). `fallbacks` and `fallback_reasons` are SITE-WIDE over the window:
+how many calls succeeded only after an upstream 429/error, and why
+("groq120|429_tpm": 3). They let the analyst name which provider failed and why
+instead of reporting an errors gap each night. Per-route fallbacks are NOT in the
+day blob, so they are not exported; that is a separate follow-up. `null` means
+UNKNOWN, never 0 (same rule as total_input_tokens). Invariant:
+sum(fallback_reasons.values()) <= fallbacks. A shortfall is a gap in the record,
+not a defect: days before #355 carry a count and no reasons, so fallbacks > 0 with
+{} is a real state, and fallbacks 0 with {} is a legitimate quiet window (not None).
+
 EXIT CODES: 0 written   1 could not read usage (nothing written)   2 bad args
 """
 
@@ -37,6 +47,10 @@ from typing import Callable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 DAYS = 7
+# fallback_reasons keys are "<provider>|<reason>"; bounded so a pathological blob
+# cannot bloat a file the commit job copies into measurements/.
+_REASON_KEY_MAX = 80
+_REASON_MAX_ENTRIES = 20
 
 
 def _measured_by_feature(usage: dict) -> dict[str, dict[str, int]]:
@@ -52,6 +66,30 @@ def _measured_by_feature(usage: dict) -> dict[str, dict[str, int]]:
         for k in acc:
             acc[k] += int(m.get(k) or 0)
     return out
+
+
+def _is_count(v: object) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _fallbacks(usage: dict) -> tuple[int | None, dict[str, int] | None]:
+    """(fallbacks, fallback_reasons) from `usage["aggregate"]`, or (None, None).
+
+    They live under range_summary()["aggregate"], NOT at the top of usage_summary():
+    reading usage.get("fallbacks") would export a permanent, silent 0 (#1208).
+    Absent or malformed is unknown (None), never 0."""
+    agg = usage.get("aggregate")
+    if not isinstance(agg, dict) or not _is_count(agg.get("fallbacks")):
+        return None, None
+    reasons: dict[str, int] = {}
+    raw = agg.get("fallback_reasons")
+    for k, n in (raw.items() if isinstance(raw, dict) else ()):
+        if not isinstance(n, (int, float)) or isinstance(n, bool):
+            continue
+        key = str(k)[:_REASON_KEY_MAX]
+        reasons[key] = reasons.get(key, 0) + max(int(n), 0)
+    top = sorted(reasons.items(), key=lambda kv: -kv[1])[:_REASON_MAX_ENTRIES]
+    return max(agg["fallbacks"], 0), dict(top)
 
 
 def slim(usage: dict, now: datetime) -> dict:
@@ -75,6 +113,7 @@ def slim(usage: dict, now: datetime) -> dict:
         routes.append(row)
     any_measured = any(r["measured_calls"] for r in routes)
     peak_meas = usage.get("peak_day_measured_tokens")
+    fallbacks, fallback_reasons = _fallbacks(usage)
     return {
         "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "days": int(usage.get("days") or DAYS),
@@ -90,13 +129,19 @@ def slim(usage: dict, now: datetime) -> dict:
         "peak_day": usage.get("peak_day"),
         "peak_day_measured_tokens": peak_meas,
         "peak_day_measured": usage.get("peak_day_measured") if peak_meas else None,
+        "fallbacks": fallbacks,
+        "fallback_reasons": fallback_reasons,
         "by_route": sorted(routes, key=lambda r: -r["calls"]),
     }
 
 
 def _summary(days: int) -> dict:
     from astro_ai import llm_stats  # noqa: PLC0415 -- needs src/ on the path
-    return llm_stats.usage_summary(days)
+    usage = llm_stats.usage_summary(days)
+    # usage_summary() has no fallbacks; range_summary()'s aggregate does (#1208).
+    # Raising here fails the whole collect, as a usage_summary failure does.
+    usage["aggregate"] = llm_stats.range_summary(days)["aggregate"]
+    return usage
 
 
 def main(argv: list[str], summary: Callable[[int], dict] = _summary,
@@ -123,7 +168,8 @@ def main(argv: list[str], summary: Callable[[int], dict] = _summary,
     peak = doc["peak_day_measured_tokens"] or doc["peak_day_tokens"]
     print(f"llm usage: {doc['total_calls']} calls, hit rate {doc['hit_rate_pct']}%, "
           f"input tokens {doc['total_input_tokens'] if doc['total_input_tokens'] is not None else 'unknown'}, "
-          f"peak day {peak} tokens ({doc['peak_day_measured'] or doc['peak_day']})")
+          f"peak day {peak} tokens ({doc['peak_day_measured'] or doc['peak_day']}), "
+          f"fallbacks {doc['fallbacks'] if doc['fallbacks'] is not None else 'unknown'}")
     return 0
 
 
