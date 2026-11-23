@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-23T19:32:27Z",
+  "generated_at": "2026-11-23T21:30:31Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 164,
@@ -177,7 +177,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-22T10:39:20Z",
-      "updated": "2026-11-23T19:31:28Z",
+      "updated": "2026-11-23T19:38:29Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -245,7 +245,7 @@
         "chore"
       ],
       "created": "2026-11-21T22:43:25Z",
-      "updated": "2026-11-21T22:43:25Z",
+      "updated": "2026-11-23T20:14:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -325,7 +325,7 @@
         "chore"
       ],
       "created": "2026-11-21T16:27:59Z",
-      "updated": "2026-11-23T01:36:12Z",
+      "updated": "2026-11-23T19:32:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -462,7 +462,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-21T00:25:35Z",
-      "updated": "2026-11-21T05:12:27Z",
+      "updated": "2026-11-23T19:36:15Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2696,7 +2696,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-23T19:32:27Z",
+    "generated_at": "2026-11-23T21:30:31Z",
     "window_days": 28,
     "open_now": 164,
     "merged_open_hours": 24,
@@ -4552,12 +4552,12 @@
         "closer": "other"
       }
     ],
-    "timelines_read": 3,
+    "timelines_read": 0,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 98,
+          "merged": 99,
           "median_h": 0.7,
           "p90_h": 8.1,
           "max_h": 46.6,
@@ -4680,7 +4680,7 @@
           ]
         },
         "28d": {
-          "merged": 337,
+          "merged": 338,
           "median_h": 0.6,
           "p90_h": 14.3,
           "max_h": 122.1,
@@ -4971,7 +4971,7 @@
         },
         {
           "date": "2026-11-23",
-          "merged": 9,
+          "merged": 10,
           "median_h": 0.6,
           "max_h": 5.9
         }
@@ -4980,42 +4980,35 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 62.3,
+          "age_h": 64.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 59.3,
+          "age_h": 61.2,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 47.8,
+          "age_h": 49.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 33.6,
+          "age_h": 35.6,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1405,
           "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 12.2,
-          "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1418,
-          "title": "matching.html stops listing comparable-severity Manglik cancellation as a classical one (#",
-          "age_h": 0.3,
+          "age_h": 14.2,
           "waiting_on": "merge",
           "why": null
         }

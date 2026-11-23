@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-23T19:33:47Z",
+ "generated_at": "2026-11-23T21:31:31Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-24",
@@ -129,14 +129,9 @@
    "issue": 1376,
    "title": "QA follow-up: matching.html still lists comparable severity among implemented cancellations; decision record misdescribes the gate split (PR #1375, #1369)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1418,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45212007413,
