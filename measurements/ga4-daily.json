@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-24",
-    "2026-11-20"
+    "2026-10-25",
+    "2026-11-21"
   ],
   "dimensions": [
     "date"
@@ -20,14 +20,6 @@
   "admin_status": "ok",
   "admin_note": "admin_sessions counts sessions landing on /admin*. #735 stopped analytics on /admin/* on 2026-11-12, so a nonzero day from then on is internal traffic leaking into the property.",
   "rows": [
-    {
-      "date": "2026-10-24",
-      "active_users": 12,
-      "sessions": 16,
-      "new_users": 9,
-      "returning_users": 4,
-      "admin_sessions": 1
-    },
     {
       "date": "2026-10-25",
       "active_users": 16,
@@ -242,6 +234,14 @@
       "sessions": 26,
       "new_users": 14,
       "returning_users": 3,
+      "admin_sessions": 0
+    },
+    {
+      "date": "2026-11-21",
+      "active_users": 16,
+      "sessions": 25,
+      "new_users": 14,
+      "returning_users": 4,
       "admin_sessions": 0
     }
   ]
