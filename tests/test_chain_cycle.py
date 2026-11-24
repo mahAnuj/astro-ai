@@ -270,6 +270,22 @@ def test_a_future_reading_at_stops_it():
     assert "no usable seven_day reading" in cc.quota_reason(with_at("not a time"), NOW)
 
 
+@pytest.mark.parametrize("bad_at", [12345, [1], {}])
+def test_a_non_string_timestamp_stops_the_chain_instead_of_crashing(bad_at):
+    """#1372: `_ts` called .replace on a non-string; the AttributeError escaped quota_reason's
+    except and killed the chain step instead of failing closed."""
+    unusable = "claude_usage.json has no usable seven_day reading"
+    stamped = [{**USAGE, "latest": {**USAGE["latest"], "at": bad_at}},
+               {**USAGE, "generated_at": 123}]
+    for u in stamped:
+        assert cc.quota_reason(u, NOW) == unusable
+        assert isinstance(decide(gh := FakeGh(), usage=u), str)
+        assert not gh.dispatched
+    # freshest() already catches TypeError: a bad file stamp must not pin itself over a real one.
+    real = {"seven_day": 0.04, "status": "allowed", "at": _iso(NOW - timedelta(minutes=10))}
+    assert cc.freshest(stamped[0], real, NOW)["latest"] is real
+
+
 def test_a_future_pinned_reading_does_not_shield_itself_from_a_real_one():
     """quota_reason refuses a future-dated file reading; without this the same reading would
     also win freshest() forever, so no genuine post-reset reading could replace it."""
