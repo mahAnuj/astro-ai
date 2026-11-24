@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-24T05:14:55Z",
+  "generated_at": "2026-11-24T07:53:04Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 165,
+  "open": 167,
   "with_ask": 44,
   "by_area": {
-    "UNCLASSIFIED": 72,
+    "UNCLASSIFIED": 74,
     "INFRA": 16,
     "OPS": 11,
     "REDESIGN": 10,
@@ -37,19 +37,73 @@
   "by_type": {
     "bug": 53,
     "untyped": 40,
-    "enhancement": 31,
+    "enhancement": 33,
     "chore": 25,
     "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 107,
+    "unset": 109,
     "medium": 26,
     "high": 20,
     "low": 12
   },
   "blocked": 10,
   "rows": [
+    {
+      "number": 1439,
+      "title": "QA follow-up: test_the_panel_renders_the_evals is date-bombed (fixed NOW vs real clock), red on main since 2026-11-24",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-24T06:23:32Z",
+      "updated": "2026-11-24T07:52:12Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1437,
+      "title": "agent-measure.yml: write gsc-query-page.json (workflow half of #1432)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo"
+      ],
+      "created": "2026-11-24T05:31:11Z",
+      "updated": "2026-11-24T05:31:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1436,
+      "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-24T05:31:10Z",
+      "updated": "2026-11-24T06:30:40Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1432,
       "title": "analytics: no export maps a query to the page that serves it — lever 4 names pages by topic only (3 reports)",
@@ -58,10 +112,11 @@
       "type": "enhancement",
       "priority": "unset",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "provenance:trusted"
       ],
       "created": "2026-11-24T05:11:41Z",
-      "updated": "2026-11-24T05:11:41Z",
+      "updated": "2026-11-24T05:31:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -73,10 +128,11 @@
       "type": "untyped",
       "priority": "unset",
       "labels": [
+        "provenance:trusted",
         "growth"
       ],
       "created": "2026-11-24T04:36:50Z",
-      "updated": "2026-11-24T04:36:50Z",
+      "updated": "2026-11-24T07:13:46Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -244,23 +300,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1372,
-      "title": "QA follow-up: chain_cycle quota_reason crashes (AttributeError) on a non-string latest.at / generated_at (PR #1367)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-22T04:18:27Z",
-      "updated": "2026-11-24T05:12:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1369,
       "title": "QA follow-up: manglik-dosh article and registry FAQs still call comparable severity classical, against manglik-remedies (PR #1368)",
       "ask": "",
@@ -308,7 +347,7 @@
         "chore"
       ],
       "created": "2026-11-21T22:43:25Z",
-      "updated": "2026-11-23T20:14:26Z",
+      "updated": "2026-11-24T07:07:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2713,9 +2752,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-24T05:14:55Z",
+    "generated_at": "2026-11-24T07:53:04Z",
     "window_days": 28,
-    "open_now": 165,
+    "open_now": 167,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3134,16 +3173,17 @@
       },
       {
         "date": "2026-11-24",
-        "opened": 4,
-        "closed": 3,
-        "net": 1,
-        "open_end": 165,
+        "opened": 8,
+        "closed": 5,
+        "net": 3,
+        "open_end": 167,
         "opened_by": {
-          "loop": 4
+          "loop": 8
         },
         "closed_by": {
           "close-on-evidence": 1,
-          "other": 2
+          "prioritise": 1,
+          "other": 3
         }
       }
     ],
@@ -4530,6 +4570,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1372,
+        "closed_at": "2026-11-24T05:36:01Z",
+        "closer": "other"
+      },
+      {
         "number": 1373,
         "closed_at": "2026-11-22T05:05:01Z",
         "closer": "prioritise"
@@ -4578,15 +4623,20 @@
         "number": 1416,
         "closed_at": "2026-11-23T16:24:48Z",
         "closer": "other"
+      },
+      {
+        "number": 1434,
+        "closed_at": "2026-11-24T06:09:56Z",
+        "closer": "prioritise"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 2,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 99,
-          "median_h": 0.6,
+          "merged": 95,
+          "median_h": 0.7,
           "p90_h": 8.1,
           "max_h": 46.6,
           "slowest": [
@@ -4708,7 +4758,7 @@
           ]
         },
         "28d": {
-          "merged": 341,
+          "merged": 342,
           "median_h": 0.5,
           "p90_h": 13.9,
           "max_h": 122.1,
@@ -4999,59 +5049,73 @@
         },
         {
           "date": "2026-11-24",
-          "merged": 3,
+          "merged": 4,
           "median_h": 0.2,
-          "max_h": 0.2
+          "max_h": 0.4
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 72.0,
+          "age_h": 74.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 69.0,
+          "age_h": 71.6,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 57.5,
+          "age_h": 60.1,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 43.3,
+          "age_h": 46.0,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1405,
           "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 21.9,
+          "age_h": 24.5,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1428,
           "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
-          "age_h": 0.9,
+          "age_h": 3.5,
           "waiting_on": "chief (trust boundary)",
           "why": null
         },
         {
-          "number": 1433,
-          "title": "chain_cycle: a non-string timestamp fails closed instead of crashing (#1372)",
-          "age_h": 0.0,
+          "number": 1438,
+          "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (#1436)",
+          "age_h": 1.6,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1440,
+          "title": "Answer-first section for an empty 7th house on the 7th-house pair (#1430)",
+          "age_h": 0.8,
           "waiting_on": "gates / QA",
+          "why": null
+        },
+        {
+          "number": 1441,
+          "title": "test_outbox_evals: pass NOW to collect(), not the real clock (#1439)",
+          "age_h": 0.1,
+          "waiting_on": "merge",
           "why": null
         }
       ]
