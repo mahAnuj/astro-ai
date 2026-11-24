@@ -1,0 +1,32 @@
+{#- #1026: Rao's lagna windows for one Vivah finder row. Reads `c` (the row), `selected_event` and `city`
+   from the including template's context, and renders NOTHING when muhurat_lagna() returns None (any
+   event but Vivah, a caution or avoid row, a date with no ordinary sunrise, an unknown place, or any
+   failure while computing). Every word shown is a string supplied by src/astro_ai/muhurat_lagna.py;
+   this partial adds no astrological wording. An empty `windows` renders the module's none_text, a
+   claim about the sky, which the module only returns after a successful computation. The note that
+   the day rating is unchanged is part of none_text, so it is printed separately only beside windows.
+   The sentence explaining "benefic" and "clean" is in the page legend, once. Collapsed, English
+   only like _muhurat_why.html, no |safe, no title= (no hover on a phone). The wrapper carries
+   data-lagna so a test can scope to it. -#}
+{%- set lagna = muhurat_lagna(c, selected_event, city) -%}
+{%- if lagna -%}
+<details class="mt-1" data-lagna>
+<summary class="cursor-pointer text-bhagya-sindoor text-xs font-semibold">{{ lagna.heading }} ▼</summary>
+<div class="mt-1 space-y-1 text-bhagya-ink-soft">
+{%- if lagna.windows %}
+<ul class="list-disc pl-4 space-y-0.5">
+{%- for w in lagna.windows %}
+<li><span class="tabular-nums">{{ w.start }}-{{ w.end }}</span> {{ w.sign }}
+{%- if w.qualifier %} ({{ w.qualifier }}){% endif -%}
+{%- if w.rahu_note %}, {{ w.rahu_note }}{% endif -%}
+</li>
+{%- endfor %}
+</ul>
+<p>{{ lagna.unchanged }}</p>
+{%- else %}
+<p>{{ lagna.none_text }}</p>
+{%- endif %}
+<p>{{ lagna.caveat }}</p>
+</div>
+</details>
+{%- endif -%}
