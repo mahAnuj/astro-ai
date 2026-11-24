@@ -80,7 +80,7 @@ MUTATIONS = [
      "test_the_note_says_sessions_are_not_additive_and_dates_each_event"),
     ("#1226: --journeys is allowed beside --events (two reports in one JSON stream)",
      _GA,
-     'if args.journeys and (args.daily or args.events or args.anomalies or args.trend):',
-     'if args.journeys and (args.daily or args.anomalies or args.trend):',
+     'if args.journeys and (args.daily or args.events or args.anomalies or args.trend\n',
+     'if args.journeys and (args.daily or args.anomalies or args.trend\n',
      "test_journeys_is_exclusive_with_the_other_reports"),
 ]

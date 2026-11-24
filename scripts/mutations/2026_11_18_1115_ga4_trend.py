@@ -48,7 +48,7 @@ MUTATIONS = [
      "test_coverage_share_and_truncation_are_reported"),
     ("#1115: --trend is no longer refused beside the other reports",
      _GA,
-     "    if args.trend and (args.daily or args.events or args.anomalies):\n",
+     "    if args.trend and (args.daily or args.events or args.anomalies or args.page_locations):\n",
      "    if False:\n",
      "test_trend_with_another_report_is_refused_before_any_request"),
 ]
