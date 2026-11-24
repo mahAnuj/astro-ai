@@ -238,7 +238,7 @@ def _section(html):
 
 
 def test_the_panel_renders_the_evals(page):
-    doc = co.collect(FakeGh(corpus()), REPO, datetime.now(timezone.utc))
+    doc = co.collect(FakeGh(corpus()), REPO, NOW)
     s = _section(page({"outbox.json": doc}))
     assert "Loop comment noise" in s
     assert "comments per PR" in s and "2.0" in s
