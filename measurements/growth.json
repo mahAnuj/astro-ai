@@ -1,35 +1,28 @@
 {
- "generated_at": "2026-11-24T14:19:12Z",
+ "generated_at": "2026-11-24T19:04:14Z",
  "target": 0.6,
  "week": "2026-W48",
- "today_date": "2026-11-24",
+ "today_date": "2026-11-25",
  "today": {
-  "growth": 6,
-  "other": 11,
+  "growth": 1,
+  "other": 0,
   "exempt": 0,
-  "share": 0.353
+  "share": 1.0
  },
  "this_week": {
-  "growth": 12,
+  "growth": 13,
   "other": 22,
   "exempt": 0,
-  "share": 0.353
+  "share": 0.371
  },
  "this_month": {
-  "growth": 46,
+  "growth": 47,
   "other": 272,
   "exempt": 0,
-  "share": 0.145
+  "share": 0.147
  },
  "must_pick_growth": true,
  "days": [
-  {
-   "date": "2026-11-11",
-   "growth": 0,
-   "other": 26,
-   "exempt": 0,
-   "share": 0.0
-  },
   {
    "date": "2026-11-12",
    "growth": 0,
@@ -120,23 +113,38 @@
    "other": 11,
    "exempt": 0,
    "share": 0.353
+  },
+  {
+   "date": "2026-11-25",
+   "growth": 1,
+   "other": 0,
+   "exempt": 0,
+   "share": 1.0
   }
  ],
  "cycles": [
+  {
+   "run": 45461507691,
+   "started": "2026-11-24T18:37:19Z",
+   "issue": 1436,
+   "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
+   "class": "growth",
+   "outcome": "pr open",
+   "pr": 1438,
+   "agents": {
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
   {
    "run": 45403353522,
    "started": "2026-11-24T13:25:53Z",
    "issue": 1237,
    "title": "analytics: no export carries GA4 page_location \u2014 #1066 and #1093 cannot be scored (3 reports in a row)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1449,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45396211064,
@@ -603,16 +611,6 @@
    "outcome": "shipped",
    "pr": 1383,
    "agents": null
-  },
-  {
-   "run": 45033334321,
-   "started": "2026-11-22T14:32:05Z",
-   "issue": 1380,
-   "title": "QA follow-up: #1378 left 'classical Saturn grain' and 'Classical charity items for Rahu' on Rao-table grains",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1382,
-   "agents": null
   }
  ],
  "goals": {
@@ -947,22 +945,22 @@
   "ga4_new_users_28d": 655,
   "ga4_sessions_28d": 804,
   "objective_top5": 1,
-  "growth_share_today": 0.353,
-  "growth_share_week": 0.353,
-  "growth_share_month": 0.145
+  "growth_share_today": 1.0,
+  "growth_share_week": 0.371,
+  "growth_share_month": 0.147
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
-   "period": "2026-11-24",
-   "progress": 0.588,
-   "detail": "6 of 17 cycles on growth, target 60%",
+   "period": "2026-11-25",
+   "progress": 1.0,
+   "detail": "1 of 1 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.361,
+   "progress": 0.374,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -973,8 +971,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.353,
-     "progress": 0.832,
+     "current": 0.371,
+     "progress": 0.896,
      "basis": "growth_share_week"
     },
     {
@@ -1043,7 +1041,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.323,
+   "progress": 0.327,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1086,8 +1084,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.145,
-     "progress": 0.42,
+     "current": 0.147,
+     "progress": 0.431,
      "basis": "growth_share_month"
     }
    ]
