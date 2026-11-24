@@ -30,8 +30,9 @@ MUTATIONS = [
      "test_qa_fail_is_a_verdict_not_a_hold"),
     ("chief clear: red gates are cleared",
      "scripts/chief_clear.py",
-     '    if not gates or any(c != "success" for c in gates.split(",")):',
-     '    if not gates:',
+     '    if not latest or not (latest.get("status") == "completed"\n'
+     '                          and latest.get("conclusion") == "success"):',
+     '    if not latest:',
      "test_red_or_missing_gates_are_refused"),
     ("chief clear: the carrier step is dropped from the workflow",
      ".github/workflows/agent-steward.yml",
