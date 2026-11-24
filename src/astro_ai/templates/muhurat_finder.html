@@ -31,6 +31,10 @@
   <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     {% if error %}
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
+    {# #1070: the failure half of muhurat_searched. `error_kind` is the route's fixed word, re-checked here; params are exactly {tool, kind}; never the error text (it echoes the exception, which can carry the city or a partner's place), the city or the date. A city that fails to geocode lands in `compute`, there is no `geocode` kind here. Counts error RENDERS: a reload re-fires it. #}
+    {% from "_analytics_event.html" import analytics_event %}
+    {% set _k = error_kind if error_kind in ['validation', 'compute'] else 'validation' %}
+    {{ analytics_event('tool_error', {'tool': 'muhurat', 'kind': _k}) }}
     {% endif %}
     <form method="post" action="/muhurat" data-tool="muhurat" class="space-y-4">
       <div>

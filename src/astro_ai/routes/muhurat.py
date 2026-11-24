@@ -304,6 +304,7 @@ async def _finder_response(
         return templates.TemplateResponse(
             request, "muhurat_finder.html",
             {"candidates": None, "error": f"Unknown event type: {event_type}",
+             "error_kind": "validation",
              "lang": _lang(request), "prefill_city": city, "prefill_start": start_date,
              "event_types": event_types, "selected_event": event_type,
              "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
@@ -316,6 +317,7 @@ async def _finder_response(
         return templates.TemplateResponse(
             request, "muhurat_finder.html",
             {"candidates": None, "error": "Invalid start date.", "lang": _lang(request),
+             "error_kind": "validation",
              "prefill_city": city, "prefill_start": start_date,
              "event_types": event_types, "selected_event": event_type,
              "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
@@ -327,6 +329,7 @@ async def _finder_response(
         return templates.TemplateResponse(
             request, "muhurat_finder.html",
             {"candidates": None, "error": "City is too long.", "lang": _lang(request),
+             "error_kind": "validation",
              "prefill_city": city[:CITY_MAX_CHARS], "prefill_start": start_date,
              "event_types": event_types, "selected_event": event_type,
              "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
@@ -386,6 +389,7 @@ async def _finder_response(
         return templates.TemplateResponse(
             request, "muhurat_finder.html",
             {"candidates": None, "error": f"Could not compute muhurats: {err}",
+             "error_kind": "compute",
              "lang": _lang(request), "prefill_city": city, "prefill_start": start_date,
              "event_types": event_types, "selected_event": event_type,
              "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
@@ -457,6 +461,7 @@ async def _finder_response(
          "search_tz": search_tz,
          "prefill_city": city, "prefill_start": start_date,
          "error": (personal_chart_error or couple_error) or None,
+         "error_kind": "compute" if (personal_chart_error or couple_error) else None,
          "event_types": event_types, "selected_event": event_type,
          "event_label": event_label,
          "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
