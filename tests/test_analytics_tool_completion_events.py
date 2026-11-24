@@ -202,9 +202,10 @@ def test_error_renders_carry_no_marker(client, match_llm):
     # contract itself is tests/test_analytics_tool_error.py). The rest still carry nothing.
     # #1411: the three dosha checks join them (tests/test_analytics_tool_error_dosha.py).
     # #1416: so does /matching (tests/test_analytics_tool_error_matching.py).
+    # #1070: and the muhurat finder (tests/test_analytics_tool_error_muhurat.py).
     numerology_errors = [bad_numerology, bad_num_date, bad_compat, bad_compat_date,
-                         bad_matching, *bad_dosha]
-    others = [bad_event, bad_date]
+                         bad_matching, *bad_dosha, bad_event, bad_date]
+    others = []
     for r in [*numerology_errors, *others]:
         assert r.status_code >= 400, r.status_code
     for r in numerology_errors:
@@ -223,7 +224,11 @@ def test_a_failed_search_and_an_empty_one_carry_no_marker(client, monkeypatch):
 
     monkeypatch.setattr(MU, "find_candidates", boom)
     failed = _muhurat(client)
-    assert failed.status_code == 500 and markers(failed) == []
+    # #1070: the 500 banner now declares `tool_error` (tests/test_analytics_tool_error_muhurat.py);
+    # what must still be absent is any completion marker.
+    assert failed.status_code == 500
+    assert [n for n, _ in markers(failed)] == ["tool_error"], markers(failed)
+    assert markers(failed, "muhurat_searched") == []
 
     monkeypatch.setattr(MU, "find_candidates", lambda *a, **k: [])
     empty = _muhurat(client)
