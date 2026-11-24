@@ -5,7 +5,8 @@ asserted. Hermetic: `post`, `token` and `window` are patched.
 Each test is a way this export could ship wrong, and the worst is a leak: the export exists
 to find an address in a URL, so printing one into a file that gets posted into a report
 would reproduce the defect it measures. The canaries below are planted in values, in a bare
-parameter NAME, in a path and in a long segment, and must appear nowhere in stdout. The
+parameter NAME, in a path, in a long segment, as a bare token, double-encoded in a path and as
+a /r/<id> kundli snapshot id (#1450), and must appear nowhere in stdout. The
 others: a partial file after one request failed (a silent zero reads as "no leak"), coverage
 measured against all events (it would read ~1% and look like a failed fetch), watch counts
 taken from the 50 rows shown, the JS and Python PII lists drifting apart, or the flag
@@ -31,7 +32,8 @@ WIN = ("2026-11-01", "2026-11-21")
 HOST = "https://shubhagya.com"
 
 CANARIES = ("victim@example.com", "tok3nSECRET", "Ujjain-Canary", "victim%40example.com",
-            "LONGSEGMENTCANARY")
+            "LONGSEGMENTCANARY", "tok3nSECRETabcdefghijklmnop", "victim%2540example.com",
+            "SNAPSHOTIDCANARY", "Ujjain")
 
 
 def _loc_rows(rows, row_count=None, totals=None, loss=None):
@@ -110,17 +112,24 @@ def test_no_canary_value_or_address_reaches_stdout(monkeypatch, capsys):
         (f"{HOST}/u/victim@example.com/chart?utm_source=x#tok3nSECRET", 2),
         (f"https://victim@example.com:pw@shubhagya.com/x?q=tok3nSECRET", 1),
         (f"{HOST}/c/{'LONGSEGMENTCANARY' * 3}?utm=1", 1),
+        (f"{HOST}/unsubscribe?tok3nSECRETabcdefghijklmnop", 1),
+        (f"{HOST}/pre/victim%2540example.com?c=1", 1),
+        (f"{HOST}/r/SNAPSHOTIDCANARY?utm_source=x", 1),
+        (f"{HOST}/x?Ujjain", 1),
     ]
     (_, _, raw), _ = _go(monkeypatch, capsys, rows)
     for c in CANARIES:
         assert c not in raw
     assert "example.com" not in raw and "shubhagya.com" not in raw
+    assert "/r/<id>" in raw and "/pre/<redacted>" in raw
 
 
 def test_a_bare_address_as_a_parameter_name_is_redacted(monkeypatch, capsys):
     (_, out, _), _ = _go(monkeypatch, capsys, [(f"{HOST}/ask?a@b.com", 3)])
     assert out["rows"][0]["params"] == ["(redacted-name)"]
     assert [b["param"] for b in out["by_param"]] == ["(redacted-name)"]
+    # With an `=` the bare-name check does not apply, so the character whitelist must catch it.
+    assert ga.fold_location(f"{HOST}/ask?a@b.com=1") == ("/ask", ("(redacted-name)",))
 
 
 @pytest.mark.parametrize("name", ["a@b.com", "x" * 33, "a b", "a%40b", "\u00e9"])
@@ -128,6 +137,62 @@ def test_unsafe_parameter_names_are_redacted_and_safe_ones_kept(name):
     path, names = ga.fold_location(f"{HOST}/p?{name}&utm_source=x&filter[a].b-c_d=1")
     assert names == ("(redacted-name)", "filter[a].b-c_d", "utm_source")
     assert path == "/p"
+
+
+TOKEN = "tok3nSECRETabcdefghijklmnop"
+REDACTED = ("(redacted-name)",)
+
+
+@pytest.mark.parametrize("q", [TOKEN, "Ujjain", "abc"])
+def test_a_bare_query_token_as_a_name_is_redacted(q):
+    assert ga.fold_location(f"{HOST}/x?{q}") == ("/x", REDACTED)
+
+
+def test_a_token_shaped_name_with_a_value_is_redacted():
+    assert ga.fold_location(f"{HOST}/x?{TOKEN}=1") == ("/x", REDACTED)
+
+
+@pytest.mark.parametrize("enc", ["2540", "252540"])
+def test_a_double_encoded_address_in_a_path_is_redacted(enc):
+    path, names = ga.fold_location(f"{HOST}/pre/victim%{enc}example.com?c=1")
+    assert path == "/pre/<redacted>" and names == ("c",)
+
+
+def test_a_snapshot_id_is_collapsed():
+    assert ga.fold_location(f"{HOST}/r/abc123?utm_source=x") == ("/r/<id>", ("utm_source",))
+    assert ga.fold_location(f"{HOST}/r/abc123/?c=1")[0] == "/r/<id>"
+    assert ga.fold_location(f"{HOST}/r/{'AbCdEfGhIjKlMnOpQrStUv'}?c=1")[0] == "/r/<id>"
+
+
+@pytest.mark.parametrize("path,want", [("/r", "/r"), ("/r/", "/r"), ("/learn/r/x", "/learn/r/x")])
+def test_only_a_top_level_r_with_an_id_is_collapsed(path, want):
+    assert ga.fold_location(f"{HOST}{path}?c=1")[0] == want
+
+
+def test_watched_names_are_kept_with_a_value_bare_or_decoded():
+    assert ga.fold_location(f"{HOST}/x?q=1&city=x&email=a&token=t")[1] == (
+        "city", "email", "q", "token")
+    assert ga.fold_location(f"{HOST}/x?token&email")[1] == ("email", "token")
+    assert ga.fold_location(f"{HOST}/x?e%6Dail=a")[1] == ("email",)
+    # no raw `=`: the encoded one is not a separator, so this is a value sent as a name
+    assert ga.fold_location(f"{HOST}/x?email%3Dx")[1] == REDACTED
+
+
+def test_ordinary_names_and_slug_paths_are_kept():
+    names = ("utm_source", "utm_campaign", "page", "lang", "rashi", "date", "needs_chart",
+             "geoname-id", "filter[a].b-c_d")
+    q = "&".join(f"{n}=1" for n in names)
+    assert ga.fold_location(f"{HOST}/x?{q}")[1] == tuple(sorted(names))
+    slug = "/learn/which-mahadasha-best-for-career/"
+    assert ga.fold_location(f"{HOST}{slug}?lang=hi")[0] == slug.rstrip("/")
+
+
+def test_the_token_shaped_name_threshold_is_exactly_twenty_mixed_characters():
+    kept = ("a" * 20, "a1" * 9 + "b", "1" * 20)     # all letters, 19 mixed, all digits
+    assert [len(k) for k in kept] == [20, 19, 20]
+    for k in kept:
+        assert ga.fold_location(f"{HOST}/x?{k}=1")[1] == (k,), k
+    assert ga.fold_location(f"{HOST}/x?{'a1' * 10}=1")[1] == REDACTED          # 20 mixed
 
 
 def test_a_path_segment_with_an_at_sign_is_redacted():
