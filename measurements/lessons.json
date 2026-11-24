@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-23T21:34:02Z",
+ "generated_at": "2026-11-24T02:36:57Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1473,10 +1473,10 @@
   }
  ],
  "outcome_counts": {
-  "OTHER": 3,
-  "MISS": 1,
-  "UNSCOREABLE": 9,
   "PENDING": 21,
+  "UNSCOREABLE": 9,
+  "MISS": 1,
+  "OTHER": 3,
   "PASS": 3,
   "HIT": 1
  },
