@@ -51,6 +51,10 @@ _FORBIDDEN = [
     "malavya",
     "strongest",
     "best",
+    # #1444: knowledge/*.md has no line for "an empty 7th does not mean no marriage"
+    "does not mean",
+    "not mean",
+    "no marriage",
 ]
 _FORBIDDEN_WORDS = re.compile(r"\b(good|bad|auspicious|inauspicious|lucky)\b", re.I)
 _CITATIONS = ["Raman", "Ch.", "chapter", r"p\. \d"]
@@ -110,12 +114,16 @@ def test_block_points_to_the_7th_lord_guide_and_the_kundli_in_words(client):
         assert re.search(r"[A-Za-z]{3,}", text), text
 
 
-def test_block_says_an_empty_7th_is_not_a_verdict(client):
+def test_block_opens_with_the_sourced_facts(client):
     block = _block(client)
     t = _norm(block)
+    # "not a verdict" is now carried only by the audited callout (#1444)
     assert "not a verdict" in t
-    assert "does not mean no marriage" in t
     assert "Yuvati Bhava" in t
+    # the block begins with its own <h2>, so drop that before asking what the prose opens with
+    assert _norm(_prose_outside_callout(block).replace(START, "", 1)).startswith(
+        "A house is read whether or not a planet sits in it"
+    )
 
 
 def test_block_makes_none_of_the_claims_the_corpus_cannot_back(client):

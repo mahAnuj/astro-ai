@@ -11,6 +11,7 @@ _PRACTICE = "In practice, practitioners commonly look at that planet's sign, hou
 _CHART = "an empty house is still part of your chart."
 _CALLOUT = "The sources we hold do not set out how to read a 7th house with no planet in it. What we can trace to them is narrower:"
 _LINK = '<a href="/learn/7th-lord-placement-marriage-guide/">the 7th lord guide</a>'
+_OPENER = "A house is read whether or not a planet sits in it, so a 7th house with no planet in it is still read."
 
 MUTATIONS = [
     ("#1430: the empty-7th section again states 'an empty 7th is read through the 7th lord' as a plain rule",
@@ -37,5 +38,10 @@ MUTATIONS = [
      _P,
      _CHART,
      "an empty house is still part of your chart, and Venus in the 7th always gives Malavya Yoga.",
+     "test_block_makes_none_of_the_claims_the_corpus_cannot_back"),
+    ("#1430: the empty-7th opener again asserts 'does not mean no marriage'",
+     _P,
+     _OPENER,
+     "A 7th house with no planet in it does not mean no marriage, and it is not a verdict on whether or when you marry.",
      "test_block_makes_none_of_the_claims_the_corpus_cannot_back"),
 ]
