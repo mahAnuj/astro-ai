@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-23T21:30:31Z",
+  "generated_at": "2026-11-24T02:34:07Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 164,
+  "open": 165,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 73,
+    "UNCLASSIFIED": 74,
     "INFRA": 16,
     "OPS": 11,
     "REDESIGN": 10,
@@ -35,7 +35,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 54,
+    "bug": 55,
     "untyped": 39,
     "enhancement": 30,
     "chore": 25,
@@ -43,13 +43,29 @@
     "design": 5
   },
   "by_priority": {
-    "unset": 105,
+    "unset": 106,
     "medium": 27,
     "high": 20,
     "low": 12
   },
   "blocked": 10,
   "rows": [
+    {
+      "number": 1423,
+      "title": "QA follow-up: /privacy 7-day deletion promise vs the sign-out record account deletion does not remove (PR #1422)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-24T02:32:54Z",
+      "updated": "2026-11-24T02:32:54Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1419,
       "title": "QA follow-up: vedic_reference.md rule 20 still calls comparable severity classical (PR #1418, #1376)",
@@ -360,7 +376,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-21T11:10:53Z",
-      "updated": "2026-11-21T20:14:50Z",
+      "updated": "2026-11-23T22:35:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -475,10 +491,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-20T21:17:04Z",
-      "updated": "2026-11-20T21:17:04Z",
+      "updated": "2026-11-24T02:33:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -766,7 +785,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-20T01:31:13Z",
-      "updated": "2026-11-22T17:26:25Z",
+      "updated": "2026-11-24T00:06:25Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -818,7 +837,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-19T09:53:08Z",
-      "updated": "2026-11-22T17:26:23Z",
+      "updated": "2026-11-24T00:06:24Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -2696,24 +2715,11 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-23T21:30:31Z",
+    "generated_at": "2026-11-24T02:34:07Z",
     "window_days": 28,
-    "open_now": 164,
+    "open_now": 165,
     "merged_open_hours": 24,
     "days": [
-      {
-        "date": "2026-10-27",
-        "opened": 4,
-        "closed": 1,
-        "net": 3,
-        "open_end": 128,
-        "opened_by": {
-          "loop": 4
-        },
-        "closed_by": {
-          "other": 1
-        }
-      },
       {
         "date": "2026-10-28",
         "opened": 8,
@@ -3127,6 +3133,17 @@
           "close-on-evidence": 6,
           "other": 2
         }
+      },
+      {
+        "date": "2026-11-24",
+        "opened": 1,
+        "closed": 0,
+        "net": 1,
+        "open_end": 165,
+        "opened_by": {
+          "loop": 1
+        },
+        "closed_by": {}
       }
     ],
     "merged_open": [],
@@ -3400,11 +3417,6 @@
         "number": 490,
         "closed_at": "2026-11-13T11:11:43Z",
         "closer": "close-on-evidence"
-      },
-      {
-        "number": 495,
-        "closed_at": "2026-10-27T17:37:19Z",
-        "closer": "other"
       },
       {
         "number": 503,
@@ -4808,12 +4820,6 @@
       },
       "days": [
         {
-          "date": "2026-10-27",
-          "merged": 4,
-          "median_h": 2.7,
-          "max_h": 22.0
-        },
-        {
           "date": "2026-10-28",
           "merged": 4,
           "median_h": 27.5,
@@ -4974,41 +4980,54 @@
           "merged": 10,
           "median_h": 0.6,
           "max_h": 5.9
+        },
+        {
+          "date": "2026-11-24",
+          "merged": 0,
+          "median_h": null,
+          "max_h": null
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 64.3,
+          "age_h": 69.4,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 61.2,
+          "age_h": 66.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 49.8,
+          "age_h": 54.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 35.6,
+          "age_h": 40.6,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1405,
           "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 14.2,
+          "age_h": 19.2,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1422,
+          "title": "/privacy discloses the sign-out record kept after sign-out and account deletion (#1315)",
+          "age_h": 0.1,
           "waiting_on": "merge",
           "why": null
         }

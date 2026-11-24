@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-23T21:31:31Z",
+ "generated_at": "2026-11-24T02:34:55Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-24",
  "today": {
   "growth": 0,
-  "other": 1,
+  "other": 2,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 6,
-  "other": 12,
+  "other": 13,
   "exempt": 0,
-  "share": 0.333
+  "share": 0.316
  },
  "this_month": {
   "growth": 40,
-  "other": 262,
+  "other": 263,
   "exempt": 0,
   "share": 0.132
  },
@@ -117,12 +117,27 @@
   {
    "date": "2026-11-24",
    "growth": 0,
-   "other": 1,
+   "other": 2,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
+  {
+   "run": 45308728971,
+   "started": "2026-11-24T01:56:39Z",
+   "issue": 1315,
+   "title": "QA follow-up: privacy page does not list the session-revocation record kept up to 90 days after account deletion (PR #1314)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1422,
+   "agents": {
+    "architect": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
   {
    "run": 45243851912,
    "started": "2026-11-23T18:57:38Z",
@@ -578,18 +593,6 @@
    "outcome": "pr open",
    "pr": 1357,
    "agents": null
-  },
-  {
-   "run": 44925310927,
-   "started": "2026-11-21T16:34:27Z",
-   "issue": 1017,
-   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1350,
-   "agents": {
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -925,7 +928,7 @@
   "ga4_sessions_28d": 795,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.333,
+  "growth_share_week": 0.316,
   "growth_share_month": 0.132
  },
  "meters": {
@@ -933,13 +936,13 @@
    "label": "Today: growth share of build cycles",
    "period": "2026-11-24",
    "progress": 0.0,
-   "detail": "0 of 1 cycles on growth, target 60%",
+   "detail": "0 of 2 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.236,
+   "progress": 0.224,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -950,8 +953,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.333,
-     "progress": 0.761,
+     "current": 0.316,
+     "progress": 0.7,
      "basis": "growth_share_week"
     },
     {
