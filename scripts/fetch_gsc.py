@@ -47,6 +47,17 @@ measured zero and the export does not zero-fill it. `--pages` is a watchlist of
 URL substrings applied client-side to one request, not one request per entry:
 the fetch is a single call and `coverage_pct` stays measured against the whole
 property, with `emitted_*` describing what survived the filter.
+
+`--by query-page` (#1436, script half of #1432) is a query x page map: the
+dimensions are [query, page], one request per window, so each row says WHICH PAGE
+serves a query. Without it the analyst could name a high-impression query but not
+the page that already ranks for it, and a spec could duplicate that page. Coverage
+is PARTIAL by construction: Google withholds anonymised queries, so the rows
+describe only the visible share (4,442 of 30,711 impressions, ~14%, for
+2026-10-25..2026-11-21 per #1432) and the export states its own `coverage_pct`. A
+page's impressions summed over its rows here are NOT that page's total; use
+`--by page` for a page total. It is its own export and refuses --trend and --band
+(--page-daily is already refused with any explicit --by).
 """
 
 from __future__ import annotations
@@ -225,6 +236,54 @@ def page_daily(args, start: str, end: str, url: str, bearer: str) -> int:
     return 0
 
 
+def query_page_rows(raw: list[dict]) -> list[dict]:
+    """API rows (keys=[query, page]) -> flat rows, biggest impressions first.
+
+    Pure: no network. The same query on two pages is two rows, not one: which
+    pages serve a query is exactly what this export exists to show.
+    """
+    rows = [{"query": r["keys"][0], "page": r["keys"][1],
+             "impressions": r["impressions"], "clicks": r["clicks"],
+             "ctr": round(r["ctr"], 4), "position": round(r["position"], 1)}
+            for r in raw]
+    rows.sort(key=lambda r: -r["impressions"])
+    return rows
+
+
+def query_page(args, start: str, end: str, url: str, bearer: str) -> int:
+    """Query x page map (#1436). Two requests: the dimensioned rows and the property total."""
+    # 25000 is the per-request maximum, as in the other exports; `truncated` says
+    # so if the visible query x page pairs ever reach it.
+    data = post(url, {"startDate": start, "endDate": end, "dimensions": ["query", "page"],
+                      "rowLimit": ROW_LIMIT, "dataState": "final"}, bearer)
+    total_imp = property_impressions(url, bearer, start, end)
+    raw = data.get("rows", [])
+    rows = query_page_rows(raw)
+    row_imp = sum(r["impressions"] for r in rows)
+    # Never clamped, same as the default path.
+    coverage = round(row_imp / total_imp * 100) if total_imp else None
+    if coverage is None:
+        cov_note = "property total impressions were 0 or unavailable; coverage not computable"
+    else:
+        cov_note = f"rows account for {coverage}% of the property's {total_imp} impressions"
+    cov_note += (" — PARTIAL VIEW: Google withholds anonymised (low-volume) queries, so "
+                 "these rows describe only the visible share; a page's impressions here are "
+                 "NOT its page total — use --by page for that")
+    truncated = len(raw) >= ROW_LIMIT
+    if truncated:
+        cov_note += f" — TRUNCATED at rowLimit {ROW_LIMIT}"
+
+    print(json.dumps({
+        "source": "gsc", "site": args.site, "mode": "query-page",
+        "dimension": ["query", "page"], "window": [start, end],
+        "note": "window excludes the last 3 days — GSC data is not final before that",
+        "total_impressions": total_imp, "rows_impressions": row_imp,
+        "coverage_pct": coverage, "coverage_note": cov_note, "truncated": truncated,
+        "emitted_rows": len(rows), "rows": rows,
+    }, indent=2))
+    return 0
+
+
 def discover(url: str, bearer: str, start: str, end: str) -> int:
     """Discover traffic by date, and its top pages. A property that has never
     appeared in Discover answers with no rows: that is reported as zero, which
@@ -256,9 +315,10 @@ def main() -> int:
     ap.add_argument("--band", action="store_true", help="only the 6-20 position band")
     # default None so --page-daily can tell an explicit --by from the default;
     # it is resolved to "page" below, before anything reads it.
-    ap.add_argument("--by", choices=("page", "query", "date"), default=None,
+    ap.add_argument("--by", choices=("page", "query", "date", "query-page"), default=None,
                     help="dimension (default page); query is a PARTIAL view "
-                         "(anonymised queries are withheld)")
+                         "(anonymised queries are withheld); query-page maps each query "
+                         "to the page that serves it (#1436), also PARTIAL")
     ap.add_argument("--trend", action="store_true",
                     help="compare this window with the one before it and emit deltas")
     ap.add_argument("--page-daily", action="store_true",
@@ -285,6 +345,9 @@ def main() -> int:
     if args.trend and args.by == "date":
         sys.exit("--trend compares two windows on one dimension; "
                  "--by date is already a series, so the two are redundant")
+    if args.by == "query-page" and (args.trend or args.band):
+        sys.exit("--by query-page is its own query x page export; it cannot be combined "
+                 "with --trend or --band")
 
     start, end = window(args.days)
     url = API.format(site=urllib.parse.quote(args.site, safe=""))
@@ -292,6 +355,8 @@ def main() -> int:
 
     if args.page_daily:
         return page_daily(args, start, end, url, bearer)
+    if args.by == "query-page":
+        return query_page(args, start, end, url, bearer)
     if args.trend:
         return trend(args, start, end, url, bearer)
     # 25000 is the API maximum per request. The site has ~133 pages with impressions, so no
