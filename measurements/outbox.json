@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-24T07:57:04Z",
+ "generated_at": "2026-11-24T14:21:22Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-17T07:57:04Z",
-  "end": "2026-11-24T07:57:04Z",
-  "loop_comments": 1049,
-  "on_prs": 593,
-  "prs": 103,
-  "on_issues": 456,
-  "issues": 135,
-  "comments_per_pr": 5.76,
-  "comments_per_issue": 3.38,
-  "duplicates": 54,
-  "duplicate_rate_pct": 5.1,
+  "start": "2026-11-17T14:21:22Z",
+  "end": "2026-11-24T14:21:22Z",
+  "loop_comments": 955,
+  "on_prs": 516,
+  "prs": 95,
+  "on_issues": 439,
+  "issues": 133,
+  "comments_per_pr": 5.43,
+  "comments_per_issue": 3.3,
+  "duplicates": 48,
+  "duplicate_rate_pct": 5.0,
   "sent_by_kind": {
    "growth-goals": 5,
    "growth-goals-issue": 2,
@@ -30,28 +30,28 @@
    {
     "on": "pr",
     "number": 1170,
-    "comments": 20
+    "comments": 17
    },
    {
     "on": "pr",
-    "number": 1169,
-    "comments": 15
-   },
-   {
-    "on": "pr",
-    "number": 1173,
-    "comments": 15
+    "number": 1375,
+    "comments": 14
    },
    {
     "on": "issue",
-    "number": 1106,
-    "comments": 14
+    "number": 1070,
+    "comments": 13
+   },
+   {
+    "on": "pr",
+    "number": 1262,
+    "comments": 13
    }
   ],
   "owner_touched": {
-   "prs": 103,
-   "owner_commented": 8,
-   "pct": 8
+   "prs": 95,
+   "owner_commented": 7,
+   "pct": 7
   },
   "suppressed": {
    "deduped": 0,
@@ -60,17 +60,17 @@
   }
  },
  "previous": {
-  "start": "2026-11-10T07:57:04Z",
-  "end": "2026-11-17T07:57:04Z",
-  "loop_comments": 1166,
-  "on_prs": 664,
-  "prs": 131,
-  "on_issues": 502,
-  "issues": 146,
-  "comments_per_pr": 5.07,
-  "comments_per_issue": 3.44,
-  "duplicates": 44,
-  "duplicate_rate_pct": 3.8,
+  "start": "2026-11-10T14:21:22Z",
+  "end": "2026-11-17T14:21:22Z",
+  "loop_comments": 1272,
+  "on_prs": 743,
+  "prs": 141,
+  "on_issues": 529,
+  "issues": 151,
+  "comments_per_pr": 5.27,
+  "comments_per_issue": 3.5,
+  "duplicates": 49,
+  "duplicate_rate_pct": 3.9,
   "sent_by_kind": {},
   "via_outbox": 0,
   "top_threads": [
@@ -82,7 +82,7 @@
    {
     "on": "pr",
     "number": 1132,
-    "comments": 20
+    "comments": 21
    },
    {
     "on": "pr",
@@ -101,7 +101,7 @@
    }
   ],
   "owner_touched": {
-   "prs": 131,
+   "prs": 141,
    "owner_commented": 7,
    "pct": 5
   }
