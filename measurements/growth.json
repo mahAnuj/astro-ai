@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-24T20:14:07Z",
+ "generated_at": "2026-11-24T22:09:50Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-25",
  "today": {
   "growth": 1,
-  "other": 0,
+  "other": 1,
   "exempt": 0,
-  "share": 1.0
+  "share": 0.5
  },
  "this_week": {
   "growth": 13,
-  "other": 22,
+  "other": 23,
   "exempt": 0,
-  "share": 0.371
+  "share": 0.361
  },
  "this_month": {
   "growth": 47,
-  "other": 272,
+  "other": 273,
   "exempt": 0,
   "share": 0.147
  },
@@ -117,12 +117,29 @@
   {
    "date": "2026-11-25",
    "growth": 1,
-   "other": 0,
+   "other": 1,
    "exempt": 0,
-   "share": 1.0
+   "share": 0.5
   }
  ],
  "cycles": [
+  {
+   "run": 45486601069,
+   "started": "2026-11-24T21:00:17Z",
+   "issue": 1026,
+   "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1455,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "backend-engineer": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
   {
    "run": 45461507691,
    "started": "2026-11-24T18:37:19Z",
@@ -598,16 +615,6 @@
    "agents": {
     "qa": 1
    }
-  },
-  {
-   "run": 45036010068,
-   "started": "2026-11-22T15:01:51Z",
-   "issue": 1291,
-   "title": "QA follow-up: ask_audit_post --issue accepts any issue number; the 5-issue cap is prompt-only",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1383,
-   "agents": null
   }
  ],
  "goals": {
@@ -942,22 +949,22 @@
   "ga4_new_users_28d": 655,
   "ga4_sessions_28d": 804,
   "objective_top5": 1,
-  "growth_share_today": 1.0,
-  "growth_share_week": 0.371,
+  "growth_share_today": 0.5,
+  "growth_share_week": 0.361,
   "growth_share_month": 0.147
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-25",
-   "progress": 1.0,
-   "detail": "1 of 1 cycles on growth, target 60%",
+   "progress": 0.833,
+   "detail": "1 of 2 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.374,
+   "progress": 0.367,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -968,8 +975,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.371,
-     "progress": 0.896,
+     "current": 0.361,
+     "progress": 0.861,
      "basis": "growth_share_week"
     },
     {
