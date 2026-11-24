@@ -124,6 +124,11 @@ USAGE = Path(__file__).resolve().parent.parent / "measurements" / "claude_usage.
 
 
 def _ts(s: str) -> datetime:
+    # A non-string stamp (`12345`, `[1]`, `{}`) reached .replace and raised AttributeError, which
+    # quota_reason's `except (KeyError, TypeError, ValueError)` does not catch (#1372). TypeError
+    # is what every caller already treats as "unusable"; AttributeError is deliberately not added.
+    if not isinstance(s, str):
+        raise TypeError(f"timestamp must be a string, got {type(s).__name__}")
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
 
 
