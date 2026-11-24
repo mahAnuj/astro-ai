@@ -7,10 +7,12 @@ and re-reads every precondition from the API rather than trusting the file."""
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,13 +24,19 @@ _spec.loader.exec_module(cc)
 REPO = "o/r"
 SHA = "b9077f6b65a881a5b4108cc4df1f33210c0affc9"
 OTHER = "a" * 40
+T1, T2 = "2026-11-24T04:25:30Z", "2026-11-24T04:33:27Z"
 
 
 class FakeGh:
     def __init__(self, *, state="open", head=SHA,
                  labels="needs-human-review,qa-pass,qa:independent",
-                 gates="success", comments=None, fail=None):
-        self.state, self.head, self.labels, self.gates = state, head, labels, gates
+                 gates=((1, "2026-11-24T04:00:00Z", "completed", "success"),),
+                 comments=None, fail=None):
+        self.state, self.head, self.labels = state, head, labels
+        # (id, started_at, status, conclusion) per `gates` run, or the raw
+        # text itself when a test wants unreadable output
+        self.gates = gates
+        self.gate_calls: list[list[str]] = []
         # (login, body)
         self.comments = comments if comments is not None else [
             (cc.RULER, f"QA: PASS — independent round, verified at {SHA}\nbody"),
@@ -43,7 +51,7 @@ class FakeGh:
                 raise RuntimeError("boom")
             self.dispatches.append(args)
             return ""
-        url = args[1] if args[1] != "-X" else args[3]
+        url = next(a for a in args[1:] if a.startswith("repos/"))
         for f in self.fail:
             if f in url:
                 raise RuntimeError("boom")
@@ -53,7 +61,11 @@ class FakeGh:
         if re.search(r"/pulls/\d+$", url):
             return f"{self.state}\t{self.head}\t{self.labels}\n"
         if "/check-runs" in url:
-            return self.gates + "\n"
+            self.gate_calls.append(args)
+            if isinstance(self.gates, str):
+                return self.gates
+            return "".join(json.dumps({"id": i, "started_at": at, "status": st, "conclusion": c})
+                           + "\n" for i, at, st, c in self.gates)
         if "/comments" in url and 'startswith("QA: PASS")' in args[-1]:
             want = re.search(r'contains\("([0-9a-f]{40})"\)', args[-1]).group(1)
             m = re.search(r'login (==|!=) "([^"]+)"', args[-1])   # read the script's OWN filter
@@ -121,9 +133,78 @@ def test_qa_fail_is_a_verdict_not_a_hold(tmp_path, monkeypatch):
 
 
 def test_red_or_missing_gates_are_refused(tmp_path, monkeypatch):
-    for gates in ("failure", "", "success,failure"):
+    for gates in (((1, T1, "completed", "failure"),), (),
+                  ((1, T1, "completed", "success"), (2, T2, "completed", "failure"))):
         gh = FakeGh(gates=gates)
         assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == [], gates
+
+
+def test_a_superseded_red_run_does_not_veto_a_green_rerun(tmp_path, monkeypatch):
+    """#1442: PR #1428 head c2621f7 had `gates` failure (id 138216580157,
+    04:25:30Z) then success (id 138219560717, 04:33:27Z); joining every
+    conclusion refused a head whose latest run was green."""
+    gh = FakeGh(gates=((138216580157, "2026-11-24T04:25:30Z", "completed", "failure"),
+                       (138219560717, "2026-11-24T04:33:27Z", "completed", "success")))
+    assert run(tmp_path, monkeypatch, gh) == 0 and len(gh.writes) == 2
+
+
+def test_a_green_run_followed_by_a_red_one_is_refused(tmp_path, monkeypatch):
+    """Not "any success": the LATEST run decides, and here it is red."""
+    gh = FakeGh(gates=((1, T1, "completed", "success"), (2, T2, "completed", "failure")))
+    assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
+
+
+@pytest.mark.parametrize("status,conclusion", [
+    ("in_progress", None), ("queued", None), ("completed", "cancelled"),
+    ("completed", "skipped"), ("completed", "failure"), ("completed", "timed_out"),
+    ("completed", None)])
+def test_a_latest_run_that_is_not_completed_success_is_refused(tmp_path, monkeypatch,
+                                                              status, conclusion):
+    gh = FakeGh(gates=((1, T1, "completed", "success"), (2, T2, status, conclusion)))
+    assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
+
+
+@pytest.mark.parametrize("flip", [False, True])
+def test_equal_started_at_is_decided_by_the_higher_id(tmp_path, monkeypatch, flip):
+    """Same start second, either listing order: id 2 (green) is the latest."""
+    runs = [(1, T1, "completed", "failure"), (2, T1, "completed", "success")]
+    gh = FakeGh(gates=tuple(reversed(runs)) if flip else tuple(runs))
+    assert run(tmp_path, monkeypatch, gh) == 0
+    runs = [(1, T1, "completed", "success"), (2, T1, "completed", "failure")]
+    gh = FakeGh(gates=tuple(reversed(runs)) if flip else tuple(runs))
+    assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
+
+
+def test_a_queued_rerun_with_no_start_time_is_the_latest(tmp_path, monkeypatch):
+    """A queued run has a null started_at; it must not be skipped in favour
+    of an older green one."""
+    gh = FakeGh(gates=((1, T1, "completed", "success"), (2, None, "queued", None)))
+    assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
+
+
+@pytest.mark.parametrize("raw", ["not json\n", '{"started_at": "2026-11-24T04:00:00Z", '
+                                 '"status": "completed", "conclusion": "success"}\n',
+                                 "[1, 2]\n", "\n"])
+def test_unreadable_gates_output_is_refused(tmp_path, monkeypatch, raw):
+    gh = FakeGh(gates=raw)
+    assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
+
+
+def test_the_gates_request_is_paginated_and_filtered_to_gates(tmp_path, monkeypatch):
+    """Without --paginate a head with more than one page of runs is read
+    from the first page only."""
+    gh = FakeGh()
+    run(tmp_path, monkeypatch, gh)
+    (args,) = gh.gate_calls
+    assert "--paginate" in args
+    url = next(a for a in args if a.startswith("repos/"))
+    assert "check_name=gates" in url and "filter=all" in url and "per_page=100" in url
+
+
+def test_the_refusal_names_the_latest_run(tmp_path, monkeypatch, capsys):
+    gh = FakeGh(gates=((1, T1, "completed", "success"), (7, T2, "completed", "cancelled")))
+    run(tmp_path, monkeypatch, gh)
+    assert "latest run 7: completed/cancelled" in capsys.readouterr().out
 
 
 def test_a_PR_with_no_hold_or_closed_is_left_alone(tmp_path, monkeypatch):
@@ -201,7 +282,7 @@ def test_two_clearances_dispatch_only_one_sweep(tmp_path, monkeypatch):
 
 
 def test_a_refused_clearance_dispatches_nothing(tmp_path, monkeypatch):
-    for kw in ({"head": OTHER}, {"gates": "failure"}, {"labels": "qa-pass,qa:independent"}):
+    for kw in ({"head": OTHER}, {"gates": ((1, T1, "completed", "failure"),)}, {"labels": "qa-pass,qa:independent"}):
         gh = FakeGh(**kw)
         assert run(tmp_path, monkeypatch, gh) == 1 and gh.dispatches == [], kw
 

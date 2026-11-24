@@ -1,21 +1,22 @@
 {
-  "generated_at": "2026-11-24T05:14:55Z",
+  "generated_at": "2026-11-24T14:18:13Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 165,
-  "with_ask": 44,
+  "open": 167,
+  "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 72,
+    "UNCLASSIFIED": 75,
     "INFRA": 16,
     "OPS": 11,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "ANALYTICS": 6,
-    "SEO": 5,
+    "ANALYTICS": 5,
+    "SEO": 4,
     "CORPUS": 4,
     "TOKENS": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "AGENT-MEASURE": 2,
     "AGENT-MERGE": 2,
     "PRIVACY": 2,
     "MEASURE": 2,
@@ -29,27 +30,125 @@
     "NOTIFY": 1,
     "UI": 1,
     "KNOWLEDGE": 1,
-    "AGENT-MEASURE": 1,
     "ASK": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 53,
+    "bug": 54,
     "untyped": 40,
-    "enhancement": 31,
+    "enhancement": 32,
     "chore": 25,
     "correctness": 11,
     "design": 5
   },
   "by_priority": {
-    "unset": 107,
+    "unset": 111,
     "medium": 26,
-    "high": 20,
-    "low": 12
+    "high": 19,
+    "low": 11
   },
   "blocked": 10,
   "rows": [
+    {
+      "number": 1451,
+      "title": "QA follow-up: PR #1449 page-locations headline states lower-bound counts as exact; encoded names unpinned",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-24T14:16:32Z",
+      "updated": "2026-11-24T14:16:32Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1450,
+      "title": "QA follow-up: PR #1449 fold_location emits bare-token names, double-encoded path addresses and /r/<id> snapshot ids",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-24T14:16:30Z",
+      "updated": "2026-11-24T14:16:30Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1448,
+      "title": "agent-measure: wire fetch_ga4.py --page-locations and list it for the analyst (wiring half of #1237)",
+      "ask": "",
+      "area": "AGENT-MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "provenance:trusted"
+      ],
+      "created": "2026-11-24T14:00:03Z",
+      "updated": "2026-11-24T14:00:03Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1444,
+      "title": "QA follow-up: PR #1440 empty-7th section asserts 'does not mean no marriage' with no corpus line, and the test requires it",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-24T08:30:14Z",
+      "updated": "2026-11-24T10:12:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1437,
+      "title": "agent-measure.yml: write gsc-query-page.json (workflow half of #1432)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo"
+      ],
+      "created": "2026-11-24T05:31:11Z",
+      "updated": "2026-11-24T05:31:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1436,
+      "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-24T05:31:10Z",
+      "updated": "2026-11-24T06:30:40Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1432,
       "title": "analytics: no export maps a query to the page that serves it — lever 4 names pages by topic only (3 reports)",
@@ -58,25 +157,11 @@
       "type": "enhancement",
       "priority": "unset",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "provenance:trusted"
       ],
       "created": "2026-11-24T05:11:41Z",
-      "updated": "2026-11-24T05:11:41Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1430,
-      "title": "seo: 7th-house pair (3,008 impr, pos 6.8-7.2, 27 clicks) — planets-in-7th has no answer for an empty 7th house or 'which planet'; body change, not a title test",
-      "ask": "No new page type (CLAUDE.md: new content goes through /learn; this edits two existing articles).",
-      "area": "SEO",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "growth"
-      ],
-      "created": "2026-11-24T04:36:50Z",
-      "updated": "2026-11-24T04:36:50Z",
+      "updated": "2026-11-24T05:31:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -244,23 +329,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1372,
-      "title": "QA follow-up: chain_cycle quota_reason crashes (AttributeError) on a non-string latest.at / generated_at (PR #1367)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-22T04:18:27Z",
-      "updated": "2026-11-24T05:12:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1369,
       "title": "QA follow-up: manglik-dosh article and registry FAQs still call comparable severity classical, against manglik-remedies (PR #1368)",
       "ask": "",
@@ -308,7 +376,7 @@
         "chore"
       ],
       "created": "2026-11-21T22:43:25Z",
-      "updated": "2026-11-23T20:14:26Z",
+      "updated": "2026-11-24T07:07:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -615,23 +683,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1295,
-      "title": "QA follow-up: the Hindi rashifal suffix asks for Sanskrit terms while the prompt asks for everyday, non-Sanskrit-heavy Hindi",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "low",
-      "labels": [
-        "bug",
-        "priority:low",
-        "qa"
-      ],
-      "created": "2026-11-20T16:03:13Z",
-      "updated": "2026-11-20T16:03:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1290,
       "title": "QA follow-up: qa-on-green's concurrency key includes the workflow name, so two green workflows on one head can each dispatch",
       "ask": "",
@@ -878,9 +929,13 @@
       "area": "ANALYTICS",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-11-19T02:17:38Z",
-      "updated": "2026-11-19T02:17:38Z",
+      "updated": "2026-11-24T14:17:15Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1093,24 +1148,6 @@
       ],
       "created": "2026-11-15T10:19:17Z",
       "updated": "2026-11-20T16:43:12Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1070,
-      "title": "analytics: instrument the core funnels",
-      "ask": "",
-      "area": "ANALYTICS",
-      "type": "enhancement",
-      "priority": "high",
-      "labels": [
-        "enhancement",
-        "priority:high",
-        "provenance:trusted",
-        "growth"
-      ],
-      "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-24T03:38:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1923,7 +1960,7 @@
         "needs-evidence"
       ],
       "created": "2026-10-20T08:48:15Z",
-      "updated": "2026-11-17T12:20:20Z",
+      "updated": "2026-11-24T14:12:41Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -2713,9 +2750,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-24T05:14:55Z",
+    "generated_at": "2026-11-24T14:18:13Z",
     "window_days": 28,
-    "open_now": 165,
+    "open_now": 167,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3134,16 +3171,17 @@
       },
       {
         "date": "2026-11-24",
-        "opened": 4,
-        "closed": 3,
-        "net": 1,
-        "open_end": 165,
+        "opened": 13,
+        "closed": 10,
+        "net": 3,
+        "open_end": 167,
         "opened_by": {
-          "loop": 4
+          "loop": 13
         },
         "closed_by": {
-          "close-on-evidence": 1,
-          "other": 2
+          "close-on-evidence": 3,
+          "prioritise": 1,
+          "other": 6
         }
       }
     ],
@@ -4105,6 +4143,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1070,
+        "closed_at": "2026-11-24T12:49:12Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1071,
         "closed_at": "2026-11-17T05:02:40Z",
         "closer": "close-on-evidence"
@@ -4440,6 +4483,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1295,
+        "closed_at": "2026-11-24T13:07:10Z",
+        "closer": "other"
+      },
+      {
         "number": 1300,
         "closed_at": "2026-11-20T20:07:26Z",
         "closer": "close-on-evidence"
@@ -4530,6 +4578,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1372,
+        "closed_at": "2026-11-24T05:36:01Z",
+        "closer": "other"
+      },
+      {
         "number": 1373,
         "closed_at": "2026-11-22T05:05:01Z",
         "closer": "prioritise"
@@ -4578,16 +4631,36 @@
         "number": 1416,
         "closed_at": "2026-11-23T16:24:48Z",
         "closer": "other"
+      },
+      {
+        "number": 1430,
+        "closed_at": "2026-11-24T10:19:45Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1434,
+        "closed_at": "2026-11-24T06:09:56Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 1439,
+        "closed_at": "2026-11-24T07:59:22Z",
+        "closer": "other"
+      },
+      {
+        "number": 1442,
+        "closed_at": "2026-11-24T09:20:42Z",
+        "closer": "other"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 5,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 99,
-          "median_h": 0.6,
-          "p90_h": 8.1,
+          "merged": 88,
+          "median_h": 0.7,
+          "p90_h": 6.6,
           "max_h": 46.6,
           "slowest": [
             {
@@ -4608,26 +4681,6 @@
                 },
                 "qa_fails": 0,
                 "pushes": 4
-              }
-            },
-            {
-              "number": 1127,
-              "title": "muhurat: Namkaran sets and day claim follow Raman and Rao (#1060)",
-              "author": "claude[bot]",
-              "merged_at": "2026-11-17T13:27:42Z",
-              "hours": 30.9,
-              "why": {
-                "reason": "26.3h gates red; 5 pushes",
-                "primary": "gates_red",
-                "hours": {
-                  "no_gates": 0.6,
-                  "gates_running": 0.6,
-                  "gates_red": 26.3,
-                  "awaiting_qa": 0.4,
-                  "awaiting_merge": 3.0
-                },
-                "qa_fails": 0,
-                "pushes": 5
               }
             },
             {
@@ -4690,16 +4743,36 @@
                 "qa_fails": 0,
                 "pushes": 4
               }
+            },
+            {
+              "number": 1168,
+              "title": "session: expire and revoke __session server-side, refuse cross-site /auth/google (#1106)",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-18T02:14:09Z",
+              "hours": 16.5,
+              "why": {
+                "reason": "8.6h waiting for gates to start; 5.0h QA passed, waiting for the merge; 4 pushes",
+                "primary": "no_gates",
+                "hours": {
+                  "no_gates": 8.6,
+                  "gates_running": 0.7,
+                  "gates_red": 2.0,
+                  "awaiting_qa": 0.2,
+                  "awaiting_merge": 5.0
+                },
+                "qa_fails": 0,
+                "pushes": 4
+              }
             }
           ],
           "top_reasons": [
             {
-              "reason": "gates red",
-              "prs": 2
+              "reason": "waiting for gates to start",
+              "prs": 3
             },
             {
-              "reason": "waiting for gates to start",
-              "prs": 2
+              "reason": "gates red",
+              "prs": 1
             },
             {
               "reason": "waiting for a fix after QA failed",
@@ -4708,7 +4781,7 @@
           ]
         },
         "28d": {
-          "merged": 341,
+          "merged": 347,
           "median_h": 0.5,
           "p90_h": 13.9,
           "max_h": 122.1,
@@ -4999,59 +5072,66 @@
         },
         {
           "date": "2026-11-24",
-          "merged": 3,
-          "median_h": 0.2,
-          "max_h": 0.2
+          "merged": 9,
+          "median_h": 0.4,
+          "max_h": 3.1
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 72.0,
+          "age_h": 81.1,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 69.0,
+          "age_h": 78.0,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 57.5,
+          "age_h": 66.6,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 43.3,
+          "age_h": 52.4,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1405,
           "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 21.9,
+          "age_h": 31.0,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1428,
           "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
-          "age_h": 0.9,
+          "age_h": 9.9,
           "waiting_on": "chief (trust boundary)",
           "why": null
         },
         {
-          "number": 1433,
-          "title": "chain_cycle: a non-string timestamp fails closed instead of crashing (#1372)",
-          "age_h": 0.0,
-          "waiting_on": "gates / QA",
+          "number": 1438,
+          "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (#1436)",
+          "age_h": 8.0,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1449,
+          "title": "fetch_ga4 --page-locations: query strings still reaching GA4 (#1237)",
+          "age_h": 0.3,
+          "waiting_on": "merge",
           "why": null
         }
       ]
