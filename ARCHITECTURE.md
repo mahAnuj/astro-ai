@@ -263,7 +263,7 @@ route is not sharing between users, it is **surviving the container**.
 Erasure runs the other way (#1293): `erase_natal_blobs` deletes the GCS blobs first and the
 SQLite rows (`cache.delete_many`) last, in a `finally`, because evicting first lets a
 concurrent view re-warm the row from the blob still in the bucket. It runs in a threadpool
-from the async handlers (up to 20 sequential deletes). A SQLite error during eviction is
+from the async handlers (up to 40 sequential deletes: 2 lists x MAX_CHARTS x 2 languages). A SQLite error during eviction is
 logged and does not change the result. Other instances' rows are out of reach.
 `docs/decisions/2026-11-21-natal-erasure-evicts-sqlite.md`.
 
