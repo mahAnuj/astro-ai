@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-24T20:13:22Z",
+  "generated_at": "2026-11-24T22:08:54Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 167,
@@ -1236,10 +1236,11 @@
       "priority": "unset",
       "labels": [
         "enhancement",
-        "astrology-correctness"
+        "astrology-correctness",
+        "provenance:trusted"
       ],
       "created": "2026-11-14T13:15:49Z",
-      "updated": "2026-11-14T13:15:49Z",
+      "updated": "2026-11-24T21:36:32Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2750,7 +2751,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-24T20:13:22Z",
+    "generated_at": "2026-11-24T22:08:54Z",
     "window_days": 28,
     "open_now": 167,
     "merged_open_hours": 24,
@@ -4658,9 +4659,9 @@
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 81,
-          "median_h": 0.6,
-          "p90_h": 4.3,
+          "merged": 80,
+          "median_h": 0.7,
+          "p90_h": 5.9,
           "max_h": 46.6,
           "slowest": [
             {
@@ -4783,7 +4784,7 @@
           ]
         },
         "28d": {
-          "merged": 345,
+          "merged": 344,
           "median_h": 0.5,
           "p90_h": 13.8,
           "max_h": 122.1,
@@ -5083,50 +5084,57 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 87.0,
+          "age_h": 88.9,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 83.9,
+          "age_h": 85.9,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 72.5,
+          "age_h": 74.4,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 58.3,
+          "age_h": 60.2,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1405,
           "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 36.9,
+          "age_h": 38.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1428,
           "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
-          "age_h": 15.8,
+          "age_h": 17.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1438,
           "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (#1436)",
-          "age_h": 13.9,
+          "age_h": 15.9,
           "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1455,
+          "title": "Vivah lagna windows: Rao's wedding guideline, benefic-owned lagna with a clean 7th (#1026)",
+          "age_h": 0.5,
+          "waiting_on": "gates / QA",
           "why": null
         }
       ]
