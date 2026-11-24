@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-24T14:21:22Z",
+ "generated_at": "2026-11-24T19:06:23Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-17T14:21:22Z",
-  "end": "2026-11-24T14:21:22Z",
-  "loop_comments": 955,
-  "on_prs": 516,
-  "prs": 95,
-  "on_issues": 439,
+  "start": "2026-11-17T19:06:23Z",
+  "end": "2026-11-24T19:06:23Z",
+  "loop_comments": 914,
+  "on_prs": 496,
+  "prs": 89,
+  "on_issues": 418,
   "issues": 133,
-  "comments_per_pr": 5.43,
-  "comments_per_issue": 3.3,
-  "duplicates": 48,
-  "duplicate_rate_pct": 5.0,
+  "comments_per_pr": 5.57,
+  "comments_per_issue": 3.14,
+  "duplicates": 36,
+  "duplicate_rate_pct": 3.9,
   "sent_by_kind": {
    "growth-goals": 5,
    "growth-goals-issue": 2,
@@ -29,11 +29,6 @@
    },
    {
     "on": "pr",
-    "number": 1170,
-    "comments": 17
-   },
-   {
-    "on": "pr",
     "number": 1375,
     "comments": 14
    },
@@ -46,12 +41,17 @@
     "on": "pr",
     "number": 1262,
     "comments": 13
+   },
+   {
+    "on": "pr",
+    "number": 1170,
+    "comments": 12
    }
   ],
   "owner_touched": {
-   "prs": 95,
+   "prs": 89,
    "owner_commented": 7,
-   "pct": 7
+   "pct": 8
   },
   "suppressed": {
    "deduped": 0,
@@ -60,17 +60,17 @@
   }
  },
  "previous": {
-  "start": "2026-11-10T14:21:22Z",
-  "end": "2026-11-17T14:21:22Z",
-  "loop_comments": 1272,
-  "on_prs": 743,
-  "prs": 141,
-  "on_issues": 529,
+  "start": "2026-11-10T19:06:23Z",
+  "end": "2026-11-17T19:06:23Z",
+  "loop_comments": 1277,
+  "on_prs": 733,
+  "prs": 139,
+  "on_issues": 544,
   "issues": 151,
   "comments_per_pr": 5.27,
-  "comments_per_issue": 3.5,
-  "duplicates": 49,
-  "duplicate_rate_pct": 3.9,
+  "comments_per_issue": 3.6,
+  "duplicates": 63,
+  "duplicate_rate_pct": 4.9,
   "sent_by_kind": {},
   "via_outbox": 0,
   "top_threads": [
@@ -96,14 +96,14 @@
    },
    {
     "on": "pr",
-    "number": 1063,
-    "comments": 14
+    "number": 1169,
+    "comments": 15
    }
   ],
   "owner_touched": {
-   "prs": 141,
-   "owner_commented": 7,
-   "pct": 5
+   "prs": 139,
+   "owner_commented": 6,
+   "pct": 4
   }
  },
  "kinds": {

@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-24T14:21:43Z)
+# Lessons — last 30 days (generated 2026-11-24T19:06:42Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -11,9 +11,9 @@ deterministic, no LLM.
 ## Repeated error themes: act on these
 
 - **copy** — 20 QA FAIL(s): #536, #544, #550, #564, #649, #654, #675, #691, #815, #833, #841, #884, #960, #1000, #1077
-- **grounding** — 33 QA FAIL(s): #524, #536, #635, #701, #706, #713, #747, #772, #815, #833, #841, #845, #859, #875, #1011, #1027, #1057, #1058, #1063, #1077, #1086, #1132, #1150, #1167, #1169, #1345, #1375
-- **i18n** — 9 QA FAIL(s): #524, #564, #737, #815, #875, #1057, #1150
-- **performance** — 8 QA FAIL(s): #524, #536, #565, #675, #747, #815
+- **grounding** — 31 QA FAIL(s): #536, #635, #701, #706, #713, #747, #772, #815, #833, #841, #845, #859, #875, #1011, #1027, #1057, #1058, #1063, #1077, #1086, #1132, #1150, #1167, #1169, #1345, #1375
+- **i18n** — 8 QA FAIL(s): #564, #737, #815, #875, #1057, #1150
+- **performance** — 7 QA FAIL(s): #536, #565, #675, #747, #815
 - **regression** — 32 QA FAIL(s): #536, #544, #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747, #815, #841, #884, #1000, #1002, #1128, #1167, #1169, #1212, #1241, #1262
 - **security** — 15 QA FAIL(s): #544, #564, #636, #712, #747, #841, #846, #1000, #1150, #1162, #1167, #1169
 - **tests** — 29 QA FAIL(s): #536, #544, #550, #701, #713, #747, #754, #801, #804, #833, #841, #846, #913, #999, #1027, #1058, #1105, #1167, #1169, #1173, #1212
@@ -21,7 +21,7 @@ deterministic, no LLM.
 
 ## Our errors
 
-- QA FAIL verdicts: 125
+- QA FAIL verdicts: 123
 - reverted commits on main: 0
 - failed verify-production runs: 9
 - ops findings now: 0

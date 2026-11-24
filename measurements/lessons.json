@@ -1,28 +1,8 @@
 {
- "generated_at": "2026-11-24T14:21:43Z",
+ "generated_at": "2026-11-24T19:06:42Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
-   {
-    "number": 524,
-    "at": "2026-10-25T16:36:18Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/524#issuecomment-6400257351",
-    "summary": "QA: FAIL \u2014 verified at `029d1f55ccf870a48ae1bcc7ad0565239ed9b491` QA r3: criterion 6 FIXED (0 of 90 days diverge, was 10) but B1 the day-moment pin is unguarded (reverting it at all 5 call sites leaves 1229 tests green; chart.py:542 claims otherwise), B2 house-8 remedy tier unsourced (vedic_referenc",
-    "themes": [
-     "grounding"
-    ]
-   },
-   {
-    "number": 524,
-    "at": "2026-10-25T17:05:01Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/524#issuecomment-6400563265",
-    "summary": "QA: FAIL \u2014 verified at `8ab47b24dfa0426353a3d97d43a7e372db39b2ad` QA r4: B1 (11 pin sites each go red when reverted, redone independently), B2 (house 8 dropped; 90 Leo rashi-days change, nothing else), T1 (gate hi 6,116 vs real 6,118), T2, S1 all FIXED; 1271 passed, 15 gates exit 0, 55/55 scoped mut",
-    "themes": [
-     "grounding",
-     "i18n",
-     "performance"
-    ]
-   },
    {
     "number": 536,
     "at": "2026-10-26T01:50:17Z",
@@ -1185,14 +1165,14 @@
   "ops_findings": []
  },
  "error_themes": {
-  "grounding": 33,
   "regression": 32,
+  "grounding": 31,
   "tests": 29,
   "tokens": 21,
   "copy": 20,
   "security": 15,
-  "i18n": 9,
-  "performance": 8
+  "i18n": 8,
+  "performance": 7
  },
  "repeated_themes": [
   "copy",
@@ -1473,9 +1453,9 @@
   }
  ],
  "outcome_counts": {
-  "UNSCOREABLE": 9,
   "MISS": 1,
   "OTHER": 3,
+  "UNSCOREABLE": 9,
   "PASS": 3,
   "PENDING": 21,
   "HIT": 1
