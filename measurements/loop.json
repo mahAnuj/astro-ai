@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-24T19:03:04Z",
+  "generated_at": "2026-11-24T20:13:06Z",
   "rows": [
     {
       "owner_helped": null,
@@ -40,17 +40,13 @@
       "outcome": "pr open",
       "attribution": "receipt",
       "kind": "ranked",
+      "turns": 18,
       "tokens_input": 105,
       "tokens_output": 32510,
       "tokens_cache_read": 3481816,
       "tokens_cache_write": 263403,
       "cost_list_usd": 1.4336,
-      "model": "claude-sonnet-5-5",
-      "turns": 18,
-      "agents_called": {
-        "project-manager": 1,
-        "qa": 1
-      }
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": false,
@@ -15401,39 +15397,39 @@
   ],
   "waste": {
     "days": 7,
-    "cycles": 170,
+    "cycles": 168,
     "minutes_by_outcome": {
-      "shipped": 4662.2,
+      "shipped": 4621.9,
       "pr open": 505.7,
-      "judged": 360.9,
+      "judged": 344.2,
       "nothing": 163.9,
       "failed": 0.0,
       "unknown": 0.0
     },
-    "minutes_total": 5692.7,
+    "minutes_total": 5635.7,
     "minutes_without_result": 163.9,
     "share_without_result": 0.029,
-    "shipped_prs": 64,
-    "build_idle_hours": 83.9,
-    "build_idle_share": 0.5
+    "shipped_prs": 63,
+    "build_idle_hours": 84.6,
+    "build_idle_share": 0.504
   },
   "tokens": {
     "days": 7,
-    "runs": 170,
-    "measured": 170,
+    "runs": 168,
+    "measured": 168,
     "total": {
-      "tokens": 689530614,
-      "input": 503558,
-      "output": 7180104,
-      "cache_read": 630674955,
-      "cache_write": 51171997,
-      "cost_list_usd": 281.94
+      "tokens": 682964059,
+      "input": 503358,
+      "output": 7120823,
+      "cache_read": 624523479,
+      "cache_write": 50816399,
+      "cost_list_usd": 279.6
     },
     "median_by_outcome": {
       "shipped": {
-        "runs": 97,
-        "tokens": 4631066,
-        "cost_list_usd": 2.15
+        "runs": 96,
+        "tokens": 4644324,
+        "cost_list_usd": 2.17
       },
       "pr open": {
         "runs": 12,
@@ -15441,8 +15437,8 @@
         "cost_list_usd": 1.76
       },
       "judged": {
-        "runs": 38,
-        "tokens": 1114001,
+        "runs": 37,
+        "tokens": 1108572,
         "cost_list_usd": 0.44
       },
       "nothing": {
@@ -15451,22 +15447,22 @@
         "cost_list_usd": 0.27
       }
     },
-    "median_cycle": 3914190,
-    "median_qa_round": 1114001,
-    "merged_prs": 64,
-    "per_merged_pr": 10773916,
-    "cost_list_usd_per_merged_pr": 4.41,
+    "median_cycle": 3822567,
+    "median_qa_round": 1108572,
+    "merged_prs": 63,
+    "per_merged_pr": 10840699,
+    "cost_list_usd_per_merged_pr": 4.44,
     "previous": {
-      "runs": 202,
-      "measured": 202,
-      "merged_prs": 111,
-      "per_merged_pr": 9165760
+      "runs": 200,
+      "measured": 200,
+      "merged_prs": 110,
+      "per_merged_pr": 9096314
     }
   },
   "agents": {
     "runs_read": {
-      "7d": 128,
-      "30d": 449
+      "7d": 125,
+      "30d": 448
     },
     "by_agent": {
       "architect": {
@@ -15498,7 +15494,7 @@
         "last_issue": 1163
       },
       "engineer": {
-        "7d": 8,
+        "7d": 7,
         "30d": 74,
         "last_run": 44378576254,
         "last_started": "2026-11-18T19:15:28Z",
@@ -15533,18 +15529,18 @@
         "last_issue": 818
       },
       "project-manager": {
-        "7d": 44,
-        "30d": 196,
-        "last_run": 45461507691,
-        "last_started": "2026-11-24T18:37:19Z",
-        "last_issue": 1436
+        "7d": 42,
+        "30d": 195,
+        "last_run": 45384585225,
+        "last_started": "2026-11-24T11:29:06Z",
+        "last_issue": 1295
       },
       "qa": {
-        "7d": 63,
-        "30d": 260,
-        "last_run": 45461507691,
-        "last_started": "2026-11-24T18:37:19Z",
-        "last_issue": 1436
+        "7d": 61,
+        "30d": 259,
+        "last_run": 45396211064,
+        "last_started": "2026-11-24T12:43:04Z",
+        "last_issue": 1295
       }
     }
   }

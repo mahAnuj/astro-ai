@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-24T19:03:23Z",
+  "generated_at": "2026-11-24T20:13:22Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 167,
@@ -2750,7 +2750,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-24T19:03:23Z",
+    "generated_at": "2026-11-24T20:13:22Z",
     "window_days": 28,
     "open_now": 167,
     "merged_open_hours": 24,
@@ -4658,7 +4658,7 @@
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 82,
+          "merged": 81,
           "median_h": 0.6,
           "p90_h": 4.3,
           "max_h": 46.6,
@@ -5083,49 +5083,49 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 85.9,
+          "age_h": 87.0,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 82.8,
+          "age_h": 83.9,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 71.3,
+          "age_h": 72.5,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 57.1,
+          "age_h": 58.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1405,
           "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 35.7,
+          "age_h": 36.9,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1428,
           "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
-          "age_h": 14.7,
+          "age_h": 15.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1438,
           "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (#1436)",
-          "age_h": 12.8,
+          "age_h": 13.9,
           "waiting_on": "merge",
           "why": null
         }

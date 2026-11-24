@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-24T19:04:14Z",
+ "generated_at": "2026-11-24T20:14:07Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-25",
@@ -131,10 +131,7 @@
    "class": "growth",
    "outcome": "pr open",
    "pr": 1438,
-   "agents": {
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45403353522,
