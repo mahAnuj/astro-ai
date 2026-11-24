@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-24T07:57:31Z)
+# Lessons — last 30 days (generated 2026-11-24T14:21:43Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
