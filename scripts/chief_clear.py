@@ -25,7 +25,10 @@ The labels change only when ALL of these read true from the API now:
   1. the PR is open and its head IS that sha  (a clearance never survives a push)
   2. it carries `needs-human-review`          (otherwise there is no hold to clear)
   3. `qa-pass` AND `qa:independent`, no `qa-fail`   (chief.md precondition 1)
-  4. the `gates` check run on that sha concluded `success`   (precondition 2)
+  4. the LATEST `gates` check run on that sha is completed and `success`
+     (precondition 2). Latest by (started_at, id): a superseded red run does
+     not veto a head whose re-run is green (#1442, PR #1428), and a later red
+     run still refuses an earlier green one
   5. a `claude[bot]` comment contains `chief-cleared at <sha>`  (precondition 4:
      the ruling comes first, and agent-merge re-checks this same string)
   6. a `claude[bot]` `QA: PASS` verdict whose first line names that sha  (the
@@ -93,6 +96,26 @@ def parse(text: str) -> tuple[list[tuple[int, str]], list[str]]:
     return rulings, problems
 
 
+def _latest_gates(raw: str) -> dict | None:
+    """The `gates` run with the greatest (started_at, id), or None.
+
+    None on empty output, malformed JSON or a line with no `id`: the caller
+    refuses, so anything odd fails closed. A null `started_at` (a queued run)
+    sorts last via "~", which is above every ISO timestamp, so a pending
+    re-run over an older green refuses rather than being skipped.
+    """
+    runs = []
+    try:
+        for line in raw.splitlines():
+            if line.strip():
+                r = json.loads(line)
+                r["id"]                     # a line with no id is not a run we can order
+                runs.append(r)
+        return max(runs, key=lambda r: (r.get("started_at") or "~", r["id"])) if runs else None
+    except (ValueError, KeyError, TypeError):
+        return None
+
+
 def refusal(gh: Runner, repo: str, pr: int, sha: str) -> str | None:
     """Why NOT to clear PR #pr at sha, or None when every check holds."""
     try:
@@ -113,12 +136,25 @@ def refusal(gh: Runner, repo: str, pr: int, sha: str) -> str | None:
     if not {"qa-pass", "qa:independent"} <= have:
         return "needs `qa-pass` AND `qa:independent` (chief.md precondition 1)"
     try:
-        gates = gh(["api", f"repos/{repo}/commits/{sha}/check-runs?check_name=gates&per_page=20",
-                    "--jq", "[.check_runs[].conclusion] | join(\",\")"]).strip()
+        # JSON lines, not a joined string: the joined conclusions of EVERY run
+        # let a superseded failure veto a green re-run (#1442, PR #1428 head
+        # c2621f7: failure 04:25:30Z, success 04:33:27Z). `filter=all` so a
+        # re-run is listed beside the run it replaced rather than left to
+        # GitHub's own idea of "latest"; we pick the latest ourselves.
+        gates = gh(["api", "--paginate",
+                    f"repos/{repo}/commits/{sha}/check-runs?check_name=gates&per_page=100&filter=all",
+                    "--jq", ".check_runs[] | {id, started_at, status, conclusion}"])
     except RuntimeError as exc:
         return f"could not read the gates check ({exc})"
-    if not gates or any(c != "success" for c in gates.split(",")):
-        return f"`gates` on {sha[:7]} is not green ({gates or 'no run'})"
+    latest = _latest_gates(gates)
+    # Green only when the LATEST run is completed AND success. Never "any
+    # success" and never "ignore failures": a red run that came after the
+    # green one still refuses.
+    if not latest or not (latest.get("status") == "completed"
+                          and latest.get("conclusion") == "success"):
+        seen = (f"latest run {latest['id']}: {latest.get('status')}/{latest.get('conclusion')}"
+                if latest else "no run")
+        return f"`gates` on {sha[:7]} is not green ({seen})"
     try:
         ruled = gh(["api", f"repos/{repo}/issues/{pr}/comments?per_page=100", "--jq",
                     f'[.[] | select(.user.login == "{RULER}")'
