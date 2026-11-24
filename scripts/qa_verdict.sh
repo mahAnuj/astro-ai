@@ -26,6 +26,10 @@
 #   PASS  ->  +qa-pass  -qa-fail   (and `gh pr ready`)
 #   FAIL  ->  +qa-fail  -qa-pass    (and the draft STAYS a draft)
 #
+# That is the END STATE, not the write order. THE COMMENT IS WRITTEN FIRST, then
+# the PR is readied (PASS only), then the labels last (#1285): the label is what
+# starts `agent-merge`, so the comment it binds to must already exist.
+#
 # plus exactly one provenance label, `qa:independent` or `qa:in-cycle`, the
 # other removed. Provenance is NOT a verdict and a pass must not clear it:
 # qa.md calls it "a trust gradient, not bookkeeping" -- `qa:independent` means
@@ -45,6 +49,11 @@
 # as-is. So `--sha` is compared against the PR's current head and a pass is
 # refused if the branch moved underneath it. Pass the SHA QA actually examined,
 # not `HEAD` read at the end.
+#
+# `--sha` may be abbreviated (7-40 hex characters), but the comment always names
+# the FULL head when the --sha is a prefix of it: `agent-merge` matches the full
+# sha, so an abbreviation written verbatim would never bind (#1285). A FAIL
+# naming a commit that is not the head's prefix is written as given.
 #
 # Usage:
 #   qa_verdict.sh --pr <n> --verdict PASS|FAIL [--issue <n>] [--sha <sha>]
@@ -174,20 +183,43 @@ case "$PROV" in
   *) echo "qa_verdict.sh: --provenance must be independent or in-cycle, got '$PROV'" >&2; exit 2 ;;
 esac
 
+# --sha is a commit id QA examined: 7-40 hex characters (7 is the shortest form
+# detect_stalls.py's verdict-line reader accepts). Anything shorter is a prefix of
+# nearly every head, so the prefix test below would pass and the comment would
+# then name a sha that binds nothing. The value also goes into a comment body.
+case "$SHA" in
+  '') ;;
+  *[!0-9a-fA-F]*) echo "qa_verdict.sh: --sha must be 7-40 hex characters, got '$SHA'" >&2; exit 2 ;;
+  *) if [ "${#SHA}" -lt 7 ] || [ "${#SHA}" -gt 40 ]; then
+       echo "qa_verdict.sh: --sha must be 7-40 hex characters, got '$SHA'" >&2; exit 2
+     fi ;;
+esac
+
 BRANCH=$(gh pr view "$PR" --repo "$GH_REPO" --json headRefName --jq .headRefName)
 HEAD=$(gh pr view "$PR" --repo "$GH_REPO" --json headRefOid --jq .headRefOid)
+
+# THE SHA THE VERDICT COMMENT NAMES. `agent-merge` binds a PASS to the comment by
+# matching the FULL head sha, so an abbreviated `--sha` written verbatim (#1285)
+# left a passed PR that never merged. Expand it to the head when it is a prefix of
+# the head, and an omitted --sha is the head. One prefix test serves both this and
+# the PASS refusal below.
+#
+# A FAIL whose --sha is NOT a prefix of the head (QA examined an older commit and
+# the branch has since moved) keeps the sha it was given: that is what was
+# examined, and resolving it to the head would assert QA saw code it did not.
+FULL=${SHA:-$HEAD}
+if [ -n "$SHA" ]; then
+  case "$HEAD" in "$SHA"*) FULL=$HEAD ;; esac
+fi
 
 # A PASS about a head that no longer exists is the stale-label bug. Refuse it.
 # A FAIL is not checked: "this branch had defects" stays true after a push, and
 # a cycle that pushes a fix then re-runs QA passes a fresh --sha anyway.
-if [ -n "$SHA" ] && [ "$VERDICT" = PASS ]; then
-  case "$HEAD" in
-    "$SHA"*) ;;
-    *) echo "qa_verdict.sh: REFUSED — QA examined $SHA but PR #$PR is now at $HEAD." >&2
-       echo "  The branch moved after QA ran, so a qa-pass here would assert a" >&2
-       echo "  verdict about code nobody verified. Re-run QA on $HEAD." >&2
-       exit 3 ;;
-  esac
+if [ -n "$SHA" ] && [ "$VERDICT" = PASS ] && [ "$FULL" != "$HEAD" ]; then
+  echo "qa_verdict.sh: REFUSED — QA examined $SHA but PR #$PR is now at $HEAD." >&2
+  echo "  The branch moved after QA ran, so a qa-pass here would assert a" >&2
+  echo "  verdict about code nobody verified. Re-run QA on $HEAD." >&2
+  exit 3
 fi
 
 # The owning issue. The branch name is a HINT and nothing more -- --issue wins,
@@ -265,31 +297,46 @@ fi
 
 fail() { echo "qa_verdict: $1 FAILED — transition is INCOMPLETE" >&2; exit 4; }
 
-# shellcheck disable=SC2086  # word splitting is the point: these are flag pairs
-[ -z "$pr_flags" ]    || gh pr edit    "$PR"    --repo "$GH_REPO" $pr_flags    || fail "pr edit"
-# shellcheck disable=SC2086
-[ -z "$issue_flags" ] || gh issue edit "$ISSUE" --repo "$GH_REPO" $issue_flags || fail "issue edit"
+# WRITE ORDER, and why: the comment, then the un-drafting, then the labels LAST
+# (#1285). The `labeled` edge is what starts `agent-merge`, so a label written
+# before the comment let it fire with no verdict comment to bind to -- and when
+# the comment post then failed, left a label nothing bound ("the comment comes
+# first, then the label", qa.md). Nothing is written before the comment; a failure
+# at any step leaves no label, so a merge cannot start on a half-recorded verdict,
+# and a re-run is safe (labels are planned from the live state, the comment is
+# simply posted again).
+#
+# The comment is the audit trail the label cannot carry: which head, and why.
+body="QA: $VERDICT — verified at \`$FULL\`"
+[ -z "$NOTE" ] || body="$body
+$NOTE"
+if [ "$VERDICT" = PASS ]; then
+  case ",$pr_have," in
+    *",qa-fail,"*)
+      # Written BEFORE the removal, so it states what this PASS does and not that
+      # it has been done: the label write below can still fail.
+      clears="the PR"
+      [ "$ISSUE" = none ] || clears="the PR and on issue #$ISSUE"
+      body="$body
+
+\`qa-fail\` from an earlier round is being cleared by this PASS on $clears: this round passed on \`$FULL\`. Recorded by \`scripts/qa_verdict.sh\`." ;;
+  esac
+fi
+gh pr comment "$PR" --repo "$GH_REPO" --body "$body" || fail "pr comment"
 
 # A draft cannot merge, and only a PASS earns the un-drafting. agent-cycle.md:
 # "A DRAFT CARRYING qa-fail STAYS A DRAFT" -- the draft is a gate somebody shut
-# because a round found defects.
+# because a round found defects. Before the labels, so everything `agent-merge`
+# reads is in place by the time the label starts it.
 if [ "$VERDICT" = PASS ]; then
   if [ "$(gh pr view "$PR" --repo "$GH_REPO" --json isDraft --jq .isDraft)" = true ]; then
     gh pr ready "$PR" --repo "$GH_REPO" || fail "pr ready"
   fi
 fi
 
-# The comment is the audit trail the label cannot carry: which head, and why.
-body="QA: $VERDICT — verified at \`${SHA:-$HEAD}\`"
-[ -z "$NOTE" ] || body="$body
-$NOTE"
-if [ "$VERDICT" = PASS ]; then
-  case ",$pr_have," in
-    *",qa-fail,"*) body="$body
-
-\`qa-fail\` from an earlier round removed on the PR and on issue #$ISSUE: this round passed on \`${SHA:-$HEAD}\`. Recorded by \`scripts/qa_verdict.sh\`." ;;
-  esac
-fi
-gh pr comment "$PR" --repo "$GH_REPO" --body "$body" || fail "pr comment"
+# shellcheck disable=SC2086  # word splitting is the point: these are flag pairs
+[ -z "$pr_flags" ]    || gh pr edit    "$PR"    --repo "$GH_REPO" $pr_flags    || fail "pr edit"
+# shellcheck disable=SC2086
+[ -z "$issue_flags" ] || gh issue edit "$ISSUE" --repo "$GH_REPO" $issue_flags || fail "issue edit"
 
 echo "qa_verdict: recorded"
