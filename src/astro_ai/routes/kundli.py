@@ -128,8 +128,8 @@ def erase_natal_blobs(charts) -> bool:
     Keeps going after a failure so one bad key does not shield the others. Logs no
     key: it embeds hashes of birth data and the seeker's name.
 
-    Blocking (up to 20 sequential GCS deletes): async callers run it in a threadpool
-    (#1293). The SQLite rows go LAST and always (`finally`): evicting first would let
+    Blocking (up to 40 sequential GCS deletes: 2 chart lists x MAX_CHARTS=10 x 2
+    languages, see `/account/delete`): async callers run it in a threadpool (#1293). The SQLite rows go LAST and always (`finally`): evicting first would let
     a concurrent view re-warm the row from the blob still in the bucket
     (`_cached` backfills SQLite after a durable hit). This clears only the instance
     that serves the delete; other instances keep their rows (cache.py docstring).

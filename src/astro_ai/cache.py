@@ -252,8 +252,11 @@ def put(
 def delete_many(cache_keys: list[str]) -> int:
     """Remove the named rows; return how many existed. Same-instance only (see the
     module docstring). One statement under one lock, so a concurrent `put` cannot
-    interleave half-way through an erasure. At most ~20 keys, so no chunking against
-    SQLite's bound-variable limit; an empty list is `IN ()`, valid, and deletes nothing.
+    interleave half-way through an erasure. At most 40 keys (2 chart lists, cookie +
+    record, x MAX_CHARTS=10 x 2 languages, see the /account/delete handler), so no
+    chunking against SQLite's bound-variable limit (999 on builds before 3.32, 32766
+    from 3.32; 40 is far under both). Re-check this if MAX_CHARTS is raised; an empty
+    list is `IN ()`, valid, and deletes nothing.
     """
     keys = list(cache_keys)
     with _conn() as c:

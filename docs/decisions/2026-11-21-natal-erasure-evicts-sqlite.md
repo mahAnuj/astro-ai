@@ -43,3 +43,11 @@ through `run_in_threadpool`. 0 LLM tokens, no prompt touched.
 - **A per-chart `LIKE` purge of SQLite** (all prompt versions): deferred. Keys embed the
   prompt token, so only the current token's rows are evicted, as for the blobs.
 - **Cross-instance purge:** needs a shared channel; see the limit above.
+
+## Addendum 2026-11-24 (#1361)
+
+The 20 above counted one chart list. `/account/delete` passes the cookie charts and the
+record charts, each capped at `MAX_CHARTS=10`, at 2 languages each, so the real ceiling is
+40 blob deletes and 40 SQLite keys (a ceiling: the lists can overlap and
+`erase_natal_blobs` builds sets). Still no chunking: 40 is far under SQLite's
+bound-variable limit. Re-check that bound if `MAX_CHARTS` is raised.

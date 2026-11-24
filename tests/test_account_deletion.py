@@ -586,7 +586,7 @@ def test_a_sqlite_error_during_eviction_does_not_change_the_result(fake_store, m
 @pytest.mark.parametrize("handler", ["account", "charts"])
 def test_natal_erasure_deletes_run_off_the_event_loop(signed_in, fake_store, monkeypatch,
                                                       handler):
-    """20 sequential cross-continent deletes must not stall the loop. In a threadpool
+    """Up to 40 sequential cross-continent deletes must not stall the loop. In a threadpool
     worker `asyncio.get_running_loop()` raises; on the loop it returns."""
     on_loop: list[str] = []
     ran: list[str] = []
