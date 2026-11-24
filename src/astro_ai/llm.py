@@ -75,7 +75,8 @@ _LANG_SUFFIX: dict[str, str] = {
         "(e.g. ## व्यक्तित्व, ## करियर और व्यवसाय, ## धन और समृद्धि, "
         "## संबंध और विवाह, ## स्वास्थ्य और कुशल-क्षेम, ## यात्रा और अवसर, "
         "## जीवन की अवस्थाएँ — and for outlooks, segment labels in Hindi). "
-        "Use Sanskrit Vedic terms naturally: राशि, लग्न, ग्रह, नक्षत्र, भाव, "
+        "Use everyday spoken Hindi; keep Sanskrit Vedic terms to the common ones, "
+        "such as: राशि, लग्न, ग्रह, नक्षत्र, भाव, "
         "मंगल दोष, साढ़े साती. The seeker reads Hindi; do not include any English. "
         "Any section heading must still begin with `## ` on its own line."
     ),
