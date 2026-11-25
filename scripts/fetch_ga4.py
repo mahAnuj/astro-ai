@@ -922,11 +922,39 @@ REDACTED_SEGMENT = "<redacted>"
 REDACTED_NAME = "(redacted-name)"
 UNPARSEABLE = "(unparseable)"
 # A parameter NAME is attacker-controlled (`?a@b.com` is a bare name), so it is emitted only
-# when it is a plain identifier.
+# when it is a plain identifier. #1450: a plain-looking identifier is still a leak when it IS a
+# value sent without an `=` (`?Ujjain`, `?tok3nSECRET...`), so see `_plain_name` for the two
+# extra refusals.
 _SAFE_NAME = re.compile(r"[A-Za-z0-9_.\[\]-]{1,32}")
+# `routes/kundli.py` serves a saved chart at /r/{short_id}: a capability URL, so the id is as
+# good as a password for that chart. The export collapses it to this placeholder.
+SNAPSHOT_ID = "<id>"
+# A name this long that mixes digits and letters is an id or a token, never a parameter name.
+# 20 is the floor of the issue's own wording; the longest real name on the site is far shorter.
+_TOKEN_MIN = 20
+
+
+def _plain_name(part: str, name: str) -> bool:
+    """Is this query part's name a parameter NAME rather than a value that arrived as one?
+
+    `part` is the RAW text (before decoding) and `name` its decoded name. A part with no `=` is
+    a name only when it is one of the watched PII_PARAMS (`?token`, `?email` are the very
+    signals the export counts); any other bare text -- a city, an address, a token -- is a
+    value. The raw `=` is checked, not the decoded one, so `?email%3Dx` does not pass as a
+    valued `email`. A name that is 20+ characters of digits and letters is token-shaped.
+    """
+    if "=" not in part and name not in PII_PARAMS:
+        return False
+    if len(name) >= _TOKEN_MIN and any(c.isdigit() for c in name) and any(c.isalpha() for c in name):
+        return False
+    return True
 
 
 def _safe_segment(seg: str) -> str:
+    # A double-encoded address (`%2540`) decodes to `%40` one layer later, so any `%25` is
+    # refused rather than decoded to the depth an attacker chose.
+    if "%25" in seg.lower():
+        return REDACTED_SEGMENT
     if "@" in seg or "%40" in seg.lower() or len(seg) > 40:
         return REDACTED_SEGMENT
     return seg
@@ -937,19 +965,28 @@ def fold_location(raw: str) -> tuple[str, tuple[str, ...]]:
 
     The raw string is never echoed -- not here, not in an exception. Host, scheme, userinfo,
     fragment and every parameter VALUE are dropped, so an address that reached GA4 in a
-    value cannot reach the output.
+    value cannot reach the output. Also dropped: a bare query token that is really a value
+    (`?Ujjain`), a token-shaped name, a path segment holding `%25` (a double-encoded address)
+    and the id of a /r/<id> kundli snapshot, which becomes `/r/<id>`.
     """
     try:
         u = urlsplit(raw)
     except ValueError:
         return UNPARSEABLE, ()
-    path = "/".join(_safe_segment(seg) for seg in u.path.split("/"))
+    segs = u.path.split("/")
+    # Top level only: segs[0] is the empty text before the leading slash.
+    if len(segs) > 2 and segs[1] == "r" and segs[2]:
+        segs[2] = SNAPSHOT_ID
+    path = "/".join(_safe_segment(seg) for seg in segs)
     if path.endswith("/") and len(path) > 1:
         path = path[:-1]
     names = set()
     for part in u.query.split("&"):
         name = unquote_plus(part.split("=", 1)[0])
         if not name:
+            continue
+        if not _plain_name(part, name):
+            names.add(REDACTED_NAME)
             continue
         names.add(name if _SAFE_NAME.fullmatch(name) else REDACTED_NAME)
     return path, tuple(sorted(names))
