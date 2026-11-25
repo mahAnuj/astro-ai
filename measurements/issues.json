@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-25T19:23:20Z",
+  "generated_at": "2026-11-25T21:03:05Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 168,
+  "open": 167,
   "with_ask": 42,
   "by_area": {
-    "UNCLASSIFIED": 79,
+    "UNCLASSIFIED": 78,
     "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
@@ -32,7 +32,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 59,
+    "bug": 58,
     "untyped": 38,
     "enhancement": 31,
     "chore": 26,
@@ -40,13 +40,29 @@
     "design": 5
   },
   "by_priority": {
-    "unset": 112,
+    "unset": 111,
     "medium": 26,
     "high": 19,
     "low": 11
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 1497,
+      "title": "QA follow-up: finder dark-half/avoid_tithi legend wording (PR #1496)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T21:01:43Z",
+      "updated": "2026-11-25T21:01:43Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1492,
       "title": "QA follow-up: one malformed loop.json row 500s every /admin/ops tab before ops_kpis can skip it (PR #1489)",
@@ -172,25 +188,6 @@
       ],
       "created": "2026-11-25T14:59:02Z",
       "updated": "2026-11-25T14:59:02Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1483,
-      "title": "QA follow-up: matching.html and manglik-remedies status list still list comparable severity as a cancellation without saying it is ours (PR #1375)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-25T14:46:51Z",
-      "updated": "2026-11-25T19:19:48Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -482,25 +479,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1376,
-      "title": "QA follow-up: matching.html still lists comparable severity among implemented cancellations; decision record misdescribes the gate split (PR #1375, #1369)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-22T10:39:20Z",
-      "updated": "2026-11-25T19:19:36Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1364,
       "title": "analytics: no export sizes automated traffic — the Direct channel (311 sessions, 19% engaged) cannot be split into bots and readers",
       "ask": "",
@@ -542,10 +520,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-21T16:48:27Z",
-      "updated": "2026-11-21T16:48:27Z",
+      "updated": "2026-11-25T21:02:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2760,9 +2741,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-25T19:23:21Z",
+    "generated_at": "2026-11-25T21:03:05Z",
     "window_days": 28,
-    "open_now": 168,
+    "open_now": 167,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3182,15 +3163,15 @@
       },
       {
         "date": "2026-11-25",
-        "opened": 18,
-        "closed": 17,
-        "net": 1,
-        "open_end": 168,
+        "opened": 19,
+        "closed": 19,
+        "net": 0,
+        "open_end": 167,
         "opened_by": {
-          "loop": 18
+          "loop": 19
         },
         "closed_by": {
-          "close-on-evidence": 12,
+          "close-on-evidence": 14,
           "main-red-report": 1,
           "owner": 3,
           "other": 1
@@ -4640,6 +4621,11 @@
         "closer": "prioritise"
       },
       {
+        "number": 1376,
+        "closed_at": "2026-11-25T19:34:00Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1377,
         "closed_at": "2026-11-22T23:05:54Z",
         "closer": "other"
@@ -4743,15 +4729,20 @@
         "number": 1481,
         "closed_at": "2026-11-25T14:51:04Z",
         "closer": "main-red-report"
+      },
+      {
+        "number": 1483,
+        "closed_at": "2026-11-25T19:34:04Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 2,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
           "merged": 86,
-          "median_h": 0.8,
+          "median_h": 0.7,
           "p90_h": 11.4,
           "max_h": 105.0,
           "slowest": [
@@ -4862,7 +4853,7 @@
           ]
         },
         "28d": {
-          "merged": 358,
+          "merged": 359,
           "median_h": 0.6,
           "p90_h": 15.1,
           "max_h": 122.1,
@@ -5151,7 +5142,7 @@
         },
         {
           "date": "2026-11-25",
-          "merged": 17,
+          "merged": 18,
           "median_h": 1.8,
           "max_h": 105.0
         }
@@ -5160,7 +5151,7 @@
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 95.7,
+          "age_h": 97.3,
           "waiting_on": "merge",
           "why": {
             "reason": "91.5h waiting for gates to start; 4 pushes",
@@ -5169,22 +5160,22 @@
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 4.0
+              "gates_red": 5.7
             },
             "qa_fails": 0,
             "pushes": 4
           }
         },
         {
-          "number": 1493,
-          "title": "manglik-remedies: status bullet discloses the comparable-severity band (#1483, #1376)",
-          "age_h": 0.6,
+          "number": 1496,
+          "title": "muhurat: label dark-half good-tithi credit and avoid_tithi lists per astro-auditor ruling ",
+          "age_h": 0.1,
           "waiting_on": "merge",
           "why": {
-            "reason": "0.6h waiting for gates to start",
-            "primary": "no_gates",
+            "reason": "no single wait stood out",
+            "primary": "other",
             "hours": {
-              "no_gates": 0.6
+              "no_gates": 0.1
             },
             "qa_fails": 0,
             "pushes": 1
