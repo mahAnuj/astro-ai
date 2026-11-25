@@ -251,12 +251,16 @@
       </div>
       <p class="text-sm text-bhagya-ink-soft mb-2">{{ tp.reason[:1] | upper }}{{ tp.reason[1:] }}.</p>
       {% if tp_ties > 0 %}
-      <p class="text-sm text-bhagya-ink-soft mb-2">Tied on points with {{ tp_ties }} other {{ 'date' if tp_ties == 1 else 'dates' }}; earliest first.</p>
+      <p class="text-sm text-bhagya-ink-soft mb-2">Tied on {{ 'verdict and points' if couple_active and tp.couple else 'points' }} with {{ tp_ties }} other {{ 'date' if tp_ties == 1 else 'dates' }}; earliest first.</p>
       {% endif %}
       {% if couple_active and tp.couple %}
       <p class="text-sm text-bhagya-ink-soft mb-2">Couple verdict: {{ tp.couple.combined_verdict.replace('-', ' ') }}. Dates marked avoid for the couple are skipped here, though they stay in the table. This is the top date on the panchang rules under this finder's own both-partners rule (explained below). It is not a classical endorsement for your two charts.</p>
       {% endif %}
+      {% if couple_active and tp.couple %}
+      <p class="text-xs text-bhagya-muted">Among dates of the same grade, this card goes first to a date this finder marks good for both partners, ahead of a mixed one, and then to the one with the most points. Both orders are this site's own convention: the classical rules fix which dates qualify, but the tradition we follow gives no ranking between them.</p>
+      {% else %}
       <p class="text-xs text-bhagya-muted">Among dates of the same grade, this card goes first to the one with the most points under this site's own point count: the classical rules fix which dates qualify, but the tradition we follow gives no weighting between them.</p>
+      {% endif %}
     </div>
     {% elif auspicious_candidates and couple_active %}
     <p id="top-pick-none" class="mb-4 text-sm text-bhagya-muted">Every date in this range is marked avoid for the couple, so no top pick is shown.</p>
