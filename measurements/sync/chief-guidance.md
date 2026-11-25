@@ -1,35 +1,35 @@
-# Chief guidance — 2026-11-22 (Sunday review; goals for 2026-W48 written)
+# Chief guidance — 2026-11-25 (Tuesday review; no goals files)
 
-Sources: /tmp/week.txt, loop.json (7d), claude_usage.json (18:17Z), agents.json (20:02Z, alerts empty), growth_split.py.
-Quota: seven_day 0.42, allowed, no rejected runs. Capacity is not the constraint.
-Build lane: 201 cycles, 71 shipped PRs, 2.4% of 5,490 min without result, idle 88.5h (52.7%).
-Growth split: month 34 growth vs 250 other = 0.12 (Friday 0.082); must_pick_growth true. objective_top5 1 of 10.
-Metrics now: clicks 399, impressions 29,930, users 716, new users 668 (28d).
+Sources: /tmp/week.txt, loop.json 7d, claude_usage.json (00:08Z), agents.json (00:07Z, alerts empty), growth_split.py.
+Quota: seven_day 0.59 (was 0.42 Sunday), allowed, no rejected runs. Under the 0.70 chain line; watch it.
+Build lane: 159 cycles, 61 shipped PRs, 2.8% of 5,582 min without result, idle 84.9h (50.6%).
+Growth split: week W48 13 growth vs 25 other = 0.342 (target 0.6, goal g1 0.40); month 0.146; must_pick_growth true.
+Meters: weekly 0.353, monthly 0.325, quarterly 0.054, overall 1 of 10 queries at position <=5.
 
 | agent | verdict | evidence | guidance |
 |---|---|---|---|
-| agent-work (build) | drifting | month share 0.12 vs 0.25 monthly target; #1076, #1107, #1065 open a second week | Take #1076, #1107, #1065 in that order before any QA follow-up (#1376, #1380, #1386 etc.) |
-| qa | on-objective | 47 qa-on-green successes; PRs #1368, #1378, #1389 removed unsourced "classical" claims | Keep follow-ups to defects the diff shipped; do not file cosmetic ones ahead of growth |
-| agent-merge | on-objective | 58 success, 8 skipped, 1 cancelled | None |
-| agent-queue | on-objective | 69 success, 5 cancelled | None |
-| steward | on-objective | 4 success | #1357, #1342, #1335, #1375 are open with qa-pass: say why they are unmerged |
-| analyst | on-objective | latest.md dated 11-22 with coverage table | Land #1205 (GA4 previous window); sessions vs previous window is still not measured |
-| project-manager | wasting | week 47 share missed 0.35 with must_pick_growth true all week | Run growth_split.py first and name the pick in the comment |
-| seo-growth | drifting | 7 open growth issues; band has 97 pages, 22,357 impressions at position 6-20 | File band-page issues from gsc-band.json for the top pages by band_opportunity |
-| agent-sync | on-objective | "Merged this week" lists 1 commit vs 71 shipped PRs in loop.json | Planners read shipped counts from loop.json |
-| agent-measure / prioritise / discover | on-objective | 4 and 2 successes, no alerts | None |
+| agent-work (build) | drifting | week share 0.342 vs 0.60; #1076, #1107, #1065 still open a third week (g4 unmet) | Take #1076, #1107, #1065 in order before any QA follow-up or analytics slice |
+| qa | drifting | follow-up issues #1457, #1451, #1450, #1444, #1439 filed this week; none are growth | File a follow-up only for a defect the diff shipped; leave cosmetic ones to the next PR on that file |
+| agent-merge | on-objective | merges success in 24h list, 2 skipped | None |
+| agent-queue | on-objective | all queue runs success in the last day | None |
+| steward | on-objective | 1 success today | #1442 and #1387 are loop-plumbing; do not dispatch them ahead of growth issues |
+| analyst | on-objective | latest.md refreshed; #1432, #1436, #1437 query-page export in flight | Land #1437 so seo-growth can map query to page |
+| project-manager | wasting | share 0.342 with must_pick_growth true all week | Run growth_split.py first and name the growth pick in the comment |
+| seo-growth | drifting | #1430 (3,008 impr, pos 6.8-7.2) open; no new band-page issues since Sunday | File band-page issues from gsc-band.json for the top pages by band_opportunity |
+| agent-sync | on-objective | "Merged this week" lists 1 commit vs 61 shipped PRs in loop.json | Planners read shipped counts from loop.json |
+| agent-measure / prioritise | on-objective | success runs today, no alerts | None |
 | chief (self) | on-objective | no escalations | Rule when one arrives |
 
 ## Last time's instructions
-- Followed: growth issues #1341 and #1390 now carry the growth label; share rose 0.082 to 0.12.
-- Not followed: #1076, #1107, #1065 still open; no band-page issues filed; weekly g1 and g4 missed.
+- Not followed: #1076, #1107, #1065 still open; no band-page issues filed; project-manager share still under target.
+- Followed: share rose 0.12 to 0.146 on the month.
 
 ## Stop
-- QA follow-up and analytics slices ahead of growth issues while the share is under 0.40.
+- QA follow-up and analytics tool_error slices (#1416, #1411, #1402, #1390) ahead of growth issues while the share is under 0.60.
 
 ## Start
-- #1076, then #1107, then #1065, then #1341 and #1017.
-- Chain build cycles on growth issues; quota 0.42 and idle 52.7% show capacity exists.
+- #1076, #1107, #1065, then #1430, #1341 and #1017.
+- Chain build cycles while seven_day stays under 0.70; the lane is idle 50% of the time.
 
 ## Definition fixes filed
-- None. Pick order is already in project-manager's definition; the miss is not following it.
+- None this run. project-manager's repeated miss is a compliance gap, not a definition gap.
