@@ -145,10 +145,11 @@ src/astro_ai/
                         `_muhurat_why.html` / `_muhurat_why_legend.html`. Soft factors are recomputed from
                         EVENT_RULES and pinned to score_event by tests/test_muhurat_factor_parity.py
                         (#1017 R3, docs/decisions/2026-11-21-muhurat-factor-registry.md)
-  muhurat_lagna.py   354 Vivah lagna windows for the finder (#1026): benefic-owned lagna + clean 7th, edges found
+  muhurat_lagna.py   357 Vivah lagna windows for the finder (#1026): benefic-owned lagna + clean 7th, edges found
                         by grid + bisection, inward-rounded; lagna_view() / legend() are pure (0 tokens, 0 I/O beyond
                         the cached geocode, lru_cache per date+place) behind the Jinja globals `muhurat_lagna` /
-                        `muhurat_lagna_legend` (routes/deps.py). A note only: never read by the scorer
+                        `muhurat_lagna_legend` (routes/deps.py). legend() takes the city and keys on a produced view
+                        (#1457), so a page whose every row failed shows no legend. A note only: never read by the scorer
                         (docs/decisions/2026-11-24-vivah-lagna-windows.md)
   ask_transit.py     103  /ask's slow-planet transit block (four movers from the natal Moon), the pinned
                         moment and the `tr` cache-key fingerprint (#402)
@@ -770,6 +771,15 @@ confirm it turns red with a specific message, restore. A gate that has never fai
 not evidence. Several gates here were written with bugs — an optional regex group that
 matched empty and reported a false failure, an unscoped row match that read 44 tables
 instead of one — and were only caught by mutation-testing them.
+
+**Cheap checks before a QA round, and before a re-entry (#1255).** `scripts/pre_qa_check.py` runs
+the fast gates, then `THEME_CHECKS` (regression, grounding, tests: the three themes QA fails on
+most, `measurements/lessons.json`) and prints one `themes: ...` line; grounding is a proxy (a
+claim-bearing file changed with no `corpus:` line), never a judgement that a claim is true. And
+`cycle_queue.stale_reason` stands an `issue` queue entry down, through `scripts/reentry.py`, when a
+`claude[bot]` cycle comment is newer than the entry and no commit, QA verdict or main-merge need has
+come since; it fails open on any read error and can reach at most ~16% of the repeat-cycle tokens
+(`docs/decisions/2026-11-25-1255-reentry-stand-down.md`).
 
 ---
 

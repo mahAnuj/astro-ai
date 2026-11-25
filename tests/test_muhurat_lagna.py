@@ -295,10 +295,10 @@ def test_a_date_with_no_window_says_so_with_an_empty_tuple_and_the_ruled_sentenc
 
 def test_legend_needs_a_vivah_page_with_at_least_one_eligible_row():
     rows = [_row(date(2026, 11, 25)), _row(date(2026, 11, 26), rating="avoid")]
-    assert ml.legend(rows, "vivah") is not None
-    assert ml.legend(rows, "griha_pravesh") is None
-    assert ml.legend([rows[1]], "vivah") is None
-    assert ml.legend([], "vivah") is None
+    assert ml.legend(rows, "vivah", "Delhi") is not None
+    assert ml.legend(rows, "griha_pravesh", "Delhi") is None
+    assert ml.legend([rows[1]], "vivah", "Delhi") is None
+    assert ml.legend([], "vivah", "Delhi") is None
 
 
 # --- 8: Rahu Kaal is a note, never a filter ----------------------------------------------------
@@ -354,7 +354,7 @@ def test_the_day_rating_is_unchanged_by_asking_for_windows():
     assert shown
     for c in rows:
         ml.lagna_view(c, "vivah", "Delhi")
-    ml.legend(rows, "vivah")
+    ml.legend(rows, "vivah", "Delhi")
     assert snap() == before
 
 
@@ -396,13 +396,13 @@ def test_the_ruled_wording_is_verbatim():
     assert ml.BENEFIC_DISCLOSURE == ("Benefic follows Rao's natural benefics: Jupiter, Venus, the "
                                      "waxing Moon, and Mercury unless joined by malefics.")
     v = ml.lagna_view(_row(date(2026, 11, 25)), "vivah", "Delhi")
-    lg = ml.legend([_row(date(2026, 11, 25))], "vivah")
+    lg = ml.legend([_row(date(2026, 11, 25))], "vivah", "Delhi")
     assert (v.heading, v.caveat, v.unchanged) == (ml.HEADING, ml.CAVEAT, ml.UNCHANGED)
     assert (lg.disclosure, lg.caveat, lg.unchanged) == (ml.BENEFIC_DISCLOSURE, ml.CAVEAT, ml.UNCHANGED)
 
 
 def test_the_legend_states_our_reading_of_clean_and_that_aspects_are_not_considered():
-    text = " ".join(ml.legend([_row(date(2026, 11, 25))], "vivah").notes)
+    text = " ".join(ml.legend([_row(date(2026, 11, 25))], "vivah", "Delhi").notes)
     assert "none of the nine grahas, Rahu and Ketu included, is in that sign" in text
     assert "That is our reading" in text
     assert "aspects are not considered" in text and "do not say" in text
