@@ -1,26 +1,26 @@
 {
- "generated_at": "2026-11-25T06:03:20Z",
+ "generated_at": "2026-11-25T12:32:42Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-18T06:03:20Z",
-  "end": "2026-11-25T06:03:20Z",
-  "loop_comments": 834,
-  "on_prs": 452,
+  "start": "2026-11-18T12:32:42Z",
+  "end": "2026-11-25T12:32:42Z",
+  "loop_comments": 833,
+  "on_prs": 449,
   "prs": 86,
-  "on_issues": 382,
-  "issues": 113,
-  "comments_per_pr": 5.26,
-  "comments_per_issue": 3.38,
+  "on_issues": 384,
+  "issues": 114,
+  "comments_per_pr": 5.22,
+  "comments_per_issue": 3.37,
   "duplicates": 30,
   "duplicate_rate_pct": 3.6,
   "sent_by_kind": {
    "growth-goals": 5,
    "growth-goals-issue": 2,
    "ops-finding": 12,
-   "ops-finding-issue": 4
+   "ops-finding-issue": 3
   },
-  "via_outbox": 23,
+  "via_outbox": 22,
   "top_threads": [
    {
     "on": "pr",
@@ -33,14 +33,14 @@
     "comments": 14
    },
    {
-    "on": "issue",
-    "number": 1070,
-    "comments": 13
-   },
-   {
     "on": "pr",
     "number": 1262,
     "comments": 13
+   },
+   {
+    "on": "issue",
+    "number": 1070,
+    "comments": 12
    },
    {
     "on": "pr",
@@ -60,21 +60,22 @@
   }
  },
  "previous": {
-  "start": "2026-11-11T06:03:20Z",
-  "end": "2026-11-18T06:03:20Z",
-  "loop_comments": 1244,
-  "on_prs": 723,
-  "prs": 131,
-  "on_issues": 521,
-  "issues": 155,
-  "comments_per_pr": 5.52,
-  "comments_per_issue": 3.36,
-  "duplicates": 58,
-  "duplicate_rate_pct": 4.7,
+  "start": "2026-11-11T12:32:42Z",
+  "end": "2026-11-18T12:32:42Z",
+  "loop_comments": 1205,
+  "on_prs": 701,
+  "prs": 126,
+  "on_issues": 504,
+  "issues": 151,
+  "comments_per_pr": 5.56,
+  "comments_per_issue": 3.34,
+  "duplicates": 55,
+  "duplicate_rate_pct": 4.6,
   "sent_by_kind": {
-   "ops-finding": 6
+   "ops-finding": 6,
+   "ops-finding-issue": 1
   },
-  "via_outbox": 6,
+  "via_outbox": 7,
   "top_threads": [
    {
     "on": "pr",
@@ -103,9 +104,9 @@
    }
   ],
   "owner_touched": {
-   "prs": 131,
-   "owner_commented": 5,
-   "pct": 4
+   "prs": 126,
+   "owner_commented": 4,
+   "pct": 3
   }
  },
  "kinds": {
