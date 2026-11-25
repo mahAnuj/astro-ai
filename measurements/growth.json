@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-25T19:24:13Z",
+ "generated_at": "2026-11-25T21:04:09Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-26",
  "today": {
   "growth": 0,
-  "other": 1,
+  "other": 2,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 14,
-  "other": 36,
+  "other": 37,
   "exempt": 5,
-  "share": 0.28
+  "share": 0.275
  },
  "this_month": {
   "growth": 48,
-  "other": 286,
+  "other": 287,
   "exempt": 5,
-  "share": 0.144
+  "share": 0.143
  },
  "must_pick_growth": true,
  "days": [
@@ -117,23 +117,37 @@
   {
    "date": "2026-11-26",
    "growth": 0,
-   "other": 1,
+   "other": 2,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
   {
+   "run": 45694480094,
+   "started": "2026-11-25T20:23:22Z",
+   "issue": 1355,
+   "title": "QA follow-up: dark-half tithi credit and mixed-status avoid_tithi are labelled unevenly across events (PR #1350)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1496,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
    "run": 45683260499,
    "started": "2026-11-25T19:14:45Z",
    "issue": 1483,
    "title": "QA follow-up: matching.html and manglik-remedies status list still list comparable severity as a cancellation without saying it is ours (PR #1375)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1493,
-   "agents": {
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45668368241,
@@ -141,7 +155,7 @@
    "issue": 1483,
    "title": "QA follow-up: matching.html and manglik-remedies status list still list comparable severity as a cancellation without saying it is ours (PR #1375)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1493,
    "agents": null
   },
@@ -596,21 +610,6 @@
    "agents": {
     "qa": 1
    }
-  },
-  {
-   "run": 45199625786,
-   "started": "2026-11-23T14:56:31Z",
-   "issue": 1416,
-   "title": "analytics: tool_error marker on /matching error render (slice of #1070 row 8)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1417,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -946,21 +945,21 @@
   "ga4_sessions_28d": 804,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.28,
-  "growth_share_month": 0.144
+  "growth_share_week": 0.275,
+  "growth_share_month": 0.143
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-26",
    "progress": 0.0,
-   "detail": "0 of 1 cycles on growth, target 60%",
+   "detail": "0 of 2 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.515,
+   "progress": 0.512,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -971,8 +970,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.28,
-     "progress": 0.571,
+     "current": 0.275,
+     "progress": 0.554,
      "basis": "growth_share_week"
     },
     {
@@ -1041,7 +1040,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.359,
+   "progress": 0.357,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1084,8 +1083,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.144,
-     "progress": 0.414,
+     "current": 0.143,
+     "progress": 0.409,
      "basis": "growth_share_month"
     }
    ]
