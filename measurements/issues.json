@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-24T22:08:54Z",
+  "generated_at": "2026-11-25T00:06:39Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 167,
@@ -35,11 +35,11 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 54,
+    "bug": 55,
     "untyped": 40,
     "enhancement": 32,
     "chore": 25,
-    "correctness": 11,
+    "correctness": 10,
     "design": 5
   },
   "by_priority": {
@@ -51,8 +51,8 @@
   "blocked": 10,
   "rows": [
     {
-      "number": 1451,
-      "title": "QA follow-up: PR #1449 page-locations headline states lower-bound counts as exact; encoded names unpinned",
+      "number": 1457,
+      "title": "QA follow-up: Vivah lagna legend renders with no row blocks when the window computation fails (PR #1455)",
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
@@ -61,8 +61,25 @@
         "bug",
         "qa"
       ],
+      "created": "2026-11-24T22:44:04Z",
+      "updated": "2026-11-24T22:44:11Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1451,
+      "title": "QA follow-up: PR #1449 page-locations headline states lower-bound counts as exact; encoded names unpinned",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "provenance:trusted"
+      ],
       "created": "2026-11-24T14:16:32Z",
-      "updated": "2026-11-24T14:16:32Z",
+      "updated": "2026-11-24T23:47:36Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -75,10 +92,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-24T14:16:30Z",
-      "updated": "2026-11-24T14:16:30Z",
+      "updated": "2026-11-25T00:05:52Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1224,23 +1244,6 @@
       ],
       "created": "2026-11-14T13:51:31Z",
       "updated": "2026-11-19T01:05:03Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1026,
-      "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "astrology-correctness",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-14T13:15:49Z",
-      "updated": "2026-11-24T21:36:32Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2751,25 +2754,11 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-24T22:08:54Z",
+    "generated_at": "2026-11-25T00:06:39Z",
     "window_days": 28,
     "open_now": 167,
     "merged_open_hours": 24,
     "days": [
-      {
-        "date": "2026-10-28",
-        "opened": 8,
-        "closed": 2,
-        "net": 6,
-        "open_end": 134,
-        "opened_by": {
-          "audit": 2,
-          "loop": 6
-        },
-        "closed_by": {
-          "owner": 2
-        }
-      },
       {
         "date": "2026-10-29",
         "opened": 5,
@@ -3172,18 +3161,27 @@
       },
       {
         "date": "2026-11-24",
-        "opened": 13,
-        "closed": 10,
+        "opened": 14,
+        "closed": 11,
         "net": 3,
         "open_end": 167,
         "opened_by": {
-          "loop": 13
+          "loop": 14
         },
         "closed_by": {
-          "close-on-evidence": 3,
+          "close-on-evidence": 4,
           "prioritise": 1,
           "other": 6
         }
+      },
+      {
+        "date": "2026-11-25",
+        "opened": 0,
+        "closed": 0,
+        "net": 0,
+        "open_end": 167,
+        "opened_by": {},
+        "closed_by": {}
       }
     ],
     "merged_open": [],
@@ -3334,11 +3332,6 @@
         "closer": "owner"
       },
       {
-        "number": 387,
-        "closed_at": "2026-10-28T11:05:54Z",
-        "closer": "owner"
-      },
-      {
         "number": 388,
         "closed_at": "2026-10-30T02:58:46Z",
         "closer": "close-on-evidence"
@@ -3382,11 +3375,6 @@
         "number": 429,
         "closed_at": "2026-11-07T20:28:07Z",
         "closer": "close-on-evidence"
-      },
-      {
-        "number": 430,
-        "closed_at": "2026-10-28T10:43:22Z",
-        "closer": "owner"
       },
       {
         "number": 431,
@@ -4064,6 +4052,11 @@
         "closer": "owner"
       },
       {
+        "number": 1026,
+        "closed_at": "2026-11-24T22:58:09Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1027,
         "closed_at": "2026-11-15T16:22:24Z",
         "closer": "close-on-evidence"
@@ -4654,7 +4647,7 @@
         "closer": "other"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
@@ -4784,7 +4777,7 @@
           ]
         },
         "28d": {
-          "merged": 344,
+          "merged": 345,
           "median_h": 0.5,
           "p90_h": 13.8,
           "max_h": 122.1,
@@ -4911,12 +4904,6 @@
         }
       },
       "days": [
-        {
-          "date": "2026-10-28",
-          "merged": 4,
-          "median_h": 27.5,
-          "max_h": 41.6
-        },
         {
           "date": "2026-10-29",
           "merged": 1,
@@ -5075,66 +5062,72 @@
         },
         {
           "date": "2026-11-24",
-          "merged": 10,
+          "merged": 11,
           "median_h": 0.4,
           "max_h": 3.1
+        },
+        {
+          "date": "2026-11-25",
+          "merged": 0,
+          "median_h": null,
+          "max_h": null
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 88.9,
+          "age_h": 90.9,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 85.9,
+          "age_h": 87.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 74.4,
+          "age_h": 76.4,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 60.2,
+          "age_h": 62.2,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1405,
           "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 38.8,
+          "age_h": 40.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1428,
           "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
-          "age_h": 17.8,
+          "age_h": 19.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1438,
           "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (#1436)",
-          "age_h": 15.9,
+          "age_h": 17.8,
           "waiting_on": "merge",
           "why": null
         },
         {
-          "number": 1455,
-          "title": "Vivah lagna windows: Rao's wedding guideline, benefic-owned lagna with a clean 7th (#1026)",
-          "age_h": 0.5,
-          "waiting_on": "gates / QA",
+          "number": 1458,
+          "title": "fold_location: close three leak shapes in the --page-locations export (#1450)",
+          "age_h": 0.1,
+          "waiting_on": "merge",
           "why": null
         }
       ]
