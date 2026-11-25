@@ -1,54 +1,8 @@
 {
- "generated_at": "2026-11-25T00:09:53Z",
+ "generated_at": "2026-11-25T04:04:17Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
-   {
-    "number": 536,
-    "at": "2026-10-26T01:50:17Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406442682",
-    "summary": "QA: FAIL \u2014 verified at `9caa9b6637d300c52621bce0a2baae2aa7bb1942` Round 3: BUG-1..5 fixed; 3 new defects from the fix commit: garbled panel sentence (D1), over-claimed skip_full diagnostic (D2), test gaps on skip_full/raw_mid/zero-remaining (D3)",
-    "themes": [
-     "grounding",
-     "tokens",
-     "tests",
-     "regression"
-    ]
-   },
-   {
-    "number": 536,
-    "at": "2026-10-26T02:03:33Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406590521",
-    "summary": "QA: FAIL \u2014 verified at `3857f27f5f06f27f6a3797694b98bff01fb92260` Round 4: D1/D3 fixed and mutant-verified; one blocker: stale 'fires forever / cannot be measured' comment at ops_data.py:1152-1157 (D2 over-claim survives); N1/N2/N3 non-blocking wording",
-    "themes": [
-     "tokens",
-     "copy"
-    ]
-   },
-   {
-    "number": 536,
-    "at": "2026-10-26T02:11:54Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406687161",
-    "summary": "QA: FAIL \u2014 verified at `67635814690438b7c4b6b5ff2b4a8908538ff298` Round 5: F1 fixed; N2 sentence 'closer calls cannot help a bucket-sized request' over-claims (fake clock: counted sample in a ~1s window); N1 wording not applied in probe comment/test docstring",
-    "themes": [
-     "tokens",
-     "tests",
-     "copy",
-     "performance"
-    ]
-   },
-   {
-    "number": 536,
-    "at": "2026-10-26T02:20:49Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406792982",
-    "summary": "QA: FAIL \u2014 verified at `6beaf8a7dd8d613f8f1ce285ebc1eecf5b9da2a6` Round 6: one blocker: ratelimit_probe.py:229-232 claims a bucket-sized request 'still yields a counted sample in a window about a second wide'; fake clock shows none under admission charging at realistic latency and none for the hi re",
-    "themes": [
-     "tokens",
-     "tests",
-     "copy",
-     "performance"
-    ]
-   },
    {
     "number": 544,
     "at": "2026-10-26T16:27:28Z",
@@ -1165,14 +1119,14 @@
   "ops_findings": []
  },
  "error_themes": {
-  "regression": 32,
-  "grounding": 31,
-  "tests": 29,
-  "tokens": 21,
-  "copy": 20,
+  "regression": 31,
+  "grounding": 30,
+  "tests": 26,
+  "copy": 17,
+  "tokens": 17,
   "security": 15,
   "i18n": 8,
-  "performance": 7
+  "performance": 5
  },
  "repeated_themes": [
   "copy",

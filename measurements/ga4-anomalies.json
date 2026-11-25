@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-25",
-    "2026-11-21"
+    "2026-10-26",
+    "2026-11-22"
   ],
   "rule": "active users >= max(2 x median, median + 10, 15)",
   "watch_rule": "active users >= median + 10, not a spike",
