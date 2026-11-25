@@ -100,7 +100,21 @@ QUOTA_MAX_AGE = timedelta(hours=36)
 #: and latest.at is GitHub's created_at judged on the runner's clock: seconds of NTP
 #: skew, so 5 minutes absorbs that and is ~0.2% of QUOTA_MAX_AGE. Not measured.
 QUOTA_FUTURE_SKEW = timedelta(minutes=5)
-MAX_BUILD_RUNS_PER_DAY = 16
+#: A BACKSTOP since 2026-11-25, raised from 16: the weekly pace below is what
+#: spreads the quota now; this only bounds a runaway bug.
+MAX_BUILD_RUNS_PER_DAY = 30
+#: THE WEEKLY PACE (owner, 2026-11-25: "do what is necessary as per you").
+#: Measured that week: the loop ran back to back from the Friday reset, reached
+#: the 70% ceiling on Wednesday at 12:20Z and stood down until Friday 06:00Z,
+#: about 40 hours dark, while a fixed 16-a-day cap had idled it on quiet days.
+#: A chain or idle restart now also needs use at or under the share of the week
+#: already elapsed: elapsed/7d x PACE_SHARE + PACE_MARGIN. PACE_SHARE is the
+#: ceiling, so on the line the loop reaches 70% as the week ends; PACE_MARGIN
+#: lets the week start with a burst. Queue rulings (a QA round someone asked
+#: for) are not paced: the drain, not this script, starts those.
+PACE_SHARE = QUOTA_CEILING
+PACE_MARGIN = 0.05
+WEEK = timedelta(days=7)
 #: An IDLE lane restarts (2026-11-20). A run with no finished cycle behind it --
 #: the hourly cron, or the heartbeat -- starts one ranked cycle once the last
 #: build run has been finished this long. After a cycle that produced nothing
@@ -181,6 +195,24 @@ def quota_reason(usage: dict | None, now: datetime) -> str | None:
         return f"the latest Claude reading says {latest.get('status')!r}"
     if used >= QUOTA_CEILING:
         return f"weekly Claude window at {used:.0%}, ceiling {QUOTA_CEILING:.0%}"
+    return pace_reason(latest, used, now)
+
+
+def pace_reason(latest: dict, used: float, now: datetime) -> str | None:
+    """None when weekly use is on or behind the pace line, else why not.
+
+    The window's start is `resets.seven_day` minus seven days. A reading with no
+    usable reset time is judged by the ceiling alone, as before 2026-11-25."""
+    try:
+        reset = datetime.fromtimestamp(float((latest.get("resets") or {})["seven_day"]), timezone.utc)
+    except (KeyError, TypeError, ValueError, OverflowError, OSError):
+        return None
+    elapsed = min(max((now - (reset - WEEK)) / WEEK, 0.0), 1.0)
+    allowed = elapsed * PACE_SHARE + PACE_MARGIN
+    if used > allowed:
+        return (f"ahead of the weekly pace: {used:.0%} used, {allowed:.0%} allowed "
+                f"{elapsed:.0%} of the way through the week")
+    return None
     return None
 
 
