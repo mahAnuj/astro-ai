@@ -784,6 +784,8 @@ Two stages, and they must not be merged:
 A closing comment must let someone else check you: the commit, what was verified and how,
 and the numbers. Partial work does not close.
 
+**Stall detector (`scripts/detect_stalls.py`):** a `mergeable-but-open` PR starved behind the owner's open `qa-pass` fix to `agent-merge.yml` is reported as `merge-starved-owner-blocked` and is not an obliged action, so chief is not woken for a ruled cause; it fails open and expires when the fix PR merges (#1387, `docs/decisions/2026-11-25-1387-ruled-owner-block-is-not-obliged.md`).
+
 **QA runs by default before every push** — an independent agent, not self-review.
 Verification by the same reasoning that produced the change is not QA. This is not
 optional and does not need to be requested; it exists because three consecutive rounds of
