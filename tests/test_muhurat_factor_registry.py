@@ -339,20 +339,31 @@ RULING2 = [
     ("avoid_weekday_soft", "business", None, "site_convention", "#### Business start",
      "This finder deducts a point for Saturday; the Muhurtha tradition calls it passable for "
      "buying and middling for selling, and gives no rule for a business start."),
-    ("avoid_tithi", "vivah", None, "sourced", "### 29.9 ",
+    # #1355 ruling: every avoid_tithi list is contested (held books differ, or support it only in
+    # part); griha_pravesh and business name the sourced tithis and call Navami this finder's own.
+    ("avoid_tithi", "vivah", None, "contested", "### 29.9 ",
      "These tithis are rejected for auspicious work in the Muhurtha tradition. Purnima is "
      "contested: the Vedic table lists it, while the Muhurtha tradition's general list rejects "
      "it."),
-    ("avoid_tithi", "namkaran", None, "sourced", "#### Namkaran",
+    ("avoid_tithi", "namkaran", None, "contested", "#### Namkaran",
      "These tithis are rejected for auspicious work in the Muhurtha tradition. Navami is "
      "contested: the figure for it in the Muhurtha text is unclear, and the Vedic table does not "
      "list it."),
-    ("avoid_tithi", "griha_pravesh", None, "sourced", "#### Griha Pravesh",
-     "These tithis are rejected for auspicious work in the Muhurtha tradition. Navami is this "
-     "finder's own addition."),
-    ("avoid_tithi", "business", None, "sourced", "### 29.9 ",
-     "These tithis are rejected for auspicious work in the Muhurtha tradition. Navami is this "
-     "finder's own addition."),
+    ("avoid_tithi", "griha_pravesh", None, "contested", "#### Griha Pravesh",
+     "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon and Full Moon for auspicious "
+     "work. Navami is this finder's own addition."),
+    ("avoid_tithi", "business", None, "contested", "### 29.9 ",
+     "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon and Full Moon for auspicious "
+     "work. Navami is this finder's own addition."),
+    # #1355: the dark-half credit is contested wherever the sources do not settle the half.
+    ("good_tithi", "griha_pravesh", "@Krishna", "contested", "#### Griha Pravesh",
+     "In the dark half this credit rests on one table, which lists the tithi without naming a "
+     "half; the Muhurtha tradition's list names the bright half (the only dark-half tithi it "
+     "lists is the 1st)."),
+    ("good_tithi", "vidyarambh", "@Krishna", "contested", "#### Vidyarambh",
+     "Rao's table names no half; the Muhurtha tradition's list marks only its 1st as dark-half "
+     "and does not, in the extract we hold, say whether the others are bright-half only. The half "
+     "is not settled."),
     ("good_tithi", "business", None, "site_convention", "#### Business start",
      "Site convention, not sourced: this finder's own tithi list for a new venture."),
     ("good_weekday", "business", None, "site_convention", "#### Business start",
@@ -570,3 +581,69 @@ def test_the_legend_labels_all_five_combustion_combinations_as_not_sourced(scans
             sentence = entries[key].sentence
             assert "own convention" in sentence or "own extension" in sentence, (event, key)
         assert not (set(entries) & {"jupiter_combust", "venus_combust", "mercury_combust"}) - want
+
+
+# ─── #1355: the dark-half label, over the real rule table ─────────────────────────────────────
+# (qual, status) of the good_tithi credit on a Krishna-paksha row, per event, from the auditor's
+# ruling. Written out literally: it is the ruling the registry is checked against.
+KRISHNA_CREDIT = {
+    "vivah": ("@Krishna", "contested"),
+    "griha_pravesh": ("@Krishna", "contested"),
+    "vidyarambh": ("@Krishna", "contested"),
+    "namkaran": ("", "sourced"),
+    "business": ("", "site_convention"),
+}
+SHUKLA_CREDIT = {"vivah": "sourced", "griha_pravesh": "sourced", "vidyarambh": "sourced",
+                 "namkaran": "sourced", "business": "site_convention"}
+
+
+def _credit(event: str, tithi: str, paksha: str):
+    it = {i.key: i for i in mf.explain(_cand(event, tithi=tithi, tithi_paksha=paksha),
+                                       event).scored}["good_tithi"]
+    return it.qual, it.status
+
+
+def test_every_good_tithi_of_every_event_carries_the_rulings_krishna_label():
+    """Reads m.EVENT_RULES, so a tithi added to any event's good_tithis is checked too. The
+    vidyarambh Dwadashi is the one tithi with an entry of its own, and it beats `@Krishna`."""
+    assert set(KRISHNA_CREDIT) == set(m.EVENT_RULES) == set(EVENTS)
+    for event in EVENTS:
+        tithis = m.EVENT_RULES[event]["good_tithis"]
+        assert tithis, event
+        for tithi in tithis:
+            want = ("Dwadashi", "contested") if (event, tithi) == ("vidyarambh", "Dwadashi") \
+                else KRISHNA_CREDIT[event]
+            assert _credit(event, tithi, "Krishna") == want, (event, tithi)
+            assert _credit(event, tithi, "Shukla") == (
+                ("Dwadashi", "contested") if (event, tithi) == ("vidyarambh", "Dwadashi")
+                else ("", SHUKLA_CREDIT[event])), (event, tithi)
+
+
+def test_a_tithi_specific_entry_beats_the_half_wide_one_on_a_krishna_row():
+    dwa = {i.key: i for i in mf.explain(
+        _cand("vidyarambh", tithi="Dwadashi", tithi_paksha="Krishna", weekday="Monday"),
+        "vidyarambh").scored}["good_tithi"]
+    assert (dwa.qual, dwa.status) == ("Dwadashi", "contested")
+    dashami = {i.key: i for i in mf.explain(
+        _cand("vidyarambh", tithi="Dashami", tithi_paksha="Krishna", weekday="Monday"),
+        "vidyarambh").scored}["good_tithi"]
+    assert (dashami.qual, dashami.status) == ("@Krishna", "contested")
+
+
+def test_krishna_pratipada_earns_no_credit_for_any_event_so_it_needs_no_label():
+    """#1355 asked about Krishna Pratipada: it is in no event's good_tithis, so no credit is
+    given and none can be mislabelled. Raman lists it for house entry; the finder does not."""
+    for event in EVENTS:
+        assert "Pratipada" not in m.EVENT_RULES[event]["good_tithis"], event
+        scored = mf.explain(_cand(event, tithi="Pratipada", tithi_paksha="Krishna"), event).scored
+        assert "good_tithi" not in {i.key for i in scored}, event
+    assert not any("Pratipada" in str(v) for ev in mf.REGISTRY["good_tithi"].get("when", {}).values()
+                   for v in ev)
+
+
+def test_the_avoid_tithi_cleared_item_is_contested_for_four_events_and_sourced_for_vidyarambh():
+    want = {"vivah": "contested", "griha_pravesh": "contested", "namkaran": "contested",
+            "business": "contested", "vidyarambh": "sourced"}
+    for event in EVENTS:
+        item = {i.key: i for i in mf.explain(_cand(event), event).cleared}["avoid_tithi"]
+        assert item.status == want[event], event
