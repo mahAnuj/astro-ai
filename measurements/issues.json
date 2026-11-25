@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-25T06:00:08Z",
+  "generated_at": "2026-11-25T12:28:48Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 168,
@@ -61,7 +61,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-25T03:58:08Z",
-      "updated": "2026-11-25T05:58:59Z",
+      "updated": "2026-11-25T12:27:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -76,7 +76,7 @@
         "chore"
       ],
       "created": "2026-11-25T03:23:11Z",
-      "updated": "2026-11-25T03:23:11Z",
+      "updated": "2026-11-25T06:47:35Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -865,7 +865,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-20T01:31:13Z",
-      "updated": "2026-11-24T18:26:44Z",
+      "updated": "2026-11-25T06:48:01Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -897,10 +897,11 @@
       "labels": [
         "priority:high",
         "effort:m",
-        "chore"
+        "chore",
+        "provenance:trusted"
       ],
       "created": "2026-11-19T09:53:21Z",
-      "updated": "2026-11-20T15:28:03Z",
+      "updated": "2026-11-25T11:31:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -918,7 +919,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-19T09:53:08Z",
-      "updated": "2026-11-25T00:33:35Z",
+      "updated": "2026-11-25T06:48:00Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -1122,10 +1123,11 @@
         "category:technical",
         "priority:high",
         "ui",
-        "design-proposal"
+        "design-proposal",
+        "provenance:trusted"
       ],
       "created": "2026-11-16T17:33:22Z",
-      "updated": "2026-11-19T02:06:38Z",
+      "updated": "2026-11-25T10:32:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2769,7 +2771,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-25T06:00:08Z",
+    "generated_at": "2026-11-25T12:28:48Z",
     "window_days": 28,
     "open_now": 168,
     "merged_open_hours": 24,
@@ -4686,12 +4688,12 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 0,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 78,
+          "merged": 76,
           "median_h": 0.6,
           "p90_h": 3.1,
           "max_h": 23.3,
@@ -4811,9 +4813,9 @@
           ]
         },
         "28d": {
-          "merged": 349,
+          "merged": 347,
           "median_h": 0.5,
-          "p90_h": 13.8,
+          "p90_h": 13.6,
           "max_h": 122.1,
           "slowest": [
             {
@@ -5111,57 +5113,71 @@
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 96.8,
+          "age_h": 103.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 93.7,
+          "age_h": 100.2,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 82.3,
+          "age_h": 88.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 68.1,
+          "age_h": 74.6,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1405,
           "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 46.7,
+          "age_h": 53.1,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1428,
           "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
-          "age_h": 25.6,
+          "age_h": 32.1,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1438,
           "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (#1436)",
-          "age_h": 23.7,
+          "age_h": 30.2,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1465,
           "title": "Vivah lagna legend renders only when a row produced a block (#1457)",
-          "age_h": 2.8,
+          "age_h": 9.3,
           "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1474,
+          "title": "ops: tab module and route wiring for the /admin/ops tab shell (slice 1, step 1)",
+          "age_h": 1.2,
+          "waiting_on": "gates / QA",
+          "why": null
+        },
+        {
+          "number": 1475,
+          "title": "#1255: stand an `issue` queue entry down when a cycle already ran and nothing is new; pre-",
+          "age_h": 0.1,
+          "waiting_on": "gates / QA",
           "why": null
         }
       ]
