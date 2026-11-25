@@ -162,6 +162,94 @@ def test_the_backlog_bars_are_only_drawn_where_they_exist():
     assert 'if (!document.getElementById("bars")) return;' in TPL[i: i + 400]
 
 
+# --- the data blob is cut per tab (#1133 step 3) -------------------------------------
+# The blob was 438,553 B on every tab (`cycles` 364,803 B, `issues` 65,675 B) while
+# only the drill-downs read them. The expectations below are written out, not read
+# back from ops_tabs.BLOB_KEYS, so a table edited to ship everything fails here.
+
+WANT_BLOB = {
+    "overview": {"repo", "issues", "today_shipped", "today_failed", "today_live",
+                 "filed_live", "filed_today"},
+    "agents": {"repo"},
+    "workflows": {"repo"},
+    "runs": {"repo", "cycles"},
+    "backlog": {"repo", "issues", "by_priority", "by_area", "by_type"},
+    "analytics": {"repo"},
+    "monitoring": {"repo"},
+}
+
+
+def _blob(html_text: str) -> dict:
+    import json
+    m = re.search(r'<script type="application/json" id="ops-data">(.*?)</script>', html_text, re.S)
+    assert m, "no ops-data blob"
+    return json.loads(m.group(1).replace("<\\/", "</"))
+
+
+@pytest.mark.parametrize("key", KEYS)
+def test_each_tab_ships_only_the_blob_keys_its_drill_downs_read(key):
+    assert set(_blob(_page(f"?tab={key}").text)) == WANT_BLOB[key]
+
+
+def test_cycles_ride_only_on_runs_and_issues_only_on_overview_and_backlog():
+    for key in KEYS:
+        b = _blob(_page(f"?tab={key}").text)
+        assert ("cycles" in b) == (key == "runs"), key
+        assert ("issues" in b) == (key in ("overview", "backlog")), key
+
+
+def test_an_unknown_tab_ships_overviews_blob():
+    assert set(_blob(_page("?tab=zzz").text)) == WANT_BLOB["overview"]
+
+
+def test_the_cut_blob_makes_the_page_smaller_not_just_the_json():
+    full = len(_page("?tab=runs").content)
+    for key in ("agents", "workflows", "analytics", "monitoring"):
+        r = _page(f"?tab={key}")
+        assert len(r.text.split('id="ops-data">', 1)[1].split("</script>", 1)[0]) < 1024, key
+        assert len(r.content) < full, key
+
+
+def test_every_drill_down_that_a_tab_renders_has_its_data_on_that_tab():
+    for key in KEYS:
+        h = _page(f"?tab={key}").text
+        body, b = _body(h), _blob(h)
+        if "day-btn" in body:
+            assert "cycles" in b and b["cycles"], f"{key}: .day-btn rows but no cycles"
+            days = set(re.findall(r'data-day="([^"]+)"', body))
+            assert days, key
+        if 'id="bars"' in body:
+            assert "issues" in b and {"by_priority", "by_area", "by_type"} <= set(b), key
+        for tile, need in (("today-shipped", "today_shipped"), ("today-filed", "filed_today"),
+                           ("today-failed", "today_failed"), ("backlog", "issues")):
+            if f'data-drill="{tile}"' in body:
+                assert need in b, f"{key}: tile {tile} but no {need}"
+
+
+def test_the_runs_tab_has_day_rows_and_the_backlog_tab_has_bars_so_the_check_above_bites():
+    assert "day-btn" in _body(_page("?tab=runs").text)
+    assert 'id="bars"' in _body(_page("?tab=backlog").text)
+    assert 'data-drill="backlog"' in _body(_page("?tab=overview").text)
+
+
+def test_the_script_guards_every_blob_key_that_a_tab_may_omit():
+    script = TPL[TPL.index("var D = JSON.parse"): TPL.index("function esc(s)")]
+    assert "D.cycles || []" in script and "D.issues || []" in script
+    tail = TPL[TPL.index("function esc(s)"): TPL.index("Agents right now: re-read")]
+    unguarded = re.findall(r"\bD\.(?:cycles|issues|today_shipped|today_failed|filed_today)\b(?!\s*\|\|)", tail)
+    assert not unguarded, f"unguarded read of an omittable key: {unguarded}"
+    assert "D[GROUPS[group]] || {}" in tail
+
+
+def test_blob_for_cuts_a_full_dict_and_unknown_falls_back_to_overview():
+    full = {k: 1 for k in ("repo", "cycles", "issues", "today_shipped", "today_failed",
+                           "today_live", "filed_live", "filed_today", "by_priority",
+                           "by_area", "by_type")}
+    assert set(ops_tabs.blob_for("runs", full)) == {"repo", "cycles"}
+    assert set(ops_tabs.blob_for("nope", full)) == set(ops_tabs.blob_for("overview", full))
+    assert "cycles" not in ops_tabs.blob_for("overview", full)
+
+
 # --- CSS tokens --------------------------------------------------------------------
 
 def _css() -> str:
@@ -272,3 +360,95 @@ def test_the_owners_violet_is_the_fill_and_never_the_text():
     assert light["--brand"].lower() == "#6c5ce7"
     assert light["--accent"].lower() != "#6c5ce7"  # 4.09:1 on --panel-3, so text uses --accent
     assert light["--ground"].lower() == "#f8fafc"
+
+
+# --- Gate 6 of scripts/verify_contrast.py (#1133 step 4) ---------------------------
+# The gate is the same arithmetic as the tests above, run by the verify_* sweep.
+# These pin that it passes on the real page and FAILS on each defect it names, so a
+# gate that quietly matches nothing is caught here.
+
+def _gate6():
+    import importlib.util
+    root = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location("verify_contrast_g6", root / "scripts" / "verify_contrast.py")
+    vc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(vc)
+    return vc
+
+
+def _gate6_on(monkeypatch, tmp_path, edit) -> list[str]:
+    vc = _gate6()
+    p = tmp_path / "admin_ops.html"
+    edited = edit(TPL)
+    assert edited != TPL, "the edit changed nothing, so this test proves nothing"
+    p.write_text(edited)
+    monkeypatch.setattr(vc, "OPS_HTML", p)
+    return vc.gate_6_ops_tokens()
+
+
+def _last(t: str, old: str, new: str) -> str:
+    """Replace the LAST occurrence: the final :root and the dark block are the last."""
+    i = t.rindex(old)
+    return t[:i] + new + t[i + len(old):]
+
+
+def test_gate_6_passes_on_the_real_page():
+    assert _gate6().gate_6_ops_tokens() == []
+
+
+def test_gate_6_fails_on_a_text_token_under_AA(monkeypatch, tmp_path):
+    f = _gate6_on(monkeypatch, tmp_path, lambda t: _last(t, "--ink-dim:#475569", "--ink-dim:#aab4c3"))
+    assert any("--ink-dim" in x and "4.5" in x for x in f), f
+
+
+def test_gate_6_fails_on_a_dark_token_under_AA(monkeypatch, tmp_path):
+    f = _gate6_on(monkeypatch, tmp_path, lambda t: _last(t, "--ink:#f1f3f7", "--ink:#2a3140"))
+    assert any(x.startswith("dark:") and "--ink" in x for x in f), f
+
+
+def test_gate_6_fails_on_a_fill_under_3_to_1(monkeypatch, tmp_path):
+    f = _gate6_on(monkeypatch, tmp_path, lambda t: _last(t, "--control:#64748b", "--control:#dde3ea"))
+    assert any("--control" in x and "3.0:1" in x for x in f), f
+
+
+def test_gate_6_fails_on_a_var_missing_from_the_final_root(monkeypatch, tmp_path):
+    f = _gate6_on(monkeypatch, tmp_path, lambda t: _last(t, " --link-hover:#3d2fa8;", ""))
+    assert any("--link-hover" in x and "not defined" in x for x in f), f
+
+
+def test_gate_6_fails_when_dark_stops_redefining_a_token(monkeypatch, tmp_path):
+    f = _gate6_on(monkeypatch, tmp_path, lambda t: _last(t, " --failed:#f06a55;", ""))
+    assert any("dark block does not redefine --failed" in x for x in f), f
+
+
+def test_gate_6_fails_on_a_literal_colour_in_a_rule(monkeypatch, tmp_path):
+    f = _gate6_on(monkeypatch, tmp_path, lambda t: t.replace(
+        "html,body{background:var(--ground);color:var(--ink)}",
+        "html,body{background:var(--ground);color:#123456}", 1))
+    assert any("literal colour" in x for x in f), f
+
+
+def test_gate_6_fails_when_the_dark_block_is_gone(monkeypatch, tmp_path):
+    f = _gate6_on(monkeypatch, tmp_path, lambda t: t.replace(
+        "@media (prefers-color-scheme:dark){\n  :root{", "@media (prefers-color-scheme:light){\n  :root{", 1))
+    assert f and "prefers-color-scheme:dark" in f[0], f
+
+
+def test_gate_6_is_registered_in_main_and_the_whole_script_passes(capsys, monkeypatch, tmp_path):
+    vc = _gate6()
+    assert vc.main() == 0
+    out = capsys.readouterr().out
+    assert "Gate 6 - /admin/ops tokens" in out and "PASS      Gate 6" in out
+    # Registered, not just titled: a broken page must turn main() red.
+    p = tmp_path / "admin_ops.html"
+    p.write_text(_last(TPL, "--ink:#f1f3f7", "--ink:#2a3140"))
+    monkeypatch.setattr(vc, "OPS_HTML", p)
+    assert vc.main() == 1
+    assert "FAIL      Gate 6" in capsys.readouterr().out
+
+
+def test_main_exits_2_not_a_pass_when_the_ops_template_is_missing(capsys, monkeypatch, tmp_path):
+    vc = _gate6()
+    monkeypatch.setattr(vc, "OPS_HTML", tmp_path / "nope.html")
+    assert vc.main() == 2
+    assert "COULD NOT VERIFY" in capsys.readouterr().out

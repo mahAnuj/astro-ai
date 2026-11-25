@@ -18,11 +18,13 @@
 
     DRILL-DOWN IS CLIENT-SIDE ON DATA ALREADY IN THE PAGE
     ----------------------------------------------------
-    Every row is already here (66 issues, 25 cycles — kilobytes). So a click
-    filters and renders locally: no second request, nothing to rate-limit, and
-    it still works if GitHub is down. The JSON blob below is the SAME object
-    the server rendered the summary from, so a drill-down can never disagree
-    with the headline above it.
+    Every row a tab's drill-downs need is already here, so a click filters and
+    renders locally: no second request, nothing to rate-limit, and it still
+    works if GitHub is down. The JSON blob below is the SAME object the server
+    rendered the summary from, so a drill-down can never disagree with the
+    headline above it. It is cut per tab (ops_tabs.BLOB_KEYS): measured
+    2026-11-25 it was 438,553 B (`cycles` 364,803 B, `issues` 65,675 B), not
+    "kilobytes", and shipping it whole put 440 KB on tabs with no drill-down.
 #}<!doctype html>
 <html lang="en" class="ops">
 <head>
@@ -2521,6 +2523,11 @@ body{font-variant-numeric:tabular-nums}
   "use strict";
   var D = JSON.parse(document.getElementById("ops-data").textContent);
   var REPO = "https://github.com/" + D.repo;
+  /* Each tab ships only the blob keys its own drill-downs read
+     (ops_tabs.BLOB_KEYS), so a key can be absent. Guard every read: the handler
+     is only wired where its elements exist, but a missing key must be an empty
+     drill-down and never a TypeError that stops the rest of this script. */
+  var CYCLES = D.cycles || [], ISSUES = D.issues || [];
   var sheet = document.getElementById("sheet"),
       scrim = document.getElementById("scrim"),
       list  = document.getElementById("sheet-list"),
@@ -2637,20 +2644,20 @@ body{font-variant-numeric:tabular-nums}
        empty list — which is the common case and the one that matters. */
     "today-shipped": [D.today_live ? "shipped today, live" : "shipped today",
                       "Pull requests merged today",
-                      function () { return D.today_shipped; },
+                      function () { return D.today_shipped || []; },
                       D.today_live ? "pr" : "cycle"],
     "today-filed":   [D.filed_live ? "filed today, live" : "filed today",
                       "Issues opened today",
-                      function () { return D.filed_today; }, "issue"],
+                      function () { return D.filed_today || []; }, "issue"],
     "today-failed":  [D.today_live ? "failed today, live" : "failed today",
                       D.today_live ? "Loop runs that did not finish today"
                                    : "Agent-work cycles that did not deliver today",
-                      function () { return D.today_failed; },
+                      function () { return D.today_failed || []; },
                       D.today_live ? "run" : "cycle"],
     "backlog":       ["backlog", "Every open issue, highest priority first",
                       function () {
                         var rank = { high: 0, medium: 1, low: 2, unset: 3 };
-                        return D.issues.slice().sort(function (a, b) {
+                        return ISSUES.slice().sort(function (a, b) {
                           return (rank[a.priority] ?? 9) - (rank[b.priority] ?? 9) || b.number - a.number;
                         });
                       }, "issue"]
@@ -2691,7 +2698,7 @@ body{font-variant-numeric:tabular-nums}
   Array.prototype.forEach.call(document.querySelectorAll(".day-btn"), function (el) {
     el.addEventListener("click", function () {
       var day = el.getAttribute("data-day");
-      var r = D.cycles.filter(function (x) { return x.date_ist === day; });
+      var r = CYCLES.filter(function (x) { return x.date_ist === day; });
       open("cycles", day + " IST, " + r.length + " run" + (r.length === 1 ? "" : "s"), r, "cycle");
     });
   });
@@ -2726,7 +2733,7 @@ body{font-variant-numeric:tabular-nums}
       el.addEventListener("click", function () {
         var key = el.getAttribute("data-key");
         open(group + " · " + key, key + " — " + counts[key] + " open",
-             D.issues.filter(function (i) { return i[group] === key; }), "issue");
+             ISSUES.filter(function (i) { return i[group] === key; }), "issue");
       });
     });
   }

@@ -28,6 +28,30 @@ TABS: tuple[tuple[str, str], ...] = (
 )
 DEFAULT = "overview"
 
+# Which keys of the page's `ops-data` JSON blob each tab ships (#1133 slice 1,
+# step 3). The blob was 438,553 B on every tab -- `cycles` 364,803 B and
+# `issues` 65,675 B of it -- while only the drill-downs read them. A key is
+# listed here only if a drill-down ON THAT TAB reads it:
+#   cycles  -> the `.day-btn` rows (Runs)
+#   issues  -> the Backlog tile (Overview) and the `#bars` buttons (Backlog)
+#   today_*, filed_* -> the three "today" tiles (Overview)
+#   by_*    -> the `#bars` chart (Backlog)
+# `repo` is read on every tab (the sheet's links). The script guards each
+# omitted key (`D.cycles || []`), so a missing key is an empty drill, never a
+# throw. Add a drill-down to a tab and its key to this table in one commit;
+# tests/test_ops_tab_shell.py fails on a drill-down whose data is not shipped.
+_BASE = frozenset({"repo"})
+BLOB_KEYS: dict[str, frozenset] = {
+    "overview": _BASE | {"issues", "today_shipped", "today_failed", "today_live",
+                         "filed_live", "filed_today"},
+    "agents": _BASE,
+    "workflows": _BASE,
+    "runs": _BASE | {"cycles"},
+    "backlog": _BASE | {"issues", "by_priority", "by_area", "by_type"},
+    "analytics": _BASE,
+    "monitoring": _BASE,
+}
+
 _KEYS = frozenset(k for k, _ in TABS)
 _LABELS = dict(TABS)
 
@@ -41,6 +65,12 @@ def pick_tab(raw) -> str:
     """
     key = str(raw or "").strip().lower()
     return key if key in _KEYS else DEFAULT
+
+
+def blob_for(tab: str, full: dict) -> dict:
+    """`full` cut down to the keys `tab` ships; an unknown tab gets Overview's."""
+    keep = BLOB_KEYS.get(tab, BLOB_KEYS[DEFAULT])
+    return {k: v for k, v in full.items() if k in keep}
 
 
 def tab_label(key: str) -> str:

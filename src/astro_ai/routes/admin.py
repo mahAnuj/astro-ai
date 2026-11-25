@@ -201,7 +201,7 @@ async def admin_ops(request: Request, window: str = "", day: str = "", tab: str 
     # rail links are built from `ops`, which `snapshot()` already validated.
     tab = ops_tabs.pick_tab(tab)
     L, I = ops["loop"], ops["issues"]
-    client = {
+    full = {
         "repo": "mahAnuj/astro-ai",
         "cycles": L["rows"],
         "issues": I["rows"],
@@ -219,6 +219,9 @@ async def admin_ops(request: Request, window: str = "", day: str = "", tab: str 
         "by_area": I.get("by_area", {}),
         "by_type": I.get("by_type", {}),
     }
+    # Each tab ships only what its own drill-downs read (#1133): the whole blob
+    # was 438,553 B on every tab. ops_tabs.BLOB_KEYS is the table.
+    client = ops_tabs.blob_for(tab, full)
     return templates.TemplateResponse(
         request, "admin_ops.html",
         {
