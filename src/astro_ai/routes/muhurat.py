@@ -308,7 +308,7 @@ async def _finder_response(
              "lang": _lang(request), "prefill_city": city, "prefill_start": start_date,
              "event_types": event_types, "selected_event": event_type,
              "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
-             "via_get": via_get},
+             "via_get": via_get, "prefill_days": days},
             status_code=400,
         )
     try:
@@ -321,7 +321,7 @@ async def _finder_response(
              "prefill_city": city, "prefill_start": start_date,
              "event_types": event_types, "selected_event": event_type,
              "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
-             "via_get": via_get},
+             "via_get": via_get, "prefill_days": days},
             status_code=400,
         )
     # Before any geocode: personal mode below and find_candidates both resolve this string.
@@ -333,7 +333,7 @@ async def _finder_response(
              "prefill_city": city[:CITY_MAX_CHARS], "prefill_start": start_date,
              "event_types": event_types, "selected_event": event_type,
              "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
-             "via_get": via_get},
+             "via_get": via_get, "prefill_days": days},
             status_code=400,
         )
     personal_chart = None
@@ -393,7 +393,7 @@ async def _finder_response(
              "lang": _lang(request), "prefill_city": city, "prefill_start": start_date,
              "event_types": event_types, "selected_event": event_type,
              "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
-             "via_get": via_get},
+             "via_get": via_get, "prefill_days": days},
             status_code=500,
         )
     event_label = _muhurat.EVENT_RULES[event_type]["label"]
@@ -451,9 +451,15 @@ async def _finder_response(
         next_valid = {
             "d": next_date, "weekday": next_date.strftime("%A"),
             "link": _share_url(event_type, city, next_date, len(candidates)) if basic else ""}
+    # The ranked list's headline (#1341, R1): None when no row qualifies. `top_pick_ties` is how many
+    # other valid days tie it on rating and score, so the card can say the date won on order.
+    pick, pick_ties = _muhurat.top_pick(candidates)
     return templates.TemplateResponse(
         request, "muhurat_finder.html",
         {"candidates": candidates, "city": city, "start_date": start_date,
+         "top_pick": pick, "top_pick_ties": pick_ties,
+         # The Range select shows the CLAMPED days that were searched (#1339), as the share link does.
+         "prefill_days": len(candidates),
          "muhurat_searched": muhurat_searched, "via_get": via_get,
          "share_url": share_url, "next_valid": next_valid,
          "scanned_until": scanned_until if next_date is None else None,
