@@ -1,38 +1,28 @@
 {
- "generated_at": "2026-11-24T05:07:22Z",
+ "generated_at": "2026-11-25T03:55:46Z",
  "days": 7,
- "total_calls": 164,
- "cache_hits": 111,
- "cache_misses": 53,
- "hit_rate_pct": 67,
- "total_input_tokens": 166431,
- "total_output_tokens": 30523,
+ "total_calls": 150,
+ "cache_hits": 108,
+ "cache_misses": 42,
+ "hit_rate_pct": 72,
+ "total_input_tokens": 135871,
+ "total_output_tokens": 25353,
  "peak_day_tokens": 6733,
  "peak_day": "2026-11-22",
- "peak_day_measured_tokens": 43421,
- "peak_day_measured": "2026-11-18",
+ "peak_day_measured_tokens": 42994,
+ "peak_day_measured": "2026-11-23",
  "fallbacks": 0,
  "fallback_reasons": {},
  "by_route": [
   {
    "route": "natal",
-   "calls": 91,
-   "hits": 80,
-   "hit_rate_pct": 87,
-   "input_tokens": 72159,
-   "output_tokens": 13964,
-   "measured_calls": 11,
-   "tokens_per_call": 6559
-  },
-  {
-   "route": "ask",
-   "calls": 34,
-   "hits": 0,
-   "hit_rate_pct": 0,
-   "input_tokens": 78921,
-   "output_tokens": 10512,
-   "measured_calls": 34,
-   "tokens_per_call": 2321
+   "calls": 86,
+   "hits": 77,
+   "hit_rate_pct": 89,
+   "input_tokens": 59417,
+   "output_tokens": 11161,
+   "measured_calls": 9,
+   "tokens_per_call": 6601
   },
   {
    "route": "rashifal",
@@ -43,6 +33,16 @@
    "output_tokens": null,
    "measured_calls": 0,
    "tokens_per_call": null
+  },
+  {
+   "route": "ask",
+   "calls": 26,
+   "hits": 0,
+   "hit_rate_pct": 0,
+   "input_tokens": 63045,
+   "output_tokens": 8470,
+   "measured_calls": 26,
+   "tokens_per_call": 2424
   },
   {
    "route": "matching",
@@ -66,12 +66,12 @@
   },
   {
    "route": "today",
-   "calls": 3,
+   "calls": 2,
    "hits": 1,
-   "hit_rate_pct": 33,
-   "input_tokens": 3883,
-   "output_tokens": 725,
-   "measured_calls": 2,
+   "hit_rate_pct": 50,
+   "input_tokens": 1941,
+   "output_tokens": 360,
+   "measured_calls": 1,
    "tokens_per_call": 1941
   }
  ]

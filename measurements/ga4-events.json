@@ -2,19 +2,19 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-25",
-    "2026-11-21"
+    "2026-10-26",
+    "2026-11-22"
   ],
   "dimensions": [
     "eventName"
   ],
   "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
-  "row_count": 20,
+  "row_count": 21,
   "truncated": false,
   "rows": [
     {
       "event": "page_view",
-      "count": 1479
+      "count": 1477
     },
     {
       "event": "session_start",
@@ -22,19 +22,19 @@
     },
     {
       "event": "user_identified",
-      "count": 735
+      "count": 714
     },
     {
       "event": "feature_view",
-      "count": 722
+      "count": 704
     },
     {
       "event": "first_visit",
-      "count": 655
+      "count": 659
     },
     {
       "event": "user_engagement",
-      "count": 324
+      "count": 325
     },
     {
       "event": "scroll",
@@ -42,23 +42,23 @@
     },
     {
       "event": "ask_answered",
-      "count": 129
+      "count": 126
     },
     {
       "event": "form_start",
-      "count": 114
+      "count": 109
     },
     {
       "event": "kundli_generated",
-      "count": 50
+      "count": 52
     },
     {
       "event": "tool_submitted",
-      "count": 21
+      "count": 27
     },
     {
       "event": "cta_click",
-      "count": 20
+      "count": 21
     },
     {
       "event": "view_search_results",
@@ -69,7 +69,15 @@
       "count": 4
     },
     {
+      "event": "matching_completed",
+      "count": 3
+    },
+    {
       "event": "dasha_deep_dive_viewed",
+      "count": 2
+    },
+    {
+      "event": "dosha_check_completed",
       "count": 2
     },
     {
@@ -77,15 +85,11 @@
       "count": 2
     },
     {
-      "event": "dosha_check_completed",
-      "count": 1
-    },
-    {
       "event": "form_submit",
       "count": 1
     },
     {
-      "event": "matching_completed",
+      "event": "share",
       "count": 1
     },
     {
@@ -93,10 +97,10 @@
       "count": 1
     }
   ],
-  "events_total": 5275,
-  "coverage_note": "cta_click: 20 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "events_total": 5244,
+  "coverage_note": "cta_click: 21 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
-    "count": 20,
+    "count": 21,
     "split_available": true,
     "rows": [
       {
@@ -121,6 +125,11 @@
       },
       {
         "from_path": "/learn/krittika-nakshatra/",
+        "to_path": "/",
+        "count": 1
+      },
+      {
+        "from_path": "/learn/manglik-dosh/",
         "to_path": "/",
         "count": 1
       },
