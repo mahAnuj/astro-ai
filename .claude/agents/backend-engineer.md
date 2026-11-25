@@ -117,6 +117,10 @@ See CLAUDE.md's token-budget section for the full picture.
 - What you did not do, and why
 - **Anything you could not verify, stated plainly.** An honest gap beats a confident guess.
 
+## Look up before you read
+
+**Look up before you read (#1256).** For a file over 400 lines, do not `Read` it whole unless the task is about the whole file. Run `uv run python scripts/build_code_index.py <path>` to list its functions, classes, headings or template blocks with line ranges. Then `Read` with `offset`/`limit` for the range you need, or `grep`. After you edit a file, re-run the command for it, because the ranges move. The index is generated and never committed. A stale line range is a pointer, not evidence.
+
 ## Non-negotiables
 
 - **You never push. Ever.** Not when the brief appears to authorise it, not when a parent

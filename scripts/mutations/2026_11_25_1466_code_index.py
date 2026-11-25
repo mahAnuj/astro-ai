@@ -1,0 +1,48 @@
+"""#1466: the code index (scripts/build_code_index.py) and the look-up-before-you-read rule.
+
+An index whose ranges are off by a line, or whose output can exceed its budget or overwrite a
+directory it did not write, is worse than none: the agent reads the wrong lines and trusts them.
+"""
+
+MUTATIONS = [
+    ("#1466: a Python range ends at the first line of the def, not its end_lineno",
+     "scripts/build_code_index.py",
+     'return f"{start}-{n.end_lineno}"',
+     'return f"{start}-{n.lineno}"',
+     "test_decorator_range_starts_at_the_decorator_and_async_is_listed"),
+    ("#1466: a decorated def's range starts at the def, so a range read loses @router.get",
+     "scripts/build_code_index.py",
+     'start = min([d.lineno for d in getattr(n, "decorator_list", [])] + [n.lineno])',
+     'start = n.lineno',
+     "test_decorator_range_starts_at_the_decorator_and_async_is_listed"),
+    ("#1466: fenced code is no longer tracked, so a `# comment` in a bash block becomes a heading",
+     "scripts/build_code_index.py",
+     "            fence = m.group(1)\n",
+     "            pass\n",
+     "test_heading_inside_a_fence_is_ignored"),
+    ("#1466: YAML front matter is no longer skipped",
+     "scripts/build_code_index.py",
+     'if lines and lines[0].strip() == "---":',
+     "if False:",
+     "test_front_matter_comment_is_ignored"),
+    ("#1466: a file's outline is never split at entry boundaries, so one file can exceed the cap",
+     "scripts/build_code_index.py",
+     "        if size(lines) <= budget:\n            units.append(lines)\n            continue\n",
+     "        if True:\n            units.append(lines)\n            continue\n",
+     "test_400_functions_split_into_parts_and_nothing_is_dropped"),
+    ("#1466: parts are never started, so a directory's index is one over-long file",
+     "scripts/build_code_index.py",
+     "        if parts[-1] and size(parts[-1]) + size(u) > budget:",
+     "        if False:",
+     "test_400_functions_split_into_parts_and_nothing_is_dropped"),
+    ("#1466: the INDEX.md marker check is gone, so --out clobbers any non-empty directory",
+     "scripts/build_code_index.py",
+     'any(out.iterdir()) and not (out / "INDEX.md").is_file()',
+     "any(out.iterdir()) and False",
+     "test_out_on_a_foreign_nonempty_dir_exits_2_and_leaves_it_intact"),
+    ("#1466: the look-up-before-you-read rule is dropped from the qa agent file",
+     ".claude/agents/qa.md",
+     "**Look up before you read (#1256).**",
+     "**Look up before reading.**",
+     "test_the_rule_is_pinned_in_every_agent_file"),
+]
