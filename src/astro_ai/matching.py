@@ -413,14 +413,13 @@ _SEVERITY_RANK: dict[str, int] = {"low": 0, "moderate": 1, "high": 2}
 def _severity_comparable(a: str, b: str) -> bool:
     """Are two Manglik severities "comparable" for the mutual-cancellation rule?
 
-    knowledge/vedic_reference.md §1.3 table E rule 20, verbatim:
-    "Both partners are Manglik of comparable severity | cancels for the
-    marriage match".
-
-    The corpus gives no band. It says "comparable" and stops — no classical
-    source we hold defines how far apart two Manglik charts may sit and still
-    cancel each other. Our own three-notch ladder (low < moderate < high) is a
-    Bhagya construct, graded from the qualifying Mars house; the texts do not
+    The rule itself comes from one held antidote list (Raman, knowledge/grahas.md
+    §12.4, book line 3642): both partners Manglik cancels the dosha, with NO
+    severity condition (#1369). "Comparable severity" is Bhagya's own condition
+    — vedic_reference.md §1.3 rule 20 records it as ours, not as that list's
+    wording — and no source we hold defines how far apart two Manglik charts may
+    sit and still cancel each other. Our own three-notch ladder
+    (low < moderate < high) is a Bhagya construct, graded from the qualifying Mars house; the texts do not
     grade Manglik that way at all. So on that ladder `low` versus `high` is the
     only pair unambiguously outside any reading of "comparable" — excluding it
     invents nothing. Treating equal or adjacent grades as comparable
@@ -489,11 +488,15 @@ _SEVERITY_GRADING_SENTENCE = (
 # Where Bhagya draws the "comparable severity" band. Only meaningful when both
 # partners are Manglik and mutual cancellation is on the table, so it is NOT
 # appended to the one-sided note.
+#
+# Attribution (#1369): the one held antidote list (Raman, knowledge/grahas.md
+# §12.4) cancels the dosha when both partners are Manglik and names NO severity
+# condition. "Comparable severity" is Bhagya's own condition, so this sentence
+# must never call it classical or required.
 _COMPARABILITY_BAND_SENTENCE = (
-    "Classical texts require 'comparable "
-    "severity' for this mutual cancellation but do not define the band — Bhagya "
-    "treats equal or adjacent grades as comparable, and a low-versus-high "
-    "pairing as not comparable."
+    "One held antidote list names no severity condition; comparable severity is "
+    "Bhagya's own condition, not scripture — Bhagya treats equal or adjacent "
+    "grades as comparable, and a low-versus-high pairing as not comparable."
 )
 
 # Composed, not a third variant: both both-Manglik notes need both facts in this
@@ -543,7 +546,7 @@ def mangal_dosh_verdict(g, b) -> MangalVerdict:
             branch = "both_comparable"
             note = (
                 f"Groom: {g_lbl}. Bride: {b_lbl}. Both effectively Manglik — the "
-                "dosha cancels through matching per classical tradition. Mars-related "
+                "dosha cancels through matching per one held antidote list. Mars-related "
                 "marital concerns are mitigated by the symmetry. "
                 + _SEVERITY_CONVENTION_SENTENCE
             )
@@ -551,10 +554,11 @@ def mangal_dosh_verdict(g, b) -> MangalVerdict:
             branch = "both_incomparable"
             note = (
                 f"Groom: {g_lbl}. Bride: {b_lbl}. Both are effectively Manglik, but "
-                f"at different strengths ({g.severity} versus {b.severity}). The "
-                "classical mutual-cancellation rule applies to partners of comparable "
-                "severity, so we do not apply it here — this pairing still needs "
-                "careful evaluation. " + _SEVERITY_CONVENTION_SENTENCE
+                f"at different strengths ({g.severity} versus {b.severity}). "
+                "Bhagya's own comparable-severity condition, which these two do not "
+                "meet, stops us applying the cancellation here — this pairing still "
+                "needs careful evaluation. "
+                + _SEVERITY_CONVENTION_SENTENCE
             )
     else:
         branch = "one_sided"

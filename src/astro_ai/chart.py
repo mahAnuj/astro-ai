@@ -2443,10 +2443,11 @@ def format_manglik_for_prompt(details: ManglikDetails) -> str:
     else:
         lines.append(
             "→ Mention the dosha honestly as 'something to be aware of', not as destiny. "
-            "The traditional remedy — a partner who also carries the dosha — classically "
-            "holds only when both carry it at comparable strength, so give it as that "
-            "condition and never as 'marry any Manglik'. Only this one chart is in scope, "
-            "so say comparability is settled by a compatibility check of both charts. "
+            "One held antidote list cancels it when both partners carry it, naming no "
+            "severity condition; comparable strength is Shubh Bhagya's own condition, so "
+            "give it as ours and never as 'marry any Manglik'. Only this one chart is in "
+            "scope, so say comparability is settled by a compatibility check of both "
+            "charts. "
             "Do NOT predict marital failure. Do NOT name classical texts."
         )
     return "\n".join(lines)

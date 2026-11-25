@@ -182,9 +182,10 @@ of the modules involved. So: one command, zero judgment, PASS/FAIL, exit 0 or
       must ALSO disclose the convention — the note has to contain the word
       "comparable" — so CLAUDE.md's "state which convention a page uses"
       requirement cannot be dropped in a prose cleanup. The band is a Bhagya
-      construct on a Bhagya severity ladder; §1.3 rule 20 says "comparable
-      severity" and defines nothing, so the user has to be told where we drew
-      the line.
+      construct on a Bhagya severity ladder; the one held antidote list
+      (grahas.md §12.4, line 3642) names no severity condition at all (#1369),
+      so the user has to be told that the condition and where we drew the line
+      are ours.
 
   Gate 5 - the cache key actually moved.  `cache.fingerprint_prompt(p)` must
       NOT equal the bare `sha256(p.read_bytes()).hexdigest()[:8]`, and must
@@ -1658,9 +1659,10 @@ CANCELLATION_CLAIMS: tuple[str, ...] = (
     "the dosha cancels", "dosha cancels through matching", "cancels through matching",
 )
 # CLAUDE.md: "State which convention a page uses rather than implying a single
-# universal answer." §1.3 rule 20 says "comparable severity" and defines no
-# band; the low/high exclusion is a Bhagya convention on a Bhagya severity
-# ladder, so the note must say so rather than presenting it as classical fact.
+# universal answer." The held antidote list (grahas.md §12.4, line 3642) names
+# no severity condition (#1369); "comparable severity" and the low/high
+# exclusion are Bhagya's own, on a Bhagya severity ladder, so the note must say
+# so rather than presenting them as classical fact.
 CONVENTION_DISCLOSURE = "comparable"
 
 
@@ -1686,9 +1688,9 @@ def gate_4_no_low_high_cancellation(combos: list[tuple[str, str, str, str]]) -> 
 
         if v.compatible is not False:
             failures.append(
-                f"{label}: compatible={v.compatible}. Issue #166: the classical "
-                "mutual-Manglik cancellation (§1.3 table E rule 20) requires "
-                "\"comparable severity\", and a low against a high is the one pair "
+                f"{label}: compatible={v.compatible}. Issue #166: the mutual-Manglik "
+                "cancellation (§1.3 table E rule 20) carries Bhagya's own "
+                "\"comparable severity\" condition, and a low against a high is the one pair "
                 "unambiguously outside any reading of that word. Telling this couple "
                 "the dosha cancels is the harmful direction of the error."
             )
@@ -1707,8 +1709,8 @@ def gate_4_no_low_high_cancellation(combos: list[tuple[str, str, str, str]]) -> 
         if not discloses:
             failures.append(
                 f"{label}: the note never uses the word {CONVENTION_DISCLOSURE!r}. The "
-                "corpus says \"comparable severity\" and defines no band — where Bhagya "
-                "draws it is our convention, and CLAUDE.md requires a page to state the "
+                "held antidote list names no severity condition — the \"comparable severity\" "
+                "condition and where Bhagya draws its band are our convention, and CLAUDE.md requires a page to state the "
                 "convention it uses instead of implying a universal answer."
             )
 
