@@ -274,6 +274,7 @@ def test_coverage_is_100_unless_truncated_and_is_not_against_all_events(monkeypa
     (_, out, _), _ = _go(monkeypatch, capsys, [(f"{HOST}/p?city=X", 10)], total=100000)
     assert out["coverage_pct"] == 100 and out["truncated"] is False
     assert "TRUNCATED" not in out["coverage_note"]
+    assert "lower bound" not in out["headline"]
 
 
 def test_truncation_lowers_coverage_and_says_so(monkeypatch, capsys):
@@ -282,6 +283,70 @@ def test_truncation_lowers_coverage_and_says_so(monkeypatch, capsys):
     assert out["truncated"] is True and out["row_count"] == 77
     assert out["coverage_pct"] == 30
     assert "TRUNCATED: 1 of 77 page_location rows returned" in out["coverage_note"]
+
+
+_NAMED = "watched params city=0, email=0, token=0, q=20"
+
+
+def test_truncation_is_in_the_headline_not_only_in_the_coverage_note(monkeypatch, capsys):
+    (_, out, _), _ = _go(monkeypatch, capsys, [(f"{HOST}/p?q=a", 20)], totals=200,
+                         row_count=5, total=1000)
+    assert out["headline"].startswith("200 of 1000 events (20.0%) carry a query string in "
+                                      f"page_location; {_NAMED}")
+    assert out["headline"].endswith(" (lower bound: truncated)")
+
+
+def test_data_loss_at_full_coverage_is_a_lower_bound_in_the_headline(monkeypatch, capsys):
+    (_, out, _), _ = _go(monkeypatch, capsys, [(f"{HOST}/p?q=a", 20)], loss=True)
+    assert out["coverage_pct"] == 100
+    assert out["headline"].endswith(" (lower bound: rows hidden in (other))")
+
+
+def test_both_flags_are_named_in_one_suffix(monkeypatch, capsys):
+    (_, out, _), _ = _go(monkeypatch, capsys, [(f"{HOST}/p?q=a", 20)], totals=200,
+                         row_count=5, loss=True)
+    assert out["headline"].endswith(" (lower bound: truncated; rows hidden in (other))")
+
+
+def test_rows_covering_less_than_the_total_is_a_lower_bound_on_coverage_alone(monkeypatch, capsys):
+    (_, out, _), _ = _go(monkeypatch, capsys, [(f"{HOST}/p?q=a", 30)], totals=100)
+    assert out["truncated"] is False and out["other_row_data_loss"] is False
+    assert out["headline"].endswith(
+        " (lower bound: fetched rows cover 30% of the events with a query string)")
+    assert "truncated" not in out["headline"] and "(other)" not in out["headline"]
+
+
+def test_an_unknown_total_with_a_known_query_count_does_not_say_of_zero(monkeypatch, capsys):
+    fake = Fake(_loc_rows([(f"{HOST}/p?city=X", 4)], totals=4), {})
+    _, out, _ = run(monkeypatch, capsys, fake, "--page-locations")
+    assert out["headline"] == ("4 events carry a query string in page_location (total events "
+                               "unknown); watched params city=4, email=0, token=0, q=0")
+    assert "None" not in out["headline"] and " of 0 " not in out["headline"]
+    assert out["query_share_pct"] is None
+
+
+def test_both_totals_unknown_says_so_instead_of_of_zero(monkeypatch, capsys):
+    fake = Fake(_loc_rows([(f"{HOST}/p?city=X", 4)]), {})
+    _, out, _ = run(monkeypatch, capsys, fake, "--page-locations")
+    assert "no total for events with a query string or for all events" in out["headline"]
+    assert "(total unknown)" in out["headline"]
+    assert "None" not in out["headline"] and " of 0 " not in out["headline"]
+
+
+@pytest.mark.parametrize("kw,why", [({"loss": True}, "rows hidden in (other)"),
+                                    ({"row_count": 3}, "truncated")])
+def test_an_incomplete_empty_result_is_not_a_none_of_them_all_clear(monkeypatch, capsys, kw, why):
+    fake = Fake(_loc_rows([], **kw), _total(5000))
+    _, out, _ = run(monkeypatch, capsys, fake, "--page-locations")
+    assert f"result is incomplete ({why})" in out["headline"]
+    assert "may still reach GA4" in out["headline"]
+    assert "none of the watched params" not in out["headline"]
+
+
+def test_an_encoded_watched_name_is_counted_and_its_value_never_printed(monkeypatch, capsys):
+    (_, out, raw), _ = _go(monkeypatch, capsys, [(f"{HOST}/x?e%6Dail=a@b.com", 3)])
+    assert out["watch"]["email"]["events"] == 3
+    assert "a@b.com" not in raw and "b.com" not in raw
 
 
 def test_other_row_data_loss_is_surfaced_and_tolerated_when_absent(monkeypatch, capsys):
