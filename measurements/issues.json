@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-25T04:00:44Z",
+  "generated_at": "2026-11-25T06:00:08Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 169,
+  "open": 168,
   "with_ask": 43,
   "by_area": {
     "UNCLASSIFIED": 74,
@@ -11,7 +11,7 @@
     "REDESIGN": 10,
     "FEATURE": 7,
     "ANALYTICS": 6,
-    "TOKENS": 6,
+    "TOKENS": 5,
     "SEO": 4,
     "CORPUS": 4,
     "RETRIEVAL": 3,
@@ -37,12 +37,12 @@
     "bug": 53,
     "untyped": 41,
     "enhancement": 32,
-    "chore": 28,
+    "chore": 27,
     "correctness": 10,
     "design": 5
   },
   "by_priority": {
-    "unset": 113,
+    "unset": 112,
     "medium": 26,
     "high": 19,
     "low": 11
@@ -57,10 +57,11 @@
       "type": "untyped",
       "priority": "unset",
       "labels": [
-        "seo"
+        "seo",
+        "provenance:trusted"
       ],
       "created": "2026-11-25T03:58:08Z",
-      "updated": "2026-11-25T03:58:08Z",
+      "updated": "2026-11-25T05:58:59Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -91,22 +92,6 @@
       ],
       "created": "2026-11-25T03:23:10Z",
       "updated": "2026-11-25T03:23:10Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1466,
-      "title": "tokens: code-index generator and the look-up-before-you-read agent rule (part of #1256)",
-      "ask": "",
-      "area": "TOKENS",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "chore",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-25T03:23:09Z",
-      "updated": "2026-11-25T04:00:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1036,7 +1021,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-18T02:05:15Z",
-      "updated": "2026-11-20T03:59:25Z",
+      "updated": "2026-11-25T05:59:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2784,9 +2769,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-25T04:00:44Z",
+    "generated_at": "2026-11-25T06:00:08Z",
     "window_days": 28,
-    "open_now": 169,
+    "open_now": 168,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3207,14 +3192,14 @@
       {
         "date": "2026-11-25",
         "opened": 5,
-        "closed": 3,
-        "net": 2,
-        "open_end": 169,
+        "closed": 4,
+        "net": 1,
+        "open_end": 168,
         "opened_by": {
           "loop": 5
         },
         "closed_by": {
-          "close-on-evidence": 3
+          "close-on-evidence": 4
         }
       }
     ],
@@ -4694,16 +4679,21 @@
         "number": 1451,
         "closed_at": "2026-11-25T02:34:04Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1466,
+        "closed_at": "2026-11-25T05:08:40Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 3,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
           "merged": 78,
           "median_h": 0.6,
-          "p90_h": 3.4,
+          "p90_h": 3.1,
           "max_h": 23.3,
           "slowest": [
             {
@@ -4725,27 +4715,6 @@
                 },
                 "qa_fails": 5,
                 "pushes": 6
-              }
-            },
-            {
-              "number": 1170,
-              "title": "ask: each form_ask event stores a compact chart summary, never birth date/time/place (#116",
-              "author": "claude[bot]",
-              "merged_at": "2026-11-18T05:50:59Z",
-              "hours": 19.4,
-              "why": {
-                "reason": "7.9h waiting for gates to start; 5.1h gates red; 4 pushes",
-                "primary": "no_gates",
-                "hours": {
-                  "no_gates": 7.9,
-                  "gates_running": 0.4,
-                  "gates_red": 5.1,
-                  "awaiting_qa": 0.3,
-                  "awaiting_merge": 2.2,
-                  "held": 3.6
-                },
-                "qa_fails": 0,
-                "pushes": 4
               }
             },
             {
@@ -4803,21 +4772,46 @@
                 "qa_fails": 0,
                 "pushes": 1
               }
+            },
+            {
+              "number": 1240,
+              "title": "Team restructure: architect plans every build; backend/frontend engineers; seo-growth in d",
+              "author": "mahAnuj",
+              "merged_at": "2026-11-19T07:07:11Z",
+              "hours": 4.3,
+              "why": {
+                "reason": "1.8h gates running; 1.0h held for chief (trust boundary)",
+                "primary": "gates_running",
+                "hours": {
+                  "no_gates": 0.8,
+                  "gates_running": 1.8,
+                  "awaiting_qa": 0.5,
+                  "qa_fail": 0.3,
+                  "awaiting_merge": 0.0,
+                  "held": 1.0
+                },
+                "qa_fails": 1,
+                "pushes": 3
+              }
             }
           ],
           "top_reasons": [
             {
-              "reason": "waiting for gates to start",
-              "prs": 3
-            },
-            {
               "reason": "waiting for a fix after QA failed",
               "prs": 2
+            },
+            {
+              "reason": "waiting for gates to start",
+              "prs": 2
+            },
+            {
+              "reason": "gates running",
+              "prs": 1
             }
           ]
         },
         "28d": {
-          "merged": 348,
+          "merged": 349,
           "median_h": 0.5,
           "p90_h": 13.8,
           "max_h": 122.1,
@@ -5108,73 +5102,66 @@
         },
         {
           "date": "2026-11-25",
-          "merged": 3,
-          "median_h": 0.4,
-          "max_h": 0.7
+          "merged": 5,
+          "median_h": 0.5,
+          "max_h": 1.0
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 94.8,
+          "age_h": 96.8,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 91.7,
+          "age_h": 93.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 80.3,
+          "age_h": 82.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1375,
           "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 66.1,
+          "age_h": 68.1,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1405,
           "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 44.7,
+          "age_h": 46.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1428,
           "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
-          "age_h": 23.6,
+          "age_h": 25.6,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1438,
           "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (#1436)",
-          "age_h": 21.7,
+          "age_h": 23.7,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1465,
           "title": "Vivah lagna legend renders only when a row produced a block (#1457)",
-          "age_h": 0.8,
+          "age_h": 2.8,
           "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1470,
-          "title": "code index: build_code_index.py and the look-up-before-you-read rule (#1466)",
-          "age_h": 0.0,
-          "waiting_on": "gates / QA",
           "why": null
         }
       ]
