@@ -771,6 +771,15 @@ not evidence. Several gates here were written with bugs — an optional regex gr
 matched empty and reported a false failure, an unscoped row match that read 44 tables
 instead of one — and were only caught by mutation-testing them.
 
+**Cheap checks before a QA round, and before a re-entry (#1255).** `scripts/pre_qa_check.py` runs
+the fast gates, then `THEME_CHECKS` (regression, grounding, tests: the three themes QA fails on
+most, `measurements/lessons.json`) and prints one `themes: ...` line; grounding is a proxy (a
+claim-bearing file changed with no `corpus:` line), never a judgement that a claim is true. And
+`cycle_queue.stale_reason` stands an `issue` queue entry down, through `scripts/reentry.py`, when a
+`claude[bot]` cycle comment is newer than the entry and no commit, QA verdict or main-merge need has
+come since; it fails open on any read error and can reach at most ~16% of the repeat-cycle tokens
+(`docs/decisions/2026-11-25-1255-reentry-stand-down.md`).
+
 ---
 
 ## 9. Issue and deploy discipline

@@ -15,7 +15,9 @@ the real gates or the real suite.
 from __future__ import annotations
 
 import importlib.util
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -52,6 +54,7 @@ def fake_root(tmp_path, monkeypatch):
 
     monkeypatch.setattr(pqc, "ROOT", tmp_path)
     monkeypatch.setattr(pqc, "changed_files", lambda: [])
+    monkeypatch.setattr(pqc, "diff_context", lambda changed: pqc.DiffContext(list(changed)))
     return make
 
 
@@ -161,3 +164,176 @@ def test_agent_cycle_runs_it_before_every_qa_dispatch():
     # Step 0d: the push is what earns the next round.
     s0d = AGENT_CYCLE[AGENT_CYCLE.index("## Step 0d"):AGENT_CYCLE.index("## Step 0a")]
     assert s0d.index("scripts/pre_qa_check.py") < s0d.index("**Push to the PR's branch**")
+
+
+# --------------------------------------------------------------- theme checks (#1255)
+#
+# The three themes QA fails on most (measurements/lessons.json, 2026-11-25: regression 31,
+# grounding 30, tests 26). Each check is driven over a hand-built DiffContext in a temp ROOT.
+# The pin below deliberately does NOT read lessons.json -- it is regenerated daily, and a
+# test that follows it would go red on data drift rather than on a defect.
+
+D = pqc.DiffContext
+
+
+def test_theme_checks_cover_regression_grounding_and_tests():
+    assert set(pqc.THEME_CHECKS) == {"regression", "grounding", "tests"}
+    for theme, checks in pqc.THEME_CHECKS.items():
+        assert len(checks) >= 1 and all(callable(c) for c in checks), theme
+
+
+@pytest.fixture
+def tree(tmp_path, monkeypatch):
+    monkeypatch.setattr(pqc, "ROOT", tmp_path)
+
+    def put(rel: str, text: str) -> str:
+        f = tmp_path / rel
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(text, encoding="utf-8")
+        return rel
+    return put
+
+
+def test_new_code_with_no_test_in_the_diff_fails_the_tests_theme():
+    ctx = D(["scripts/new.py"], added={"scripts/new.py": ["import os", "def helper():", "    pass"]})
+    [problem] = pqc.check_tests_accompany_code(ctx)
+    assert "scripts/new.py" in problem and "tests/" in problem
+
+
+def test_a_test_in_the_diff_clears_it_and_mutation_tables_and_non_code_are_exempt():
+    with_test = D(["scripts/new.py", "tests/test_new.py"], added={"scripts/new.py": ["def helper():"]})
+    assert pqc.check_tests_accompany_code(with_test) == []
+    exempt = D(["scripts/mutations/m.py", "docs/x.md", "src/astro_ai/t.py"],
+               added={"scripts/mutations/m.py": ["def f():"], "docs/x.md": ["def f():"],
+                      "src/astro_ai/t.py": ["X = 1", "    # def commented", "y = 2"]})
+    assert pqc.check_tests_accompany_code(exempt) == []
+
+
+def _rows_file(tree, rows: str) -> str:
+    return tree("scripts/mutations/m.py", f"MUTATIONS = [{rows}]\n")
+
+
+def test_a_mutation_row_whose_anchor_is_missing_or_ambiguous_or_whose_test_is_absent_fails(tree):
+    tree("src/t.py", "a = 1\nb = 2\nb = 2\n")
+    tree("tests/test_t.py", "def test_real():\n    pass\n")
+    row = lambda old, test: f'("lbl", "src/t.py", {old!r}, "x", {test!r}),'
+    ok = _rows_file(tree, row("a = 1", "test_real"))
+    assert pqc.check_mutation_rows_live(D([ok])) == []
+    for old, test, word in (("zzz", "test_real", "0x"), ("b = 2", "test_real", "2x"),
+                            ("a = 1", "test_gone", "test_gone")):
+        _rows_file(tree, row(old, test))
+        [problem] = pqc.check_mutation_rows_live(D(["scripts/mutations/m.py"]))
+        assert word in problem, problem
+
+
+def test_a_malformed_mutation_row_or_a_non_literal_table_cannot_pass(tree):
+    _rows_file(tree, '("only", "three", "fields"),')
+    assert "5-tuple" in pqc.check_mutation_rows_live(D(["scripts/mutations/m.py"]))[0]
+    tree("scripts/mutations/m.py", "MUTATIONS = [make_row() for _ in range(3)]\n")
+    with pytest.raises(pqc.CannotCompute):
+        pqc.check_mutation_rows_live(D(["scripts/mutations/m.py"]))
+
+
+def test_a_changed_python_file_that_does_not_parse_fails_regression(tree):
+    tree("src/ok.py", "x = 1\n")
+    tree("src/bad.py", "def f(:\n")
+    [problem] = pqc.check_python_parses(D(["src/ok.py", "src/bad.py"]))
+    assert problem.startswith("src/bad.py:1")
+
+
+def test_a_changed_template_that_does_not_parse_fails_regression(tree):
+    tree("src/astro_ai/templates/ok.html", "{% if a %}x{% endif %}")
+    tree("src/astro_ai/templates/bad.html", "{% if a %}x")
+    [problem] = pqc.check_templates_parse(D(["src/astro_ai/templates/ok.html", "src/astro_ai/templates/bad.html"]))
+    assert problem.startswith("src/astro_ai/templates/bad.html")
+
+
+def test_a_removed_name_that_code_still_uses_fails_regression(tree):
+    tree("src/astro_ai/gone.py", "X = 1\n")
+    tree("src/astro_ai/user.py", "from astro_ai.gone import helper\nprint(MAX_ROWS, gone.OLD)\n")
+    ctx = D(["src/astro_ai/gone.py"], removed={"src/astro_ai/gone.py": [
+        "def helper():", "MAX_ROWS = 5", "OLD = 1", "class Unused:"]})
+    problems = pqc.check_removed_names_unreferenced(ctx)
+    assert sorted(p.split("`")[1] for p in problems) == ["MAX_ROWS", "OLD", "helper"]
+    assert all("src/astro_ai/user.py:" in p for p in problems)
+
+
+def test_a_removed_name_that_was_re_added_or_only_named_in_a_string_passes(tree):
+    tree("src/astro_ai/user.py", 'print(helper())\nS = "see helper and MAX_ROWS"\nobj.MAX_ROWS\n')
+    moved = D(["a.py", "b.py"], removed={"a.py": ["def helper():"]}, added={"b.py": ["def helper():"]})
+    assert pqc.check_removed_names_unreferenced(moved) == []
+    string_only = D(["a.py"], removed={"a.py": ["MAX_ROWS = 5"]})
+    assert pqc.check_removed_names_unreferenced(string_only) == []
+
+
+def test_a_claim_bearing_file_without_a_corpus_line_fails_grounding():
+    for path in ("src/astro_ai/knowledge/remedies.md", "src/astro_ai/prompts/natal.txt",
+                 "src/astro_ai/templates/learn/x.html", "src/astro_ai/chart.py",
+                 "src/astro_ai/muhurat_lagna.py", "src/astro_ai/matching.py"):
+        got = pqc.check_grounding_proxy(D([path], commits=["fix a thing\n\nCloses #1"]))
+        # a knowledge/*.md change IS the source, so only that one is exempt
+        assert (got == []) == path.endswith(".md"), path
+
+
+def test_a_corpus_line_or_a_knowledge_change_or_an_unrelated_diff_passes_grounding():
+    msg = "retune the table\n\ncorpus: n/a -- no astrological rule changed"
+    assert pqc.check_grounding_proxy(D(["src/astro_ai/chart.py"], commits=["x", msg])) == []
+    assert pqc.check_grounding_proxy(D(["src/astro_ai/chart.py", "src/astro_ai/knowledge/a.md"])) == []
+    assert pqc.check_grounding_proxy(D(["src/astro_ai/main.py", "scripts/x.py"])) == []
+
+
+def test_main_prints_one_themes_line_and_a_failing_theme_exits_one(fake_root, monkeypatch, capsys):
+    monkeypatch.setattr(pqc, "changed_files", lambda: ["src/astro_ai/chart.py"])
+    monkeypatch.setattr(pqc, "tests_for", lambda changed: [])
+    monkeypatch.setattr(pqc, "diff_context", lambda changed: D(list(changed), commits=["no corpus"]))
+    assert pqc.main((fake_root("verify_a", 0),)) == 1
+    out = capsys.readouterr().out
+    assert "themes: regression PASS grounding FAIL tests PASS" in out
+    assert "[grounding] src/astro_ai/chart.py" in out and "FAIL (theme:grounding)" in out
+
+
+def test_all_themes_passing_prints_the_summary_line_and_exits_zero(fake_root, monkeypatch, capsys, tmp_path):
+    summary = tmp_path / "summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    monkeypatch.setattr(pqc, "changed_files", lambda: ["docs/x.md"])
+    assert pqc.main((fake_root("verify_a", 0),)) == 0
+    assert "themes: regression PASS grounding PASS tests PASS" in capsys.readouterr().out
+    assert "themes: regression PASS grounding PASS tests PASS" in summary.read_text()
+
+
+def test_a_theme_that_cannot_compute_exits_two_never_zero(fake_root, monkeypatch, capsys):
+    monkeypatch.setattr(pqc, "changed_files", lambda: ["docs/x.md"])
+    monkeypatch.setattr(pqc, "tests_for", lambda changed: [])
+    def boom(ctx):
+        raise pqc.CannotCompute("no table")
+    monkeypatch.setitem(pqc.THEME_CHECKS, "tests", (boom,))
+    assert pqc.main((fake_root("verify_a", 0),)) == 2
+    assert "tests COULD NOT RUN" in capsys.readouterr().out
+
+
+def test_an_undiffable_tree_makes_the_themes_unrunnable_not_passing(fake_root, monkeypatch):
+    monkeypatch.setattr(pqc, "changed_files", lambda: ["docs/x.md"])
+    monkeypatch.setattr(pqc, "tests_for", lambda changed: [])
+    monkeypatch.setattr(pqc, "diff_context", lambda changed: None)
+    assert pqc.main((fake_root("verify_a", 0),)) == 2
+
+
+def test_diff_context_reads_added_removed_untracked_and_commit_lines_from_real_git(tmp_path, monkeypatch):
+    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t",
+           "GIT_COMMITTER_EMAIL": "t@t"}
+    def git(*a):
+        subprocess.run(["git", *a], cwd=tmp_path, check=True, capture_output=True, env=env)
+    git("init", "-q", "-b", "main")
+    (tmp_path / "a.py").write_text("def old():\n    pass\n-- not a header\nKEEP = 1\n")
+    git("add", "."); git("commit", "-qm", "base")
+    git("checkout", "-qb", "work")
+    (tmp_path / "a.py").write_text("def new():\n    pass\n-- not a header\nKEEP = 1\n")
+    git("commit", "-qam", "rename\n\ncorpus: n/a -- test")
+    (tmp_path / "b.py").write_text("def fresh():\n    pass\n")      # untracked
+    monkeypatch.setattr(pqc, "ROOT", tmp_path)
+    monkeypatch.setattr(pqc, "BASE_REF", "main")
+    ctx = pqc.diff_context(["a.py", "b.py"])
+    assert ctx.added == {"a.py": ["def new():"], "b.py": ["def fresh():", "    pass"]}
+    assert ctx.removed == {"a.py": ["def old():"]}
+    assert len(ctx.commits) == 1 and "corpus: n/a" in ctx.commits[0]
+    assert pqc.check_grounding_proxy(D(["src/astro_ai/chart.py"], commits=ctx.commits)) == []
