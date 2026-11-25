@@ -1,6 +1,32 @@
 {
-  "generated_at": "2026-11-25T19:14:10Z",
+  "generated_at": "2026-11-25T19:23:08Z",
   "rows": [
+    {
+      "owner_helped": null,
+      "run": 45683260499,
+      "workflow": "agent-work",
+      "date": "2026-11-25",
+      "started": "2026-11-25T19:14:45Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 5.3,
+      "issue": 1483,
+      "pr": 1493,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt",
+      "kind": "issue",
+      "tokens_input": 40,
+      "tokens_output": 14017,
+      "tokens_cache_read": 1059481,
+      "tokens_cache_write": 103419,
+      "cost_list_usd": 0.6026,
+      "model": "claude-sonnet-5-5",
+      "turns": 13,
+      "agents_called": {
+        "qa": 1
+      }
+    },
     {
       "owner_helped": null,
       "run": 45668368241,
@@ -16,19 +42,13 @@
       "outcome": "pr open",
       "attribution": "receipt",
       "kind": "ranked",
+      "turns": 20,
       "tokens_input": 184,
       "tokens_output": 71080,
       "tokens_cache_read": 5443968,
       "tokens_cache_write": 498286,
       "cost_list_usd": 2.6356,
-      "model": "claude-sonnet-5-5",
-      "turns": 20,
-      "agents_called": {
-        "architect": 1,
-        "backend-engineer": 1,
-        "project-manager": 1,
-        "qa": 1
-      }
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": false,
@@ -100,17 +120,13 @@
       "outcome": "pr open",
       "attribution": "receipt",
       "kind": "issue",
+      "turns": 36,
       "tokens_input": 112,
       "tokens_output": 30342,
       "tokens_cache_read": 3985240,
       "tokens_cache_write": 167965,
       "cost_list_usd": 1.2572,
-      "model": "claude-sonnet-5-5",
-      "turns": 36,
-      "agents_called": {
-        "chief": 1,
-        "qa": 1
-      }
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": null,
@@ -16023,42 +16039,42 @@
     "days": 7,
     "cycles": 161,
     "minutes_by_outcome": {
-      "shipped": 5278.0,
-      "pr open": 250.8,
+      "shipped": 5203.3,
+      "pr open": 256.1,
       "judged": 232.8,
       "nothing": 207.2,
       "failed": 0.0,
       "unknown": 0.0
     },
-    "minutes_total": 5968.8,
+    "minutes_total": 5899.4,
     "minutes_without_result": 207.2,
     "share_without_result": 0.035,
     "shipped_prs": 68,
-    "build_idle_hours": 77.6,
-    "build_idle_share": 0.462
+    "build_idle_hours": 78.8,
+    "build_idle_share": 0.469
   },
   "tokens": {
     "days": 7,
     "runs": 161,
     "measured": 161,
     "total": {
-      "tokens": 744478881,
-      "input": 504720,
-      "output": 7880808,
-      "cache_read": 681572544,
-      "cache_write": 54520809,
-      "cost_list_usd": 301.72
+      "tokens": 737813314,
+      "input": 504550,
+      "output": 7813925,
+      "cache_read": 675434927,
+      "cache_write": 54059912,
+      "cost_list_usd": 299.25
     },
     "median_by_outcome": {
       "shipped": {
-        "runs": 109,
-        "tokens": 4815167,
-        "cost_list_usd": 2.24
+        "runs": 108,
+        "tokens": 4743933,
+        "cost_list_usd": 2.23
       },
       "pr open": {
-        "runs": 4,
-        "tokens": 5733548,
-        "cost_list_usd": 2.22
+        "runs": 5,
+        "tokens": 5453579,
+        "cost_list_usd": 1.81
       },
       "judged": {
         "runs": 28,
@@ -16071,30 +16087,30 @@
         "cost_list_usd": 0.63
       }
     },
-    "median_cycle": 4385634,
+    "median_cycle": 4354604,
     "median_qa_round": 1000625,
     "merged_prs": 68,
-    "per_merged_pr": 10948219,
-    "cost_list_usd_per_merged_pr": 4.44,
+    "per_merged_pr": 10850196,
+    "cost_list_usd_per_merged_pr": 4.4,
     "previous": {
-      "runs": 200,
-      "measured": 200,
-      "merged_prs": 95,
-      "per_merged_pr": 9606423
+      "runs": 201,
+      "measured": 201,
+      "merged_prs": 96,
+      "per_merged_pr": 9588049
     }
   },
   "agents": {
     "runs_read": {
-      "7d": 113,
-      "30d": 467
+      "7d": 111,
+      "30d": 466
     },
     "by_agent": {
       "architect": {
-        "7d": 30,
-        "30d": 36,
-        "last_run": 45668368241,
-        "last_started": "2026-11-25T17:47:04Z",
-        "last_issue": 1483
+        "7d": 29,
+        "30d": 35,
+        "last_run": 45646019134,
+        "last_started": "2026-11-25T15:30:57Z",
+        "last_issue": 1133
       },
       "astro-auditor": {
         "7d": 5,
@@ -16104,28 +16120,28 @@
         "last_issue": 1359
       },
       "backend-engineer": {
-        "7d": 30,
-        "30d": 30,
-        "last_run": 45668368241,
-        "last_started": "2026-11-25T17:47:04Z",
-        "last_issue": 1483
+        "7d": 29,
+        "30d": 29,
+        "last_run": 45646019134,
+        "last_started": "2026-11-25T15:30:57Z",
+        "last_issue": 1133
       },
       "chief": {
-        "7d": 1,
-        "30d": 13,
-        "last_run": 45640425832,
-        "last_started": "2026-11-25T15:01:16Z",
-        "last_issue": 1346
+        "7d": 0,
+        "30d": 12,
+        "last_run": 44192795443,
+        "last_started": "2026-11-17T22:43:24Z",
+        "last_issue": 1163
       },
       "engineer": {
-        "7d": 1,
+        "7d": 0,
         "30d": 74,
         "last_run": 44378576254,
         "last_started": "2026-11-18T19:15:28Z",
         "last_issue": 1226
       },
       "frontend-engineer": {
-        "7d": 7,
+        "7d": 6,
         "30d": 24,
         "last_run": 45646019134,
         "last_started": "2026-11-25T15:30:57Z",
@@ -16153,17 +16169,17 @@
         "last_issue": 818
       },
       "project-manager": {
-        "7d": 41,
-        "30d": 202,
-        "last_run": 45668368241,
-        "last_started": "2026-11-25T17:47:04Z",
-        "last_issue": 1483
+        "7d": 39,
+        "30d": 201,
+        "last_run": 45612886971,
+        "last_started": "2026-11-25T12:20:56Z",
+        "last_issue": null
       },
       "qa": {
-        "7d": 65,
-        "30d": 273,
-        "last_run": 45668368241,
-        "last_started": "2026-11-25T17:47:04Z",
+        "7d": 64,
+        "30d": 272,
+        "last_run": 45683260499,
+        "last_started": "2026-11-25T19:14:45Z",
         "last_issue": 1483
       }
     }
