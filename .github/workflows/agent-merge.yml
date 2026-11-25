@@ -889,6 +889,20 @@ jobs:
           gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body-file /tmp/pr-comment.md
           gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-label "needs-human-review"
 
+          # SWEEP AGAIN AFTER A NEW HOLD (2026-11-25). Only a run that MERGED
+          # re-dispatched the sweep, so a sweep that picked a boundary PR held it
+          # and ended the chain with green PRs still behind it: 14:10Z that day it
+          # held #1375 and left #1428, #1438 and #1465 (green, qa-pass) waiting
+          # for a cron GitHub had not fired since 04:00Z. The label just added
+          # takes this PR out of the sweep filter, and this point is reached
+          # only when the label was NOT already there (the exit above), so each
+          # re-dispatch needs a newly held PR and the chain still ends.
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            gh workflow run agent-merge.yml --repo "$GH_REPO" --ref main \
+              && echo "::notice::held #$PR_NUMBER; dispatched another sweep for the PRs behind it" \
+              || echo "::warning::held #$PR_NUMBER but could not dispatch the next sweep"
+          fi
+
       # A DRAFT CANNOT MERGE, and this job used to fetch `isDraft` and never
       # read it. So a readied-by-nobody PR reached `gh pr merge` and failed
       # with "Pull request is in draft state" — after every condition that

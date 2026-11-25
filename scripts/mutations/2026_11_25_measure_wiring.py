@@ -24,4 +24,9 @@ MUTATIONS = [
      "        with:\n          fetch-depth: 0\n",
      "",
      "test_the_measurement_wiring_is_in_place"),
+    ("merge sweep: a sweep that newly holds a PR ends the chain again",
+     ".github/workflows/agent-merge.yml",
+     '            gh workflow run agent-merge.yml --repo "$GH_REPO" --ref main \\\n              && echo "::notice::held',
+     '            true \\\n              && echo "::notice::held',
+     "test_a_sweep_that_newly_holds_a_pr_sweeps_again"),
 ]
