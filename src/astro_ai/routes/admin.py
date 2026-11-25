@@ -27,7 +27,7 @@ import json
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from astro_ai import agent_status, cache, events, feedback, ops_data, subscribers, users
+from astro_ai import agent_status, cache, events, feedback, ops_data, ops_tabs, subscribers, users
 from astro_ai.routes.deps import _lang, require_admin, templates
 
 router = APIRouter()
@@ -152,7 +152,7 @@ async def admin_insights(request: Request, days: int = 30,
 
 @router.get("/admin/ops", response_class=HTMLResponse,
             dependencies=[Depends(require_admin)])
-async def admin_ops(request: Request, window: str = "", day: str = "") -> HTMLResponse:
+async def admin_ops(request: Request, window: str = "", day: str = "", tab: str = "") -> HTMLResponse:
     """The agent team's control room — what the loop did, costs, and the backlog.
 
     Mostly the committed `measurements/*.json` files via `ops_data`, which
@@ -196,6 +196,10 @@ async def admin_ops(request: Request, window: str = "", day: str = "") -> HTMLRe
     ops = await asyncio.to_thread(ops_data.snapshot, app_days=days, app_day=day)
     # The "Agents right now" cards: 3 GitHub reads per CACHE_TTL, never raises.
     agents_now = await asyncio.to_thread(agent_status.snapshot)
+    # `tab` is a string for the same reason `window` is: an unknown value shows
+    # Overview rather than a 422 (#1133). Membership-tested, never echoed; the
+    # rail links are built from `ops`, which `snapshot()` already validated.
+    tab = ops_tabs.pick_tab(tab)
     L, I = ops["loop"], ops["issues"]
     client = {
         "repo": "mahAnuj/astro-ai",
@@ -221,6 +225,10 @@ async def admin_ops(request: Request, window: str = "", day: str = "") -> HTMLRe
             "lang": _lang(request),
             "ops": ops,
             "agents_now": agents_now,
+            "tab": tab,
+            "tab_label": ops_tabs.tab_label(tab),
+            "tab_links": ops_tabs.tab_links(tab, ops["app_days"], ops["app"]["day"]),
+            "tabs_health": ops_tabs.health(ops["alerts"], ops["reds"], ops["missing"]),
             # </script> inside a JSON string would end the block early.
             "ops_json": json.dumps(client).replace("</", "<\\/"),
         },
