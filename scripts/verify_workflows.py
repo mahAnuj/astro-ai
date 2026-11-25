@@ -835,6 +835,18 @@ def check_job(name: str, text_lines: dict, jid: str, job: dict, doc: dict, rep: 
         if not run_clean:
             continue
         calls = gh_calls(run)
+        # SHELL HELD IN AN ENV VALUE COUNTS TOO (2026-11-23). agent-merge keeps
+        # one function in job env `HEAD_CHECKS_FN` and two steps `eval` it; its
+        # `gh api .../check-runs` lives there, not in `run:`, so this check
+        # stopped seeing it and the `checks: read removed` mutation went
+        # MISSED. Every `eval "$NAME"` pulls NAME's text in from step, job or
+        # workflow env; its calls report the step's line.
+        nrun = len(run.splitlines())
+        for var in dict.fromkeys(re.findall(r'\beval\s+"?\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?"?', run_clean)):
+            body = next((e[var] for e in (step.get("env"), job.get("env"), yaml_get(doc, "env"))
+                         if isinstance(e, dict) and isinstance(e.get(var), str)), None)
+            if body is not None:
+                calls += [(-1 - nrun, toks) for _ln, toks in gh_calls(body)]
         if not calls:
             continue
         token = resolve_token(step, job, doc)
@@ -849,7 +861,7 @@ def check_job(name: str, text_lines: dict, jid: str, job: dict, doc: dict, rep: 
             continue
         seen: set[tuple[str, str]] = set()
         for lineno, toks in calls:
-            ln = (rline + lineno) if rline else sline
+            ln = (rline + lineno) if (rline and lineno >= 0) else sline
             cls = classify(toks)
             if cls is None:
                 rep.note(f"UNCLASSIFIED  {name}:{ln}  {where}  `gh {' '.join(toks)[:70]}`"
