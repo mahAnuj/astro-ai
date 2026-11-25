@@ -35,6 +35,7 @@ DEFAULT = "overview"
 #   cycles  -> the `.day-btn` rows (Runs)
 #   issues  -> the Backlog tile (Overview) and the `#bars` buttons (Backlog)
 #   today_*, filed_* -> the three "today" tiles (Overview)
+#   kpi_rows -> the four KPI cards' drill-downs (Overview, #1133 slice 2a)
 #   by_*    -> the `#bars` chart (Backlog)
 # `repo` is read on every tab (the sheet's links). The script guards each
 # omitted key (`D.cycles || []`), so a missing key is an empty drill, never a
@@ -43,7 +44,7 @@ DEFAULT = "overview"
 _BASE = frozenset({"repo"})
 BLOB_KEYS: dict[str, frozenset] = {
     "overview": _BASE | {"issues", "today_shipped", "today_failed", "today_live",
-                         "filed_live", "filed_today"},
+                         "filed_live", "filed_today", "kpi_rows"},
     "agents": _BASE,
     "workflows": _BASE,
     "runs": _BASE | {"cycles"},

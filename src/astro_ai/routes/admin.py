@@ -27,7 +27,7 @@ import json
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from astro_ai import agent_status, cache, events, feedback, ops_data, ops_tabs, subscribers, users
+from astro_ai import agent_status, cache, events, feedback, ops_data, ops_kpis, ops_tabs, subscribers, users
 from astro_ai.routes.deps import _lang, require_admin, templates
 
 router = APIRouter()
@@ -219,6 +219,12 @@ async def admin_ops(request: Request, window: str = "", day: str = "", tab: str 
         "by_area": I.get("by_area", {}),
         "by_type": I.get("by_type", {}),
     }
+    # The KPI cards (#1133 slice 2a) are Overview's alone, so the other six tabs
+    # do not pay for computing them. `build` never raises and reads nothing new.
+    kpis = None
+    if tab == "overview":
+        kpis = ops_kpis.build(ops)
+        full["kpi_rows"] = kpis["rows"]
     # Each tab ships only what its own drill-downs read (#1133): the whole blob
     # was 438,553 B on every tab. ops_tabs.BLOB_KEYS is the table.
     client = ops_tabs.blob_for(tab, full)
@@ -230,6 +236,7 @@ async def admin_ops(request: Request, window: str = "", day: str = "", tab: str 
             "agents_now": agents_now,
             "tab": tab,
             "tab_label": ops_tabs.tab_label(tab),
+            "kpis": kpis,
             "tab_links": ops_tabs.tab_links(tab, ops["app_days"], ops["app"]["day"]),
             "tabs_health": ops_tabs.health(ops["alerts"], ops["reds"], ops["missing"]),
             # </script> inside a JSON string would end the block early.

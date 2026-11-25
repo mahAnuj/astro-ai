@@ -932,6 +932,10 @@ def _last_run_failed(lp: dict) -> bool:
             and lp.get("last_run_health") == "red")
 
 
+#: Workflow filename prefixes `_agents_view` leaves out of every count and list.
+HIDDEN_WORKFLOW_PREFIXES = ("zz-probe-",)
+
+
 def _agents_view() -> dict:
     """Loop liveness, delivery yield and per-agent activity (#345).
 
@@ -939,14 +943,21 @@ def _agents_view() -> dict:
     verdict, and re-deriving one here would let the page and the file disagree
     about whether a loop is dormant. The only thing added is the ordering the
     table renders in — alerts first, because a page that puts a broken loop
-    eleventh is a page nobody reads to row eleven.
+    eleventh is a page nobody reads to row eleven — and the removal of probe
+    workflows (`HIDDEN_WORKFLOW_PREFIXES`), which are not verdicts re-derived
+    but rows not shown.
     """
     doc = _fetch("agents.json")
     if not doc or not isinstance(doc.get("loops"), list):
         return {"ok": False, "loops": []}
     rank = {"broken": 0, "dormant": 1, "missing-slots": 2, "reporting": 3,
             "ok": 4, "not-due-yet": 5, "on-demand": 6}
-    loops = sorted(doc["loops"], key=lambda r: (rank.get(r["verdict"], 9), r["workflow"]))
+    # Probe workflows are scaffolding, not part of the team (owner, 2026-11-17,
+    # answer 7 on #1133: hidden from every count and list; 8 of the 27 loops in
+    # agents.json were `zz-probe-*`, leaving 19).
+    shown = [r for r in doc["loops"]
+             if not str(r.get("workflow") or "").startswith(HIDDEN_WORKFLOW_PREFIXES)]
+    loops = sorted(shown, key=lambda r: (rank.get(r["verdict"], 9), r["workflow"]))
     return {
         "ok": True,
         "generated_at": doc.get("generated_at"),
