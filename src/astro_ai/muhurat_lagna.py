@@ -344,11 +344,14 @@ def lagna_view(candidate, event_type: str, city: str) -> LagnaView | None:
         return None
 
 
-def legend(candidates, event_type: str) -> LagnaLegend | None:
-    """The once-per-page disclosure, or None when no row on the page can carry a block.
+def legend(candidates, event_type: str, city: str) -> LagnaLegend | None:
+    """The once-per-page disclosure, or None when no row on the page produced a block.
 
-    Keyed on the same gate as `lagna_view` minus the place (the global takes no city), so it
-    computes nothing and the rows' cached windows are not touched."""
-    if any(_eligible(c, event_type) for c in candidates):
+    Keyed on a produced `lagna_view`, not on `_eligible` alone (#1457): eligibility is only the
+    gate, and a page whose every row failed to compute would otherwise print a legend explaining
+    windows that are not there. It runs `lagna_view` per row, so it computes through the same
+    cached windows the row partials use (`_windows_for` is memoised) and costs no new
+    astronomy; `city` is required, with no default, so a caller cannot ask without the place."""
+    if any(lagna_view(c, event_type, city) is not None for c in candidates):
         return LagnaLegend()
     return None

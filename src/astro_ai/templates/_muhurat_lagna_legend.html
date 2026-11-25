@@ -1,10 +1,11 @@
-{#- #1026: the once-per-page legend for the Vivah "lagna windows" blocks. Reads `auspicious_candidates`
-   and `selected_event` from the including template; renders nothing unless muhurat_lagna_legend()
-   returns one (it does only for Vivah with at least one row that can carry a block). Every sentence
+{#- #1026: the once-per-page legend for the Vivah "lagna windows" blocks. Reads `auspicious_candidates`,
+   `selected_event` and `city` from the including template (the same `city` _muhurat_lagna.html
+   passes); renders nothing unless muhurat_lagna_legend() returns one (#1457: it does only when at
+   least one row produced a block, not merely was eligible for one). Every sentence
    is a string supplied by src/astro_ai/muhurat_lagna.py, including which parts are this finder's
    own reading. Collapsed, English only, no |safe, no title=. Classes are the ones
    _muhurat_why_legend.html uses. -#}
-{% set lagna_legend = muhurat_lagna_legend(auspicious_candidates, selected_event) %}
+{% set lagna_legend = muhurat_lagna_legend(auspicious_candidates, selected_event, city) %}
 {% if lagna_legend %}
 <details class="mt-4 rounded border border-bhagya-line bg-bhagya-cream-2 p-3" data-lagna-legend>
   <summary class="cursor-pointer text-sm font-semibold text-bhagya-ink-soft hover:text-bhagya-sindoor">{{ lagna_legend.heading }}: how these windows are read</summary>

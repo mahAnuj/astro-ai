@@ -279,10 +279,10 @@ def _muhurat_lagna(candidate, event_type: str, city: str):
     return lagna_view(candidate, event_type, city)
 
 
-def _muhurat_lagna_legend(candidates, event_type: str):
-    """The once-per-page disclosure for those rows' lagna windows (#1026)."""
+def _muhurat_lagna_legend(candidates, event_type: str, city: str):
+    """The once-per-page disclosure for those rows' lagna windows (#1026, #1457)."""
     from astro_ai.muhurat_lagna import legend
-    return legend(candidates, event_type)
+    return legend(candidates, event_type, city)
 
 
 templates.env.globals["muhurat_lagna"] = _muhurat_lagna

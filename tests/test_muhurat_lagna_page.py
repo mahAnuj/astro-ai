@@ -201,6 +201,40 @@ def test_a_failed_computation_renders_neither_windows_nor_the_none_sentence(clie
     assert "No lagna window met" not in h
 
 
+def test_the_legend_is_keyed_on_a_block_produced_not_on_row_eligibility(client, monkeypatch):
+    """#1457: every row is eligible and every computation fails, so no block draws and the legend
+    explaining the blocks must not draw either. Then one failing date among working ones: the
+    blocks that do draw bring the legend, once, below them."""
+    ml = _ml()
+    real = ml._windows_for
+
+    def boom(*a, **k):
+        raise RuntimeError("ephemeris unavailable")
+
+    monkeypatch.setattr(ml, "_windows_for", boom)
+    h = _post(client, "vivah", 120)
+    assert "data-lagna>" not in h and "data-lagna-legend" not in h
+    assert ml.NONE_TEXT not in html.unescape(h)
+
+    failing: list = []
+
+    def first_date_only(day, *a, **k):
+        if not failing:
+            failing.append(day)
+        if day == failing[0]:
+            raise RuntimeError("ephemeris unavailable")
+        return real(day, *a, **k)
+
+    monkeypatch.setattr(ml, "_windows_for", first_date_only)
+    h = _post(client, "vivah", 120)
+    assert failing, "premise: the page asked for windows"
+    assert _blocks(h), "premise: the other dates still produced blocks"
+    assert h.count("data-lagna-legend") == 1
+    pos = h.index("data-lagna-legend")
+    assert pos > h.rindex("data-lagna>"), "below every block"
+    assert pos > h.rindex("</table>", 0, pos)
+
+
 def test_a_none_view_renders_nothing_through_the_partial():
     from astro_ai.routes.deps import templates
 
