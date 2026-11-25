@@ -1017,21 +1017,40 @@ def _by_param(shapes: list[dict]) -> list[dict]:
 
 
 def location_headline(total: int, with_query: int | None, rows_events: int,
-                      share: float | None, watch: dict, has_rows: bool) -> str:
-    """The sentence #1066 and #1093 quote. Says so when there is nothing to judge."""
+                      share: float | None, watch: dict, has_rows: bool,
+                      lower_bound: tuple[str, ...] = ()) -> str:
+    """The sentence #1066 and #1093 quote. Says so when there is nothing to judge.
+
+    `lower_bound` names why the counts may undercount (truncated, rows hidden in (other), rows
+    covering less than the total). The sentence is quoted without coverage_note, so the caveat
+    has to be in it: a watched count that is a floor must not read as a measured value (#1451).
+    """
     # q last: it is the free-text one, the others name an identity.
     order = sorted(PII_PARAMS, key=lambda p: p == "q")
     named = ", ".join(f"{p}={watch[p]['events']}" for p in order)
+    suffix = f" (lower bound: {'; '.join(lower_bound)})" if lower_bound else ""
     if not total and not has_rows:
         return "no events in the window; nothing can be said"
+    if not has_rows and lower_bound:
+        # An incomplete empty result proves nothing: "none reaches GA4" would be a false all-clear.
+        return (f"no page_location rows with a query string returned out of {total} events, "
+                f"but the result is incomplete ({'; '.join(lower_bound)}): the watched params "
+                "may still reach GA4 in the window")
     if not has_rows:
         return (f"0 of {total} events carry a query string in page_location: none of the "
                 f"watched params ({', '.join(order)}) reaches GA4 in the window")
     if with_query is None:
+        if not total:
+            return (f"GA4 returned no total for events with a query string or for all events; "
+                    f"the fetched rows hold {rows_events} events (total unknown); watched "
+                    f"params {named}{suffix}")
         return (f"GA4 returned no total for events with a query string; the fetched rows "
-                f"hold {rows_events} of {total} events; watched params {named}")
+                f"hold {rows_events} of {total} events; watched params {named}{suffix}")
+    if not total:
+        return (f"{with_query} events carry a query string in page_location (total events "
+                f"unknown); watched params {named}{suffix}")
     return (f"{with_query} of {total} events ({share}%) carry a query string in "
-            f"page_location; watched params {named}")
+            f"page_location; watched params {named}{suffix}")
 
 
 def page_locations(args, start: str, end: str, bearer: str) -> int:
@@ -1078,6 +1097,16 @@ def page_locations(args, start: str, end: str, bearer: str) -> int:
                 if with_query else None)
     data_loss = bool((data.get("metadata") or {}).get("dataLossFromOtherRow", False))
 
+    lower_bound = []
+    if truncated:
+        lower_bound.append("truncated")
+    if data_loss:
+        lower_bound.append("rows hidden in (other)")
+    # Only when neither flag already explains the shortfall; rows_events < with_query, not
+    # coverage < 100, because coverage rounds 99.6 up to 100.
+    if not lower_bound and with_query is not None and rows_events < with_query:
+        lower_bound.append(f"fetched rows cover {coverage}% of the events with a query string")
+
     watch = _watch(shapes)
     parts = ["these are EVENTS, not pageviews: a page_view, a scroll and a click on one URL "
              "count three times"]
@@ -1101,7 +1130,7 @@ def page_locations(args, start: str, end: str, bearer: str) -> int:
         "row_count": row_count, "truncated": truncated,
         "other_row_data_loss": data_loss, "shape_count": len(shapes),
         "headline": location_headline(total_events, with_query, rows_events, share,
-                                      watch, bool(raw_rows)),
+                                      watch, bool(raw_rows), tuple(lower_bound)),
         "watch": watch,
         "watch_note": "events, not pageviews. A zero proves a fix only if the window starts "
                       "after that fix's deploy date, and GA4 can threshold low-volume rows, "
