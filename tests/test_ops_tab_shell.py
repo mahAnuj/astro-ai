@@ -169,7 +169,7 @@ def test_the_backlog_bars_are_only_drawn_where_they_exist():
 
 WANT_BLOB = {
     "overview": {"repo", "issues", "today_shipped", "today_failed", "today_live",
-                 "filed_live", "filed_today"},
+                 "filed_live", "filed_today", "kpi_rows"},
     "agents": {"repo"},
     "workflows": {"repo"},
     "runs": {"repo", "cycles"},
@@ -244,10 +244,12 @@ def test_the_script_guards_every_blob_key_that_a_tab_may_omit():
 def test_blob_for_cuts_a_full_dict_and_unknown_falls_back_to_overview():
     full = {k: 1 for k in ("repo", "cycles", "issues", "today_shipped", "today_failed",
                            "today_live", "filed_live", "filed_today", "by_priority",
-                           "by_area", "by_type")}
+                           "by_area", "by_type", "kpi_rows")}
     assert set(ops_tabs.blob_for("runs", full)) == {"repo", "cycles"}
     assert set(ops_tabs.blob_for("nope", full)) == set(ops_tabs.blob_for("overview", full))
     assert "cycles" not in ops_tabs.blob_for("overview", full)
+    assert "kpi_rows" in ops_tabs.blob_for("overview", full)
+    assert all("kpi_rows" not in ops_tabs.blob_for(k, full) for k in KEYS if k != "overview")
 
 
 # --- CSS tokens --------------------------------------------------------------------
