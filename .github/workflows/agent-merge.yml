@@ -1028,8 +1028,15 @@ jobs:
         env:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
+          # The time BEFORE the dispatch, so the reporter can find this run (#1221).
+          after=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           if gh workflow run pr-gates.yml --repo "$GH_REPO" --ref main; then
             echo "::notice::merged #$PR_NUMBER; dispatched pr-gates on main so the merge result is gated"
+            # GitHub almost never delivers this run's completion to
+            # main-red-report by workflow_run (1 of 20, #1221), so dispatch the
+            # reporter too; it waits for the run and reports it.
+            gh workflow run main-red-report.yml --repo "$GH_REPO" --ref main -f after="$after" \
+              || echo "::warning::could not dispatch main-red-report for #$PR_NUMBER's gates run"
           else
             echo "::warning::merged #$PR_NUMBER but could not dispatch pr-gates on main; the daily scheduled run will gate it"
           fi

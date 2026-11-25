@@ -81,7 +81,13 @@ jobs:
       pull-requests: read
       id-token: write
     steps:
+      # FULL HISTORY (#974, #666, #1065). The analyst's confound check runs
+      # `git log origin/main --since`, which a depth-1 clone answers with one
+      # commit, and fetch_index_status.py computes `stale_in_index` only when
+      # the checkout is not shallow (every file would carry the tip's date).
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       # enable-cache MUST be an explicit false. The action defaults to `auto`,
       # which turns caching on for hosted runners, so merely deleting
       # `enable-cache: true` left it on — and its POST step kept exiting 2 while
@@ -122,6 +128,20 @@ jobs:
           uv run python scripts/collect_llm_usage.py --out /tmp/measure/llm-usage.json \
             || echo "::warning::LLM usage not snapshotted; measurements/llm-usage.json is the previous one"
 
+      # Server-side fresh-kundli count per day, split by probe (#1272, #1409), so
+      # the analyst can set it beside GA4's `kundli_generated` and score #1068.
+      # HERE for the same reason as the LLM snapshot: this job holds the GCS
+      # credentials. Non-fatal: a failed read leaves the file absent, which the
+      # analyst reads as "not measured".
+      - name: Count fresh kundli submissions
+        continue-on-error: true
+        env:
+          BHAGYA_STORAGE_BUCKET: shubhagya-cache-us
+        run: |
+          mkdir -p /tmp/measure
+          uv run python scripts/collect_kundli_submissions.py --out /tmp/measure/kundli-submissions.json \
+            || echo "::warning::kundli submissions export failed; measurements/kundli-submissions.json is absent or the previous one"
+
       - name: Pull the numbers
         env:
           GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
@@ -152,6 +172,11 @@ jobs:
           # card for 11-06: "can't u do it automatically?"). Both NON-FATAL.
           uv run python scripts/fetch_ga4.py --days 28 --anomalies > /tmp/ga4-anomalies.json \
             || { echo "::warning::GA4 anomaly breakdown failed; absent this run"; rm -f /tmp/ga4-anomalies.json; }
+          # GA4's previous window (#1115, #1205): sessions and users this window
+          # against the one before, in total and by channel. Every report so far
+          # has had to say "not measured" for GA4 against the previous window.
+          uv run python scripts/fetch_ga4.py --days 28 --trend > /tmp/ga4-trend.json \
+            || { echo "::warning::GA4 trend export failed; /tmp/ga4-trend.json is absent this run (#1115)"; rm -f /tmp/ga4-trend.json; }
           uv run python scripts/fetch_gsc.py --days 28 --discover > /tmp/gsc-discover.json \
             || { echo "::warning::GSC Discover export failed; absent this run"; rm -f /tmp/gsc-discover.json; }
           uv run python scripts/fetch_gsc.py --days 28 --by date      > /tmp/gsc-daily.json
@@ -179,6 +204,25 @@ jobs:
             --out /tmp/measure/verify-first.json \
             && cp /tmp/measure/verify-first.json /tmp/verify-first.json
 
+      # Index status of every sitemap URL (#1065): not indexed, canonical
+      # mismatch, and pages changed after Google's last crawl, ranked into the
+      # top 10 to request indexing for on /admin/ops. URL Inspection API on the
+      # existing webmasters.readonly scope; ~214 calls against a 2,000/day quota.
+      # Needs the full-history checkout above for `stale_in_index`. Non-fatal:
+      # a failure (or exit 1, "inspected nothing") leaves the previous file.
+      - name: Inspect index status
+        continue-on-error: true
+        env:
+          GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+        run: |
+          mkdir -p /tmp/measure
+          if uv run python scripts/fetch_index_status.py --impressions /tmp/gsc-all.json > /tmp/index-status.json; then
+            mv /tmp/index-status.json /tmp/measure/index-status.json
+          else
+            echo "::warning::index status not captured; measurements/index-status.json is the previous one"
+            rm -f /tmp/index-status.json
+          fi
+
       - uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452  # v1.0.278
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -202,13 +246,18 @@ jobs:
               /tmp/gsc-trend-page.json   per-page change, this window vs the previous one
               /tmp/gsc-trend-query.json  per-query change, this window vs the previous one
               /tmp/ga4-events.json       GA4 event counts incl. cta_click (#782); may be absent
+              /tmp/ga4-trend.json        GA4 this window vs the previous one, totals and by
+                                         channel (#1115); may be absent
+              /tmp/measure/kundli-submissions.json  server-side fresh kundlis per day,
+                                         probe vs non-probe (#1409); may be absent
+              /tmp/measure/index-status.json  index status per sitemap URL (#1065); may be absent
               /tmp/ga4-anomalies.json    spike days, each broken down by source, landing,
                                          browser and engagement, with an explanation; may be absent
               /tmp/gsc-discover.json     Google Discover clicks per day and top pages; may be absent
               /tmp/verify-first.json     the busiest pages by engaged sessions, with their
                                          impressions and serving module; may be absent
               /tmp/measure/llm-usage.json the app's LLM calls, cache hits, tokens per route
-            All eight are written by the fetch step above (the events file only when its
+            All are written by the steps above (the optional ones only when their
             export succeeded; absent means not measured, never zero). Until 2026-11-06 this list
             named only the first three, and runs reported decay as "not determinable"
             while the trend files sat unread on disk.
@@ -344,6 +393,7 @@ jobs:
                 /tmp/gsc-trend-page.json /tmp/gsc-trend-query.json /tmp/measure/ 2>/dev/null || true
           cp -f /tmp/ga4-events.json /tmp/measure/ 2>/dev/null || true
           cp -f /tmp/ga4-anomalies.json /tmp/gsc-discover.json /tmp/measure/ 2>/dev/null || true
+          cp -f /tmp/ga4-trend.json /tmp/measure/ 2>/dev/null || true
           date -u +%Y-%m-%dT%H:%M:%SZ > /tmp/measure/generated-at.txt
 
       # ---- The weekly /ask answer audit (#1167) -------------------------------

@@ -57,7 +57,9 @@ def _on(path: pathlib.Path) -> dict:
 
 
 def _reporter_script() -> str:
-    step = _doc(REPORTER)["jobs"]["report"]["steps"][0]
+    # By name, not position: since #1221 a dispatched leg checks out and waits first.
+    step = next(s for s in _doc(REPORTER)["jobs"]["report"]["steps"]
+                if s.get("name") == "File, append to, or close the main-red sentinel")
     return step["run"]
 
 
