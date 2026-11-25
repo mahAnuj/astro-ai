@@ -16,6 +16,7 @@ THE RULES
   * Python: top-level def / async def / class as `name  start-end  docline`, start = the first
     decorator, so a range read includes `@router.get(...)`. Methods as `Class.method` only when
     the class spans more than 60 lines. A top-level constant spanning 30+ lines is `(data)`.
+    Nested classes (`Outer.Inner`) and functions nested in functions are NOT listed.
     A syntax error is one `PARSE ERROR L<n>` line and indexing continues.
   * Markdown: ATX headings only (`## Title`), each ending before the next heading of the same
     or a higher level. Headings inside ``` or ~~~ fences and YAML front matter are ignored.
@@ -31,8 +32,9 @@ THE RULES
   * Output is byte-deterministic: sorted, no timestamps, no absolute paths.
   * LINE NUMBERS ARE VALID UNTIL THE FILE IS EDITED. A stale range is a pointer, not evidence.
 
-EXIT CODES  0 done (a content problem is a stderr warning); 2 bad usage, or --out is a
-non-empty directory that this script did not write (no INDEX.md marker).
+EXIT CODES  0 done (a content problem is a stderr warning); 2 bad usage, --out is a non-empty
+directory that this script did not write (no INDEX.md marker), or --out cannot be written.
+A re-run deletes only the files the previous INDEX.md lists; any other file in --out stays.
 """
 from __future__ import annotations
 
@@ -328,7 +330,8 @@ def describe(name: str, text: str, full: bool, tkey: str | None = None, tidx=Non
     doc, entries = {"py": _py, "md": _md, "html": _tpl}.get(suffix, lambda t: ("", []))(text)
     if entries and entries[0][0].startswith("PARSE ERROR"):
         print(f"warning: {name}: syntax error ({entries[0][0]})", file=sys.stderr)
-        doc = doc or entries[0][0]
+        if not full:                # a full outline already shows the entry; once is enough
+            doc = doc or entries[0][0]
     if suffix == "html" and tkey is not None and tidx is not None:
         entries = [(_named_in(tkey, tidx), "")] + entries
     return name, n, doc, entries, full or False
@@ -379,13 +382,27 @@ def _check_out(out: Path) -> None:
         raise UsageError(f"{out} exists and was not written by this script (no INDEX.md); refusing to touch it")
 
 
+_LISTED = re.compile(r"([\w.\-]+\.md)  ")
+
+
+def _previous_names(out: Path) -> list[str]:
+    """Files the last run wrote, read from its INDEX.md. A name with a path separator can never
+    match, and INDEX.md itself is rewritten, not unlinked: a hand-edited index cannot make this
+    delete anything outside the directory or anything the tool did not list."""
+    try:
+        text = (out / "INDEX.md").read_text(encoding="utf-8")
+    except OSError:
+        return []
+    return [m.group(1) for m in map(_LISTED.match, text.split("\n")) if m and m.group(1) != "INDEX.md"]
+
+
 def build(root: Path, out: Path) -> list[str]:
     root, out = Path(root), Path(out)
     _check_out(out)
     tidx = (template_refs(root), _template_links(root))
     out.mkdir(parents=True, exist_ok=True)
-    for stale in out.glob("*.md"):
-        stale.unlink()
+    for stale in _previous_names(out):      # only what this tool wrote: never `*.md` (#1466 QA)
+        (out / stale).unlink(missing_ok=True)
     index = ["# Code index", STALE, "Written by scripts/build_code_index.py; generated, never committed.", ""]
     names: list[str] = []
     for rel_d, fns in sorted(_scan(root).items()):
@@ -451,6 +468,9 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
             print(f"wrote {len(names) + 1} files")
     except UsageError as e:
         print(f"error: {e}", file=sys.stderr)
+        return 2
+    except OSError as e:
+        print(f"error: cannot write the index: {e}", file=sys.stderr)
         return 2
     return 0
 

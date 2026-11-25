@@ -146,20 +146,43 @@ class TestTemplate:
 
 
 class TestSmallFileRule:
-    def test_under_400_lines_is_one_line_and_400_is_outlined(self):
-        small = "def f():\n    pass\n" * 1 + "\n" * 10
-        f = bci.describe("a.py", small, len(small.splitlines()) >= 400)
-        assert len(bci._render(f, 70)) == 1
-        body = "\n".join(f"def f{i}():\n    pass" for i in range(200)) + "\n"
-        big = bci.describe("b.py", body, True)
-        assert len(bci._render(big, 70)) == 201
+    @staticmethod
+    def _py_lines(n):
+        """A python file of exactly n lines holding 3 top-level defs."""
+        body = "".join(f"def f{i}():\n    pass\n" for i in range(3)) + "# pad\n" * (n - 6)
+        assert len(body.splitlines()) == n
+        return body
+
+    def test_399_lines_is_one_line_and_400_is_outlined_through_build(self, tmp_path, tmp_path_factory):
+        # Driven through build() with LITERAL sizes, so a changed threshold (10, 399, 401, 4000)
+        # goes red; the old test recomputed the threshold in its own body and could not.
+        (tmp_path / "scripts").mkdir()
+        (tmp_path / "scripts" / "a399.py").write_text(self._py_lines(399))
+        (tmp_path / "scripts" / "b400.py").write_text(self._py_lines(400))
+        out = tmp_path_factory.mktemp("small")
+        assert bci.main(["--out", str(out)], root=tmp_path) == 0
+        got = (out / "scripts.md").read_text().split("\n")
+        assert "a399.py  399 lines" in got                       # one line, no entries under it
+        assert "b400.py  400 lines" in got
+        after = got[got.index("b400.py  400 lines") + 1:]
+        assert after[:3] == ["  f0  1-2", "  f1  3-4", "  f2  5-6"]
+        assert not any(l.startswith("  f") for l in got[:got.index("b400.py  400 lines")])
+
+    def test_399_and_400_lines_through_the_path_form(self, tmp_path):
+        a, b = tmp_path / "a399.py", tmp_path / "b400.py"
+        a.write_text(self._py_lines(399))
+        b.write_text(self._py_lines(400))
+        out = bci.outline_path(tmp_path, tmp_path).split("\n")
+        assert out.count("a399.py  399 lines") == 1 and "  f0  1-2" in out[out.index("b400.py  400 lines"):]
+        assert not any(l.startswith("  f") for l in out[:out.index("b400.py  400 lines")])
+        assert "  f2  5-6" in bci.outline_path(tmp_path, a).split("\n")   # a named file is always full
 
 
 class TestBudget:
     def test_400_functions_split_into_parts_and_nothing_is_dropped(self):
         body = "".join(f'def function_number_{i:03d}():\n    """Does thing {i} with a fairly long docstring line."""\n'
                         for i in range(400))
-        parts = bci.pack([bci.describe("big.py", body, True)], 8000, "d")
+        parts = bci.pack([bci.describe("big.py", body, True)], title="d")   # the default cap
         assert len(parts) > 1
         assert all(len(p) <= 8000 for p in parts)
         joined = "".join(parts)
@@ -168,8 +191,18 @@ class TestBudget:
 
     def test_a_dir_that_fits_stays_one_part_by_shrinking_docstrings(self):
         files = [bci.describe(f"m{i}.py", f'"""{"x" * 90}"""\n', False) for i in range(75)]
-        parts = bci.pack(files, 8000, "d")
+        parts = bci.pack(files, title="d")
         assert len(parts) == 1 and len(parts[0]) <= 8000
+
+    def test_build_writes_files_of_at_most_8000_chars(self, tmp_path, tmp_path_factory):
+        (tmp_path / "scripts").mkdir()
+        (tmp_path / "scripts" / "big.py").write_text("".join(
+            f'def function_number_{i:03d}():\n    """Does thing {i} with a fairly long docstring line."""\n'
+            for i in range(900)))
+        out = tmp_path_factory.mktemp("budget")
+        assert bci.main(["--out", str(out)], root=tmp_path) == 0
+        sizes = [len(p.read_text(encoding="utf-8")) for p in out.glob("scripts*.md")]
+        assert len(sizes) > 1 and max(sizes) <= 8000 and max(sizes) > 6000   # full parts, not tiny ones
 
     def test_a_single_line_is_hard_truncated(self):
         assert len(bci._clip("x" * 500)) == bci.LINE_CAP
@@ -203,16 +236,50 @@ class TestCliAndSafety:
         assert bci.main(["--out", str(out)], root=mini_repo) == 2
         assert (out / "precious.md").read_text() == "mine" and not (out / "INDEX.md").exists()
 
-    def test_rerun_over_its_own_output_removes_stale_files_and_is_byte_identical(self, mini_repo, tmp_path_factory):
+    def test_rerun_keeps_files_it_did_not_write_and_removes_its_own_stale_parts(self, mini_repo, tmp_path_factory):
+        out = tmp_path_factory.mktemp("keep")
+        assert bci.main(["--out", str(out)], root=mini_repo) == 0
+        (out / "precious.md").write_text("mine")
+        (out / "NOTES.md").write_text("notes")
+        (out / "zzz.9.md").write_text("not listed, so not ours")
+        # a part file the PREVIOUS run listed and this run no longer produces
+        (out / "scripts.2.md").write_text("old part")
+        idx = out / "INDEX.md"
+        idx.write_text(idx.read_text() + "scripts.2.md  scripts  1 files  part 2/2\n")
+        assert bci.main(["--out", str(out)], root=mini_repo) == 0
+        assert not (out / "scripts.2.md").exists()
+        assert "scripts.2.md" not in idx.read_text()
+        assert (out / "precious.md").read_text() == "mine"
+        assert (out / "NOTES.md").read_text() == "notes" and (out / "zzz.9.md").exists()
+        assert (out / "scripts.md").is_file() and (out / "_root.md").is_file()
+
+    def test_a_dotfile_part_is_listed_in_the_index_and_removed_when_stale(self, mini_repo, tmp_path_factory):
+        (mini_repo / ".claude").mkdir()
+        (mini_repo / ".claude" / "x.md").write_text("# X\n")
+        out = tmp_path_factory.mktemp("dot")
+        assert bci.main(["--out", str(out)], root=mini_repo) == 0
+        assert (out / ".claude.md").is_file() and ".claude.md  .claude" in (out / "INDEX.md").read_text()
+        (mini_repo / ".claude" / "x.md").unlink()
+        assert bci.main(["--out", str(out)], root=mini_repo) == 0
+        assert not (out / ".claude.md").exists()
+
+    def test_an_uncreatable_out_is_one_stderr_line_and_exit_2(self, mini_repo, tmp_path, capsys):
+        blocker = tmp_path / "afile"
+        blocker.write_text("x")
+        assert bci.main(["--out", str(blocker / "idx")], root=mini_repo) == 2
+        err = capsys.readouterr().err
+        assert err.startswith("error: ") and "Traceback" not in err and len(err.strip().splitlines()) == 1
+
+    def test_a_binary_py_file_reports_its_parse_error_once(self, tmp_path):
+        (tmp_path / "bin.py").write_bytes(b"\x00\x01\xff" * 600)
+        assert bci.outline_path(tmp_path, tmp_path / "bin.py").count("PARSE ERROR") == 1
+
+    def test_rerun_over_its_own_output_is_byte_identical(self, mini_repo, tmp_path_factory):
         out = tmp_path_factory.mktemp("idx")
         assert bci.main(["--out", str(out)], root=mini_repo) == 0
-        (out / "stale.md").write_text("old")
         first = {p.name: p.read_bytes() for p in out.iterdir()}
-        (out / "stale.md").unlink()
         assert bci.main(["--out", str(out)], root=mini_repo) == 0
-        assert {p.name: p.read_bytes() for p in out.iterdir()} == {k: v for k, v in first.items() if k != "stale.md"}
-        (out / "stale.md").write_text("old")
-        assert bci.main(["--out", str(out)], root=mini_repo) == 0 and not (out / "stale.md").exists()
+        assert {p.name: p.read_bytes() for p in out.iterdir()} == first
         assert "tests" not in (out / "INDEX.md").read_text() and "hidden" not in "".join(
             p.read_text() for p in out.iterdir())
 
@@ -239,7 +306,7 @@ class TestRealRepo:
         assert secs < 5
         files = list(out.glob("*.md"))
         assert len(files) > 10 and (out / "INDEX.md").is_file()
-        assert max(len(p.read_text(encoding="utf-8")) for p in files) <= bci.MAX_CHARS
+        assert max(len(p.read_text(encoding="utf-8")) for p in files) <= 8000   # literal, not bci.MAX_CHARS
 
     def test_every_chart_py_range_is_structurally_valid(self):
         lines = (ROOT / "src" / "astro_ai" / "chart.py").read_text(encoding="utf-8").split("\n")
@@ -252,6 +319,10 @@ class TestRealRepo:
             name, start, end = m.group(1), int(m.group(2)), int(m.group(3))
             assert 1 <= start <= end <= n, label
             assert name.split(".")[-1] in lines[start - 1] or "@" in lines[start - 1], label
+            assert lines[end - 1].strip(), label              # the range ends on code, not a blank
+            if end < n:                                       # and what follows is blank or a new top-level line
+                nxt = lines[end]
+                assert not nxt.strip() or not nxt[0].isspace(), label
 
     @pytest.mark.parametrize("agent", AGENTS)
     def test_the_rule_is_pinned_in_every_agent_file(self, agent):
