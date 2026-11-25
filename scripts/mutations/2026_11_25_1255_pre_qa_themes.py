@@ -88,4 +88,11 @@ MUTATIONS = [
      "        _themes_into(changed, failed, unrun)\n",
      "        pass\n",
      "test_main_prints_one_themes_line_and_a_failing_theme_exits_one"),
+
+    ("themes/tests: a mutation table built from a module constant is refused again (literal_eval)",
+     "scripts/pre_qa_check.py",
+     '        exec(compile(path.read_text(encoding="utf-8"), str(path), "exec"), ns)  # noqa: S102 - data-only table, as the suite does\n',
+     '        ns["MUTATIONS"] = __import__("ast").literal_eval(path.read_text(encoding="utf-8").split("MUTATIONS = ", 1)[1])\n',
+     "test_a_mutation_table_built_from_a_module_constant_is_read_not_refused"),
+
 ]

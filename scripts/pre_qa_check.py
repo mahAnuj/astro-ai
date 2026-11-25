@@ -260,15 +260,18 @@ def check_tests_accompany_code(ctx: DiffContext) -> list[str]:
 
 
 def _mutation_rows(path: Path) -> list:
-    tree = ast.parse(path.read_text(encoding="utf-8"))
-    for node in tree.body:
-        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "MUTATIONS"
-                                                for t in node.targets):
-            try:
-                return list(ast.literal_eval(node.value))
-            except (ValueError, SyntaxError) as e:
-                raise CannotCompute(f"{path.name}: MUTATIONS is not a literal ({e})") from e
-    raise CannotCompute(f"{path.name}: no MUTATIONS table")
+    """Load a mutation file the way `mutate_behaviour_suite._load_area_rows` does (exec it into a
+    namespace), because a third of the files build rows from module constants (`_GA = "..."`)
+    that `ast.literal_eval` cannot resolve (QA FAIL on #1475: 95 of 263 files)."""
+    ns: dict = {}
+    try:
+        exec(compile(path.read_text(encoding="utf-8"), str(path), "exec"), ns)  # noqa: S102 - data-only table, as the suite does
+    except Exception as e:  # noqa: BLE001 - any failure to load is "cannot compute", never a pass
+        raise CannotCompute(f"{path.name}: cannot be loaded ({type(e).__name__}: {e})") from e
+    table = ns.get("MUTATIONS")
+    if not isinstance(table, list):
+        raise CannotCompute(f"{path.name}: no MUTATIONS list")
+    return table
 
 
 def check_mutation_rows_live(ctx: DiffContext) -> list[str]:

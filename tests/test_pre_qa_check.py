@@ -234,6 +234,21 @@ def test_a_malformed_mutation_row_or_a_non_literal_table_cannot_pass(tree):
         pqc.check_mutation_rows_live(D(["scripts/mutations/m.py"]))
 
 
+def test_a_mutation_table_built_from_a_module_constant_is_read_not_refused(tree):
+    # QA FAIL on #1475: `_GA = "..."` prefixes are common; literal_eval could not read them.
+    tree("scripts/target.py", "ANCHOR = 1\n")
+    tree("tests/test_t.py", "def test_x():\n    pass\n")
+    tree("scripts/mutations/m.py",
+         '_T = "scripts/target.py"\nMUTATIONS = [("lbl", _T, "ANCHOR", "OTHER", "test_x")]\n')
+    assert pqc.check_mutation_rows_live(D(["scripts/mutations/m.py"])) == []
+
+
+def test_a_mutation_file_that_cannot_be_loaded_cannot_compute_not_traceback(tree):
+    tree("scripts/mutations/m.py", "MUTATIONS = [\n")
+    with pytest.raises(pqc.CannotCompute):
+        pqc.check_mutation_rows_live(D(["scripts/mutations/m.py"]))
+
+
 def test_a_changed_python_file_that_does_not_parse_fails_regression(tree):
     tree("src/ok.py", "x = 1\n")
     tree("src/bad.py", "def f(:\n")
