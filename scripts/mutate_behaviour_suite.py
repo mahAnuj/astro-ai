@@ -1733,8 +1733,8 @@ MUTATIONS = [
 
     ("#ops-window: ?window=abc 422s the whole control room",
      "src/astro_ai/routes/admin.py",
-     "async def admin_ops(request: Request, window: str = \"\", day: str = \"\") -> HTMLResponse:",
-     "async def admin_ops(request: Request, window: int = 0, day: str = \"\") -> HTMLResponse:",
+     "async def admin_ops(request: Request, window: str = \"\", day: str = \"\", tab: str = \"\") -> HTMLResponse:",
+     "async def admin_ops(request: Request, window: int = 0, day: str = \"\", tab: str = \"\") -> HTMLResponse:",
      "test_a_mistyped_window_renders_the_default_page_not_an_error"),
 
     ("#ops-trend: features are ranked per day, so a bar changes colour daily",
@@ -2860,7 +2860,7 @@ MUTATIONS = [
     # defect: it reports "offers [1, 1, 1], the app accepts [1, 7, 30]".
     ("#452/BUG-5: the window selector hardcodes one window",
      "src/astro_ai/templates/admin_ops.html",
-     'href="?window={{ d }}"', 'href="?window=1"',
+     'href="?window={{ d }}&amp;tab={{ tab }}"', 'href="?window=1&amp;tab={{ tab }}"',
      "test_the_template_offers_exactly_the_windows_the_module_declares"),
 
     # BUG-6. The old assertion was `peak <= _nice_top(peak)` restated, so it

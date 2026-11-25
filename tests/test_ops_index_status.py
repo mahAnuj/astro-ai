@@ -91,7 +91,7 @@ def _page(client, monkeypatch, tmp_path):
     monkeypatch.setenv("ADMIN_PASSWORD", "bhagya-dev")
     monkeypatch.delenv("BHAGYA_STORAGE_BUCKET", raising=False)
     monkeypatch.setattr(llm_stats, "_LOCAL_FALLBACK_DIR", tmp_path / "stats")
-    r = client.get("/admin/ops", auth=("admin", "bhagya-dev"))
+    r = client.get("/admin/ops?tab=analytics", auth=("admin", "bhagya-dev"))
     assert r.status_code == 200, r.text[:500]
     i = r.text.index('id="index-status"')
     return r.text[i: r.text.index("</section>", i)]
