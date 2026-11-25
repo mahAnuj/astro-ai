@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-25T19:15:26Z",
+ "generated_at": "2026-11-25T19:24:13Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-26",
  "today": {
   "growth": 0,
-  "other": 0,
+  "other": 1,
   "exempt": 0,
-  "share": null
+  "share": 0.0
  },
  "this_week": {
   "growth": 14,
-  "other": 35,
+  "other": 36,
   "exempt": 5,
-  "share": 0.286
+  "share": 0.28
  },
  "this_month": {
   "growth": 48,
-  "other": 285,
+  "other": 286,
   "exempt": 5,
   "share": 0.144
  },
@@ -117,12 +117,24 @@
   {
    "date": "2026-11-26",
    "growth": 0,
-   "other": 0,
+   "other": 1,
    "exempt": 0,
-   "share": null
+   "share": 0.0
   }
  ],
  "cycles": [
+  {
+   "run": 45683260499,
+   "started": "2026-11-25T19:14:45Z",
+   "issue": 1483,
+   "title": "QA follow-up: matching.html and manglik-remedies status list still list comparable severity as a cancellation without saying it is ours (PR #1375)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1493,
+   "agents": {
+    "qa": 1
+   }
+  },
   {
    "run": 45668368241,
    "started": "2026-11-25T17:47:04Z",
@@ -131,12 +143,7 @@
    "class": "other",
    "outcome": "pr open",
    "pr": 1493,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45657790798,
@@ -173,10 +180,7 @@
    "class": "other",
    "outcome": "pr open",
    "pr": 1357,
-   "agents": {
-    "chief": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45630474309,
@@ -607,18 +611,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 45197422578,
-   "started": "2026-11-23T14:44:25Z",
-   "issue": 1411,
-   "title": "analytics: tool_error marker on dosha_check_form.html (slice of #1070 row 8)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1412,
-   "agents": {
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -953,21 +945,22 @@
   "ga4_new_users_28d": 659,
   "ga4_sessions_28d": 804,
   "objective_top5": 1,
-  "growth_share_week": 0.286,
+  "growth_share_today": 0.0,
+  "growth_share_week": 0.28,
   "growth_share_month": 0.144
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-26",
-   "progress": null,
-   "detail": "0 of 0 cycles on growth, target 60%",
+   "progress": 0.0,
+   "detail": "0 of 1 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.52,
+   "progress": 0.515,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -978,8 +971,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.286,
-     "progress": 0.593,
+     "current": 0.28,
+     "progress": 0.571,
      "basis": "growth_share_week"
     },
     {
