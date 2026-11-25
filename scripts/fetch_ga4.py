@@ -48,6 +48,12 @@ survive that failure instead of dying with it. One request dimensioned by event 
 two params would also multiply rows. Only a 400 on the split is read as
 "unregistered"; a 403 or a 5xx still fails the run.
 
+`--events` also carries `journey_events` (#1469): `{count, since, partial_history}` for
+every name in JOURNEY_SINCE, from the rows it already fetched. agent-measure runs
+`--events` but not `--journeys`, so a declared event GA4 returned no row for read as
+absent; it now reads 0 with its since-date -- unless the property was empty or the
+list truncated, where count is null with a reason.
+
 --trend IS THE PREVIOUS WINDOW GA4 NEVER HAD (#1115)
 ----------------------------------------------------
 The analyst reported "no GA4 previous-window export" in four reports running, so
@@ -458,6 +464,8 @@ def events(args, start: str, end: str, bearer: str) -> int:
     Data API refusing `customEvent:from_path` because it is not a registered custom
     dimension -- an owner-side GA4 setting the loop cannot make -- and is reported
     in `coverage_note` while the total still stands. Any other error propagates.
+    `journey_events` gives {count, since, partial_history} for every declared event
+    from the same rows (#1469); count is null, with a reason, when zero is unprovable.
     """
     url = API.format(pid=args.property)
     ranges = [{"startDate": start, "endDate": end}]
@@ -536,6 +544,32 @@ def events(args, start: str, end: str, bearer: str) -> int:
     parts.append(f"{CTA_EVENT} exists only from {CTA_SINCE} 04:42Z (PR #688), so a "
                  f"window starting before 2026-12-01 holds partial history")
 
+    # #1469: a declared event GA4 did not return used to be no row at all, which the
+    # analyst read as "absent". Same rows, no new request. A name missing from the
+    # list is a measured zero ONLY when the list is complete and non-empty: an empty
+    # property or a truncated list cannot tell "zero" from "not seen".
+    by_name = {r["event"]: r["count"] for r in rows}
+    journey_events = {}
+    for name in JOURNEY_SINCE:
+        if name in by_name:
+            entry = {"count": by_name[name]}  # exact even when the list was truncated
+        elif not rows:
+            entry = {"count": None, "reason": "the property recorded no events in the "
+                     "window, so zero is not a measurement"}
+        elif truncated:
+            entry = {"count": None, "reason": "the event list was truncated at the row "
+                     "limit, so a name may be cut off"}
+        else:
+            entry = {"count": 0}
+        journey_events[name] = {**entry, **_since_note(start, name)}
+    unknown = sum(e["count"] is None for e in journey_events.values())
+    parts.append("journey_events: a count of 0 is a measurement over the window; "
+                 "partial_history true means the event began after the window start")
+    if unknown:
+        parts.append(f"journey_events: {unknown} of {len(journey_events)} unknown -- "
+                     + next(e["reason"] for e in journey_events.values()
+                            if e["count"] is None))
+
     print(json.dumps({
         "source": "ga4", "property": args.property, "window": [start, end],
         "dimensions": ["eventName"],
@@ -545,6 +579,7 @@ def events(args, start: str, end: str, bearer: str) -> int:
         "coverage_note": "; ".join(parts),
         CTA_EVENT: {"count": cta_count, "split_available": split_available,
                     "rows": split_rows},
+        "journey_events": journey_events,
     }, indent=2))
     return 0
 

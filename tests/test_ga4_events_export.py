@@ -174,3 +174,61 @@ def test_events_and_daily_together_are_refused(monkeypatch, capsys):
         run(monkeypatch, capsys, fake, "--events", "--daily")
     assert "--events" in str(e.value) and "--daily" in str(e.value)
     assert fake.bodies == []                          # refused before any request
+
+
+# --- #1469: journey_events, so a declared event GA4 returned no row for is a number ---
+
+def test_journey_events_declared_but_not_returned_reads_zero_with_since(monkeypatch, capsys):
+    rc, out = run(monkeypatch, capsys, Fake(A_ROWS, []), "--events")
+    je = out["journey_events"]
+    assert set(je) == set(ga.JOURNEY_SINCE)
+    assert je["muhurat_searched"] == {"count": 0, "since": "2026-11-18",
+                                      "partial_history": True}
+    assert je["tool_submitted"] == {"count": 0, "since": None, "partial_history": None}
+    assert je["cta_click"]["count"] == 7
+
+
+def test_journey_events_returned_names_carry_their_count(monkeypatch, capsys):
+    rows = A_ROWS + [_row(["matching_completed"], 3)]
+    rc, out = run(monkeypatch, capsys, Fake(rows, []), "--events")
+    je = out["journey_events"]
+    assert je["matching_completed"]["count"] == 3
+    assert je["muhurat_searched"]["count"] == 0
+
+
+def test_journey_events_on_an_empty_property_are_unknown_not_zero(monkeypatch, capsys):
+    rc, out = run(monkeypatch, capsys, Fake([], []), "--events")
+    je = out["journey_events"]
+    assert all(e["count"] is None for e in je.values())
+    assert all("no events" in e["reason"] for e in je.values())
+    assert out["cta_click"]["count"] == 0
+    assert "journey_events" in out["coverage_note"]
+
+
+def test_journey_events_when_truncated_a_missing_name_is_unknown(monkeypatch, capsys):
+    rows = A_ROWS + [_row(["matching_completed"], 3)]
+    rc, out = run(monkeypatch, capsys, Fake(rows, [], a_row_count=1500), "--events")
+    je = out["journey_events"]
+    assert je["muhurat_searched"]["count"] is None
+    assert "truncated" in je["muhurat_searched"]["reason"]
+    assert je["matching_completed"]["count"] == 3     # a returned count stays exact
+    assert je["cta_click"]["count"] == 7
+    assert "unknown" in out["coverage_note"]
+
+
+def test_journey_events_add_no_request_and_keep_the_cta_click_shape(monkeypatch, capsys):
+    fake = Fake(A_ROWS, B_ROWS)
+    rc, out = run(monkeypatch, capsys, fake, "--events")
+    assert len(fake.bodies) == 2
+    assert set(out["cta_click"]) == {"count", "split_available", "rows"}
+
+
+def test_journey_events_partial_history_false_once_the_window_starts_after_since(
+        monkeypatch, capsys):
+    monkeypatch.setattr(ga, "post", Fake(A_ROWS, []))
+    monkeypatch.setattr(ga, "token", lambda: "t")
+    monkeypatch.setattr(ga, "window", lambda days: ("2026-11-20", "2026-12-10"))
+    monkeypatch.setattr(sys, "argv", ["fetch_ga4.py", "--property", "123", "--events"])
+    ga.main()
+    out = json.loads(capsys.readouterr().out)
+    assert out["journey_events"]["muhurat_searched"]["partial_history"] is False
