@@ -171,6 +171,20 @@ def test_manglik_remedies_does_not_call_the_seven_remedies_classically_cited(cli
     assert "STRONGEST REMEDY" not in art.llm_summary
 
 
+def test_manglik_check_remedies_card_does_not_call_the_practices_classical(client):
+    """#1320: the /manglik-check "learn more" card for manglik-remedies said "Classical practices
+    to soften Mars", while the article it links to says only one of its seven remedies is a Manglik
+    antidote in a held book. The card now says what the article says. A phrase test: it catches the
+    wording it names, not every possible rewording."""
+    r = client.get("/manglik-check")
+    assert r.status_code == 200
+    text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", r.text))
+    assert "Classical practices to soften Mars" not in text
+    assert "Traditional remedies for Mars in a marriage chart, and which of them a source we hold supports" in text
+    # the card itself must still be there: deleting it would otherwise satisfy the two checks above
+    assert "/learn/manglik-remedies/" in r.text
+
+
 def test_manglik_dosh_keypoints_carry_the_clause():
     from astro_ai.learn_registry import get_article
 
