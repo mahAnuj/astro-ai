@@ -18,11 +18,13 @@
 
     DRILL-DOWN IS CLIENT-SIDE ON DATA ALREADY IN THE PAGE
     ----------------------------------------------------
-    Every row is already here (66 issues, 25 cycles — kilobytes). So a click
-    filters and renders locally: no second request, nothing to rate-limit, and
-    it still works if GitHub is down. The JSON blob below is the SAME object
-    the server rendered the summary from, so a drill-down can never disagree
-    with the headline above it.
+    Every row a tab's drill-downs need is already here, so a click filters and
+    renders locally: no second request, nothing to rate-limit, and it still
+    works if GitHub is down. The JSON blob below is the SAME object the server
+    rendered the summary from, so a drill-down can never disagree with the
+    headline above it. It is cut per tab (ops_tabs.BLOB_KEYS): measured
+    2026-11-25 it was 438,553 B (`cycles` 364,803 B, `issues` 65,675 B), not
+    "kilobytes", and shipping it whole put 440 KB on tabs with no drill-down.
 #}<!doctype html>
 <html lang="en" class="ops">
 <head>
@@ -88,7 +90,7 @@ body{
   -webkit-font-smoothing:antialiased;
   /* A single very soft warm bloom at the top, so the page is not a flat
      rectangle of near-black. No second gradient anywhere. */
-  background-image:radial-gradient(1200px 420px at 18% -12%,rgba(227,168,74,.07),transparent 70%);
+  background-image:radial-gradient(1200px 420px at 18% -12%,var(--glow),transparent 70%);
   background-repeat:no-repeat;
 }
 a{color:var(--accent);text-decoration:none}
@@ -119,8 +121,8 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .top-meta{display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}
 
 /* ── Verdict: the one sentence this page exists to deliver ───────────── */
-.verdict{border:1px solid var(--line);border-left:2px solid var(--accent);
-  background:linear-gradient(90deg,rgba(227,168,74,.045),transparent 55%);
+.verdict{border:1px solid var(--line);border-left:2px solid var(--brand);
+  background:linear-gradient(90deg,var(--wash-brand),transparent 55%);
   padding:20px 22px;border-radius:3px;margin-bottom:22px}
 .verdict p{margin:8px 0 0;font-size:19px;line-height:1.5;max-width:68ch}
 .verdict .sub{font-size:13px;color:var(--ink-dim);margin-top:10px;max-width:78ch}
@@ -266,11 +268,11 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .alert .d{font-size:13px;line-height:1.5;color:var(--ink-dim);max-width:76ch}
 .alert .d a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
 .alert .d a:hover{border-bottom-color:var(--accent)}
-.alert.red{border-color:#6b3329;background:linear-gradient(90deg,rgba(224,97,74,.07),transparent 65%)}
-.alert.red .sev{color:var(--failed);border:1px solid #6b3329}
-.alert.red .t{color:#f0a393}
-.alert.amber{border-color:#6b5223;background:linear-gradient(90deg,rgba(227,168,74,.05),transparent 65%)}
-.alert.amber .sev{color:var(--open);border:1px solid #6b5223}
+.alert.red{border-color:var(--red-bd);background:linear-gradient(90deg,var(--red-wash-a),transparent 65%)}
+.alert.red .sev{color:var(--failed);border:1px solid var(--red-bd)}
+.alert.red .t{color:var(--red-t)}
+.alert.amber{border-color:var(--amber-bd);background:linear-gradient(90deg,var(--amber-wash-a),transparent 65%)}
+.alert.amber .sev{color:var(--open);border:1px solid var(--amber-bd)}
 .clear{margin:0 0 18px;padding:11px 16px;border:1px solid var(--line);border-radius:3px;
   font-size:13px;color:var(--ink-mute)}
 .clear b{color:var(--shipped);font-weight:600}
@@ -306,7 +308,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
    line; this only renders it. */
 .obj{display:flex;gap:14px;align-items:baseline;margin:0 0 18px;padding:13px 16px;
   border:1px solid var(--line);border-left:2px solid var(--shipped);
-  background:linear-gradient(90deg,rgba(91,185,140,.05),transparent 60%);border-radius:3px}
+  background:linear-gradient(90deg,var(--green-wash),transparent 60%);border-radius:3px}
 .obj .lbl{flex:none;padding-top:2px}
 .obj p{margin:0;font:400 15px/1.45 Marcellus,Georgia,serif;color:var(--ink);max-width:70ch}
 .obj .none{font-family:Manrope,sans-serif;font-size:13px;color:var(--ink-mute)}
@@ -336,8 +338,8 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
   transparent 25.5%,transparent 49.5%,var(--line-2) 49.5%,var(--line-2) 50.5%,
   transparent 50.5%,transparent 74.5%,var(--line-2) 74.5%,var(--line-2) 75.5%,transparent 75.5%)}
 .tb{shape-rendering:crispEdges}
-.tb.f0{fill:var(--shipped)} .tb.f1{fill:var(--open)} .tb.f2{fill:#6f8fd0}
-.tb.f3{fill:#b07fc7} .tb.f4{fill:#4fa3a8} .tb.f5{fill:#c9a227} .tb.f6{fill:var(--nothing)}
+.tb.f0{fill:var(--shipped)} .tb.f1{fill:var(--open)} .tb.f2{fill:var(--c2)}
+.tb.f3{fill:var(--c3)} .tb.f4{fill:var(--c4)} .tb.f5{fill:var(--c5)} .tb.f6{fill:var(--nothing)}
 .tpdline{stroke:var(--failed);stroke-width:1;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
 .trendx{display:flex;margin-top:5px}
 .trendx span{flex:1;text-align:center;font:400 9px/1 "JetBrains Mono",ui-monospace,monospace;
@@ -346,8 +348,8 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
   font:600 10px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase}
 .lg{display:inline-flex;align-items:center;gap:5px;color:var(--ink)}
 .sw{width:9px;height:9px;border-radius:2px;display:inline-block}
-.sw.f0{background:var(--shipped)} .sw.f1{background:var(--open)} .sw.f2{background:#6f8fd0}
-.sw.f3{background:#b07fc7} .sw.f4{background:#4fa3a8} .sw.f5{background:#c9a227}
+.sw.f0{background:var(--shipped)} .sw.f1{background:var(--open)} .sw.f2{background:var(--c2)}
+.sw.f3{background:var(--c3)} .sw.f4{background:var(--c4)} .sw.f5{background:var(--c5)}
 .sw.f6{background:var(--nothing)}
 .sw.tpdsw{background:repeating-linear-gradient(90deg,var(--failed) 0 3px,transparent 3px 5px);border-radius:0}
 /* `live` is a state, not an age, so it gets a dot rather than a colour of its
@@ -444,7 +446,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
    Each carries a <title>, which is how a reader gets one day's number with no
    JavaScript at all. */
 .band{fill:transparent}
-.band:hover{fill:rgba(232,228,218,.06)}
+.band:hover{fill:var(--band-hover)}
 .dot{opacity:0;pointer-events:none}
 .band:hover + .dot{opacity:1}
 
@@ -463,7 +465,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .mv .was{font-family:var(--mono);font-size:12px;color:var(--ink-mute);text-align:right;white-space:nowrap}
 .up .d{color:var(--shipped)} .down .d{color:var(--failed)}
 .cov{display:inline-block;font:600 11px/1 Manrope,sans-serif;letter-spacing:.08em;
-  text-transform:uppercase;padding:4px 7px;border-radius:2px;border:1px solid #6b5223;color:var(--open)}
+  text-transform:uppercase;padding:4px 7px;border-radius:2px;border:1px solid var(--amber-bd);color:var(--open)}
 
 /* ── Team: loop liveness, delivery yield, per-agent activity ──────────────
    The verdict chip carries the colour; the row stays quiet. A table where
@@ -478,11 +480,11 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .loops a{color:var(--ink);white-space:nowrap}
 .loops a:hover{color:var(--accent);text-decoration:none}
 .loops .c{font-family:var(--mono);font-size:12px;color:var(--ink-mute)}
-.v-broken{color:var(--failed);border-color:#6b3329}
-.v-dormant{color:var(--failed);border-color:#6b3329}
-.v-missing-slots{color:var(--open);border-color:#6b5223}
-.v-reporting{color:var(--open);border-color:#6b5223}
-.v-ok{color:var(--shipped);border-color:#2f5c47}
+.v-broken{color:var(--failed);border-color:var(--red-bd)}
+.v-dormant{color:var(--failed);border-color:var(--red-bd)}
+.v-missing-slots{color:var(--open);border-color:var(--amber-bd)}
+.v-reporting{color:var(--open);border-color:var(--amber-bd)}
+.v-ok{color:var(--shipped);border-color:var(--green-bd)}
 .v-not-due-yet,.v-on-demand{color:var(--ink-mute)}
 .who{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
 .who span{border:1px solid var(--line-2);border-radius:2px;padding:6px 9px;font-size:12px;color:var(--ink-dim)}
@@ -558,7 +560,7 @@ table.cost .v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
   text-transform:uppercase;color:var(--open)}
 
 /* ── Drill-down sheet ─────────────────────────────────────────────────── */
-.scrim{position:fixed;inset:0;background:rgba(5,6,8,.62);opacity:0;pointer-events:none;
+.scrim{position:fixed;inset:0;background:var(--scrim);opacity:0;pointer-events:none;
   transition:opacity .2s;z-index:40;backdrop-filter:blur(2px)}
 .scrim.on{opacity:1;pointer-events:auto}
 .sheet{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);z-index:41;
@@ -593,17 +595,17 @@ table.cost .v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
 .item.row{cursor:default}
 .chip{font:600 11px/1 Manrope,sans-serif;letter-spacing:.08em;text-transform:uppercase;
   padding:4px 7px;border-radius:2px;border:1px solid var(--line-2);color:var(--ink-dim);flex:none}
-.chip.shipped{color:var(--shipped);border-color:#2f5c47}
-.chip.failed,.chip.unknown{color:var(--failed);border-color:#6b3329}
+.chip.shipped{color:var(--shipped);border-color:var(--green-bd)}
+.chip.failed,.chip.unknown{color:var(--failed);border-color:var(--red-bd)}
 .chip.nothing{color:var(--nothing-text)}
-.chip.pr-open{color:var(--open);border-color:#6b5223}
-.chip.high{color:var(--failed);border-color:#6b3329}
-.chip.medium{color:var(--open);border-color:#6b5223}
+.chip.pr-open{color:var(--open);border-color:var(--amber-bd)}
+.chip.high{color:var(--failed);border-color:var(--red-bd)}
+.chip.medium{color:var(--open);border-color:var(--amber-bd)}
 .chip.low{color:var(--ink-mute)}
 /* Unranked is not low. It is the absence of a decision, so it gets the colour
    of "nothing recorded" rather than a position on the scale. */
 .chip.unset{color:var(--nothing-text);border-color:var(--line-2)}
-.chip.blocked{color:var(--open);border-color:#6b5223}
+.chip.blocked{color:var(--open);border-color:var(--amber-bd)}
 .empty{padding:30px 0;color:var(--ink-mute);font-size:13px}
 
 /* ── Provenance footer: where every number came from ─────────────────── */
@@ -644,7 +646,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 body{font:400 15px/1.6 var(--ui);font-feature-settings:"tnum" 1,"cv11" 1;
-  background-image:radial-gradient(1100px 380px at 15% -10%,rgba(106,168,240,.06),transparent 70%)}
+  background-image:radial-gradient(1100px 380px at 15% -10%,var(--glow),transparent 70%)}
 .wrap{max-width:1240px}
 /* every display face back to one legible family, with lining tabular figures */
 .num,.mark,.obj p,.chart .big,.panel > h2,h1,h2,h3{font-family:var(--ui)!important;
@@ -657,10 +659,10 @@ body{font:400 15px/1.6 var(--ui);font-feature-settings:"tnum" 1,"cv11" 1;
 .rt th{padding-bottom:10px}
 .win{font:600 12px/1 var(--ui);letter-spacing:.03em;padding:6px 10px}
 .winsel{border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
-.win.on{color:#0c0f14;background:var(--accent)}
+.win.on{color:var(--on-brand);background:var(--brand)}
 /* panels: rounded cards with a clear header band */
 .panel,.tile,.verdict,.obj,.alert{border-radius:12px!important}
-.panel{border-color:var(--line);box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 8px 24px rgba(0,0,0,.25)}
+.panel{border-color:var(--line);box-shadow:var(--shadow)}
 .panel > h2{font-size:18px;font-weight:650;letter-spacing:-.01em;padding:16px 20px;
   background:linear-gradient(180deg,var(--panel-2),var(--panel));border-radius:12px 12px 0 0}
 .panel > h2{flex-wrap:wrap;align-items:center;row-gap:8px;line-height:1.3;white-space:nowrap}
@@ -670,8 +672,8 @@ body{font:400 15px/1.6 var(--ui);font-feature-settings:"tnum" 1,"cv11" 1;
 /* tables: zebra, hover, roomier rows, brighter sub-lines */
 .rt{font-size:14px}
 .rt td{padding:12px 0}
-.rt tbody tr:nth-child(even) td{background:rgba(255,255,255,.018)}
-.rt tbody tr:hover td{background:rgba(106,168,240,.07)}
+.rt tbody tr:nth-child(even) td{background:var(--zebra)}
+.rt tbody tr:hover td{background:var(--row-hover)}
 .rt td.n{font-size:13.5px}
 .rt .sub{font-size:12.5px;color:var(--ink-mute)}
 /* tiles: big lining numbers, colour carries state */
@@ -685,19 +687,19 @@ body{font:400 15px/1.6 var(--ui);font-feature-settings:"tnum" 1,"cv11" 1;
   padding:5px 8px;border-radius:999px}
 .alert .t{font-size:16px}
 .alert .d{font-size:14px;color:var(--ink-dim)}
-.alert.red{border-color:#7a3226!important;border-left-color:var(--failed)!important;
-  background:linear-gradient(90deg,rgba(240,106,85,.14),rgba(240,106,85,.03) 70%)!important}
-.alert.red .sev{background:rgba(240,106,85,.18);border-color:transparent!important;color:#ffb3a6!important}
-.alert.red .t{color:#ffc2b8}
-.alert.amber{border-color:#6e5420!important;border-left-color:var(--open)!important;
-  background:linear-gradient(90deg,rgba(242,178,76,.13),rgba(242,178,76,.03) 70%)!important}
-.alert.amber .sev{background:rgba(242,178,76,.18);border-color:transparent!important;color:#ffd58f!important}
+.alert.red{border-color:var(--red-bd)!important;border-left-color:var(--failed)!important;
+  background:linear-gradient(90deg,var(--red-wash-a),var(--red-wash-b) 70%)!important}
+.alert.red .sev{background:var(--red-chip);border-color:transparent!important;color:var(--red-sev)!important}
+.alert.red .t{color:var(--red-t)}
+.alert.amber{border-color:var(--amber-bd)!important;border-left-color:var(--open)!important;
+  background:linear-gradient(90deg,var(--amber-wash-a),var(--amber-wash-b) 70%)!important}
+.alert.amber .sev{background:var(--amber-chip);border-color:transparent!important;color:var(--amber-t)!important}
 /* status chips: a pill with a dot, coloured by state */
 .age{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px;border-radius:999px;
   background:var(--panel-3);color:var(--ink-dim)}
-.age.live{background:rgba(76,195,138,.14);color:#8fe0b6}
+.age.live{background:var(--live-bg);color:var(--live-fg)}
 .age.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--shipped)}
-.age.stale{background:rgba(242,178,76,.14);color:#ffd58f}
+.age.stale{background:var(--amber-chip);color:var(--amber-t)}
 .verdict{border-left-width:5px!important;padding:22px 24px}
 .verdict p{font-size:20px}
 .obj{border-left-width:5px!important}
@@ -705,11 +707,11 @@ body{font:400 15px/1.6 var(--ui);font-feature-settings:"tnum" 1,"cv11" 1;
 .empty{color:var(--ink-dim)}
 details > summary{color:var(--ink-dim);cursor:pointer}
 details > summary:hover{color:var(--ink)}
-a{color:#7fb6f5} a:hover{color:#a8cdf8}
-.alert .d a{color:#ffd58f}
+a{color:var(--link)} a:hover{color:var(--link-hover)}
+.alert .d a{color:var(--amber-t)}
 .daypick{display:inline-flex;align-items:center;gap:6px;margin-left:6px}
 .daypick input{font:500 12px/1 var(--mono);color:var(--ink);background:var(--panel-3);
-  border:1px solid var(--line-2);border-radius:8px;padding:5px 8px;color-scheme:dark}
+  border:1px solid var(--control);border-radius:8px;padding:5px 8px}
 .daypick input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .daypick .win{border:1px solid var(--line-2);border-radius:8px}
 @media (max-width:720px){.tile .v .num{font-size:32px}.panel > h2{font-size:16px}}
@@ -757,34 +759,140 @@ a.ag:hover{border-color:var(--line-2);border-left-color:var(--st)}
   @keyframes an-pulse{50%{opacity:.35}}
 }
 
-/* ── Light theme (owner, 2026-11-13: "make ops page - light background") ────
-   Redefines every token above for a warm paper ground, plus the handful of
-   rules that carried dark-only hexes. Status colours are darkened to clear
-   AA as TEXT on white: shipped #1d7a4f 5.3:1, open #9a5b00 5.6:1, failed
-   #b3261e 6.3:1, judged #2f62b0 5.8:1, ink-mute #636a78 5.4:1 (5.0:1 on
-   panel-2). Chart-only fills keep their hues. */
+/* ── Tokens, final (owner, 2026-11-13: "make ops page - light background"; #1133
+   slice 1 re-tokenised it) ────────────────────────────────────────────────────
+   THIS IS THE LAST TOP-LEVEL :root, AND IT IS COMPLETE: every colour a rule on
+   this page uses for text, a border, a fill or a shadow is a token here, and the
+   @media (prefers-color-scheme:dark) block right after it redefines ALL of them
+   (a token that exists only in the dark block would be undefined in light). The
+   two :root blocks above are the old dark layers; they are shadowed by this one
+   and kept only so nothing that reads them breaks. A rule must never carry a hex.
+
+   Light is the default; dark follows the visitor's system setting.
+   --accent is violet AS TEXT (#5240cc: 7.1:1 on white, 6.0:1 on --panel-3).
+   --brand is the owner's violet #6C5CE7 as a FILL or bar only: as text it is
+   4.86:1 on white but 4.09:1 on --panel-3, so text never uses it. --on-brand is
+   what sits ON that fill (white 4.86:1; near-black on the lighter dark violet).
+   Status colours are darkened to clear AA as TEXT on white: shipped #1d7a4f 5.3:1,
+   open #9a5b00 5.4:1, failed #b3261e 6.5:1, judged #2f62b0 6.0:1, ink-mute
+   #5b6676 5.8:1 (4.9:1 on --panel-3). They are never the only signal: every
+   status carries its word. Measured 2026-11-25 with tests/test_ops_tab_shell.py. */
 :root{
-  --ground:#f4f1ea; --panel:#ffffff; --panel-2:#faf8f3; --panel-3:#f0ece3;
-  --line:#e3ded2; --line-2:#cdc6b6;
-  --ink:#1c1e22; --ink-dim:#4a505c; --ink-mute:#636a78;
+  color-scheme:light;
+  --ground:#f8fafc; --panel:#ffffff; --panel-2:#f1f5f9; --panel-3:#eaeff5;
+  --line:#e2e8f0; --line-2:#cbd5e1; --control:#64748b;
+  --ink:#0f172a; --ink-dim:#475569; --ink-mute:#5b6676;
   --shipped:#1d7a4f; --open:#9a5b00; --failed:#b3261e; --judged:#2f62b0;
-  --nothing:#a3a9b3; --nothing-text:#5f6672; --accent:#9a5b00; --accent-dim:#e8cf9f;
+  --nothing:#7d8aa0; --nothing-text:#556070;
+  --accent:#5240cc; --accent-dim:#c9c2f5; --brand:#6c5ce7; --on-brand:#ffffff;
+  --link:#5240cc; --link-hover:#3d2fa8;
   --st-building:#c2410c; --st-running:#0f766e;
+  --red-bd:#f0c4bd; --red-t:#8a1c15; --red-sev:#8a1c15; --red-chip:rgba(179,38,30,.10);
+  --red-wash-a:rgba(179,38,30,.08); --red-wash-b:rgba(179,38,30,.02);
+  --amber-bd:#ecd5a8; --amber-t:#7a4800; --amber-chip:#fbefd6;
+  --amber-wash-a:rgba(154,91,0,.09); --amber-wash-b:rgba(154,91,0,.02);
+  --green-bd:#b9dcc8; --green-wash:rgba(29,122,79,.06);
+  --live-bg:rgba(29,122,79,.10); --live-fg:#14633f;
+  --wash-brand:rgba(108,92,231,.06); --wash-1:rgba(108,92,231,.14); --wash-2:rgba(29,122,79,.13);
+  --glow:rgba(108,92,231,.06); --rail-on:rgba(108,92,231,.10);
+  --zebra:rgba(15,23,42,.025); --row-hover:rgba(108,92,231,.06); --band-hover:rgba(15,23,42,.06);
+  --scrim:rgba(15,23,42,.35);
+  --shadow:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.04);
+  --c2:#3f6fc0; --c3:#8a52b0; --c4:#2a8187; --c5:#a1800f;
+  --ui:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r-card:12px; --r-inner:8px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --ground:#0c0f14; --panel:#151922; --panel-2:#1b212c; --panel-3:#232a37;
+    --line:#2a3140; --line-2:#3b4456; --control:#7d879a;
+    --ink:#f1f3f7; --ink-dim:#c4cad5; --ink-mute:#9ea7b7;
+    --shipped:#4cc38a; --open:#f2b24c; --failed:#f06a55; --judged:#6aa8f0;
+    --nothing:#6b7486; --nothing-text:#a3abba;
+    --accent:#b4aaff; --accent-dim:#3b3470; --brand:#8b7cf6; --on-brand:#0c0f14;
+    --link:#b4aaff; --link-hover:#d0c9ff;
+    --st-building:#fb923c; --st-running:#2dd4bf;
+    --red-bd:#7a3226; --red-t:#ffc2b8; --red-sev:#ffb3a6; --red-chip:rgba(240,106,85,.18);
+    --red-wash-a:rgba(240,106,85,.14); --red-wash-b:rgba(240,106,85,.03);
+    --amber-bd:#6e5420; --amber-t:#ffd58f; --amber-chip:rgba(242,178,76,.18);
+    --amber-wash-a:rgba(242,178,76,.13); --amber-wash-b:rgba(242,178,76,.03);
+    --green-bd:#2f5c47; --green-wash:rgba(91,185,140,.05);
+    --live-bg:rgba(76,195,138,.14); --live-fg:#8fe0b6;
+    --wash-brand:rgba(139,124,246,.07); --wash-1:rgba(139,124,246,.16); --wash-2:rgba(76,195,138,.13);
+    --glow:rgba(106,168,240,.06); --rail-on:rgba(139,124,246,.16);
+    --zebra:rgba(255,255,255,.018); --row-hover:rgba(106,168,240,.07); --band-hover:rgba(232,228,218,.06);
+    --scrim:rgba(5,6,8,.62);
+    --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 8px 24px rgba(0,0,0,.25);
+    --c2:#6f8fd0; --c3:#b07fc7; --c4:#4fa3a8; --c5:#c9a227;
+  }
 }
 html,body{background:var(--ground);color:var(--ink)}
-.panel{box-shadow:0 1px 2px rgba(28,30,34,.05),0 6px 20px rgba(28,30,34,.04)}
-.rt tbody tr:nth-child(even) td{background:rgba(28,30,34,.025)}
-.alert.red{border-color:#f0c4bd} .alert.red .sev{border-color:#f0c4bd}
-.alert.amber{border-color:#ecd5a8} .alert.amber .sev{background:#fbefd6;color:var(--open)!important}
-.age.stale{background:#fbefd6;color:var(--open)}
-.alert .d a{color:var(--open)}
-.v-broken,.v-dormant,.chip.failed,.chip.unknown,.chip.high{border-color:#f0c4bd}
-.v-missing-slots,.v-reporting,.chip.pr-open,.chip.medium,.chip.blocked{border-color:#ecd5a8}
-.v-ok,.chip.shipped{border-color:#b9dcc8}
-.win.on{color:#fff}
-.scrim{background:rgba(28,30,34,.35)}
-a{color:#1f5fae} a:hover{color:#174a88}
-.daypick input{color-scheme:light}
+.daypick input{color-scheme:inherit}
+
+/* ── Tab shell (#1133 slice 1): a side rail beside the content ──────────────
+   Server-rendered `?tab=` links, no script. The active item is shown by a fill
+   AND a 3px violet bar AND aria-current, never by colour alone. At 768px and
+   below the rail becomes a strip of seven 44px icon targets across the top; the
+   labels stay in the DOM (visually hidden) so each link keeps its name. 7 x 44px
+   + 6 x 4px gaps is 332px, inside a 375px viewport with room to spare, and the
+   strip scrolls inside itself rather than ever widening the page. */
+header.top{margin-bottom:0}
+.top-in{max-width:1600px}
+.panel>.waste-grid{margin:16px 20px 0}
+.panel>p.sub,.panel>p.none{margin:12px 20px 20px}
+.shell{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1600px;margin:0 auto;align-items:stretch}
+.shell>.wrap{max-width:1240px;width:100%;min-width:0;margin:0;padding:24px 24px 72px;
+  display:flex;flex-direction:column}
+.rail{background:var(--panel);border-right:1px solid var(--line);border-top:1px solid var(--line)}
+.rail-in{position:sticky;top:0;display:flex;flex-direction:column;gap:16px;padding:16px 12px;
+  max-height:100vh;min-height:calc(100vh - 56px)}
+.rail nav{display:flex;flex-direction:column;gap:4px}
+.rl-item{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:var(--r-inner);
+  color:var(--ink-dim);font:600 14px/1.2 var(--ui);text-decoration:none;box-shadow:inset 3px 0 0 transparent}
+.rl-item:hover{background:var(--panel-2);color:var(--ink);text-decoration:none}
+.rl-item.on,.rl-item.on:hover{background:var(--rail-on);color:var(--ink);box-shadow:inset 3px 0 0 var(--brand)}
+.rl-item.on .ri{color:var(--accent)}
+.ri{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;
+  stroke-linecap:round;stroke-linejoin:round}
+.rail-health{margin-top:auto;display:flex;gap:12px;align-items:flex-start;padding:12px;
+  border:1px solid var(--line);border-radius:var(--r-card);background:var(--panel-2)}
+.rail-health .hdot{flex:none;width:10px;height:10px;border-radius:50%;margin-top:5px;background:var(--shipped)}
+.rail-health.h-watch .hdot{background:var(--open)}
+.rail-health.h-bad .hdot{background:var(--failed)}
+.rail-health b{display:block;font:600 14px/1.3 var(--ui);color:var(--ink)}
+.rail-health .hd{display:block;font:400 12px/1.4 var(--ui);color:var(--ink-dim)}
+.tab-h{margin:0 0 16px;font:700 22px/1.2 var(--ui);letter-spacing:-.01em;color:var(--ink)}
+.cols.solo{grid-template-columns:minmax(0,1fr)}
+/* Overview: the Goals panel is long, so it follows the headline panels instead
+   of pushing the verdict and the tiles a screen down (markup order is unchanged;
+   the footer stays last). */
+.wrap>#goals{order:2}
+.wrap>footer.prov{order:9}
+/* One radius for every top-level card, a smaller one inside them; 4/8px steps. */
+.quota,.gap,.clear{border-radius:var(--r-card)}
+.meter,.waste-grid div,.chart,.ag,.arith{border-radius:var(--r-inner)}
+.panel,.verdict,.obj,.quota,.alerts,.clear,.tiles,.gap{margin-bottom:24px}
+.alert{padding:12px 16px!important}
+body{font-variant-numeric:tabular-nums}
+@media (max-width:768px){
+  .shell{display:block}
+  .rail{border-right:0;border-top:0;border-bottom:1px solid var(--line)}
+  .rail-in{position:static;max-height:none;min-height:0;padding:8px 12px;gap:8px}
+  .rail nav{flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:4px}
+  .rl-item{position:relative;flex:none;width:44px;padding:0;justify-content:center;box-shadow:inset 0 -3px 0 transparent}
+  .rl-item.on,.rl-item.on:hover{box-shadow:inset 0 -3px 0 var(--brand)}
+  .rl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .rail-health{margin-top:0;align-items:center;padding:8px 12px}
+  .rail-health .hdot{margin-top:0}
+  .rail-health b,.rail-health .hd{display:inline}
+  .rail-health .hd::before{content:" · "}
+  .shell>.wrap{padding:16px 16px 56px}
+  .quota{grid-template-columns:1fr auto}
+  .quota .meter{grid-column:1/-1;order:3}
+  .quota .sub{order:4}
+}
 </style>
 </head>
 <body>
@@ -806,8 +914,46 @@ a{color:#1f5fae} a:hover{color:#174a88}
   </div>
 </header>
 
-<div class="wrap">
+{# ── The tab shell (#1133 slice 1) ───────────────────────────────────────────
+   `tab_links` is built by ops_tabs from values the route already validated, and
+   the page body below renders ONLY the active tab's panels, each guarded in place
+   by `{% if tab == '…' %}` (panel bodies are not re-indented on purpose: the
+   mutation rows match exact indented strings). Icons are static strings from this
+   file, so `|safe` here escapes nothing a visitor controls. #}
+{% set ICONS = {
+  'overview':   '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  'agents':     '<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/>',
+  'workflows':  '<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10"/><path d="M18 11c0 3-3 4-12 6"/>',
+  'runs':       '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  'backlog':    '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
+  'analytics':  '<path d="M5 20V11M12 20V4M19 20v-6"/>',
+  'monitoring': '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><path d="M7 11l3-3 2 2 4-4"/>',
+} %}
+<div class="shell">
+<aside class="rail">
+  <div class="rail-in">
+    <nav aria-label="Ops sections">
+      {%- for l in tab_links %}
+      <a class="rl-item{{ ' on' if l.current }}" href="{{ l.href }}"{% if l.current %} aria-current="page"{% endif %} title="{{ l.label }}">
+        <svg class="ri" viewBox="0 0 24 24" aria-hidden="true" focusable="false">{{ ICONS.get(l.key, '')|safe }}</svg>
+        <span class="rl">{{ l.label }}</span>
+      </a>
+      {%- endfor %}
+    </nav>
+    {#- The state is written as words beside the dot, from what the page itself
+        checked (alerts, red count, panels whose file is missing). It never says
+        "all agents operational": nothing here measures that. -#}
+    <div class="rail-health h-{{ tabs_health.state }}" role="status" aria-label="System health">
+      <span class="hdot" aria-hidden="true"></span>
+      <div><b>{{ tabs_health.label }}</b><span class="hd">{{ tabs_health.detail }}</span></div>
+    </div>
+  </div>
+</aside>
 
+<div class="wrap" id="main">
+  <h1 class="tab-h">{{ tab_label }}</h1>
+
+{% if tab == 'agents' %}
   {# ── Agents right now: what each agent is doing this minute (agent_status.py).
      Live from GitHub (running runs, queued runs, open PR labels), last runs from
      agents.json; the same JSON feeds anujmahajan.com/agent-cycle. #}
@@ -842,8 +988,13 @@ a{color:#1f5fae} a:hover{color:#174a88}
       {% endfor %}
     </ul>
   </section>
+  {% else %}
+  <p class="clear"><b>No agent status to show.</b> <code>agent_status.snapshot</code> returned no agents,
+    so this tab has nothing to draw. It is blank, not idle.</p>
   {% endif %}
+{% endif %}
 
+{% if tab == 'overview' %}
   {# ── Claude quota. Every agent shares ONE subscription; this is how much of it
      is left before the weekly window resets (scripts/collect_claude_usage.py). #}
   {% set Q = ops.claude %}
@@ -1122,7 +1273,9 @@ a{color:#1f5fae} a:hover{color:#174a88}
       <code>agent-measure</code> run writes it.</p>
     {% endif %}
   </section>
+{% endif %}
 
+{% if tab == 'analytics' %}
   {# ── What the loop's Claude tokens bought. loop.json `tokens`
      (collect_loop_measurements.py `token_summary`, 2026-11-17). Per merged PR is
      EVERY measured run's tokens in the window -- QA rounds and empty cycles
@@ -1153,7 +1306,9 @@ a{color:#1f5fae} a:hover{color:#174a88}
       <code>agent-measure</code> run writes it.</p>
     {% endif %}
   </section>
+{% endif %}
 
+{% if tab == 'monitoring' %}
   {# ── How noisy the loop's own comments are. measurements/outbox.json
      (scripts/collect_outbox.py, #1188). Computed from EVERY comment by the loop's
      identities, outbox or not, so a quiet number is real quiet and not just "the
@@ -1217,7 +1372,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
           30 is the ceiling -- events.EVENT_RETENTION_DAYS. -#}
       <span class="winsel" role="group" aria-label="Token budget window">
         {%- for d in ops.app_windows %}
-        <a href="?window={{ d }}" class="win{{ ' on' if d == ops.app_days and not ops.app.day }}"
+        <a href="?window={{ d }}&amp;tab={{ tab }}" class="win{{ ' on' if d == ops.app_days and not ops.app.day }}"
            {% if d == ops.app_days and not ops.app.day %}aria-current="true"{% endif %}
            {#- CALENDAR DAYS, NOT A ROLLING WINDOW. `events.error_breakdown` and
                `llm_stats` both build `[today - timedelta(days=i) for i in
@@ -1237,10 +1392,11 @@ a{color:#1f5fae} a:hover{color:#174a88}
           30 days both stores keep; a value outside them is refused server-side
           and the page shows the default window rather than zeros. -#}
       <form method="get" class="daypick" aria-label="Pick one day">
+        <input type="hidden" name="tab" value="{{ tab }}">
         <input type="date" name="day" value="{{ ops.app.day }}" min="{{ ops.pick_min }}"
                max="{{ ops.pick_max }}" onchange="this.form.submit()" aria-label="Day (UTC)">
         <noscript><button type="submit">go</button></noscript>
-        {% if ops.app.day %}<a class="win" href="?window=7" title="back to the last 7 days">clear</a>{% endif %}
+        {% if ops.app.day %}<a class="win" href="?window=7&amp;tab={{ tab }}" title="back to the last 7 days">clear</a>{% endif %}
       </form>
       {% if ops.app.measured %}<span class="age live"
             title="read from this app's own GCS stores on the request, 60 s cache">live</span>{% endif %}
@@ -1581,7 +1737,9 @@ a{color:#1f5fae} a:hover{color:#174a88}
       {% endif %}
     </div>
   </section>
+{% endif %}
 
+{% if tab == 'runs' %}
   {# ── The loop, day by day (2026-11-09) ────────────────────────────────
      Replaces the cycle ribbon. The ribbon drew each cycle on a 24 h axis
      against two cron lines, to show a cron firing LATE (#345); by this date
@@ -1665,7 +1823,9 @@ a{color:#1f5fae} a:hover{color:#174a88}
       {% endif %}
     </div>
   </section>
+{% endif %}
 
+{% if tab == 'workflows' %}
   {# ── Team. Liveness first, then yield, then who did what. ───────────────
      Liveness leads because a loop that never runs cannot produce bad work to
      grade, and a yield figure over zero runs reads as a flawless 0 of 0. #}
@@ -1774,8 +1934,13 @@ a{color:#1f5fae} a:hover{color:#174a88}
       </div>
     </div>
   </section>
+  {% else %}
+  <p class="clear"><b>No team data to show.</b> <code>measurements/agents.json</code> could not be read, so
+    the scheduled-loop table and delivery yield are blank, not zero.</p>
   {% endif %}
+{% endif %}
 
+{% if tab == 'analytics' %}
   {# ── Google index status. measurements/index-status.json
      (scripts/fetch_index_status.py, #1065). The ranking is the FILE's: this panel
      lists `request_indexing` as written and never re-sorts it. Every string here
@@ -1888,10 +2053,10 @@ a{color:#1f5fae} a:hover{color:#174a88}
       <div class="charts">
         {{ chart(T.users, 'People · daily active users', T.users.total,
                  'peak ' ~ T.users.peak ~ '<br>last ' ~ T.users.last,
-                 'var(--accent)', 'rgba(227,168,74,.14)', 'users') }}
+                 'var(--brand)', 'var(--wash-1)', 'users') }}
         {{ chart(T.impressions, 'Search impressions · daily', '{:,}'.format(T.impressions.total),
                  'peak ' ~ T.impressions.peak ~ '<br>' ~ T.clicks_total ~ ' clicks',
-                 'var(--shipped)', 'rgba(91,185,140,.13)', 'impressions') }}
+                 'var(--shipped)', 'var(--wash-2)', 'impressions') }}
       </div>
 
       {# A page row links to the live page. A QUERY row links nowhere: the
@@ -1935,6 +2100,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
     </div>
   </section>
   {% endif %}
+{% endif %}
 
   {# ── Issue flow (2026-11-18). Owner: "Many prs have been merged but I don't see
      issue count reducing". The open count alone cannot tell findings arriving
@@ -1945,6 +2111,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
   {% set F = ops.issue_flow %}
   {# ── PR merge time (owner, 2026-11-19). issues.json trend.pr_flow, scripts/issue_flow.py. ── #}
   {% set PF = ops.pr_flow %}
+{% if tab == 'runs' %}
   <section class="panel" id="pr-merge-time">
     <h2>PR merge time <span class="lbl">open → merge · automated measurement PRs excluded</span></h2>
     <div class="body">
@@ -1993,7 +2160,9 @@ a{color:#1f5fae} a:hover{color:#174a88}
     {% endif %}
     </div>
   </section>
+{% endif %}
 
+{% if tab == 'backlog' %}
   <section class="panel" id="issue-flow">
     <h2>Issue flow <span class="lbl">UTC days · last {{ F.window_days if F and F.window_days else 28 }}{% if F %} · {{ F.age.text }}{% endif %}</span></h2>
     <div class="body">
@@ -2070,8 +2239,14 @@ a{color:#1f5fae} a:hover{color:#174a88}
     {% endif %}
     </div>
   </section>
+{% endif %}
 
-  <div class="cols">
+{#- The two-up grid below only exists where two of its panels do (Monitoring:
+    Rashifal + App health). Backlog and Analytics show one panel each, so they
+    get `solo`, a single full-width column, instead of half a grid. -#}
+{% if tab in ('backlog', 'analytics', 'monitoring') %}
+  <div class="cols{{ '' if tab == 'monitoring' else ' solo' }}">
+{% if tab == 'backlog' %}
     {# ── Backlog, three ways, each segment a filter ─────────────────── #}
     <section class="panel">
       <h2>Backlog <span class="lbl">{{ I.open }} open · click a bar</span>
@@ -2139,7 +2314,9 @@ a{color:#1f5fae} a:hover{color:#174a88}
         </div>
       </div>
     </section>
+{% endif %}
 
+{% if tab == 'monitoring' %}
     {# ── Nightly rashifal generation (#515). 12 rashis x 2 languages = 24. ── #}
     <section class="panel">
       <h2>Rashifal generation
@@ -2253,7 +2430,9 @@ a{color:#1f5fae} a:hover{color:#174a88}
         {% endif %}
       </div>
     </section>
+{% endif %}
 
+{% if tab == 'analytics' %}
     {# ── Cost. Nulls stay null. ─────────────────────────────────────── #}
     <section class="panel">
       <h2>Cost <span class="lbl">per month</span></h2>
@@ -2292,8 +2471,11 @@ a{color:#1f5fae} a:hover{color:#174a88}
         </div>
       </div>
     </section>
+{% endif %}
   </div>
+{% endif %}
 
+{% if tab == 'backlog' %}
   {# ── What the page cannot show. Stated, not omitted. ───────────────── #}
   <section class="gap">
     <h3>One thing is still missing</h3>
@@ -2306,6 +2488,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
     pages table is near-complete; the queries table ranks only the measured share, and a query
     absent from it is not a query nobody searched.
   </section>
+{% endif %}
 
   <footer class="prov">
     Rendered from
@@ -2322,6 +2505,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
     <i>due</i>, not <i>ran</i>.
   </footer>
 </div>
+</div>{# /.shell #}
 
 {# ── Drill-down ─────────────────────────────────────────────────────── #}
 <div class="scrim" id="scrim"></div>
@@ -2339,6 +2523,11 @@ a{color:#1f5fae} a:hover{color:#174a88}
   "use strict";
   var D = JSON.parse(document.getElementById("ops-data").textContent);
   var REPO = "https://github.com/" + D.repo;
+  /* Each tab ships only the blob keys its own drill-downs read
+     (ops_tabs.BLOB_KEYS), so a key can be absent. Guard every read: the handler
+     is only wired where its elements exist, but a missing key must be an empty
+     drill-down and never a TypeError that stops the rest of this script. */
+  var CYCLES = D.cycles || [], ISSUES = D.issues || [];
   var sheet = document.getElementById("sheet"),
       scrim = document.getElementById("scrim"),
       list  = document.getElementById("sheet-list"),
@@ -2455,20 +2644,20 @@ a{color:#1f5fae} a:hover{color:#174a88}
        empty list — which is the common case and the one that matters. */
     "today-shipped": [D.today_live ? "shipped today, live" : "shipped today",
                       "Pull requests merged today",
-                      function () { return D.today_shipped; },
+                      function () { return D.today_shipped || []; },
                       D.today_live ? "pr" : "cycle"],
     "today-filed":   [D.filed_live ? "filed today, live" : "filed today",
                       "Issues opened today",
-                      function () { return D.filed_today; }, "issue"],
+                      function () { return D.filed_today || []; }, "issue"],
     "today-failed":  [D.today_live ? "failed today, live" : "failed today",
                       D.today_live ? "Loop runs that did not finish today"
                                    : "Agent-work cycles that did not deliver today",
-                      function () { return D.today_failed; },
+                      function () { return D.today_failed || []; },
                       D.today_live ? "run" : "cycle"],
     "backlog":       ["backlog", "Every open issue, highest priority first",
                       function () {
                         var rank = { high: 0, medium: 1, low: 2, unset: 3 };
-                        return D.issues.slice().sort(function (a, b) {
+                        return ISSUES.slice().sort(function (a, b) {
                           return (rank[a.priority] ?? 9) - (rank[b.priority] ?? 9) || b.number - a.number;
                         });
                       }, "issue"]
@@ -2509,7 +2698,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
   Array.prototype.forEach.call(document.querySelectorAll(".day-btn"), function (el) {
     el.addEventListener("click", function () {
       var day = el.getAttribute("data-day");
-      var r = D.cycles.filter(function (x) { return x.date_ist === day; });
+      var r = CYCLES.filter(function (x) { return x.date_ist === day; });
       open("cycles", day + " IST, " + r.length + " run" + (r.length === 1 ? "" : "s"), r, "cycle");
     });
   });
@@ -2519,6 +2708,8 @@ a{color:#1f5fae} a:hover{color:#174a88}
   var ORDER = { priority: ["high", "medium", "low", "unset"] };
 
   function drawBars(group) {
+    /* Only the Backlog tab renders #bars; on every other tab there is nothing to draw. */
+    if (!document.getElementById("bars")) return;
     var counts = D[GROUPS[group]] || {};
     var keys = Object.keys(counts);
     if (ORDER[group]) {
@@ -2542,7 +2733,7 @@ a{color:#1f5fae} a:hover{color:#174a88}
       el.addEventListener("click", function () {
         var key = el.getAttribute("data-key");
         open(group + " · " + key, key + " — " + counts[key] + " open",
-             D.issues.filter(function (i) { return i[group] === key; }), "issue");
+             ISSUES.filter(function (i) { return i[group] === key; }), "issue");
       });
     });
   }

@@ -6,9 +6,10 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,11 +28,12 @@ USAGE = {"generated_at": "2026-11-06T09:00:00Z",
 
 
 class FakeGh:
-    def __init__(self, running=(), today=(), prs=None):
+    def __init__(self, running=(), today=(), prs=None, comments=()):
         self.running = list(running)          # displayTitles of non-completed runs
         self.today = list(today)              # display_titles of today's runs
         self.prs = prs if prs is not None else [
             {"user": {"login": "claude[bot]"}, "updated_at": "2026-11-06T11:50:00Z"}]
+        self.comments = list(comments)       # repo-wide issue comments since the run started
         self.calls: list[list[str]] = []
 
     def __call__(self, args):
@@ -44,6 +46,8 @@ class FakeGh:
             return f"{n}\n"
         if args[0] == "api" and "/actions/workflows/agent-work.yml/runs" in args[1]:
             return json.dumps({"workflow_runs": [{"display_title": t} for t in self.today]})
+        if args[0] == "api" and "/issues/comments?since=" in args[1]:
+            return json.dumps(self.comments)
         if args[0] == "api" and "/pulls?" in args[1]:
             return json.dumps(self.prs)
         if args[:2] == ["workflow", "run"]:
@@ -227,6 +231,83 @@ def test_a_reading_with_one_window_still_open_still_refuses():
     assert "allowed_warning" in cc.quota_reason({**USAGE, "latest": nores}, NOW)
 
 
+# --- a malformed reading fails closed (#1282) -----------------------------------------------
+
+def _iso(dt):
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf"), -0.1, 1.5, "nan"])
+def test_a_malformed_seven_day_reading_stops_the_chain(bad):
+    """`NaN >= 0.70` is False, so a NaN reading used to pass the ceiling and open the chain."""
+    u = {**USAGE, "latest": {"seven_day": bad, "status": "allowed"}}
+    assert "seven_day" in cc.quota_reason(u, NOW)
+    assert isinstance(decide(FakeGh(), usage=u), str)
+
+
+def test_a_nan_reading_with_expired_windows_still_stops_it():
+    """Validation runs before windows_reset: `resets` is in the same file, so a NaN reading
+    must not be able to claim its windows have ended."""
+    latest = {"seven_day": float("nan"), "status": "allowed",
+              "resets": {"five_hour": _epoch("2026-11-06T04:40:00Z"),
+                         "seven_day": _epoch("2026-11-06T06:00:00Z")}}
+    assert "seven_day" in cc.quota_reason({**USAGE, "latest": latest}, NOW)
+
+
+def test_a_future_generated_at_stops_it():
+    """A future stamp is a negative age, which passes `age > 36h`."""
+    ahead = {**USAGE, "generated_at": _iso(NOW + timedelta(minutes=10))}
+    assert "generated_at is 10m in the future" in cc.quota_reason(ahead, NOW)
+    skewed = {**USAGE, "generated_at": _iso(NOW + timedelta(minutes=1))}
+    assert cc.quota_reason(skewed, NOW) is None
+
+
+def test_a_future_reading_at_stops_it():
+    def with_at(at):
+        return {**USAGE, "latest": {**USAGE["latest"], "at": at}}
+    assert "latest.at is 10m in the future" in cc.quota_reason(with_at(_iso(NOW + timedelta(minutes=10))), NOW)
+    assert cc.quota_reason(with_at(_iso(NOW + timedelta(minutes=1))), NOW) is None
+    assert "no usable seven_day reading" in cc.quota_reason(with_at("not a time"), NOW)
+
+
+@pytest.mark.parametrize("bad_at", [12345, [1], {}])
+def test_a_non_string_timestamp_stops_the_chain_instead_of_crashing(bad_at):
+    """#1372: `_ts` called .replace on a non-string; the AttributeError escaped quota_reason's
+    except and killed the chain step instead of failing closed."""
+    unusable = "claude_usage.json has no usable seven_day reading"
+    stamped = [{**USAGE, "latest": {**USAGE["latest"], "at": bad_at}},
+               {**USAGE, "generated_at": 123}]
+    for u in stamped:
+        assert cc.quota_reason(u, NOW) == unusable
+        assert isinstance(decide(gh := FakeGh(), usage=u), str)
+        assert not gh.dispatched
+    # freshest() already catches TypeError: a bad file stamp must not pin itself over a real one.
+    real = {"seven_day": 0.04, "status": "allowed", "at": _iso(NOW - timedelta(minutes=10))}
+    assert cc.freshest(stamped[0], real, NOW)["latest"] is real
+
+
+def test_a_future_pinned_reading_does_not_shield_itself_from_a_real_one():
+    """quota_reason refuses a future-dated file reading; without this the same reading would
+    also win freshest() forever, so no genuine post-reset reading could replace it."""
+    future = _iso(NOW + timedelta(hours=2))
+    usage = {"generated_at": "2026-11-06T11:50:00Z",
+             "latest": {"seven_day": 0.5, "status": "allowed", "at": future}}
+    real = {"seven_day": 0.04, "status": "allowed", "at": _iso(NOW - timedelta(minutes=10))}
+    assert cc.freshest(usage, real, NOW)["latest"] is real
+
+
+def test_a_nan_file_dispatches_nothing_through_main(tmp_path, monkeypatch):
+    p = tmp_path / "u.json"
+    p.write_text('{"generated_at": "2026-11-06T09:00:00Z", '
+                 '"latest": {"seven_day": NaN, "status": "allowed"}}')
+    monkeypatch.setenv("GH_REPO", REPO)
+    for k, v in RUN.items():
+        monkeypatch.setenv(f"WR_{k.upper()}", v)
+    gh = FreshGh("")
+    assert cc.main(["x"], gh=gh, now=NOW, usage_path=p) == 0
+    assert not [a for a in gh.calls if a[:3] == ["workflow", "run", "agent-work.yml"]]
+
+
 class IdleGh(FakeGh):
     """FakeGh plus the finished agent-work runs `last_build_run` reads."""
 
@@ -286,3 +367,52 @@ def test_a_run_with_no_finished_cycle_restarts_an_idle_lane_through_main(tmp_pat
     assert cc.main(["x"], gh=gh, now=NOW, usage_path=p) == 0
     assert [a for a in gh.calls if a[:2] == ["workflow", "run"]] == [["workflow", "run", "agent-work.yml", "--repo", REPO]]
     assert "restarted:" in capsys.readouterr().out
+
+
+# --- a QA verdict is output (2026-11-22) ------------------------------------------------------
+
+def _verdict(login="claude[bot]", body="QA: PASS — verified at `abc`", at="2026-11-06T11:45:00Z"):
+    return {"user": {"login": login}, "body": body, "created_at": at}
+
+
+def test_a_cycle_that_passed_an_adopted_pr_counts_as_output():
+    """Run 45023409764, 2026-11-22: adopted PR #1378, posted its QA PASS, pushed nothing,
+    and the idle restart waited 240 min."""
+    stale = [{"user": {"login": "claude[bot]"}, "updated_at": "2026-11-06T10:00:00Z"}]
+    assert decide(FakeGh(prs=stale, comments=[_verdict()])) is None
+    assert decide(FakeGh(prs=stale, comments=[_verdict(body="QA: FAIL — verified at `abc`")])) is None
+
+
+def test_a_verdict_by_someone_else_or_before_the_run_or_any_other_comment_is_not_output():
+    stale = [{"user": {"login": "claude[bot]"}, "updated_at": "2026-11-06T10:00:00Z"}]
+    for c in (_verdict(login="mahAnuj"), _verdict(at="2026-11-06T11:00:00Z"),
+              _verdict(body="steward -- kind=no-qa-verdict")):
+        assert "no PR" in decide(FakeGh(prs=stale, comments=[c]))
+
+
+# --- the weekly pace (2026-11-25) -------------------------------------------------------------
+
+def _paced(seven, reset_iso):
+    return {**USAGE, "latest": {"seven_day": seven, "status": "allowed",
+                                "resets": {"seven_day": _epoch(reset_iso)}}}
+
+
+def test_use_ahead_of_the_weekly_line_waits():
+    """NOW is 2026-11-06 12:00Z. With the reset at 2026-11-10 12:00Z the week is 3/7 gone:
+    allowed = 3/7 x 70% + 5% = 35%."""
+    r = cc.quota_reason(_paced(0.40, "2026-11-10T12:00:00Z"), NOW)
+    assert r and "ahead of the weekly pace: 40% used, 35% allowed" in r
+
+
+def test_use_on_or_behind_the_line_chains():
+    assert cc.quota_reason(_paced(0.34, "2026-11-10T12:00:00Z"), NOW) is None
+
+
+def test_the_week_starts_with_a_burst_and_ends_at_the_ceiling():
+    assert cc.quota_reason(_paced(0.04, "2026-11-13T11:00:00Z"), NOW) is None   # ~0% elapsed, 5% allowed
+    assert "ahead" in cc.quota_reason(_paced(0.06, "2026-11-13T11:00:00Z"), NOW)
+    assert cc.quota_reason(_paced(0.69, "2026-11-06T13:00:00Z"), NOW) is None   # ~100% elapsed
+
+
+def test_a_reading_with_no_reset_time_is_judged_by_the_ceiling_alone():
+    assert cc.quota_reason({**USAGE, "latest": {"seven_day": 0.65, "status": "allowed"}}, NOW) is None

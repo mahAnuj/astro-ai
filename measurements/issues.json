@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-11-21T16:50:17Z",
+  "generated_at": "2026-11-25T12:28:48Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 158,
+  "open": 168,
   "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 68,
+    "UNCLASSIFIED": 74,
     "INFRA": 16,
-    "OPS": 10,
+    "OPS": 11,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "ANALYTICS": 5,
+    "ANALYTICS": 6,
+    "TOKENS": 5,
     "SEO": 4,
     "CORPUS": 4,
-    "TOKENS": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "AGENT-MEASURE": 2,
     "AGENT-MERGE": 2,
-    "UI": 2,
     "PRIVACY": 2,
     "MEASURE": 2,
     "MATCHING": 2,
@@ -27,29 +27,393 @@
     "BUG": 2,
     "MUHURAT": 1,
     "NOTIFY": 1,
+    "UI": 1,
     "KNOWLEDGE": 1,
-    "AGENT-MEASURE": 1,
     "ASK": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 48,
-    "untyped": 39,
-    "enhancement": 30,
-    "chore": 24,
-    "correctness": 11,
-    "design": 5,
-    "ui": 1
+    "bug": 53,
+    "untyped": 41,
+    "enhancement": 32,
+    "chore": 27,
+    "correctness": 10,
+    "design": 5
   },
   "by_priority": {
-    "unset": 97,
-    "medium": 28,
-    "high": 21,
-    "low": 12
+    "unset": 112,
+    "medium": 26,
+    "high": 19,
+    "low": 11
   },
-  "blocked": 9,
+  "blocked": 10,
   "rows": [
+    {
+      "number": 1469,
+      "title": "analytics: muhurat_searched is absent from GA4 in every report — cannot tell broken from unused (half of #1336's metric)",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "seo",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-25T03:58:08Z",
+      "updated": "2026-11-25T12:27:57Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1468,
+      "title": "tokens: agent-work.yml runs the code index and uploads the Read log (workflow half) (part of #1256)",
+      "ask": "",
+      "area": "TOKENS",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-25T03:23:11Z",
+      "updated": "2026-11-25T06:47:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1467,
+      "title": "tokens: Read-logging PostToolUse hook and counts-only summary (part of #1256)",
+      "ask": "",
+      "area": "TOKENS",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-11-25T03:23:10Z",
+      "updated": "2026-11-25T03:23:10Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1464,
+      "title": "QA follow-up: Vivah lagna legend probe doubles the per-row 'lagna windows skipped' warning on a failing page (#1457)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T03:09:43Z",
+      "updated": "2026-11-25T03:09:49Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1457,
+      "title": "QA follow-up: Vivah lagna legend renders with no row blocks when the window computation fails (PR #1455)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-24T22:44:04Z",
+      "updated": "2026-11-25T03:10:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1448,
+      "title": "agent-measure: wire fetch_ga4.py --page-locations and list it for the analyst (wiring half of #1237)",
+      "ask": "",
+      "area": "AGENT-MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "provenance:trusted"
+      ],
+      "created": "2026-11-24T14:00:03Z",
+      "updated": "2026-11-24T18:26:26Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1444,
+      "title": "QA follow-up: PR #1440 empty-7th section asserts 'does not mean no marriage' with no corpus line, and the test requires it",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-24T08:30:14Z",
+      "updated": "2026-11-24T10:12:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1437,
+      "title": "agent-measure.yml: write gsc-query-page.json (workflow half of #1432)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo"
+      ],
+      "created": "2026-11-24T05:31:11Z",
+      "updated": "2026-11-24T05:31:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1436,
+      "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-24T05:31:10Z",
+      "updated": "2026-11-24T19:02:29Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1432,
+      "title": "analytics: no export maps a query to the page that serves it — lever 4 names pages by topic only (3 reports)",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-24T05:11:41Z",
+      "updated": "2026-11-24T05:31:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1427,
+      "title": "QA follow-up: qa_verdict.sh accepts an uppercase --sha that then never binds (PR #1426)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-24T03:31:03Z",
+      "updated": "2026-11-24T03:31:10Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1423,
+      "title": "QA follow-up: /privacy 7-day deletion promise vs the sign-out record account deletion does not remove (PR #1422)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-24T02:32:54Z",
+      "updated": "2026-11-24T02:32:54Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1419,
+      "title": "QA follow-up: vedic_reference.md rule 20 still calls comparable severity classical (PR #1418, #1376)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-23T19:30:41Z",
+      "updated": "2026-11-23T19:30:49Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1415,
+      "title": "QA follow-up: agent-merge head_checks drops an older red gates while a newer same-SHA pr-gates run has no gates job yet (PR #1405)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-23T14:48:09Z",
+      "updated": "2026-11-23T14:48:09Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1413,
+      "title": "QA follow-up: agent-merge sweep exits on an unreadable head_checks instead of skipping (PR #1405)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-23T14:39:25Z",
+      "updated": "2026-11-23T14:39:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1409,
+      "title": "QA follow-up: wire collect_kundli_submissions.py into agent-measure.yml (#1272 part 2, owner act #1)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "needs-human-review"
+      ],
+      "created": "2026-11-23T11:31:06Z",
+      "updated": "2026-11-23T11:31:06Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 1396,
+      "title": "QA follow-up: result.html:564 says classical texts require comparable severity for Manglik mutual cancellation (PR #1394, #1377)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-22T22:59:19Z",
+      "updated": "2026-11-25T02:28:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1384,
+      "title": "QA follow-up: ask-audit prompt does not say what the new --issue and cap refusals mean (PR #1383)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-22T16:42:08Z",
+      "updated": "2026-11-22T16:42:08Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1376,
+      "title": "QA follow-up: matching.html still lists comparable severity among implemented cancellations; decision record misdescribes the gate split (PR #1375, #1369)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-22T10:39:20Z",
+      "updated": "2026-11-23T19:38:29Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1369,
+      "title": "QA follow-up: manglik-dosh article and registry FAQs still call comparable severity classical, against manglik-remedies (PR #1368)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-22T03:59:44Z",
+      "updated": "2026-11-22T11:00:09Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1364,
+      "title": "analytics: no export sizes automated traffic — the Direct channel (311 sessions, 19% engaged) cannot be split into bots and readers",
+      "ask": "",
+      "area": "ANALYTICS",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-22T00:57:54Z",
+      "updated": "2026-11-23T02:40:57Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1363,
+      "title": "[OPS] 1 red PR(s) with no live fix after 2h",
+      "ask": "",
+      "area": "OPS",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "chore"
+      ],
+      "created": "2026-11-21T22:43:25Z",
+      "updated": "2026-11-24T07:07:53Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1355,
       "title": "QA follow-up: dark-half tithi credit and mixed-status avoid_tithi are labelled unevenly across events (PR #1350)",
@@ -75,10 +439,11 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "provenance:trusted"
       ],
       "created": "2026-11-21T16:48:26Z",
-      "updated": "2026-11-21T16:48:26Z",
+      "updated": "2026-11-21T18:10:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -89,11 +454,13 @@
       "area": "AGENT-MERGE",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "needs-evidence"
+      ],
       "created": "2026-11-21T16:30:36Z",
-      "updated": "2026-11-21T16:30:36Z",
+      "updated": "2026-11-22T17:26:07Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 1351,
@@ -107,7 +474,7 @@
         "chore"
       ],
       "created": "2026-11-21T16:27:59Z",
-      "updated": "2026-11-21T16:38:30Z",
+      "updated": "2026-11-23T19:32:28Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -123,7 +490,7 @@
         "chore"
       ],
       "created": "2026-11-21T11:29:41Z",
-      "updated": "2026-11-21T11:29:41Z",
+      "updated": "2026-11-24T04:18:47Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -136,10 +503,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-21T11:10:53Z",
-      "updated": "2026-11-21T16:28:22Z",
+      "updated": "2026-11-23T22:35:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -211,22 +581,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1330,
-      "title": "QA follow-up: a one-day typo repeated in registry and expected JSON passes every festival gate for non-Purnima/Ekadashi rows (PR #1329)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa"
-      ],
-      "created": "2026-11-21T03:22:10Z",
-      "updated": "2026-11-21T03:22:10Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1324,
       "title": "notify: muhurat_computed says 'N auspicious of M days' with the non-avoid count, which now over-counts versus the finder page (follow-up to #1322)",
       "ask": "",
@@ -239,22 +593,6 @@
       ],
       "created": "2026-11-21T01:18:50Z",
       "updated": "2026-11-21T03:58:21Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1321,
-      "title": "QA follow-up: manglik-remedies headings and FAQ 4 still say 'presiding deity', 'classical grain', 'truest' (PR #1319)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa"
-      ],
-      "created": "2026-11-21T00:25:36Z",
-      "updated": "2026-11-21T00:25:36Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -273,23 +611,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-21T00:25:35Z",
-      "updated": "2026-11-21T05:12:27Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1315,
-      "title": "QA follow-up: privacy page does not list the session-revocation record kept up to 90 days after account deletion (PR #1314)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa"
-      ],
-      "created": "2026-11-20T21:17:04Z",
-      "updated": "2026-11-20T21:17:04Z",
+      "updated": "2026-11-23T19:36:15Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -395,57 +717,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1295,
-      "title": "QA follow-up: the Hindi rashifal suffix asks for Sanskrit terms while the prompt asks for everyday, non-Sanskrit-heavy Hindi",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "low",
-      "labels": [
-        "bug",
-        "priority:low",
-        "qa"
-      ],
-      "created": "2026-11-20T16:03:13Z",
-      "updated": "2026-11-20T16:03:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1293,
-      "title": "QA follow-up: account deletion leaves per-instance SQLite cache entries, and erases blobs with blocking calls inside async routes",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa"
-      ],
-      "created": "2026-11-20T16:03:12Z",
-      "updated": "2026-11-20T16:03:12Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1291,
-      "title": "QA follow-up: ask_audit_post --issue accepts any issue number; the 5-issue cap is prompt-only",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa"
-      ],
-      "created": "2026-11-20T16:03:10Z",
-      "updated": "2026-11-20T16:03:10Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1290,
       "title": "QA follow-up: qa-on-green's concurrency key includes the workflow name, so two green workflows on one head can each dispatch",
       "ask": "",
@@ -531,23 +802,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1285,
-      "title": "QA follow-up: qa_verdict.sh labels before it comments, and accepts an abbreviated --sha that then does not bind",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa"
-      ],
-      "created": "2026-11-20T16:03:06Z",
-      "updated": "2026-11-20T16:03:06Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1284,
       "title": "QA follow-up: main-red-report files [main-red] for runs GitHub cancelled as a replaced pending run",
       "ask": "",
@@ -582,32 +836,19 @@
       "needs_evidence": false
     },
     {
-      "number": 1282,
-      "title": "QA follow-up: chain_cycle quota guard fails open on NaN, negative or future-dated readings",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "qa"
-      ],
-      "created": "2026-11-20T16:03:03Z",
-      "updated": "2026-11-20T16:03:03Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1272,
       "title": "analytics: no export carries the server-side kundli submission count — #1068 cannot be scored (3 reports in a row)",
       "ask": "",
       "area": "ANALYTICS",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-11-20T02:04:36Z",
-      "updated": "2026-11-20T02:04:36Z",
+      "updated": "2026-11-23T11:37:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -624,25 +865,9 @@
         "needs-evidence"
       ],
       "created": "2026-11-20T01:31:13Z",
-      "updated": "2026-11-20T15:30:14Z",
+      "updated": "2026-11-25T06:48:01Z",
       "blocked": false,
       "needs_evidence": true
-    },
-    {
-      "number": 1268,
-      "title": "[UI] /matching: card-in-card double border wastes ~40px of width at 375px; inputs 257px wide",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer"
-      ],
-      "created": "2026-11-20T01:31:11Z",
-      "updated": "2026-11-20T15:30:04Z",
-      "blocked": false,
-      "needs_evidence": false
     },
     {
       "number": 1256,
@@ -654,10 +879,11 @@
       "labels": [
         "priority:high",
         "effort:m",
-        "chore"
+        "chore",
+        "provenance:trusted"
       ],
       "created": "2026-11-19T09:54:32Z",
-      "updated": "2026-11-20T15:27:57Z",
+      "updated": "2026-11-25T03:23:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -671,10 +897,11 @@
       "labels": [
         "priority:high",
         "effort:m",
-        "chore"
+        "chore",
+        "provenance:trusted"
       ],
       "created": "2026-11-19T09:53:21Z",
-      "updated": "2026-11-20T15:28:03Z",
+      "updated": "2026-11-25T11:31:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -692,7 +919,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-19T09:53:08Z",
-      "updated": "2026-11-20T15:28:11Z",
+      "updated": "2026-11-25T06:48:00Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -708,7 +935,7 @@
         "weekly-goals"
       ],
       "created": "2026-11-19T07:40:12Z",
-      "updated": "2026-11-20T15:29:23Z",
+      "updated": "2026-11-22T21:09:26Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -721,10 +948,13 @@
       "priority": "unset",
       "labels": [
         "astrology-correctness",
-        "chore"
+        "chore",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:independent"
       ],
       "created": "2026-11-19T04:43:24Z",
-      "updated": "2026-11-20T15:27:12Z",
+      "updated": "2026-11-24T04:39:29Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -735,9 +965,13 @@
       "area": "ANALYTICS",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
       "created": "2026-11-19T02:17:38Z",
-      "updated": "2026-11-19T02:17:38Z",
+      "updated": "2026-11-24T14:23:37Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -775,19 +1009,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1208,
-      "title": "analytics: export LLM fallbacks (and reasons) in llm-usage.json — errors per route are unmeasured in three consecutive analyst reports",
-      "ask": "",
-      "area": "ANALYTICS",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-11-18T02:46:01Z",
-      "updated": "2026-11-18T03:05:23Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1207,
       "title": "[INFRA] agent-queue drains into a cycle for a target another cycle just finished; the stand-down leaves no comment, so the carrier reports failure and retries",
       "ask": "",
@@ -801,7 +1022,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-18T02:05:15Z",
-      "updated": "2026-11-20T03:59:25Z",
+      "updated": "2026-11-25T05:59:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -902,10 +1123,11 @@
         "category:technical",
         "priority:high",
         "ui",
-        "design-proposal"
+        "design-proposal",
+        "provenance:trusted"
       ],
       "created": "2026-11-16T17:33:22Z",
-      "updated": "2026-11-19T02:06:38Z",
+      "updated": "2026-11-25T10:32:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -924,7 +1146,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-15T20:41:37Z",
-      "updated": "2026-11-19T22:35:02Z",
+      "updated": "2026-11-21T20:48:22Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -967,23 +1189,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1070,
-      "title": "analytics: instrument the core funnels",
-      "ask": "",
-      "area": "ANALYTICS",
-      "type": "enhancement",
-      "priority": "high",
-      "labels": [
-        "enhancement",
-        "priority:high",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-15T10:14:10Z",
-      "updated": "2026-11-20T11:15:16Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1065,
       "title": "seo: track index status per sitemap URL (URL Inspection API), flag pages changed after Google's last crawl, and list which to request indexing for",
       "ask": "",
@@ -1000,7 +1205,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T10:10:28Z",
-      "updated": "2026-11-19T22:35:03Z",
+      "updated": "2026-11-23T03:13:35Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1060,22 +1265,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1026,
-      "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "astrology-correctness"
-      ],
-      "created": "2026-11-14T13:15:49Z",
-      "updated": "2026-11-14T13:15:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1017,
       "title": "Muhurat Finder: what \"the best results\" means — ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
       "ask": "",
@@ -1090,7 +1279,7 @@
         "growth"
       ],
       "created": "2026-11-14T13:09:28Z",
-      "updated": "2026-11-21T16:49:16Z",
+      "updated": "2026-11-22T01:33:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1792,7 +1981,7 @@
         "needs-evidence"
       ],
       "created": "2026-10-20T08:48:15Z",
-      "updated": "2026-11-17T12:20:20Z",
+      "updated": "2026-11-24T14:12:41Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -2582,59 +2771,11 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-21T16:50:17Z",
+    "generated_at": "2026-11-25T12:28:48Z",
     "window_days": 28,
-    "open_now": 158,
+    "open_now": 168,
     "merged_open_hours": 24,
     "days": [
-      {
-        "date": "2026-10-25",
-        "opened": 0,
-        "closed": 0,
-        "net": 0,
-        "open_end": 123,
-        "opened_by": {},
-        "closed_by": {}
-      },
-      {
-        "date": "2026-10-26",
-        "opened": 2,
-        "closed": 0,
-        "net": 2,
-        "open_end": 125,
-        "opened_by": {
-          "audit": 1,
-          "loop": 1
-        },
-        "closed_by": {}
-      },
-      {
-        "date": "2026-10-27",
-        "opened": 4,
-        "closed": 1,
-        "net": 3,
-        "open_end": 128,
-        "opened_by": {
-          "loop": 4
-        },
-        "closed_by": {
-          "other": 1
-        }
-      },
-      {
-        "date": "2026-10-28",
-        "opened": 8,
-        "closed": 2,
-        "net": 6,
-        "open_end": 134,
-        "opened_by": {
-          "audit": 2,
-          "loop": 6
-        },
-        "closed_by": {
-          "owner": 2
-        }
-      },
       {
         "date": "2026-10-29",
         "opened": 5,
@@ -2994,16 +3135,73 @@
       },
       {
         "date": "2026-11-21",
-        "opened": 21,
-        "closed": 8,
-        "net": 13,
-        "open_end": 158,
+        "opened": 24,
+        "closed": 9,
+        "net": 15,
+        "open_end": 160,
         "opened_by": {
-          "loop": 19,
-          "ops": 2
+          "loop": 21,
+          "ops": 3
         },
         "closed_by": {
-          "close-on-evidence": 8
+          "close-on-evidence": 9
+        }
+      },
+      {
+        "date": "2026-11-22",
+        "opened": 13,
+        "closed": 10,
+        "net": 3,
+        "open_end": 163,
+        "opened_by": {
+          "loop": 13
+        },
+        "closed_by": {
+          "close-on-evidence": 8,
+          "prioritise": 1,
+          "other": 1
+        }
+      },
+      {
+        "date": "2026-11-23",
+        "opened": 9,
+        "closed": 8,
+        "net": 1,
+        "open_end": 164,
+        "opened_by": {
+          "loop": 9
+        },
+        "closed_by": {
+          "close-on-evidence": 6,
+          "other": 2
+        }
+      },
+      {
+        "date": "2026-11-24",
+        "opened": 14,
+        "closed": 11,
+        "net": 3,
+        "open_end": 167,
+        "opened_by": {
+          "loop": 14
+        },
+        "closed_by": {
+          "close-on-evidence": 4,
+          "prioritise": 1,
+          "other": 6
+        }
+      },
+      {
+        "date": "2026-11-25",
+        "opened": 5,
+        "closed": 4,
+        "net": 1,
+        "open_end": 168,
+        "opened_by": {
+          "loop": 5
+        },
+        "closed_by": {
+          "close-on-evidence": 4
         }
       }
     ],
@@ -3155,11 +3353,6 @@
         "closer": "owner"
       },
       {
-        "number": 387,
-        "closed_at": "2026-10-28T11:05:54Z",
-        "closer": "owner"
-      },
-      {
         "number": 388,
         "closed_at": "2026-10-30T02:58:46Z",
         "closer": "close-on-evidence"
@@ -3203,11 +3396,6 @@
         "number": 429,
         "closed_at": "2026-11-07T20:28:07Z",
         "closer": "close-on-evidence"
-      },
-      {
-        "number": 430,
-        "closed_at": "2026-10-28T10:43:22Z",
-        "closer": "owner"
       },
       {
         "number": 431,
@@ -3278,11 +3466,6 @@
         "number": 490,
         "closed_at": "2026-11-13T11:11:43Z",
         "closer": "close-on-evidence"
-      },
-      {
-        "number": 495,
-        "closed_at": "2026-10-27T17:37:19Z",
-        "closer": "other"
       },
       {
         "number": 503,
@@ -3890,6 +4073,11 @@
         "closer": "owner"
       },
       {
+        "number": 1026,
+        "closed_at": "2026-11-24T22:58:09Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1027,
         "closed_at": "2026-11-15T16:22:24Z",
         "closer": "close-on-evidence"
@@ -3967,6 +4155,11 @@
       {
         "number": 1069,
         "closed_at": "2026-11-19T02:37:23Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1070,
+        "closed_at": "2026-11-24T12:49:12Z",
         "closer": "close-on-evidence"
       },
       {
@@ -4205,6 +4398,11 @@
         "closer": "prioritise"
       },
       {
+        "number": 1208,
+        "closed_at": "2026-11-23T02:18:17Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1211,
         "closed_at": "2026-11-18T03:44:54Z",
         "closer": "main-red-report"
@@ -4255,6 +4453,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1268,
+        "closed_at": "2026-11-22T09:18:55Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1274,
         "closed_at": "2026-11-20T02:34:43Z",
         "closer": "main-red-report"
@@ -4265,14 +4468,39 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1282,
+        "closed_at": "2026-11-22T04:25:25Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1285,
+        "closed_at": "2026-11-24T03:39:03Z",
+        "closer": "other"
+      },
+      {
+        "number": 1291,
+        "closed_at": "2026-11-22T16:55:52Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1292,
         "closed_at": "2026-11-20T21:31:41Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1293,
+        "closed_at": "2026-11-21T22:13:32Z",
         "closer": "close-on-evidence"
       },
       {
         "number": 1294,
         "closed_at": "2026-11-20T22:55:20Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1295,
+        "closed_at": "2026-11-24T13:07:10Z",
+        "closer": "other"
       },
       {
         "number": 1300,
@@ -4300,6 +4528,16 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1315,
+        "closed_at": "2026-11-24T02:39:43Z",
+        "closer": "other"
+      },
+      {
+        "number": 1321,
+        "closed_at": "2026-11-22T04:13:38Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1322,
         "closed_at": "2026-11-21T01:30:28Z",
         "closer": "close-on-evidence"
@@ -4312,6 +4550,11 @@
       {
         "number": 1326,
         "closed_at": "2026-11-21T03:34:11Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1330,
+        "closed_at": "2026-11-23T10:30:06Z",
         "closer": "close-on-evidence"
       },
       {
@@ -4333,6 +4576,116 @@
         "number": 1338,
         "closed_at": "2026-11-21T07:31:18Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1359,
+        "closed_at": "2026-11-22T03:16:51Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1361,
+        "closed_at": "2026-11-24T03:13:38Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1370,
+        "closed_at": "2026-11-22T12:58:45Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1372,
+        "closed_at": "2026-11-24T05:36:01Z",
+        "closer": "other"
+      },
+      {
+        "number": 1373,
+        "closed_at": "2026-11-22T05:05:01Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 1377,
+        "closed_at": "2026-11-22T23:05:54Z",
+        "closer": "other"
+      },
+      {
+        "number": 1380,
+        "closed_at": "2026-11-22T17:08:10Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1386,
+        "closed_at": "2026-11-22T18:46:49Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1387,
+        "closed_at": "2026-11-25T01:47:19Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1390,
+        "closed_at": "2026-11-23T02:02:07Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1400,
+        "closed_at": "2026-11-23T04:43:08Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1402,
+        "closed_at": "2026-11-23T04:43:04Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1408,
+        "closed_at": "2026-11-23T14:56:07Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1411,
+        "closed_at": "2026-11-23T14:54:57Z",
+        "closer": "other"
+      },
+      {
+        "number": 1416,
+        "closed_at": "2026-11-23T16:24:48Z",
+        "closer": "other"
+      },
+      {
+        "number": 1430,
+        "closed_at": "2026-11-24T10:19:45Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1434,
+        "closed_at": "2026-11-24T06:09:56Z",
+        "closer": "prioritise"
+      },
+      {
+        "number": 1439,
+        "closed_at": "2026-11-24T07:59:22Z",
+        "closer": "other"
+      },
+      {
+        "number": 1442,
+        "closed_at": "2026-11-24T09:20:42Z",
+        "closer": "other"
+      },
+      {
+        "number": 1450,
+        "closed_at": "2026-11-25T00:19:32Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1451,
+        "closed_at": "2026-11-25T02:34:04Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1466,
+        "closed_at": "2026-11-25T05:08:40Z",
+        "closer": "close-on-evidence"
       }
     ],
     "timelines_read": 0,
@@ -4340,92 +4693,11 @@
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 114,
+          "merged": 76,
           "median_h": 0.6,
-          "p90_h": 11.0,
-          "max_h": 46.6,
+          "p90_h": 3.1,
+          "max_h": 23.3,
           "slowest": [
-            {
-              "number": 1121,
-              "title": "10th-lord-in-6th guide: Jupiter is not debilitated in Scorpio; unsourced 'classical' claim",
-              "author": "claude[bot]",
-              "merged_at": "2026-11-18T02:13:43Z",
-              "hours": 46.6,
-              "why": {
-                "reason": "45.1h gates red; 4 pushes",
-                "primary": "gates_red",
-                "hours": {
-                  "no_gates": 0.2,
-                  "gates_running": 0.5,
-                  "gates_red": 45.1,
-                  "awaiting_qa": 0.0,
-                  "awaiting_merge": 0.7
-                },
-                "qa_fails": 0,
-                "pushes": 4
-              }
-            },
-            {
-              "number": 1000,
-              "title": "Every prompt change is evaluated: base vs head, judged pairwise; a worse prompt cannot mer",
-              "author": "mahAnuj",
-              "merged_at": "2026-11-15T15:09:27Z",
-              "hours": 34.8,
-              "why": {
-                "reason": "33.1h held for chief (trust boundary); 4 pushes",
-                "primary": "held",
-                "hours": {
-                  "no_gates": 1.2,
-                  "gates_running": 0.3,
-                  "awaiting_qa": 0.2,
-                  "awaiting_merge": 0.0,
-                  "held": 33.1
-                },
-                "qa_fails": 2,
-                "pushes": 4
-              }
-            },
-            {
-              "number": 1127,
-              "title": "muhurat: Namkaran sets and day claim follow Raman and Rao (#1060)",
-              "author": "claude[bot]",
-              "merged_at": "2026-11-17T13:27:42Z",
-              "hours": 30.9,
-              "why": {
-                "reason": "26.3h gates red; 5 pushes",
-                "primary": "gates_red",
-                "hours": {
-                  "no_gates": 0.6,
-                  "gates_running": 0.6,
-                  "gates_red": 26.3,
-                  "awaiting_qa": 0.4,
-                  "awaiting_merge": 3.0
-                },
-                "qa_fails": 0,
-                "pushes": 5
-              }
-            },
-            {
-              "number": 1002,
-              "title": "Watch the live app's health after every cycle and file it as issues",
-              "author": "mahAnuj",
-              "merged_at": "2026-11-15T11:17:54Z",
-              "hours": 30.8,
-              "why": {
-                "reason": "29.7h held for chief (trust boundary); 4 pushes",
-                "primary": "held",
-                "hours": {
-                  "no_gates": 0.2,
-                  "qa_fail": 0.6,
-                  "gates_running": 0.2,
-                  "awaiting_qa": 0.1,
-                  "awaiting_merge": 0.0,
-                  "held": 29.7
-                },
-                "qa_fails": 3,
-                "pushes": 4
-              }
-            },
             {
               "number": 1212,
               "title": "close-on-evidence: close every PR the live, verified commit contains, not only its own",
@@ -4446,27 +4718,104 @@
                 "qa_fails": 5,
                 "pushes": 6
               }
+            },
+            {
+              "number": 1262,
+              "title": "pr-gates: run the suite, four mutation shards and the verification gates as parallel jobs",
+              "author": "mahAnuj",
+              "merged_at": "2026-11-20T07:37:22Z",
+              "hours": 13.6,
+              "why": {
+                "reason": "12.0h waiting for a fix after QA failed (1 QA FAIL)",
+                "primary": "qa_fail",
+                "hours": {
+                  "no_gates": 0.5,
+                  "qa_fail": 12.0,
+                  "gates_running": 0.1,
+                  "awaiting_qa": 0.1,
+                  "awaiting_merge": 0.0,
+                  "held": 0.9
+                },
+                "qa_fails": 1,
+                "pushes": 2
+              }
+            },
+            {
+              "number": 1259,
+              "title": "mutation harness: 8 rows the anchor tripwires were faking now have real guards; 2 re-point",
+              "author": "mahAnuj",
+              "merged_at": "2026-11-19T18:28:52Z",
+              "hours": 6.3,
+              "why": {
+                "reason": "4.8h waiting for gates to start; 0.9h waiting for a QA round",
+                "primary": "no_gates",
+                "hours": {
+                  "no_gates": 4.8,
+                  "gates_running": 0.6,
+                  "awaiting_qa": 0.9,
+                  "awaiting_merge": 0.0
+                },
+                "qa_fails": 0,
+                "pushes": 2
+              }
+            },
+            {
+              "number": 1391,
+              "title": "numerology and numerology_compat declare tool_error {tool, kind} on a refused or failed su",
+              "author": "shubhagya-publisher[bot]",
+              "merged_at": "2026-11-23T01:55:27Z",
+              "hours": 5.9,
+              "why": {
+                "reason": "5.9h waiting for gates to start",
+                "primary": "no_gates",
+                "hours": {
+                  "no_gates": 5.9
+                },
+                "qa_fails": 0,
+                "pushes": 1
+              }
+            },
+            {
+              "number": 1240,
+              "title": "Team restructure: architect plans every build; backend/frontend engineers; seo-growth in d",
+              "author": "mahAnuj",
+              "merged_at": "2026-11-19T07:07:11Z",
+              "hours": 4.3,
+              "why": {
+                "reason": "1.8h gates running; 1.0h held for chief (trust boundary)",
+                "primary": "gates_running",
+                "hours": {
+                  "no_gates": 0.8,
+                  "gates_running": 1.8,
+                  "awaiting_qa": 0.5,
+                  "qa_fail": 0.3,
+                  "awaiting_merge": 0.0,
+                  "held": 1.0
+                },
+                "qa_fails": 1,
+                "pushes": 3
+              }
             }
           ],
           "top_reasons": [
             {
-              "reason": "gates red",
-              "prs": 2
-            },
-            {
-              "reason": "held for chief (trust boundary)",
-              "prs": 2
-            },
-            {
               "reason": "waiting for a fix after QA failed",
+              "prs": 2
+            },
+            {
+              "reason": "waiting for gates to start",
+              "prs": 2
+            },
+            {
+              "reason": "gates running",
               "prs": 1
             }
           ]
         },
         "28d": {
-          "merged": 326,
+          "merged": 347,
           "median_h": 0.5,
-          "p90_h": 16.5,
+          "p90_h": 13.6,
           "max_h": 122.1,
           "slowest": [
             {
@@ -4591,30 +4940,6 @@
         }
       },
       "days": [
-        {
-          "date": "2026-10-25",
-          "merged": 5,
-          "median_h": 3.2,
-          "max_h": 31.2
-        },
-        {
-          "date": "2026-10-26",
-          "merged": 4,
-          "median_h": 12.8,
-          "max_h": 27.2
-        },
-        {
-          "date": "2026-10-27",
-          "merged": 4,
-          "median_h": 2.7,
-          "max_h": 22.0
-        },
-        {
-          "date": "2026-10-28",
-          "merged": 4,
-          "median_h": 27.5,
-          "max_h": 41.6
-        },
         {
           "date": "2026-10-29",
           "merged": 1,
@@ -4755,24 +5080,104 @@
         },
         {
           "date": "2026-11-21",
-          "merged": 10,
+          "merged": 11,
           "median_h": 0.4,
           "max_h": 2.5
+        },
+        {
+          "date": "2026-11-22",
+          "merged": 10,
+          "median_h": 1.1,
+          "max_h": 1.7
+        },
+        {
+          "date": "2026-11-23",
+          "merged": 10,
+          "median_h": 0.6,
+          "max_h": 5.9
+        },
+        {
+          "date": "2026-11-24",
+          "merged": 11,
+          "median_h": 0.4,
+          "max_h": 3.1
+        },
+        {
+          "date": "2026-11-25",
+          "merged": 5,
+          "median_h": 0.5,
+          "max_h": 1.0
         }
       ],
       "open": [
         {
           "number": 1335,
           "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 11.6,
+          "age_h": 103.3,
           "waiting_on": "merge",
           "why": null
         },
         {
           "number": 1342,
           "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 8.6,
+          "age_h": 100.2,
           "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1357,
+          "title": "issue/1346 abujha booster not bypass",
+          "age_h": 88.7,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1375,
+          "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
+          "age_h": 74.6,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1405,
+          "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
+          "age_h": 53.1,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1428,
+          "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
+          "age_h": 32.1,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1438,
+          "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (#1436)",
+          "age_h": 30.2,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1465,
+          "title": "Vivah lagna legend renders only when a row produced a block (#1457)",
+          "age_h": 9.3,
+          "waiting_on": "merge",
+          "why": null
+        },
+        {
+          "number": 1474,
+          "title": "ops: tab module and route wiring for the /admin/ops tab shell (slice 1, step 1)",
+          "age_h": 1.2,
+          "waiting_on": "gates / QA",
+          "why": null
+        },
+        {
+          "number": 1475,
+          "title": "#1255: stand an `issue` queue entry down when a cycle already ran and nothing is new; pre-",
+          "age_h": 0.1,
+          "waiting_on": "gates / QA",
           "why": null
         }
       ]

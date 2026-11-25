@@ -79,6 +79,8 @@ def _dosha_form_ctx(page_title: str, page_lead: str, form_action: str,
         "page_meta_description": meta_desc,
         "prefill": prefill,
         "error": error,
+        # #1411: fixed word for the tool_error marker, never the exception
+        "error_kind": "validation" if error else None,
         "show_ksy_caveat": show_ksy_caveat,
     }
 

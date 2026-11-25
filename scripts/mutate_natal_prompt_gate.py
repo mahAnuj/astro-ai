@@ -620,7 +620,7 @@ GATE7_LEGAL = (
     "Good deeds in Mars's domain (safe for anyone)",
     "None of these needs an expensive puja package.",
     # Slice 8. Each is live in the tree or is the shipped replacement text, and must stay green.
-    "Black gram (urad daal) \u2014 Rahu's classical grain; often given raw or cooked to those in need",
+    "Black gram (urad daal) \u2014 the grain a modern textbook's table gives Rahu; often given raw or cooked to those in need",
     "Some folk traditions substitute black til (sesame) \u2014 this is actually Saturn's grain, but works as a "
     "symbolic offering on shared Saturday since Rahu and Shani both share the day. If in doubt, use urad daal.",
     "Donate black sesame, iron, or mustard oil on Saturdays.",

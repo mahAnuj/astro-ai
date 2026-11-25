@@ -2,70 +2,82 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-22",
-    "2026-11-18"
+    "2026-10-26",
+    "2026-11-22"
   ],
   "dimensions": [
     "eventName"
   ],
   "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
-  "row_count": 17,
+  "row_count": 21,
   "truncated": false,
   "rows": [
     {
       "event": "page_view",
-      "count": 1374
-    },
-    {
-      "event": "user_identified",
-      "count": 798
+      "count": 1477
     },
     {
       "event": "session_start",
-      "count": 789
+      "count": 802
+    },
+    {
+      "event": "user_identified",
+      "count": 714
     },
     {
       "event": "feature_view",
-      "count": 783
+      "count": 704
     },
     {
       "event": "first_visit",
-      "count": 661
+      "count": 659
     },
     {
       "event": "user_engagement",
-      "count": 326
+      "count": 325
     },
     {
       "event": "scroll",
-      "count": 194
+      "count": 204
     },
     {
       "event": "ask_answered",
-      "count": 130
+      "count": 126
     },
     {
       "event": "form_start",
-      "count": 128
+      "count": 109
     },
     {
       "event": "kundli_generated",
-      "count": 54
+      "count": 52
+    },
+    {
+      "event": "tool_submitted",
+      "count": 27
     },
     {
       "event": "cta_click",
-      "count": 18
+      "count": 21
+    },
+    {
+      "event": "view_search_results",
+      "count": 8
     },
     {
       "event": "click",
       "count": 4
     },
     {
-      "event": "view_search_results",
+      "event": "matching_completed",
       "count": 3
     },
     {
       "event": "dasha_deep_dive_viewed",
+      "count": 2
+    },
+    {
+      "event": "dosha_check_completed",
       "count": 2
     },
     {
@@ -77,14 +89,18 @@
       "count": 1
     },
     {
+      "event": "share",
+      "count": 1
+    },
+    {
       "event": "subscribe_completed",
       "count": 1
     }
   ],
-  "events_total": 5268,
-  "coverage_note": "cta_click: 18 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "events_total": 5244,
+  "coverage_note": "cta_click: 21 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
   "cta_click": {
-    "count": 18,
+    "count": 21,
     "split_available": true,
     "rows": [
       {
@@ -95,7 +111,7 @@
       {
         "from_path": "/learn/career-during-sade-sati/",
         "to_path": "/",
-        "count": 2
+        "count": 3
       },
       {
         "from_path": "/learn/sade-sati/",
@@ -113,6 +129,11 @@
         "count": 1
       },
       {
+        "from_path": "/learn/manglik-dosh/",
+        "to_path": "/",
+        "count": 1
+      },
+      {
         "from_path": "/learn/name-numerology-explained/",
         "to_path": "/numerology",
         "count": 1
@@ -125,6 +146,11 @@
       {
         "from_path": "/learn/rahu-mahadasha-ketu-antardasha/",
         "to_path": "/dasha",
+        "count": 1
+      },
+      {
+        "from_path": "/learn/sade-sati/",
+        "to_path": "/sade-sati-check",
         "count": 1
       },
       {

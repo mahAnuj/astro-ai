@@ -58,7 +58,7 @@ def _page(window: str | None = None):
     from astro_ai.main import app
     from astro_ai.routes import deps
     pw = os.environ.get("ADMIN_PASSWORD", deps._ADMIN_DEV_FALLBACK)
-    q = "" if window is None else f"?window={window}"
+    q = "?tab=monitoring" + ("" if window is None else f"&window={window}")
     return TestClient(app).get("/admin/ops" + q, auth=("admin", pw))
 
 
@@ -138,7 +138,7 @@ def test_exactly_one_window_is_marked_selected():
 def test_every_offered_window_has_a_link_on_the_page():
     h = _page().text
     for d in ops_data.APP_WINDOWS:
-        assert f'href="?window={d}"' in h, f"no link for {d}d"
+        assert f'href="?window={d}&amp;tab=monitoring"' in h, f"no link for {d}d"
 
 
 def test_the_template_offers_exactly_the_windows_the_module_declares():
@@ -152,11 +152,11 @@ def test_the_template_offers_exactly_the_windows_the_module_declares():
     # is true of (1, 1, 1), of (2, 9, 400) and of any permutation, so the test
     # named for the selector could not see WHICH windows it offered. Assert the
     # values, and that nothing else is offered.
-    found = [int(x) for x in re.findall(r'href="\?window=(\d+)"', h)]
+    found = [int(x) for x in re.findall(r'href="\?window=(\d+)&amp;tab=monitoring"', h)]
     assert found == list(ops_data.APP_WINDOWS), (
         f"the selector offers {found}, the app accepts {list(ops_data.APP_WINDOWS)}")
     for d in ops_data.APP_WINDOWS:
-        assert f'href="?window={d}"' in h, d
+        assert f'href="?window={d}&amp;tab=monitoring"' in h, d
 
 
 # --------------------------------------------------------------------------- #

@@ -52,8 +52,8 @@ DID_YOU_KNOW: list[dict[str, str]] = [
         "hi": "बुध आकाश में सूर्य से 28° से अधिक दूर नहीं जाता। इसीलिए बुध चपल बुद्धि और छोटी यात्राओं का स्वामी है।",
     },
     {
-        "en": "Mangal Dosh only matters in marriage if both partners have it — they cancel each other out. One-sided Manglik isn't an automatic block.",
-        "hi": "मांगलिक दोष विवाह में तभी मायने रखता है जब दोनों साथियों में हो — दोनों एक-दूसरे को रद्द कर देते हैं। एक-तरफ़ा मांगलिक स्वतः बाधा नहीं है।",
+        "en": "One modern textbook on auspicious times lists Mangal Dosh antidotes: the dosha is cancelled when both partners are Manglik. It also lists sign exceptions for Mars, and Mars joined with Jupiter or the Moon, as counteracting it.",
+        "hi": "शुभ समय पर एक आधुनिक पुस्तक मांगलिक दोष के परिहार गिनाती है: दोनों साथी मांगलिक हों तो दोष कट जाता है। वही सूची मंगल की कुछ राशि-स्थितियों को, और मंगल के गुरु या चन्द्र के साथ युति को भी दोष का निवारक बताती है।",
     },
     {
         "en": "Each nakshatra is ruled by a deity, planet, and element. Pushya nakshatra is the most auspicious — its very name means 'nourishing'.",

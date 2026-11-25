@@ -207,8 +207,10 @@ _DECLARED: tuple[Festival, ...] = (
         significance=(
             "Vasant Panchami falls on the fifth tithi of Magha's waxing fortnight and opens the "
             "spring season in the Hindu reckoning. The day belongs to Saraswati — speech, learning, "
-            "music and the arts — and by long custom it is treated as an abujha muhurat, a day "
-            "whose auspiciousness is taken as given and needs no further calculation. Children are "
+            "music and the arts — and by long custom some regional almanacs list it as an abujha "
+            "muhurat, a day taken as favourable. That is an almanac custom, not a rule in the books "
+            "this site holds, so for a wedding or griha pravesh still confirm the tithi, star and "
+            "Panchak with your priest or panchang. Children are "
             "traditionally given their first letters on it, books and instruments are set before the "
             "goddess, and the mustard fields in bloom lend the day its yellow."
         ),
@@ -288,9 +290,10 @@ _DECLARED: tuple[Festival, ...] = (
             "The first tithi of Chaitra's bright fortnight opens the lunar year across the "
             "Deccan — Ugadi in Andhra, Telangana and Karnataka, Gudi Padwa in Maharashtra "
             "and Goa, Cheti Chand for Sindhis, Navreh in Kashmir, and the same morning "
-            "begins Chaitra Navratri in the north. Classically it is the day Brahma is held "
-            "to have begun creation, and it is one of the three and a half abujha muhurats "
-            "of the year, auspicious without a calculated window. Which day counts as new "
+            "begins Chaitra Navratri in the north. In Puranic tradition it is the day Brahma is held "
+            "to have begun creation. Regional almanac custom also lists it as an abujha "
+            "muhurat; no book this site holds names it, so confirm the tithi, star and "
+            "Panchak with your priest or panchang. Which day counts as new "
             "year is regional convention rather than a single rule: north India largely "
             "reckons from Diwali and Gujarat from Govardhan Puja, and none of those is "
             "wrong within its own tradition."
@@ -365,25 +368,26 @@ _DECLARED: tuple[Festival, ...] = (
         slug="akshaya-tritiya",
         name_en="Akshaya Tritiya",
         name_hi="अक्षय तृतीया",
-        note_en="Whatever is begun or given today is held never to diminish. A day that is its own muhurat.",
-        note_hi="आज जो आरम्भ या दान किया जाए वह कभी क्षीण नहीं होता। यह दिन स्वयं मुहूर्त है।",
+        note_en="Whatever is begun or given today is held never to diminish. Regional almanac custom calls the day abujha; confirm the tithi, star and Panchak for any wedding or griha pravesh.",
+        note_hi="आज जो आरम्भ या दान किया जाए वह कभी क्षीण नहीं होता। क्षेत्रीय पंचांग-प्रथा इसे अबूझ कहती है; विवाह या गृहप्रवेश के लिए तिथि, नक्षत्र और पंचक जाँचें।",
         dates={2026: "2026-04-19", 2027: "2027-05-09", 2028: "2028-04-27"},
         rule="Vaishakha Shukla Tritiya",
         observance_window="sunrise to madhyahna, Tritiya prevailing",
         significance=(
             "Akshaya means undiminishing, and the third tithi of Vaishakha's bright "
-            "fortnight is held to keep whatever is started on it from wearing out. It is one "
-            "of the three and a half abujha muhurats — days taken as auspicious in full, "
-            "needing no further calculation — and the astrological reason usually given is "
-            "that the Sun is exalted in Aries and the Moon in Taurus around this window. The "
+            "fortnight is held to keep whatever is started on it from wearing out. Regional "
+            "almanac custom lists it as an abujha muhurat, a day taken as favourable; no book "
+            "this site holds names the custom, so confirm the tithi, star and Panchak with your "
+            "priest or panchang. A reason often given is the Sun's exaltation in Aries. The "
             "Puranas hang several beginnings on it: Parashurama's appearance, Vyasa "
             "beginning to dictate the Mahabharata to Ganesha, the Akshaya Patra given to "
             "Draupadi, Sudama's handful of rice. The classical instruction on the day is "
             "about giving; buying gold is a later commercial custom laid over that."
         ),
         observance=(
-            "Begin what has been waiting — a business, a build, a marriage, a course of "
-            "study — without checking a muhurat, since the day is one. Daan is the "
+            "Many begin what has been waiting on this day by custom — a business, a build, "
+            "a course of study; for a wedding or griha pravesh still confirm the tithi, star "
+            "and Panchak. Daan is the "
             "prescribed act, and the traditional list is seasonal and unglamorous: water, "
             "a pot, curd-rice, sattu, grain, an umbrella, footwear, a fan. Lakshmi-Narayana "
             "are worshipped with tulsi and yellow flowers, many keeping a light fast until "
@@ -943,16 +947,17 @@ _DECLARED: tuple[Festival, ...] = (
             "Vijayadashami falls on the tenth tithi of Ashwina's bright fortnight, after the nine "
             "nights. It carries two stories at once — Rama's victory over Ravana in the north, "
             "Durga's over Mahishasura in the east — and both are read as the same thing: a long "
-            "contest finally finishing. The day is one of the three and a half abujha muhurats of "
-            "the year, auspicious throughout without needing a calculated window, which is why so "
-            "much is traditionally begun on it."
+            "contest finally finishing. Regional almanac custom also lists it as an abujha muhurat, "
+            "a day taken as favourable; no book this site holds names it, so confirm the tithi, "
+            "star and Panchak with your priest or panchang. That victory is why so much is "
+            "traditionally begun on it."
         ),
         observance=(
             "The observance window is aparahna, the late afternoon, when the Ravana effigies burn "
             "and Shami puja and Aparajita puja are performed. Tools, books, vehicles and instruments "
             "are honoured in the ayudha puja, and children are traditionally started on their "
-            "letters. Beginning a journey, a business or any new undertaking today needs no further "
-            "muhurat check. Exchanging apta leaves as symbolic gold is the Maharashtrian custom."
+            "letters. Many begin a journey, a business or something new on this day by custom; for a "
+            "wedding or griha pravesh still confirm the tithi, star and Panchak. Exchanging apta leaves as symbolic gold is the Maharashtrian custom."
         ),
     ),
     # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and monthly
@@ -1225,8 +1230,8 @@ _DECLARED: tuple[Festival, ...] = (
         slug="devuthani-ekadashi",
         name_en="Devuthani Ekadashi (Prabodhini)",
         name_hi="देवउठनी एकादशी",
-        note_en="Vishnu wakes and Chaturmas ends — the wedding season reopens on an abujha muhurat, auspicious the whole day through.",
-        note_hi="विष्णु का जागरण, चातुर्मास समाप्त — विवाह ऋतु पुनः आरम्भ; अबूझ मुहूर्त, पूरा दिन शुभ।",
+        note_en="Vishnu wakes and Chaturmas ends: the wedding season reopens. Regional almanac custom calls the day abujha; confirm the tithi, star and Panchak for any wedding or griha pravesh.",
+        note_hi="विष्णु का जागरण, चातुर्मास समाप्त: विवाह ऋतु पुनः आरम्भ। क्षेत्रीय पंचांग-प्रथा इसे अबूझ कहती है; विवाह या गृहप्रवेश के लिए तिथि, नक्षत्र और पंचक जाँचें।",
         dates={2026: "2026-11-20", 2027: "2027-11-10", 2028: "2028-10-28"},
         rule="Kartika Shukla Ekadashi",
         observance_window="sunrise",
@@ -1235,10 +1240,11 @@ _DECLARED: tuple[Festival, ...] = (
             "eleventh tithi of Kartika's bright fortnight, the day Vishnu is held to wake "
             "from the four months of yoganidra that began at Devshayani. Chaturmas ends "
             "here, and with it the pause on samskaras: the muhurat calendar reopens, and "
-            "Tulsi Vivah the following day performs the season's first wedding. It is one "
-            "of the handful of abujha, or swayamsiddha, muhurats — days held auspicious in "
-            "their entirety, on which a marriage, a griha pravesh or a new venture needs no "
-            "muhurat looked up at all, which is why so much is undertaken on it. The name "
+            "Tulsi Vivah the following day performs the season's first wedding. Regional "
+            "almanac custom lists it among the abujha days, taken as favourable; no book this "
+            "site holds names the custom, and the day can fall inside Panchak, so a wedding, a "
+            "griha pravesh or a new venture still needs the tithi, star and Panchak checked "
+            "with your priest or panchang. The name "
             "is prabodhana, an awakening, and the tradition reads it in both directions: "
             "the deity is roused, and so is the household that has kept four months of "
             "restraint."

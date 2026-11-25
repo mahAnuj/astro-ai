@@ -31,6 +31,10 @@
   <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     {% if error %}
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
+    {# #1070: the failure half of muhurat_searched. `error_kind` is the route's fixed word, re-checked here; params are exactly {tool, kind}; never the error text (it echoes the exception, which can carry the city or a partner's place), the city or the date. A city that fails to geocode lands in `compute`, there is no `geocode` kind here. Counts error RENDERS: a reload re-fires it. #}
+    {% from "_analytics_event.html" import analytics_event %}
+    {% set _k = error_kind if error_kind in ['validation', 'compute'] else 'validation' %}
+    {{ analytics_event('tool_error', {'tool': 'muhurat', 'kind': _k}) }}
     {% endif %}
     <form method="post" action="/muhurat" data-tool="muhurat" class="space-y-4">
       <div>
@@ -59,10 +63,16 @@
         <div>
           <label for="days" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Range (days)</label>
           <select name="days" id="days" class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
-            <option value="30">30 days</option>
-            <option value="60" selected>60 days</option>
-            <option value="90">90 days</option>
-            <option value="180">6 months</option>
+            {#- #1339: the select shows the days that were searched. `prefill_days` is absent on the bare form
+                (default 60); a value outside 1..365 falls back to 60 (the route clamps a result's days to 365
+                before it reaches here, so this guards only the error re-renders). A value that is not one of
+                the standard four is added to the list, in order, so a shared 14-day link does not show 60. -#}
+            {% set sel = prefill_days | default(60) | int(60) %}
+            {% if sel < 1 or sel > 365 %}{% set sel = 60 %}{% endif %}
+            {% set day_opts = ([30, 60, 90, 180] + ([] if sel in [30, 60, 90, 180] else [sel])) | sort %}
+            {% for o in day_opts %}
+            <option value="{{ o }}"{% if o == sel %} selected{% endif %}>{% if o == 180 %}6 months{% elif o == 1 %}1 day{% else %}{{ o }} days{% endif %}</option>
+            {% endfor %}
           </select>
         </div>
       </div>
@@ -155,6 +165,14 @@
   {% set caution_candidates = candidates | selectattr('rating', 'equalto', 'caution') | list %}
   {% set listed_candidates = candidates | rejectattr('rating', 'equalto', 'avoid') | list %}
   {% set avoid_candidates = candidates | selectattr('rating', 'equalto', 'avoid') | list %}
+  {#- These carry the WHOLE class pair, not a family name. The old
+      bg-VAR-100/text-VAR-800 shape needed every family to have -100/-800
+      stops, which forced the middle case onto stone — a cool near-white
+      that reads as a different page against cream. The redesign surface
+      it belongs on (bhagya-cream-2) has no numeric stops, so the
+      indirection had to go. The two middle keys below are common live
+      values, not just fallbacks. One definition, read by the top-pick card and every table row. -#}
+  {% set colors = {'excellent': 'bg-emerald-100 text-emerald-800', 'good': 'bg-emerald-100 text-emerald-800', 'acceptable': 'bg-amber-100 text-amber-800', 'caution': 'bg-amber-100 text-amber-800'} %}
   {# #1217 muhurat_searched (#1017 F1): declared only here, where a search found candidates. The route builds the values (an event key, two integers, a mode enum; no city, name or birth data) and each is spelt out here so tests/test_pii_egress_analytics.py reviews every one; a caller that passes none, as the tests that render this template directly do, declares nothing. #}
   {% if muhurat_searched %}
   {% from "_analytics_event.html" import analytics_event %}
@@ -214,6 +232,34 @@
       Times are local to {{ city }} ({{ search_tz }}).
       {% if anchor.sunrise %}Sunrise on the first listed date, {{ anchor.d.strftime('%b %d, %Y') }}: {{ anchor.sunrise }}.{% else %}First listed date, {{ anchor.d.strftime('%b %d, %Y') }}: no ordinary sunrise on this date at this latitude.{% endif %}
     </p>
+    {% endif %}
+
+    {#- #1341 (#1017 R1): the first date of the ranked list, named once. Within a grade the order is this
+        site's own point count, which the card says every time (astro-auditor, 2026-11-21: the weights are
+        not in knowledge/); `top_pick_ties` says when the pick won on order alone. The score is never
+        printed. Heading is "Top pick", never a superlative; the tie-break is "earliest first". -#}
+    {% if top_pick %}
+    {% set tp = top_pick %}
+    {% set tp_ties = top_pick_ties | default(0) %}
+    <div id="top-pick" class="mb-4 p-4 bg-bhagya-cream-2 border border-bhagya-line rounded">
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Top pick</h3>
+      <p class="font-marcellus text-2xl text-bhagya-ink mb-2">{{ tp.weekday }}, {{ tp.d.strftime('%b %d, %Y') }}</p>
+      <div class="flex flex-wrap items-center gap-2 mb-2">
+        <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded {{ colors.get(tp.rating, 'bg-bhagya-cream-2 text-bhagya-ink-soft') }} capitalize">{{ tp.rating }}</span>
+        {% if tp.boosters %}<span class="inline-block px-1.5 py-0.5 text-xs rounded bg-emerald-100 text-emerald-800" title="{{ ' + '.join(tp.boosters) }}">★ boost</span>{% endif %}
+        <span class="text-sm text-bhagya-ink-soft">{{ tp.tithi_paksha }} {{ tp.tithi }} · {{ tp.nakshatra }}</span>
+      </div>
+      <p class="text-sm text-bhagya-ink-soft mb-2">{{ tp.reason[:1] | upper }}{{ tp.reason[1:] }}.</p>
+      {% if tp_ties > 0 %}
+      <p class="text-sm text-bhagya-ink-soft mb-2">Tied on points with {{ tp_ties }} other {{ 'date' if tp_ties == 1 else 'dates' }}; earliest first.</p>
+      {% endif %}
+      {% if couple_active and tp.couple %}
+      <p class="text-sm text-bhagya-ink-soft mb-2">Couple verdict: {{ tp.couple.combined_verdict.replace('-', ' ') }}. Dates marked avoid for the couple are skipped here, though they stay in the table. This is the top date on the panchang rules under this finder's own both-partners rule (explained below). It is not a classical endorsement for your two charts.</p>
+      {% endif %}
+      <p class="text-xs text-bhagya-muted">Among dates of the same grade, this card goes first to the one with the most points under this site's own point count: the classical rules fix which dates qualify, but the tradition we follow gives no weighting between them.</p>
+    </div>
+    {% elif auspicious_candidates and couple_active %}
+    <p id="top-pick-none" class="mb-4 text-sm text-bhagya-muted">Every date in this range is marked avoid for the couple, so no top pick is shown.</p>
     {% endif %}
 
     {% if child_first_letter %}
@@ -278,14 +324,7 @@
       </thead>
       <tbody>
         {% for c in group_rows %}
-        {#- These carry the WHOLE class pair, not a family name. The old
-            bg-VAR-100/text-VAR-800 shape needed every family to have -100/-800
-            stops, which forced the middle case onto stone — a cool near-white
-            that reads as a different page against cream. The redesign surface
-            it belongs on (bhagya-cream-2) has no numeric stops, so the
-            indirection had to go. The two middle keys below are common live
-            values, not just fallbacks. -#}
-        {% set colors = {'excellent': 'bg-emerald-100 text-emerald-800', 'good': 'bg-emerald-100 text-emerald-800', 'acceptable': 'bg-amber-100 text-amber-800', 'caution': 'bg-amber-100 text-amber-800'} %}
+        {#- `colors` is defined once, above the top-pick card (#1341), and read here. -#}
         {% set color = colors.get(c.rating, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
         {% set personal_colors = {'excellent': 'bg-emerald-100 text-emerald-800', 'good': 'bg-emerald-100 text-emerald-800', 'ok': 'bg-bhagya-cream-2 text-bhagya-ink-soft', 'avoid': 'bg-rose-100 text-rose-800', 'strong': 'bg-emerald-100 text-emerald-800', 'weak': 'bg-rose-100 text-rose-800'} %}
         <tr class="border-b border-bhagya-line-2 align-top">
@@ -398,7 +437,9 @@
                is unaffected and belongs outside. #}
             {% if c.bhadra_window %}<div class="text-xs text-bhagya-sindoor mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
           </td>
-          <td data-label="Notes" data-span class="py-2 text-xs text-bhagya-muted">{{ c.reason }}{% include "_muhurat_why.html" %}</td>
+          <td data-label="Notes" data-span class="py-2 text-xs text-bhagya-muted">{{ c.reason }}{% include "_muhurat_why.html" %}
+{%- include "_muhurat_lagna.html" -%}
+</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -406,6 +447,7 @@
     {% endif %}
     {% endfor %}
     {% include "_muhurat_why_legend.html" %}
+    {% include "_muhurat_lagna_legend.html" %}
     <p class="text-xs text-bhagya-muted mt-2 italic">
       <span class="text-emerald-800">✓</span> Abhijit Muhurta = the midday muhurta, a fifteenth of daylight centred on solar noon; <span class="text-emerald-800">✓</span> means it lies clear of Rahu Kaal and Bhadra that day, and <span class="text-amber-800">~</span> means it overlaps one of them, with the overlap named on the row. The finder holds no source that calls Abhijit the most auspicious window or ranks it above either. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Days under Atiganda, Shula, Ganda, Vyatipata or Vaidhriti are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present. These weekday-nakshatra booster tables are this finder&rsquo;s own convention: Raman&rsquo;s <em>Muhurtha</em> has a similar Siddha Yoga list, but these are not the same tables.
     </p>

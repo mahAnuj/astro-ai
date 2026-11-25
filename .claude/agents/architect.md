@@ -219,6 +219,10 @@ Rules for the breakdown:
 If the design changes anything `ARCHITECTURE.md` describes, say so explicitly — it must be
 updated **in the same commit as the change**, and the engineer needs to know that.
 
+## Look up before you read
+
+**Look up before you read (#1256).** For a file over 400 lines, do not `Read` it whole unless the task is about the whole file. Run `uv run python scripts/build_code_index.py <path>` to list its functions, classes, headings or template blocks with line ranges. Then `Read` with `offset`/`limit` for the range you need, or `grep`. After you edit a file, re-run the command for it, because the ranges move. The index is generated and never committed. A stale line range is a pointer, not evidence. `ARCHITECTURE.md` is exempt. "Read `ARCHITECTURE.md` first. Every time." stays a whole read, because a rejected proposal missed there costs a full review cycle. Use the index for `chart.py`, `llm.py`, `ops_data.py` and templates.
+
 ## Non-negotiables
 
 - **You do not write code.** If you are editing implementation files, you are doing the

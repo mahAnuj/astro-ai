@@ -240,6 +240,46 @@ jobs:
       #   events.py   what is recorded about a user.
       #   notify.py / email_sender.py   what leaves to Telegram / Brevo.
       #   storage.py  where it is kept.
+      # ONE DEFINITION OF "THE HEAD'S CHECKS ARE GREEN" (2026-11-23), eval'd by the
+      # sweep and by `Gates green?`. Each check counts only from the NEWEST run of
+      # its own workflow, and this workflow's own runs never vote.
+      #
+      # Measured 2026-11-23: #1335 (qa-pass, every gate green on b0d9aa7) was
+      # refused on every sweep since 2026-11-21 by two corpses: `merge=failure`,
+      # an EARLIER agent-merge run's own job (only THIS run's check was
+      # excluded, and a sweep never writes a new `merge` check to supersede it),
+      # and `mutants=cancelled`, a superseded pr-gates run whose job #1262
+      # renamed to `mutants (0..3)`, so latest-per-name never replaced it. And
+      # because the sweep picked by mergeability alone and stopped, #1342 and
+      # #1375 (green, qa-pass) sat behind it for two days.
+      HEAD_CHECKS_FN: |
+        head_checks() {
+          # $1 = head SHA. Prints `name=status:conclusion`, one line per check that
+          # counts; returns 2 when the API cannot be read (never a pass).
+          local sha="$1" self runs rid meta path at keep
+          self=${GITHUB_WORKFLOW_REF#*/*/}; self=${self%@*}
+          runs=$(gh api "repos/$GH_REPO/commits/$sha/check-runs?per_page=100") || return 2
+          declare -A newest_at=() newest_id=()
+          for rid in $(printf '%s' "$runs" | jq -r '.check_runs[] | (.details_url // "") | capture("/actions/runs/(?<r>[0-9]+)/")? | .r' | sort -u); do
+            meta=$(gh api "repos/$GH_REPO/actions/runs/$rid" --jq '"\(.path) \(.created_at)"') || return 2
+            path=${meta% *}; at=${meta#* }
+            [ "$path" = "$self" ] && continue
+            if [ -z "${newest_at[$path]:-}" ] || [[ "$at" > "${newest_at[$path]}" ]] \
+               || { [ "$at" = "${newest_at[$path]}" ] && [ "$rid" -gt "${newest_id[$path]}" ]; }; then
+              newest_at[$path]=$at; newest_id[$path]=$rid
+            fi
+          done
+          keep=$(IFS=,; printf '%s' "${newest_id[*]}")
+          printf '%s' "$runs" | jq -r --arg keep "$keep" '
+            ($keep | split(",")) as $ok
+            | [.check_runs[]
+               | ([(.details_url // "") | capture("/actions/runs/(?<r>[0-9]+)/")? | .r] | .[0]) as $rid
+               | select($rid == null or ($ok | index($rid)))]
+            | sort_by(.started_at, .id)
+            | reduce .[] as $c ({}; . + {($c.name): $c})
+            | to_entries[]
+            | "\(.value.name)=\(.value.status):\(.value.conclusion // "pending")"' || return 2
+        }
       TRUST_BOUNDARY: |
         src/astro_ai/prompts/
         src/astro_ai/knowledge/
@@ -348,6 +388,7 @@ jobs:
             # "skipping — mergeable=UNKNOWN" and the */30 cron, throttled by
             # GitHub, came back ~6 hours later to do it again. Up to four asks,
             # MERGEABLE_WAIT seconds apart; still UNKNOWN after that is skipped.
+            eval "$HEAD_CHECKS_FN"
             n=""
             for cand in $candidates; do
               m=""
@@ -357,6 +398,16 @@ jobs:
                 [ "$_ask" = 4 ] || sleep "${MERGEABLE_WAIT:-5}"
               done  # asks
               if [ "$m" = "MERGEABLE" ]; then
+                # Checks too, or one red PR low in the range is picked forever
+                # and blocks every green PR above it (#1335, 2026-11-21..23).
+                csha=$(gh pr view "$cand" --repo "$GH_REPO" --json headRefOid --jq .headRefOid 2>/dev/null || echo "")
+                clines=""
+                [ -n "$csha" ] && clines=$(head_checks "$csha" 2>/dev/null)
+                cred=$(printf '%s\n' "$clines" | grep -v ":success$" | grep -v '^$' || true)
+                if [ -z "$clines" ] || [ -n "$cred" ]; then
+                  echo "  skipping #$cand — checks not green: $(printf '%s' "${cred:-unreadable}" | tr '\n' ' ' | cut -c1-200)"
+                  continue
+                fi
                 n="$cand"
                 echo "::notice::sweep picked PR #$n — every condition is re-checked below"
                 break
@@ -492,13 +543,11 @@ jobs:
           # pending or failed LATEST check is still not a pass — while a
           # superseded attempt stops voting. `.id` as a tiebreak because two runs
           # can share a start second.
-          runs=$(gh api "repos/$GH_REPO/commits/$sha/check-runs" --paginate \
-                   --jq "[.check_runs[]
-                          | select((.details_url // \"\") | contains(\"/runs/$GITHUB_RUN_ID/\") | not)]
-                         | sort_by(.started_at, .id)
-                         | reduce .[] as \$c ({}; . + {(\$c.name): \$c})
-                         | to_entries[]
-                         | \"\(.value.name)=\(.value.status):\(.value.conclusion // \"pending\")\"")
+          eval "$HEAD_CHECKS_FN"
+          if ! runs=$(head_checks "$sha"); then
+            echo "::notice::could not read the checks for $sha — not merging, the next run asks again"
+            exit 0
+          fi
           echo "$runs" | sed 's/^/  /'
           # Every check must have finished, and none may be anything but success.
           # `pending` counts as not-green: a check still running is not a pass,

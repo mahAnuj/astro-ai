@@ -806,4 +806,6 @@
 {% if reading and not error %}
 {{ analytics_event('numerology_completed', {'lang': lang, 'kind': 'reading'}) }}
 {% endif %}
+{# #1390: the failure half of the completion above. `kind` is the route's own fixed word and is re-checked here, so a stray value can only ever read as 'compute'; never the error text, which can echo the input. Params are exactly {tool, kind}. #}
+{% if error %}{% set _k = error_kind if error_kind in ['validation', 'compute'] else 'compute' %}{{ analytics_event('tool_error', {'tool': 'numerology', 'kind': _k}) }}{% endif %}
 {% endblock %}

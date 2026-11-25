@@ -1,0 +1,55 @@
+"""#1070 (row 8, muhurat finder): /muhurat declares `tool_error` on its error banner, with a
+fixed {tool, kind} vocabulary (validation|compute).
+
+Rows target templates/muhurat_finder.html and routes/muhurat.py, which
+tests/test_analytics_tool_error_muhurat.py exercises through the real route. Anchored on the
+`"error_kind"` lines, not the `via_get` lines open PR #1342 edits. One area file, a literal
+list (test_mutation_tables.py requires it)."""
+
+MUTATIONS = [
+    ('#1070: muhurat_finder.html stops declaring tool_error',
+     'src/astro_ai/templates/muhurat_finder.html',
+     "    {{ analytics_event('tool_error', {'tool': 'muhurat', 'kind': _k}) }}\n",
+     '',
+     'test_muhurat_a_refused_search_declares_tool_error_validation'),
+    ('#1070: muhurat_finder.html declares tool_error on every render (guard dropped)',
+     'src/astro_ai/templates/muhurat_finder.html',
+     '    {% if error %}\n    <div class="mb-4 p-3 bg-red-50',
+     '    {% if True %}\n    <div class="mb-4 p-3 bg-red-50',
+     'test_muhurat_no_marker_on_a_success_a_shared_link_or_the_bare_form'),
+    ('#1070: /muhurat reports a refused search as a compute failure',
+     'src/astro_ai/routes/muhurat.py',
+     '"error": "Invalid start date.", "lang": _lang(request),\n             "error_kind": "validation",',
+     '"error": "Invalid start date.", "lang": _lang(request),\n             "error_kind": "compute",',
+     'test_muhurat_a_refused_search_declares_tool_error_validation'),
+    ('#1070: /muhurat reports a failed search as a validation failure',
+     'src/astro_ai/routes/muhurat.py',
+     '"error_kind": "compute",\n             "lang"',
+     '"error_kind": "validation",\n             "lang"',
+     'test_muhurat_a_failed_search_declares_tool_error_compute'),
+    ('#1070: /muhurat drops the kind for a failed personal or couple chart on a 200 render',
+     'src/astro_ai/routes/muhurat.py',
+     '"error_kind": "compute" if (personal_chart_error or couple_error) else None,',
+     '"error_kind": None,',
+     'test_muhurat_a_failed_personal_chart_declares_compute_and_still_shows_dates'),
+    ('#1070: /muhurat success dict reports compute even with no chart error (conditional flipped)',
+     'src/astro_ai/routes/muhurat.py',
+     '"error_kind": "compute" if (personal_chart_error or couple_error) else None,',
+     '"error_kind": "compute" if not (personal_chart_error or couple_error) else "validation",',
+     'test_muhurat_a_failed_couple_chart_declares_compute_and_still_shows_dates'),
+    ("#1070: muhurat_finder.html trusts the route's error_kind instead of its whitelist",
+     'src/astro_ai/templates/muhurat_finder.html',
+     "{% set _k = error_kind if error_kind in ['validation', 'compute'] else 'validation' %}",
+     '{% set _k = error_kind %}',
+     'test_muhurat_the_template_only_ever_emits_a_known_kind'),
+    ('#1070: the muhurat tool_error marker carries the error text',
+     'src/astro_ai/templates/muhurat_finder.html',
+     "'tool': 'muhurat', 'kind': _k",
+     "'tool': 'muhurat', 'kind': _k, 'message': error",
+     'test_muhurat_the_marker_carries_no_city_date_or_error_text'),
+    ('#1070: the muhurat tool_error marker carries the city',
+     'src/astro_ai/templates/muhurat_finder.html',
+     "'tool': 'muhurat', 'kind': _k",
+     "'tool': 'muhurat', 'kind': _k, 'city': prefill_city",
+     'test_muhurat_the_raw_marker_attribute_is_exactly_tool_and_kind'),
+]

@@ -95,6 +95,10 @@
   <div class="p-4 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
     Couldn't geocode "{{ city }}" — showing Panchang for Mumbai instead. Try a different spelling or add the country name (e.g. "Delhi, India").
   </div>
+  {# #1402: `geocode` = the requested city failed and a fallback was served; `compute` = the fallback failed too. The route's word is re-checked here, so a stray value can only read as 'geocode'; never the city, which is typed text. This counts error RENDERS, not seekers: a reload re-fires it. Params are exactly {tool, kind}. #}
+  {% from "_analytics_event.html" import analytics_event %}
+  {% set _k = error_kind if error_kind in ['geocode', 'compute'] else 'geocode' %}
+  {{ analytics_event('tool_error', {'tool': 'panchang', 'kind': _k}) }}
   {% endif %}
 
   {% if p %}

@@ -1,337 +1,337 @@
-# Analyst report — 2026-11-21
+# Analyst report — 2026-11-25
 
-**Window W = 2026-10-22 → 2026-11-18** (28 days; the last 3 are excluded: GA4 lags 24–48h, GSC 2–3 days).
-**Previous window P = 2026-09-24 → 2026-10-21** (GSC trend files only).
-Everything below was read from this run's files. Anything I did not read is marked **not measured**.
+**Window for every number: W = 2026-10-26 → 2026-11-22** (28 days; the last 3 are excluded: GSC lags 2–3 days, GA4 24–48h).
+**Previous window P = 2026-09-28 → 2026-10-25** (GSC trend files only; GA4 has no previous window in this run).
+Everything below was read from this run's `/tmp/*.json` and `/tmp/measure/*.json`, from `gh` this run, from `measurements/index-status.json` (generated 2026-11-23T03:12Z) or from `festival_registry.py` this run. Anything not read is marked **not measured**.
 
 ## 0. Coverage — read before any number
 
 | file | window | coverage | truncated | note |
 |---|---|---|---|---|
-| `gsc-daily.json` (site, by date) | W | 100% of 29,632 impressions | no | 394 clicks |
-| `gsc-all.json` / `gsc-band.json` (`dimension: page`) | W | 100%; `rows_impressions` 29,715 vs property 29,632 (a page row can count a query once per page) | no | band printed 98 rows = 22,265 impressions = **75%** (`emitted_coverage_pct`) |
-| `gsc-trend-page.json` | W vs P | 100% of W stated; P coverage **not stated** | no | P page-sum = 11,867 impressions |
-| `gsc-trend-query.json` (`dimension: query`) | W vs P | **15%** (4,310 of 29,632) | no | Google withholds the rest. No conclusion about the whole band from it |
-| `ga4.json` (landing × channel) | W | 100% of 787 sessions (rows sum 789) | no | 93 distinct paths after folding query strings and trailing slashes (100 raw landings) |
-| `ga4-daily.json` | W | 28 of 28 days with traffic | – | daily sessions sum to 791, vs 787 in the landing report: two GA4 reports, not reconciled |
-| `ga4-events.json` | W | 17 event names, `events_total` 5,268 | no | `cta_click` exists only from 2026-11-03 (PR #688): partial history |
-| `ga4-anomalies.json` | W | 2 spikes, 5 watch days, 0 omitted | – | |
-| `gsc-discover.json` | W | 0 clicks, 0 impressions, `top_pages` empty | – | |
-| `verify-first.json`, `llm-usage.json` | W / last 7 days | – | – | `llm-usage.json` is 7 days, generated 2026-11-21T01:56Z |
-| GA4 previous window | – | **absent** | – | no `ga4-trend.json` in this run (#1205 open). Sessions and users against P are **not measured** |
-| `git log origin/main --since` | – | **1 commit** | – | the checkout is shallow (`git rev-parse --is-shallow-repository` = true; #666, #974). Concurrent ships below come from `gh pr list --state merged` instead |
+| `gsc-daily.json` (site, by date) | W | 100% of 31,021 impressions | no | 416 clicks |
+| `gsc-all.json` (`dimension: page`) | W | 100%; page rows sum 31,106 vs property 31,021 | no | 140 pages |
+| `gsc-band.json` (`dimension: page`) | W | whole fetch 100%; **printed 97 rows = 22,486 impressions = 72%** (`emitted_coverage_pct`) | no | band figures are the printed rows |
+| `gsc-trend-page.json` | W vs P | W 100%; P coverage **not stated** | no | page-row sums: W 31,106 impr / 416 clicks; P 12,802 impr / 129 clicks |
+| `gsc-trend-query.json` (`dimension: query`) | W vs P | **14%** (4,446 of 31,021 impressions visible; 967 query keys vs 254 in P) | no | Google withholds the rest. No conclusion about the whole band from it |
+| `ga4.json` (landing × channel) | W | 100% of 800 sessions (rows sum 801) | no | 163 rows, 105 raw landings, **97 distinct paths** after folding query strings and trailing slashes |
+| `ga4-daily.json` | W | 28 of 28 days with traffic | – | daily sessions sum **804**, daily users sum 707. Session totals do not reconcile (800 property / 801 rows / 804 daily / 802 `session_start`); each is quoted from its own file |
+| `ga4-events.json` | W | 21 event names, `events_total` 5,244 | no | `cta_click` exists only from 2026-11-03 (PR #688): partial history |
+| `ga4-anomalies.json` | W | 2 spikes + 4 watch days, 0 omitted | – | |
+| `gsc-discover.json` | W | **0 clicks, 0 impressions on all 28 days**, `top_pages` empty | – | a measured zero |
+| `verify-first.json` | W | 10 busiest pages by engaged sessions | – | |
+| `measure/llm-usage.json` | last 7 days, generated 2026-11-25T03:55Z | – | – | carries `fallbacks` and `fallback_reasons` |
+| `measurements/index-status.json` | generated 2026-11-23T03:12Z | 214 of 214 URLs inspected, 0 errors | – | same file as the 2026-11-24 report read; **no newer capture** |
+| GA4 previous window | – | **absent** | – | no `ga4-trend.json` in `/tmp`. Sessions and users against P are **not measured** (#1205, open, `needs-human-review`) |
+| `measurements/kundli-submissions.json` | – | **absent** | – | kundli GA4 ↔ server ratio **not computable** (#1409 wires the collector, open) |
+| `git log origin/main --since=2026-10-26` | – | 568 commits after `git fetch --unshallow` | – | the checkout was shallow (`git rev-parse --is-shallow-repository` = true) before the fetch |
 
 ## 1. The 6–20 position band against OBJECTIVE.md
 
-OBJECTIVE.md: *move the 6–20 band into the top 5 on the ten highest-impression queries.*
-**The objective cannot be measured as written.** The query export covers 15% of impressions, and in page mode a band `position` is the page's average across its queries. The table below is the page-level proxy.
+OBJECTIVE.md: *move the 6–20 band into the top 5 on the ten highest-impression queries.* **Not measurable as written**: the query export covers 14% of impressions, and in page mode a band `position` is the page's average across its queries. The tables are the page-level proxy.
 
 | metric (W, `dimension: page`) | value |
 |---|---|
-| pages with impressions | 139 |
-| pages at position 6–20 | **98**, 22,265 impressions (75% of the property's), 282 clicks, aggregate CTR **1.27%** |
-| of those, pages with ≥100 impressions | 29 |
-| pages at average position < 6 | 32 (most with a handful of impressions) |
-| of the top-10 pages by impressions, at average position ≤ 5 | **1** (`gochar-2026-planetary-transits`, 5.0) |
+| pages with impressions | 140 |
+| pages at average position < 6 | 33 (7,913 impressions) |
+| pages at position 6–20 (printed rows) | **97**, 22,486 impressions (72%), 295 clicks, aggregate CTR **1.31%** |
+| band pages with ≥ 100 impressions | 29; median CTR 1.35% |
+| top-10 pages by impressions at average position ≤ 5 | **1 of 10** (`gochar-2026-planetary-transits`, 5.0) |
 
-Band list, ranked by the file's `band_opportunity` (window W; position = page average):
+Band list, ranked by the file's `band_opportunity` (W; position = page average; P pos from `gsc-trend-page.json`):
 
 | # | page | impr | clicks | CTR | pos | P pos |
-|---|---|---|---|---|---|---|
-| 1 | /learn/rahu-mahadasha-ketu-antardasha/ | 3,751 | 62 | 1.65% | 6.4 | 7.5 |
-| 2 | /learn/debilitated-sun-career/ | 2,979 | 16 | **0.54%** | 6.6 | 6.1 |
-| 3 | /learn/sade-sati/ | 2,135 | 16 | **0.75%** | 6.6 | 6.2 |
-| 4 | /learn/jupiter-in-10th-house-career/ | 2,005 | 20 | 1.00% | 7.0 | 6.9 |
-| 5 | /learn/7th-lord-placement-marriage-guide/ | 1,478 | 14 | 0.95% | 7.3 | 7.7 |
-| 6 | /learn/planets-in-7th-house-marriage/ | 1,305 | 10 | 0.77% | 6.8 | 5.8 |
-| 7 | /learn/panch-mahapurush-yoga/ | 1,051 | 15 | 1.43% | 7.3 | 7.0 |
-| 8 | /learn/mangal-mars-in-vedic-astrology/ | 592 | 3 | **0.51%** | 7.6 | – |
-| 9 | /learn/10th-lord-in-6th-house-career/ | 809 | 23 | 2.84% | 6.8 | 7.0 |
-| 10 | /learn/manglik-dosh/ | 485 | 4 | 0.82% | 6.5 | – |
-| 11 | /learn/shukra-venus-in-vedic-astrology/ | 394 | 2 | **0.51%** | 6.1 | – |
-| 12 | /learn/saturn-in-10th-house-career/ | 437 | 6 | 1.37% | 7.7 | – |
+|---|---|---:|---:|---:|---:|---:|
+| 1 | /learn/debilitated-sun-career/ | 2,840 | 17 | **0.60%** | 6.5 | 6.3 |
+| 2 | /learn/rahu-mahadasha-ketu-antardasha/ | 3,307 | 59 | 1.78% | 6.5 | 7.1 |
+| 3 | /learn/jupiter-in-10th-house-career/ | 2,273 | 23 | 1.01% | 7.0 | 7.0 |
+| 4 | /learn/sade-sati/ | 1,971 | 18 | **0.91%** | 6.7 | 6.4 |
+| 5 | /learn/7th-lord-placement-marriage-guide/ | 1,634 | 16 | 0.98% | 7.1 | 7.6 |
+| 6 | /learn/planets-in-7th-house-marriage/ | 1,503 | 12 | **0.80%** | 6.8 | 5.8 |
+| 7 | /learn/panch-mahapurush-yoga/ | 1,089 | 17 | 1.56% | 7.2 | 6.9 |
+| 8 | /learn/mangal-mars-in-vedic-astrology/ | 643 | 3 | **0.47%** | 7.7 | 7.3 |
+| 9 | /learn/10th-lord-in-6th-house-career/ | 841 | 25 | 2.97% | 6.9 | 6.8 |
+| 10 | /learn/manglik-dosh/ | 497 | 4 | 0.80% | 6.8 | 7.3 |
+| 11 | /learn/saturn-in-10th-house-career/ | 520 | 7 | 1.35% | 7.5 | – |
+| 12 | /learn/vimshottari-dasha-explained/ | 442 | 3 | 0.68% | 7.6 | – |
 
-Top-10 pages by impressions (all positions, W): rahu-ketu 3,751 · debilitated-sun 2,979 · gochar-2026 2,873 · sade-sati 2,135 · jupiter-10th 2,005 · 7th-lord 1,478 · career-during-sade-sati 1,308 (pos 5.4, P 7.0) · planets-in-7th 1,305 · rahu-mahadasha-career-problems 1,113 (pos 5.8) · panch-mahapurush 1,051. **Nearest to top 5:** career-during-sade-sati (0.4 away) and career-problems (0.8 away). The other seven sit at 6.4–7.3.
+**Nearest to top 5** (top-10 by impressions): `career-during-sade-sati` 1,377 impr, pos **5.4** (P 6.7), CTR 1.89%; `rahu-mahadasha-career-problems` 1,213 impr, pos **5.7** (P 6.8), CTR 1.81%. `marriage-mahadasha-timing` 717 impr at 5.1 (P 6.6). `chronic-health-issues-kundli` 539 impr at 4.6.
 
-### CTR outliers (against the band's own rate: 1.27% aggregate; median of the 17 band pages with ≥300 impressions = 1.00%)
+### CTR outliers (≥ 300 impressions, position ≤ 8, CTR < 0.9% against the band's 1.31% aggregate)
 
 | page | impr | CTR | pos | reading |
+|---|---:|---:|---:|---|
+| /learn/gochar-2026-planetary-transits/ | 3,402 | **0.79%** | 5.0 | at position 5.0 the page earns 27 clicks; the band aggregate would give 45 |
+| /learn/debilitated-sun-career/ | 2,840 | 0.60% | 6.5 | largest gap among band pages: at 1.31% it would take ~37 clicks, not 17. Title/meta-shaped. #835 pending |
+| /learn/planets-in-7th-house-marriage/ | 1,503 | 0.80% | 6.8 | #1430 (closed 2026-11-24) covers the 7th-house pair |
+| /learn/mangal-mars-in-vedic-astrology/ | 643 | 0.47% | 7.7 | no open ship named in this run |
+| /learn/manglik-dosh/ | 497 | 0.80% | 6.8 | the #311 page; see §3 |
+| /learn/vimshottari-dasha-explained/ | 442 | 0.68% | 7.6 | #1072 pending |
+| /learn/shukra-venus-in-vedic-astrology/ | 406 | 0.49% | 6.0 | position 6.0, 2 clicks |
+
+Counter-case: `muhurat/griha-pravesh` 480 impr, 3.96% CTR at 6.5 (19 clicks); `numerology` converts at 3–4× the article band at the same position (194 impr, 10 clicks in the `/numerology*` group).
+
+## 2. Decay and rises — W vs P (`gsc-trend-page.json`, page-row sums)
+
+| page group | impr W | impr P | clicks W | clicks P |
+|---|---:|---:|---:|---:|
+| /learn/* articles | 29,127 | 11,486 | 363 | 105 |
+| /muhurat* | 584 | 163 | 23 | 10 |
+| /festivals* | 254 | 240 | 0 | 0 |
+| / | 217 | 120 | 9 | 8 |
+| /numerology* | 194 | 3 | 10 | 0 |
+| /rashifal* | 167 | 145 | 1 | 0 |
+| /matching* | 118 | 348 | 3 | 1 |
+| /learn/ (index) | 113 | 147 | 0 | 0 |
+| /panchang* | 101 | 67 | 2 | 1 |
+| /kundli* | 100 | 58 | 4 | 4 |
+
+| decay (impr ≥ 50 in P, position worse by ≥ 2) | impr W / P | pos W / P | clicks W / P |
+|---|---|---|---|
+| /matching | 118 / 348 | **10.1 / 4.4** | 3 / 1 |
+| /festivals | 254 / 240 | **39.3 / 25.8** | 0 / 0 |
+
+- `/matching` lost 5.7 positions and 66% of its impressions in W vs P. #508 (title/meta shortened, PR #696, merged 2026-11-03) is pending, scoreable 2026-12-04. Cause **not determined**: no per-page × per-day export (#953, #1076).
+- `/festivals` sits at position 39.3 with 0 clicks. The registry had no entry for 2026-11-22 → 2027-01-14 until #1326 (closed 2026-11-21).
+- Fallers with a small base: `mars-remedies` 125 → 47, `pushya-nakshatra` 128 → 68, `jupiter-remedies` 72 → 21, `the-9-grahas-overview` 60 → 10, `muhurat/vidyarambh` 92 → 58. **Too small to carry a conclusion.**
+
+Rises (impr W vs P): gochar-2026 73 → 3,402 (27 clicks vs 0, pos 6.0 → 5.0), jupiter-10th 362 → 2,273 (23 vs 1), debilitated-sun 1,504 → 2,840, 7th-lord 307 → 1,634, planets-in-7th 487 → 1,503, rahu-ketu 2,358 → 3,307 (59 vs 29 clicks), career-during-sade-sati 456 → 1,377 (pos 6.7 → 5.4; 26 vs 5 clicks), 10th-lord-in-6th 203 → 841 (25 vs 3 clicks). 37 pages are new in W, 25 are gone.
+
+## 3. Post-ship scores — closed issues with a `thesis:` and a `metric:`
+
+Rule: score once, when the window is clean (W starts 2026-10-26; clean means the deploy is on or before that date). Earlier analyst comments were read on every thread; **nothing was posted on any scored issue this run**, because no verdict changed.
+
+### 3a. Clean window — re-read this run
+
+| issue | deploy | predicted (`metric:`) | actual this run (W) | posted earlier | action |
+|---|---|---|---|---|---|
+| **#311** (four band pages' title/meta) | PR #334, 2026-10-13 | combined CTR **≥ 1.5%** on ≥ 1,500 impr, position within ±1 | **0.967%** (66 clicks / 6,823 impr); P 0.673% (21 / 3,121) | **MISS** (0.937%, 2026-11-13) | verdict unchanged, not re-posted |
+| **#276** (Rahu–Ketu dasha CTA) | PR #342, 2026-10-14 | pages/session **≥ 1.20** on ≥ 20 sessions | Organic **1.62 on 63 sessions**; all channels 1.56 on 70 | BAR MET, not attributable | unchanged, not re-posted |
+| **#329** (manglik-dosh checker link) | PR #344, 2026-10-14 | ≥ 1.30 on ≥ 10 Organic sessions | **5** Organic sessions (3.0 pages/session) | UNSCOREABLE: 4 vs 10 | scoring stopped, nothing posted |
+| **#1277** (`admin_sessions`) | PR #1278, 2026-11-20 | 0 on every day from 2026-11-12 | **0 on all 11 days 2026-11-12 → 11-22**; `returning.user_days` 88, `share_pct` 12.4, `status: ok` | MET (2026-11-21) | unchanged |
+
+**#311 is a miss and stays one.** Per page over W: rahu-mahadasha-career-problems 1.81% at 5.7 (P pos 6.8, so it moved 1.1 positions and the gain is not attributable to the title at unchanged position); debilitated-sun-career **0.60%** at 6.5; manglik-dosh **0.80%** at 6.8; jupiter-in-10th **1.01%** at 7.0. Three of the four are under 1.1% at positions 6.5–7.0. The reference sibling `rahu-mahadasha-ketu-antardasha` is 1.78% at 6.5, so the "sibling converts at 2.05%" premise did not persist.
+
+**#276:** 1.62 against a bar of 1.20 passes the stated bar and is still not attributable to the CTA. Other `/learn/*` Organic landings combined are **351 sessions at 1.83 pages/session**, above this page's 1.62. `cta_click` from this page to `/dasha` in W: **1** (`ga4-events.json`; `rahu-mahadasha-ketu-antardasha` → `/dasha`). The page took #342, #680, #830 and #1122 inside the same weeks.
+
+### 3b. Pending — window not clean, note already on the issue, timer written
+
+Every issue below already carries a "pending — scoreable from …" note (verified with `gh issue view`; none repeated). All 16 lines are in `/tmp/analyst-timers.txt`; merge dates re-read with `gh pr view` this run.
+
+| issue | thesis (short) | deploy (PR, merge) | scoreable from | note |
 |---|---|---|---|---|
-| debilitated-sun-career | 2,979 | 0.54% | 6.6 | second-largest band page at roughly half the band rate. At 1.0% it would take about 30 clicks, not 16. #835 (answer-first lede, merged 2026-11-13) targets it; pending |
-| sade-sati | 2,135 | 0.75% | 6.6 | #685 (title names the Moon signs, merged 2026-11-03); pending, scoreable 2026-12-04 |
-| mangal-mars-in-vedic-astrology | 592 | 0.51% | 7.6 | no issue found on it this run (not searched) |
-| shukra-venus-in-vedic-astrology | 394 | 0.51% | 6.1 | same |
-| 10th-lord-in-6th-house-career | 809 | 2.84% | 6.8 | the in-band reference at this position |
-| /muhurat/griha-pravesh | 381 | 5.51% | 6.1 | best CTR on the site |
+| #553 | panch-mahapurush: tool link, false matching claim removed | #615, 2026-10-31 | **2026-12-01** | floor ≥ 10 Organic sessions: W has 17 Organic landing sessions at 1.00 pages/session on the page, so the floor is reachable |
+| #426 | Saturn/Jupiter dates fixed; guard on sade-sati position | #673, 2026-11-02 | **2026-12-03** | guard only |
+| #570 | `cta_click` by from/to path | #688, 2026-11-03 | **2026-12-04** | 21 `cta_click` events in W (8 with `(not set)` from/to); partial history; not a score |
+| #685 | sade-sati title names Moon signs | #690, 2026-11-03 | **2026-12-04** | confound already noted on the thread: Google's first re-crawl was 2026-11-20 |
+| #508 | /matching title/meta shortened | #696, 2026-11-03 | **2026-12-04** | floor ≥ 300 impressions near the old position is **at risk**: W has 118 at 10.1 |
+| #518 | tool routes on learn articles; pages/session ≥ 2.0 | last slice #754, 2026-11-06 | **2026-12-07** | `/learn/*` article landings in W: 555 sessions at **1.62** pages/session (session-weighted, all channels). Not a score |
+| #735 | no GA4 sessions on `/admin*` | #877, 2026-11-11 | **2026-12-12** | W holds 10 `/admin/ops` sessions, last on 2026-11-09; **0 on the 11 days since 11-12** |
+| #835 | debilitated-sun 'which sign' lede | #940, 2026-11-13 | **2026-12-14** | page CTR 0.60% on 2,840 impressions in W |
+| #1075, #1073, #1074 | rahu-ketu headings; jupiter-10th sections; dated panchang titles | #1122 / #1126 / #1130, 2026-11-16 | **2026-12-17** | #1074 floor ≥ 150 impressions on dated panchang URLs is **at risk**: `/panchang*` is 101 impressions in all |
+| #1072, #1071 | vimshottari 'which mahadasha is best'; gochar-2027 | #1145 / #1148, 2026-11-17 | **2026-12-18** | "which mahadasha is best for career": 65 impr at 8.4, P 0 |
+| #1322, #1325, #1336 | muhurat finder and landing changes | #1323 / #1328 / #1337, 2026-11-21 | **2026-12-22** | `muhurat/griha-pravesh` W: 480 impr, 3.96% CTR, 29 sessions at 93% engaged (baseline). Three ships inside 24 h: no movement can be split. `muhurat_searched` is absent (§9, #1469) |
 
-### Decay (position worse by ≥1.5 with ≥100 impressions in W)
+### 3c. No traffic claim — nothing to score
+Issues whose metric is a grep, a count or "event appears" (#1217, #1226, #1229, #1115, #1236, #1208, #1326, #1332, #1400, #1408, #1411, #1416, #1178, #1175–#1177 and similar). #1093 cannot be scored (no export carries `page_location`; #1237 and #1448 track it).
 
-| page | impr W / P | pos W / P | clicks W / P | note |
-|---|---|---|---|---|
-| /matching | 121 / 340 | **9.9 / 4.4** | 4 / 0 | #1076 (onset undated; per-page × per-day export #953 not run). #508's title shipped 2026-11-03 |
-| /festivals | 281 / 251 | 37.3 / 28.2 | 0 / 0 | far outside the band |
+## 4. Confounds
 
-Pages gone from GSC in W (P → W impressions): ketu-in-vedic-astrology 57 → 0, griha-pravesh-muhurat-2026-2027 33 → 0. The index file reads "Crawled - currently not indexed" for the second (last crawl 2026-08-09), yet GA4 shows **14 landings on it in W**. Not explained.
-
-## 2. Scores — issues closed in the last 45 days with a `thesis:` and a `metric:`
-
-Rule: score once, when the window starts on or after the deploy date; otherwise one "pending" note and a timer. Today is 2026-11-21, so the first date a window can start is 2026-10-21: only issues deployed on or before it can score.
-
-### Scored on earlier runs (verdicts re-read this run, nothing re-posted: none moved)
-
-| issue | thesis | predicted | actual (earlier clean window) | verdict | W read this run |
-|---|---|---|---|---|---|
-| **#311** title/meta rewrite on four band pages | CTR rises at unchanged position | ≥ 1.5% combined on ≥ 1,500 impr | 0.937% (53 / 5,658) | **MISS** | same four pages in W: 62 clicks / 6,582 impr = **0.94%**. Unchanged |
-| **#276** /dasha CTA on the Rahu–Ketu article | pages/session rises | ≥ 1.20 | Organic 1.64 | bar met, not attributable to the CTA | Organic 1.64 (66 sessions); all channels 1.54 (78). Unchanged |
-| **#329** Manglik checker link | pages/session rises | ≥ 1.30 on ≥ 10 sessions | **3 vs floor 10**: unscoreable | stopped | /learn/manglik-dosh: 8 sessions (4 Organic), pages/session 1.00. Floor still not reached |
-
-**#311 is a miss and stays one.** The title rewrite alone did not reach its bar on three of four pages. Same shape now: debilitated-sun 0.54%, manglik-dosh 0.82%.
-
-### Posted this run
-
-| issue | comment | why |
+| confound | read | consequence |
 |---|---|---|
-| **#1277** (returning users and `admin_sessions` in the daily export) | **MET**, posted once | `returning.user_days` = 84, status ok, share 11.9%. `admin_sessions` = 0 on all 7 days 2026-11-12 → 2026-11-18. The 15 admin sessions in W are all dated 2026-10-23 → 2026-11-09 (pre-#735) |
-| **#1322** (muhurat finder, merged 2026-11-21) | "pending — scoreable from 2026-12-22", posted once | no note existed. Timer written |
+| Concurrent ships in W | `git log origin/main --since=2026-10-26`: **568 commits** after unshallowing. The ten largest pages were each edited repeatedly (#940, #1122, #1126, #690, #673 and others named in the earlier report) | no single ship is attributable for the W vs P rise; per-page deltas are scored only on each issue's own window |
+| Google has not re-crawled many edits | `index-status.json` 2026-11-23: **168 of 214** URLs "changed after Google's last crawl" | W position and CTR on edited pages partly predate Google seeing the edit |
+| Seasonality | Dhanteras 2026-11-06, Diwali 2026-11-08, Chhath 2026-11-15 fall in W (`festival_registry.py`). None of the top-10 pages is a festival page; `gochar-2026` is time-bound | seasonal share **not determined**: no year-earlier window |
+| Page working? | `verify-production.yml`, last 100 runs (2026-11-17T09:41Z → 2026-11-25T02:27Z): 93 success, **2 failure** (both 2026-11-17: 13:27Z, 18:12Z), 5 cancelled. No failure in the last 7 days. `llm-usage.json`: **0 fallbacks** in 7 days | pages were up for W except possibly on 2026-11-17 (the failure causes were not read) |
+| Sample size | most page deltas rest on < 30 clicks | #311, #329, #1074 and #508 are at or under their own floors |
+| Automated traffic | §5 | Direct is 281 of 801 sessions at 19% engaged: raw sessions overstate people |
 
-### Pending (note already on the issue; nothing posted; timer line written for every one)
+## 5. Lever 1 — Growth against the previous window
 
-| issue | deploy (merge) | scoreable from | read this run, W (pre-deploy or mixed: **not a score**) |
-|---|---|---|---|
-| #553 | 2026-10-31 | 2026-12-01 | panch-mahapurush-yoga: 20 sessions, pages/session 1.00 |
-| #426 | 2026-11-02 | 2026-12-03 | guard: sade-sati pos 6.6 (P 6.2) |
-| #508 | 2026-11-03 | 2026-12-04 | /matching 121 impr at pos 9.9: its pass bar needs ≥300 impr within ±1.5 of 4.3. On today's numbers this reads INCONCLUSIVE. Same page as #1076 |
-| #685 | 2026-11-03 | 2026-12-04 | sade-sati CTR 0.75% (16 / 2,135) vs 0.63% baseline: pass bar ≥1.2%. W holds 15 post-deploy days, so mixed |
-| #570 | 2026-11-03 | 2026-12-04 | `cta_click` = 18 in W (see §5). Window starts before 2026-12-01: partial history |
-| #518 | 2026-11-06 | 2026-12-07 | – |
-| #528 | 2026-11-09 | 2026-12-10 | – |
-| #735 | 2026-11-11 | 2026-12-12 | 0 admin-landing sessions on every day from 2026-11-12 (7 days only) |
-| #835 | 2026-11-13 | 2026-12-14 | "sun debilitated" query cluster: 1,085 impr, 2 clicks, weighted pos 7.4 (P: 3 impr) |
-| #1066, #1093 | 2026-11-15 | 2026-12-16 | **cannot score**: no export carries `page_location` (#1237) |
-| #1073 / #1074 / #1075 | 2026-11-16 | 2026-12-17 | #1073 queries: 51 rows, 426 impr, 1 click, pos 9.6. #1075: 51 rows, 986 impr, 23 clicks, pos 7.3. #1074 floor (≥150 impr) at risk: `/panchang*` pages = 96 impr |
-| #1067, #1068, #1072, #1175 | 2026-11-17 | 2026-12-18 | #1068 also needs a server-side count (#1272). #1072: "which mahadasha" queries 75 impr, 0 clicks, pos 7.7 |
-| #1071 | 2026-11-17 | 2026-12-18 (guard), **2027-02-28** (main read) | `gochar-2027` index state: "URL is unknown to Google" |
-| #1217, #1226, #1229 | 2026-11-18 | 2026-12-19 | – |
-| #1069 | 2026-11-19 | 2026-12-20 | – |
-| #1322 | 2026-11-21 | 2026-12-22 | muhurat/griha-pravesh: 32 sessions, 30 engaged, bounce 6%, 381 impr at 6.1 |
-| #1115 | – | – | **NOT MET, blocked on #1205**: this run has one window, not two. No timer (it waits on #1205, not a date) |
+| metric | W (2026-10-26 → 11-22) | P (2026-09-28 → 10-25) | change | source |
+|---|---:|---:|---:|---|
+| GSC impressions (page-row sum) | 31,106 | 12,802 | **+143%** | `gsc-trend-page.json`; W property total 31,021 |
+| GSC clicks (page-row sum) | 416 | 129 | **+222%** | same |
+| GA4 sessions (daily sum) | 804 | **not measured** | – | no previous GA4 window (#1205) |
+| GA4 active users (daily sum, not people) | 707 | **not measured** | – | |
+| Organic Search sessions | 514 | not measured | – | 57% engaged, 153 s per session |
+| Direct sessions | 281 | not measured | – | 19% engaged, 53 s per session |
+| AI Assistant sessions | 5 | not measured | – | 20% engaged |
+| Returning user-days | 88 (**12.4%**) | not measured | – | `ga4-daily.json`, `status: ok` |
+| `admin_sessions` | 10 in W, all 2026-10-26 → 11-09 | – | – | **0 on every day from 2026-11-12** (#735): no internal-traffic leak |
+| Discover | **0 clicks, 0 impressions** | – | – | measured zero, all 28 days |
 
-Not scoreable from GA4/GSC (structural or deterministic metrics; noted once earlier): #843, #1176, #1177, #1178, #838, #856, #978, #959, and the infra issues. Not re-read this run.
+### Inside W, by 7-day block (`gsc-daily.json`, `ga4-daily.json`)
 
-**Misses this run: #311 (above). No new hit besides #1277.** The two band-page title/lede ships (#685, #835) have no verdict yet. Their pages' CTR in W reads 0.75% and 0.54%, both under the band's 1.27%.
+| block | impressions | clicks | sessions | active users (sum) |
+|---|---:|---:|---:|---:|
+| 10-26 → 11-01 | 7,349 | 88 | 157 | 135 |
+| 11-02 → 11-08 | 7,740 | 106 | 215 | 196 |
+| 11-09 → 11-15 | 9,185 | 145 | 281 | 249 |
+| 11-16 → 11-22 | 6,747 | **77** | 151 | 127 |
 
-## 3. Confounds, named before any delta
+The last block is **27% lower on impressions and 47% lower on clicks** than the block before, and 46% lower on sessions. Daily GSC impressions 11-16 → 11-22: 908, 811, 798, 815, 1,001, 1,177, 1,237 (11-11 → 11-14 were 1,337–1,433); average position stayed 6.0–7.4. **The last four days are rising** and the 11-22 reading is within 14% of the 11-14 level. Cause **not determined** (post-Diwali/Chhath calendar, a re-rank, or late GSC data). A week is not a trend; Discover is 0 throughout, so it is not a Discover loss.
 
-| confound | state |
-|---|---|
-| Concurrent ships in W | Git history unreadable (shallow). From `gh pr list --state merged`: **many.** Page content: #940 debilitated-sun (11-13), #1005/#1009/#1011 learn corrections (11-14), #1099/#1125 gochar-2026 dates rewritten (11-15/16), #1122 rahu-ketu headings, #1126 jupiter-10th sections (11-16), #1145 vimshottari (11-17). Site-wide: #1179 inbound links (11-17), #1182 nav, #1197 308 redirects (11-17), #1202 meta ≤160 chars (11-18). **Three or more landed on the top pages inside W, so no movement on a top-10 page can be attributed to one ship** |
-| Google has not re-crawled the edits | `index-status.json` (2026-11-19T20:05Z) lists the ten largest pages as "changed after Google's last crawl" (rahu-ketu: changed 11-16T04:15Z, last crawl 11-08T08:35Z). Their W position and CTR therefore mostly predate Google seeing the edits |
-| Seasonality | Dhanteras 11-06, Diwali 11-08, Chhath 11-15 fall in W (`festival_registry.py`). None of the top-10 pages is a festival page. No year-earlier window exists. Seasonal share: **not determined** |
-| Was the page working? | `verify-production.yml`: **30 of 30 runs success**, 2026-11-18T17:15Z → 2026-11-21T01:24Z. That covers only the last 3 days, not W. #266-style Groq failures: see §6 (errors not measured) |
-| Sample size | 394 clicks in 28 days. A page with <100 impressions or <10 clicks does not carry a conclusion. Said where it applies |
-| Automated traffic | on the two spike days and two watch days named in §4, 19 of 50, 21 of 35 sessions had zero engagement. The share across all of Direct is not measured. I read Organic Search as readers |
+**Which pages drive the change (W vs P, GSC page rows):** `/learn/*` articles are 29,127 of the 31,106 W impressions and 363 of 416 clicks. The gain sits in articles whose impressions grew 2–45×: gochar-2026 (+3,329), jupiter-10th (+1,911), debilitated-sun (+1,336), 7th-lord (+1,327), planets-in-7th (+1,016), rahu-ketu (+949), career-during-sade-sati (+921). **Structural vs seasonal:** a ranking-footprint gain on articles at similar or better position, with one time-bound exception: gochar-2026 is 3,329 of the 18,304 page-row impression gain (18%), and its engaged rate is 35% at 26 s (§6). A year-earlier window does not exist, so the split is not determined further.
 
-## 4. Lever 1 — Growth
+### Anomaly days — every day in `spikes` and `watch` (`ga4-anomalies.json`), against search clicks that day
 
-### Site level, W
+| date | tier | active users (median 22) | source and landing | engagement | GSC clicks | Discover | reading |
+|---|---|---:|---|---|---:|---:|---|
+| 2026-11-06 | spike | 57 | (direct) top row `/rashifal/aries` 6 sessions at 17% engaged, 3.5 s; also `/r/zzzzzz`, `/kundli`; google/organic `rahu-mahadasha-career-problems` 4 at 50% | 19 of 50 sessions zero-engaged: "(not set)/desktop/United States" 10 at 0%, Chrome/desktop/US 6 | 17 | 0 | **mixed: automated traffic, not growth.** The organic rows are readers |
+| 2026-11-15 | spike | 51 | google/organic `rahu-mahadasha-ketu-antardasha` 6 at 83%, 242 s; (direct) `/panchang/2026-12-02` 5 sessions at 0%, 1.6 s; `/kundli` 3 at 0% | Chrome/mobile/**China** 9 sessions at 0%; Chrome/mobile/India 17 at 59% | 14 | 0 | organic part real; the direct part is automated (China cohort, a future-dated panchang URL). Search clicks flat; **not Discover** |
+| 2026-11-10 | watch | 40 | (direct) `/matching` 5 at 0%, `/numerology` 4; bing/organic `/numerology` 4 at 0% | 21 of 35 sessions zero-engaged: "(not set)/desktop/US" 9, Chrome/desktop/US 8 | 14 | 0 | **automated** (same cohort as 11-06) |
+| 2026-11-12 | watch | 34 | google/organic `/muhurat/griha-pravesh` 4 at 100%, 205 s | Chrome/mobile/India 14 at 71% | 24 | 0 | real readers |
+| 2026-11-09 | watch | 32 | google/organic `jupiter-in-10th` 5, `rahu-ketu` 5, `griha-pravesh` 5 | Chrome/mobile/India 15 at 53% | 21 | 0 | real readers |
+| 2026-11-14 | watch | 32 | google/organic `rahu-mahadasha-ketu-antardasha` 10 at 40%; `chronic-health-issues-kundli` 5 at 20% | Chrome/mobile/India 11 at 82%; Chrome/mobile/**Indonesia** 9 at 67% | 23 | 0 | real readers |
 
-| series | W total | weekly, wk1 → wk4 | first 14 days → last 14 days |
-|---|---|---|---|
-| GSC impressions | 29,632 | 5,844 → 7,842 → 8,228 → 7,718 | 13,686 → 15,946 (+17%) |
-| GSC clicks | 394 | 62 → 93 → 127 → 112 | 155 → 239 (+54%) |
-| GA4 sessions (daily report) | 791 | 161 → 153 → 252 → 225 | 314 → 477 (+52%) |
-| GA4 active users (sum of daily) | 707 | 137 → 141 → 228 → 201 | – |
-| new users (sum of daily) / returning user-days | 661 / 84 | returning 24, 17, 26, 17 | – |
-| GSC average position | 6.0–7.5 daily | stable | – |
+A recurring cohort ("(not set)" or Chrome, desktop, United States, 0% engaged) appears on 2026-11-06 and 11-10. **Its window-wide size is not measured** (#1364, open, `qa-pass`).
 
-Weeks: wk1 10-22 → 10-28, wk2 10-29 → 11-04, wk3 11-05 → 11-11, wk4 11-12 → 11-18.
+## 6. Lever 2 — Where time is spent (`verify-first.json`, `ga4.json`, W)
 
-### Against P (GSC only; `gsc-trend-page.json`, P coverage not stated)
+| page | sessions | engaged | engaged rate | avg engagement s | GSC impr | pos |
+|---|---:|---:|---:|---:|---:|---:|
+| /learn/rahu-mahadasha-ketu-antardasha | 70 | 42 | 60% | 131 | 3,308 | 6.5 |
+| / | 60 | 35 | 58% | **258** | 218 | 5.7 |
+| /muhurat/griha-pravesh | 29 | 27 | **93%** | 88 | 480 | 6.5 |
+| /learn/10th-lord-in-6th-house-career | 30 | 19 | 63% | 167 | 841 | 6.9 |
+| /learn/gochar-2026-planetary-transits | 48 | 17 | **35%** | **26** | 3,402 | 5.0 |
+| /learn/sade-sati | 25 | 15 | 60% | 251 | 1,971 | 6.7 |
+| /learn/career-during-sade-sati | 31 | 15 | 48% | 215 | 1,377 | 5.4 |
+| /learn/rahu-mahadasha-career-problems | 27 | 14 | 52% | **259** | 1,213 | 5.7 |
+| /learn/debilitated-sun-career | 23 | 11 | 48% | 234 | 2,840 | 6.5 |
+| /learn/jupiter-in-10th-house-career | 26 | 10 | 38% | 58 | 2,273 | 7.0 |
 
-| | P (09-24 → 10-21) | W | change |
-|---|---|---|---|
-| page-summed impressions | 11,867 | 29,715 | **+150%** |
-| page-summed clicks | 119 | 394 | **+231%** |
-| /learn/* impressions / clicks | 10,615 / 100 | 27,805 / 337 | 94% of W impressions |
-| /muhurat* | 147 / 8 | 470 / 25 | |
-| / (home) | 105 / 6 | 213 / 10 | |
-| /rashifal* | 101 / 0 | 208 / 1 | |
-| /panchang* | 93 / 1 | 96 / 2 | flat |
-| GA4 sessions / users vs P | **not measured** (#1205) | 787 sessions | |
+Whole property (`ga4.json`): 801 session rows, 347 engaged (43%), average engagement **118 s** per session. By channel: Organic Search 514 sessions at 57% engaged, 153 s; Direct 281 at 19%, 53 s; AI Assistant 5; Unassigned 1.
 
-**Drivers of the change (page, impressions P → W):** gochar-2026 10 → 2,873 (position 6.5 → 5.0; 26 clicks vs 0), debilitated-sun 1,245 → 2,979, rahu-ketu 2,019 → 3,751 (clicks 26 → 62), jupiter-10th 379 → 2,005, career-during-sade-sati 386 → 1,308 (position 7.0 → 5.4; clicks 4 → 23), 10th-lord-in-6th 174 → 809, 7th-lord 274 → 1,478. **Structural vs seasonal: not determined.** The gain is concentrated in /learn pages whose impressions grew 2–280×, which looks like Google surfacing pages it had under-served, not a festival effect. The 2027 comparison does not exist.
+Pages that get traffic and do not hold it (folded landings, W):
 
-**The tail is falling.** Daily impressions 11-14 → 11-18: 1,337 → 1,110 → 908 → 811 → 798, and clicks 23 → 14 → 9 → 10 → 10, at stable position (6.0–7.4). Cause **not determined** (a post-Diwali/Chhath fade, a re-rank, or the late-GSC-data effect). The next run's daily rows settle whether it held.
+| landing | sessions | engaged | avg engagement s | channels | reading |
+|---|---:|---:|---:|---|---|
+| /learn/chronic-health-issues-kundli | 21 | 4 (19%) | **8** | Organic 16 | position 4.6, 539 impressions, 13 clicks; readers leave at once. Cause **not determined** |
+| /learn/gochar-2026-planetary-transits | 48 | 17 (35%) | 26 | Organic 28 | the page gaining most from search is the one readers abandon fastest among the top five |
+| /learn/7th-lord-placement-marriage-guide | 28 | 10 | 41 | – | 1.11 pages/session |
+| /learn/panch-mahapurush-yoga | 24 | 10 | 38 | Organic 17 | 1.00 pages/session |
+| /learn/jupiter-in-10th-house-career | 26 | 10 | 58 | – | 1.27 pages/session |
 
-### Organic vs other (`ga4.json`, W, sessions summed by channel)
+Tool funnel (W, `ga4-events.json`, event counts not users; `session_start` 802):
 
-| channel | sessions | engaged rate | avg engagement s |
-|---|---|---|---|
-| Organic Search | **480** (61%) | 58% | 143 |
-| Direct | 303 (38%) | **19%** | 45 |
-| AI Assistant | 5 | 40% | 157 |
-| Unassigned | 1 | 0% | 186 |
-| all | 789 | 43% | 105 |
+| step | count | note |
+|---|---:|---|
+| `page_view` | 1,477 | 1.84 per session |
+| `feature_view` | 704 | |
+| `form_start` | 109 | |
+| `kundli_generated` | 52 | 48% of `form_start`; may count re-renders on some paths, read as an upper bound |
+| `ask_answered` | 126 | the one high-volume generative path |
+| `tool_submitted` | 27 | #1226 |
+| `cta_click` | **21** (2.6% of sessions) | 13 with a named from/to, 8 `(not set)`. From `/learn/*` to tools: `/` 5, `/kundli` 3, `/dasha` 2, `/kaal-sarp-check` 1, `/numerology` 1, `/sade-sati-check` 1. Partial history (from 2026-11-03). No impression event, so low click rate vs low exposure is not determinable |
+| `matching_completed` | 3 | |
+| `dosha_check_completed` | 2 | |
+| `subscribe_completed` | 1 | |
+| `feedback_sent` | 2 | |
+| `muhurat_searched` | **absent** | not among the 21 names; filed as **#1469** this run (§9) |
 
-The north star (organic sessions) is **480 in W**. GSC clicks are 394; the gap is Bing and other engines, which GSC does not see. Direct's 19% engagement is the lowest on the site. I did not measure how much of it is automated; §4 spike rows suggest a large share.
+Kundli GA4 ↔ server ratio: **not computable** (`measurements/kundli-submissions.json` does not exist in this run). I divided nothing by `totals.fresh_generations`.
 
-### Every day in `spikes` and `watch` — source named
+## 7. Lever 3 — Errors per route
 
-| date | active users (median 22) | tier | source | engagement | GSC clicks that day | Discover | verdict |
-|---|---|---|---|---|---|---|---|
-| 2026-11-06 | 57 | spike | (direct)/(none) landing /rashifal/aries (6), /kundli, /numerology, /r/zzzzzz; browser "(not set)" desktop US 10 sessions, Chrome desktop US 6 | **19 of 50 sessions zero engagement**; the rest look like readers | 17 | 0 | **mixed, part automated.** Not growth |
-| 2026-11-15 | 51 | spike | google/organic /learn/rahu-mahadasha-ketu-antardasha/ (6 sessions, 83% engaged, 242s), Chrome mobile India 17; **plus Chrome mobile China 9 sessions, 0% engaged**; direct /panchang/2026-12-02 5 sessions, 1.6s | – | 14 | 0 | **part real readers, part automated** (the China and /panchang/2026-12-02 rows have no engagement). GSC clicks were not high, so this is not a search jump |
-| 2026-11-10 | 40 | watch | direct /matching (5), /numerology (4), bing/organic /numerology (4); "(not set)" desktop US 9, Chrome desktop US 8 | **21 of 35 zero engagement** | 14 | 0 | **automated**, not growth |
-| 2026-10-23 | 34 | watch | direct /, /kundli, /matching, /numerology (3–6 each, 0–33% engaged, 3–6s); **Chrome mobile US 26 sessions, 12% engaged** | low | 7 | 0 | **automated-looking**, not growth |
-| 2026-11-12 | 34 | watch | google/organic /muhurat/griha-pravesh (4, 100% engaged, 205s), India mobile 14 | real | 24 | 0 | **real search readers** |
-| 2026-11-09 | 32 | watch | google/organic jupiter-10th (5), rahu-ketu (5), griha-pravesh (5), 10th-lord (3, 420s) | real | 21 | 0 | **real search readers** |
-| 2026-11-14 | 32 | watch | google/organic rahu-ketu (10), chronic-health (5); Chrome mobile India 11, Indonesia 9 | real | 23 | 0 | **real search readers** |
-
-**Google Discover: 0 clicks, 0 impressions on all 28 days, no top pages.** The anomaly file's hint that organic with flat GSC clicks "usually means Discover" does not apply. GSC clicks on the three organic-led watch days were 21, 24 and 23 against a W median I did not compute, and Discover is 0 on each, so I read them as ordinary search.
-
-| series | value (W) |
-|---|---|
-| returning users (user-days, `returning.status: ok`) | **84 of 707 = 11.9%** (user-days, not people) |
-| `admin_sessions`, days from 2026-11-12 (#735) | **0 on all 7 days.** No internal-traffic leak after the fix. The 15 sessions in W are 10-23 (1), 10-24 (1), 10-25 (3), 10-26 (2), 10-28 (1), 11-04 (2), 11-05 (3), 11-09 (2) |
-
-## 5. Lever 2 — Where time is spent (`verify-first.json`, `ga4.json`, W)
-
-| page | sessions | engaged | engaged rate | avg engagement s | GSC impr / clicks / pos |
-|---|---|---|---|---|---|
-| /learn/rahu-mahadasha-ketu-antardasha | 78 | 47 | 60% | 143 | 3,752 / 62 / 6.4 |
-| / | 69 | 41 | 59% | **221** | 214 / 10 / 5.9 |
-| /muhurat/griha-pravesh | 32 | 30 | **94%** | 89 | 381 / 21 / 6.1 |
-| /learn/gochar-2026-planetary-transits | 43 | 17 | 40% | **29** | 2,873 / 26 / 5.0 |
-| /learn/rahu-mahadasha-career-problems | 25 | 16 | 64% | **289** | 1,113 / 22 / 5.8 |
-| /learn/10th-lord-in-6th-house-career | 27 | 14 | 52% | 95 | 809 / 23 / 6.8 |
-| /learn/sade-sati | 22 | 12 | 55% | 225 | 2,135 / 16 / 6.6 |
-| /learn/career-during-sade-sati | 26 | 12 | 46% | 217 | 1,308 / 23 / 5.4 |
-| /learn/7th-lord-placement-marriage-guide | 27 | 11 | 41% | **57** | 1,478 / 14 / 7.3 |
-| /learn/debilitated-sun-career | 24 | 10 | 42% | 223 | 2,979 / 16 / 6.6 |
-
-- Longest reads: career-problems 289s, sade-sati 225s, debilitated-sun 223s, home 221s.
-- Shortest on a large page: gochar-2026 at **29s and 40% engaged** on 43 sessions (the site's third-largest page, position 5.0). Its dates were rewritten 11-15/16, inside W.
-- Tool pages in the landing list (sessions, bounce weighted by sessions): /numerology 23 (65%), /kundli 22 (68%), /matching 17 (82%). Pages per session: /numerology 1.13, /kundli 1.68, /matching 1.00.
-- Learn pages are 520 of 789 landing-row sessions (66%).
-- Home is the deepest page: pages/session 4.23.
-
-### Event counts (`ga4-events.json`, W)
-
-| event | count | caveat |
+| source | window | reading |
 |---|---|---|
-| page_view | 1,374 | |
-| ask_answered | 130 | counted before #1157's fix of per-render firing (2026-11-17) for most of W: inflated |
-| form_start | 128 | totals across several forms |
-| kundli_generated | 54 | same: over-counted re-renders until 2026-11-17 |
-| cta_click | **18** | exists from 2026-11-03; 8 of the 18 carry `(not set)` for both paths. The 10 with paths: sade-sati → /kundli 2, career-during-sade-sati → / 2, others 1 each (kaal-sarp-dosh → /kaal-sarp-check, name-numerology → /numerology, two Rahu pages → /dasha, saturn-in-10th → /kundli, krittika → /) |
-| subscribe_completed | 1 | |
-| form_submit | 1 | reads as instrumentation, not behaviour |
-| feedback_sent | 2 | |
-| feature_view 783, user_identified 798 | – | dropped from collection on 2026-11-19 (#1234); W counts are partly gone going forward |
+| `llm-usage.json` | last 7 days, generated 2026-11-25T03:55Z | 150 calls, 108 cache hits (**72%**), 42 misses. Input 135,871 tokens, output 25,353. **`fallbacks`: 0; `fallback_reasons`: {}** |
+| peak day | `peak_day_tokens` 6,733 on 2026-11-22; `peak_day_measured_tokens` **42,994** on 2026-11-23 | 42,994 is 21.5% of the 200,000 TPD the repo cites. #925 (open) says a peak day used 83%; this file does not reproduce that, and I did not read the collector to say which field is the day's total |
+| `verify-production.yml` | last 100 runs, 2026-11-17T09:41Z → 11-25T02:27Z | 93 success, 2 failure (both 2026-11-17), 5 cancelled |
 
-**No step-through rate can be computed.** `form_start` and `kundli_generated` are totals across forms, the second inflated. #1070 and #1272 are the open work.
+| route | calls | hits | hit rate | input tokens | tokens per measured call | errors / fallbacks | tracked by |
+|---|---:|---:|---:|---:|---:|---|---|
+| natal | 86 | 77 | 89% | 59,417 | 6,601 (9 measured) | 0 | – |
+| ask | 26 | 0 | **0%** | 63,045 | 2,424 (26 measured) | 0 | per-visitor by nature; nothing here says it is over budget |
+| rashifal | 28 | 28 | 100% | not measured | not measured | 0 | nightly job (#515) serves it from cache |
+| matching | 5 | 0 | 0% | 9,352 | 1,870 | 0 | – |
+| monthly | 3 | 2 | 66% | 2,116 | 2,116 (1 measured) | 0 | – |
+| today | 2 | 1 | 50% | 1,941 | 1,941 (1 measured) | 0 | – |
 
-## 6. Lever 3 — Errors
+No route has a recorded LLM error or fallback in 7 days. Still **not measured**: HTTP 5xx per non-LLM route (the file records LLM fallbacks only) and the cause of the two 2026-11-17 `verify-production` failures.
 
-| route (7 days to 2026-11-21, `llm-usage.json`) | calls | cache hits | hit rate | measured calls | tokens/call |
-|---|---|---|---|---|---|
-| natal | 110 | 101 | 91% | 9 | 6,499 |
-| rashifal | 28 | 28 | 100% | 0 | **not measured** |
-| ask | 25 | 0 | **0%** | 25 | 2,067 |
-| today | 4 | 1 | 25% | 3 | 1,921 |
-| matching | 1 | 0 | 0% | 1 | 1,929 |
-| monthly | 1 | 0 | 0% | 1 | 2,075 |
+## 8. Lever 4 — Search demand (partial: query export covers 14% of impressions)
 
-- Totals: 169 calls, 130 hits (76%), 119,962 input + 21,737 output tokens.
-- **Errors and fallbacks per route: not measured.** `llm-usage.json` carries no error or fallback key, so I cannot name a route with errors. Tracked by **#1208** (open). Not re-filed.
-- Production health: `verify-production.yml` 30 of 30 recent runs succeeded (2026-11-18T17:15Z → 2026-11-21T01:24Z).
-- `peak_day_tokens` 6,529 and `peak_day_measured_tokens` 43,421 both name 2026-11-18. I did not read `collect_llm_usage.py`, so I cannot say which one is the day's total. #925 (open) tracks the Groq daily budget.
-- `ask` has 0% cache hits across 25 calls: expected for personal questions; it is the route that costs most per visit.
+Themes from `gsc-trend-query.json`, W vs P. **The export has no page column**, so "the page" below is named by topic, not measured. #1432 (query × page export) is open with halves #1436 (script, `qa-pass`) and #1437 (workflow).
 
-## 7. Lever 4 — Search demand
+| theme (W, visible queries only) | impressions W (P) | clicks | pos W (P) | existing page | note |
+|---|---:|---:|---:|---|---|
+| "sun debilitated in which sign" family: 332 + 153 + 70 + 68 (+ "sun debilitation degree" 57, "debilitated sun" 53) | 623 for the first four (P 92); 733 with the last two | 2 | 5.8–8.8 | `/learn/debilitated-sun-career/` | page CTR 0.60% on 2,840 impressions. #835 pending |
+| "rahu mahadasha ketu antardasha" family: 350, 61, 46 for three wordings | 457 (P 344) | 12 for the head query | 6.3–10.2 (P 9.1–16.4) | `/learn/rahu-mahadasha-ketu-antardasha/` | every listed wording gained 2–6 positions vs P |
+| "jupiter in 10th house", "guru in 10th house" | 123 + 94 (P 0) | 0 | 8.7–10.9 | `/learn/jupiter-in-10th-house-career/` | new in W; #1073 pending |
+| "10th lord in 6th house" | 89 (P 11) | 1 | 8.7 (8.7) | `/learn/10th-lord-in-6th-house-career/` | |
+| "which mahadasha is best for career" | 65 (P 0) | 0 | 8.4 | `/learn/vimshottari-dasha-explained/` (#1072) | pending |
+| "yes" | 121 (P 10) | 0 | 3.8 | **not determined** | a one-word query: no page can be named. Not a theme to act on |
 
-Query view covers **15%** (4,310 impressions of 29,632). It does not say which page serves a query. Themes by regex on query text; the page named is the one I know of, **not measured**.
+- **Queries with no page: not determinable from this export.** I name no new page. Each new cluster has a page and a pending ship.
+- `/matching`: 348 → 118 impressions, position 4.4 → 10.1 (§2). `/festivals` sits at 39.3.
+- Cannibalisation check: `7th-lord-placement-marriage-guide` (1,634 impr, 7.1) and `planets-in-7th-house-marriage` (1,503 impr, 6.8) share a theme; #1430 covered the pair and is closed. I do not propose a new page.
 
-| theme | queries | impr (W) | clicks | weighted pos | P impr | existing page |
-|---|---|---|---|---|---|---|
-| sun debilitated (which sign / libra / degree / meaning) | 34 | **1,085** | **2** | 7.4 | 3 | /learn/debilitated-sun-career (0.54% CTR; #835 pending) |
-| rahu mahadasha / ketu antardasha | 51 | 986 | 23 | 7.3 | 561 | /learn/rahu-mahadasha-ketu-antardasha (#1075 pending) |
-| jupiter / guru in 10th house | 51 | 426 | **1** | **9.6** | 1 | /learn/jupiter-in-10th-house-career (#1073 pending) |
-| 10th lord in 6th house | 6 | 157 | 2 | 8.6 | 0 | /learn/10th-lord-in-6th-house-career |
-| which mahadasha is best for career | 7 | 75 | 0 | 7.7 | 0 | /learn/vimshottari-dasha-explained (#1072 pending) |
-| manglik / mangal dosha | 47 | 94 | 1 | 10.3 | 79 | /learn/manglik-dosh |
-| sade sati / 7.5 sani | 47 | 81 | 0 | 8.1 | 38 | /learn/sade-sati |
-
-Single queries worth naming: `rahu mahadasha ketu antardasha` 397 impr, 13 clicks, pos 6.5; `sun debilitated in which sign` 338, 1 click, pos 7.4; `jupiter in 10th house` 116, 0 clicks, pos 11.0; `bhagya chart` 26 impr, 4 clicks, pos 6.5; `cheiro numerology calculator` 17, 2 clicks, pos 5.8; **`yes` 108 impressions, 0 clicks, pos 3.6**, unexplained (not investigated).
-
-**Queries with no page.** Not determinable from this export. `/numerology` is the likely page for the Cheiro query (173 impr, 9 clicks, pos 6.2 in W); that mapping is by topic, not measured. I name no new page. The three clusters new in W (sun debilitated, jupiter 10th, 10th lord in 6th) each have a page and a pending ship.
-
-Pages with impressions and zero clicks worth a title look (impr ≥ 100, W): guru-jupiter-in-vedic-astrology (185, 0), kundali-matching-ashtakoot-guna-milan (122, 0), /learn/ (119, 0), pushya-nakshatra (101, 0, "Crawled - currently not indexed"). The first three are in the band list.
-
-## 8. Lever 5 — Content opportunities (dates **only** from `festival_registry.py`, read this run)
-
-| date | festival | tier | learn article by that name |
-|---|---|---|---|
-| 2026-11-20 | devuthani-ekadashi | – | none |
-| 2026-11-21 | tulsi-vivah | major | none |
-| 2027-01-15 | makar-sankranti | major | none |
-| 2027-01-15 | pongal | major | none |
-
-- **The registry holds no festival between 2026-11-22 and 2027-01-14 (54 days).** In my last three reports and this one. I supply no date. **Filed as #1326** (below).
-- Existing time-bound pages: `diwali-muhurat-2026`, `karva-chauth-2026` (7 impr, 0 clicks: its date has passed), `gochar-2026-planetary-transits`, `gochar-2027-planetary-transits`, `vivah-muhurat-2027`, `griha-pravesh-muhurat-2026-2027`.
-- **Annual pages whose year is ending:** `gochar-2026-planetary-transits` is the site's third-largest page (2,873 impr, pos 5.0, 29s engagement). `gochar-2027-planetary-transits` exists (merged 2026-11-17) and Google reads it as **"URL is unknown to Google"** (index file 2026-11-19). `griha-pravesh-muhurat-2026-2027` and `vivah-muhurat-2027` are "Crawled - currently not indexed".
-- Sibling pages in the query view show muhurat demand: /muhurat/griha-pravesh 381 impr, 21 clicks (5.5% CTR, pos 6.1); /muhurat/vivah 25 / 1 / 5.6; /muhurat/vidyarambh 45 / 0 / 6.1 (P 89 / 2).
-
-## 9. Lever 6 — Index status (`measurements/index-status.json`, generated 2026-11-19T20:05Z)
+## 9. Lever 6 — Index status (`measurements/index-status.json`, generated 2026-11-23T03:12Z; not re-captured since the last report)
 
 | count | value |
-|---|---|
-| URLs inspected | 214 of 214, 0 errors, quota 214 of 2,000 |
-| indexed | 166 |
-| **not indexed** | **48** = 29 "Crawled - currently not indexed" + 12 "Discovered - currently not indexed" + 7 "URL is unknown to Google" |
-| blocked / canonical mismatch | 0 / 0 |
-| stale (changed after last crawl) | 174 (the file's own note says this overstates: base templates are excluded on purpose, `/rashifal*` and `/panchang*` change by data) |
+|---|---:|
+| URLs in sitemap, inspected | 214 of 214, 0 errors |
+| indexed / not indexed | **165 / 49** |
+| stale ("changed after Google's last crawl") | **168** |
+| canonical mismatch / blocked / unknown | 0 / 0 / 0 |
 
-Not indexed, ranked by W impressions: pushya-nakshatra 124 · ashwini-nakshatra 89 · mars-remedies 71 · vivah-muhurat-2027 42 · rohini-nakshatra 41 · jupiter-remedies 39 · swati-nakshatra 32 · dhana-yoga-wealth-combinations 31 · the-9-grahas-overview 24 · marriage-delayed 23. "Unknown to Google": /dasha, five /panchang dated URLs (2026-11-09, 2027-01-04, 01-15, 01-16, 01-17), gochar-2027.
+The ten largest pages by W impressions are stale in the file; the file predates every ship after 2026-11-23. This is a request for a re-crawl; **I have no write path to request indexing.** `request_indexing` is a key in the file; I did not read it. #1065 holds the export.
 
-**Request-indexing list (the file's own, ranked by value):** all ten are "changed after Google's last crawl": rahu-ketu (3,912 impr; changed 11-16, crawled 11-08), gochar-2026 (2,512), sade-sati (2,133; crawled **2026-10-23**, 29 days earlier), jupiter-10th (1,940), 7th-lord (1,509), career-during-sade-sati (1,239), planets-in-7th (1,221), rahu-mahadasha-career-problems (1,044), 10th-lord-in-6th (762), mangal-mars (557). **The edits the #685/#835/#1073/#1075 scores will measure may not have been seen by Google.** I cannot request indexing (no write path); #1065's remaining step is a workflows edit. This list is for chief or the owner.
+## 10. Lever 5 — Content opportunities (next 6–8 weeks, 2026-11-25 → 2027-01-20)
 
-## 10. Lever 7 — Measurement gaps (checked against `measurements/2026-11-18.md`, `-19.md`, `-20.md`)
+Dates read from `festival_registry.py` this run (`dates={...}`); I did not re-verify any date against an almanac.
+
+| date | festival (slug) | learn article (`learn_article_for`) |
+|---|---|---|
+| 2026-12-01 | kalabhairav-jayanti | none |
+| 2026-12-14 | vivah-panchami | none |
+| 2026-12-20 | gita-jayanti | none |
+| 2026-12-23 | dattatreya-jayanti | none |
+| 2027-01-15 | makar-sankranti | none |
+| 2027-01-15 | pongal | none |
+
+- All six registry entries in the window have no linked `/learn` article. None appears among the 140 pages in `gsc-all.json`; `/festivals` has 254 impressions at 39.3 and 0 clicks. product-manager decides whether a page is worth building; the existing surface is `/festivals`.
+- Kartika Purnima (2026-11-24) has just passed. **Lohri is not in the registry** (grep over `festival_registry.py` and `festivals.py` returns nothing): I state no Lohri date.
+- Annual pages: `gochar-2026-planetary-transits` (3,402 impr, pos 5.0, 2026 transit year, ends in about five weeks); `gochar-2027-planetary-transits` exists (#1148); it is **absent** from the 140 pages in `gsc-all.json` (0 impressions).
+- `/panchang/2026-12-02` drew 5 zero-engagement direct sessions on 2026-11-15 (§5).
+
+## 11. Lever 7 — Measurement gaps vs my last three reports (2026-11-22, 11-23, 11-24)
 
 | gap | in each of the last three? | open issue | action |
 |---|---|---|---|
-| GA4 previous window | yes, and this run | #1205 | covered |
-| `page_location` / query strings in GA4 exports | yes | #1237 | covered |
-| Errors / LLM fallbacks per route | yes | #1208 | covered |
-| Per-page × per-day GSC export | yes | #953, #1076 | covered |
-| Full git history (shallow checkout) | yes, and this run (1 commit) | #666, #974 | covered |
-| Server-side completed-kundli count | 11-18, 11-19, 11-20 | #1272 | covered (filed last run) |
-| Which page serves which query | 11-17, 11-19, 11-20, **and this run** (query export has no page column) | none | **not filed**: 11-18 did not name it as a gap, so it does not meet "all three". If 11-22 names it too, file |
-| **Festival registry empty 2026-11-22 → 2027-01-14** | **11-18, 11-19, 11-20, and this run** | none found (searched open and closed) | **filed #1326** |
-| Index status per URL | was a gap on 11-18, 11-19 | #1065 | resolved: the file exists |
-
-## 11. What I did this run
-
-| action | result |
-|---|---|
-| Comments posted | **#1277** (MET), **#1322** (pending → 2026-12-22) |
-| Issues filed | **#1326** — festival registry has no entry for 54 days; label `growth`; Evidence Block passes `verify_issue_evidence.py` (a first draft failed on `corpus:`; fixed, re-run PASS) |
-| Timers | **25 lines** in `/tmp/analyst-timers.txt`: every pending issue above, `#1322` new, `#1071` has two keys (`score-1071` 2026-12-18, `score-1071-final` 2027-02-28). `#1115` gets none (waits on #1205). I did not verify that `agent-measure` sets them |
-| Re-read, nothing posted | #311, #276, #329: no verdict changed and no number moved past what the metric calls material |
+| GA4 previous window | yes, and this run | **#1205** | none: covered |
+| `page_location` / query strings in GA4 exports | yes | **#1237**, #1448 | none: covered |
+| Per-page × per-day export | yes | **#953**, **#1076** | none: covered |
+| Shallow checkout (no `git log --since`) | yes (unshallowed this run, 568 commits) | **#974** | none: covered |
+| Server-side kundli submission count | yes | **#1272**, #1409 | none: covered |
+| Share of Direct traffic that is automated | yes | **#1364** | none: covered |
+| Query → page map | yes | **#1432**, #1436, #1437 | none: covered |
+| **`muhurat_searched` absent from `ga4-events.json`** | **yes: 11-22, 11-23, 11-24, and this run** | none (#1017 and #1336 mention it in passing) | **filed #1469** |
+| Errors / LLM fallbacks per route | resolved by #1208 | – | – |
 
 ## 12. What I could not determine, and the one measurement that settles each
 
-| unknown | measurement |
+| not determined | measurement |
 |---|---|
-| Sessions and users against the previous window | `fetch_ga4.py --trend` wired into `agent-measure` (#1205) |
-| Whether the +150% impressions is the work, a seasonal effect, or Google re-ranking a young domain | a per-page × per-day export plus the dated ship list (#953); no year-earlier window exists |
-| Which ship moved which page | a full-depth checkout in the analyst job (#666, #974) |
-| Whether the 11-15 → 11-18 fall in impressions (1,110 → 798) held | the next run's daily rows |
-| Whether any route is erroring for visitors | `fallbacks` and `fallback_reasons` in `llm-usage.json` (#1208) |
-| How much of Direct (303 sessions, 19% engaged) is automated | a by-tech breakdown of the whole Direct channel, not only spike days |
-| Whether the top-10-queries-into-top-5 objective is moving | cannot be recovered: 85% of impressions are withheld from the query export. The page-level proxy (1 of the top 10 at ≤5.0) is all I can state |
-| Why `griha-pravesh-muhurat-2026-2027` gets GA4 sessions (14) with no GSC impressions and a "not indexed" verdict | a URL Inspection reading dated inside W; the file is dated 11-19 |
-| Whether Google has now re-fetched the ten edited pages | the next index-status run's `lastCrawlTime` against `changed_at` |
-| `peak_day_tokens` 6,529 vs `peak_day_measured_tokens` 43,421 (both 2026-11-18) | the field definitions in `collect_llm_usage.py`, which I did not read |
-| What the `yes` query (108 impr, pos 3.6, 0 clicks) is | the page it lands on, from a page × query export |
-| Whether #1066 / #1093's privacy fixes worked | an export carrying GA4 `page_location` (#1237) |
+| GA4 sessions and users against P | `ga4-trend.json` written by `agent-measure` (#1205) |
+| Whether the objective (ten highest-impression queries into the top 5) is moving | not recoverable: 86% of impressions are withheld. Page proxy: 1 of the top 10 pages at ≤ 5.0 |
+| Which page serves a visible query | `query × page` export (#1432) |
+| Window-wide share of Direct traffic that is automated | cohort export (#1364) |
+| Why `/matching` lost ~6 positions | per-page × per-day export (#953, #1076) |
+| Whether the 11-16 → 11-19 dip (impressions ~800/day, 47% lower clicks week-on-week) was a re-rank | the next run's daily rows; 11-20 → 11-22 already read 1,001 / 1,177 / 1,237 |
+| Whether `chronic-health-issues-kundli` (8 s average engagement) is broken or a bad-intent landing | page render check plus scroll depth; not in these files |
+| Whether `muhurat_searched` is broken or unused | `fetch_ga4.py --journeys` for `tool_submitted` with `tool=muhurat`, plus the server-side POST count (#1469) |
+| HTTP 5xx per non-LLM route; cause of the two 2026-11-17 `verify-production` failures | Cloud Run request log; those runs' logs |
+| Which of the 168 stale pages Google has re-fetched | a new `index-status.json` capture |
+
+## 13. Handed back
+
+| item | value |
+|---|---|
+| Issues filed | **#1469** (`muhurat_searched` absent from GA4 in four consecutive reports) |
+| Comments posted on issues | none: no verdict changed and every pending note already exists |
+| Verdict changes | none: #311 MISS (0.967%), #276 BAR MET (not attributable), #329 UNSCOREABLE (5 vs 10), #1277 MET |
+| Timers | 16 lines in `/tmp/analyst-timers.txt` (#553 12-01; #426 12-03; #570, #685, #508 12-04; #518 12-07; #735 12-12; #835 12-14; #1075, #1073, #1074 12-17; #1072, #1071 12-18; #1322, #1325, #1336 12-22) |
+| The one number to read first | clicks 416 vs 129 and impressions 31,021 vs 12,802 (W vs P): the footprint is ~2.4× larger, concentrated in `/learn` articles. The 11-16 → 11-22 week is 47% below the week before on clicks, with the last three days recovering. Not yet shown to be durable |

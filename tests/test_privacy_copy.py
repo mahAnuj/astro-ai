@@ -103,7 +103,56 @@ def test_privacy_page_discloses_what_still_reaches_the_operator(client):
 def test_privacy_page_date_is_a_literal_not_the_current_year(client):
     # `{{ current_year() }}-08-06` made the page claim an update this year,
     # every year, with a fixed month and day nobody had edited it on.
-    assert "Last updated: 2026-11-17" in _text(client.get("/privacy").text)
+    assert "Last updated: 2026-11-24" in _text(client.get("/privacy").text)
+
+
+def test_privacy_page_discloses_the_sign_out_record(client):
+    # #1315: revocation.py stores the Google sub and a timestamp when anyone signs
+    # out or deletes an account, and account deletion does not remove it. The page
+    # said nothing, which is a disclosure gap about stored identifiers.
+    text = _text(client.get("/privacy").text)
+    assert "{{" not in text, "an unresolved template variable leaked"
+    assert "Sign-out record:" in text
+    block = text[text.index("Sign-out record:"):]
+    # This one bullet only: the next <li> (the activity log) legitimately says
+    # "not automatically deleted", which is not this line's claim.
+    block = block[:block.index("&bull;")]
+    days = session.SIGNIN_MAX_AGE // 86400
+    for needed in ("Google account ID", "not your email or name", f"Entries older than {days} days are dropped",
+                   "Deleting your account does not remove it",
+                   "next time the record is written"):
+        assert needed in block, f"sign-out record line no longer says {needed!r}"
+    # Pruning happens on write, not on a clock: never promise a hard deadline.
+    for overclaim in ("within 90 days", "deleted after 90 days",
+                      "automatically deleted", "exactly 90"):
+        assert overclaim not in block, f"sign-out record line overclaims: {overclaim!r}"
+
+
+def test_revocation_record_holds_only_the_sub_and_a_timestamp(monkeypatch):
+    # The privacy line says the record is an opaque ID and a time, pruned on write.
+    # Pin that to the code that writes it.
+    import time
+
+    from astro_ai import revocation, storage
+
+    now = int(time.time())
+    stale_sub = "sub-stale"
+    blobs = {revocation.KEY: {"revoked_before": {
+        stale_sub: now - session.SIGNIN_MAX_AGE - 3600}}}
+
+    def update_json(key, mutator, *, default=None, max_retries=5):
+        blobs[key] = mutator(blobs.get(key, default))
+        return blobs[key]
+
+    monkeypatch.setattr(storage, "update_json", update_json)
+    revocation.revoke("sub-1")
+
+    written = blobs[revocation.KEY]
+    assert set(written) == {"revoked_before"}
+    assert set(written["revoked_before"]) == {"sub-1"}, "stale entry was not pruned"
+    stamp = written["revoked_before"]["sub-1"]
+    assert isinstance(stamp, int) and not isinstance(stamp, bool)
+    assert abs(stamp - now) < 60
 
 
 # ─── retired claims, everywhere they were found ────────────────────────────

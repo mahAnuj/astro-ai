@@ -464,17 +464,51 @@ EVIDENCE = (
     "- **metric:** the class count is 0 on the next weekly audit.\n")
 
 
+AUDIT_VIEW = {"author": {"login": "app/claude", "is_bot": True, "name": "claude"},
+              "labels": [{"name": "bug"}, {"name": "provenance:outsider"}],
+              "body": "<!-- ask-audit-class: exam-verdict -->\nbody\n"}
+
+
+def _row(n, age_h=1.0, **over):
+    """One `gh issue list` row for an audit issue made `age_h` hours ago."""
+    made = datetime.now(timezone.utc) - timedelta(hours=age_h)
+    row = dict(AUDIT_VIEW, number=n, createdAt=made.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    row.update(over)
+    return row
+
+
 class FakeGh:
-    def __init__(self, fail=()):
+    """`views` maps an issue number to the dict `gh issue view --json` would print;
+    `listing` is what `gh issue list` prints. `bad` maps ("issue", "view"|"list") to
+    raw stdout, for malformed answers. The default view is a valid audit issue."""
+
+    def __init__(self, fail=(), views=None, listing=(), bad=None):
         self.calls, self.fail = [], set(fail)
+        self.views, self.listing, self.bad = views, list(listing), bad or {}
 
     def __call__(self, args):
         self.calls.append(list(args))
-        rc = 1 if tuple(args[:2]) in self.fail else 0
-        return self.mod.Result(rc, "https://github.com/o/r/issues/9\n" if args[:2] == ["issue", "create"] else "")
+        key = tuple(args[:2])
+        rc = 1 if key in self.fail else 0
+        out = ""
+        if args[:2] == ["issue", "create"]:
+            out = "https://github.com/o/r/issues/9\n"
+        # Valid stdout even when rc is 1: a gh that fails but prints a plausible answer
+        # must still be refused on its exit code, not on a parse error.
+        elif key == ("issue", "view"):
+            out = self.bad.get(key) or json.dumps(
+                (self.views or {}).get(int(args[2]), AUDIT_VIEW))
+        elif key == ("issue", "list"):
+            out = self.bad.get(key) or json.dumps(self.listing)
+        return self.mod.Result(rc, out)
 
     def posts(self):
         return [c for c in self.calls if c[:2] in (["issue", "create"], ["issue", "comment"])]
+
+    def writes(self):
+        """Every call that changes GitHub: label create, edit, create, comment."""
+        return [c for c in self.calls if c[:2] in (["label", "create"], ["issue", "edit"],
+                                                    ["issue", "create"], ["issue", "comment"])]
 
 
 def _post(tmp_path, monkeypatch, body, *args, gh=None, where="work"):
@@ -519,7 +553,8 @@ def test_post_files_a_clean_body_with_the_outsider_label(tmp_path, monkeypatch):
     [create] = [c for c in gh.calls if c[:2] == ["issue", "create"]]
     labels = [create[i + 1] for i, x in enumerate(create) if x == "--label"]
     assert "provenance:outsider" in labels and "astrology-correctness" in labels
-    assert gh.calls[0][:3] == ["label", "create", "provenance:outsider"]
+    # The cap read comes first (#1291); the label is the first WRITE.
+    assert gh.writes()[0][:3] == ["label", "create", "provenance:outsider"]
 
 
 def test_post_comment_labels_the_issue_before_commenting(tmp_path, monkeypatch):
@@ -534,6 +569,128 @@ def test_post_comment_is_not_posted_when_the_label_fails(tmp_path, monkeypatch):
     rc, gh = _post(tmp_path, monkeypatch, EVIDENCE, *LABELS, "--issue", "42",
                    gh=FakeGh(fail={("issue", "edit")}))
     assert rc == 2 and gh.posts() == []
+
+
+# ---- #1291: --issue and the cap are bound by gh, not by the prompt -------------------
+
+def _comment(tmp_path, monkeypatch, view, **kw):
+    return _post(tmp_path, monkeypatch, EVIDENCE, *LABELS, "--issue", "42",
+                 gh=FakeGh(views={42: view}, **kw))
+
+
+def _refused_without_a_write(rc, gh, want):
+    assert rc == want and gh.writes() == [], gh.calls
+    assert not any(c[:2] == ["label", "create"] for c in gh.calls)
+
+
+def test_a_comment_on_a_human_filed_issue_is_refused(tmp_path, monkeypatch):
+    human = dict(AUDIT_VIEW, author={"login": "someone", "is_bot": False, "name": "S"},
+                 labels=[{"name": "bug"}])
+    _refused_without_a_write(*_comment(tmp_path, monkeypatch, human), 1)
+
+
+def test_a_comment_on_an_outsider_issue_copying_the_marker_and_label_is_refused(tmp_path, monkeypatch):
+    """Forgery: label and marker are text anyone can write; the author is not."""
+    forged = dict(AUDIT_VIEW, author={"login": "mallory", "is_bot": False, "name": "M"})
+    _refused_without_a_write(*_comment(tmp_path, monkeypatch, forged), 1)
+    # A non-self bot is no better.
+    other = dict(AUDIT_VIEW, author={"login": "app/dependabot", "is_bot": True, "name": "d"})
+    _refused_without_a_write(*_comment(tmp_path, monkeypatch, other), 1)
+
+
+def test_a_comment_on_a_loop_issue_without_the_marker_or_the_label_is_refused(tmp_path, monkeypatch):
+    """The loop's own issues (#1291 itself): self-app author, neither marker nor label."""
+    no_marker = dict(AUDIT_VIEW, body="An ordinary loop issue.\n")
+    no_label = dict(AUDIT_VIEW, labels=[{"name": "provenance:trusted"}])
+    inline = dict(AUDIT_VIEW, body="see <!-- ask-audit-class: x --> inline, not on its own line")
+    for view in (no_marker, no_label, inline):
+        _refused_without_a_write(*_comment(tmp_path, monkeypatch, view), 1)
+
+
+def test_a_comment_on_an_audit_issue_is_allowed_label_first(tmp_path, monkeypatch):
+    rc, gh = _comment(tmp_path, monkeypatch, AUDIT_VIEW)
+    assert rc == 0
+    names = [c[:2] for c in gh.calls]
+    assert names.index(["issue", "view"]) < names.index(["label", "create"]) \
+        < names.index(["issue", "edit"]) < names.index(["issue", "comment"])
+    assert not any(c[:2] == ["issue", "list"] for c in gh.calls)   # the cap is for new issues
+    assert gh.calls[0] == ["issue", "view", "42", "--json", "author,labels,body"]
+
+
+def test_a_comment_also_accepts_the_bot_suffix_rendering(tmp_path, monkeypatch):
+    view = dict(AUDIT_VIEW, author={"login": "github-actions[bot]", "is_bot": True, "name": "g"})
+    assert _comment(tmp_path, monkeypatch, view)[0] == 0
+
+
+def test_a_comment_fails_closed_on_a_gh_answer_it_cannot_trust(tmp_path, monkeypatch):
+    stringy = dict(AUDIT_VIEW, author={"login": "app/claude", "is_bot": "false", "name": "c"})
+    bad_login = dict(AUDIT_VIEW, author={"login": "x y;rm", "is_bot": True, "name": "c"})
+    for view in (stringy, bad_login, {"labels": [], "body": ""}, [], dict(AUDIT_VIEW, labels="bug"),
+                 dict(AUDIT_VIEW, body=None)):
+        rc, gh = _comment(tmp_path, monkeypatch, view)
+        assert rc == 2 and gh.writes() == [], view
+    rc, gh = _post(tmp_path, monkeypatch, EVIDENCE, *LABELS, "--issue", "42",
+                   gh=FakeGh(fail={("issue", "view")}))
+    assert rc == 2 and gh.writes() == []
+    rc, gh = _post(tmp_path, monkeypatch, EVIDENCE, *LABELS, "--issue", "42",
+                   gh=FakeGh(bad={("issue", "view"): "not json"}))
+    assert rc == 2 and gh.writes() == []
+
+
+def _new(tmp_path, monkeypatch, body=EVIDENCE, **kw):
+    return _post(tmp_path, monkeypatch, body, "--title", "Exam verdicts", *LABELS, gh=FakeGh(**kw))
+
+
+def test_a_sixth_new_issue_in_the_window_is_refused(tmp_path, monkeypatch):
+    rc, gh = _new(tmp_path, monkeypatch, listing=[_row(n, age_h=n) for n in range(1, 6)])
+    _refused_without_a_write(rc, gh, 1)
+    assert not any(c[:2] == ["issue", "create"] for c in gh.calls)
+
+
+def test_a_fifth_new_issue_in_the_window_is_allowed(tmp_path, monkeypatch):
+    rc, gh = _new(tmp_path, monkeypatch, listing=[_row(n, age_h=n) for n in range(1, 5)])
+    assert rc == 0
+    [lst] = [c for c in gh.calls if c[:2] == ["issue", "list"]]
+    assert "--search" not in lst and lst[lst.index("--state") + 1] == "all"
+    assert [c[:2] for c in gh.calls].index(["issue", "list"]) < [c[:2] for c in gh.calls].index(["label", "create"])
+
+
+def test_the_cap_counts_only_audit_issues_inside_the_window(tmp_path, monkeypatch):
+    noise = [_row(10, age_h=25),                                        # outside the window
+             _row(11, author={"login": "mallory", "is_bot": False, "name": "m"}),   # human + marker
+             _row(12, body="no marker here"),                           # bot, no marker
+             _row(13, labels=[{"name": "bug"}])]                        # no outsider label
+    rc, gh = _new(tmp_path, monkeypatch, listing=noise + [_row(n) for n in range(1, 5)])
+    assert rc == 0, gh.calls
+
+
+def test_the_cap_is_counted_by_the_author_test(tmp_path, monkeypatch):
+    """Five outsider-authored issues copying marker and label must not lock the audit out."""
+    forged = [_row(n, author={"login": "mallory", "is_bot": False, "name": "m"}) for n in range(1, 8)]
+    assert _new(tmp_path, monkeypatch, listing=forged)[0] == 0
+
+
+def test_the_cap_fails_closed_when_it_cannot_be_counted(tmp_path, monkeypatch):
+    for kw in (dict(fail={("issue", "list")}),
+               dict(bad={("issue", "list"): "not json"}),
+               dict(bad={("issue", "list"): '{"a": 1}'}),
+               dict(listing=[_row(1, createdAt="yesterday")]),
+               dict(listing=[_row(1, author={"login": "claude", "is_bot": "true", "name": "c"})]),
+               # a full page that never leaves the window: older rows may still count
+               dict(listing=[_row(n, age_h=0.1, body="x") for n in range(1, 101)])):
+        rc, gh = _new(tmp_path, monkeypatch, **kw)
+        assert rc == 2 and gh.writes() == [], (kw, gh.calls)
+
+
+def test_a_full_page_that_reaches_outside_the_window_is_countable(tmp_path, monkeypatch):
+    rows = [_row(n, age_h=0.1, body="x") for n in range(1, 100)] + [_row(100, age_h=30, body="x")]
+    assert _new(tmp_path, monkeypatch, listing=rows)[0] == 0
+
+
+def test_a_new_issue_without_the_class_line_is_refused(tmp_path, monkeypatch):
+    rc, gh = _new(tmp_path, monkeypatch, body=EVIDENCE.replace("<!-- ask-audit-class: exam-verdict -->\n", ""))
+    _refused_without_a_write(rc, gh, 1)
+    assert gh.calls == []   # not even a read: the body alone decides
 
 
 def test_post_refuses_a_body_outside_the_work_dir(tmp_path, monkeypatch):

@@ -1,67 +1,41 @@
-# /discover report — 2026-11-17
+# /discover report — 2026-11-24
 
-**Issues filed: 0.** Every candidate either already has an issue, already has a page, or lacked demand evidence. Reasons are below so the same ideas are not re-raised next week.
+Window for all numbers: GSC and GA4, 2026-10-25..2026-11-21 (band file: 97 pages, 74% of 30,711 impressions, 409 clicks; GA4 799 sessions). Analyst report: /tmp/measure/report.md (2026-11-23). Both dispatches ran in the foreground, `seo-growth` first, then `product-manager`.
 
-## Inputs read, in order
+## Filed
+- **#1430** (`growth`, filed by `seo-growth`): the 7th-house pair.
+  - `planets-in-7th-house-marriage` has 1,448 impressions, 11 clicks, position 6.8.
+  - `7th-lord-placement-marriage-guide` has 1,560 impressions, 16 clicks, position 7.2.
+  - The first page has no section for an empty 7th house, or for "which planet is best". A grep for `empty|vacant|unoccupied|no planet` returns 0.
+  - It is a body edit plus cross-links, not a title test, because #311 MISSED.
+  - Corpus: `houses.md` L211-236 and `vedic_reference.md` L808. Any claim about outcomes of an empty 7th house is `[UNSOURCED]`.
+  - Tokens: 0. Metric: combined clicks against 27, engaged share against 33%, pages per session against 1.14.
+  - I confirmed with `gh` that it exists, is open and carries the `growth` label. `product-manager` reports checking its corpus citations. I did not read the issue body or re-check them myself.
+- No `<!-- competitor-pattern -->` issues were filed. See Rivals below.
 
-1. `/tmp/measure/report.md` (analyst, run 2026-11-16, window 10-17 → 11-13), `/tmp/gsc-band.json` (window 10-18 → 11-14), `/tmp/ga4.json`, and `measurements/gsc-trend-query.json` for query rows.
-2. `measurements/lessons.md` and `measurements/sync/chief-guidance.md`.
-3. Rivals and social: two public `WebSearch` calls. The social search returned no Reddit threads. Rival pages seen are search results only; I did not WebFetch them.
-4. Corpus: **`data/` is absent in this checkout, so zero of the seven books were present.** `knowledge/*.md` was greppable. Any "unsourced" statement below is therefore unmeasured against the books.
+## Deliberately not filed, so it isn't re-raised
+- **Four top band pages** (`debilitated-sun-career`, `rahu-mahadasha-ketu-antardasha`, `jupiter-in-10th-house-career`, `sade-sati`) each already have a shipped change waiting to be scored. Another edit would confound the score. The pending items and their earliest scoring dates are #685 (12-04), #835 (12-14), #1073 and #1075 (12-17). Revisit after those dates.
+  - This follows chief's "file band-page issues for the top pages" row only partly. Filing for pages with an unscored ship would break the analyst's measurement.
+- **Title or meta rewrites:** #311 MISSED, and the titles already carry the query words.
+- **Sade-sati per-sign start and end dates:** wait until after #685 scores. Dates must come from `chart.py`. The phase names arambha, madhya and uttara are not in the corpus, so the page must not call them classical.
+- **Panch-mahapurush** (1,074 impressions, position 7.2, 1.49% CTR): the visible queries are 1 to 8 impressions each. The "best" and "rare" claims they ask for are `[UNSOURCED]` in `vedic_reference.md` §4.1 and `yogas.md` §5. There is no verified rival URL.
+- **Mangal-mars, shukra-venus, manglik and gochar:** no query-level signal that ties to a page gap. Manglik overlaps open #777, #1369 and #1396. Revisit once the page-by-day export (#953) exists.
+- **Per-festival pages** (Kartika Purnima, Kalabhairav Jayanti, Vivah Panchami, Gita Jayanti, Dattatreya Jayanti, Makar Sankranti/Pongal):
+  - CLAUDE.md forbids a parallel page type for festival queries.
+  - No visible query matches any of the six.
+  - `/festivals` ranks 38.1 with 0 clicks.
+  - Kartika Purnima is today.
+  - If wanted later, the route is a `/learn` article, with every date sourced.
+  - I did not check the festival dates against an almanac.
+- **gochar-2027 not indexed:** tracked by #1065.
+- **Funnel step-loss findings:** the event instrumentation is unfinished (#1070). A finding without a measured step would be an opinion.
+- **`muhurat_searched` absent from `ga4-events.json`:** per the analyst, to be filed after #1336's window opens on 2026-12-22.
 
-## What the numbers say (not re-derived)
-
-- Impressions are up 140% and clicks up 228% over the prior window. `/learn` articles are 93% of impressions.
-- The objective is unmet. None of the top-10 band pages is at position ≤ 5.0, and all ten sit at 6.4–7.7.
-- #311 is a MISS (a title/meta rewrite did not reach the bar). I am not proposing another title-only test. The pages that need work are CTR-gapped, so any change has to be content or answer-first structure, as #835 was.
-
-## Analyst inbox — one line per item
-
-### Search demand (analyst §8)
-
-| item | decision |
-|---|---|
-| "sun debilitated in which sign" family (524 impr, 0 clicks) | **Not filed.** #835 shipped 2026-11-13 and is scoreable from 2026-12-14. Filing again would stack a second change on an unmeasured one. |
-| "jupiter in 10th house" / "guru in 10th house" | **Not filed.** #1073 (closed 2026-11-16) covers it. Re-measure before more work. |
-| "10th lord in 6th house" | **Not filed.** It converts at 2.85%, so no action is needed. |
-| "rahu mahadasha ketu antardasha" family | **Not filed.** #1075 (closed 2026-11-16) covers it. The head query went from position 9.6 to 7.0. |
-| `/matching` decay (position 4.2 → 9.3) | **Not filed.** #1076 and #508 own it, and the onset cannot be dated until #953 lands. |
-| `gochar-2026` (1,863 impr, 28s engagement) | **Not filed.** The cause is unknown and #1079 rewrote the page after the window. Re-measure first. #1071 covers the 2027 sibling. |
-| `yes` query | **Not filed.** A one-word query that nobody targets. |
-
-### Content opportunities (analyst §9)
-
-| item | decision |
-|---|---|
-| Devuthani Ekadashi, 2026-11-20 (3 days) and Tulsi Vivah, 2026-11-21 | **Not filed.** Both already have dated entries in `festival_registry.py` with significance and observance text. They are covered by `/festivals`. A new `/learn` page would not be indexed in 3 days. CLAUDE.md also bars a parallel page type for queries an existing page serves, and `/festivals` is at position 34, so there is no ranking page to protect either way. The Ekadashi fast and Chaturmas rules are UNSOURCED in the corpus: `vedic_reference.md` lists `chaturmas` as UNSOURCED, and the corpus holds no Ekadashi-as-fasting source. |
-| Makar Sankranti / Pongal, 2027-01-15 | **Not filed this cycle.** The date is outside any window I could justify from this cycle's data. Revisit about 2026-12-15 with the index-status measurement (#1065). |
-| `gochar-2027`, `vivah-muhurat-2027` | Already exist or are filed (#1071). |
-
-## Rival patterns observed
-
-Two public searches only; no rival page was fetched.
-
-- **Dasha × antardasha pair pages.** `astromedha.in/insights/vedic/rahu-mahadasha-ketu-antardasha`, its mirror `ketu-mahadasha-rahu-antardasha`, and `ajmerastro.com/.../dasha/ketu-mahadasha/rahu-antardasha` each publish one page per pair.
-- **Sign × house placement pages.** `vedicbirth.com/placement/sun/libra/10` publishes one page per placement.
-
-**Not filed as `<!-- competitor-pattern -->` issues.** I measured the demand from `gsc-trend-query.json`, the 14% query view. Pair-keyed queries concentrate on one pair:
-- Rahu/Ketu variants add up to roughly 800 impressions.
-- The mirror pair "ketu mahadasha rahu antardasha" has 6 impressions plus about 10 more across variants.
-- Every other pair seen is 1–2 impressions, for example "jupiter mahadasha and venus antardasha" at 2.
-
-The 81-page pattern has no measured demand, so a thesis for it would be an opinion. The one pair with demand is already served by the top page, now at position 6.4. The owner's rule asks for one issue per rival pattern. The discover bar asks for nothing that cannot be justified from this cycle's data. I followed the second and am recording the pattern here instead. A reason to revisit: a pair other than Rahu/Ketu reaching 20 or more impressions in a window.
-
-Pages built as programmatic combinations also carry grounding risk. "grounding" is the largest QA-fail theme in `lessons.md` (27 FAILs), and per-combination interpretation text is exactly the claim shape those FAILs name. I copied no astrological claim from a rival.
-
-## Lessons applied
-
-- #311 MISS: no title/meta-only issue filed.
-- Chief guidance (analyst row: state the traffic needed before filing a thesis). At about 711 sessions per 28 days, a new page's thesis would need roughly 300 impressions to score. None of the candidates met that.
-- Chief guidance (start list): the three unowned band pages have since been covered by #1073 and #1075. `7th-lord-placement-marriage-guide` (1,512 impr, CTR 0.99%, position 7.2) and `planets-in-7th-house-marriage` (1,149 impr, CTR 0.96%, position 6.6) have no *open* ranking issue. Their prior issues (#978, #1085, #988, #990, #992) were all corpus-grounding fixes, not answer-first work. **I did not file for them.** I have no query-level data for either page, so I could not write the `keyword:` field. The 14% view does not surface their queries, and a filed issue would guess at the intent. The next run should use a per-page query export if one exists; a fix would be one query export for those two pages. That is a measurement gap, not an issue.
-
-## Gaps this run could not close
-
-- `data/` absent, so every corpus check was against `knowledge/*.md` only.
-- `/tmp/gsc-band.json` has no query dimension.
-- No rival page was fetched, only search-result summaries.
-- GA4 has no prior-window export (#1115 is open).
+## Gaps in this run
+- **Social research was not done.** `product-manager` had WebFetch but no WebSearch, and Reddit blocks WebFetch. Nothing was invented. The next run should give that dispatch WebSearch, or run the social step from the coordinator.
+- **Rival research is thin.** A Google search returned nothing and a guessed AstroSage URL returned 404. The only rival URLs recorded are astrosight.ai and jagannathhora.com, and they are already in #1430. No new rival pattern was filed.
+- **`data/` is absent in this checkout.** Corpus checks covered `src/astro_ai/knowledge/*.md` only, not the source books. A zero is a term check, not proof the concept is absent.
+- **Growth split:** 0.12 against a 0.40 target. Filing was not forced to lift it, because the evidence bar and the unscored ships block more filings. The levers are chief's open picks, #1076, #1107 and #1065, and the page-by-day export (#953).
+- **Chief guidance followed and not followed:** followed on `lessons.md` (MISS #311) and on picking growth. The "file band-page issues" instruction was applied only to pages with no unscored ship, which gave #1430.
+- No token-budget conflicts: nothing proposed uses an LLM call.
+- `AGENT_STATUS.md` has one heartbeat line from `product-manager`, which is local only.

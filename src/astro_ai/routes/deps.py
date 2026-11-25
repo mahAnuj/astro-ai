@@ -271,6 +271,22 @@ def _muhurat_why_legend(candidates, event_type: str):
 
 templates.env.globals["muhurat_why"] = _muhurat_why
 templates.env.globals["muhurat_why_legend"] = _muhurat_why_legend
+
+
+def _muhurat_lagna(candidate, event_type: str, city: str):
+    """Rao's lagna windows for one Vivah finder row, or None (#1026). Lazy for the same reason."""
+    from astro_ai.muhurat_lagna import lagna_view
+    return lagna_view(candidate, event_type, city)
+
+
+def _muhurat_lagna_legend(candidates, event_type: str, city: str):
+    """The once-per-page disclosure for those rows' lagna windows (#1026, #1457)."""
+    from astro_ai.muhurat_lagna import legend
+    return legend(candidates, event_type, city)
+
+
+templates.env.globals["muhurat_lagna"] = _muhurat_lagna
+templates.env.globals["muhurat_lagna_legend"] = _muhurat_lagna_legend
 # current_year used by nav labels like "Horoscope 2026" — auto-updates yearly.
 templates.env.globals["current_year"] = lambda: date.today().year
 # Astrology-term Devanagari lookups — templates call e.g.

@@ -223,7 +223,7 @@ def page(client, monkeypatch, tmp_path):
         ops_data._cache.clear()
         ops_data._app_cache.clear()
         try:
-            r = client.get("/admin/ops", auth=("admin", "bhagya-dev"))
+            r = client.get("/admin/ops?tab=monitoring", auth=("admin", "bhagya-dev"))
         finally:
             ops_data._cache.clear()
             ops_data._app_cache.clear()
@@ -238,7 +238,7 @@ def _section(html):
 
 
 def test_the_panel_renders_the_evals(page):
-    doc = co.collect(FakeGh(corpus()), REPO, datetime.now(timezone.utc))
+    doc = co.collect(FakeGh(corpus()), REPO, NOW)
     s = _section(page({"outbox.json": doc}))
     assert "Loop comment noise" in s
     assert "comments per PR" in s and "2.0" in s

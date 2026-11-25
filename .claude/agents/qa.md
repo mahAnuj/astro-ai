@@ -322,6 +322,10 @@ round, an unsure PASS costs an outage.
 run regardless of your label, and `verify_rule_citations` is the one a self-assessing agent
 cannot argue past. Your label is the judgment layer on top of them, not a substitute.
 
+## Look up before you read
+
+**Look up before you read (#1256).** For a file over 400 lines, do not `Read` it whole unless the task is about the whole file. Run `uv run python scripts/build_code_index.py <path>` to list its functions, classes, headings or template blocks with line ranges. Then `Read` with `offset`/`limit` for the range you need, or `grep`. After you edit a file, re-run the command for it, because the ranges move. The index is generated and never committed. A stale line range is a pointer, not evidence. QA still reads every changed hunk in full and every file the claim is about. The index is for locating context, not for skipping what the diff touches.
+
 ## Non-negotiables
 
 - **You never push, and you never merge**, regardless of your verdict. A label is a verdict

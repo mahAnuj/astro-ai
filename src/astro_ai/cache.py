@@ -14,17 +14,19 @@ Two jobs in one module so we don't end up with two SQLite files:
 Storage: a single SQLite database file (default `bhagya.db` in the working
 directory; override with the `BHAGYA_CACHE_DB` env var). On Cloud Run the
 Dockerfile sets `BHAGYA_CACHE_DB=/tmp/bhagya.db` — per-instance tmpfs, and
-`deploy.sh` runs `--min-instances 0`, so in production there is no cache to
-purge and no way to reach one (no exec, no volume, up to 5 instances, wiped
-on cold start). Key versioning via `PROMPT_LOGIC_VERSION` is therefore the
-only remote invalidation mechanism. Two tables:
+`deploy.sh` runs `--min-instances 0`. Natal erasure evicts its rows from the
+instance that serves the delete (`delete_many`, #1293). The OTHER instances
+(up to 5, each with its own /tmp SQLite: no exec, no volume, wiped on cold
+start) cannot be reached, so they can keep serving a deleted reading until the
+row is evicted or the instance recycles. `PROMPT_LOGIC_VERSION` stays the only
+remote lever, and it is not for deleting one user's data. Two tables:
 
     llm_cache  (cache_key PK, text, created_at, expires_at, route, tokens)
     llm_calls  (id PK, timestamp, route, lang, cache_hit, tokens, latency_ms)
 
 Why SQLite over Redis/etc.: zero setup, file-based persistence across server
 restarts, fine up to ~10K writes/second. When traffic actually warrants
-Redis, swap the storage layer behind the same `get`/`put`/`log_call` API.
+Redis, swap the storage layer behind the same `get`/`put`/`delete_many`/`log_call` API.
 """
 
 from __future__ import annotations
@@ -245,6 +247,24 @@ def put(
             """,
             (cache_key, text, now.isoformat(), expires_at, route, input_tokens, output_tokens),
         )
+
+
+def delete_many(cache_keys: list[str]) -> int:
+    """Remove the named rows; return how many existed. Same-instance only (see the
+    module docstring). One statement under one lock, so a concurrent `put` cannot
+    interleave half-way through an erasure. At most 40 keys (2 chart lists, cookie +
+    record, x MAX_CHARTS=10 x 2 languages, see the /account/delete handler), so no
+    chunking against SQLite's bound-variable limit (999 on builds before 3.32, 32766
+    from 3.32; 40 is far under both). Re-check this if MAX_CHARTS is raised; an empty
+    list is `IN ()`, valid, and deletes nothing.
+    """
+    keys = list(cache_keys)
+    with _conn() as c:
+        cur = c.execute(
+            f"DELETE FROM llm_cache WHERE cache_key IN ({','.join('?' * len(keys))})",
+            keys,
+        )
+        return cur.rowcount
 
 
 def log_call(

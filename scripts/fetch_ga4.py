@@ -48,6 +48,12 @@ survive that failure instead of dying with it. One request dimensioned by event 
 two params would also multiply rows. Only a 400 on the split is read as
 "unregistered"; a 403 or a 5xx still fails the run.
 
+`--events` also carries `journey_events` (#1469): `{count, since, partial_history}` for
+every name in JOURNEY_SINCE, from the rows it already fetched. agent-measure runs
+`--events` but not `--journeys`, so a declared event GA4 returned no row for read as
+absent; it now reads 0 with its since-date -- unless the property was empty or the
+list truncated, where count is null with a reason.
+
 --trend IS THE PREVIOUS WINDOW GA4 NEVER HAD (#1115)
 ----------------------------------------------------
 The analyst reported "no GA4 previous-window export" in four reports running, so
@@ -90,6 +96,59 @@ false, until someone records the deploy.
 NOT WIRED INTO CI. Calling this from .github/workflows/agent-measure.yml is a
 workflow edit the App token cannot push (#421); it is a separate owner or session
 act, to bundle with #1205's step.
+
+--cohorts SIZES THE AUTOMATED SHARE OF EACH CHANNEL (#1364)
+----------------------------------------------------------
+The analyst said "not measured" for the automated share of Direct three reports running:
+the only browser / device / country breakdown is `--anomalies`, which covers the spike
+days (7 of 28), not the window. `--cohorts` asks the WHOLE window as two requests: (1)
+channel x browser x device x country with `sessions`, `engagedSessions` and
+`userEngagementDuration`, and (2) by channel alone, which is the exact denominator -- the
+cohort request can be truncated, the channel request cannot in practice. Either failing
+fails the run, as the default report does. It filters nothing and changes no other export.
+
+`zero_engagement` is a FLAG on a cohort, not a verdict: GA4 cannot prove automation, and
+a real cohort can also read zero engagement. A cohort is flagged at 20 or more sessions
+and zero engaged sessions. The threshold is a false-positive bound: Direct's engaged rate
+is 19% (#1364), so a cohort of 20 genuine readers is all-zero with probability
+0.81^20 ~= 1.5%; at 10 sessions it would be 12%. It is deliberately not `explain()`'s
+`dead` test, which has no minimum and judges one day's top-10 tech rows as a hint (rates
+rounded to 2 places), where this is a window-wide count meant to be quoted. Cohorts under
+20 sessions are never counted, so the headline is a LOWER BOUND on the automated share
+(`small_cohort_sessions` says how many sessions that leaves unjudged). `engaged_rate` is
+recomputed from sums, never averaged over cohorts.
+
+NOT WIRED INTO CI, like --journeys: `agent-measure.yml` does not call it, and that is a
+workflow edit the App token cannot push (#421). Nor is it yet mentioned in
+`.claude/agents/analyst.md` (that edit was denied by the harness); both are follow-ups on #1364,
+so until then the analyst only has this export when someone runs it by hand.
+
+--page-locations SIZES WHAT STILL REACHES GA4 WITH A QUERY STRING (#1237)
+-------------------------------------------------------------------------
+#1066 (city) and #1093 (email, token) fixed leaks into GA4's `page_location` by stripping
+those parameters client-side (`static/analytics.js` PII_PARAMS), and each issue's check is
+"does a `page_location` carrying the parameter still arrive". Nothing here could answer
+that. `--page-locations` asks two requests: (A) `pageLocation` x `eventCount` filtered to
+locations CONTAINING "?", with the TOTAL aggregation, and (B) the unfiltered `eventCount`
+total as the denominator. Either failing fails the run, with no partial file: a silent zero
+would read as "no leak". These are EVENTS, not pageviews -- a page_view, a scroll and a
+cta_click on one URL are three.
+
+THE RAW LOCATION NEVER LEAVES `fold_location`. Output goes to /tmp and may be posted into
+a report, and a leaked value is exactly the defect being measured, so each location is
+folded to a SHAPE -- (path, sorted parameter NAMES) -- and the shapes are summed. Values,
+host, fragment and userinfo are dropped; a path segment that holds an `@` (or `%40`) or runs
+over 40 characters is `<redacted>`, and a parameter name is emitted only if it is a plain
+identifier, because `?a@b.com` is a parameter NAME with no value. `watch` and `by_param` count
+EVERY shape; only `rows` is capped. `coverage_pct` is events in the fetched rows over
+events carrying a query string, 100 unless truncated -- not over all events, which would
+read ~1% and look like a failed fetch.
+
+A zero proves the fix only when the window starts after the fix's deploy date (this file
+does not know those dates), and GA4 can threshold low-volume rows, so a zero can understate.
+
+NOT WIRED INTO CI, like --journeys and --cohorts: calling this from agent-measure.yml is a
+workflow edit the App token cannot push (#421). Wiring it is a separate sub-issue of #1237.
 """
 
 from __future__ import annotations
@@ -97,8 +156,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import datetime, timedelta
+from urllib.parse import unquote, unquote_plus, urlsplit
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _gapi import ApiError, post, token, window  # noqa: E402
@@ -403,6 +464,8 @@ def events(args, start: str, end: str, bearer: str) -> int:
     Data API refusing `customEvent:from_path` because it is not a registered custom
     dimension -- an owner-side GA4 setting the loop cannot make -- and is reported
     in `coverage_note` while the total still stands. Any other error propagates.
+    `journey_events` gives {count, since, partial_history} for every declared event
+    from the same rows (#1469); count is null, with a reason, when zero is unprovable.
     """
     url = API.format(pid=args.property)
     ranges = [{"startDate": start, "endDate": end}]
@@ -481,6 +544,32 @@ def events(args, start: str, end: str, bearer: str) -> int:
     parts.append(f"{CTA_EVENT} exists only from {CTA_SINCE} 04:42Z (PR #688), so a "
                  f"window starting before 2026-12-01 holds partial history")
 
+    # #1469: a declared event GA4 did not return used to be no row at all, which the
+    # analyst read as "absent". Same rows, no new request. A name missing from the
+    # list is a measured zero ONLY when the list is complete and non-empty: an empty
+    # property or a truncated list cannot tell "zero" from "not seen".
+    by_name = {r["event"]: r["count"] for r in rows}
+    journey_events = {}
+    for name in JOURNEY_SINCE:
+        if name in by_name:
+            entry = {"count": by_name[name]}  # exact even when the list was truncated
+        elif not rows:
+            entry = {"count": None, "reason": "the property recorded no events in the "
+                     "window, so zero is not a measurement"}
+        elif truncated:
+            entry = {"count": None, "reason": "the event list was truncated at the row "
+                     "limit, so a name may be cut off"}
+        else:
+            entry = {"count": 0}
+        journey_events[name] = {**entry, **_since_note(start, name)}
+    unknown = sum(e["count"] is None for e in journey_events.values())
+    parts.append("journey_events: a count of 0 is a measurement over the window; "
+                 "partial_history true means the event began after the window start")
+    if unknown:
+        parts.append(f"journey_events: {unknown} of {len(journey_events)} unknown -- "
+                     + next(e["reason"] for e in journey_events.values()
+                            if e["count"] is None))
+
     print(json.dumps({
         "source": "ga4", "property": args.property, "window": [start, end],
         "dimensions": ["eventName"],
@@ -490,6 +579,7 @@ def events(args, start: str, end: str, bearer: str) -> int:
         "coverage_note": "; ".join(parts),
         CTA_EVENT: {"count": cta_count, "split_available": split_available,
                     "rows": split_rows},
+        "journey_events": journey_events,
     }, indent=2))
     return 0
 
@@ -721,6 +811,373 @@ def trend(args, start: str, end: str, bearer: str) -> int:
     return 0
 
 
+COHORT_DIMS = ("sessionDefaultChannelGroup", "browser", "deviceCategory", "country")
+COHORT_METRICS = ("sessions", "engagedSessions", "userEngagementDuration")
+# 20 sessions: see the --cohorts section of the module docstring (0.81^20 ~= 1.5%).
+MIN_COHORT_SESSIONS = 20
+COHORT_ROWS_SHOWN = 50
+# GA4 caps one runReport at 250000 rows; 10000 is far above the ~150 cohorts seen, and a
+# truncation is reported in coverage_note rather than assumed away.
+COHORT_LIMIT = 10000
+
+
+def parse_cohorts(raw_rows: list[dict]) -> list[dict]:
+    """GA4 cohort rows -> dicts. `(not set)` values stay: dropping them would hide the very
+    browserless cohort #1364 is about and make the totals stop adding up."""
+    out = []
+    for r in raw_rows:
+        d, m = r["dimensionValues"], r["metricValues"]
+        out.append({"channel": d[0]["value"], "browser": d[1]["value"],
+                    "device": d[2]["value"], "country": d[3]["value"],
+                    "sessions": int(float(m[0]["value"])),
+                    "engaged_sessions": int(float(m[1]["value"])),
+                    "engagement_seconds": int(float(m[2]["value"]))})
+    return out
+
+
+def zero_engagement(row: dict, min_sessions: int = MIN_COHORT_SESSIONS) -> bool:
+    """A flag, not a verdict: a cohort big enough that zero engaged sessions is not luck."""
+    return row["sessions"] >= min_sessions and row["engaged_sessions"] == 0
+
+
+def channel_summary(channel_totals: dict, rows: list[dict],
+                    min_sessions: int = MIN_COHORT_SESSIONS) -> list[dict]:
+    """Per channel: totals from the by-channel request, cohort counts from ALL fetched rows."""
+    totals = {c: dict(v) for c, v in channel_totals.items()}
+    for r in rows:
+        # A channel the denominator request lacks (inconsistent response): fall back to rows.
+        if r["channel"] not in channel_totals:
+            t = totals.setdefault(r["channel"], {"sessions": 0, "engaged_sessions": 0})
+            t["sessions"] += r["sessions"]
+            t["engaged_sessions"] += r["engaged_sessions"]
+    out = []
+    for ch, t in totals.items():
+        mine = [r for r in rows if r["channel"] == ch]
+        zero = [r for r in mine if zero_engagement(r, min_sessions)]
+        zero_sessions = sum(r["sessions"] for r in zero)
+        small = sum(r["sessions"] for r in mine if r["sessions"] < min_sessions)
+        n, eng = t["sessions"], t["engaged_sessions"]
+        if n:
+            statement = (f"{zero_sessions} of {n} {ch} sessions fall in {len(zero)} cohorts "
+                         f"with >={min_sessions} sessions and 0% engagement; {small} more "
+                         f"sit in cohorts under {min_sessions} sessions and are not judged")
+        else:
+            statement = f"no {ch} sessions in the window"
+        out.append({"channel": ch, "sessions": n, "engaged_sessions": eng,
+                    "engaged_rate": round(eng / n, 4) if n else None,
+                    "zero_cohorts": len(zero), "zero_cohort_sessions": zero_sessions,
+                    "zero_engagement_share": round(zero_sessions / n, 4) if n else None,
+                    "small_cohort_sessions": small, "statement": statement})
+    out.sort(key=lambda c: (-c["sessions"], c["channel"]))
+    return out
+
+
+def headline(summary: list[dict], channel: str = "Direct") -> str:
+    """The sentence the analyst quotes. Says so when the channel has no sessions."""
+    ch = next((c for c in summary if c["channel"] == channel), None)
+    if ch is None or not ch["sessions"]:
+        return f"no {channel} sessions in the window, so no automated share can be stated"
+    return (f"{ch['zero_cohort_sessions']} of {ch['sessions']} {channel} sessions fall in "
+            f"cohorts with >={MIN_COHORT_SESSIONS} sessions and 0% engagement")
+
+
+def cohorts(args, start: str, end: str, bearer: str) -> int:
+    """Channel x browser x device x country over the whole window (#1364). Two requests."""
+    url = API.format(pid=args.property)
+    ranges = [{"startDate": start, "endDate": end}]
+    metrics = [{"name": m} for m in COHORT_METRICS]
+    order = [{"metric": {"metricName": "sessions"}, "desc": True}]
+    data = post(url, {"dateRanges": ranges,
+                      "dimensions": [{"name": d} for d in COHORT_DIMS],
+                      "metrics": metrics, "orderBys": order, "limit": COHORT_LIMIT}, bearer)
+    by_ch = post(url, {"dateRanges": ranges,
+                       "dimensions": [{"name": COHORT_DIMS[0]}],
+                       "metrics": metrics, "orderBys": order, "limit": COHORT_LIMIT}, bearer)
+
+    raw_rows = data.get("rows") or []
+    rows = parse_cohorts(raw_rows)
+    row_count = data.get("rowCount", len(raw_rows))
+    truncated = len(raw_rows) < row_count
+    channel_totals = {}
+    for r in by_ch.get("rows") or []:
+        m = r["metricValues"]
+        channel_totals[r["dimensionValues"][0]["value"]] = {
+            "sessions": int(float(m[0]["value"])), "engaged_sessions": int(float(m[1]["value"]))}
+    total_sessions = sum(v["sessions"] for v in channel_totals.values())
+    rows_sessions = sum(r["sessions"] for r in rows)
+    coverage = round(rows_sessions / total_sessions * 100) if total_sessions else None
+    summary = channel_summary(channel_totals, rows)
+
+    rows.sort(key=lambda r: (-r["sessions"], r["channel"], r["browser"], r["device"],
+                             r["country"]))
+    shown = [{**{k: r[k] for k in ("channel", "browser", "device", "country", "sessions",
+                                   "engaged_sessions")},
+              "engaged_rate": round(r["engaged_sessions"] / r["sessions"], 4)
+              if r["sessions"] else None,
+              "engagement_seconds": r["engagement_seconds"],
+              "avg_engagement_seconds": round(r["engagement_seconds"] / r["sessions"], 1)
+              if r["sessions"] else None,
+              "zero_engagement": zero_engagement(r)}
+             for r in rows[:COHORT_ROWS_SHOWN]]
+
+    parts = ["zero_engagement is a FLAG on a cohort, not a verdict: GA4 cannot prove "
+             "automation, and the headline count is a lower bound because cohorts under "
+             f"{MIN_COHORT_SESSIONS} sessions are not counted (see small_cohort_sessions)"]
+    if coverage is not None and rows_sessions < total_sessions:
+        parts.append(f"cohort rows account for {coverage}% of the property's "
+                     f"{total_sessions} sessions")
+    if row_count > len(raw_rows):
+        parts.append(f"TRUNCATED: {len(raw_rows)} of {row_count} cohort rows returned")
+    if len(rows) > COHORT_ROWS_SHOWN:
+        parts.append(f"rows lists the top {COHORT_ROWS_SHOWN} cohorts of {len(rows)}; "
+                     "channel summaries use all of them")
+
+    print(json.dumps({
+        "source": "ga4", "property": args.property, "mode": "cohorts",
+        "window": [start, end], "dimensions": list(COHORT_DIMS),
+        "note": "window excludes the last 3 days — GA4 standard reports lag 24-48h",
+        "min_cohort_sessions": MIN_COHORT_SESSIONS,
+        "total_sessions": total_sessions, "rows_sessions": rows_sessions,
+        "coverage_pct": coverage, "row_count": row_count, "truncated": truncated,
+        "cohort_count": len(rows),
+        "headline": headline(summary),
+        "channels": summary,
+        "rows": shown, "rows_omitted": max(len(rows) - COHORT_ROWS_SHOWN, 0),
+        "coverage_note": "; ".join(parts),
+    }, indent=2))
+    return 0
+
+
+PAGE_LOCATION_LIMIT = 10000
+PAGE_LOCATION_ROWS_SHOWN = 50
+# Duplicated from static/analytics.js `var PII_PARAMS`; tests/test_ga4_page_locations_export.py
+# regex-parses that list and asserts equality, so the two cannot drift apart silently.
+PII_PARAMS = ("q", "city", "email", "token")
+REDACTED_SEGMENT = "<redacted>"
+REDACTED_NAME = "(redacted-name)"
+UNPARSEABLE = "(unparseable)"
+# A parameter NAME is attacker-controlled (`?a@b.com` is a bare name), so it is emitted only
+# when it is a plain identifier. #1450: a plain-looking identifier is still a leak when it IS a
+# value sent without an `=` (`?Ujjain`, `?tok3nSECRET...`), so see `_plain_name` for the two
+# extra refusals.
+_SAFE_NAME = re.compile(r"[A-Za-z0-9_.\[\]-]{1,32}")
+# `routes/kundli.py` serves a saved chart at /r/{short_id}: a capability URL, so the id is as
+# good as a password for that chart. The export collapses it to this placeholder.
+SNAPSHOT_ID = "<id>"
+# A name this long that mixes digits and letters is an id or a token, never a parameter name.
+# 20 is the floor of the issue's own wording; the longest real name on the site is far shorter.
+_TOKEN_MIN = 20
+
+
+def _plain_name(part: str, name: str) -> bool:
+    """Is this query part's name a parameter NAME rather than a value that arrived as one?
+
+    `part` is the RAW text (before decoding) and `name` its decoded name. A part with no `=` is
+    a name only when it is one of the watched PII_PARAMS (`?token`, `?email` are the very
+    signals the export counts); any other bare text -- a city, an address, a token -- is a
+    value. The raw `=` is checked, not the decoded one, so `?email%3Dx` does not pass as a
+    valued `email`. A name that is 20+ characters of digits and letters is token-shaped.
+    """
+    if "=" not in part and name not in PII_PARAMS:
+        return False
+    if len(name) >= _TOKEN_MIN and any(c.isdigit() for c in name) and any(c.isalpha() for c in name):
+        return False
+    return True
+
+
+def _safe_segment(seg: str) -> str:
+    # A double-encoded address (`%2540`) decodes to `%40` one layer later, so any `%25` is
+    # refused rather than decoded to the depth an attacker chose.
+    if "%25" in seg.lower():
+        return REDACTED_SEGMENT
+    if "@" in seg or "%40" in seg.lower() or len(seg) > 40:
+        return REDACTED_SEGMENT
+    return seg
+
+
+def fold_location(raw: str) -> tuple[str, tuple[str, ...]]:
+    """A page_location as (path, sorted parameter NAMES); nothing else survives.
+
+    The raw string is never echoed -- not here, not in an exception. Host, scheme, userinfo,
+    fragment and every parameter VALUE are dropped, so an address that reached GA4 in a
+    value cannot reach the output. Also dropped: a bare query token that is really a value
+    (`?Ujjain`), a token-shaped name, a path segment holding `%25` (a double-encoded address)
+    and the id of a /r/<id> kundli snapshot, which becomes `/r/<id>`.
+    """
+    try:
+        u = urlsplit(raw)
+    except ValueError:
+        return UNPARSEABLE, ()
+    segs = u.path.split("/")
+    # Top level only: segs[0] is the empty text before the leading slash.
+    if len(segs) > 2 and segs[1] == "r" and segs[2]:
+        segs[2] = SNAPSHOT_ID
+    path = "/".join(_safe_segment(seg) for seg in segs)
+    if path.endswith("/") and len(path) > 1:
+        path = path[:-1]
+    names = set()
+    for part in u.query.split("&"):
+        name = unquote_plus(part.split("=", 1)[0])
+        if not name:
+            continue
+        if not _plain_name(part, name):
+            names.add(REDACTED_NAME)
+            continue
+        names.add(name if _SAFE_NAME.fullmatch(name) else REDACTED_NAME)
+    return path, tuple(sorted(names))
+
+
+def _watch(shapes: list[dict]) -> dict:
+    """Per watched parameter: events, distinct shapes, top 3 paths -- over every shape."""
+    out = {}
+    for p in PII_PARAMS:
+        mine = [s for s in shapes if p in s["params"]]
+        by_path: dict[str, int] = {}
+        for s in mine:
+            by_path[s["path"]] = by_path.get(s["path"], 0) + s["events"]
+        top = sorted(by_path.items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+        out[p] = {"events": sum(s["events"] for s in mine), "shapes": len(mine),
+                  "top_paths": [{"path": k, "events": v} for k, v in top]}
+    return out
+
+
+def _by_param(shapes: list[dict]) -> list[dict]:
+    seen: dict[str, dict] = {}
+    for s in shapes:
+        for p in s["params"]:
+            t = seen.setdefault(p, {"param": p, "events": 0, "shapes": 0})
+            t["events"] += s["events"]
+            t["shapes"] += 1
+    return sorted(seen.values(), key=lambda t: (-t["events"], t["param"]))
+
+
+def location_headline(total: int, with_query: int | None, rows_events: int,
+                      share: float | None, watch: dict, has_rows: bool,
+                      lower_bound: tuple[str, ...] = ()) -> str:
+    """The sentence #1066 and #1093 quote. Says so when there is nothing to judge.
+
+    `lower_bound` names why the counts may undercount (truncated, rows hidden in (other), rows
+    covering less than the total). The sentence is quoted without coverage_note, so the caveat
+    has to be in it: a watched count that is a floor must not read as a measured value (#1451).
+    """
+    # q last: it is the free-text one, the others name an identity.
+    order = sorted(PII_PARAMS, key=lambda p: p == "q")
+    named = ", ".join(f"{p}={watch[p]['events']}" for p in order)
+    suffix = f" (lower bound: {'; '.join(lower_bound)})" if lower_bound else ""
+    if not total and not has_rows:
+        return "no events in the window; nothing can be said"
+    if not has_rows and lower_bound:
+        # An incomplete empty result proves nothing: "none reaches GA4" would be a false all-clear.
+        return (f"no page_location rows with a query string returned out of {total} events, "
+                f"but the result is incomplete ({'; '.join(lower_bound)}): the watched params "
+                "may still reach GA4 in the window")
+    if not has_rows:
+        return (f"0 of {total} events carry a query string in page_location: none of the "
+                f"watched params ({', '.join(order)}) reaches GA4 in the window")
+    if with_query is None:
+        if not total:
+            return (f"GA4 returned no total for events with a query string or for all events; "
+                    f"the fetched rows hold {rows_events} events (total unknown); watched "
+                    f"params {named}{suffix}")
+        return (f"GA4 returned no total for events with a query string; the fetched rows "
+                f"hold {rows_events} of {total} events; watched params {named}{suffix}")
+    if not total:
+        return (f"{with_query} events carry a query string in page_location (total events "
+                f"unknown); watched params {named}{suffix}")
+    return (f"{with_query} of {total} events ({share}%) carry a query string in "
+            f"page_location; watched params {named}{suffix}")
+
+
+def page_locations(args, start: str, end: str, bearer: str) -> int:
+    """Which page_location values still carry a query string, folded to shapes (#1237)."""
+    url = API.format(pid=args.property)
+    ranges = [{"startDate": start, "endDate": end}]
+    data = post(url, {
+        "dateRanges": ranges,
+        "dimensions": [{"name": "pageLocation"}],
+        "metrics": [{"name": "eventCount"}],
+        "dimensionFilter": {"filter": {
+            "fieldName": "pageLocation",
+            "stringFilter": {"matchType": "CONTAINS", "value": "?"}}},
+        "metricAggregations": ["TOTAL"],
+        "orderBys": [{"metric": {"metricName": "eventCount"}, "desc": True}],
+        "limit": PAGE_LOCATION_LIMIT,
+    }, bearer)
+    # No dimensions = the property's event total, the figure query_share_pct is against.
+    all_events = post(url, {"dateRanges": ranges, "metrics": [{"name": "eventCount"}]}, bearer)
+
+    raw_rows = data.get("rows") or []
+    row_count = data.get("rowCount", len(raw_rows))
+    truncated = len(raw_rows) < row_count
+    folded: dict[tuple, dict] = {}
+    for r in raw_rows:
+        key = fold_location(r["dimensionValues"][0]["value"])
+        s = folded.setdefault(key, {"path": key[0], "params": list(key[1]),
+                                    "events": 0, "locations": 0})
+        s["events"] += int(float(r["metricValues"][0]["value"]))
+        s["locations"] += 1
+    shapes = sorted(folded.values(), key=lambda s: (-s["events"], s["path"], s["params"]))
+    rows_events = sum(s["events"] for s in shapes)
+
+    totals = data.get("totals") or []
+    if totals:
+        with_query = int(float(totals[0]["metricValues"][0]["value"]))
+    else:
+        # No rows means no event carried a query string; rows without a total are unknown.
+        with_query = None if raw_rows else 0
+    t_rows = all_events.get("rows") or []
+    total_events = int(float(t_rows[0]["metricValues"][0]["value"])) if t_rows else 0
+    share = round(with_query / total_events * 100, 1) if with_query is not None and total_events else None
+    coverage = (min(round(rows_events / with_query * 100), 100)
+                if with_query else None)
+    data_loss = bool((data.get("metadata") or {}).get("dataLossFromOtherRow", False))
+
+    lower_bound = []
+    if truncated:
+        lower_bound.append("truncated")
+    if data_loss:
+        lower_bound.append("rows hidden in (other)")
+    # Only when neither flag already explains the shortfall; rows_events < with_query, not
+    # coverage < 100, because coverage rounds 99.6 up to 100.
+    if not lower_bound and with_query is not None and rows_events < with_query:
+        lower_bound.append(f"fetched rows cover {coverage}% of the events with a query string")
+
+    watch = _watch(shapes)
+    parts = ["these are EVENTS, not pageviews: a page_view, a scroll and a click on one URL "
+             "count three times"]
+    if coverage is not None and rows_events < with_query:
+        parts.append(f"fetched rows account for {coverage}% of the {with_query} events "
+                     "that carry a query string")
+    if truncated:
+        parts.append(f"TRUNCATED: {len(raw_rows)} of {row_count} page_location rows returned")
+    if data_loss:
+        parts.append("GA4 reports dataLossFromOtherRow: some rows are hidden in (other)")
+    if len(shapes) > PAGE_LOCATION_ROWS_SHOWN:
+        parts.append(f"rows lists the top {PAGE_LOCATION_ROWS_SHOWN} shapes of {len(shapes)}; "
+                     "watch and by_param use all of them")
+
+    print(json.dumps({
+        "source": "ga4", "property": args.property, "mode": "page-locations",
+        "window": [start, end], "dimensions": ["pageLocation"],
+        "note": "window excludes the last 3 days — GA4 standard reports lag 24-48h",
+        "events_with_query": with_query, "total_events": total_events,
+        "query_share_pct": share, "rows_events": rows_events, "coverage_pct": coverage,
+        "row_count": row_count, "truncated": truncated,
+        "other_row_data_loss": data_loss, "shape_count": len(shapes),
+        "headline": location_headline(total_events, with_query, rows_events, share,
+                                      watch, bool(raw_rows), tuple(lower_bound)),
+        "watch": watch,
+        "watch_note": "events, not pageviews. A zero proves a fix only if the window starts "
+                      "after that fix's deploy date, and GA4 can threshold low-volume rows, "
+                      "so a zero can understate",
+        "by_param": _by_param(shapes),
+        "rows": shapes[:PAGE_LOCATION_ROWS_SHOWN],
+        "rows_omitted": max(len(shapes) - PAGE_LOCATION_ROWS_SHOWN, 0),
+        "coverage_note": "; ".join(parts),
+    }, indent=2))
+    return 0
+
+
 def _engagement(mv: list) -> dict:
     """engaged_sessions and engagement_seconds (total userEngagementDuration),
     or nothing if the response carried only the first four metrics."""
@@ -748,15 +1205,31 @@ def main() -> int:
     ap.add_argument("--journeys", action="store_true",
                     help="landing x event rows for the #1070 funnel events plus tool / "
                          "event_type / mode splits (mutually exclusive with the other reports)")
+    ap.add_argument("--cohorts", action="store_true",
+                    help="channel x browser x device x country over the window, flagging "
+                         "zero-engagement cohorts (mutually exclusive with the other reports)")
+    ap.add_argument("--page-locations", dest="page_locations", action="store_true",
+                    help="page_location values that still carry a query string, folded to "
+                         "path + parameter names, with the watched PII params counted "
+                         "(mutually exclusive with the other reports)")
     args = ap.parse_args()
-    if args.journeys and (args.daily or args.events or args.anomalies or args.trend):
-        sys.exit("--journeys is a separate report from --daily, --events, --anomalies and "
-                 "--trend; run them one at a time")
+    if args.journeys and (args.daily or args.events or args.anomalies or args.trend
+                          or args.page_locations):
+        sys.exit("--journeys is a separate report from --daily, --events, --anomalies, "
+                 "--trend and --page-locations; run them one at a time")
     if args.events and args.daily:
         sys.exit("--events and --daily are separate reports; run them one at a time")
-    if args.trend and (args.daily or args.events or args.anomalies):
-        sys.exit("--trend is a separate report from --daily, --events and --anomalies; "
-                 "run them one at a time")
+    if args.trend and (args.daily or args.events or args.anomalies or args.page_locations):
+        sys.exit("--trend is a separate report from --daily, --events, --anomalies and "
+                 "--page-locations; run them one at a time")
+    if args.cohorts and (args.daily or args.events or args.anomalies or args.trend
+                         or args.journeys or args.page_locations):
+        sys.exit("--cohorts is a separate report from --daily, --events, --anomalies, "
+                 "--trend, --journeys and --page-locations; run them one at a time")
+    if args.page_locations and (args.daily or args.events or args.anomalies or args.trend
+                                or args.journeys or args.cohorts):
+        sys.exit("--page-locations is a separate report from --daily, --events, --anomalies, "
+                 "--trend, --journeys and --cohorts; run them one at a time")
     if not args.property.isdigit():
         sys.exit("GA4_PROPERTY_ID must be the numeric property id "
                  "(GA4 > Admin > Property Settings), not the G- measurement id")
@@ -774,6 +1247,10 @@ def main() -> int:
         return journeys(args, start, end, bearer)
     if args.trend:
         return trend(args, start, end, bearer)
+    if args.cohorts:
+        return cohorts(args, start, end, bearer)
+    if args.page_locations:
+        return page_locations(args, start, end, bearer)
 
     body = {
         "dateRanges": [{"startDate": start, "endDate": end}],

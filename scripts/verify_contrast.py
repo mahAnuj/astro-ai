@@ -47,8 +47,9 @@ USAGE
 EXIT CODES
     0  PASS
     1  FAIL — a check did not hold
-    2  COULD NOT VERIFY — app.css is missing or unparseable. Not a pass: run
-       `npm ci && npm run build:css` first.
+    2  COULD NOT VERIFY — app.css is missing or unparseable, or (Gate 6)
+       admin_ops.html is missing. Not a pass: run `npm ci && npm run build:css`
+       first.
 """
 from __future__ import annotations
 
@@ -60,6 +61,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 BUILT_CSS = REPO_ROOT / "src/astro_ai/static/css/app.css"
 TEMPLATES = REPO_ROOT / "src/astro_ai/templates"
 BASE_HTML = TEMPLATES / "base.html"
+OPS_HTML = TEMPLATES / "admin_ops.html"
 
 AA_NORMAL = 4.5
 
@@ -473,6 +475,124 @@ def gate_5_focus_border(colours) -> list[str]:
     return fails
 
 
+# ---------------------------------------------------------------------------
+# Gate 6: /admin/ops tokens (#1133)
+# ---------------------------------------------------------------------------
+# The ops page styles itself with CSS custom properties, so the built-CSS
+# utilities Gates 1-5 read never describe it. The lists below are design
+# INTENT (which token is text, which is a fill), like DECLARED_PAIRS; the
+# values come from the template, never from a table here.
+OPS_TEXT = ("ink", "ink-dim", "ink-mute", "shipped", "open", "failed", "judged",
+            "nothing-text", "accent", "link")
+OPS_SURFACES = ("ground", "panel", "panel-2", "panel-3")
+OPS_FILLS = ("control", "brand", "c2", "c3", "c4", "c5",
+             "shipped", "open", "failed", "judged", "nothing")
+OPS_FILL_SURFACES = ("panel", "panel-2")
+# Properties set per element (inline or per state class), not theme tokens.
+OPS_ELEMENT_PROPS = ("--heat", "--st")
+OPS_TEXT_MIN = AA_NORMAL
+OPS_UI_MIN = 3.0
+
+_TOKEN = re.compile(r"(--[a-z0-9-]+)\s*:\s*([^;]+);")
+_LITERAL_COLOUR = re.compile(r"#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(")
+
+
+def _ops_blocks(css: str):
+    """(light, dark) token dicts: the LAST top-level :root and the dark one."""
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.DOTALL)
+    dark = re.search(r"@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\s*\{([^}]*)\}\s*\}", css)
+    if not dark:
+        return None, None, css
+    rest = css.replace(dark.group(0), "")
+    roots = re.findall(r":root\s*\{([^}]*)\}", rest)
+    if not roots:
+        return None, None, css
+    return dict(_TOKEN.findall(roots[-1])), dict(_TOKEN.findall(dark.group(1))), css
+
+
+def _tok_rgb(value: str, over: tuple[int, int, int] | None = None):
+    """rgb for `#hex` or `rgba(r,g,b,a)` (composited onto `over`), else None."""
+    v = value.strip().replace(" ", "")
+    m = re.fullmatch(r"#([0-9a-fA-F]{6})", v)
+    if m:
+        h = m.group(1)
+        return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    m = re.fullmatch(r"rgba\((\d+),(\d+),(\d+),([\d.]+)\)", v)
+    if m and over is not None:
+        return composite(tuple(int(m.group(i)) for i in (1, 2, 3)), float(m.group(4)), over)
+    return None
+
+
+def gate_6_ops_tokens(colours=None) -> list[str]:
+    text = OPS_HTML.read_text(encoding="utf-8")
+    if "<style>" not in text or "</style>" not in text:
+        return ["admin_ops.html has no <style> block — this gate is asserting nothing."]
+    style = text[text.index("<style>"): text.index("</style>")]
+    light, dark, css = _ops_blocks(style)
+    if light is None:
+        return ["admin_ops.html has no `@media (prefers-color-scheme:dark){:root{...}}` "
+                "block, or no top-level :root — the page's themes are gone or this "
+                "gate no longer finds them."]
+    fails: list[str] = []
+
+    # 1. every var(--x) is defined in the final :root.
+    # Comments are stripped from both halves: a CSS comment that mentions
+    # `--brand: ...` must not count as the page defining it.
+    page = _strip_comments(text[:text.index("<style>")] + text[text.index("</style>"):])
+    used = set(re.findall(r"var\((--[a-z0-9-]+)", css)) | set(re.findall(r"var\((--[a-z0-9-]+)", page))
+    per_element = set(OPS_ELEMENT_PROPS)
+    per_element |= set(re.findall(r"(--[a-z0-9-]+)\s*:", page))
+    per_element |= set(re.findall(r"(--[a-z0-9-]+)\s*:", re.sub(r":root\s*\{[^}]*\}", "", css)))
+    for name in sorted(used - set(light) - per_element):
+        fails.append(f"var({name}) is used but not defined in the final :root")
+
+    # 2. dark redefines every colour token and invents none.
+    colour_only = {k for k in light if not k.startswith(("--ui", "--mono", "--r-"))}
+    for name in sorted(colour_only - set(dark)):
+        fails.append(f"the dark block does not redefine {name}")
+    for name in sorted(set(dark) - set(light)):
+        fails.append(f"{name} exists only in the dark block (undefined in light)")
+
+    # 3. no rule outside :root carries a literal colour.
+    outside = re.sub(r":root\s*\{[^}]*\}", "", css)
+    for body in re.findall(r"\{([^{}]*)\}", outside):
+        if _LITERAL_COLOUR.search(body):
+            fails.append(f"a rule outside :root carries a literal colour: {body.strip()[:70]}")
+
+    # 4. the arithmetic, in both themes.
+    for theme, t in (("light", light), ("dark", {**light, **dark})):
+        def tok(name, over=None):
+            v = t.get(f"--{name}")
+            rgb = _tok_rgb(v, over) if v is not None else None
+            if rgb is None:
+                fails.append(f"{theme}: token --{name} is missing or not a hex/rgba colour")
+            return rgb
+
+        def check(label, fg, bg, need):
+            if fg is None or bg is None:
+                return
+            r = contrast_ratio(fg, bg)
+            if r < need:
+                fails.append(f"{theme}: {label} is {r:.2f}:1 (needs {need}:1)")
+
+        for name in OPS_TEXT:
+            for surf in OPS_SURFACES:
+                check(f"--{name} on --{surf}", tok(name), tok(surf), OPS_TEXT_MIN)
+        panel = tok("panel")
+        if panel is not None:
+            def wash(name):  # a translucent tint over the panel, as it is seen
+                return tok(name, panel)
+            for fg, bg in (("red-sev", "red-chip"), ("red-t", "red-wash-a"),
+                           ("amber-t", "amber-chip"), ("amber-t", "amber-wash-a"),
+                           ("live-fg", "live-bg"), ("failed", "red-wash-a")):
+                check(f"--{fg} on --{bg} over --panel", tok(fg), wash(bg), OPS_TEXT_MIN)
+        check("--on-brand on --brand", tok("on-brand"), tok("brand"), OPS_TEXT_MIN)
+        for surf in OPS_FILL_SURFACES:
+            for name in OPS_FILLS:
+                check(f"fill --{name} on --{surf}", tok(name), tok(surf), OPS_UI_MIN)
+    return fails
+
+
 def report_decorative(colours) -> None:
     """Not a gate. Surfaces how much weight the decorative exemption carries."""
     for util in sorted(DECORATIVE):
@@ -506,6 +626,11 @@ def main() -> int:
         print("-> SKIPPED (exit 2). This is NOT a pass — the check did not run.")
         return 2
 
+    if not OPS_HTML.exists():
+        print(f"COULD NOT VERIFY: templates/{OPS_HTML.name} does not exist (Gate 6).")
+        print("-> SKIPPED (exit 2). This is NOT a pass — the check did not run.")
+        return 2
+
     print(f"Contrast verification — {len(colours)} colour utilities read from app.css\n")
 
     gates = (
@@ -514,6 +639,8 @@ def main() -> int:
         ("Gate 3 - declared text-on-surface pairs meet AA", gate_3_declared_pairs),
         ("Gate 4 - every translucent text utility is declared", gate_4_alpha_declared),
         ("Gate 5 - the focused form-field border is >= 3:1 (WCAG 1.4.11)", gate_5_focus_border),
+        ("Gate 6 - /admin/ops tokens: AA text, 3:1 fills, none undefined, no literal colour",
+         gate_6_ops_tokens),
     )
 
     all_failures: list[str] = []

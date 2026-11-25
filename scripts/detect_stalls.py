@@ -114,6 +114,61 @@ def agent_pushable(pr: int) -> bool:
     return not any(q.startswith(".github/workflows/") for q in paths)
 
 
+#: The one workflow the merge-starvation stall is about. A fix PR touching any
+#: other workflow file proves nothing about why `mergeable-but-open` PRs sit.
+_MERGE_WORKFLOW = ".github/workflows/agent-merge.yml"
+
+
+def owner_workflow_fix_in_flight() -> int | None:
+    """Number of an open PR that is the owner's fix to `agent-merge.yml`, or None.
+
+    WHY (#1387). When `agent-merge` itself is the defect (#1335, chief's ruling
+    on #1352: option 1, irreducible act #1), every `qa-pass` + green PR reads
+    `mergeable-but-open`, each obliges a dispatch no agent can perform (the gate
+    is a workflow file; the App token is refused on those), and chief was woken
+    on every steward run to rule the same ruled thing. Measured 2026-11-25:
+    OBLIGED_ACTIONS=4 for five such PRs while the owner's fix, #1405, sat open.
+
+    THREE FACTS, ALL READ FROM THE API, NONE FROM TEXT. The PR is authored by the
+    repo owner, touches `agent-merge.yml`, and carries `qa-pass` (which only
+    `qa_verdict.sh` writes). No title, body or comment is read, so nothing an
+    author writes can suppress a wake; an outside PR fails the author test, and a
+    PR QA has not passed fails the label test.
+
+    SELF-EXPIRING: it answers only while that PR is open. When it merges and a
+    `mergeable-but-open` remains, the stall obliges again -- a genuinely new
+    misread wakes chief.
+
+    FAILS OPEN, the opposite way round from `agent_pushable`'s reasoning but the
+    same principle: not knowing means "not suppressed", because hiding a real
+    stall costs more than a spurious ruling. Any error, missing key or bad JSON
+    returns None. One bounded call, made lazily by the caller.
+    """
+    owner = REPO.split("/")[0].casefold()
+    try:
+        prs = json.loads(gh("pr", "list", "--repo", REPO, "--state", "open",
+                            "--author", REPO.split("/")[0], "--limit", "50",
+                            "--json", "number,author,labels,files"))
+    except Exception:  # noqa: BLE001 - any failure is "could not tell", never a crash
+        return None
+    if not isinstance(prs, list):
+        return None
+    found: list[int] = []
+    for p in prs:
+        if not isinstance(p, dict) or not isinstance(p.get("number"), int):
+            continue
+        author = p.get("author")
+        if str(author.get("login", "") if isinstance(author, dict) else "").casefold() != owner:
+            continue
+        if "qa-pass" not in {l.get("name") for l in (p.get("labels") or []) if isinstance(l, dict)}:
+            continue
+        if not any(isinstance(f, dict) and f.get("path") == _MERGE_WORKFLOW
+                   for f in (p.get("files") or [])):
+            continue
+        found.append(p["number"])
+    return min(found) if found else None
+
+
 #: The #354 trust boundary, as `agent-merge.yml`'s TRUST_BOUNDARY env sets it.
 #: Duplicated here deliberately and said so: this script cannot read the
 #: workflow's env block, and a detector that GUESSED the boundary would be the
@@ -750,6 +805,26 @@ def find_stalls(hours: float) -> list[dict]:
             stalls.append(dict(kind="no-qa-verdict", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"gates green, no qa-pass or qa-fail after {age:.0f}h",
                                checks=checks, labels=sorted(labels), agent_pushable=pushable))
+
+    # A `mergeable-but-open` STARVED BEHIND AN OWNER-AUTHORED FIX TO THE MERGE
+    # WORKFLOW IS NOT A NEW MISREAD (#1387). Reclassified, still printed, and in
+    # neither obliged set, so chief is not woken to re-rule #1352. The lookup is
+    # lazy (one `gh` call, only when such a stall exists) and the fix PR itself
+    # keeps its own kind. `is not None`, not truthiness: see the error path in
+    # `owner_workflow_fix_in_flight`, which must stay None.
+    fix_pr: int | None = None
+    looked = False
+    for st in stalls:
+        if st["kind"] != "mergeable-but-open":
+            continue
+        if not looked:
+            fix_pr, looked = owner_workflow_fix_in_flight(), True
+        if fix_pr is not None and st["pr"] != fix_pr:
+            st.update(
+                kind="merge-starved-owner-blocked", agent_pushable=False,
+                detail=(f"{st['detail']}; starved behind PR #{fix_pr}, the owner's open "
+                        f"qa-pass fix to agent-merge.yml (chief ruled #1352: the owner's act "
+                        f"is merging it). Not an obliged action."))
 
     # THE WATCHER IS NOT WATCHED. This condition is the answer to "if the steward
     # did not act, why did nothing notice".

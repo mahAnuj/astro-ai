@@ -220,7 +220,7 @@ def test_a_draft_is_never_a_candidate():
 
 # --- the walk: mergeability, and not stopping at the first (#374) ---
 
-def _walk(shortlist: str, mergeable: dict[int, str]) -> tuple[str, str]:
+def _walk(shortlist: str, mergeable: dict[int, str], red: tuple[int, ...] = ()) -> tuple[str, str]:
     """Run the workflow's own candidate loop. Returns (picked, stderr+stdout).
 
     The loop is lifted out of the `pr` step rather than reimplemented, and `gh`
@@ -242,6 +242,8 @@ def _walk(shortlist: str, mergeable: dict[int, str]) -> tuple[str, str]:
         gh.write_text(
             "#!/bin/bash\n"
             'for p in $@; do case "$p" in [0-9]*) n="$p"; break;; esac; done\n'
+            # The head SHA the sweep asks for before checking a candidate's checks.
+            'case " $* " in *" headRefOid "*) printf "sha-%s" "$n"; exit 0;; esac\n'
             f'for e in $(echo "{table}" | tr ";" " "); do\n'
             '  k="${e%%=*}"; v="${e#*=}"\n'
             '  if [ "$k" = "$n" ]; then\n'
@@ -255,7 +257,12 @@ def _walk(shortlist: str, mergeable: dict[int, str]) -> tuple[str, str]:
             "done\n"
             "exit 1\n")
         gh.chmod(0o755)
-        script = f'candidates="{shortlist}"\nGH_REPO=x\n{loop}\nprintf "PICKED=%s" "$n"\n'
+        # head_checks is the workflow's HEAD_CHECKS_FN (tested on its own in
+        # test_agent_merge_head_checks.py); here a stub says which heads are red.
+        reds = " ".join(f"sha-{r}" for r in red)
+        stub = ('head_checks() { case " ' + reds + ' " in *" $1 "*) echo "gates=completed:failure";; '
+                '*) echo "gates=completed:success";; esac; }\n')
+        script = f'candidates="{shortlist}"\nGH_REPO=x\n{stub}{loop}\nprintf "PICKED=%s" "$n"\n'
         r = subprocess.run(["bash", "-c", script], capture_output=True, text=True,
                            env={"PATH": f"{bin_dir}:/usr/bin:/bin", "MERGEABLE_WAIT": "0",
                                 "GH_COUNT": str(pathlib.Path(tmp) / "count")})
@@ -334,3 +341,12 @@ def test_the_schedule_leg_cannot_be_reached_without_the_sweep_filter():
     # And the already-handled guard, which is what keeps a sweep racing an edge
     # from reaching `gh pr merge` on a merged PR.
     assert '"$state" != "OPEN"' in run
+
+
+def test_a_red_candidate_is_skipped_so_it_cannot_block_the_green_ones_above_it():
+    """2026-11-21..23: #1335 was MERGEABLE with a red check, the sweep picked it on every
+    run and stopped, and the green, qa-pass #1342 and #1375 never got a turn."""
+    picked, out = _walk("1335 1342 1375", {1335: "MERGEABLE", 1342: "MERGEABLE", 1375: "MERGEABLE"},
+                        red=(1335,))
+    assert picked == "1342", out
+    assert "skipping #1335 — checks not green: gates=completed:failure" in out

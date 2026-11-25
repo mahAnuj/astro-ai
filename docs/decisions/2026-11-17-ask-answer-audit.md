@@ -46,7 +46,15 @@ not only from a session.
 6. `scripts/ask_audit_post.py` — the agent's only way to post. It takes a body file under
    `/tmp/ask-work`, a title, labels from a closed list and an optional issue number; it
    runs the guard on body and title and `verify_issue_evidence.check()` on the body, and
-   calls `gh` only if both pass. It always applies `provenance:outsider`.
+   calls `gh` only if both pass. It always applies `provenance:outsider`. **Scoped by `gh`,
+   not by the prompt (#1291):** `--issue N` is accepted only for an issue that `gh issue
+   view` shows carrying the `provenance:outsider` label, the hidden
+   `<!-- ask-audit-class: <class> -->` line AND an author that is this repository's own App
+   (`resolve_provenance.is_self_app`, `is_bot` a real bool); a new issue must carry the line
+   and is capped at 5 per rolling 24h, counted from `gh issue list --state all` on every call
+   (no search index, which is eventually consistent; no process memory). Anything
+   unreadable or malformed, and a full 100-row listing that never leaves the window, exits 2
+   with nothing posted; every `gh` read happens before the label is created.
 7. The sample is deleted in an `always()` step. It is never under `/tmp/measure`, which is
    uploaded as an artifact and committed.
 
@@ -118,6 +126,12 @@ documented inputs allow:
 - The guard misses by design: quotes under 6 words, re-ordered, encoded or homoglyph text.
 - An agent that restates outside text in an issue WITHOUT the label is still trusted by the
   resolver; the label covers only writers that apply it.
+- **Before #1291** `--issue N` took any number, so an injected audit agent could comment on
+  and label `provenance:outsider` any issue, the loop's own included (the label alone makes
+  it unworkable at Step 0a), and "at most five new issues" was a sentence in the prompt only.
+  Both are now enforced in the script. What stays open: the author test trusts every identity
+  in `SELF_APPS` (`claude`, `github-actions`), so a different loop writer's issue that also
+  carries the label and the class line would pass, and the cap does not cover comments.
 - Chart-specific claims are graded "rules-only" until slice 2 adds the snapshot to `form_ask`.
 
 **Cost.** 0 Groq tokens: it reads stored answers and makes no app LLM call. One Claude run

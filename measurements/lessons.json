@@ -1,74 +1,8 @@
 {
- "generated_at": "2026-11-21T16:53:09Z",
+ "generated_at": "2026-11-25T12:33:07Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
-   {
-    "number": 524,
-    "at": "2026-10-25T16:36:18Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/524#issuecomment-6400257351",
-    "summary": "QA: FAIL \u2014 verified at `029d1f55ccf870a48ae1bcc7ad0565239ed9b491` QA r3: criterion 6 FIXED (0 of 90 days diverge, was 10) but B1 the day-moment pin is unguarded (reverting it at all 5 call sites leaves 1229 tests green; chart.py:542 claims otherwise), B2 house-8 remedy tier unsourced (vedic_referenc",
-    "themes": [
-     "grounding"
-    ]
-   },
-   {
-    "number": 524,
-    "at": "2026-10-25T17:05:01Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/524#issuecomment-6400563265",
-    "summary": "QA: FAIL \u2014 verified at `8ab47b24dfa0426353a3d97d43a7e372db39b2ad` QA r4: B1 (11 pin sites each go red when reverted, redone independently), B2 (house 8 dropped; 90 Leo rashi-days change, nothing else), T1 (gate hi 6,116 vs real 6,118), T2, S1 all FIXED; 1271 passed, 15 gates exit 0, 55/55 scoped mut",
-    "themes": [
-     "grounding",
-     "i18n",
-     "performance"
-    ]
-   },
-   {
-    "number": 536,
-    "at": "2026-10-26T01:50:17Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406442682",
-    "summary": "QA: FAIL \u2014 verified at `9caa9b6637d300c52621bce0a2baae2aa7bb1942` Round 3: BUG-1..5 fixed; 3 new defects from the fix commit: garbled panel sentence (D1), over-claimed skip_full diagnostic (D2), test gaps on skip_full/raw_mid/zero-remaining (D3)",
-    "themes": [
-     "grounding",
-     "tokens",
-     "tests",
-     "regression"
-    ]
-   },
-   {
-    "number": 536,
-    "at": "2026-10-26T02:03:33Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406590521",
-    "summary": "QA: FAIL \u2014 verified at `3857f27f5f06f27f6a3797694b98bff01fb92260` Round 4: D1/D3 fixed and mutant-verified; one blocker: stale 'fires forever / cannot be measured' comment at ops_data.py:1152-1157 (D2 over-claim survives); N1/N2/N3 non-blocking wording",
-    "themes": [
-     "tokens",
-     "copy"
-    ]
-   },
-   {
-    "number": 536,
-    "at": "2026-10-26T02:11:54Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406687161",
-    "summary": "QA: FAIL \u2014 verified at `67635814690438b7c4b6b5ff2b4a8908538ff298` Round 5: F1 fixed; N2 sentence 'closer calls cannot help a bucket-sized request' over-claims (fake clock: counted sample in a ~1s window); N1 wording not applied in probe comment/test docstring",
-    "themes": [
-     "tokens",
-     "tests",
-     "copy",
-     "performance"
-    ]
-   },
-   {
-    "number": 536,
-    "at": "2026-10-26T02:20:49Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/536#issuecomment-6406792982",
-    "summary": "QA: FAIL \u2014 verified at `6beaf8a7dd8d613f8f1ce285ebc1eecf5b9da2a6` Round 6: one blocker: ratelimit_probe.py:229-232 claims a bucket-sized request 'still yields a counted sample in a window about a second wide'; fake clock shows none under admission charging at realistic latency and none for the hi re",
-    "themes": [
-     "tokens",
-     "tests",
-     "copy",
-     "performance"
-    ]
-   },
    {
     "number": 544,
     "at": "2026-10-26T16:27:28Z",
@@ -1116,6 +1050,22 @@
     "themes": [
      "grounding"
     ]
+   },
+   {
+    "number": 1375,
+    "at": "2026-11-22T10:39:55Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1375#issuecomment-7077938056",
+    "summary": "QA: FAIL \u2014 verified at `4407c6da7908855e40d03097b4ecd624a1a118f8` DEFECT 1: templates/learn/manglik-remedies.html:87 still says 'it is the evenness of the match that does the neutralising; ... tradition does not promise it cancels' right after 'names no severity condition' - re-imports the severity ",
+    "themes": [
+     "grounding"
+    ]
+   },
+   {
+    "number": 1398,
+    "at": "2026-11-23T02:32:22Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1398#issuecomment-7090017082",
+    "summary": "QA: FAIL \u2014 verified at `c9a7c3397dfe6a72a8822b09c944b2e3cadfdba2` DEFECT: scripts/fetch_ga4.py --cohorts docstring says 'The analyst runs it itself (.claude/agents/analyst.md) when /tmp/measure/ga4-cohorts.json is absent' but analyst.md has no such instruction (grep cohorts = 0; the commit/PR body s",
+    "themes": []
    }
   ],
   "reverts": [],
@@ -1166,17 +1116,25 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": []
+  "ops_findings": [
+   {
+    "kind": "loop-starved",
+    "level": "amber",
+    "title": "2 of the last 4 build cycles built nothing",
+    "detail": "Empty cycles started 2026-11-25T06:00, 2026-11-25T12:20. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
+    "where": "/admin/ops"
+   }
+  ]
  },
  "error_themes": {
-  "grounding": 32,
-  "regression": 32,
-  "tests": 29,
-  "tokens": 21,
-  "copy": 20,
+  "regression": 31,
+  "grounding": 30,
+  "tests": 26,
+  "copy": 17,
+  "tokens": 17,
   "security": 15,
-  "i18n": 9,
-  "performance": 8
+  "i18n": 8,
+  "performance": 5
  },
  "repeated_themes": [
   "copy",
@@ -1225,39 +1183,11 @@
    "url": "https://github.com/mahAnuj/astro-ai/issues/338#issuecomment-6536437917"
   },
   {
-   "number": 373,
-   "verdict": "PARTIAL",
-   "headline": "PARTIAL",
-   "at": "2026-10-22T23:55:48Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/373#issuecomment-6353962512"
-  },
-  {
-   "number": 396,
-   "verdict": "PASS",
-   "headline": "PASS on the first clause only",
-   "at": "2026-10-22T23:55:47Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/396#issuecomment-6353962282"
-  },
-  {
-   "number": 397,
-   "verdict": "PASS",
-   "headline": "PASS on the countable clause; the behavioural clause was not checked",
-   "at": "2026-10-22T23:55:46Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/397#issuecomment-6353962033"
-  },
-  {
    "number": 426,
    "verdict": "PENDING",
    "headline": "pending \u2014 scoreable from 2026-12-03",
    "at": "2026-11-08T00:12:31Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/426#issuecomment-6714891661"
-  },
-  {
-   "number": 493,
-   "verdict": "UNSCOREABLE",
-   "headline": "UNSCORED \u2014 the measured event has not happened yet",
-   "at": "2026-10-23T23:46:57Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/493#issuecomment-6377014633"
   },
   {
    "number": 508,
@@ -1468,15 +1398,28 @@
    "headline": "pending \u2014 scoreable from 2026-12-22",
    "at": "2026-11-21T02:00:03Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/1322#issuecomment-7055553267"
+  },
+  {
+   "number": 1325,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-22",
+   "at": "2026-11-22T00:56:09Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1325#issuecomment-7071875259"
+  },
+  {
+   "number": 1336,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-22",
+   "at": "2026-11-22T00:56:10Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1336#issuecomment-7071875487"
   }
  ],
  "outcome_counts": {
-  "OTHER": 3,
   "MISS": 1,
-  "UNSCOREABLE": 10,
-  "PASS": 5,
-  "PARTIAL": 1,
-  "PENDING": 19,
+  "OTHER": 3,
+  "UNSCOREABLE": 9,
+  "PASS": 3,
+  "PENDING": 21,
   "HIT": 1
  },
  "competitor_patterns": [

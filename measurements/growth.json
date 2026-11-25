@@ -1,56 +1,28 @@
 {
- "generated_at": "2026-11-21T16:51:08Z",
+ "generated_at": "2026-11-25T12:29:54Z",
  "target": 0.6,
- "week": "2026-W47",
- "today_date": "2026-11-21",
+ "week": "2026-W48",
+ "today_date": "2026-11-25",
  "today": {
-  "growth": 15,
+  "growth": 2,
   "other": 10,
-  "exempt": 0,
-  "share": 0.6
+  "exempt": 1,
+  "share": 0.167
  },
  "this_week": {
-  "growth": 30,
-  "other": 65,
-  "exempt": 0,
-  "share": 0.316
+  "growth": 14,
+  "other": 32,
+  "exempt": 1,
+  "share": 0.304
  },
  "this_month": {
-  "growth": 33,
-  "other": 230,
-  "exempt": 0,
-  "share": 0.125
+  "growth": 48,
+  "other": 282,
+  "exempt": 1,
+  "share": 0.145
  },
  "must_pick_growth": true,
  "days": [
-  {
-   "date": "2026-11-08",
-   "growth": 0,
-   "other": 11,
-   "exempt": 0,
-   "share": 0.0
-  },
-  {
-   "date": "2026-11-09",
-   "growth": 0,
-   "other": 11,
-   "exempt": 0,
-   "share": 0.0
-  },
-  {
-   "date": "2026-11-10",
-   "growth": 0,
-   "other": 10,
-   "exempt": 0,
-   "share": 0.0
-  },
-  {
-   "date": "2026-11-11",
-   "growth": 0,
-   "other": 26,
-   "exempt": 0,
-   "share": 0.0
-  },
   {
    "date": "2026-11-12",
    "growth": 0,
@@ -117,491 +89,535 @@
   {
    "date": "2026-11-21",
    "growth": 15,
-   "other": 10,
+   "other": 11,
    "exempt": 0,
-   "share": 0.6
+   "share": 0.577
+  },
+  {
+   "date": "2026-11-22",
+   "growth": 1,
+   "other": 19,
+   "exempt": 0,
+   "share": 0.05
+  },
+  {
+   "date": "2026-11-23",
+   "growth": 6,
+   "other": 11,
+   "exempt": 0,
+   "share": 0.353
+  },
+  {
+   "date": "2026-11-24",
+   "growth": 6,
+   "other": 11,
+   "exempt": 0,
+   "share": 0.353
+  },
+  {
+   "date": "2026-11-25",
+   "growth": 2,
+   "other": 10,
+   "exempt": 1,
+   "share": 0.167
   }
  ],
  "cycles": [
   {
-   "run": 44925310927,
-   "started": "2026-11-21T16:34:27Z",
-   "issue": 1017,
-   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1350,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44917254081,
-   "started": "2026-11-21T15:04:56Z",
-   "issue": 1017,
-   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1350,
-   "agents": null
-  },
-  {
-   "run": 44905954944,
-   "started": "2026-11-21T12:51:20Z",
-   "issue": 1017,
-   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1348,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44902743294,
-   "started": "2026-11-21T12:12:30Z",
-   "issue": 1332,
-   "title": "lunar_observances emits Drik's Gauna Ekadashi date for 2027-01 and 2028-11; shukla_tithi_date mis-resolves Margashirsha 2027",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1345,
-   "agents": {
-    "qa": 2
-   }
-  },
-  {
-   "run": 44895992203,
-   "started": "2026-11-21T10:47:22Z",
-   "issue": 1017,
-   "title": "Muhurat Finder: what \"the best results\" means \u2014 ranked top pick, honest count, usable local window, explained factors, shareable (umbrella over the muhurat rule audit)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1348,
-   "agents": null
-  },
-  {
-   "run": 44890430479,
-   "started": "2026-11-21T09:37:04Z",
-   "issue": 1332,
-   "title": "lunar_observances emits Drik's Gauna Ekadashi date for 2027-01 and 2028-11; shukla_tithi_date mis-resolves Margashirsha 2027",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1345,
-   "agents": null
-  },
-  {
-   "run": 44889993023,
-   "started": "2026-11-21T09:31:36Z",
-   "issue": 1341,
-   "title": "muhurat finder: top-pick card ranked by (tier, -score, date), score carried on MuhuratCandidate; Range select reflects searched days (R1 of #1017, closes #1339)",
-   "class": "growth",
-   "outcome": "pr open",
-   "pr": 1342,
-   "agents": null
-  },
-  {
-   "run": 44886410798,
-   "started": "2026-11-21T08:46:04Z",
-   "issue": 1341,
-   "title": "muhurat finder: top-pick card ranked by (tier, -score, date), score carried on MuhuratCandidate; Range select reflects searched days (R1 of #1017, closes #1339)",
-   "class": "growth",
-   "outcome": "pr open",
-   "pr": 1342,
-   "agents": null
-  },
-  {
-   "run": 44879675820,
-   "started": "2026-11-21T07:19:03Z",
-   "issue": 1341,
-   "title": "muhurat finder: top-pick card ranked by (tier, -score, date), score carried on MuhuratCandidate; Range select reflects searched days (R1 of #1017, closes #1339)",
-   "class": "growth",
-   "outcome": "pr open",
-   "pr": 1342,
-   "agents": null
-  },
-  {
-   "run": 44878585998,
-   "started": "2026-11-21T07:05:20Z",
-   "issue": 1338,
-   "title": "QA follow-up: muhurat find_candidates sunset-derived windows depend on which calls ran earlier (1-minute drift) (found in PR #1337)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1340,
-   "agents": {
-    "qa": 2
-   }
-  },
-  {
-   "run": 44873482975,
-   "started": "2026-11-21T06:00:33Z",
-   "issue": 1338,
-   "title": "QA follow-up: muhurat find_candidates sunset-derived windows depend on which calls ran earlier (1-minute drift) (found in PR #1337)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1340,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44869959448,
-   "started": "2026-11-21T05:14:44Z",
-   "issue": 1336,
-   "title": "muhurat finder: shareable GET result URL and a named next valid date on zero results (#1017 slice 5: R7 + R8)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1337,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44868228537,
-   "started": "2026-11-21T04:53:03Z",
-   "issue": 1320,
-   "title": "QA follow-up: /manglik-check card still calls manglik-remedies 'Classical practices' (PR #1319)",
+   "run": 45603269707,
+   "started": "2026-11-25T11:18:51Z",
+   "issue": 1255,
+   "title": "tokens: 26 of 123 build cycles in 7 days re-entered an issue already in progress \u2014 cut the rework, not the fix rounds",
    "class": "other",
    "outcome": "pr open",
-   "pr": 1335,
-   "agents": null
-  },
-  {
-   "run": 44867228276,
-   "started": "2026-11-21T04:40:11Z",
-   "issue": 1325,
-   "title": "muhurat landing pages show the next 5 valid dates for New Delhi, plus today/tomorrow check (slice 6 of #1017, R9)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1328,
-   "agents": {
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44863097138,
-   "started": "2026-11-21T03:49:56Z",
-   "issue": 1331,
-   "title": "QA follow-up: kalabhairav-jayanti copy says Ashtami runs dusk to midnight, but on 2026-12-01 it ends 23:14 (PR #1329)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1333,
-   "agents": null
-  },
-  {
-   "run": 44860923821,
-   "started": "2026-11-21T03:24:02Z",
-   "issue": 1325,
-   "title": "muhurat landing pages show the next 5 valid dates for New Delhi, plus today/tomorrow check (slice 6 of #1017, R9)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1328,
-   "agents": null
-  },
-  {
-   "run": 44856777487,
-   "started": "2026-11-21T02:35:59Z",
-   "issue": 1326,
-   "title": "festival registry: no festival dated 2026-11-22 to 2027-01-14 \u2014 54 days the daily email, rashifal and /festivals have nothing to show",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1329,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44845187680,
-   "started": "2026-11-21T00:38:42Z",
-   "issue": 1325,
-   "title": "muhurat landing pages show the next 5 valid dates for New Delhi, plus today/tomorrow check (slice 6 of #1017, R9)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1328,
-   "agents": null
-  },
-  {
-   "run": 44843936407,
-   "started": "2026-11-21T00:27:27Z",
-   "issue": 1322,
-   "title": "muhurat finder: headline counts caution days as auspicious; results name no timezone or sunrise (#1017 slice 2: R2 + R5)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1323,
+   "pr": 1475,
    "agents": {
     "architect": 1,
     "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44839329355,
-   "started": "2026-11-20T23:47:22Z",
-   "issue": 1313,
-   "title": "QA follow-up: manglik-remedies intro and summary still say 'seven classically-cited remedies' (PR #1312)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1319,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44825462844,
-   "started": "2026-11-20T22:01:57Z",
-   "issue": 1294,
-   "title": "QA follow-up: the-9-grahas-overview gives Rahu and Ketu exaltation on two different schemes",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1316,
-   "agents": null
-  },
-  {
-   "run": 44817503104,
-   "started": "2026-11-20T21:07:34Z",
-   "issue": 1292,
-   "title": "QA follow-up: /account/delete does not revoke the user's other sessions, so another device stays signed in",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1314,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44806805035,
-   "started": "2026-11-20T19:56:37Z",
-   "issue": 1292,
-   "title": "QA follow-up: /account/delete does not revoke the user's other sessions, so another device stays signed in",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1314,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44799139462,
-   "started": "2026-11-20T19:07:11Z",
-   "issue": 1300,
-   "title": "QA follow-up: manglik-remedies.html line 7 still says 'that classical tradition flags for marriage friction'",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1312,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44797856801,
-   "started": "2026-11-20T18:59:01Z",
-   "issue": 1302,
-   "title": "QA follow-up: kundali-matching article links with the raw text '/matching tool'",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1310,
-   "agents": null
-  },
-  {
-   "run": 44788136062,
-   "started": "2026-11-20T17:57:05Z",
-   "issue": 1301,
-   "title": "QA follow-up: numerology caption says 'the classical text we follow' though the page mixes two sources; a code comment says 'to about a day' where two differ by 2 days",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1308,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44775691097,
-   "started": "2026-11-20T16:40:16Z",
-   "issue": 1301,
-   "title": "QA follow-up: numerology caption says 'the classical text we follow' though the page mixes two sources; a code comment says 'to about a day' where two differ by 2 days",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1308,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "numerologist": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44768005421,
-   "started": "2026-11-20T15:54:43Z",
-   "issue": 1261,
-   "title": "infra: cap Cloud Run instances, and stop a query string bypassing the CDN cache on public endpoints (/api/agents/status)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1305,
-   "agents": null
-  },
-  {
-   "run": 44724731272,
-   "started": "2026-11-20T11:05:48Z",
-   "issue": 1277,
-   "title": "analytics (#1070 slice 4): the daily GA4 export carries returning users and a per-day admin-landing count",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1278,
-   "agents": null
-  },
-  {
-   "run": 44658677640,
-   "started": "2026-11-20T02:08:42Z",
-   "issue": 1207,
-   "title": "[INFRA] agent-queue drains into a cycle for a target another cycle just finished; the stand-down leaves no comment, so the carrier reports failure and retries",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1271,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44650736678,
-   "started": "2026-11-20T01:03:39Z",
-   "issue": 1207,
-   "title": "[INFRA] agent-queue drains into a cycle for a target another cycle just finished; the stand-down leaves no comment, so the carrier reports failure and retries",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1271,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 2,
-    "project-manager": 1,
-    "qa": 2
-   }
-  },
-  {
-   "run": 44629149030,
-   "started": "2026-11-19T22:29:49Z",
-   "issue": 1236,
-   "title": "analytics: anomaly breakdown skips every day under the spike bar \u2014 5 elevated days in 28 have no named source (4 reports in a row)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1266,
-   "agents": null
-  },
-  {
-   "run": 44455237313,
-   "started": "2026-11-19T03:59:58Z",
-   "issue": 1232,
-   "title": "corpus: Raman rejects the first quarter of Makha and Moola for weddings; vivah finder has no pada test",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1242,
-   "agents": null
-  },
-  {
-   "run": 44441088862,
-   "started": "2026-11-19T02:00:22Z",
-   "issue": 1069,
-   "title": "analytics: feature_view and user_identified fire only on full loads under hx-boost; user_identified is 44% of code-sent events; languageSwitched/pwaInstalled never called",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1234,
-   "agents": null
-  },
-  {
-   "run": 44433226676,
-   "started": "2026-11-19T00:58:05Z",
-   "issue": 1069,
-   "title": "analytics: feature_view and user_identified fire only on full loads under hx-boost; user_identified is 44% of code-sent events; languageSwitched/pwaInstalled never called",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1234,
-   "agents": null
-  },
-  {
-   "run": 44411358136,
-   "started": "2026-11-18T22:24:59Z",
-   "issue": 1229,
-   "title": "analytics: login, language_switched, share events and from_path on subscribe_completed (#1070 slice 3)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1230,
-   "agents": {
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 44391751946,
-   "started": "2026-11-18T20:30:33Z",
-   "issue": 1226,
-   "title": "analytics: tool_submitted event and fetch_ga4.py --journeys (#1070 slice 2)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1227,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 44378576254,
-   "started": "2026-11-18T19:15:28Z",
-   "issue": 1226,
-   "title": "analytics: tool_submitted event and fetch_ga4.py --journeys (#1070 slice 2)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1227,
-   "agents": {
-    "engineer": 1,
-    "frontend-engineer": 1,
     "project-manager": 1
    }
   },
   {
-   "run": 44343896958,
-   "started": "2026-11-18T16:09:25Z",
-   "issue": 856,
-   "title": "Manglik copy: remaining flat six-house claims and the 'many texts \u2026 after age 28' claim outrun the held sources (residue of #838)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1222,
+   "run": 45593061168,
+   "started": "2026-11-25T10:14:29Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "pr open",
+   "pr": 1474,
    "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 45550122168,
+   "started": "2026-11-25T04:56:15Z",
+   "issue": 1469,
+   "title": "analytics: muhurat_searched is absent from GA4 in every report \u2014 cannot tell broken from unused (half of #1336's metric)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1472,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
     "project-manager": 1,
     "qa": 1
    }
   },
   {
-   "run": 44304393801,
-   "started": "2026-11-18T12:29:23Z",
-   "issue": 1217,
-   "title": "analytics: completion events for matching, numerology, muhurat and the dosha checks (#1070 rows 3-6)",
+   "run": 45547131994,
+   "started": "2026-11-25T04:29:33Z",
+   "issue": 1466,
+   "title": "tokens: code-index generator and the look-up-before-you-read agent rule (part of #1256)",
    "class": "other",
    "outcome": "shipped",
-   "pr": 1218,
+   "pr": 1470,
    "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45536453385,
+   "started": "2026-11-25T02:56:20Z",
+   "issue": 1466,
+   "title": "tokens: code-index generator and the look-up-before-you-read agent rule (part of #1256)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1470,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 2,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45532549739,
+   "started": "2026-11-25T02:23:06Z",
+   "issue": 1457,
+   "title": "QA follow-up: Vivah lagna legend renders with no row blocks when the window computation fails (PR #1455)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1465,
+   "agents": null
+  },
+  {
+   "run": 45526898284,
+   "started": "2026-11-25T01:35:45Z",
+   "issue": 1451,
+   "title": "QA follow-up: PR #1449 page-locations headline states lower-bound counts as exact; encoded names unpinned",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1462,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45523919175,
+   "started": "2026-11-25T01:11:51Z",
+   "issue": 1387,
+   "title": "detect_stalls: mergeable-but-open PRs starved by a ruled blocked-on-owner workflow defect still oblige an action, waking chief every steward run",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1460,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45515523924,
+   "started": "2026-11-25T00:07:05Z",
+   "issue": 1387,
+   "title": "detect_stalls: mergeable-but-open PRs starved by a ruled blocked-on-owner workflow defect still oblige an action, waking chief every steward run",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1460,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45511968192,
+   "started": "2026-11-24T23:40:41Z",
+   "issue": 1450,
+   "title": "QA follow-up: PR #1449 fold_location emits bare-token names, double-encoded path addresses and /r/<id> snapshot ids",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1458,
+   "agents": null
+  },
+  {
+   "run": 45498131461,
+   "started": "2026-11-24T22:09:02Z",
+   "issue": 1026,
+   "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1455,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45486601069,
+   "started": "2026-11-24T21:00:17Z",
+   "issue": 1026,
+   "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1455,
+   "agents": null
+  },
+  {
+   "run": 45461507691,
+   "started": "2026-11-24T18:37:19Z",
+   "issue": 1436,
+   "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
+   "class": "growth",
+   "outcome": "pr open",
+   "pr": 1438,
+   "agents": null
+  },
+  {
+   "run": 45403353522,
+   "started": "2026-11-24T13:25:53Z",
+   "issue": 1237,
+   "title": "analytics: no export carries GA4 page_location \u2014 #1066 and #1093 cannot be scored (3 reports in a row)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1449,
+   "agents": null
+  },
+  {
+   "run": 45396211064,
+   "started": "2026-11-24T12:43:04Z",
+   "issue": 1295,
+   "title": "QA follow-up: the Hindi rashifal suffix asks for Sanskrit terms while the prompt asks for everyday, non-Sanskrit-heavy Hindi",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1447,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45394566362,
+   "started": "2026-11-24T12:32:54Z",
+   "issue": 1070,
+   "title": "analytics: instrument the core funnels",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1446,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45384585225,
+   "started": "2026-11-24T11:29:06Z",
+   "issue": 1295,
+   "title": "QA follow-up: the Hindi rashifal suffix asks for Sanskrit terms while the prompt asks for everyday, non-Sanskrit-heavy Hindi",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1447,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45372767475,
+   "started": "2026-11-24T10:13:51Z",
+   "issue": 1070,
+   "title": "analytics: instrument the core funnels",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1446,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 45363615784,
+   "started": "2026-11-24T09:16:24Z",
+   "issue": 1430,
+   "title": "seo: 7th-house pair (3,008 impr, pos 6.8-7.2, 27 clicks) \u2014 planets-in-7th has no answer for an empty 7th house or 'which planet'; body change, not a title test",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1440,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45356939483,
+   "started": "2026-11-24T08:31:59Z",
+   "issue": 1442,
+   "title": "chief_clear.py counts a superseded failed `gates` run, so a ruled and green PR (#1428) stays held",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1445,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45351443241,
+   "started": "2026-11-24T07:53:06Z",
+   "issue": 1430,
+   "title": "seo: 7th-house pair (3,008 impr, pos 6.8-7.2, 27 clicks) \u2014 planets-in-7th has no answer for an empty 7th house or 'which planet'; body change, not a title test",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1440,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45343346544,
+   "started": "2026-11-24T06:49:41Z",
+   "issue": 1439,
+   "title": "QA follow-up: test_the_panel_renders_the_evals is date-bombed (fixed NOW vs real clock), red on main since 2026-11-24",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1441,
+   "agents": null
+  },
+  {
+   "run": 45340369099,
+   "started": "2026-11-24T06:25:39Z",
+   "issue": 1430,
+   "title": "seo: 7th-house pair (3,008 impr, pos 6.8-7.2, 27 clicks) \u2014 planets-in-7th has no answer for an empty 7th house or 'which planet'; body change, not a title test",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1440,
+   "agents": null
+  },
+  {
+   "run": 45333086586,
+   "started": "2026-11-24T05:24:23Z",
+   "issue": 1436,
+   "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
+   "class": "growth",
+   "outcome": "pr open",
+   "pr": 1438,
+   "agents": null
+  },
+  {
+   "run": 45326457147,
+   "started": "2026-11-24T04:26:53Z",
+   "issue": 1372,
+   "title": "QA follow-up: chain_cycle quota_reason crashes (AttributeError) on a non-string latest.at / generated_at (PR #1367)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1433,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45324708773,
+   "started": "2026-11-24T04:12:03Z",
+   "issue": 1243,
+   "title": "knowledge: vedic_reference.md \u00a729.14 still says Magha/Mula first-pada exclusion is not implemented (after #1242)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1428,
+   "agents": null
+  },
+  {
+   "run": 45315956148,
+   "started": "2026-11-24T02:56:17Z",
+   "issue": 1285,
+   "title": "QA follow-up: qa_verdict.sh labels before it comments, and accepts an abbreviated --sha that then does not bind",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1426,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45313429964,
+   "started": "2026-11-24T02:34:52Z",
+   "issue": 1361,
+   "title": "QA follow-up: natal erasure key-count bound says 20, /account/delete can pass 40 (PR #1360)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1425,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45308728971,
+   "started": "2026-11-24T01:56:39Z",
+   "issue": 1315,
+   "title": "QA follow-up: privacy page does not list the session-revocation record kept up to 90 days after account deletion (PR #1314)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1422,
+   "agents": null
+  },
+  {
+   "run": 45243851912,
+   "started": "2026-11-23T18:57:38Z",
+   "issue": 1376,
+   "title": "QA follow-up: matching.html still lists comparable severity among implemented cancellations; decision record misdescribes the gate split (PR #1375, #1369)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1418,
+   "agents": null
+  },
+  {
+   "run": 45212007413,
+   "started": "2026-11-23T16:02:46Z",
+   "issue": 1416,
+   "title": "analytics: tool_error marker on /matching error render (slice of #1070 row 8)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1417,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45199625786,
+   "started": "2026-11-23T14:56:31Z",
+   "issue": 1416,
+   "title": "analytics: tool_error marker on /matching error render (slice of #1070 row 8)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1417,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45197422578,
+   "started": "2026-11-23T14:44:25Z",
+   "issue": 1411,
+   "title": "analytics: tool_error marker on dosha_check_form.html (slice of #1070 row 8)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1412,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45196244694,
+   "started": "2026-11-23T14:37:43Z",
+   "issue": 1408,
+   "title": "QA follow-up: kundli-submissions totals.non_probe covers fewer days than fresh_generations (PR #1407)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1410,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45170093706,
+   "started": "2026-11-23T11:59:32Z",
+   "issue": 1411,
+   "title": "analytics: tool_error marker on dosha_check_form.html (slice of #1070 row 8)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1412,
+   "agents": null
+  },
+  {
+   "run": 45166220020,
+   "started": "2026-11-23T11:33:07Z",
+   "issue": 1408,
+   "title": "QA follow-up: kundli-submissions totals.non_probe covers fewer days than fresh_generations (PR #1407)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1410,
+   "agents": null
+  },
+  {
+   "run": 45164212084,
+   "started": "2026-11-23T11:19:50Z",
+   "issue": 1272,
+   "title": "analytics: no export carries the server-side kundli submission count \u2014 #1068 cannot be scored (3 reports in a row)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1407,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45154869917,
+   "started": "2026-11-23T10:18:23Z",
+   "issue": 1272,
+   "title": "analytics: no export carries the server-side kundli submission count \u2014 #1068 cannot be scored (3 reports in a row)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1407,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45152309796,
+   "started": "2026-11-23T10:01:39Z",
+   "issue": 1330,
+   "title": "QA follow-up: a one-day typo repeated in registry and expected JSON passes every festival gate for non-Purnima/Ekadashi rows (PR #1329)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1406,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45140675179,
+   "started": "2026-11-23T08:41:33Z",
+   "issue": 1330,
+   "title": "QA follow-up: a one-day typo repeated in registry and expected JSON passes every festival gate for non-Purnima/Ekadashi rows (PR #1329)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1406,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
     "qa": 1
    }
   }
@@ -610,26 +626,26 @@
   "issue": 1246,
   "levels": {
    "weekly": {
-    "period": "2026-W47",
+    "period": "2026-W48",
     "current": {
-     "week": "2026-W47",
+     "week": "2026-W48",
      "goals": [
       {
        "id": "g1",
-       "goal": "Lift the week's growth share",
+       "goal": "Put most build cycles on growth",
        "metric": "growth share this week",
        "metric_key": "growth_share_week",
-       "baseline": 0.206,
-       "target": 0.35,
+       "baseline": 0.12,
+       "target": 0.4,
        "issues": []
       },
       {
        "id": "g2",
-       "goal": "Hold search clicks while open SEO fixes land",
+       "goal": "Grow search clicks",
        "metric": "GSC clicks, 28 days",
        "metric_key": "gsc_clicks_28d",
-       "baseline": 383,
-       "target": 395,
+       "baseline": 399,
+       "target": 420,
        "issues": [
         1076,
         1107
@@ -640,8 +656,8 @@
        "goal": "Grow impressions toward the month's 33,000",
        "metric": "GSC impressions, 28 days",
        "metric_key": "gsc_impressions_28d",
-       "baseline": 28918,
-       "target": 30500,
+       "baseline": 29930,
+       "target": 31500,
        "issues": [
         1076,
         1107
@@ -649,9 +665,8 @@
       },
       {
        "id": "g4",
-       "goal": "Ship the three open growth issues",
-       "metric": "share of issues closed",
-       "metric_key": "",
+       "goal": "Ship the three open SEO fixes",
+       "metric": "share of #1076, #1107, #1065 closed",
        "baseline": 0,
        "target": 1,
        "issues": [
@@ -659,17 +674,66 @@
         1107,
         1065
        ]
+      },
+      {
+       "id": "g5",
+       "goal": "Ship the muhurat finder growth work",
+       "metric": "share of #1017, #1341 closed",
+       "baseline": 0,
+       "target": 1,
+       "issues": [
+        1017,
+        1341
+       ]
       }
      ],
-     "direction": "Only #1065, #1076 and #1107 are open growth issues, so supply caps the share: project-manager picks them first, and seo-growth files band-page issues for the 6-20 queries in gsc-band.json today so the share can climb. Analytics-event PRs wait until the week share passes 0.35. Weekly Claude use is 0.79, so size cycles to the window and keep production breakage first.",
-     "at": "2026-11-19T07:52:11Z",
+     "direction": "Week 47 missed its share target while the build lane sat idle 52.7% of the time, so the limit is pick order, not capacity. project-manager runs growth_split.py first and takes #1076, then #1107, then #1065, before any QA follow-up or analytics slice. seo-growth files band-page issues from gsc-band.json (97 pages at position 6-20, 22,357 impressions) so supply does not run out. No goal requires an astrological claim.",
+     "at": "2026-11-22T21:09:26Z",
      "by": "github-actions[bot]"
     },
-    "previous_score": null,
+    "previous_score": {
+     "week": "2026-W47",
+     "results": [
+      {
+       "id": "g1",
+       "status": "missed",
+       "actual": 0.12,
+       "why": "month share 34 of 284 cycles (0.12), was 0.082 on Friday; the 0.35 week target was not reached and must_pick_growth stayed true"
+      },
+      {
+       "id": "g2",
+       "status": "met",
+       "actual": 399,
+       "why": "GSC clicks 28d 399 vs 395 target (baseline 383)"
+      },
+      {
+       "id": "g3",
+       "status": "partial",
+       "actual": 29930,
+       "why": "impressions 28d 29,930 vs 30,500 target (baseline 28,918)"
+      },
+      {
+       "id": "g4",
+       "status": "missed",
+       "actual": "0 of 3",
+       "why": "#1076, #1107 and #1065 are all still open"
+      }
+     ],
+     "lacking": "growth supply and pick order: 7 open growth issues, but cycles went to QA follow-ups and analytics slices; build lane idle 52.7% (loop.json), so capacity is not the limit",
+     "direction": "Growth issues go first until the weekly share passes 0.35.",
+     "at": "2026-11-22T21:09:25Z",
+     "by": "github-actions[bot]"
+    },
     "history": [
      {
       "period": "2026-W47",
       "goals": 4,
+      "met": 1,
+      "scored": true
+     },
+     {
+      "period": "2026-W48",
+      "goals": 5,
       "met": 0,
       "scored": false
      }
@@ -786,24 +850,24 @@
    }
   },
   "current": {
-   "week": "2026-W47",
+   "week": "2026-W48",
    "goals": [
     {
      "id": "g1",
-     "goal": "Lift the week's growth share",
+     "goal": "Put most build cycles on growth",
      "metric": "growth share this week",
      "metric_key": "growth_share_week",
-     "baseline": 0.206,
-     "target": 0.35,
+     "baseline": 0.12,
+     "target": 0.4,
      "issues": []
     },
     {
      "id": "g2",
-     "goal": "Hold search clicks while open SEO fixes land",
+     "goal": "Grow search clicks",
      "metric": "GSC clicks, 28 days",
      "metric_key": "gsc_clicks_28d",
-     "baseline": 383,
-     "target": 395,
+     "baseline": 399,
+     "target": 420,
      "issues": [
       1076,
       1107
@@ -814,8 +878,8 @@
      "goal": "Grow impressions toward the month's 33,000",
      "metric": "GSC impressions, 28 days",
      "metric_key": "gsc_impressions_28d",
-     "baseline": 28918,
-     "target": 30500,
+     "baseline": 29930,
+     "target": 31500,
      "issues": [
       1076,
       1107
@@ -823,9 +887,8 @@
     },
     {
      "id": "g4",
-     "goal": "Ship the three open growth issues",
-     "metric": "share of issues closed",
-     "metric_key": "",
+     "goal": "Ship the three open SEO fixes",
+     "metric": "share of #1076, #1107, #1065 closed",
      "baseline": 0,
      "target": 1,
      "issues": [
@@ -833,64 +896,107 @@
       1107,
       1065
      ]
+    },
+    {
+     "id": "g5",
+     "goal": "Ship the muhurat finder growth work",
+     "metric": "share of #1017, #1341 closed",
+     "baseline": 0,
+     "target": 1,
+     "issues": [
+      1017,
+      1341
+     ]
     }
    ],
-   "direction": "Only #1065, #1076 and #1107 are open growth issues, so supply caps the share: project-manager picks them first, and seo-growth files band-page issues for the 6-20 queries in gsc-band.json today so the share can climb. Analytics-event PRs wait until the week share passes 0.35. Weekly Claude use is 0.79, so size cycles to the window and keep production breakage first.",
-   "at": "2026-11-19T07:52:11Z",
+   "direction": "Week 47 missed its share target while the build lane sat idle 52.7% of the time, so the limit is pick order, not capacity. project-manager runs growth_split.py first and takes #1076, then #1107, then #1065, before any QA follow-up or analytics slice. seo-growth files band-page issues from gsc-band.json (97 pages at position 6-20, 22,357 impressions) so supply does not run out. No goal requires an astrological claim.",
+   "at": "2026-11-22T21:09:26Z",
    "by": "github-actions[bot]"
   },
-  "previous_score": null
+  "previous_score": {
+   "week": "2026-W47",
+   "results": [
+    {
+     "id": "g1",
+     "status": "missed",
+     "actual": 0.12,
+     "why": "month share 34 of 284 cycles (0.12), was 0.082 on Friday; the 0.35 week target was not reached and must_pick_growth stayed true"
+    },
+    {
+     "id": "g2",
+     "status": "met",
+     "actual": 399,
+     "why": "GSC clicks 28d 399 vs 395 target (baseline 383)"
+    },
+    {
+     "id": "g3",
+     "status": "partial",
+     "actual": 29930,
+     "why": "impressions 28d 29,930 vs 30,500 target (baseline 28,918)"
+    },
+    {
+     "id": "g4",
+     "status": "missed",
+     "actual": "0 of 3",
+     "why": "#1076, #1107 and #1065 are all still open"
+    }
+   ],
+   "lacking": "growth supply and pick order: 7 open growth issues, but cycles went to QA follow-ups and analytics slices; build lane idle 52.7% (loop.json), so capacity is not the limit",
+   "direction": "Growth issues go first until the weekly share passes 0.35.",
+   "at": "2026-11-22T21:09:25Z",
+   "by": "github-actions[bot]"
+  }
  },
  "metrics": {
-  "gsc_clicks_28d": 394,
-  "gsc_impressions_28d": 29632,
+  "gsc_clicks_28d": 416,
+  "gsc_impressions_28d": 31021,
   "ga4_users_28d": 707,
-  "ga4_new_users_28d": 661,
-  "ga4_sessions_28d": 791,
+  "ga4_new_users_28d": 659,
+  "ga4_sessions_28d": 804,
   "objective_top5": 1,
-  "growth_share_today": 0.6,
-  "growth_share_week": 0.316,
-  "growth_share_month": 0.125
+  "growth_share_today": 0.167,
+  "growth_share_week": 0.304,
+  "growth_share_month": 0.145
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
-   "period": "2026-11-21",
-   "progress": 1.0,
-   "detail": "15 of 25 cycles on growth, target 60%",
+   "period": "2026-11-25",
+   "progress": 0.278,
+   "detail": "2 of 12 cycles on growth, target 60%, 1 exempt",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
-   "period": "2026-W47",
-   "progress": 0.533,
-   "detail": "4 goals, 4 measurable",
+   "period": "2026-W48",
+   "progress": 0.432,
+   "detail": "5 goals, 5 measurable",
    "goals": [
     {
      "id": "g1",
-     "goal": "Lift the week's growth share",
+     "goal": "Put most build cycles on growth",
      "metric": "growth share this week",
      "metric_key": "growth_share_week",
-     "baseline": 0.206,
-     "target": 0.35,
+     "baseline": 0.12,
+     "target": 0.4,
      "issues": [],
-     "current": 0.316,
-     "progress": 0.764,
+     "current": 0.304,
+     "progress": 0.657,
      "basis": "growth_share_week"
     },
     {
      "id": "g2",
-     "goal": "Hold search clicks while open SEO fixes land",
+     "goal": "Grow search clicks",
      "metric": "GSC clicks, 28 days",
      "metric_key": "gsc_clicks_28d",
-     "baseline": 383,
-     "target": 395,
+     "baseline": 399,
+     "target": 420,
      "issues": [
       1076,
       1107
      ],
-     "current": 394,
-     "progress": 0.917,
+     "current": 416,
+     "progress": 0.81,
      "basis": "gsc_clicks_28d"
     },
     {
@@ -898,21 +1004,21 @@
      "goal": "Grow impressions toward the month's 33,000",
      "metric": "GSC impressions, 28 days",
      "metric_key": "gsc_impressions_28d",
-     "baseline": 28918,
-     "target": 30500,
+     "baseline": 29930,
+     "target": 31500,
      "issues": [
       1076,
       1107
      ],
-     "current": 29632,
-     "progress": 0.451,
+     "current": 31021,
+     "progress": 0.695,
      "basis": "gsc_impressions_28d"
     },
     {
      "id": "g4",
-     "goal": "Ship the three open growth issues",
-     "metric": "share of issues closed",
-     "metric_key": "",
+     "goal": "Ship the three open SEO fixes",
+     "metric": "share of #1076, #1107, #1065 closed",
+     "metric_key": null,
      "baseline": 0,
      "target": 1,
      "issues": [
@@ -923,13 +1029,28 @@
      "current": "0/3 issues closed",
      "progress": 0.0,
      "basis": "issues"
+    },
+    {
+     "id": "g5",
+     "goal": "Ship the muhurat finder growth work",
+     "metric": "share of #1017, #1341 closed",
+     "metric_key": null,
+     "baseline": 0,
+     "target": 1,
+     "issues": [
+      1017,
+      1341
+     ],
+     "current": "0/2 issues closed",
+     "progress": 0.0,
+     "basis": "issues"
     }
    ]
   },
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.21,
+   "progress": 0.361,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -944,8 +1065,8 @@
       1107,
       1071
      ],
-     "current": 29632,
-     "progress": 0.175,
+     "current": 31021,
+     "progress": 0.515,
      "basis": "gsc_impressions_28d"
     },
     {
@@ -972,8 +1093,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.125,
-     "progress": 0.309,
+     "current": 0.145,
+     "progress": 0.42,
      "basis": "growth_share_month"
     }
    ]
@@ -981,7 +1102,7 @@
   "quarterly": {
    "label": "Quarterly goals",
    "period": "2026-Q4",
-   "progress": 0.036,
+   "progress": 0.068,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1011,8 +1132,8 @@
       1071,
       1072
      ],
-     "current": 394,
-     "progress": 0.051,
+     "current": 416,
+     "progress": 0.152,
      "basis": "gsc_clicks_28d"
     },
     {
@@ -1023,8 +1144,8 @@
      "baseline": 640,
      "target": 1000,
      "issues": [],
-     "current": 661,
-     "progress": 0.058,
+     "current": 659,
+     "progress": 0.053,
      "basis": "ga4_new_users_28d"
     }
    ]
@@ -1037,53 +1158,53 @@
    "queries": [
     {
      "query": "rahu mahadasha ketu antardasha",
-     "impressions": 397,
-     "position": 6.5
+     "impressions": 350,
+     "position": 6.3
     },
     {
      "query": "sun debilitated in which sign",
-     "impressions": 338,
-     "position": 7.4
+     "impressions": 332,
+     "position": 7.2
     },
     {
      "query": "sun is debilitated in which sign",
-     "impressions": 149,
-     "position": 6.5
+     "impressions": 153,
+     "position": 6.0
     },
     {
      "query": "jupiter in 10th house",
-     "impressions": 116,
-     "position": 11.0
+     "impressions": 123,
+     "position": 10.9
     },
     {
      "query": "yes",
-     "impressions": 108,
-     "position": 3.6
-    },
-    {
-     "query": "10th lord in 6th house",
-     "impressions": 94,
-     "position": 8.6
-    },
-    {
-     "query": "sun debilitated sign",
-     "impressions": 86,
-     "position": 5.9
-    },
-    {
-     "query": "sun debilitated",
-     "impressions": 79,
-     "position": 8.9
+     "impressions": 121,
+     "position": 3.8
     },
     {
      "query": "guru in 10th house",
-     "impressions": 76,
-     "position": 8.9
+     "impressions": 94,
+     "position": 8.7
     },
     {
-     "query": "rahu mahadasha and ketu antardasha",
-     "impressions": 67,
-     "position": 7.0
+     "query": "10th lord in 6th house",
+     "impressions": 89,
+     "position": 8.7
+    },
+    {
+     "query": "sun debilitated sign",
+     "impressions": 70,
+     "position": 5.8
+    },
+    {
+     "query": "sun debilitated",
+     "impressions": 68,
+     "position": 8.8
+    },
+    {
+     "query": "which mahadasha is best for career",
+     "impressions": 65,
+     "position": 8.4
     }
    ],
    "goals": []
@@ -1094,6 +1215,9 @@
   1065,
   1076,
   1107,
-  1341
+  1341,
+  1436,
+  1437,
+  1469
  ]
 }

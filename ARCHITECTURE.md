@@ -136,7 +136,7 @@ src/astro_ai/
   chart.py         5,051  Swiss Ephemeris, panchang, dashas, gochar, combustion
   learn_registry.py 3,107  /learn article metadata
   numerology.py    1,910  Chaldean + Lo Shu calculators
-  festival_registry.py 1,672
+  festival_registry.py 1,678
   muhurat.py       1,966  electional scoring; shares angas with panchang
   muhurat_factors.py 525  why a finder row rated as it did: REGISTRY of factor/exclusion keys, each
                         sourced | contested | site_convention with a knowledge heading and a page sentence;
@@ -145,6 +145,12 @@ src/astro_ai/
                         `_muhurat_why.html` / `_muhurat_why_legend.html`. Soft factors are recomputed from
                         EVENT_RULES and pinned to score_event by tests/test_muhurat_factor_parity.py
                         (#1017 R3, docs/decisions/2026-11-21-muhurat-factor-registry.md)
+  muhurat_lagna.py   357 Vivah lagna windows for the finder (#1026): benefic-owned lagna + clean 7th, edges found
+                        by grid + bisection, inward-rounded; lagna_view() / legend() are pure (0 tokens, 0 I/O beyond
+                        the cached geocode, lru_cache per date+place) behind the Jinja globals `muhurat_lagna` /
+                        `muhurat_lagna_legend` (routes/deps.py). legend() takes the city and keys on a produced view
+                        (#1457), so a page whose every row failed shows no legend. A note only: never read by the scorer
+                        (docs/decisions/2026-11-24-vivah-lagna-windows.md)
   ask_transit.py     103  /ask's slow-planet transit block (four movers from the natal Moon), the pinned
                         moment and the `tr` cache-key fingerprint (#402)
   llm.py           1,566  prompt assembly, rashifal fan-out (re-measured 2026-11-06)
@@ -185,12 +191,16 @@ This is the most misunderstood part of the system. Layers, outermost first:
 | `lru_cache` (stdlib) | in-process, per-function | no | geocode, lunar dates, sankranti |
 | `_PANCHANG_CACHE`, `_PANCHANG_STRIP_CACHE` | in-process dicts | no | panchang by (date, lat, lon at 4 dp, tz), exact to ~11 m, cleared at 20,000 entries (#1338; was a 0.5° cell, where the first caller in the cell decided the value for the rest), and by (date, city) |
 | `daily_cache` | **file** on the instance | no | per-rashi readings, keyed `(namespace, slug-lang, date)` |
-| `cache` (SQLite) | `/tmp/bhagya.db`, **tmpfs** | no | per-chart LLM output, keyed by fingerprint |
+| `cache` (SQLite) | `/tmp/bhagya.db`, **tmpfs** | no | per-chart LLM output, keyed by fingerprint. Natal erasure evicts its rows on the serving instance only (`cache.delete_many`, #1293) |
 | `storage` (GCS) | bucket | **yes** | the only cross-instance layer; also the durable tier behind SQLite (below) |
 
 **Every layer except GCS is per-instance and dies with the container.** `minScale=0`
 means containers come and go constantly. If two requests must share a result, GCS is the
 only thing that gets them there — this is why `/admin/warm-rashifal` works at all.
+The one exception is deletion: natal erasure (`/account/delete`, `/delete-chart`) evicts the
+SQLite rows of the instance that serves the request, and cannot reach the other instances'
+(up to 5, each its own `/tmp`), which can serve a deleted reading until the row is evicted or
+the instance recycles (#1293).
 
 ### The `__session` cookie is bounded and revocable on the server (#1106)
 
@@ -255,6 +265,13 @@ It exists because "per-chart output gains nothing from GCS" was wrong. Natal is 
 regenerated once per instance, once per cold start and once per deploy — each a full
 ~7,800-token natal call against an 8,000 TPM per-model bucket. GCS's value to a per-chart
 route is not sharing between users, it is **surviving the container**.
+
+Erasure runs the other way (#1293): `erase_natal_blobs` deletes the GCS blobs first and the
+SQLite rows (`cache.delete_many`) last, in a `finally`, because evicting first lets a
+concurrent view re-warm the row from the blob still in the bucket. It runs in a threadpool
+from the async handlers (up to 40 sequential deletes: 2 lists x MAX_CHARTS x 2 languages). A SQLite error during eviction is
+logged and does not change the result. Other instances' rows are out of reach.
+`docs/decisions/2026-11-21-natal-erasure-evicts-sqlite.md`.
 
 What it does not do: it does not raise the ceiling. A chart nobody has asked for still
 costs full price and the site still serves on the order of 20–30 fresh natal readings a
@@ -755,6 +772,15 @@ not evidence. Several gates here were written with bugs — an optional regex gr
 matched empty and reported a false failure, an unscoped row match that read 44 tables
 instead of one — and were only caught by mutation-testing them.
 
+**Cheap checks before a QA round, and before a re-entry (#1255).** `scripts/pre_qa_check.py` runs
+the fast gates, then `THEME_CHECKS` (regression, grounding, tests: the three themes QA fails on
+most, `measurements/lessons.json`) and prints one `themes: ...` line; grounding is a proxy (a
+claim-bearing file changed with no `corpus:` line), never a judgement that a claim is true. And
+`cycle_queue.stale_reason` stands an `issue` queue entry down, through `scripts/reentry.py`, when a
+`claude[bot]` cycle comment is newer than the entry and no commit, QA verdict or main-merge need has
+come since; it fails open on any read error and can reach at most ~16% of the repeat-cycle tokens
+(`docs/decisions/2026-11-25-1255-reentry-stand-down.md`).
+
 ---
 
 ## 9. Issue and deploy discipline
@@ -767,6 +793,8 @@ Two stages, and they must not be merged:
 
 A closing comment must let someone else check you: the commit, what was verified and how,
 and the numbers. Partial work does not close.
+
+**Stall detector (`scripts/detect_stalls.py`):** a `mergeable-but-open` PR starved behind the owner's open `qa-pass` fix to `agent-merge.yml` is reported as `merge-starved-owner-blocked` and is not an obliged action, so chief is not woken for a ruled cause; it fails open and expires when the fix PR merges (#1387, `docs/decisions/2026-11-25-1387-ruled-owner-block-is-not-obliged.md`).
 
 **QA runs by default before every push** — an independent agent, not self-review.
 Verification by the same reasoning that produced the change is not QA. This is not
@@ -1071,7 +1099,7 @@ Dated, with the evidence. **Check here before proposing a change.**
   `analytics_event('dasha_deep_dive_viewed', …)` in `dasha_deep_dive.html` are allowed as a planet name, one of nine, at the grain of the rashi
   triple Telegram already carries; that is a judgement `privacy.html` does not spell out. The completion
   markers of #1217 (`matching_completed`, `numerology_completed`, `muhurat_searched`, `dosha_check_completed`)
-  pass only enums and integers; `docs/decisions/2026-11-18-1217-tool-completion-events-need-no-flag.md`. `tool_submitted` (#1226) is sent by one delegated `submit` listener in `analytics.js` from `form[data-tool]` and carries only `tool`, a nine-value enum read from a template attribute, never a field the visitor typed. `login`, `language_switched`, `share` (#1229) follow the same rule: fixed-vocabulary scalars only (`method` google; `to_lang` en|hi; `share` `method` whatsapp|snapshot|pdf and `content_type` kundli|rashifal|learn, declared as `data-share-method`/`data-share-content` in markup, never read from an href), and `subscribe_completed` gains `from_path`, the path with any query or hash cut. `language_switched` listens for the select's `change`, because `form.submit()` raises no `submit` event. The
+  pass only enums and integers; `docs/decisions/2026-11-18-1217-tool-completion-events-need-no-flag.md`. `tool_submitted` (#1226) is sent by one delegated `submit` listener in `analytics.js` from `form[data-tool]` and carries only `tool`, a nine-value enum read from a template attribute, never a field the visitor typed. `tool_error` (#1390, #1402, #1411, #1416) is declared by `numerology.html` and `numerology_compat.html` on a refused or failed submit and carries `tool` (numerology, numerology_compat) and `kind` (validation, compute), and by `ask.html` (`tool` ask; `kind` validation for a too short or too long question, quota for the 429) and `panchang.html` (`tool` panchang; `kind` geocode when the requested city failed and the Mumbai fallback was served, compute when the fallback failed too) and `dosha_check_form.html` (`tool` manglik, sade_sati or kaal_sarp, the same value as `dosha_check_completed`'s `check`; `kind` validation only, because `ChartError` is the sole error render) and by `muhurat_finder.html` (`tool` muhurat; `kind` validation for the 400s, an unknown event, a bad start date or a city over 100 characters, and compute for the 500 and for a personal or couple chart that failed on an otherwise successful render, where the dates are still shown; there is no `geocode` kind, a city that fails to geocode raises inside the search and lands in compute) and by `error.html` only when a route sets `tool_error_tool` (today only `/matching`: `tool` matching, `kind` validation only, the `ChartError` 400; every other route sharing `error.html` stays silent), a fixed vocabulary the template re-checks, never the error text (it can echo a name, a date, a question or a city); on `/panchang`, the dosha checks, `/matching` and the muhurat finder the metric counts error renders, not seekers, because a reload re-fires it; `llm_degraded`, ask's `error.html` paths (no key, chart error, LLM failure) are not wired. `login`, `language_switched`, `share` (#1229) follow the same rule: fixed-vocabulary scalars only (`method` google; `to_lang` en|hi; `share` `method` whatsapp|snapshot|pdf and `content_type` kundli|rashifal|learn, declared as `data-share-method`/`data-share-content` in markup, never read from an href), and `subscribe_completed` gains `from_path`, the path with any query or hash cut. `language_switched` listens for the select's `change`, because `form.submit()` raises no `submit` event. The
   subscriber's city reaches Telegram as `source=` by design and carries no sentinel in the sweep.
   Email in operational logs is pinned as allowed, not endorsed.
 

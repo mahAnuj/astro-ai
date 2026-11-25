@@ -298,7 +298,7 @@ def test_the_detector_and_the_page_share_one_threshold():
 
 @pytest.fixture
 def page(client, monkeypatch, tmp_path):
-    def render(issues_doc):
+    def render(issues_doc, tab="backlog"):
         d = tmp_path / "m"
         d.mkdir(exist_ok=True)
         if issues_doc is not None:
@@ -313,7 +313,7 @@ def page(client, monkeypatch, tmp_path):
         ops_data._cache.clear()
         ops_data._app_cache.clear()
         try:
-            r = client.get("/admin/ops", auth=("admin", "bhagya-dev"))
+            r = client.get(f"/admin/ops?tab={tab}", auth=("admin", "bhagya-dev"))
         finally:
             ops_data._cache.clear()
             ops_data._app_cache.clear()
@@ -420,7 +420,7 @@ def test_the_ops_page_shows_merge_time_and_the_slowest(page):
                                 [], PR_NOW)
     t["pr_flow"]["windows"]["7d"]["slowest"][0]["why"] = {"reason": "45.5h gates red", "primary": "gates_red"}
     t["pr_flow"]["windows"]["7d"]["top_reasons"] = flow.top_reasons(t["pr_flow"]["windows"]["7d"]["slowest"])
-    html = page(_backlog(t))
+    html = page(_backlog(t), tab="runs")  # PR merge time lives on the Runs & Traces tab
     i = html.index('id="pr-merge-time"')
     s = html[i: html.index("</section>", i)]
     assert "48.0h" in s and "slow one" in s and "Slowest" in s and "pr-median" in s
@@ -430,10 +430,10 @@ def test_the_ops_page_shows_merge_time_and_the_slowest(page):
 def test_the_ops_page_survives_a_malformed_pr_flow(page):
     t = _collect()[0]
     t["pr_flow"] = {"windows": "x"}
-    assert "Not collected yet" in page(_backlog(t))
+    assert "Not collected yet" in page(_backlog(t), tab="runs")
     # Past the shape check, broken inside: a day whose date is not a string.
     t["pr_flow"] = {"windows": {}, "days": [{"date": 20261119, "merged": 1, "max_h": 2.0, "median_h": 1.0}]}
-    assert "Not collected yet" in page(_backlog(t))
+    assert "Not collected yet" in page(_backlog(t), tab="runs")
 
 
 # ---- why a PR was slow: each PR's own timeline, replayed (owner: "this should be dynamic") ----

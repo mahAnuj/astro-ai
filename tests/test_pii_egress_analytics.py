@@ -128,6 +128,14 @@ ALLOWED_CALL_EXPRESSIONS = frozenset({
     # in routes/muhurat.py. None is read from a form field as typed.
     "score_band", "muhurat_searched.event_type", "muhurat_searched.days",
     "muhurat_searched.valid_count", "muhurat_searched.mode",
+    # #1390: `_k` is set in numerology.html and numerology_compat.html to one of two
+    # literals ('validation' or 'compute'): the route's `error_kind` only if it is in that
+    # list, else 'compute'. It is never the error text, which can echo a name or a date.
+    "_k",
+    # #1411: `_tool` in dosha_check_form.html is a lookup of the route's fixed `form_action`
+    # in a three-entry dict (manglik, sade_sati, kaal_sarp), and the marker is only emitted
+    # when it is truthy. The same value the #1226 `data-tool` attribute carries; never typed.
+    "_tool",
 })
 
 #: The same for the two inline blocks base.html builds for analytics.js.

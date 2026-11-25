@@ -1,7 +1,7 @@
 {
   "source": "gsc-url-inspection",
   "site": "sc-domain:shubhagya.com",
-  "generated_at": "2026-11-19T20:05:00Z",
+  "generated_at": "2026-11-23T03:12:22Z",
   "sitemap_url": "https://shubhagya.com/sitemap.xml",
   "git_shallow": false,
   "partial": false,
@@ -12,8 +12,8 @@
   },
   "impressions_source": "measurements/gsc-all.json",
   "impressions_matched": {
-    "matched": 137,
-    "with_impressions": 141
+    "matched": 133,
+    "with_impressions": 137
   },
   "note": "base.html, i18n.py and learn_registry.py are excluded from every page's file list on purpose: one edit to any of them would flag all pages. /rashifal* and /panchang* change by data, not by commit, so commit staleness understates them. stale_in_index is null (never false) when it cannot be computed; a not_inspected row has no verdict at all.",
   "counts": {
@@ -21,9 +21,9 @@
     "inspected": 214,
     "not_inspected": 0,
     "errors": 0,
-    "indexed": 166,
-    "not_indexed": 48,
-    "stale": 174,
+    "indexed": 165,
+    "not_indexed": 49,
+    "stale": 168,
     "canonical_mismatch": 0,
     "blocked": 0,
     "unknown": 0
@@ -34,7 +34,7 @@
       "reasons": [
         "changed after Google's last crawl"
       ],
-      "impressions": 3912,
+      "impressions": 3526,
       "changed_at": "2026-11-16T04:15:54Z",
       "lastCrawlTime": "2026-11-08T08:35:15Z"
     },
@@ -43,61 +43,70 @@
       "reasons": [
         "changed after Google's last crawl"
       ],
-      "impressions": 2512,
+      "impressions": 3191,
       "changed_at": "2026-11-17T04:56:56Z",
-      "lastCrawlTime": "2026-11-10T16:24:31Z"
+      "lastCrawlTime": "2026-11-13T04:17:38Z"
     },
     {
-      "url": "https://shubhagya.com/learn/sade-sati/",
+      "url": "https://shubhagya.com/learn/debilitated-sun-career/",
       "reasons": [
         "changed after Google's last crawl"
       ],
-      "impressions": 2133,
-      "changed_at": "2026-11-15T20:31:39Z",
-      "lastCrawlTime": "2026-10-23T02:51:03Z"
+      "impressions": 2999,
+      "changed_at": "2026-11-22T18:40:36Z",
+      "lastCrawlTime": "2026-11-16T15:56:57Z"
     },
     {
       "url": "https://shubhagya.com/learn/jupiter-in-10th-house-career/",
       "reasons": [
         "changed after Google's last crawl"
       ],
-      "impressions": 1940,
+      "impressions": 2111,
       "changed_at": "2026-11-16T06:26:32Z",
       "lastCrawlTime": "2026-11-11T05:04:17Z"
+    },
+    {
+      "url": "https://shubhagya.com/learn/sade-sati/",
+      "reasons": [
+        "changed after Google's last crawl"
+      ],
+      "impressions": 2072,
+      "changed_at": "2026-11-22T17:01:49Z",
+      "lastCrawlTime": "2026-11-20T04:32:53Z"
     },
     {
       "url": "https://shubhagya.com/learn/7th-lord-placement-marriage-guide/",
       "reasons": [
         "changed after Google's last crawl"
       ],
-      "impressions": 1509,
+      "impressions": 1500,
       "changed_at": "2026-11-16T03:32:46Z",
       "lastCrawlTime": "2026-11-08T10:46:59Z"
-    },
-    {
-      "url": "https://shubhagya.com/learn/career-during-sade-sati/",
-      "reasons": [
-        "changed after Google's last crawl"
-      ],
-      "impressions": 1239,
-      "changed_at": "2026-11-16T01:03:26Z",
-      "lastCrawlTime": "2026-11-12T16:18:37Z"
     },
     {
       "url": "https://shubhagya.com/learn/planets-in-7th-house-marriage/",
       "reasons": [
         "changed after Google's last crawl"
       ],
-      "impressions": 1221,
+      "impressions": 1395,
       "changed_at": "2026-11-14T04:04:44Z",
       "lastCrawlTime": "2026-11-01T22:59:08Z"
+    },
+    {
+      "url": "https://shubhagya.com/learn/career-during-sade-sati/",
+      "reasons": [
+        "changed after Google's last crawl"
+      ],
+      "impressions": 1367,
+      "changed_at": "2026-11-22T17:01:49Z",
+      "lastCrawlTime": "2026-11-12T16:18:37Z"
     },
     {
       "url": "https://shubhagya.com/learn/rahu-mahadasha-career-problems/",
       "reasons": [
         "changed after Google's last crawl"
       ],
-      "impressions": 1044,
+      "impressions": 1159,
       "changed_at": "2026-11-16T03:17:33Z",
       "lastCrawlTime": "2026-11-11T20:15:15Z"
     },
@@ -106,18 +115,9 @@
       "reasons": [
         "changed after Google's last crawl"
       ],
-      "impressions": 762,
+      "impressions": 852,
       "changed_at": "2026-11-18T02:13:42Z",
       "lastCrawlTime": "2026-11-11T17:38:48Z"
-    },
-    {
-      "url": "https://shubhagya.com/learn/mangal-mars-in-vedic-astrology/",
-      "reasons": [
-        "changed after Google's last crawl"
-      ],
-      "impressions": 557,
-      "changed_at": "2026-11-14T07:40:58Z",
-      "lastCrawlTime": "2026-11-10T04:20:11Z"
     }
   ],
   "rows": [
@@ -125,7 +125,7 @@
       "url": "https://shubhagya.com/",
       "path": "/",
       "sitemap_priority": 1.0,
-      "impressions": 206,
+      "impressions": 215,
       "source_files": [
         "src/astro_ai/templates/index.html"
       ],
@@ -150,7 +150,7 @@
       "url": "https://shubhagya.com/rashifal",
       "path": "/rashifal",
       "sitemap_priority": 0.9,
-      "impressions": 154,
+      "impressions": 137,
       "source_files": [
         "src/astro_ai/templates/rashifal_grid.html"
       ],
@@ -200,14 +200,14 @@
       "url": "https://shubhagya.com/matching",
       "path": "/matching",
       "sitemap_priority": 0.7,
-      "impressions": 124,
+      "impressions": 119,
       "source_files": [
         "src/astro_ai/templates/matching.html"
       ],
       "status": "inspected",
       "verdict": "PASS",
       "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-11-08T01:32:46Z",
+      "lastCrawlTime": "2026-11-22T10:54:29Z",
       "googleCanonical": "https://shubhagya.com/matching",
       "userCanonical": "https://shubhagya.com/matching",
       "robotsTxtState": "ALLOWED",
@@ -216,16 +216,16 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-18T21:07:06Z",
-      "changed_sha": "1eb7b4fb2b2296fe1bf89d27e13ddf58ceb89d20",
-      "stale_in_index": true,
+      "changed_at": "2026-11-22T09:12:27Z",
+      "changed_sha": "6e9fb3fc8b6079f2e48bcb701896f81cc6cf27f1",
+      "stale_in_index": false,
       "stale_reason": null
     },
     {
       "url": "https://shubhagya.com/learn/",
       "path": "/learn/",
       "sitemap_priority": 0.8,
-      "impressions": 123,
+      "impressions": 115,
       "source_files": [
         "src/astro_ai/templates/learn_index.html"
       ],
@@ -256,7 +256,7 @@
       ],
       "status": "inspected",
       "verdict": "NEUTRAL",
-      "coverageState": "Discovered - currently not indexed",
+      "coverageState": "URL is unknown to Google",
       "lastCrawlTime": null,
       "googleCanonical": null,
       "userCanonical": null,
@@ -266,8 +266,8 @@
       "not_indexed": true,
       "canonical_mismatch": null,
       "blocked": false,
-      "changed_at": "2026-11-18T21:07:06Z",
-      "changed_sha": "1eb7b4fb2b2296fe1bf89d27e13ddf58ceb89d20",
+      "changed_at": "2026-11-21T16:49:12Z",
+      "changed_sha": "1865a382c0bdfc4b765fb36becb619c1d7d9a655",
       "stale_in_index": null,
       "stale_reason": "never-crawled"
     },
@@ -282,7 +282,7 @@
       "status": "inspected",
       "verdict": "PASS",
       "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-11-08T22:57:29Z",
+      "lastCrawlTime": "2026-11-21T21:01:43Z",
       "googleCanonical": "https://shubhagya.com/manglik-check",
       "userCanonical": "https://shubhagya.com/manglik-check",
       "robotsTxtState": "ALLOWED",
@@ -293,7 +293,7 @@
       "blocked": false,
       "changed_at": "2026-11-18T21:07:06Z",
       "changed_sha": "1eb7b4fb2b2296fe1bf89d27e13ddf58ceb89d20",
-      "stale_in_index": true,
+      "stale_in_index": false,
       "stale_reason": null
     },
     {
@@ -325,7 +325,7 @@
       "url": "https://shubhagya.com/kaal-sarp-check",
       "path": "/kaal-sarp-check",
       "sitemap_priority": 0.7,
-      "impressions": 1,
+      "impressions": 0,
       "source_files": [
         "src/astro_ai/templates/dosha_check_form.html"
       ],
@@ -350,7 +350,7 @@
       "url": "https://shubhagya.com/numerology",
       "path": "/numerology",
       "sitemap_priority": 0.7,
-      "impressions": 173,
+      "impressions": 184,
       "source_files": [
         "src/astro_ai/templates/numerology.html"
       ],
@@ -366,8 +366,8 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-18T21:07:06Z",
-      "changed_sha": "1eb7b4fb2b2296fe1bf89d27e13ddf58ceb89d20",
+      "changed_at": "2026-11-23T01:55:26Z",
+      "changed_sha": "8b4dcbd161e34be2ef0367c7785bb3c688eee431",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -391,8 +391,8 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-18T21:07:06Z",
-      "changed_sha": "1eb7b4fb2b2296fe1bf89d27e13ddf58ceb89d20",
+      "changed_at": "2026-11-23T01:55:26Z",
+      "changed_sha": "8b4dcbd161e34be2ef0367c7785bb3c688eee431",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -400,14 +400,14 @@
       "url": "https://shubhagya.com/kundli",
       "path": "/kundli",
       "sitemap_priority": 0.8,
-      "impressions": 98,
+      "impressions": 97,
       "source_files": [
         "src/astro_ai/templates/kundli_landing.html"
       ],
       "status": "inspected",
       "verdict": "PASS",
       "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-10-23T06:24:46Z",
+      "lastCrawlTime": "2026-11-22T10:03:55Z",
       "googleCanonical": "https://shubhagya.com/kundli",
       "userCanonical": "https://shubhagya.com/kundli",
       "robotsTxtState": "ALLOWED",
@@ -418,7 +418,7 @@
       "blocked": false,
       "changed_at": "2026-11-18T21:07:06Z",
       "changed_sha": "1eb7b4fb2b2296fe1bf89d27e13ddf58ceb89d20",
-      "stale_in_index": true,
+      "stale_in_index": false,
       "stale_reason": null
     },
     {
@@ -431,7 +431,7 @@
       ],
       "status": "inspected",
       "verdict": "NEUTRAL",
-      "coverageState": "URL is unknown to Google",
+      "coverageState": "Discovered - currently not indexed",
       "lastCrawlTime": null,
       "googleCanonical": null,
       "userCanonical": null,
@@ -475,7 +475,7 @@
       "url": "https://shubhagya.com/festivals",
       "path": "/festivals",
       "sitemap_priority": 0.7,
-      "impressions": 293,
+      "impressions": 275,
       "source_files": [
         "src/astro_ai/templates/festivals_index.html"
       ],
@@ -500,7 +500,7 @@
       "url": "https://shubhagya.com/about",
       "path": "/about",
       "sitemap_priority": 0.5,
-      "impressions": 35,
+      "impressions": 40,
       "source_files": [
         "src/astro_ai/templates/about.html"
       ],
@@ -550,7 +550,7 @@
       "url": "https://shubhagya.com/terms",
       "path": "/terms",
       "sitemap_priority": 0.3,
-      "impressions": 7,
+      "impressions": 6,
       "source_files": [
         "src/astro_ai/templates/terms.html"
       ],
@@ -575,7 +575,7 @@
       "url": "https://shubhagya.com/muhurat/vivah",
       "path": "/muhurat/vivah",
       "sitemap_priority": 0.7,
-      "impressions": 23,
+      "impressions": 29,
       "source_files": [
         "src/astro_ai/templates/muhurat_landing.html",
         "src/astro_ai/muhurat.py"
@@ -592,8 +592,8 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-19T04:59:05Z",
-      "changed_sha": "e2a5b3d5f85cbcb69dc8e158c20ca35f027572d5",
+      "changed_at": "2026-11-21T13:17:45Z",
+      "changed_sha": "9d51d242d32e0fb99dfa5dd7cfe63d7b24a22699",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -601,7 +601,7 @@
       "url": "https://shubhagya.com/muhurat/griha-pravesh",
       "path": "/muhurat/griha-pravesh",
       "sitemap_priority": 0.7,
-      "impressions": 384,
+      "impressions": 401,
       "source_files": [
         "src/astro_ai/templates/muhurat_landing.html",
         "src/astro_ai/muhurat.py"
@@ -618,8 +618,8 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-19T04:59:05Z",
-      "changed_sha": "e2a5b3d5f85cbcb69dc8e158c20ca35f027572d5",
+      "changed_at": "2026-11-21T13:17:45Z",
+      "changed_sha": "9d51d242d32e0fb99dfa5dd7cfe63d7b24a22699",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -644,8 +644,8 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-19T04:59:05Z",
-      "changed_sha": "e2a5b3d5f85cbcb69dc8e158c20ca35f027572d5",
+      "changed_at": "2026-11-21T13:17:45Z",
+      "changed_sha": "9d51d242d32e0fb99dfa5dd7cfe63d7b24a22699",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -653,7 +653,7 @@
       "url": "https://shubhagya.com/muhurat/vidyarambh",
       "path": "/muhurat/vidyarambh",
       "sitemap_priority": 0.7,
-      "impressions": 95,
+      "impressions": 44,
       "source_files": [
         "src/astro_ai/templates/muhurat_landing.html",
         "src/astro_ai/muhurat.py"
@@ -670,8 +670,8 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-19T04:59:05Z",
-      "changed_sha": "e2a5b3d5f85cbcb69dc8e158c20ca35f027572d5",
+      "changed_at": "2026-11-21T13:17:45Z",
+      "changed_sha": "9d51d242d32e0fb99dfa5dd7cfe63d7b24a22699",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -679,7 +679,7 @@
       "url": "https://shubhagya.com/muhurat/business",
       "path": "/muhurat/business",
       "sitemap_priority": 0.7,
-      "impressions": 16,
+      "impressions": 12,
       "source_files": [
         "src/astro_ai/templates/muhurat_landing.html",
         "src/astro_ai/muhurat.py"
@@ -696,8 +696,8 @@
       "not_indexed": true,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-19T04:59:05Z",
-      "changed_sha": "e2a5b3d5f85cbcb69dc8e158c20ca35f027572d5",
+      "changed_at": "2026-11-21T13:17:45Z",
+      "changed_sha": "9d51d242d32e0fb99dfa5dd7cfe63d7b24a22699",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -730,7 +730,7 @@
       "url": "https://shubhagya.com/hi/rashifal/aries",
       "path": "/hi/rashifal/aries",
       "sitemap_priority": 0.7,
-      "impressions": 7,
+      "impressions": 6,
       "source_files": [
         "src/astro_ai/templates/rashifal_single.html"
       ],
@@ -780,7 +780,7 @@
       "url": "https://shubhagya.com/hi/rashifal/taurus",
       "path": "/hi/rashifal/taurus",
       "sitemap_priority": 0.7,
-      "impressions": 6,
+      "impressions": 5,
       "source_files": [
         "src/astro_ai/templates/rashifal_single.html"
       ],
@@ -930,7 +930,7 @@
       "url": "https://shubhagya.com/hi/rashifal/leo",
       "path": "/hi/rashifal/leo",
       "sitemap_priority": 0.7,
-      "impressions": 29,
+      "impressions": 28,
       "source_files": [
         "src/astro_ai/templates/rashifal_single.html"
       ],
@@ -1055,7 +1055,7 @@
       "url": "https://shubhagya.com/rashifal/scorpio",
       "path": "/rashifal/scorpio",
       "sitemap_priority": 0.7,
-      "impressions": 4,
+      "impressions": 3,
       "source_files": [
         "src/astro_ai/templates/rashifal_single.html"
       ],
@@ -1080,7 +1080,7 @@
       "url": "https://shubhagya.com/hi/rashifal/scorpio",
       "path": "/hi/rashifal/scorpio",
       "sitemap_priority": 0.7,
-      "impressions": 4,
+      "impressions": 1,
       "source_files": [
         "src/astro_ai/templates/rashifal_single.html"
       ],
@@ -1255,7 +1255,7 @@
       "url": "https://shubhagya.com/rashifal/pisces",
       "path": "/rashifal/pisces",
       "sitemap_priority": 0.7,
-      "impressions": 33,
+      "impressions": 23,
       "source_files": [
         "src/astro_ai/templates/rashifal_single.html"
       ],
@@ -1280,7 +1280,7 @@
       "url": "https://shubhagya.com/hi/rashifal/pisces",
       "path": "/hi/rashifal/pisces",
       "sitemap_priority": 0.7,
-      "impressions": 6,
+      "impressions": 5,
       "source_files": [
         "src/astro_ai/templates/rashifal_single.html"
       ],
@@ -1298,106 +1298,6 @@
       "blocked": false,
       "changed_at": "2026-11-18T23:22:43Z",
       "changed_sha": "8c3f4eb27f193b379fe57367c98917e417fec42d",
-      "stale_in_index": true,
-      "stale_reason": null
-    },
-    {
-      "url": "https://shubhagya.com/panchang/2026-10-20",
-      "path": "/panchang/2026-10-20",
-      "sitemap_priority": 0.5,
-      "impressions": 0,
-      "source_files": [
-        "src/astro_ai/templates/panchang.html"
-      ],
-      "status": "inspected",
-      "verdict": "PASS",
-      "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-11-18T08:41:04Z",
-      "googleCanonical": "https://shubhagya.com/panchang/2026-10-20",
-      "userCanonical": "https://shubhagya.com/panchang/2026-10-20",
-      "robotsTxtState": "ALLOWED",
-      "indexingState": "INDEXING_ALLOWED",
-      "pageFetchState": "SUCCESSFUL",
-      "not_indexed": false,
-      "canonical_mismatch": false,
-      "blocked": false,
-      "changed_at": "2026-11-18T03:36:18Z",
-      "changed_sha": "890d516ed8bdbf1a3341026ec67974ff0be2079a",
-      "stale_in_index": false,
-      "stale_reason": null
-    },
-    {
-      "url": "https://shubhagya.com/panchang/2026-10-21",
-      "path": "/panchang/2026-10-21",
-      "sitemap_priority": 0.5,
-      "impressions": 2,
-      "source_files": [
-        "src/astro_ai/templates/panchang.html"
-      ],
-      "status": "inspected",
-      "verdict": "PASS",
-      "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-11-09T15:34:59Z",
-      "googleCanonical": "https://shubhagya.com/panchang/2026-10-21",
-      "userCanonical": "https://shubhagya.com/panchang/2026-10-21",
-      "robotsTxtState": "ALLOWED",
-      "indexingState": "INDEXING_ALLOWED",
-      "pageFetchState": "SUCCESSFUL",
-      "not_indexed": false,
-      "canonical_mismatch": false,
-      "blocked": false,
-      "changed_at": "2026-11-18T03:36:18Z",
-      "changed_sha": "890d516ed8bdbf1a3341026ec67974ff0be2079a",
-      "stale_in_index": true,
-      "stale_reason": null
-    },
-    {
-      "url": "https://shubhagya.com/panchang/2026-10-22",
-      "path": "/panchang/2026-10-22",
-      "sitemap_priority": 0.5,
-      "impressions": 1,
-      "source_files": [
-        "src/astro_ai/templates/panchang.html"
-      ],
-      "status": "inspected",
-      "verdict": "PASS",
-      "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-11-18T11:33:31Z",
-      "googleCanonical": "https://shubhagya.com/panchang/2026-10-22",
-      "userCanonical": "https://shubhagya.com/panchang/2026-10-22",
-      "robotsTxtState": "ALLOWED",
-      "indexingState": "INDEXING_ALLOWED",
-      "pageFetchState": "SUCCESSFUL",
-      "not_indexed": false,
-      "canonical_mismatch": false,
-      "blocked": false,
-      "changed_at": "2026-11-18T03:36:18Z",
-      "changed_sha": "890d516ed8bdbf1a3341026ec67974ff0be2079a",
-      "stale_in_index": false,
-      "stale_reason": null
-    },
-    {
-      "url": "https://shubhagya.com/panchang/2026-10-23",
-      "path": "/panchang/2026-10-23",
-      "sitemap_priority": 0.5,
-      "impressions": 2,
-      "source_files": [
-        "src/astro_ai/templates/panchang.html"
-      ],
-      "status": "inspected",
-      "verdict": "PASS",
-      "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-11-18T02:54:03Z",
-      "googleCanonical": "https://shubhagya.com/panchang/2026-10-23",
-      "userCanonical": "https://shubhagya.com/panchang/2026-10-23",
-      "robotsTxtState": "ALLOWED",
-      "indexingState": "INDEXING_ALLOWED",
-      "pageFetchState": "SUCCESSFUL",
-      "not_indexed": false,
-      "canonical_mismatch": false,
-      "blocked": false,
-      "changed_at": "2026-11-18T03:36:18Z",
-      "changed_sha": "890d516ed8bdbf1a3341026ec67974ff0be2079a",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -1811,7 +1711,7 @@
       ],
       "status": "inspected",
       "verdict": "NEUTRAL",
-      "coverageState": "URL is unknown to Google",
+      "coverageState": "Discovered - currently not indexed",
       "lastCrawlTime": null,
       "googleCanonical": null,
       "userCanonical": null,
@@ -1830,7 +1730,7 @@
       "url": "https://shubhagya.com/panchang/2026-11-10",
       "path": "/panchang/2026-11-10",
       "sitemap_priority": 0.5,
-      "impressions": 4,
+      "impressions": 3,
       "source_files": [
         "src/astro_ai/templates/panchang.html"
       ],
@@ -2230,7 +2130,7 @@
       "url": "https://shubhagya.com/panchang/2026-11-26",
       "path": "/panchang/2026-11-26",
       "sitemap_priority": 0.5,
-      "impressions": 3,
+      "impressions": 2,
       "source_files": [
         "src/astro_ai/templates/panchang.html"
       ],
@@ -2380,7 +2280,7 @@
       "url": "https://shubhagya.com/panchang/2026-12-02",
       "path": "/panchang/2026-12-02",
       "sitemap_priority": 0.5,
-      "impressions": 34,
+      "impressions": 33,
       "source_files": [
         "src/astro_ai/templates/panchang.html"
       ],
@@ -2605,7 +2505,7 @@
       "url": "https://shubhagya.com/panchang/2026-12-11",
       "path": "/panchang/2026-12-11",
       "sitemap_priority": 0.5,
-      "impressions": 11,
+      "impressions": 12,
       "source_files": [
         "src/astro_ai/templates/panchang.html"
       ],
@@ -2761,7 +2661,7 @@
       ],
       "status": "inspected",
       "verdict": "NEUTRAL",
-      "coverageState": "Discovered - currently not indexed",
+      "coverageState": "URL is unknown to Google",
       "lastCrawlTime": null,
       "googleCanonical": null,
       "userCanonical": null,
@@ -2787,7 +2687,7 @@
       "status": "inspected",
       "verdict": "PASS",
       "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-10-23T02:16:41Z",
+      "lastCrawlTime": "2026-11-22T19:10:32Z",
       "googleCanonical": "https://shubhagya.com/panchang/2026-12-18",
       "userCanonical": "https://shubhagya.com/panchang/2026-12-18",
       "robotsTxtState": "ALLOWED",
@@ -2798,7 +2698,7 @@
       "blocked": false,
       "changed_at": "2026-11-18T03:36:18Z",
       "changed_sha": "890d516ed8bdbf1a3341026ec67974ff0be2079a",
-      "stale_in_index": true,
+      "stale_in_index": false,
       "stale_reason": null
     },
     {
@@ -2811,7 +2711,7 @@
       ],
       "status": "inspected",
       "verdict": "NEUTRAL",
-      "coverageState": "Discovered - currently not indexed",
+      "coverageState": "URL is unknown to Google",
       "lastCrawlTime": null,
       "googleCanonical": null,
       "userCanonical": null,
@@ -3211,7 +3111,7 @@
       ],
       "status": "inspected",
       "verdict": "NEUTRAL",
-      "coverageState": "URL is unknown to Google",
+      "coverageState": "Discovered - currently not indexed",
       "lastCrawlTime": null,
       "googleCanonical": null,
       "userCanonical": null,
@@ -3436,7 +3336,7 @@
       ],
       "status": "inspected",
       "verdict": "NEUTRAL",
-      "coverageState": "Discovered - currently not indexed",
+      "coverageState": "URL is unknown to Google",
       "lastCrawlTime": null,
       "googleCanonical": null,
       "userCanonical": null,
@@ -3486,7 +3386,7 @@
       ],
       "status": "inspected",
       "verdict": "NEUTRAL",
-      "coverageState": "URL is unknown to Google",
+      "coverageState": "Discovered - currently not indexed",
       "lastCrawlTime": null,
       "googleCanonical": null,
       "userCanonical": null,
@@ -3535,6 +3435,106 @@
         "src/astro_ai/templates/panchang.html"
       ],
       "status": "inspected",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-11-23T02:59:48Z",
+      "googleCanonical": "https://shubhagya.com/panchang/2027-01-17",
+      "userCanonical": "https://shubhagya.com/panchang/2027-01-17",
+      "robotsTxtState": "ALLOWED",
+      "indexingState": "INDEXING_ALLOWED",
+      "pageFetchState": "SUCCESSFUL",
+      "not_indexed": false,
+      "canonical_mismatch": false,
+      "blocked": false,
+      "changed_at": "2026-11-18T03:36:18Z",
+      "changed_sha": "890d516ed8bdbf1a3341026ec67974ff0be2079a",
+      "stale_in_index": false,
+      "stale_reason": null
+    },
+    {
+      "url": "https://shubhagya.com/panchang/2027-01-18",
+      "path": "/panchang/2027-01-18",
+      "sitemap_priority": 0.5,
+      "impressions": 0,
+      "source_files": [
+        "src/astro_ai/templates/panchang.html"
+      ],
+      "status": "inspected",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null,
+      "googleCanonical": null,
+      "userCanonical": null,
+      "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
+      "not_indexed": true,
+      "canonical_mismatch": null,
+      "blocked": false,
+      "changed_at": "2026-11-18T03:36:18Z",
+      "changed_sha": "890d516ed8bdbf1a3341026ec67974ff0be2079a",
+      "stale_in_index": null,
+      "stale_reason": "never-crawled"
+    },
+    {
+      "url": "https://shubhagya.com/panchang/2027-01-19",
+      "path": "/panchang/2027-01-19",
+      "sitemap_priority": 0.5,
+      "impressions": 0,
+      "source_files": [
+        "src/astro_ai/templates/panchang.html"
+      ],
+      "status": "inspected",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null,
+      "googleCanonical": null,
+      "userCanonical": null,
+      "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
+      "not_indexed": true,
+      "canonical_mismatch": null,
+      "blocked": false,
+      "changed_at": "2026-11-18T03:36:18Z",
+      "changed_sha": "890d516ed8bdbf1a3341026ec67974ff0be2079a",
+      "stale_in_index": null,
+      "stale_reason": "never-crawled"
+    },
+    {
+      "url": "https://shubhagya.com/panchang/2027-01-20",
+      "path": "/panchang/2027-01-20",
+      "sitemap_priority": 0.5,
+      "impressions": 0,
+      "source_files": [
+        "src/astro_ai/templates/panchang.html"
+      ],
+      "status": "inspected",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null,
+      "googleCanonical": null,
+      "userCanonical": null,
+      "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
+      "not_indexed": true,
+      "canonical_mismatch": null,
+      "blocked": false,
+      "changed_at": "2026-11-18T03:36:18Z",
+      "changed_sha": "890d516ed8bdbf1a3341026ec67974ff0be2079a",
+      "stale_in_index": null,
+      "stale_reason": "never-crawled"
+    },
+    {
+      "url": "https://shubhagya.com/panchang/2027-01-21",
+      "path": "/panchang/2027-01-21",
+      "sitemap_priority": 0.5,
+      "impressions": 0,
+      "source_files": [
+        "src/astro_ai/templates/panchang.html"
+      ],
+      "status": "inspected",
       "verdict": "NEUTRAL",
       "coverageState": "URL is unknown to Google",
       "lastCrawlTime": null,
@@ -3555,32 +3555,32 @@
       "url": "https://shubhagya.com/learn/the-9-grahas-overview/",
       "path": "/learn/the-9-grahas-overview/",
       "sitemap_priority": 0.7,
-      "impressions": 24,
+      "impressions": 14,
       "source_files": [
         "src/astro_ai/templates/learn/the-9-grahas-overview.html"
       ],
       "status": "inspected",
-      "verdict": "NEUTRAL",
-      "coverageState": "Crawled - currently not indexed",
-      "lastCrawlTime": "2026-09-12T17:31:47Z",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-11-21T10:46:15Z",
       "googleCanonical": "https://shubhagya.com/learn/the-9-grahas-overview/",
       "userCanonical": "https://shubhagya.com/learn/the-9-grahas-overview/",
       "robotsTxtState": "ALLOWED",
       "indexingState": "INDEXING_ALLOWED",
       "pageFetchState": "SUCCESSFUL",
-      "not_indexed": true,
+      "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-17T15:11:49+05:30",
-      "changed_sha": "57494b5dd6377b8e4f7c8166041522764a88eb8f",
-      "stale_in_index": true,
+      "changed_at": "2026-11-20T22:48:49Z",
+      "changed_sha": "0274cbe2d4b2596ef52ca6f858a8c0f2eb610a04",
+      "stale_in_index": false,
       "stale_reason": null
     },
     {
       "url": "https://shubhagya.com/learn/vimshottari-dasha-explained/",
       "path": "/learn/vimshottari-dasha-explained/",
       "sitemap_priority": 0.7,
-      "impressions": 374,
+      "impressions": 389,
       "source_files": [
         "src/astro_ai/templates/learn/vimshottari-dasha-explained.html"
       ],
@@ -3605,7 +3605,7 @@
       "url": "https://shubhagya.com/learn/surya-sun-in-vedic-astrology/",
       "path": "/learn/surya-sun-in-vedic-astrology/",
       "sitemap_priority": 0.7,
-      "impressions": 12,
+      "impressions": 8,
       "source_files": [
         "src/astro_ai/templates/learn/surya-sun-in-vedic-astrology.html"
       ],
@@ -3630,7 +3630,7 @@
       "url": "https://shubhagya.com/learn/chandra-moon-in-vedic-astrology/",
       "path": "/learn/chandra-moon-in-vedic-astrology/",
       "sitemap_priority": 0.7,
-      "impressions": 14,
+      "impressions": 12,
       "source_files": [
         "src/astro_ai/templates/learn/chandra-moon-in-vedic-astrology.html"
       ],
@@ -3655,7 +3655,7 @@
       "url": "https://shubhagya.com/learn/guru-jupiter-in-vedic-astrology/",
       "path": "/learn/guru-jupiter-in-vedic-astrology/",
       "sitemap_priority": 0.7,
-      "impressions": 170,
+      "impressions": 200,
       "source_files": [
         "src/astro_ai/templates/learn/guru-jupiter-in-vedic-astrology.html"
       ],
@@ -3680,7 +3680,7 @@
       "url": "https://shubhagya.com/learn/mangal-mars-in-vedic-astrology/",
       "path": "/learn/mangal-mars-in-vedic-astrology/",
       "sitemap_priority": 0.7,
-      "impressions": 557,
+      "impressions": 624,
       "source_files": [
         "src/astro_ai/templates/learn/mangal-mars-in-vedic-astrology.html"
       ],
@@ -3696,8 +3696,8 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-14T07:40:58Z",
-      "changed_sha": "196526bceb16d6e31e6ba9406543d20ad14cb7ce",
+      "changed_at": "2026-11-22T12:52:21Z",
+      "changed_sha": "680b545df0f7ced1e4d4eb1bd6411727627662dc",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -3705,14 +3705,14 @@
       "url": "https://shubhagya.com/learn/shukra-venus-in-vedic-astrology/",
       "path": "/learn/shukra-venus-in-vedic-astrology/",
       "sitemap_priority": 0.7,
-      "impressions": 393,
+      "impressions": 395,
       "source_files": [
         "src/astro_ai/templates/learn/shukra-venus-in-vedic-astrology.html"
       ],
       "status": "inspected",
       "verdict": "PASS",
       "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-10-23T04:01:24Z",
+      "lastCrawlTime": "2026-11-21T07:57:37Z",
       "googleCanonical": "https://shubhagya.com/learn/shukra-venus-in-vedic-astrology/",
       "userCanonical": "https://shubhagya.com/learn/shukra-venus-in-vedic-astrology/",
       "robotsTxtState": "ALLOWED",
@@ -3723,14 +3723,14 @@
       "blocked": false,
       "changed_at": "2026-11-14T07:40:58Z",
       "changed_sha": "196526bceb16d6e31e6ba9406543d20ad14cb7ce",
-      "stale_in_index": true,
+      "stale_in_index": false,
       "stale_reason": null
     },
     {
       "url": "https://shubhagya.com/learn/budha-mercury-in-vedic-astrology/",
       "path": "/learn/budha-mercury-in-vedic-astrology/",
       "sitemap_priority": 0.7,
-      "impressions": 20,
+      "impressions": 23,
       "source_files": [
         "src/astro_ai/templates/learn/budha-mercury-in-vedic-astrology.html"
       ],
@@ -3755,7 +3755,7 @@
       "url": "https://shubhagya.com/learn/rahu-in-vedic-astrology/",
       "path": "/learn/rahu-in-vedic-astrology/",
       "sitemap_priority": 0.7,
-      "impressions": 143,
+      "impressions": 197,
       "source_files": [
         "src/astro_ai/templates/learn/rahu-in-vedic-astrology.html"
       ],
@@ -3805,14 +3805,14 @@
       "url": "https://shubhagya.com/learn/gochar-2026-planetary-transits/",
       "path": "/learn/gochar-2026-planetary-transits/",
       "sitemap_priority": 0.7,
-      "impressions": 2512,
+      "impressions": 3191,
       "source_files": [
         "src/astro_ai/templates/learn/gochar-2026-planetary-transits.html"
       ],
       "status": "inspected",
       "verdict": "PASS",
       "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-11-10T16:24:31Z",
+      "lastCrawlTime": "2026-11-13T04:17:38Z",
       "googleCanonical": "https://shubhagya.com/learn/gochar-2026-planetary-transits/",
       "userCanonical": "https://shubhagya.com/learn/gochar-2026-planetary-transits/",
       "robotsTxtState": "ALLOWED",
@@ -3836,7 +3836,7 @@
       ],
       "status": "inspected",
       "verdict": "NEUTRAL",
-      "coverageState": "URL is unknown to Google",
+      "coverageState": "Discovered - currently not indexed",
       "lastCrawlTime": null,
       "googleCanonical": null,
       "userCanonical": null,
@@ -3855,7 +3855,7 @@
       "url": "https://shubhagya.com/learn/kundali-matching-ashtakoot-guna-milan/",
       "path": "/learn/kundali-matching-ashtakoot-guna-milan/",
       "sitemap_priority": 0.7,
-      "impressions": 139,
+      "impressions": 130,
       "source_files": [
         "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html"
       ],
@@ -3871,16 +3871,16 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-02T21:11:52Z",
-      "changed_sha": "612ac3182a86ab259fd32c1320f83c9bef26c0df",
-      "stale_in_index": false,
+      "changed_at": "2026-11-20T19:12:04Z",
+      "changed_sha": "8fe2d35b81fc8717986d80cc2691c6453417bb5c",
+      "stale_in_index": true,
       "stale_reason": null
     },
     {
       "url": "https://shubhagya.com/learn/sun-mahadasha/",
       "path": "/learn/sun-mahadasha/",
       "sitemap_priority": 0.7,
-      "impressions": 385,
+      "impressions": 435,
       "source_files": [
         "src/astro_ai/templates/learn/sun-mahadasha.html"
       ],
@@ -3905,14 +3905,14 @@
       "url": "https://shubhagya.com/learn/sade-sati/",
       "path": "/learn/sade-sati/",
       "sitemap_priority": 0.7,
-      "impressions": 2133,
+      "impressions": 2072,
       "source_files": [
         "src/astro_ai/templates/learn/sade-sati.html"
       ],
       "status": "inspected",
       "verdict": "PASS",
       "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-10-23T02:51:03Z",
+      "lastCrawlTime": "2026-11-20T04:32:53Z",
       "googleCanonical": "https://shubhagya.com/learn/sade-sati/",
       "userCanonical": "https://shubhagya.com/learn/sade-sati/",
       "robotsTxtState": "ALLOWED",
@@ -3921,8 +3921,8 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-15T20:31:39Z",
-      "changed_sha": "a45a6d30864e3adfc7154682bca7b475297f28ca",
+      "changed_at": "2026-11-22T17:01:49Z",
+      "changed_sha": "b524d134cc2b7357bad09faa2d7b7a121fc8bd03",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -3930,7 +3930,7 @@
       "url": "https://shubhagya.com/learn/kaal-sarp-dosh/",
       "path": "/learn/kaal-sarp-dosh/",
       "sitemap_priority": 0.7,
-      "impressions": 143,
+      "impressions": 131,
       "source_files": [
         "src/astro_ai/templates/learn/kaal-sarp-dosh.html"
       ],
@@ -3955,7 +3955,7 @@
       "url": "https://shubhagya.com/learn/shani-saturn/",
       "path": "/learn/shani-saturn/",
       "sitemap_priority": 0.7,
-      "impressions": 99,
+      "impressions": 101,
       "source_files": [
         "src/astro_ai/templates/learn/shani-saturn.html"
       ],
@@ -3980,7 +3980,7 @@
       "url": "https://shubhagya.com/learn/rahu-mahadasha-ketu-antardasha/",
       "path": "/learn/rahu-mahadasha-ketu-antardasha/",
       "sitemap_priority": 0.7,
-      "impressions": 3912,
+      "impressions": 3526,
       "source_files": [
         "src/astro_ai/templates/learn/rahu-mahadasha-ketu-antardasha.html"
       ],
@@ -4005,7 +4005,7 @@
       "url": "https://shubhagya.com/learn/manglik-dosh/",
       "path": "/learn/manglik-dosh/",
       "sitemap_priority": 0.7,
-      "impressions": 489,
+      "impressions": 494,
       "source_files": [
         "src/astro_ai/templates/learn/manglik-dosh.html"
       ],
@@ -4055,7 +4055,7 @@
       "url": "https://shubhagya.com/learn/krittika-nakshatra/",
       "path": "/learn/krittika-nakshatra/",
       "sitemap_priority": 0.7,
-      "impressions": 92,
+      "impressions": 112,
       "source_files": [
         "src/astro_ai/templates/learn/krittika-nakshatra.html"
       ],
@@ -4080,7 +4080,7 @@
       "url": "https://shubhagya.com/learn/jupiter-remedies/",
       "path": "/learn/jupiter-remedies/",
       "sitemap_priority": 0.7,
-      "impressions": 39,
+      "impressions": 23,
       "source_files": [
         "src/astro_ai/templates/learn/jupiter-remedies.html"
       ],
@@ -4096,8 +4096,8 @@
       "not_indexed": true,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-14T04:42:33Z",
-      "changed_sha": "939ded245419c4db0617a2750c4d7afe7545f97c",
+      "changed_at": "2026-11-22T12:52:21Z",
+      "changed_sha": "680b545df0f7ced1e4d4eb1bd6411727627662dc",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -4105,7 +4105,7 @@
       "url": "https://shubhagya.com/learn/mercury-remedies/",
       "path": "/learn/mercury-remedies/",
       "sitemap_priority": 0.7,
-      "impressions": 276,
+      "impressions": 357,
       "source_files": [
         "src/astro_ai/templates/learn/mercury-remedies.html"
       ],
@@ -4121,16 +4121,16 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-14T07:40:58Z",
-      "changed_sha": "196526bceb16d6e31e6ba9406543d20ad14cb7ce",
-      "stale_in_index": false,
+      "changed_at": "2026-11-22T12:52:21Z",
+      "changed_sha": "680b545df0f7ced1e4d4eb1bd6411727627662dc",
+      "stale_in_index": true,
       "stale_reason": null
     },
     {
       "url": "https://shubhagya.com/learn/venus-remedies/",
       "path": "/learn/venus-remedies/",
       "sitemap_priority": 0.7,
-      "impressions": 27,
+      "impressions": 28,
       "source_files": [
         "src/astro_ai/templates/learn/venus-remedies.html"
       ],
@@ -4155,24 +4155,24 @@
       "url": "https://shubhagya.com/learn/mars-remedies/",
       "path": "/learn/mars-remedies/",
       "sitemap_priority": 0.7,
-      "impressions": 71,
+      "impressions": 48,
       "source_files": [
         "src/astro_ai/templates/learn/mars-remedies.html"
       ],
       "status": "inspected",
-      "verdict": "NEUTRAL",
-      "coverageState": "Crawled - currently not indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
       "lastCrawlTime": "2026-11-09T04:00:53Z",
       "googleCanonical": "https://shubhagya.com/learn/mars-remedies/",
       "userCanonical": "https://shubhagya.com/learn/mars-remedies/",
       "robotsTxtState": "ALLOWED",
       "indexingState": "INDEXING_ALLOWED",
       "pageFetchState": "SUCCESSFUL",
-      "not_indexed": true,
+      "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-14T05:46:25Z",
-      "changed_sha": "b0ea7e6699e39ebb2604b31b15a906d3eebb2437",
+      "changed_at": "2026-11-22T12:52:21Z",
+      "changed_sha": "680b545df0f7ced1e4d4eb1bd6411727627662dc",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -4180,7 +4180,7 @@
       "url": "https://shubhagya.com/learn/saturn-remedies/",
       "path": "/learn/saturn-remedies/",
       "sitemap_priority": 0.7,
-      "impressions": 186,
+      "impressions": 174,
       "source_files": [
         "src/astro_ai/templates/learn/saturn-remedies.html"
       ],
@@ -4205,7 +4205,7 @@
       "url": "https://shubhagya.com/learn/marriage-delayed/",
       "path": "/learn/marriage-delayed/",
       "sitemap_priority": 0.7,
-      "impressions": 23,
+      "impressions": 22,
       "source_files": [
         "src/astro_ai/templates/learn/marriage-delayed.html"
       ],
@@ -4221,16 +4221,16 @@
       "not_indexed": true,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-10T05:08:08Z",
-      "changed_sha": "d87dfb537b0fd0a8de349f01c1c36247942b07c6",
-      "stale_in_index": false,
+      "changed_at": "2026-11-22T23:05:52Z",
+      "changed_sha": "107e414b262e443d771b03f7b777f8891f8911d4",
+      "stale_in_index": true,
       "stale_reason": null
     },
     {
       "url": "https://shubhagya.com/learn/financial-struggles/",
       "path": "/learn/financial-struggles/",
       "sitemap_priority": 0.7,
-      "impressions": 4,
+      "impressions": 1,
       "source_files": [
         "src/astro_ai/templates/learn/financial-struggles.html"
       ],
@@ -4280,7 +4280,7 @@
       "url": "https://shubhagya.com/learn/saturn-in-10th-house-career/",
       "path": "/learn/saturn-in-10th-house-career/",
       "sitemap_priority": 0.7,
-      "impressions": 394,
+      "impressions": 473,
       "source_files": [
         "src/astro_ai/templates/learn/saturn-in-10th-house-career.html"
       ],
@@ -4305,7 +4305,7 @@
       "url": "https://shubhagya.com/learn/career-during-sade-sati/",
       "path": "/learn/career-during-sade-sati/",
       "sitemap_priority": 0.7,
-      "impressions": 1239,
+      "impressions": 1367,
       "source_files": [
         "src/astro_ai/templates/learn/career-during-sade-sati.html"
       ],
@@ -4321,8 +4321,8 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-16T01:03:26Z",
-      "changed_sha": "610a19d23bd144d35d1897034c709edf2e34baf8",
+      "changed_at": "2026-11-22T17:01:49Z",
+      "changed_sha": "b524d134cc2b7357bad09faa2d7b7a121fc8bd03",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -4330,7 +4330,7 @@
       "url": "https://shubhagya.com/learn/debilitated-sun-career/",
       "path": "/learn/debilitated-sun-career/",
       "sitemap_priority": 0.7,
-      "impressions": 2915,
+      "impressions": 2999,
       "source_files": [
         "src/astro_ai/templates/learn/debilitated-sun-career.html"
       ],
@@ -4346,16 +4346,16 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-16T03:17:05Z",
-      "changed_sha": "b8ac1815612a37b99eafb2faa39b1e903582ad28",
-      "stale_in_index": false,
+      "changed_at": "2026-11-22T18:40:36Z",
+      "changed_sha": "255ea2dba58f5f44f65f9ed68735b0f71f004c79",
+      "stale_in_index": true,
       "stale_reason": null
     },
     {
       "url": "https://shubhagya.com/learn/jupiter-in-10th-house-career/",
       "path": "/learn/jupiter-in-10th-house-career/",
       "sitemap_priority": 0.7,
-      "impressions": 1940,
+      "impressions": 2111,
       "source_files": [
         "src/astro_ai/templates/learn/jupiter-in-10th-house-career.html"
       ],
@@ -4380,7 +4380,7 @@
       "url": "https://shubhagya.com/learn/sun-in-10th-house-career/",
       "path": "/learn/sun-in-10th-house-career/",
       "sitemap_priority": 0.7,
-      "impressions": 376,
+      "impressions": 438,
       "source_files": [
         "src/astro_ai/templates/learn/sun-in-10th-house-career.html"
       ],
@@ -4405,7 +4405,7 @@
       "url": "https://shubhagya.com/learn/foreign-career-yoga-kundli/",
       "path": "/learn/foreign-career-yoga-kundli/",
       "sitemap_priority": 0.7,
-      "impressions": 6,
+      "impressions": 2,
       "source_files": [
         "src/astro_ai/templates/learn/foreign-career-yoga-kundli.html"
       ],
@@ -4430,7 +4430,7 @@
       "url": "https://shubhagya.com/learn/marriage-mahadasha-timing/",
       "path": "/learn/marriage-mahadasha-timing/",
       "sitemap_priority": 0.7,
-      "impressions": 660,
+      "impressions": 643,
       "source_files": [
         "src/astro_ai/templates/learn/marriage-mahadasha-timing.html"
       ],
@@ -4455,7 +4455,7 @@
       "url": "https://shubhagya.com/learn/love-vs-arranged-marriage-kundli/",
       "path": "/learn/love-vs-arranged-marriage-kundli/",
       "sitemap_priority": 0.7,
-      "impressions": 18,
+      "impressions": 16,
       "source_files": [
         "src/astro_ai/templates/learn/love-vs-arranged-marriage-kundli.html"
       ],
@@ -4480,7 +4480,7 @@
       "url": "https://shubhagya.com/learn/marriage-timing-kundli/",
       "path": "/learn/marriage-timing-kundli/",
       "sitemap_priority": 0.7,
-      "impressions": 14,
+      "impressions": 13,
       "source_files": [
         "src/astro_ai/templates/learn/marriage-timing-kundli.html"
       ],
@@ -4505,7 +4505,7 @@
       "url": "https://shubhagya.com/learn/job-or-business-kundli-guide/",
       "path": "/learn/job-or-business-kundli-guide/",
       "sitemap_priority": 0.7,
-      "impressions": 10,
+      "impressions": 8,
       "source_files": [
         "src/astro_ai/templates/learn/job-or-business-kundli-guide.html"
       ],
@@ -4530,7 +4530,7 @@
       "url": "https://shubhagya.com/learn/10th-lord-in-6th-house-career/",
       "path": "/learn/10th-lord-in-6th-house-career/",
       "sitemap_priority": 0.7,
-      "impressions": 762,
+      "impressions": 852,
       "source_files": [
         "src/astro_ai/templates/learn/10th-lord-in-6th-house-career.html"
       ],
@@ -4555,7 +4555,7 @@
       "url": "https://shubhagya.com/learn/rahu-mahadasha-career-problems/",
       "path": "/learn/rahu-mahadasha-career-problems/",
       "sitemap_priority": 0.7,
-      "impressions": 1044,
+      "impressions": 1159,
       "source_files": [
         "src/astro_ai/templates/learn/rahu-mahadasha-career-problems.html"
       ],
@@ -4580,7 +4580,7 @@
       "url": "https://shubhagya.com/learn/santan-prapti-children-in-kundli/",
       "path": "/learn/santan-prapti-children-in-kundli/",
       "sitemap_priority": 0.7,
-      "impressions": 18,
+      "impressions": 8,
       "source_files": [
         "src/astro_ai/templates/learn/santan-prapti-children-in-kundli.html"
       ],
@@ -4605,14 +4605,14 @@
       "url": "https://shubhagya.com/learn/chronic-health-issues-kundli/",
       "path": "/learn/chronic-health-issues-kundli/",
       "sitemap_priority": 0.7,
-      "impressions": 439,
+      "impressions": 505,
       "source_files": [
         "src/astro_ai/templates/learn/chronic-health-issues-kundli.html"
       ],
       "status": "inspected",
       "verdict": "PASS",
       "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-10-30T15:05:41Z",
+      "lastCrawlTime": "2026-11-20T12:09:33Z",
       "googleCanonical": "https://shubhagya.com/learn/chronic-health-issues-kundli/",
       "userCanonical": "https://shubhagya.com/learn/chronic-health-issues-kundli/",
       "robotsTxtState": "ALLOWED",
@@ -4623,14 +4623,14 @@
       "blocked": false,
       "changed_at": "2026-10-31T02:26:10Z",
       "changed_sha": "f2c2104c7f48d9001b25c11c0c8a206920cf6ac1",
-      "stale_in_index": true,
+      "stale_in_index": false,
       "stale_reason": null
     },
     {
       "url": "https://shubhagya.com/learn/gajakesari-yoga/",
       "path": "/learn/gajakesari-yoga/",
       "sitemap_priority": 0.7,
-      "impressions": 5,
+      "impressions": 3,
       "source_files": [
         "src/astro_ai/templates/learn/gajakesari-yoga.html"
       ],
@@ -4655,7 +4655,7 @@
       "url": "https://shubhagya.com/learn/panch-mahapurush-yoga/",
       "path": "/learn/panch-mahapurush-yoga/",
       "sitemap_priority": 0.7,
-      "impressions": 1016,
+      "impressions": 1056,
       "source_files": [
         "src/astro_ai/templates/learn/panch-mahapurush-yoga.html"
       ],
@@ -4755,7 +4755,7 @@
       "url": "https://shubhagya.com/learn/swati-nakshatra/",
       "path": "/learn/swati-nakshatra/",
       "sitemap_priority": 0.7,
-      "impressions": 32,
+      "impressions": 27,
       "source_files": [
         "src/astro_ai/templates/learn/swati-nakshatra.html"
       ],
@@ -4780,7 +4780,7 @@
       "url": "https://shubhagya.com/learn/magha-nakshatra/",
       "path": "/learn/magha-nakshatra/",
       "sitemap_priority": 0.7,
-      "impressions": 115,
+      "impressions": 157,
       "source_files": [
         "src/astro_ai/templates/learn/magha-nakshatra.html"
       ],
@@ -4805,7 +4805,7 @@
       "url": "https://shubhagya.com/learn/purva-phalguni-nakshatra/",
       "path": "/learn/purva-phalguni-nakshatra/",
       "sitemap_priority": 0.7,
-      "impressions": 70,
+      "impressions": 73,
       "source_files": [
         "src/astro_ai/templates/learn/purva-phalguni-nakshatra.html"
       ],
@@ -4855,7 +4855,7 @@
       "url": "https://shubhagya.com/learn/punarvasu-nakshatra/",
       "path": "/learn/punarvasu-nakshatra/",
       "sitemap_priority": 0.7,
-      "impressions": 13,
+      "impressions": 11,
       "source_files": [
         "src/astro_ai/templates/learn/punarvasu-nakshatra.html"
       ],
@@ -4880,7 +4880,7 @@
       "url": "https://shubhagya.com/learn/pushya-nakshatra/",
       "path": "/learn/pushya-nakshatra/",
       "sitemap_priority": 0.7,
-      "impressions": 124,
+      "impressions": 82,
       "source_files": [
         "src/astro_ai/templates/learn/pushya-nakshatra.html"
       ],
@@ -4905,7 +4905,7 @@
       "url": "https://shubhagya.com/learn/ashlesha-nakshatra/",
       "path": "/learn/ashlesha-nakshatra/",
       "sitemap_priority": 0.7,
-      "impressions": 7,
+      "impressions": 8,
       "source_files": [
         "src/astro_ai/templates/learn/ashlesha-nakshatra.html"
       ],
@@ -4930,7 +4930,7 @@
       "url": "https://shubhagya.com/learn/rohini-nakshatra/",
       "path": "/learn/rohini-nakshatra/",
       "sitemap_priority": 0.7,
-      "impressions": 41,
+      "impressions": 33,
       "source_files": [
         "src/astro_ai/templates/learn/rohini-nakshatra.html"
       ],
@@ -4980,7 +4980,7 @@
       "url": "https://shubhagya.com/learn/ardra-nakshatra/",
       "path": "/learn/ardra-nakshatra/",
       "sitemap_priority": 0.7,
-      "impressions": 37,
+      "impressions": 35,
       "source_files": [
         "src/astro_ai/templates/learn/ardra-nakshatra.html"
       ],
@@ -5005,7 +5005,7 @@
       "url": "https://shubhagya.com/learn/ashwini-nakshatra/",
       "path": "/learn/ashwini-nakshatra/",
       "sitemap_priority": 0.7,
-      "impressions": 89,
+      "impressions": 83,
       "source_files": [
         "src/astro_ai/templates/learn/ashwini-nakshatra.html"
       ],
@@ -5030,7 +5030,7 @@
       "url": "https://shubhagya.com/learn/planets-in-7th-house-marriage/",
       "path": "/learn/planets-in-7th-house-marriage/",
       "sitemap_priority": 0.7,
-      "impressions": 1221,
+      "impressions": 1395,
       "source_files": [
         "src/astro_ai/templates/learn/planets-in-7th-house-marriage.html"
       ],
@@ -5055,7 +5055,7 @@
       "url": "https://shubhagya.com/learn/7th-lord-placement-marriage-guide/",
       "path": "/learn/7th-lord-placement-marriage-guide/",
       "sitemap_priority": 0.7,
-      "impressions": 1509,
+      "impressions": 1500,
       "source_files": [
         "src/astro_ai/templates/learn/7th-lord-placement-marriage-guide.html"
       ],
@@ -5080,7 +5080,7 @@
       "url": "https://shubhagya.com/learn/second-marriage-yoga-kundli/",
       "path": "/learn/second-marriage-yoga-kundli/",
       "sitemap_priority": 0.7,
-      "impressions": 17,
+      "impressions": 19,
       "source_files": [
         "src/astro_ai/templates/learn/second-marriage-yoga-kundli.html"
       ],
@@ -5105,7 +5105,7 @@
       "url": "https://shubhagya.com/learn/rahu-remedies/",
       "path": "/learn/rahu-remedies/",
       "sitemap_priority": 0.7,
-      "impressions": 18,
+      "impressions": 12,
       "source_files": [
         "src/astro_ai/templates/learn/rahu-remedies.html"
       ],
@@ -5121,8 +5121,8 @@
       "not_indexed": true,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-10-26T10:02:40+05:30",
-      "changed_sha": "0f1bda177d94b74570279b784c25837a5aef5bab",
+      "changed_at": "2026-11-22T17:01:49Z",
+      "changed_sha": "b524d134cc2b7357bad09faa2d7b7a121fc8bd03",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -5180,7 +5180,7 @@
       "url": "https://shubhagya.com/learn/chandra-moon-remedies/",
       "path": "/learn/chandra-moon-remedies/",
       "sitemap_priority": 0.7,
-      "impressions": 11,
+      "impressions": 15,
       "source_files": [
         "src/astro_ai/templates/learn/chandra-moon-remedies.html"
       ],
@@ -5205,7 +5205,7 @@
       "url": "https://shubhagya.com/learn/pitru-dosh-remedies/",
       "path": "/learn/pitru-dosh-remedies/",
       "sitemap_priority": 0.7,
-      "impressions": 4,
+      "impressions": 5,
       "source_files": [
         "src/astro_ai/templates/learn/pitru-dosh-remedies.html"
       ],
@@ -5230,14 +5230,14 @@
       "url": "https://shubhagya.com/learn/kaal-sarp-dosh-remedies/",
       "path": "/learn/kaal-sarp-dosh-remedies/",
       "sitemap_priority": 0.7,
-      "impressions": 10,
+      "impressions": 11,
       "source_files": [
         "src/astro_ai/templates/learn/kaal-sarp-dosh-remedies.html"
       ],
       "status": "inspected",
       "verdict": "PASS",
       "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-10-24T07:17:23Z",
+      "lastCrawlTime": "2026-11-22T13:02:29Z",
       "googleCanonical": "https://shubhagya.com/learn/kaal-sarp-dosh-remedies/",
       "userCanonical": "https://shubhagya.com/learn/kaal-sarp-dosh-remedies/",
       "robotsTxtState": "ALLOWED",
@@ -5248,7 +5248,7 @@
       "blocked": false,
       "changed_at": "2026-11-13T19:42:38Z",
       "changed_sha": "95e27d2d7edfd831593307ca1e70c0c697078af8",
-      "stale_in_index": true,
+      "stale_in_index": false,
       "stale_reason": null
     },
     {
@@ -5271,8 +5271,8 @@
       "not_indexed": false,
       "canonical_mismatch": false,
       "blocked": false,
-      "changed_at": "2026-11-10T05:08:08Z",
-      "changed_sha": "d87dfb537b0fd0a8de349f01c1c36247942b07c6",
+      "changed_at": "2026-11-22T04:06:52Z",
+      "changed_sha": "0eaf9bda3083d2075fdd7bcb9ca6234aa2f0dbfd",
       "stale_in_index": true,
       "stale_reason": null
     },
@@ -5280,7 +5280,7 @@
       "url": "https://shubhagya.com/learn/dhana-yoga-wealth-combinations/",
       "path": "/learn/dhana-yoga-wealth-combinations/",
       "sitemap_priority": 0.7,
-      "impressions": 31,
+      "impressions": 26,
       "source_files": [
         "src/astro_ai/templates/learn/dhana-yoga-wealth-combinations.html"
       ],
@@ -5305,7 +5305,7 @@
       "url": "https://shubhagya.com/learn/2nd-lord-placement-wealth-guide/",
       "path": "/learn/2nd-lord-placement-wealth-guide/",
       "sitemap_priority": 0.7,
-      "impressions": 79,
+      "impressions": 85,
       "source_files": [
         "src/astro_ai/templates/learn/2nd-lord-placement-wealth-guide.html"
       ],
@@ -5330,7 +5330,7 @@
       "url": "https://shubhagya.com/learn/vivah-muhurat-2027/",
       "path": "/learn/vivah-muhurat-2027/",
       "sitemap_priority": 0.7,
-      "impressions": 42,
+      "impressions": 33,
       "source_files": [
         "src/astro_ai/templates/learn/vivah-muhurat-2027.html"
       ],
@@ -5380,7 +5380,7 @@
       "url": "https://shubhagya.com/learn/diwali-muhurat-2026/",
       "path": "/learn/diwali-muhurat-2026/",
       "sitemap_priority": 0.7,
-      "impressions": 75,
+      "impressions": 76,
       "source_files": [
         "src/astro_ai/templates/learn/diwali-muhurat-2026.html"
       ],
@@ -5430,7 +5430,7 @@
       "url": "https://shubhagya.com/learn/11th-lord-placement-gains-guide/",
       "path": "/learn/11th-lord-placement-gains-guide/",
       "sitemap_priority": 0.7,
-      "impressions": 16,
+      "impressions": 14,
       "source_files": [
         "src/astro_ai/templates/learn/11th-lord-placement-gains-guide.html"
       ],
@@ -5455,7 +5455,7 @@
       "url": "https://shubhagya.com/learn/name-numerology-explained/",
       "path": "/learn/name-numerology-explained/",
       "sitemap_priority": 0.7,
-      "impressions": 275,
+      "impressions": 324,
       "source_files": [
         "src/astro_ai/templates/learn/name-numerology-explained.html"
       ],
