@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-25T12:28:48Z",
+  "generated_at": "2026-11-25T19:14:34Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 168,
-  "with_ask": 43,
+  "with_ask": 42,
   "by_area": {
-    "UNCLASSIFIED": 74,
-    "INFRA": 16,
+    "UNCLASSIFIED": 79,
+    "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
     "FEATURE": 7,
-    "ANALYTICS": 6,
+    "ANALYTICS": 5,
     "TOKENS": 5,
     "SEO": 4,
     "CORPUS": 4,
@@ -19,7 +19,6 @@
     "AGENT-MEASURE": 2,
     "AGENT-MERGE": 2,
     "PRIVACY": 2,
-    "MEASURE": 2,
     "MATCHING": 2,
     "NUMEROLOGY": 2,
     "RASHIFAL": 2,
@@ -28,17 +27,16 @@
     "MUHURAT": 1,
     "NOTIFY": 1,
     "UI": 1,
-    "KNOWLEDGE": 1,
     "ASK": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 53,
-    "untyped": 41,
-    "enhancement": 32,
-    "chore": 27,
-    "correctness": 10,
+    "bug": 59,
+    "untyped": 38,
+    "enhancement": 31,
+    "chore": 26,
+    "correctness": 9,
     "design": 5
   },
   "by_priority": {
@@ -47,8 +45,201 @@
     "high": 19,
     "low": 11
   },
-  "blocked": 10,
+  "blocked": 6,
   "rows": [
+    {
+      "number": 1492,
+      "title": "QA follow-up: one malformed loop.json row 500s every /admin/ops tab before ops_kpis can skip it (PR #1489)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T17:37:07Z",
+      "updated": "2026-11-25T17:37:07Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1491,
+      "title": "QA follow-up: decision record 2026-11-25-ops-overview-kpis.md measures Overview size against step 1, not main (PR #1489)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T17:37:05Z",
+      "updated": "2026-11-25T17:37:05Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1490,
+      "title": "QA follow-up: KPI cards print 'was 0' beside an unavailable delta when the previous window predates the data (PR #1489)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T17:37:04Z",
+      "updated": "2026-11-25T17:37:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1488,
+      "title": "QA follow-up: the dispatched main-red reporter route has no decision record",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T15:37:34Z",
+      "updated": "2026-11-25T15:37:34Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1487,
+      "title": "QA follow-up: the reporter's lower bound uses the runner clock, not GitHub's",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T15:37:32Z",
+      "updated": "2026-11-25T15:37:44Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1486,
+      "title": "QA follow-up: the replaced-run check also swallows a timed-out main",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T15:37:30Z",
+      "updated": "2026-11-25T15:37:30Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1485,
+      "title": "QA follow-up: tab shell and Gate 6 have no decision record, docstring omits Gate 6, PR body stale (PR #1474)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T14:59:03Z",
+      "updated": "2026-11-25T14:59:03Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1484,
+      "title": "QA follow-up: /admin/ops 375px drawer with menu button and sticky header are owned by no slice (PR #1474)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T14:59:02Z",
+      "updated": "2026-11-25T14:59:02Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1483,
+      "title": "QA follow-up: matching.html and manglik-remedies status list still list comparable severity as a cancellation without saying it is ours (PR #1375)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-25T14:46:51Z",
+      "updated": "2026-11-25T18:46:02Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1479,
+      "title": "QA follow-up: pre_qa_check crashes with a traceback on a syntactically invalid mutation file (PR #1475)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T13:48:16Z",
+      "updated": "2026-11-25T13:48:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1478,
+      "title": "QA follow-up: pre_qa_check grounding proxy fails grounded commits whose message has no corpus: line (PR #1475)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T13:48:14Z",
+      "updated": "2026-11-25T13:48:14Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1477,
+      "title": "QA follow-up: reentry stand-down can drop a QA-FAIL fix entry after an unrelated claude[bot] comment (PR #1475)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-25T13:48:13Z",
+      "updated": "2026-11-25T13:48:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1469,
       "title": "analytics: muhurat_searched is absent from GA4 in every report — cannot tell broken from unused (half of #1336's metric)",
@@ -112,25 +303,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1457,
-      "title": "QA follow-up: Vivah lagna legend renders with no row blocks when the window computation fails (PR #1455)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-24T22:44:04Z",
-      "updated": "2026-11-25T03:10:45Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1448,
       "title": "agent-measure: wire fetch_ga4.py --page-locations and list it for the analyst (wiring half of #1237)",
       "ask": "",
@@ -174,26 +346,7 @@
         "seo"
       ],
       "created": "2026-11-24T05:31:11Z",
-      "updated": "2026-11-24T05:31:27Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1436,
-      "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement",
-        "seo",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-24T05:31:10Z",
-      "updated": "2026-11-24T19:02:29Z",
+      "updated": "2026-11-25T17:52:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -294,23 +447,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1409,
-      "title": "QA follow-up: wire collect_kundli_submissions.py into agent-measure.yml (#1272 part 2, owner act #1)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "needs-human-review"
-      ],
-      "created": "2026-11-23T11:31:06Z",
-      "updated": "2026-11-23T11:31:06Z",
-      "blocked": true,
-      "needs_evidence": false
-    },
-    {
       "number": 1396,
       "title": "QA follow-up: result.html:564 says classical texts require comparable severity for Manglik mutual cancellation (PR #1394, #1377)",
       "ask": "",
@@ -358,26 +494,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-22T10:39:20Z",
-      "updated": "2026-11-23T19:38:29Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1369,
-      "title": "QA follow-up: manglik-dosh article and registry FAQs still call comparable severity classical, against manglik-remedies (PR #1368)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-22T03:59:44Z",
-      "updated": "2026-11-22T11:00:09Z",
+      "updated": "2026-11-25T18:46:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -410,7 +527,7 @@
         "chore"
       ],
       "created": "2026-11-21T22:43:25Z",
-      "updated": "2026-11-24T07:07:53Z",
+      "updated": "2026-11-25T17:32:09Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -490,7 +607,7 @@
         "chore"
       ],
       "created": "2026-11-21T11:29:41Z",
-      "updated": "2026-11-24T04:18:47Z",
+      "updated": "2026-11-25T14:36:40Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -509,7 +626,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-21T11:10:53Z",
-      "updated": "2026-11-23T22:35:01Z",
+      "updated": "2026-11-25T15:29:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -546,41 +663,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1341,
-      "title": "muhurat finder: top-pick card ranked by (tier, -score, date), score carried on MuhuratCandidate; Range select reflects searched days (R1 of #1017, closes #1339)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "seo",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle",
-        "growth"
-      ],
-      "created": "2026-11-21T07:29:31Z",
-      "updated": "2026-11-21T10:09:45Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1339,
-      "title": "QA follow-up: muhurat finder range select ignores the searched days, misleading on a shared link (found in PR #1337)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa"
-      ],
-      "created": "2026-11-21T05:58:28Z",
-      "updated": "2026-11-21T05:58:28Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1324,
       "title": "notify: muhurat_computed says 'N auspicious of M days' with the non-avoid count, which now over-counts versus the finder page (follow-up to #1322)",
       "ask": "",
@@ -593,25 +675,6 @@
       ],
       "created": "2026-11-21T01:18:50Z",
       "updated": "2026-11-21T03:58:21Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1320,
-      "title": "QA follow-up: /manglik-check card still calls manglik-remedies 'Classical practices' (PR #1319)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-21T00:25:35Z",
-      "updated": "2026-11-23T19:36:15Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -898,10 +961,12 @@
         "priority:high",
         "effort:m",
         "chore",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-19T09:53:21Z",
-      "updated": "2026-11-25T11:31:57Z",
+      "updated": "2026-11-25T14:09:34Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -940,25 +1005,6 @@
       "needs_evidence": true
     },
     {
-      "number": 1243,
-      "title": "knowledge: vedic_reference.md §29.14 still says Magha/Mula first-pada exclusion is not implemented (after #1242)",
-      "ask": "",
-      "area": "KNOWLEDGE",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness",
-        "chore",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-11-19T04:43:24Z",
-      "updated": "2026-11-24T04:39:29Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1237,
       "title": "analytics: no export carries GA4 page_location — #1066 and #1093 cannot be scored (3 reports in a row)",
       "ask": "",
@@ -973,23 +1019,6 @@
       "created": "2026-11-19T02:17:38Z",
       "updated": "2026-11-24T14:23:37Z",
       "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1221,
-      "title": "[INFRA] main-red-report never fires for the dispatched pr-gates runs agent-merge starts, so a green main does not close its sentinel and a red one would not report (#1216 open 5h after green)",
-      "ask": "The fix is in .github/workflows/ (either report from the dispatching step, or have the agent-merge dispatch carry the report, or add a trigger that does fire).",
-      "area": "INFRA",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "category:technical",
-        "needs-human-review"
-      ],
-      "created": "2026-11-18T12:32:36Z",
-      "updated": "2026-11-18T12:32:51Z",
-      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -1024,21 +1053,6 @@
       "created": "2026-11-18T02:05:15Z",
       "updated": "2026-11-25T05:59:26Z",
       "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1205,
-      "title": "analytics: call fetch_ga4.py --trend from agent-measure.yml and list the file for the analyst (#1115 part 2, owner act #1)",
-      "ask": "",
-      "area": "ANALYTICS",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "needs-human-review"
-      ],
-      "created": "2026-11-18T01:43:20Z",
-      "updated": "2026-11-18T03:01:38Z",
-      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -1124,10 +1138,12 @@
         "priority:high",
         "ui",
         "design-proposal",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-16T17:33:22Z",
-      "updated": "2026-11-25T10:32:41Z",
+      "updated": "2026-11-25T17:45:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1205,7 +1221,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T10:10:28Z",
-      "updated": "2026-11-23T03:13:35Z",
+      "updated": "2026-11-25T17:52:55Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1279,7 +1295,7 @@
         "growth"
       ],
       "created": "2026-11-14T13:09:28Z",
-      "updated": "2026-11-22T01:33:23Z",
+      "updated": "2026-11-25T17:52:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1296,22 +1312,6 @@
       "created": "2026-11-13T23:26:00Z",
       "updated": "2026-11-14T04:43:37Z",
       "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 974,
-      "title": "[MEASURE] agent-sync.yml and agent-measure.yml check out at depth 1: blocked at three syncs, owner act: push fetch-depth: 0",
-      "ask": "",
-      "area": "MEASURE",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "needs-human-review",
-        "chore"
-      ],
-      "created": "2026-11-13T23:25:59Z",
-      "updated": "2026-11-20T23:47:55Z",
-      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -1461,7 +1461,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-20T19:07:08Z",
+      "updated": "2026-11-25T14:11:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1670,19 +1670,6 @@
       ],
       "created": "2026-11-03T20:55:15Z",
       "updated": "2026-11-14T03:36:23Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 666,
-      "title": "[MEASURE] The analyst job checks out at depth 1, so the required `git log origin/main --since` confound check cannot run",
-      "ask": "",
-      "area": "MEASURE",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-11-02T00:15:45Z",
-      "updated": "2026-11-13T23:26:17Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2771,7 +2758,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-25T12:28:48Z",
+    "generated_at": "2026-11-25T19:14:34Z",
     "window_days": 28,
     "open_now": 168,
     "merged_open_hours": 24,
@@ -3193,15 +3180,18 @@
       },
       {
         "date": "2026-11-25",
-        "opened": 5,
-        "closed": 4,
+        "opened": 18,
+        "closed": 17,
         "net": 1,
         "open_end": 168,
         "opened_by": {
-          "loop": 5
+          "loop": 18
         },
         "closed_by": {
-          "close-on-evidence": 4
+          "close-on-evidence": 12,
+          "main-red-report": 1,
+          "owner": 3,
+          "other": 1
         }
       }
     ],
@@ -3638,6 +3628,11 @@
         "closer": "owner"
       },
       {
+        "number": 666,
+        "closed_at": "2026-11-25T17:51:43Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 669,
         "closed_at": "2026-11-02T13:27:58Z",
         "closer": "close-on-evidence"
@@ -3945,6 +3940,11 @@
       {
         "number": 972,
         "closed_at": "2026-11-14T00:26:45Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 974,
+        "closed_at": "2026-11-25T17:51:46Z",
         "closer": "close-on-evidence"
       },
       {
@@ -4398,6 +4398,11 @@
         "closer": "prioritise"
       },
       {
+        "number": 1205,
+        "closed_at": "2026-11-25T17:51:35Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1208,
         "closed_at": "2026-11-23T02:18:17Z",
         "closer": "close-on-evidence"
@@ -4415,6 +4420,11 @@
       {
         "number": 1217,
         "closed_at": "2026-11-18T12:59:43Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1221,
+        "closed_at": "2026-11-25T17:51:38Z",
         "closer": "close-on-evidence"
       },
       {
@@ -4436,6 +4446,11 @@
         "number": 1236,
         "closed_at": "2026-11-19T23:41:48Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1243,
+        "closed_at": "2026-11-25T14:33:46Z",
+        "closer": "owner"
       },
       {
         "number": 1247,
@@ -4533,6 +4548,11 @@
         "closer": "other"
       },
       {
+        "number": 1320,
+        "closed_at": "2026-11-25T14:17:11Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1321,
         "closed_at": "2026-11-22T04:13:38Z",
         "closer": "close-on-evidence"
@@ -4578,6 +4598,16 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1339,
+        "closed_at": "2026-11-25T14:10:46Z",
+        "closer": "other"
+      },
+      {
+        "number": 1341,
+        "closed_at": "2026-11-25T14:17:06Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1359,
         "closed_at": "2026-11-22T03:16:51Z",
         "closer": "close-on-evidence"
@@ -4585,6 +4615,11 @@
       {
         "number": 1361,
         "closed_at": "2026-11-24T03:13:38Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1369,
+        "closed_at": "2026-11-25T14:55:58Z",
         "closer": "close-on-evidence"
       },
       {
@@ -4643,6 +4678,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1409,
+        "closed_at": "2026-11-25T17:51:40Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1411,
         "closed_at": "2026-11-23T14:54:57Z",
         "closer": "other"
@@ -4661,6 +4701,11 @@
         "number": 1434,
         "closed_at": "2026-11-24T06:09:56Z",
         "closer": "prioritise"
+      },
+      {
+        "number": 1436,
+        "closed_at": "2026-11-25T14:33:54Z",
+        "closer": "owner"
       },
       {
         "number": 1439,
@@ -4683,139 +4728,141 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1457,
+        "closed_at": "2026-11-25T14:34:01Z",
+        "closer": "owner"
+      },
+      {
         "number": 1466,
         "closed_at": "2026-11-25T05:08:40Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1481,
+        "closed_at": "2026-11-25T14:51:04Z",
+        "closer": "main-red-report"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 13,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 76,
-          "median_h": 0.6,
-          "p90_h": 3.1,
-          "max_h": 23.3,
+          "merged": 86,
+          "median_h": 0.8,
+          "p90_h": 11.4,
+          "max_h": 105.0,
           "slowest": [
             {
-              "number": 1212,
-              "title": "close-on-evidence: close every PR the live, verified commit contains, not only its own",
-              "author": "mahAnuj",
-              "merged_at": "2026-11-19T03:03:32Z",
-              "hours": 23.3,
+              "number": 1335,
+              "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-25T14:10:11Z",
+              "hours": 105.0,
               "why": {
-                "reason": "19.9h waiting for a fix after QA failed (5 QA FAILs); 6 pushes",
-                "primary": "qa_fail",
-                "hours": {
-                  "no_gates": 0.6,
-                  "qa_fail": 19.9,
-                  "gates_running": 2.1,
-                  "awaiting_qa": 0.4,
-                  "awaiting_merge": 0.0,
-                  "held": 0.3
-                },
-                "qa_fails": 5,
-                "pushes": 6
-              }
-            },
-            {
-              "number": 1262,
-              "title": "pr-gates: run the suite, four mutation shards and the verification gates as parallel jobs",
-              "author": "mahAnuj",
-              "merged_at": "2026-11-20T07:37:22Z",
-              "hours": 13.6,
-              "why": {
-                "reason": "12.0h waiting for a fix after QA failed (1 QA FAIL)",
-                "primary": "qa_fail",
-                "hours": {
-                  "no_gates": 0.5,
-                  "qa_fail": 12.0,
-                  "gates_running": 0.1,
-                  "awaiting_qa": 0.1,
-                  "awaiting_merge": 0.0,
-                  "held": 0.9
-                },
-                "qa_fails": 1,
-                "pushes": 2
-              }
-            },
-            {
-              "number": 1259,
-              "title": "mutation harness: 8 rows the anchor tripwires were faking now have real guards; 2 re-point",
-              "author": "mahAnuj",
-              "merged_at": "2026-11-19T18:28:52Z",
-              "hours": 6.3,
-              "why": {
-                "reason": "4.8h waiting for gates to start; 0.9h waiting for a QA round",
+                "reason": "105.0h waiting for gates to start",
                 "primary": "no_gates",
                 "hours": {
-                  "no_gates": 4.8,
-                  "gates_running": 0.6,
-                  "awaiting_qa": 0.9,
-                  "awaiting_merge": 0.0
-                },
-                "qa_fails": 0,
-                "pushes": 2
-              }
-            },
-            {
-              "number": 1391,
-              "title": "numerology and numerology_compat declare tool_error {tool, kind} on a refused or failed su",
-              "author": "shubhagya-publisher[bot]",
-              "merged_at": "2026-11-23T01:55:27Z",
-              "hours": 5.9,
-              "why": {
-                "reason": "5.9h waiting for gates to start",
-                "primary": "no_gates",
-                "hours": {
-                  "no_gates": 5.9
+                  "no_gates": 105.0
                 },
                 "qa_fails": 0,
                 "pushes": 1
               }
             },
             {
-              "number": 1240,
-              "title": "Team restructure: architect plans every build; backend/frontend engineers; seo-growth in d",
-              "author": "mahAnuj",
-              "merged_at": "2026-11-19T07:07:11Z",
-              "hours": 4.3,
+              "number": 1342,
+              "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-25T14:10:44Z",
+              "hours": 101.9,
               "why": {
-                "reason": "1.8h gates running; 1.0h held for chief (trust boundary)",
-                "primary": "gates_running",
+                "reason": "100.4h QA passed, waiting for the merge",
+                "primary": "awaiting_merge",
                 "hours": {
-                  "no_gates": 0.8,
-                  "gates_running": 1.8,
-                  "awaiting_qa": 0.5,
-                  "qa_fail": 0.3,
-                  "awaiting_merge": 0.0,
-                  "held": 1.0
+                  "no_gates": 1.3,
+                  "gates_running": 0.1,
+                  "awaiting_qa": 0.1,
+                  "awaiting_merge": 100.4
+                },
+                "qa_fails": 0,
+                "pushes": 3
+              }
+            },
+            {
+              "number": 1375,
+              "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-25T14:48:32Z",
+              "hours": 76.9,
+              "why": {
+                "reason": "73.4h QA passed, waiting for the merge; 8 pushes",
+                "primary": "awaiting_merge",
+                "hours": {
+                  "no_gates": 0.6,
+                  "gates_running": 0.2,
+                  "awaiting_qa": 0.2,
+                  "qa_fail": 0.1,
+                  "gates_red": 1.7,
+                  "awaiting_merge": 73.4,
+                  "held": 0.6
                 },
                 "qa_fails": 1,
-                "pushes": 3
+                "pushes": 8
+              }
+            },
+            {
+              "number": 1405,
+              "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
+              "author": "mahAnuj",
+              "merged_at": "2026-11-25T14:06:11Z",
+              "hours": 54.8,
+              "why": {
+                "reason": "47.3h QA passed, waiting for the merge; 7.1h waiting for gates to start",
+                "primary": "awaiting_merge",
+                "hours": {
+                  "no_gates": 7.1,
+                  "gates_running": 0.1,
+                  "awaiting_qa": 0.1,
+                  "awaiting_merge": 47.3,
+                  "held": 0.2
+                },
+                "qa_fails": 0,
+                "pushes": 2
+              }
+            },
+            {
+              "number": 1428,
+              "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-25T14:33:44Z",
+              "hours": 34.2,
+              "why": {
+                "reason": "24.4h waiting for gates to start; 9.8h held for chief (trust boundary)",
+                "primary": "no_gates",
+                "hours": {
+                  "no_gates": 24.4,
+                  "held": 9.8
+                },
+                "qa_fails": 0,
+                "pushes": 1
               }
             }
           ],
           "top_reasons": [
             {
-              "reason": "waiting for a fix after QA failed",
-              "prs": 2
+              "reason": "QA passed, waiting for the merge",
+              "prs": 3
             },
             {
               "reason": "waiting for gates to start",
               "prs": 2
-            },
-            {
-              "reason": "gates running",
-              "prs": 1
             }
           ]
         },
         "28d": {
-          "merged": 347,
-          "median_h": 0.5,
-          "p90_h": 13.6,
+          "merged": 358,
+          "median_h": 0.6,
+          "p90_h": 15.1,
           "max_h": 122.1,
           "slowest": [
             {
@@ -4837,6 +4884,41 @@
                 },
                 "qa_fails": 5,
                 "pushes": 12
+              }
+            },
+            {
+              "number": 1335,
+              "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-25T14:10:11Z",
+              "hours": 105.0,
+              "why": {
+                "reason": "105.0h waiting for gates to start",
+                "primary": "no_gates",
+                "hours": {
+                  "no_gates": 105.0
+                },
+                "qa_fails": 0,
+                "pushes": 1
+              }
+            },
+            {
+              "number": 1342,
+              "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
+              "author": "claude[bot]",
+              "merged_at": "2026-11-25T14:10:44Z",
+              "hours": 101.9,
+              "why": {
+                "reason": "100.4h QA passed, waiting for the merge",
+                "primary": "awaiting_merge",
+                "hours": {
+                  "no_gates": 1.3,
+                  "gates_running": 0.1,
+                  "awaiting_qa": 0.1,
+                  "awaiting_merge": 100.4
+                },
+                "qa_fails": 0,
+                "pushes": 3
               }
             },
             {
@@ -4880,47 +4962,6 @@
                 "qa_fails": 5,
                 "pushes": 7
               }
-            },
-            {
-              "number": 706,
-              "title": "/ask carries the slow-planet transit block; ask.txt stops committing to yes/no (refs #402)",
-              "author": "claude[bot]",
-              "merged_at": "2026-11-06T22:16:29Z",
-              "hours": 58.9,
-              "why": {
-                "reason": "32.2h held for chief (trust boundary); 20.4h waiting for a QA round; 6 pushes",
-                "primary": "held",
-                "hours": {
-                  "no_gates": 0.6,
-                  "qa_fail": 3.1,
-                  "gates_running": 0.5,
-                  "awaiting_merge": 2.2,
-                  "held": 32.2,
-                  "awaiting_qa": 20.4
-                },
-                "qa_fails": 2,
-                "pushes": 6
-              }
-            },
-            {
-              "number": 574,
-              "title": "Dispatch pr-gates only when the head SHA has no gates run (refs #573)",
-              "author": "mahAnuj",
-              "merged_at": "2026-10-30T15:12:27Z",
-              "hours": 57.0,
-              "why": {
-                "reason": "52.5h waiting for a QA round",
-                "primary": "awaiting_qa",
-                "hours": {
-                  "no_gates": 0.1,
-                  "gates_running": 0.3,
-                  "awaiting_qa": 52.5,
-                  "awaiting_merge": 0.0,
-                  "held": 4.2
-                },
-                "qa_fails": 0,
-                "pushes": 3
-              }
             }
           ],
           "top_reasons": [
@@ -4929,11 +4970,15 @@
               "prs": 2
             },
             {
-              "reason": "waiting for a QA round",
-              "prs": 2
+              "reason": "waiting for gates to start",
+              "prs": 1
             },
             {
-              "reason": "held for chief (trust boundary)",
+              "reason": "QA passed, waiting for the merge",
+              "prs": 1
+            },
+            {
+              "reason": "waiting for a QA round",
               "prs": 1
             }
           ]
@@ -5104,81 +5149,44 @@
         },
         {
           "date": "2026-11-25",
-          "merged": 5,
-          "median_h": 0.5,
-          "max_h": 1.0
+          "merged": 17,
+          "median_h": 1.8,
+          "max_h": 105.0
         }
       ],
       "open": [
         {
-          "number": 1335,
-          "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
-          "age_h": 103.3,
-          "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1342,
-          "title": "muhurat finder: top-pick card, in-grade ranking by score, Range select reflects searched d",
-          "age_h": 100.2,
-          "waiting_on": "merge",
-          "why": null
-        },
-        {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 88.7,
+          "age_h": 95.5,
           "waiting_on": "merge",
-          "why": null
+          "why": {
+            "reason": "91.5h waiting for gates to start; 4 pushes",
+            "primary": "no_gates",
+            "hours": {
+              "no_gates": 91.5,
+              "gates_running": 0.1,
+              "awaiting_qa": 0.0,
+              "gates_red": 3.9
+            },
+            "qa_fails": 0,
+            "pushes": 4
+          }
         },
         {
-          "number": 1375,
-          "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
-          "age_h": 74.6,
-          "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1405,
-          "title": "agent-merge: superseded and self-authored checks never vote; a red PR never blocks the swe",
-          "age_h": 53.1,
-          "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1428,
-          "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
-          "age_h": 32.1,
-          "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1438,
-          "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (#1436)",
-          "age_h": 30.2,
-          "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1465,
-          "title": "Vivah lagna legend renders only when a row produced a block (#1457)",
-          "age_h": 9.3,
-          "waiting_on": "merge",
-          "why": null
-        },
-        {
-          "number": 1474,
-          "title": "ops: tab module and route wiring for the /admin/ops tab shell (slice 1, step 1)",
-          "age_h": 1.2,
+          "number": 1493,
+          "title": "manglik-remedies: status bullet discloses the comparable-severity band (#1483, #1376)",
+          "age_h": 0.5,
           "waiting_on": "gates / QA",
-          "why": null
-        },
-        {
-          "number": 1475,
-          "title": "#1255: stand an `issue` queue entry down when a cycle already ran and nothing is new; pre-",
-          "age_h": 0.1,
-          "waiting_on": "gates / QA",
-          "why": null
+          "why": {
+            "reason": "0.5h waiting for gates to start",
+            "primary": "no_gates",
+            "hours": {
+              "no_gates": 0.5
+            },
+            "qa_fails": 0,
+            "pushes": 1
+          }
         }
       ]
     }

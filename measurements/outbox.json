@@ -1,36 +1,31 @@
 {
- "generated_at": "2026-11-25T12:32:42Z",
+ "generated_at": "2026-11-25T19:17:24Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-18T12:32:42Z",
-  "end": "2026-11-25T12:32:42Z",
-  "loop_comments": 833,
-  "on_prs": 449,
-  "prs": 86,
-  "on_issues": 384,
-  "issues": 114,
-  "comments_per_pr": 5.22,
-  "comments_per_issue": 3.37,
-  "duplicates": 30,
-  "duplicate_rate_pct": 3.6,
+  "start": "2026-11-18T19:17:24Z",
+  "end": "2026-11-25T19:17:24Z",
+  "loop_comments": 883,
+  "on_prs": 474,
+  "prs": 88,
+  "on_issues": 409,
+  "issues": 119,
+  "comments_per_pr": 5.39,
+  "comments_per_issue": 3.44,
+  "duplicates": 34,
+  "duplicate_rate_pct": 3.9,
   "sent_by_kind": {
    "growth-goals": 5,
    "growth-goals-issue": 2,
-   "ops-finding": 12,
+   "ops-finding": 15,
    "ops-finding-issue": 3
   },
-  "via_outbox": 22,
+  "via_outbox": 25,
   "top_threads": [
    {
     "on": "pr",
-    "number": 1212,
-    "comments": 21
-   },
-   {
-    "on": "pr",
     "number": 1375,
-    "comments": 14
+    "comments": 20
    },
    {
     "on": "pr",
@@ -44,14 +39,19 @@
    },
    {
     "on": "pr",
+    "number": 1212,
+    "comments": 12
+   },
+   {
+    "on": "pr",
     "number": 1241,
     "comments": 12
    }
   ],
   "owner_touched": {
-   "prs": 86,
-   "owner_commented": 7,
-   "pct": 8
+   "prs": 88,
+   "owner_commented": 8,
+   "pct": 9
   },
   "suppressed": {
    "deduped": 0,
@@ -60,22 +60,22 @@
   }
  },
  "previous": {
-  "start": "2026-11-11T12:32:42Z",
-  "end": "2026-11-18T12:32:42Z",
-  "loop_comments": 1205,
-  "on_prs": 701,
-  "prs": 126,
+  "start": "2026-11-11T19:17:24Z",
+  "end": "2026-11-18T19:17:24Z",
+  "loop_comments": 1209,
+  "on_prs": 705,
+  "prs": 127,
   "on_issues": 504,
-  "issues": 151,
-  "comments_per_pr": 5.56,
-  "comments_per_issue": 3.34,
-  "duplicates": 55,
+  "issues": 154,
+  "comments_per_pr": 5.55,
+  "comments_per_issue": 3.27,
+  "duplicates": 56,
   "duplicate_rate_pct": 4.6,
   "sent_by_kind": {
-   "ops-finding": 6,
+   "ops-finding": 7,
    "ops-finding-issue": 1
   },
-  "via_outbox": 7,
+  "via_outbox": 8,
   "top_threads": [
    {
     "on": "pr",
@@ -89,6 +89,11 @@
    },
    {
     "on": "pr",
+    "number": 1212,
+    "comments": 21
+   },
+   {
+    "on": "pr",
     "number": 1170,
     "comments": 20
    },
@@ -96,15 +101,10 @@
     "on": "pr",
     "number": 1121,
     "comments": 16
-   },
-   {
-    "on": "pr",
-    "number": 1000,
-    "comments": 15
    }
   ],
   "owner_touched": {
-   "prs": 126,
+   "prs": 127,
    "owner_commented": 4,
    "pct": 3
   }

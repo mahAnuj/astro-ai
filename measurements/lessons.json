@@ -1,45 +1,8 @@
 {
- "generated_at": "2026-11-25T12:33:07Z",
+ "generated_at": "2026-11-25T19:17:42Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
-   {
-    "number": 544,
-    "at": "2026-10-26T16:27:28Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6421317944",
-    "summary": "QA: FAIL \u2014 verified at `2a78417d0822f55b123931056b2e5cbeb33d1e1f` Allow-list is not read-only, proven by execution through validate_issue.py with a trusted-author fixture: sed 1e/s///e executes commands and w writes files; git ls-remote --upload-pack=id runs a program; sort -o, uniq in out, git diff",
-    "themes": []
-   },
-   {
-    "number": 544,
-    "at": "2026-10-26T16:44:19Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6421710987",
-    "summary": "QA: FAIL \u2014 verified at `47762ba2998a53d8d8f88d441c248a99dd88e0c8` Round 2 (re-verifying the cycle's own fix; round 1 fixes held: sed e/w, upload-pack, sort/uniq/jq/rg, -i.bak, gh --method=/-XDELETE/-fa=b, comment gate, exit-code and trusted/comment wiring all RED under mutation; 125 tests pass; live",
-    "themes": [
-     "security",
-     "regression"
-    ]
-   },
-   {
-    "number": 544,
-    "at": "2026-10-26T18:02:22Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6423584656",
-    "summary": "QA: FAIL \u2014 verified at `e37a411eff5049fdcdd490a37764de640964202d` Round 3 (dispatched qa agent, attacked e37a411 by execution). BLOCKING: gh api --jq string interpolation prints GH_TOKEN: _bad_jq strips \"...\" literals first, so '\"\\(env.GH_TOKEN|split(\"\")|join(\".\"))\"' vets read-only, child gets GH_TO",
-    "themes": [
-     "tests",
-     "copy"
-    ]
-   },
-   {
-    "number": 544,
-    "at": "2026-10-30T18:24:03Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6530377333",
-    "summary": "QA: FAIL \u2014 verified at `bf2b17df67f81ba5e8d5a1b283b8ec0fe22f78bb` (round 4, independent, dispatched by chief; I had no hand in this PR)  **One secret read remains, found by execution through the real pipeline. A fix that can be broken is a FAIL.**  ## BLOCKING: a glob that expands to a name equal to",
-    "themes": [
-     "tests",
-     "security"
-    ]
-   },
    {
     "number": 556,
     "at": "2026-10-27T02:32:25Z",
@@ -55,6 +18,16 @@
     "themes": [
      "tests",
      "copy"
+    ]
+   },
+   {
+    "number": 544,
+    "at": "2026-10-30T18:24:03Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6530377333",
+    "summary": "QA: FAIL \u2014 verified at `bf2b17df67f81ba5e8d5a1b283b8ec0fe22f78bb` (round 4, independent, dispatched by chief; I had no hand in this PR)  **One secret read remains, found by execution through the real pipeline. A fix that can be broken is a FAIL.**  ## BLOCKING: a glob that expands to a name equal to",
+    "themes": [
+     "tests",
+     "security"
     ]
    },
    {
@@ -1066,10 +1039,22 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/1398#issuecomment-7090017082",
     "summary": "QA: FAIL \u2014 verified at `c9a7c3397dfe6a72a8822b09c944b2e3cadfdba2` DEFECT: scripts/fetch_ga4.py --cohorts docstring says 'The analyst runs it itself (.claude/agents/analyst.md) when /tmp/measure/ga4-cohorts.json is absent' but analyst.md has no such instruction (grep cohorts = 0; the commit/PR body s",
     "themes": []
+   },
+   {
+    "number": 1475,
+    "at": "2026-11-25T13:48:49Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1475#issuecomment-7164327212",
+    "summary": "QA: FAIL \u2014 verified at `13ec65ebf3f9cc24dd7161c5eaf2f08729182084` DEFECT: pre_qa_check tests theme (check_mutation_rows_live -> _mutation_rows uses ast.literal_eval) raises CannotCompute on any mutation file whose rows use a module constant (_GA, _P, _T); 95 of 263 files in scripts/mutations/ (36%),",
+    "themes": []
    }
   ],
   "reverts": [],
   "verify_production_failed": [
+   {
+    "run": 45635418554,
+    "at": "2026-11-25T14:33:49Z",
+    "sha": "dc393ae"
+   },
    {
     "run": 44145312520,
     "at": "2026-11-17T18:12:27Z",
@@ -1116,23 +1101,15 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": [
-   {
-    "kind": "loop-starved",
-    "level": "amber",
-    "title": "2 of the last 4 build cycles built nothing",
-    "detail": "Empty cycles started 2026-11-25T06:00, 2026-11-25T12:20. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
-    "where": "/admin/ops"
-   }
-  ]
+  "ops_findings": []
  },
  "error_themes": {
-  "regression": 31,
   "grounding": 30,
-  "tests": 26,
-  "copy": 17,
+  "regression": 30,
+  "tests": 25,
   "tokens": 17,
-  "security": 15,
+  "copy": 16,
+  "security": 14,
   "i18n": 8,
   "performance": 5
  },
