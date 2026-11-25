@@ -118,8 +118,9 @@ permission from the top-level session to the loop. What has NOT changed:
   on the `weekly-goals` issue; `/admin/ops` meters them.
   `docs/decisions/2026-11-19-growth-goals-and-split.md`.
 - **Chaining and parallelism are read from `measurements/claude_usage.json`, not argued.**
-  `scripts/chain_cycle.py` chains only under 70% weekly use, fresh and `allowed`, at most 16
-  build runs a UTC day, queue first. All agents share one Claude Max 5x subscription.
+  `scripts/chain_cycle.py` chains only under 70% weekly use, fresh and `allowed`, **and on or
+  behind the weekly pace** (elapsed share of the week x 70% + 5%; 2026-11-25), at most 30 build
+  runs a UTC day as a backstop, queue first. All agents share one Claude Max 5x subscription.
 - **The loop learns from its own errors, outcomes and rivals** (owner, 2026-11-06: *"a
   continuous feedback loop from their own actions and as well as from researching other
   websites"*). Build cycles, discover and prioritise read `measurements/lessons.md` before

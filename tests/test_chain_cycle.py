@@ -388,3 +388,31 @@ def test_a_verdict_by_someone_else_or_before_the_run_or_any_other_comment_is_not
     for c in (_verdict(login="mahAnuj"), _verdict(at="2026-11-06T11:00:00Z"),
               _verdict(body="steward -- kind=no-qa-verdict")):
         assert "no PR" in decide(FakeGh(prs=stale, comments=[c]))
+
+
+# --- the weekly pace (2026-11-25) -------------------------------------------------------------
+
+def _paced(seven, reset_iso):
+    return {**USAGE, "latest": {"seven_day": seven, "status": "allowed",
+                                "resets": {"seven_day": _epoch(reset_iso)}}}
+
+
+def test_use_ahead_of_the_weekly_line_waits():
+    """NOW is 2026-11-06 12:00Z. With the reset at 2026-11-10 12:00Z the week is 3/7 gone:
+    allowed = 3/7 x 70% + 5% = 35%."""
+    r = cc.quota_reason(_paced(0.40, "2026-11-10T12:00:00Z"), NOW)
+    assert r and "ahead of the weekly pace: 40% used, 35% allowed" in r
+
+
+def test_use_on_or_behind_the_line_chains():
+    assert cc.quota_reason(_paced(0.34, "2026-11-10T12:00:00Z"), NOW) is None
+
+
+def test_the_week_starts_with_a_burst_and_ends_at_the_ceiling():
+    assert cc.quota_reason(_paced(0.04, "2026-11-13T11:00:00Z"), NOW) is None   # ~0% elapsed, 5% allowed
+    assert "ahead" in cc.quota_reason(_paced(0.06, "2026-11-13T11:00:00Z"), NOW)
+    assert cc.quota_reason(_paced(0.69, "2026-11-06T13:00:00Z"), NOW) is None   # ~100% elapsed
+
+
+def test_a_reading_with_no_reset_time_is_judged_by_the_ceiling_alone():
+    assert cc.quota_reason({**USAGE, "latest": {"seven_day": 0.65, "status": "allowed"}}, NOW) is None
