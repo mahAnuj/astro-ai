@@ -13,7 +13,9 @@ learn_registry.py) is covered without a request:
 
   * `.py` files: parsed with `ast`, every string Constant (docstrings and f-string
     pieces included);
-  * templates: tags and Jinja comments stripped, entities decoded, whitespace collapsed;
+  * templates: tags and Jinja comments stripped, entities decoded, whitespace collapsed; a
+    block-closing tag (`</li>`, `</p>`, `</td>` ...) and `<br>` become a bullet first, so
+    list items and cells with no full stop stay separate sentences (#1483);
   * knowledge/vedic_reference.md: per LINE, because rule 20's cells are one table row.
 
 THE RULE, per sentence (split on `. ; ! ?` + whitespace, bullets and newlines; NOT on `:`, which
@@ -26,8 +28,17 @@ checked.
   * SOFT words ("classical", "the tradition", "the texts") fail it unless the SAME
     sentence says it is not scripture / names no severity condition / is ours.
 
+A second rule, for TEMPLATES only (#1483): a sentence that mentions comparability AND
+cancelling/neutralising must carry a disclosure whether or not it says "classical". The
+/learn/manglik-remedies/ status bullet named "matching with another Manglik of comparable
+severity" among "the cancellation rules we implement" -- no soft word, so rule one passed it,
+yet it told the reader the band belongs to the cancellation rule. It is templates-only because
+a Python docstring such as matching.py's ('Are two Manglik severities "comparable" for the
+mutual-cancellation rule') is a developer comment, not a claim to a reader.
+
 This is a PHRASE test. It catches the wording it names, not every rewording; a new
-way to say "the texts demand it" that avoids every pattern below passes it. The
+way to say "the texts demand it" that avoids every pattern below passes it, and so does
+"of similar severity" (it never says comparable), deliberately. The
 positive pins at the bottom are the half that does not depend on phrasing, and the
 unit cases use the sentences that shipped before the fix as fixtures, so a loosened
 pattern goes red here rather than in review.
@@ -84,6 +95,8 @@ _DISCLOSURE = [
 # NOT on `:` -- #1369 QA round 1: "classical texts include several conditions most calculators
 # ignore: ... both partners are Manglik of comparable severity" shipped through the first
 # version of this gate because the colon put "classical" and "comparable" in different fragments.
+_CANCEL = re.compile(r"cancel|neutrali[sz]", re.I)
+
 _SPLIT = re.compile(r"[.;!?]\s|•|\n")
 
 
@@ -91,8 +104,10 @@ def _sentences(text: str) -> list[str]:
     return [s.strip() for s in _SPLIT.split(text) if s.strip()]
 
 
-def violations_in_text(text: str) -> list[str]:
-    """Every sentence in `text` that calls comparable severity classical, with why."""
+def violations_in_text(text: str, templates_only: bool = False) -> list[str]:
+    """Every sentence in `text` that calls comparable severity classical, with why.
+
+    `templates_only` turns on the UNDISCLOSED rule, which is meant for reader-facing templates."""
     out = []
     for s in _sentences(text):
         if not _TRIGGER.search(s):
@@ -104,6 +119,10 @@ def violations_in_text(text: str) -> list[str]:
         soft = next((p.pattern for p in _SOFT if p.search(s)), None)
         if soft and not any(d.search(s) for d in _DISCLOSURE):
             out.append(f"SOFT {soft!r} with no disclosure: {s}")
+            continue
+        if (templates_only and _CANCEL.search(s)
+                and not any(d.search(s) for d in _DISCLOSURE)):
+            out.append(f"UNDISCLOSED cancellation with comparable severity: {s}")
     return out
 
 
@@ -119,6 +138,9 @@ def template_text(source: str) -> str:
     """Visible-ish text of a Jinja template: comments and tags gone, entities decoded."""
     s = re.sub(r"\{#.*?#\}", " ", source, flags=re.S)
     s = re.sub(r"\{%.*?%\}", " ", s, flags=re.S)
+    # A closing block tag ends a sentence even with no full stop in it (#1483): the status list's
+    # <li> items had none, so four items read as one sentence. `•` is already in `_SPLIT`.
+    s = re.sub(r"</(?:li|p|h[1-6]|td|th|dd|dt)>|<br\s*/?>", " • ", s, flags=re.I)
     s = re.sub(r"<[^>]+>", " ", s)
     return re.sub(r"\s+", " ", html.unescape(s))
 
@@ -181,7 +203,9 @@ def test_scan_reaches_the_surfaces_it_claims_to():
 
 
 def test_no_surface_calls_comparable_severity_classical():
-    found = [f"{name}: {v}" for name, text in _surfaces() for v in violations_in_text(text)]
+    found = [f"{name}: {v}" for name, text in _surfaces()
+             for v in violations_in_text(
+                 text, templates_only=name.startswith("src/astro_ai/templates/"))]
     assert not found, "\n".join(found)
 
 
@@ -226,6 +250,37 @@ def test_the_scanner_flags_the_old_wording(sentence):
     assert violations_in_text(sentence), sentence
 
 
+# #1483: the /learn/manglik-remedies/ status bullet as it shipped. No soft word, so only the
+# UNDISCLOSED rule can see it.
+_OLD_STATUS_BULLET = (
+    "<li><strong>Cancelled</strong> — Mars is in a qualifying house BUT the cancellation rules we "
+    "implement apply (Cancer/Leo Lagna Yogakaraka rule, Jupiter aspect, own-sign Mars, matching "
+    "with another Manglik of comparable severity). Remedies optional, mostly for peace of mind.</li>")
+
+_NEW_STATUS_BULLET = (
+    "<li><strong>Cancelled</strong> — Mars is in a qualifying house BUT a cancellation rule we "
+    "implement applies (Cancer/Leo Lagna Yogakaraka rule, Jupiter aspect, own-sign Mars, or "
+    "matching with another Manglik &mdash; one held antidote list cancels the dosha when both "
+    "partners carry it and names no severity condition, and the comparable-severity band our "
+    "matching tool applies is Shubh Bhagya's own convention, not scripture). Remedies optional.</li>")
+
+
+def test_the_old_status_bullet_is_flagged_and_only_in_a_template():
+    old = template_text(_OLD_STATUS_BULLET)
+    assert violations_in_text(old, templates_only=True)
+    # Rule one alone cannot see it, which is why the second rule exists.
+    assert violations_in_text(old) == []
+
+
+def test_the_reworded_status_bullet_passes():
+    assert violations_in_text(template_text(_NEW_STATUS_BULLET), templates_only=True) == []
+
+
+def test_li_items_without_a_full_stop_stay_separate_sentences():
+    text = template_text("<ul><li>Cancelled: comparable severity</li><li>names no severity condition</li></ul>")
+    assert [s for s in _sentences(text) if _TRIGGER.search(s)] == ["Cancelled: comparable severity"]
+
+
 def test_a_hard_phrase_fails_even_beside_a_disclosure():
     assert violations_in_text(
         "Classical texts require comparable severity, but that band is ours, not scripture.")
@@ -251,6 +306,14 @@ def test_py_strings_and_template_text_do_what_the_scan_assumes():
 
 
 # --- positive pins: they do not depend on phrasing -------------------------------------
+
+def test_manglik_remedies_status_list_discloses_the_band(client):
+    r = client.get("/learn/manglik-remedies/")
+    assert r.status_code == 200
+    text = template_text(r.text)
+    bullet = next(s for s in _sentences(text) if "Cancelled" in s)
+    assert "names no severity condition" in bullet, bullet
+    assert "Shubh Bhagya's own convention, not scripture" in bullet, bullet
 
 def test_manglik_dosh_page_says_the_held_list_names_no_severity_condition(client):
     r = client.get("/learn/manglik-dosh/")
