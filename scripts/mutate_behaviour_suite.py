@@ -3560,8 +3560,9 @@ MUTATIONS = [
      "test_a_main_run_is_not_cancelled_by_the_next_push"),
     ("#461: the red-main reporter tests for `failure`, so a cancelled or timed-out main reports nothing",
      ".github/workflows/main-red-report.yml",
-     "      github.event.workflow_run.conclusion != 'skipped'\n",
-     "      github.event.workflow_run.conclusion == 'failure'\n",
+     # Re-anchored 2026-11-25: #1221 wrapped the workflow_run leg in parentheses.
+     "      github.event.workflow_run.conclusion != 'skipped')\n",
+     "      github.event.workflow_run.conclusion == 'failure')\n",
      "test_the_reporter_fires_on_cancelled_and_timed_out_not_only_on_failure"),
 
     ("#461: the sentinel is looked up with GitHub search again, which strips `[ ] -` and matches #461 itself",
