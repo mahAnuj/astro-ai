@@ -30,6 +30,16 @@ dead entry behind.
 Timings are wall-clock from one sequential local run on 2026-11-17 (this
 script runs FAST in parallel, so the whole check is shorter than their sum).
 
+THEME CHECKS (#1255) -- the three themes QA fails on most
+measurements/lessons.json, 2026-11-25, counted by FAIL theme: regression 31,
+grounding 30, tests 26 (copy and tokens 17). `THEME_CHECKS` below holds, per theme,
+the checks that can see that class of defect in a diff in seconds, so a round is not
+spent finding it. They run after the gates and before pytest and print one line,
+`themes: regression PASS grounding PASS tests PASS`. They are narrow on purpose: a
+check that cried wolf would be waived by habit. GROUNDING IS A PROXY -- it can see
+that a claim-bearing file changed with no `corpus:` line, never whether the claim is
+true; `qa`, `astro-auditor` and `verify_rule_citations` judge that.
+
 EXIT CODES
   0  every fast gate passed and the diff's tests passed
   1  something failed -- the tail of each failing gate is printed
@@ -38,11 +48,14 @@ EXIT CODES
 """
 from __future__ import annotations
 
+import ast
+import os
 import re
 import subprocess
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -177,6 +190,272 @@ def tests_for(changed: list[str]) -> list[str] | str:
     return sorted(picked)
 
 
+# --- THEME CHECKS (#1255) ----------------------------------------------------
+
+class CannotCompute(Exception):
+    """A theme check could not decide. Exit 2, never a pass."""
+
+
+@dataclass
+class DiffContext:
+    """What a theme check may look at: the diff against the merge base, nothing else."""
+    changed: list[str]
+    added: dict[str, list[str]] = field(default_factory=dict)     # path -> added lines
+    removed: dict[str, list[str]] = field(default_factory=dict)   # path -> removed lines
+    commits: list[str] = field(default_factory=list)              # base..HEAD messages
+
+
+def _git(*args: str) -> str:
+    return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True,
+                          timeout=60, check=True).stdout
+
+
+def diff_context(changed: list[str]) -> DiffContext | None:
+    """The diff's added and removed lines. None when git cannot say -- the caller
+    turns that into exit 2. An empty diff needs no git at all."""
+    if not changed:
+        return DiffContext([])
+    try:
+        base = _git("merge-base", BASE_REF, "HEAD").strip()
+        diff = _git("diff", "--unified=0", "--no-color", base)
+        log = _git("log", "--format=%B%x1e", f"{base}..HEAD")
+        untracked = _git("ls-files", "--others", "--exclude-standard")
+    except (subprocess.SubprocessError, OSError):
+        return None
+    ctx = DiffContext(list(changed), commits=[m.strip() for m in log.split("\x1e") if m.strip()])
+    old = new = ""
+    header = False
+    for line in diff.splitlines():
+        if line.startswith("diff --git "):
+            header = True
+        elif line.startswith("@@"):
+            header = False
+        elif header and line.startswith("--- "):
+            old = line[4:].removeprefix("a/")
+        elif header and line.startswith("+++ "):
+            new = line[4:].removeprefix("b/")
+        elif not header and line.startswith("+"):
+            ctx.added.setdefault(old if new == "/dev/null" else new, []).append(line[1:])
+        elif not header and line.startswith("-"):
+            ctx.removed.setdefault(new if old == "/dev/null" else old, []).append(line[1:])
+    for p in untracked.splitlines():
+        f = ROOT / p
+        if p.endswith((".py", ".html", ".md", ".txt")) and f.is_file():
+            ctx.added[p] = f.read_text(encoding="utf-8", errors="replace").splitlines()
+    return ctx
+
+
+_CODE_ROOTS = ("src/astro_ai/", "scripts/")
+_DEF = re.compile(r"^\s*(?:async\s+)?(?:def|class)\s+\w+")
+
+
+def check_tests_accompany_code(ctx: DiffContext) -> list[str]:
+    """Code that gained a def or class with no file under tests/ in the diff."""
+    if any(p.startswith("tests/") for p in ctx.changed):
+        return []
+    hits = [p for p, lines in ctx.added.items()
+            if p.endswith(".py") and p.startswith(_CODE_ROOTS) and not p.startswith("scripts/mutations/")
+            and any(_DEF.match(x) for x in lines)]
+    return [f"{p} gained a def or class and the diff touches no file under tests/" for p in sorted(hits)]
+
+
+def _mutation_rows(path: Path) -> list:
+    """Load a mutation file the way `mutate_behaviour_suite._load_area_rows` does (exec it into a
+    namespace), because a third of the files build rows from module constants (`_GA = "..."`)
+    that `ast.literal_eval` cannot resolve (QA FAIL on #1475: 95 of 263 files)."""
+    ns: dict = {}
+    try:
+        exec(compile(path.read_text(encoding="utf-8"), str(path), "exec"), ns)  # noqa: S102 - data-only table, as the suite does
+    except Exception as e:  # noqa: BLE001 - any failure to load is "cannot compute", never a pass
+        raise CannotCompute(f"{path.name}: cannot be loaded ({type(e).__name__}: {e})") from e
+    table = ns.get("MUTATIONS")
+    if not isinstance(table, list):
+        raise CannotCompute(f"{path.name}: no MUTATIONS list")
+    return table
+
+
+def check_mutation_rows_live(ctx: DiffContext) -> list[str]:
+    """A changed mutation row whose anchor is not in its file exactly once, or whose
+    test exists nowhere, can never be killed -- the static form of `survived`."""
+    problems: list[str] = []
+    tests_text = None
+    for p in sorted(ctx.changed):
+        path = ROOT / p
+        if not (p.startswith("scripts/mutations/") and p.endswith(".py") and path.is_file()):
+            continue
+        for row in _mutation_rows(path):
+            if not (isinstance(row, (tuple, list)) and len(row) == 5):
+                problems.append(f"{p}: a row is not a (label, file, old, new, test) 5-tuple")
+                continue
+            label, rel, old, _new, test = row
+            target = ROOT / rel
+            if not target.is_file():
+                problems.append(f"{p}: '{label[:50]}' targets {rel}, which does not exist")
+                continue
+            n = target.read_text(encoding="utf-8").count(old)
+            if n != 1:
+                problems.append(f"{p}: '{label[:50]}' anchor occurs {n}x in {rel}, needs exactly 1")
+            if tests_text is None:
+                tests_text = "\n".join(t.read_text(encoding="utf-8", errors="replace")
+                                       for t in (ROOT / "tests").rglob("*.py"))
+            name = str(test).split("[", 1)[0]
+            if not re.search(rf"\bdef {re.escape(name)}\b", tests_text):
+                problems.append(f"{p}: '{label[:50]}' names test {name}, which is defined nowhere in tests/")
+    return problems
+
+
+def check_python_parses(ctx: DiffContext) -> list[str]:
+    problems = []
+    for p in sorted(ctx.changed):
+        if p.endswith(".py") and (ROOT / p).is_file():
+            try:
+                ast.parse((ROOT / p).read_text(encoding="utf-8"))
+            except SyntaxError as e:
+                problems.append(f"{p}:{e.lineno}: {e.msg}")
+    return problems
+
+
+def check_templates_parse(ctx: DiffContext) -> list[str]:
+    paths = [p for p in sorted(ctx.changed)
+             if p.startswith("src/astro_ai/templates/") and p.endswith(".html") and (ROOT / p).is_file()]
+    if not paths:
+        return []
+    try:
+        import jinja2
+    except ImportError as e:
+        raise CannotCompute(f"jinja2 is not importable ({e})") from e
+    env, problems = jinja2.Environment(), []
+    for p in paths:
+        try:
+            env.parse((ROOT / p).read_text(encoding="utf-8"))
+        except jinja2.TemplateSyntaxError as e:
+            problems.append(f"{p}:{e.lineno}: {e.message}")
+    return problems
+
+
+_TOP_NAME = re.compile(r"^(?:async\s+)?(?:def|class)\s+(\w+)|^([A-Z][A-Z0-9_]*)\s*(?::[^=]+)?=(?!=)")
+
+
+def _top_names(lines: list[str]) -> set[str]:
+    return {m.group(1) or m.group(2) for m in map(_TOP_NAME.match, lines) if m}
+
+
+def _referenced(name: str, stem: str) -> list[str]:
+    """Where `name` is USED in code (never in a string): a bare name, an import, or
+    `<module stem>.name`. Attribute access on anything else is not counted -- a removed
+    `load` must not fail on every other object's `.load`."""
+    out: list[str] = []
+    for root in ("src/astro_ai", "scripts", "tests"):
+        for f in sorted((ROOT / root).rglob("*.py")):
+            try:
+                tree = ast.parse(f.read_text(encoding="utf-8", errors="replace"))
+            except SyntaxError:
+                continue
+            for n in ast.walk(tree):
+                hit = ((isinstance(n, ast.Name) and n.id == name and isinstance(n.ctx, ast.Load))
+                       or (isinstance(n, ast.ImportFrom) and any(a.name == name for a in n.names))
+                       or (isinstance(n, ast.Attribute) and n.attr == name
+                           and isinstance(n.value, ast.Name) and n.value.id == stem))
+                if hit:
+                    out.append(f"{f.relative_to(ROOT)}:{n.lineno}")
+    return out
+
+
+def check_removed_names_unreferenced(ctx: DiffContext) -> list[str]:
+    """A top-level def, class or CONSTANT the diff removed (and nothing re-added) that code
+    still names -- the shape of a regression a rename or a deletion leaves behind."""
+    readded = set()
+    for p, lines in ctx.added.items():
+        if p.endswith(".py"):
+            readded |= _top_names(lines)
+    problems = []
+    for p, lines in sorted(ctx.removed.items()):
+        if not p.endswith(".py"):
+            continue
+        for name in sorted(_top_names(lines) - readded):
+            if name.startswith(("test_", "Test")):
+                continue
+            refs = _referenced(name, Path(p).stem)
+            if refs:
+                problems.append(f"{p} removed `{name}`, still used at {', '.join(refs[:3])}"
+                                f"{' ...' if len(refs) > 3 else ''}")
+    return problems
+
+
+_CLAIM_DIRS = ("src/astro_ai/knowledge/", "src/astro_ai/prompts/", "src/astro_ai/templates/learn/")
+_CLAIM_FILES = re.compile(r"^src/astro_ai/(?:chart|matching|muhurat\w*)\.py$")
+
+
+def check_grounding_proxy(ctx: DiffContext) -> list[str]:
+    """PROXY. A claim-bearing path changed, no commit since the merge base carries a
+    `corpus:` line, and no knowledge/*.md changed. It cannot tell whether a claim is
+    TRUE -- `qa`, `astro-auditor` and verify_rule_citations do that -- only that nobody
+    wrote down where it came from."""
+    touched = [p for p in ctx.changed if p.startswith(_CLAIM_DIRS) or _CLAIM_FILES.match(p)]
+    if not touched:
+        return []
+    if any(p.startswith("src/astro_ai/knowledge/") and p.endswith(".md") for p in ctx.changed):
+        return []
+    if any(re.search(r"(?im)^\s*corpus:", m) for m in ctx.commits):
+        return []
+    return [f"{p} can carry an astrological claim; no commit since the merge base has a "
+            f"`corpus:` line and no knowledge/*.md changed (commit with one, or `corpus: n/a -- why`)"
+            for p in sorted(touched)[:5]]
+
+
+#: theme -> the checks that can see that class of defect in a diff.
+THEME_CHECKS: dict[str, tuple] = {
+    "regression": (check_python_parses, check_templates_parse, check_removed_names_unreferenced),
+    "grounding": (check_grounding_proxy,),
+    "tests": (check_tests_accompany_code, check_mutation_rows_live),
+}
+
+
+def run_themes(ctx: DiffContext) -> tuple[dict[str, list[str]], list[str]]:
+    """({theme: problems}, [themes that could not compute])."""
+    results: dict[str, list[str]] = {}
+    unrun: list[str] = []
+    for theme, checks in THEME_CHECKS.items():
+        problems: list[str] = []
+        try:
+            for check in checks:
+                problems += check(ctx)
+        except CannotCompute as e:
+            unrun.append(theme)
+            problems.append(f"COULD NOT RUN: {e}")
+        results[theme] = problems
+    return results, unrun
+
+
+def _themes_into(changed: list[str], failed: list[str], unrun: list[str]) -> None:
+    ctx = diff_context(changed)
+    if ctx is None:
+        print(f"  {'themes':<34} COULD NOT RUN    -- no diff against {BASE_REF}")
+        unrun.append("themes")
+        return
+    results, cannot = run_themes(ctx)
+    cells = []
+    for theme, problems in results.items():
+        verdict = "COULD NOT RUN" if theme in cannot else "FAIL" if problems else "PASS"
+        cells.append(f"{theme} {verdict}")
+        if verdict == "FAIL":
+            failed.append(f"theme:{theme}")
+        elif verdict != "PASS":
+            unrun.append(f"theme:{theme}")
+    line = "themes: " + " ".join(cells)
+    print(line)
+    for theme, problems in results.items():
+        for prob in problems:
+            print(f"    [{theme}] {prob}")
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:
+        try:
+            with open(summary, "a", encoding="utf-8") as fh:
+                fh.write(f"- pre-QA {line}\n")
+        except OSError:
+            pass
+
+
 def main(gates: tuple[str, ...] | None = None) -> int:
     gates = FAST_GATES if gates is None else gates
     t0 = time.monotonic()
@@ -198,6 +477,7 @@ def main(gates: tuple[str, ...] | None = None) -> int:
         print(f"  {'pytest (diff tests)':<34} COULD NOT RUN    -- no diff against {BASE_REF}")
         unrun.append("pytest")
     else:
+        _themes_into(changed, failed, unrun)
         sel = tests_for(changed)
         if sel == []:
             print(f"  {'pytest (diff tests)':<34} none touched by the diff")
@@ -218,7 +498,7 @@ def main(gates: tuple[str, ...] | None = None) -> int:
     if unrun:
         print(f"pre-QA check: COULD NOT RUN ({', '.join(unrun)}) in {total:.0f}s -- this is NOT a pass")
         return 2
-    print(f"pre-QA check: PASS ({len(gates)} gates + diff tests) in {total:.0f}s")
+    print(f"pre-QA check: PASS ({len(gates)} gates + themes + diff tests) in {total:.0f}s")
     return 0
 
 

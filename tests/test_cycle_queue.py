@@ -36,7 +36,7 @@ class FakeGh:
     """Answers exactly the calls cycle_queue.py makes, and records them."""
 
     def __init__(self, *, busy="0", busy_qa=None, labels=None, heads=None, fail_patch_after=None,
-                 open_prs=None, gates=None):
+                 open_prs=None, gates=None, commit_dates=None):
         self.comments: list[dict] = []
         self.busy = busy                    # build lane (and the QA lane unless busy_qa given)
         self.busy_qa = busy if busy_qa is None else busy_qa
@@ -44,15 +44,17 @@ class FakeGh:
         self.heads = heads or {}            # pr -> head sha
         self.open_prs = open_prs or {}      # pr -> (head ref, "a,b" labels, mergeable "true"/"false"/"null")
         self.gates = gates or {}            # head sha -> list of Actions runs, or "error" to raise
+        self.commit_dates = commit_dates or {}     # head sha -> committer date, or "error" to raise (#1255)
         self.fail_patch_after = fail_patch_after   # PATCH calls allowed before failing
         self.patches = 0
+        self.comments_error = False
         self.calls: list[list[str]] = []
         self._id = 100
 
-    def add(self, body, login=cq.WRITER, on=1):
+    def add(self, body, login=cq.WRITER, on=1, created_at=None):
         self._id += 1
         self.comments.append({"id": self._id, "body": body, "login": login, "on": on,
-                              "created_at": f"2026-11-02T10:{self._id - 100:02d}:00Z"})
+                              "created_at": created_at or f"2026-11-02T10:{self._id - 100:02d}:00Z"})
         return self._id
 
     def __call__(self, args):
@@ -60,6 +62,16 @@ class FakeGh:
         if args[:2] == ["api", "--paginate"] and "/issues/comments?" in args[2]:
             return "\n".join(json.dumps({k: c[k] for k in ("id", "body", "created_at", "login")})
                              for c in self.comments)
+        if args[:2] == ["api", "--paginate"] and "user.login" in args[-1] and "created_at" in args[-1]:
+            # reentry's read (#1255): login, time, is-verdict, is-QA per comment -- never a body.
+            n = int(args[2].split("/issues/")[1].split("/")[0])
+            if self.comments_error:
+                raise RuntimeError("gh api failed")
+            return "\n".join(
+                f"{c['login']}\t{c['created_at']}\t"
+                f"{'true' if c['body'].startswith(('QA: PASS', 'QA: FAIL')) else 'false'}\t"
+                f"{'true' if c['body'].startswith('QA:') else 'false'}"
+                for c in self.comments if c["on"] == n)
         if args[:2] == ["api", "--paginate"] and "user.login" in args[-1]:   # PASS verdicts + author
             n = int(args[2].split("/issues/")[1].split("/")[0])
             return "\n".join(f"{c['login']}\t{c['body'].splitlines()[0]}"
@@ -85,6 +97,11 @@ class FakeGh:
             return "\n".join(json.dumps({"number": n, "ref": ref, "sha": self.heads.get(n, ""),
                                          "labels": [l for l in labs.split(",") if l]})
                              for n, (ref, labs, _m) in self.open_prs.items())
+        if args[0] == "api" and "/commits/" in args[1]:
+            d = self.commit_dates.get(args[1].rsplit("/", 1)[1], "")
+            if d == "error":
+                raise RuntimeError("gh api failed")
+            return d + "\n"
         if args[0] == "api" and "/pulls/" in args[1] and args[-1] == ".mergeable_state":
             m = self.open_prs[int(args[1].rsplit("/", 1)[1])][2]
             return {"true": "clean", "false": "dirty", "null": "unknown"}.get(m, m) + "\n"
@@ -415,12 +432,51 @@ def test_an_ISSUE_entry_whose_PR_mergeability_is_UNKNOWN_is_still_started():
 
 
 def test_an_ISSUE_entry_without_qa_pass_is_started_without_reading_PRs():
+    """No `qa-pass` label: the mergeable/gates reads of `_mergeable_passed_pr` are
+    skipped. Name kept (verify_test_floor refuses a rename as a removal). Since #1255 the
+    PR LIST is read once (reentry.nothing_new); with no owned PR that read ends it, so no
+    per-PR call (mergeable state, gates runs, commits) is made."""
     gh = FakeGh(labels={431: "bug,qa-fail"})
     gh.add(entry("issue", 431))
     car = FakeCarrier([(0, "1")])
     cq.drain(gh, REPO, car)
     assert car.calls and car.calls[0][0] == "issue=431"
-    assert not any("/pulls?state=open" in " ".join(c) for c in gh.calls)
+    assert not any(w in " ".join(c) for c in gh.calls for w in (".mergeable_state", "/actions/runs", "/commits/"))
+
+def _reentered_431(trace_at="2026-11-02T11:00:00Z", commit_at="2026-11-02T10:30:00Z", kind="issue"):
+    """#1255: issue 431 has an owned PR 694 with no `qa-pass`; a cycle left its trace
+    at `trace_at`, after the entry (10:01) was queued."""
+    gh = FakeGh(labels={431: "bug"}, heads={694: HEAD_694},
+                open_prs={694: ("issue/431-fix", "", "true")}, commit_dates={HEAD_694: commit_at})
+    gh.add(entry(kind, 431))
+    gh.add("Cycle: nothing to change, stood down.", login="claude[bot]", on=431, created_at=trace_at)
+    return gh
+
+
+def test_an_ISSUE_entry_a_cycle_already_ran_on_with_nothing_new_is_dropped():
+    gh = _reentered_431()
+    car = FakeCarrier([])
+    cq.drain(gh, REPO, car)
+    assert car.calls == []
+    assert "nothing new since the last cycle on issue #431" in gh.comments[0]["body"]
+
+
+def test_the_same_entry_runs_when_the_PR_has_a_commit_since_that_cycle():
+    gh = _reentered_431(commit_at="2026-11-02T11:05:00Z")
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls and car.calls[0][0] == "issue=431"
+
+
+def test_a_FIX_entry_is_never_stood_down_by_the_re_entry_rule():
+    """A `fix_pr` entry is an explicit request; only the QA-pass rule may drop it."""
+    gh = _reentered_431(kind="fix_pr")
+    gh.comments[0]["body"] = entry("fix_pr", 694)
+    gh.labels[694] = "qa-fail"
+    car = FakeCarrier([(0, "1")])
+    cq.drain(gh, REPO, car)
+    assert car.calls and car.calls[0][0] == "fix_pr=694"
+
 
 def test_a_qa_fail_pr_IS_started():
     """qa-fail is exactly the state a manual round exists for (#649, #636)."""

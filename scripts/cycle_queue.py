@@ -490,7 +490,14 @@ def stale_reason(gh: Runner, repo: str, e: Entry) -> str | None:
     if e.kind != "pr":
         pr = _mergeable_passed_pr(gh, repo, e.target) if passed else None
         if pr is None:
-            return None
+            # Nothing is waiting to merge. Still stand down when a cycle has
+            # already run since this was queued and nothing is new (#1255).
+            # Lazy import: reentry imports this module for _OWNED_BRANCH.
+            here = str(Path(__file__).resolve().parent)
+            if here not in sys.path:
+                sys.path.insert(0, here)
+            import reentry
+            return reentry.nothing_new(gh, repo, e)
         return (f"issue #{e.target}'s PR #{pr} carries `qa-pass` and is mergeable (or "
                 f"blocked only on required gates that are not red); it is waiting to merge, "
                 f"and a cycle would re-decide passed work.")
