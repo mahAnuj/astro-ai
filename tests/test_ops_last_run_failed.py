@@ -105,7 +105,7 @@ def _page(monkeypatch, loops):
     monkeypatch.setattr(ops_data, "LIVE_ISSUES", False)
     ops_data._cache.clear()
     pw = os.environ.get("ADMIN_PASSWORD", deps._ADMIN_DEV_FALLBACK)
-    r = TestClient(app).get("/admin/ops", auth=("admin", pw))
+    r = TestClient(app).get("/admin/ops?tab=workflows", auth=("admin", pw))
     assert r.status_code == 200, r.status_code
     return r.text
 

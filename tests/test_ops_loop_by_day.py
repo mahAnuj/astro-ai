@@ -95,7 +95,7 @@ def page(client, monkeypatch, tmp_path):
         ops_data._cache.clear()
         ops_data._app_cache.clear()
         try:
-            r = client.get("/admin/ops", auth=("admin", "bhagya-dev"))
+            r = client.get("/admin/ops?tab=runs", auth=("admin", "bhagya-dev"))
         finally:
             ops_data._cache.clear()
             ops_data._app_cache.clear()

@@ -373,7 +373,7 @@ def _page_html(monkeypatch, extra, chain=(K120, K20)):
     monkeypatch.setattr(ops_data, "_chain_keys", lambda: list(chain))
     ops_data._app_cache.clear()
     pw = os.environ.get("ADMIN_PASSWORD", deps._ADMIN_DEV_FALLBACK)
-    r = TestClient(app).get("/admin/ops", auth=("admin", pw))
+    r = TestClient(app).get("/admin/ops?tab=monitoring", auth=("admin", pw))
     assert r.status_code == 200, r.status_code
     return r.text
 

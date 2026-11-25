@@ -121,7 +121,7 @@ def _page(q: str):
     from astro_ai.main import app
     from astro_ai.routes import deps
     pw = os.environ.get("ADMIN_PASSWORD", deps._ADMIN_DEV_FALLBACK)
-    return TestClient(app).get("/admin/ops" + q, auth=("admin", pw))
+    return TestClient(app).get("/admin/ops?tab=monitoring" + ("&" + q.lstrip("?") if q else ""), auth=("admin", pw))
 
 
 def test_the_page_renders_the_picker_bounded_to_kept_days():

@@ -2860,7 +2860,7 @@ MUTATIONS = [
     # defect: it reports "offers [1, 1, 1], the app accepts [1, 7, 30]".
     ("#452/BUG-5: the window selector hardcodes one window",
      "src/astro_ai/templates/admin_ops.html",
-     'href="?window={{ d }}"', 'href="?window=1"',
+     'href="?window={{ d }}&amp;tab={{ tab }}"', 'href="?window=1&amp;tab={{ tab }}"',
      "test_the_template_offers_exactly_the_windows_the_module_declares"),
 
     # BUG-6. The old assertion was `peak <= _nice_top(peak)` restated, so it
