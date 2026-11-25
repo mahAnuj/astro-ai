@@ -893,6 +893,36 @@ body{font-variant-numeric:tabular-nums}
   .quota .meter{grid-column:1/-1;order:3}
   .quota .sub{order:4}
 }
+
+/* ── Results: the four KPI cards (#1133 slice 2a). Tokens only. A delta is an arrow
+   and a word in its own text, so its colour is a second signal. The grid has no
+   padding (the cells do) and wraps by width, so 375px is one column. .vh is the
+   page's visually-hidden text, for slice 2b. */
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:16px 20px 0}
+.kpis>p.sub{margin:12px 20px 0;max-width:none}
+.kpis>p.sub:last-child{margin-bottom:20px}
+.tile.kpi{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;
+  padding:16px;border-radius:var(--r-inner)!important;overflow-wrap:anywhere}
+.kpi>span{display:block;max-width:100%}
+.kpi .caret{position:absolute;top:14px;right:14px;max-width:none}
+.kpi .lbl{padding-right:20px}
+.kpi .v{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin:0}
+.kpi .v .num{font-size:32px;font-weight:700;letter-spacing:-.02em}
+.kpi .v .num.na{font-size:18px;font-weight:600;letter-spacing:0;color:var(--ink-dim)}
+.kpi .u{font-size:12px;font-weight:600;color:var(--ink-dim)}
+.kpi .nl{font-size:13px;line-height:1.45;color:var(--ink-dim)}
+.kpi .nl b{font-weight:600;color:var(--ink)}
+.kpi .nl.low{color:var(--open)}
+.kpi .wl{font:400 12px/1.4 var(--mono);color:var(--ink-mute)}
+.kpi .dl{display:inline-block;width:auto;padding:3px 9px;border-radius:999px;background:var(--panel-3);
+  font-size:12px;font-weight:600;line-height:1.4;color:var(--ink-dim)}
+.kpi .dl.good{color:var(--shipped)}
+.kpi .dl.bad{color:var(--failed)}
+.kpi .was,.kpi .src{font-size:12px;line-height:1.4;color:var(--ink-mute)}
+.kpi .df{font-size:12px;line-height:1.5;color:var(--ink-dim)}
+.kpi .src{margin-top:auto;padding-top:4px;font-family:var(--mono)}
 </style>
 </head>
 <body>
@@ -1050,6 +1080,50 @@ body{font-variant-numeric:tabular-nums}
       independently. <code>chief</code> owns it.</p>
     {% endif %}
   </section>
+
+  {# ── Results: the four KPI cards (#1133 slice 2a). `kpis` is ops_kpis.build(ops),
+     computed by the route for this tab only, so there is NO arithmetic and no
+     literal number in this block: every figure, window and caption is printed as
+     given. A card that cannot be computed says "unavailable: <why>" (its n_text)
+     and never shows a 0. Each card is a button that opens the rows behind it
+     (data-drill kpi-*, fed by D.kpi_rows). A delta is an arrow and a direction
+     word in its own text, so colour is never the only signal. #}
+  {% if kpis %}
+  {% set UNIT = {'cycles': 'build cycles shipped', 'qa': 'passed first time',
+                 'cost': 'list price per PR, not spend', 'prs': 'shipped by loop cycles'} %}
+  <section class="panel kpis" id="results" aria-labelledby="kpi-h">
+    <h2 id="kpi-h">Results <span class="lbl">IST days{% if kpis.window.text %} · {{ kpis.window.text }}{% endif %}</span></h2>
+    <div class="kpi-grid">
+    {% for c in kpis.cards %}
+      {%- set d = c.delta %}
+      {%- set summary -%}
+        {{ c.label }}: {{ c.display }}; {{ c.n_text }};{% if c.window_text %} {{ c.window_text }};{% endif %} {{ d.text }}
+      {%- endset %}
+      <button type="button" class="tile kpi k-{{ c.key }} st-{{ c.state }}" data-drill="{{ c.drill }}"
+              title="{{ summary|trim }}" aria-label="{{ summary|trim }}. Opens the rows behind it.">
+        <span class="caret" aria-hidden="true">▸</span><span class="lbl">{{ c.label }}</span>
+        <span class="v"><span class="num{{ ' na' if c.state != 'ok' }}">{{ c.display }}</span>
+          {%- if c.state == 'ok' %}<span class="u">{{ UNIT[c.key] }}{{ ', a floor' if c.floor }}</span>{% endif %}</span>
+        <span class="nl{{ ' low' if c.low_n }}">{% if c.state == 'ok' %}<b>n={{ c.n }}</b> · {% endif %}{{ c.n_text }}</span>
+        {%- if c.window_text %}
+        <span class="wl">{{ c.window_text }}</span>{% endif %}
+        <span class="dl{{ ' good' if d.good is true }}{{ ' bad' if d.good is false }}">{{ d.text }}{% if d.state != 'ok' and d.previous_window %} · previous {{ d.previous_window }}{% endif %}</span>
+        {%- if d.previous_text %}
+        <span class="was">was {{ d.previous_text }}</span>{% endif %}
+        <span class="df">{{ c.definition }}</span>
+        <span class="src">source: {{ c.source }}</span>
+      </button>
+    {% endfor %}
+    </div>
+    <p class="sub">{{ kpis.caption }} <b>Where the loop's time went</b>, further down, counts a rolling
+      week up to the moment its data was collected, so its cycle and PR counts differ from these.</p>
+    <p class="sub"{% if kpis.reason %} role="status"{% endif %}>
+      {% if kpis.reason %}<b>{{ kpis.reason }}.</b> The four cards are unavailable, not zero.{% endif %}
+      <span class="age {{ 'stale' if kpis.as_of.stale }}">cycle data {{ kpis.as_of.text }}</span>
+      Sources: <code>measurements/loop.json</code>, and <code>measurements/agents.json</code> for the QA verdicts.
+      {% if kpis.skipped %}<b>{{ kpis.skipped }} row(s) in loop.json could not be read and are left out.</b>{% endif %}</p>
+  </section>
+  {% endif %}
 
   {# ── Goals and agent decisions (owner, 2026-11-19). growth.json, scripts/growth_split.py. ── #}
   {% set GR = ops.growth %}
@@ -2528,6 +2602,7 @@ body{font-variant-numeric:tabular-nums}
      is only wired where its elements exist, but a missing key must be an empty
      drill-down and never a TypeError that stops the rest of this script. */
   var CYCLES = D.cycles || [], ISSUES = D.issues || [];
+  var KPI_ROWS = D.kpi_rows || [];
   var sheet = document.getElementById("sheet"),
       scrim = document.getElementById("scrim"),
       list  = document.getElementById("sheet-list"),
@@ -2565,6 +2640,8 @@ body{font-variant-numeric:tabular-nums}
       if (kind === "cycle") {
         var bits = [r.time_ist + " IST", r.date_ist, r.minutes + " min", r.trigger];
         if (r.attribution === "unattributed") bits.push("unattributable");
+        if (r.qa1 && r.kind !== "qa-round") bits.push("first QA " + r.qa1);
+        if (r.usd != null) bits.push("$" + r.usd.toFixed(2) + " list");
         var ls = [link(REPO + "/actions/runs/" + r.run, "run log &rarr;")];
         /* The agents' own account of the work, which is the "why". */
         if (r.issue) ls.push(link(REPO + "/issues/" + r.issue, "what the agents said &rarr;"));
@@ -2660,8 +2737,23 @@ body{font-variant-numeric:tabular-nums}
                         return ISSUES.slice().sort(function (a, b) {
                           return (rank[a.priority] ?? 9) - (rank[b.priority] ?? 9) || b.number - a.number;
                         });
-                      }, "issue"]
+                      }, "issue"],
+    /* The four Results cards. Rows are the current KPI window's (the blob's
+       kpi_rows, Overview only). One row per PR for the PR and QA cards, because that is
+       the unit their numbers count. */
+    "kpi-cycles":    ["cycles shipped", "Build cycles that shipped, last complete IST days",
+                      function () { return KPI_ROWS.filter(function (r) { return r.outcome === "shipped" && r.kind !== "qa-round"; }); }, "cycle"],
+    "kpi-prs":       ["PRs merged", "Distinct PRs the loop shipped, last complete IST days", kpiPrs, "cycle"],
+    "kpi-qa":        ["first-pass QA", "PRs the loop shipped, with the first QA verdict where one is recorded", kpiPrs, "cycle"],
+    "kpi-cost":      ["cost, list price", "Every run in the window, with its list-price cost", function () { return KPI_ROWS; }, "cycle"]
   };
+  function kpiPrs() {
+    var seen = {};
+    return KPI_ROWS.filter(function (r) {
+      if (r.outcome !== "shipped" || !r.pr || seen[r.pr]) return false;
+      return (seen[r.pr] = true);
+    });
+  }
   Array.prototype.forEach.call(document.querySelectorAll("[data-drill]"), function (el) {
     el.addEventListener("click", function () {
       var t = TILES[el.getAttribute("data-drill")];
