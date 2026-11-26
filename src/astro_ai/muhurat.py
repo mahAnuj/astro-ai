@@ -241,8 +241,9 @@ AUSPICIOUS_RATINGS = ("excellent", "good", "acceptable")
 # The weights (+2 tithi, +2 nakshatra, +1 weekday, +1 peak day, -1 avoid weekday) and these cut-offs
 # are THIS SITE'S OWN CONVENTION, not a classical figure (astro-auditor 2026-11-21: the sources in
 # knowledge/vedic_reference.md §29.11 and §29.13 name the factors, not their weights; the
-# `peak_day` Thursday for Vidyarambh is CONTESTED). In-grade order is therefore a point count, and the
-# results page says so.
+# `peak_day` Thursday for Vidyarambh is CONTESTED). In-grade order is therefore the couple's combined
+# verdict first (couple mode only, #1344), then a point count; both are this site's own conventions,
+# and the results page says so.
 #
 # BOOSTER FLOOR DECISION: a day a booster (Amrit/Sarvartha Siddhi, Ravi Yoga) or an Abujha date lifts
 # carries its tier's floor as its score. The floor adds NO weight to the booster and moves NO rating:
@@ -256,14 +257,29 @@ _RATING_MIN_SCORE = {"excellent": 5, "good": 4, "acceptable": 3}
 _TIER_ORDER = {"excellent": 0, "good": 1, "acceptable": 2, "caution": 3, "avoid": 4}
 
 
-def rank_key(c: MuhuratCandidate) -> tuple[int, int, date]:
-    """Sort key of the ranked list: tier, then HIGHER score first, then earlier date (#1341).
-    Deterministic, so `top_pick` and the page's order can never disagree."""
-    return (_TIER_ORDER.get(c.rating, 99), -c.score, c.d)
+# Couple-mode order inside a tier (#1344): the finder's own both-partners rule (#885), NOT a classical
+# grade. A row with no couple ranks 0, so non-couple order is exactly (tier, -score, date).
+_VERDICT_ORDER = {"excellent-for-both": 0, "good-for-both": 1, "mixed": 2, "avoid": 3}
+
+
+def _verdict_rank(c: MuhuratCandidate) -> int:
+    """0 without a couple; otherwise the combined verdict's place. An unknown verdict counts as
+    mixed rather than raising, because this runs inside the sort of a live request."""
+    if c.couple is None:
+        return 0
+    return _VERDICT_ORDER.get(c.couple.combined_verdict, _VERDICT_ORDER["mixed"])
+
+
+def rank_key(c: MuhuratCandidate) -> tuple[int, int, int, date]:
+    """Sort key of the ranked list: tier, then the couple's combined verdict (good for both before
+    mixed; couple mode only, this finder's own rule #885, #1344), then HIGHER score first, then earlier
+    date (#1341). Tier stays dominant. Deterministic, so `top_pick` and the page's order can never
+    disagree."""
+    return (_TIER_ORDER.get(c.rating, 99), _verdict_rank(c), -c.score, c.d)
 
 
 def top_pick(candidates: list[MuhuratCandidate]) -> tuple[MuhuratCandidate | None, int]:
-    """The best valid day of a result, and how many OTHER valid days tie it on (rating, score).
+    """The best valid day of a result, and how many OTHER valid days tie it on (rating, verdict, score).
 
     Valid means an auspicious rating (never caution or avoid) and, in couple mode, a combined
     verdict that is not "avoid": a day the pair's own factors reject is never the headline. Those
@@ -275,8 +291,9 @@ def top_pick(candidates: list[MuhuratCandidate]) -> tuple[MuhuratCandidate | Non
     if not eligible:
         return None, 0
     best = min(eligible, key=rank_key)
+    best_grade = (best.rating, _verdict_rank(best), best.score)
     ties = sum(1 for c in eligible
-               if c is not best and (c.rating, c.score) == (best.rating, best.score))
+               if c is not best and (c.rating, _verdict_rank(c), c.score) == best_grade)
     return best, ties
 
 

@@ -1,7 +1,7 @@
 """#1341 (R1 of #1017, closes #1339): the finder ranks within a tier by score and names a top pick.
 
 `MuhuratCandidate.score` carries the soft-scoring points behind the rating, the sort key is
-`(tier, -score, date)`, and `top_pick` names the first valid row: an excellent/good/acceptable
+`(tier, verdict_rank, -score, date)` (the verdict only in couple mode, #1344), and `top_pick` names the first valid row: an excellent/good/acceptable
 day that, in couple mode, is not a verdict of "avoid". A booster- or Abujha-lifted day carries its
 tier's floor as its score; no weight, cut-off or exclusion changed (the sweep below pins that
 the rating is still a pure function of the points for every day nothing lifted).
@@ -301,6 +301,11 @@ def test_a_bare_form_has_no_pick(client, ctx):
 DISCLOSURE = ("Among dates of the same grade, this card goes first to the one with the most points "
               "under this site's own point count: the classical rules fix which dates qualify, but "
               "the tradition we follow gives no weighting between them.")
+COUPLE_DISCLOSURE = ("Among dates of the same grade, this card goes first to a date this finder marks "
+                     "good for both partners, ahead of a mixed one, and then to the one with the "
+                     "most points. Both orders are this site's own convention: the classical rules "
+                     "fix which dates qualify, but the tradition we follow gives no ranking between "
+                     "them.")
 COUPLE = {"bride_name": "Sita Verma", "bride_dob": "1995-03-04", "bride_time": "06:30",
           "bride_place": "Jaipur, India", "groom_name": "Ram Verma", "groom_dob": "1993-07-19",
           "groom_time": "11:15", "groom_place": "Lucknow, India"}
@@ -437,9 +442,12 @@ def test_a_couple_search_shows_the_verdict_and_the_not_an_endorsement_line(clien
     assert "It is not a classical endorsement for your two charts." in card
     assert "own both-partners rule (explained below)" in card
     assert "Dates marked avoid for the couple are skipped here" in card
-    assert DISCLOSURE in card
-    # The pick is the first table row whose couple verdict is not "avoid": a couple-avoid row
-    # stays in the table, so it may sit above the pick (Nov 25 does here, and says so).
+    assert COUPLE_DISCLOSURE in card
+    assert DISCLOSURE not in card  # the non-couple sentence is replaced, not stacked
+    assert "Tied on points" not in card  # a couple's tie line names the verdict as well
+    # The pick is the first table row whose couple verdict is not "avoid" (a couple-avoid row
+    # stays in the table, so it may sit above the pick; sorting within a tier now puts one below
+    # a mixed or good-for-both row, so there is no fixed date to name here).
     table = re.search(r"<table.*?</table>", r.text, re.S).group(0)
     rows = re.findall(r'data-label="Date"[^>]*>([^<]+)<.*?title="Combined bride\+groom verdict">'
                       r'\s*([^<]+?)\s*<', table, re.S)
@@ -526,3 +534,76 @@ def test_a_bad_request_re_render_keeps_the_searched_days_selected(client):
     # Out of range on an error re-render (the route does not clamp there): the form falls back to 60.
     assert [(v, label) for v, sel, label in _days_options(r.text) if sel] == [("60", "60 days")]
     assert [v for v, _, _ in _days_options(r.text)] == ["30", "60", "90", "180"]
+
+
+# --- #1344: in couple mode the combined verdict ranks inside a tier -------------------------
+
+
+def test_within_a_tier_good_for_both_ranks_before_mixed_even_when_later_and_lower_scoring():
+    early_mixed = _row(date(2026, 12, 1), "excellent", 5, verdict="mixed")
+    late_gfb = _row(date(2026, 12, 20), "excellent", 5, verdict="good-for-both")
+    high_mixed = _row(date(2026, 12, 2), "excellent", 6, verdict="mixed")
+    rows = _ranked([early_mixed, high_mixed, late_gfb])
+    assert rows[0] is late_gfb
+    assert top_pick(rows)[0] is late_gfb
+
+
+def test_verdict_order_is_excellent_good_mixed_avoid():
+    d = date(2026, 12, 1)
+    rows = [_row(d + timedelta(days=i), "excellent", 5, verdict=v)
+            for i, v in enumerate(["avoid", "mixed", "good-for-both", "excellent-for-both"])]
+    assert [c.couple.combined_verdict for c in _ranked(rows)] == [
+        "excellent-for-both", "good-for-both", "mixed", "avoid"]
+
+
+def test_tier_still_outranks_the_verdict():
+    gfb_good = _row(date(2026, 12, 1), "good", 4, verdict="good-for-both")
+    mixed_excellent = _row(date(2026, 12, 20), "excellent", 5, verdict="mixed")
+    rows = _ranked([gfb_good, mixed_excellent])
+    assert rows[0] is mixed_excellent
+    assert top_pick(rows)[0] is mixed_excellent
+
+
+def test_non_couple_rows_rank_zero_for_the_verdict():
+    rows = [_row(date(2026, 12, 9), "excellent", 5), _row(date(2026, 12, 1), "good", 4),
+            _row(date(2026, 12, 5), "excellent", 6), _row(date(2026, 12, 3), "excellent", 5),
+            _row(date(2026, 12, 4), "caution", 2)]
+    assert all(rank_key(c)[1] == 0 for c in rows)
+    old = sorted(rows, key=lambda c: (muhurat._TIER_ORDER.get(c.rating, 99), -c.score, c.d))
+    assert _ranked(rows) == old
+
+
+def test_a_tie_counts_only_the_same_verdict():
+    rows = _ranked([_row(date(2026, 12, 1), "excellent", 5, verdict="mixed"),
+                    _row(date(2026, 12, 2), "excellent", 5, verdict="mixed"),
+                    _row(date(2026, 12, 3), "excellent", 5, verdict="mixed"),
+                    _row(date(2026, 12, 10), "excellent", 5, verdict="good-for-both"),
+                    _row(date(2026, 12, 11), "excellent", 5, verdict="good-for-both")])
+    pick, ties = top_pick(rows)
+    assert pick.d == date(2026, 12, 10) and ties == 1
+
+
+def test_an_unknown_verdict_does_not_raise_and_ranks_as_mixed():
+    odd = _row(date(2026, 12, 1), "excellent", 5, verdict="something-new")
+    mixed = _row(date(2026, 12, 1), "excellent", 5, verdict="mixed")
+    gfb = _row(date(2026, 12, 1), "excellent", 5, verdict="good-for-both")
+    assert rank_key(odd) == rank_key(mixed) and rank_key(gfb) < rank_key(odd)
+    assert top_pick([odd])[0] is odd
+
+
+def test_the_real_finder_never_headlines_a_worse_verdict_than_the_tier_has():
+    """A property over the real finder, no date pinned: which vivah days exist changes with the
+    rules (#1357), so the test reads the window's own rows."""
+    from astro_ai import chart
+    from astro_ai.routes import muhurat as route
+
+    bride = chart.compute_chart("1995-03-14", "10:30", "Delhi")
+    groom = chart.compute_chart("1993-07-02", "18:15", "Delhi")
+    cs, _, _ = route._search("vivah", "Delhi", START, 365, None, bride, groom)
+    eligible = [c for c in cs if c.rating in muhurat.AUSPICIOUS_RATINGS
+                and c.couple.combined_verdict != "avoid"]
+    assert any(c.couple.combined_verdict == "good-for-both" for c in eligible), (
+        "premise: a good-for-both auspicious day exists, so the property is not vacuous")
+    pick, _ = top_pick(cs)
+    best_in_tier = min(muhurat._verdict_rank(c) for c in eligible if c.rating == pick.rating)
+    assert muhurat._verdict_rank(pick) == best_in_tier
