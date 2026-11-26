@@ -6,7 +6,8 @@ tests/test_await_main_gates.py. One area file, a literal list."""
 MUTATIONS = [
     ("main-red: a pending run a later merge replaced is reported as a red main",
      "scripts/await_main_gates.py",
-     '            if cur.get("conclusion") == "cancelled" and newer:\n',
+     # Re-anchored 2026-11-26: the test is "no step ran" since #1486.
+     '            if cur.get("conclusion") == "cancelled" and never_started(gh, repo, mine):\n',
      "            if False:\n",
      "test_a_replaced_pending_run_is_not_a_red_main"),
     ("main-red: a gates run from before the merge is taken as this merge's",

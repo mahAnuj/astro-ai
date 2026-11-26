@@ -63,6 +63,12 @@ def test_a_replaced_pending_run_is_not_a_red_main():
     assert rc == 0 and r is None and "before any step ran" in why
 
 
+def test_a_cancelled_run_with_nothing_behind_it_is_still_reported():
+    gh = Gh([[run(5, "2026-11-25T14:06:03Z", conclusion="cancelled")]])
+    rc, r, _ = amg.await_run(gh, "o/r", AFTER, sleep=lambda s: None)
+    assert rc == 0 and r["conclusion"] == "cancelled"
+
+
 def test_a_timed_out_run_with_a_newer_run_behind_it_is_still_reported():
     """#1486: the old 'a newer run exists' test swallowed a run that TIMED OUT with the next
     merge's run queued behind it -- exactly the case #461 exists for. It ran steps."""
