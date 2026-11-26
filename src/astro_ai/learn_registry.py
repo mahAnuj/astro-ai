@@ -773,7 +773,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Why is Saturn considered the most-feared planet?",
-                "a": "Because Saturn delays gratification, demands discipline, and tests effort over decades. To a culture optimised for quick wins, Saturn feels punitive. Classical Vedic astrology actually treats Saturn as the great teacher — the parent who says no when you want candy. The fear is misplaced; people who respect Saturn don't suffer at his hands.",
+                "a": "Because Saturn delays gratification, demands discipline, and tests effort over decades. To a culture optimised for quick wins, Saturn feels punitive. This site reads Saturn as a teacher — the parent who says no when you want candy — and in our view the fear is out of proportion; that is our reading, not a classical claim.",
             },
             {
                 "q": "What is Shasha Yoga?",
@@ -2852,7 +2852,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Venus in 8th house always mean second marriage?",
-                "a": "No — this is one of the most over-diagnosed placements in commercial astrology. Venus in the 8th in a male chart is a tendency signature (Venus is the karaka of marriage; 8th is the transformation house — the karaka in a transformative house increases probability of marriage transitions). But 'tendency' is not 'certainty'. Many male charts with Venus in the 8th spend their lives in first marriages, particularly when Venus is well-aspected (Jupiter's aspect is strongly protective), in own sign (Taurus or Libra), or when the 7th house itself is otherwise clean. The signature matters when it converges with other signatures (7th lord in 8th, malefics in 7th, weak Jupiter). Alone, it is a probability shift, not a prediction.",
+                "a": "No — a placement alone does not decide it. Venus in the 8th in a male chart is a tendency signature (Venus is the karaka of marriage; 8th is the transformation house — the karaka in a transformative house increases probability of marriage transitions). But 'tendency' is not 'certainty'. Practitioners commonly read it as softer when Venus is well-aspected (Jupiter's aspect), in own sign (Taurus or Libra), or when the 7th house itself is otherwise clean; that is interpretive practice, and the sources we hold say nothing about second marriage. The signature matters when it converges with other signatures (7th lord in 8th, malefics in 7th, weak Jupiter). Alone, it is a probability shift, not a prediction.",
             },
             {
                 "q": "Can Kundli predict divorce?",
@@ -2898,7 +2898,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Can Rahu remedies fix my addiction?", "a": "Remedies are a support layer, not a substitute for professional care. Rahu-driven addictions (substances, phone/gaming, compulsive behaviours) need therapy + medical support if severe. Remedies help by reducing the underlying restless craving over time."},
         ),
         llm_summary=(
-            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhraam Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) pilgrimage or research donation, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black gram/urad daal, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Anti-exploitation: legitimate Trimbakeshwar Nagbali ₹5-25K; anything quoted in lakhs is scam'
+            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhraam Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) pilgrimage or research donation, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black gram/urad daal, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Cost: no held source prices a remedy; be cautious of a very large quote'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2970,13 +2970,13 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "How do I know if I really have Pitru Dosh?", "a": "Classical signatures: Sun heavily afflicted by Rahu/Saturn, 9th/12th house lords afflicted, Rahu-Ketu on 9th-3rd or 12th-6th axis. Life patterns: repeated obstacles despite competence, children delayed, money slips through fingers, frequent ancestor-related dreams. Verify with proper chart reading before investing in remedies."},
         ),
         llm_summary=(
-            'Keypoints:\n• Pitru Dosh = ancestral karmic debt (Sun+Rahu/Saturn affliction, 9th/12th house issues)\n• MOST OVER-EXPLOITED category in Indian astrology commerce\n• 6 classical remedies: (1) Pitru Paksha 15-day observance (tarpan, feed Brahmin/cow/crow), (2) annual death anniversary tarpan (Barsi), (3) monthly Amavasya practice, (4) Gaya tri-pindi shraddha for serious cases, (5) Ganesha + Vishnu worship (Ekadashi vrat), (6) serving living elders\n• ALL remedies < ₹500; Gaya adds travel + ₹5-15K\n• Anti-exploitation: anyone quoting ₹50K+ for Pitru Shanti is scamming'
+            'Keypoints:\n• Pitru Dosh = ancestral karmic debt (Sun+Rahu/Saturn affliction, 9th/12th house issues)\n• 6 classical remedies: (1) Pitru Paksha 15-day observance (tarpan, feed Brahmin/cow/crow), (2) annual death anniversary tarpan (Barsi), (3) monthly Amavasya practice, (4) Gaya tri-pindi shraddha for serious cases, (5) Ganesha + Vishnu worship (Ekadashi vrat), (6) serving living elders\n• ALL remedies < ₹500; Gaya adds travel + ₹5-15K\n• Cost: no held source prices a remedy; be cautious of a very large quote'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="kaal-sarp-dosh-remedies", title="Kaal Sarp Dosh Remedies: Classical Practices That Actually Work",
-        summary="Kaal Sarp Dosh — all 7 non-shadow planets on one side of the Rahu-Ketu axis — is the most exploited category in Indian astrology commerce. Real remedies are simple: worship of Rahu's and Ketu's own deities (Durga or Narasimha, Ganesha), the combined Rahu+Ketu Beej mantras, and traditional practices such as Nag Panchami observance, Shiva worship on Mondays and the silver serpent offering, with Trimbakeshwar Nagbali for severe cases. This guide walks seven remedies, says which are classical and which are tradition, and keeps strong guardrails against exploitation.",
+        summary="Kaal Sarp Dosh — all 7 non-shadow planets on one side of the Rahu-Ketu axis. Remedies: worship of Rahu's and Ketu's own deities (Durga or Narasimha, Ganesha), the combined Rahu+Ketu Beej mantras, and traditional practices such as Nag Panchami observance, Shiva worship on Mondays and the silver serpent offering, with Trimbakeshwar Nagbali for severe cases. This guide walks seven remedies, says which are classical and which are tradition, and keeps strong guardrails against exploitation.",
         seo_title="Kaal Sarp Dosh Remedies: Shiva Puja, Nag Panchami, Trimbakeshwar",
         seo_description="Kaal Sarp Dosh remedies — Rahu and Ketu's deities, Nag Panchami, silver serpent offering, Trimbakeshwar Nagbali. Anti-exploitation guide with cost checks.",
         category="Doshas", hero_image="/static/learn/kaal-sarp-dosh-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
@@ -2988,7 +2988,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Can I do KSD remedy at home instead of Trimbakeshwar?", "a": "Yes. Regular worship of Rahu's and Ketu's deities (Durga or Narasimha, Ganesha), Nag Panchami observance, silver serpent offering, and Rahu+Ketu Beej mantras done consistently at home are the accessible starting point; Monday Shiva visits are a devotional tradition you may add. Save the Trimbakeshwar pilgrimage for when you're certain of the diagnosis and have the time to do it well."},
         ),
         llm_summary=(
-            'Keypoints:\n• Kaal Sarp Dosh = all 7 non-shadow planets on one semicircle of Rahu-Ketu axis\n• MOST EXPLOITED category in astrology commerce; real remedies are cheap\n• 7 remedies; only (1) the deities of Rahu and Ketu and (4) the Beej mantras are classical, the rest is tradition: (1) Rahu: Durga or Narasimha, Ketu: Ganesha (Monday Shiva worship + Om Namah Shivaya 108x is a devotional tradition, not the deity of either node), (2) Nag Panchami annual observance (fast + serpent milk offering), (3) silver serpent offering at Shiva temple or river (₹500-2K, once), (4) Rahu+Ketu Beej mantras combined 108x each, (5) Trimbakeshwar Nagbali Puja ₹5-25K for severe cases, (6) symbolic serpent-serving (donate to reptile rescues), (7) year-long weekly practice\n• Cost sanity: anyone quoting lakhs for KSD Shanti is scamming; ₹15-25K is the ceiling for legitimate Trimbakeshwar puja'
+            'Keypoints:\n• Kaal Sarp Dosh = all 7 non-shadow planets on one semicircle of Rahu-Ketu axis\n• 7 remedies; only (1) the deities of Rahu and Ketu and (4) the Beej mantras are classical, the rest is tradition: (1) Rahu: Durga or Narasimha, Ketu: Ganesha (Monday Shiva worship + Om Namah Shivaya 108x is a devotional tradition, not the deity of either node), (2) Nag Panchami annual observance (fast + serpent milk offering), (3) silver serpent offering at Shiva temple or river (₹500-2K, once), (4) Rahu+Ketu Beej mantras combined 108x each, (5) Trimbakeshwar Nagbali Puja for severe cases, (6) symbolic serpent-serving (donate to reptile rescues), (7) year-long weekly practice\n• Cost: no held source prices a remedy; be cautious of a very large quote'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),

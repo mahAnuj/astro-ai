@@ -51,8 +51,17 @@ _BANNED = (
     # sade-sati and marriage-delayed.
     r"almost always", r"\brarely\b", r"lots of people", r"better careers?",
     r"most simple calculators", r"nobody mentions", r"many charts that look like",
+    # #1513: the same motive, price and outcome families on four more pages and one registry FAQ.
+    r"exploited", r"fear is misplaced", r"life-defining", r"exploitation happens", r"\bscam",
+    r"₹\s?5-?25\s?k", r"₹\s?50\s?k",
 )
+# The round-2 pages are gated on the #1513 families only. The broad list above trips on sentences
+# the issue does not name there ("most people" in rahu/shani prose, "K.N. Rao lineage" in the
+# kundali-matching advice on choosing an astrologer), and widening the diff to rewrite those was
+# out of scope; they are a follow-up for the auditor.
+_BANNED_R2 = (r"exploiting", r"preys? on", r"over-?diagnos") + _BANNED[-7:]
 _BANNED_RE = [re.compile(p) for p in _BANNED]
+_BANNED_RE_R2 = [re.compile(p) for p in _BANNED_R2]
 
 
 def _norm(s: str) -> str:
@@ -62,10 +71,10 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s).lower()
 
 
-def _hits(text: str) -> list[str]:
+def _hits(text: str, patterns=None) -> list[str]:
     n = _norm(text)
     out = []
-    for p in _BANNED_RE:
+    for p in (_BANNED_RE if patterns is None else patterns):
         m = p.search(n)
         if m:
             # The surrounding words, so a failure says which sentence to change.
@@ -111,9 +120,19 @@ def _registry_text(slug: str) -> str:
     return " \n ".join(parts)
 
 
+# #1513: the pages and the one FAQ #1511's QA round found still carrying the same families.
+_ROUND2 = ("rahu-remedies", "mars-remedies", "kundali-matching-ashtakoot-guna-milan", "shani-saturn")
+_ROUND2_REGISTRY = _ROUND2 + ("second-marriage-yoga-kundli",)
+
+
 @pytest.mark.parametrize("slug", SLUGS)
 def test_rendered_worry_page_carries_no_unsourced_claim_family(client, slug):
     assert _hits(_visible(client, slug)) == [], slug
+
+
+@pytest.mark.parametrize("slug", _ROUND2)
+def test_rendered_round2_page_carries_no_unsourced_claim_family(client, slug):
+    assert _hits(_visible(client, slug), _BANNED_RE_R2) == [], slug
 
 
 # Two more registry entries the auditor ruled on whose FAQ carried the same families (Sade Sati
@@ -122,9 +141,12 @@ def test_rendered_worry_page_carries_no_unsourced_claim_family(client, slug):
 _REGISTRY_ONLY = ("saturn-remedies", "mars-remedies")
 
 
-@pytest.mark.parametrize("slug", SLUGS + _REGISTRY_ONLY)
+@pytest.mark.parametrize("slug", SLUGS + tuple(dict.fromkeys(_REGISTRY_ONLY + _ROUND2_REGISTRY)))
 def test_registry_entry_carries_no_unsourced_claim_family(slug):
-    assert _hits(_registry_text(slug)) == [], slug
+    # The broad list for the entries #1509 ruled on; only the #1513 families for the round-2 ones,
+    # whose other FAQs are outside this issue (see _BANNED_R2).
+    pats = _BANNED_RE_R2 if slug in _ROUND2_REGISTRY and slug not in SLUGS + _REGISTRY_ONLY else None
+    assert _hits(_registry_text(slug), pats) == [], slug
 
 
 # Attribution each page must keep: the replacement text says whose view a sentence is, or that no
@@ -142,6 +164,32 @@ _MARKER = {
     "planets-in-7th-house-marriage": "the one antidote list we hold",
     "career-during-sade-sati": "this is practical advice, not a rule",
 }
+
+
+# #1513: one attribution sentence per round-2 page, verbatim from the replacement text.
+_MARKER2 = {
+    "rahu-remedies": "we hold no source that prices a rahu remedy",
+    "mars-remedies": "hanuman chalisa is practice, not a held book",
+    "kundali-matching-ashtakoot-guna-milan": "specific mantras and timing are practice, not a held book",
+    "shani-saturn": "rewards sustained effort over decades - our reading, not a classical claim",
+}
+_REGISTRY_MARKER2 = {
+    "shani-saturn": "that is our reading, not a classical claim",
+    "second-marriage-yoga-kundli": "that is interpretive practice, and the sources we hold say nothing about second marriage",
+    "rahu-remedies": "no held source prices a remedy",
+    "pitru-dosh-remedies": "no held source prices a remedy",
+    "kaal-sarp-dosh-remedies": "no held source prices a remedy",
+}
+
+
+@pytest.mark.parametrize("slug", _ROUND2)
+def test_round2_page_names_whose_view_it_is(client, slug):
+    assert _MARKER2[slug] in _norm(_visible(client, slug)), slug
+
+
+@pytest.mark.parametrize("slug", sorted(_REGISTRY_MARKER2))
+def test_round2_registry_entry_keeps_its_attribution(slug):
+    assert _REGISTRY_MARKER2[slug] in _norm(_registry_text(slug)), slug
 
 
 @pytest.mark.parametrize("slug", SLUGS)

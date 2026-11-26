@@ -110,3 +110,43 @@ remedies pages), by the same rule: attribute to the site, label as practice, or 
 `tests/test_learn_worry_claims_attribution.py` is a phrase test: it catches the families it names,
 not every rewording, and the ten pages carry other unsourced practice prose that is labelled as
 practice. `qa` and `astro-auditor` read the rest.
+
+## Addendum 2026-11-26 (#1513): round 2, the pages #1511's QA round found
+
+Same rule (attribute to the site, label as practice, or delete); no new astrological claim. Four
+templates (`rahu-remedies`, `mars-remedies`, `kundali-matching-ashtakoot-guna-milan`,
+`shani-saturn`) and six registry spots (the `shani-saturn` FAQ, the Venus-in-8th FAQ under
+`second-marriage-yoga-kundli`, and the Rahu, Pitru and Kaal Sarp remedies summaries). The Mars price
+sentence names the one antidote list we hold (Raman, *Muhurtha*, `grahas.md` section 12.4: both
+partners Manglik, sign exceptions, Mars with Jupiter or the Moon) and says Hanuman Chalisa is
+practice. `grahas.md` holds no "Saturn as teacher" claim, so that stays only as the site's reading.
+
+Phrase-match counts (`exploiting|exploited|preys? on|over-?diagnos|fear is misplaced|life-defining|
+exploitation happens|\bscam|₹5-25K|₹50K`, case-insensitive; a phrase count, not a read of the pages):
+
+| file | before | after |
+| --- | --- | --- |
+| `rahu-remedies.html` | 4 | 0 |
+| `mars-remedies.html` | 1 | 0 |
+| `kundali-matching-ashtakoot-guna-milan.html` | 1 | 0 |
+| `shani-saturn.html` | 2 | 0 |
+| `learn_registry.py` | 15 | 4 |
+
+The four registry matches left are outside this issue: line ~1642 ("Foreign-yoga scams"), ~1914
+("life-defining opportunity", a figure of speech, not a claim) and the two "heavily exploited" bullets
+at ~2038 and ~2174 (see the follow-up below).
+
+The gate gives the round-2 pages only the #1513 families (`_BANNED_R2`), not the broad #1509 list:
+that list trips on sentences this issue does not name ("most people" in the Rahu and Shani prose,
+"K.N. Rao lineage" in the astrologer-choosing advice on kundali-matching). Widening the diff to
+rewrite those was out of scope.
+
+Beyond the plan's list, the Kaal Sarp remedies `llm_summary` also lost its "scamming" cost line and
+the "₹5-25K" Nagbali price, because the new `\bscam` and price patterns match them and they are the
+same family.
+
+### Out of scope, to be filed separately
+
+The "selling anxiety / tens of thousands" family on about ten more surfaces: templates
+`venus-remedies`, `mercury-remedies`, `jupiter-remedies`, `santan-prapti`, `10th-lord-in-6th`; registry
+lines near 1022, 1203, 1250, 1975, 2038, 2079 and 2174 (grep before editing; the numbers move).
