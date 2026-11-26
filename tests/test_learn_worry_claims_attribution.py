@@ -171,7 +171,7 @@ _MARKER2 = {
     "rahu-remedies": "we hold no source that prices a rahu remedy",
     "mars-remedies": "hanuman chalisa is practice, not a held book",
     "kundali-matching-ashtakoot-guna-milan": "specific mantras and timing are practice, not a held book",
-    "shani-saturn": "our reading, not a classical claim",
+    "shani-saturn": "rewards sustained effort over decades - our reading, not a classical claim",
 }
 _REGISTRY_MARKER2 = {
     "shani-saturn": "that is our reading, not a classical claim",
