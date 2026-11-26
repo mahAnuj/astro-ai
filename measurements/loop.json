@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-26T18:37:34Z",
+  "generated_at": "2026-11-26T19:06:36Z",
   "rows": [
     {
       "owner_helped": null,
@@ -16,20 +16,13 @@
       "outcome": "pr open",
       "attribution": "receipt",
       "kind": "ranked",
+      "turns": 20,
       "tokens_input": 350,
       "tokens_output": 121653,
       "tokens_cache_read": 13652394,
       "tokens_cache_write": 622102,
       "cost_list_usd": 4.2602,
-      "model": "claude-sonnet-5-5",
-      "turns": 20,
-      "agents_called": {
-        "architect": 1,
-        "astro-auditor": 1,
-        "backend-engineer": 1,
-        "project-manager": 1,
-        "qa": 1
-      }
+      "model": "claude-sonnet-5-5"
     },
     {
       "owner_helped": null,
@@ -16418,38 +16411,38 @@
     "per_merged_pr": 10867631,
     "cost_list_usd_per_merged_pr": 4.39,
     "previous": {
-      "runs": 213,
-      "measured": 213,
-      "merged_prs": 93,
-      "per_merged_pr": 9797825
+      "runs": 212,
+      "measured": 212,
+      "merged_prs": 92,
+      "per_merged_pr": 9859382
     }
   },
   "agents": {
     "runs_read": {
-      "7d": 95,
-      "30d": 474
+      "7d": 94,
+      "30d": 473
     },
     "by_agent": {
       "architect": {
-        "7d": 31,
-        "30d": 37,
-        "last_run": 45868328170,
-        "last_started": "2026-11-26T17:30:38Z",
-        "last_issue": 1514
+        "7d": 30,
+        "30d": 36,
+        "last_run": 45739810063,
+        "last_started": "2026-11-26T02:03:05Z",
+        "last_issue": 1497
       },
       "astro-auditor": {
-        "7d": 7,
-        "30d": 11,
-        "last_run": 45868328170,
-        "last_started": "2026-11-26T17:30:38Z",
-        "last_issue": 1514
+        "7d": 6,
+        "30d": 10,
+        "last_run": 45739810063,
+        "last_started": "2026-11-26T02:03:05Z",
+        "last_issue": 1497
       },
       "backend-engineer": {
-        "7d": 31,
-        "30d": 31,
-        "last_run": 45868328170,
-        "last_started": "2026-11-26T17:30:38Z",
-        "last_issue": 1514
+        "7d": 30,
+        "30d": 30,
+        "last_run": 45739810063,
+        "last_started": "2026-11-26T02:03:05Z",
+        "last_issue": 1497
       },
       "chief": {
         "7d": 0,
@@ -16494,18 +16487,18 @@
         "last_issue": 818
       },
       "project-manager": {
-        "7d": 38,
-        "30d": 203,
-        "last_run": 45868328170,
-        "last_started": "2026-11-26T17:30:38Z",
-        "last_issue": 1514
+        "7d": 37,
+        "30d": 202,
+        "last_run": 45739810063,
+        "last_started": "2026-11-26T02:03:05Z",
+        "last_issue": 1497
       },
       "qa": {
-        "7d": 62,
-        "30d": 276,
-        "last_run": 45868328170,
-        "last_started": "2026-11-26T17:30:38Z",
-        "last_issue": 1514
+        "7d": 61,
+        "30d": 275,
+        "last_run": 45867160554,
+        "last_started": "2026-11-26T17:22:19Z",
+        "last_issue": null
       }
     }
   }
