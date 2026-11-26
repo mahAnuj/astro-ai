@@ -39,5 +39,4 @@ Pravesh table and the Vidyarambh table; `data/` was not re-read):
 
 Shashthi and Dwadashi are missing from the griha_pravesh and vivah avoid lists. Per the
 auditor these are undocumented omissions: Raman's list rejects the 6th and 12th. The vivah
-Dwadashi is deliberate (`muhurat.py` L746-748). Not changed here; a separate issue is to be
-filed.
+Dwadashi is deliberate (`muhurat.py` L746-748). Not changed here; filed as #1504.
