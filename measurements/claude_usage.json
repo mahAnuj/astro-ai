@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-26T00:51:07Z",
+ "generated_at": "2026-11-26T03:57:11Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 45721050663,
-  "at": "2026-11-25T23:23:56Z",
-  "five_hour": 0.12,
-  "seven_day": 0.82,
+  "run": 45750754984,
+  "at": "2026-11-26T03:43:47Z",
+  "five_hour": 0.18,
+  "seven_day": 0.84,
   "status": "allowed_warning",
   "resets": {
    "five_hour": 1795668000,
    "seven_day": 1795759200
   }
  },
- "peak_seven_day": 0.82,
+ "peak_seven_day": 0.84,
  "rejected_runs": [],
  "readings": [
   {
@@ -66,46 +66,46 @@
   },
   {
    "workflow": "agent-work",
-   "run": 45668368241,
-   "at": "2026-11-25T17:47:04Z",
-   "five_hour": 0.85,
-   "seven_day": 0.8,
+   "run": 45739810063,
+   "at": "2026-11-26T02:03:05Z",
+   "five_hour": 0.15,
+   "seven_day": 0.83,
    "status": "allowed_warning",
    "resets": {
-    "five_hour": 1795650000,
+    "five_hour": 1795668000,
     "seven_day": 1795759200
    }
   },
   {
    "workflow": "agent-work",
-   "run": 45683260499,
-   "at": "2026-11-25T19:14:45Z",
-   "five_hour": 0.03,
-   "seven_day": 0.8,
+   "run": 45741405160,
+   "at": "2026-11-26T02:17:19Z",
+   "five_hour": 0.1,
+   "seven_day": 0.83,
    "status": "allowed_warning",
    "resets": {
-    "five_hour": 1795650000,
+    "five_hour": 1795668000,
     "seven_day": 1795759200
    }
   },
   {
    "workflow": "agent-work",
-   "run": 45694480094,
-   "at": "2026-11-25T20:23:22Z",
-   "five_hour": 0.06,
-   "seven_day": 0.81,
+   "run": 45749606081,
+   "at": "2026-11-26T03:32:47Z",
+   "five_hour": 0.17,
+   "seven_day": 0.84,
    "status": "allowed_warning",
    "resets": {
-    "five_hour": 1795650000,
+    "five_hour": 1795668000,
     "seven_day": 1795759200
    }
   },
   {
    "workflow": "agent-work",
-   "run": 45721050663,
-   "at": "2026-11-25T23:23:56Z",
-   "five_hour": 0.12,
-   "seven_day": 0.82,
+   "run": 45750754984,
+   "at": "2026-11-26T03:43:47Z",
+   "five_hour": 0.18,
+   "seven_day": 0.84,
    "status": "allowed_warning",
    "resets": {
     "five_hour": 1795668000,

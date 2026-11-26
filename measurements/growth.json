@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-26T00:49:47Z",
+ "generated_at": "2026-11-26T03:55:38Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-26",
  "today": {
   "growth": 0,
-  "other": 3,
+  "other": 6,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 14,
-  "other": 38,
+  "other": 41,
   "exempt": 5,
-  "share": 0.269
+  "share": 0.255
  },
  "this_month": {
   "growth": 48,
-  "other": 288,
+  "other": 291,
   "exempt": 5,
-  "share": 0.143
+  "share": 0.142
  },
  "must_pick_growth": true,
  "days": [
@@ -117,27 +117,60 @@
   {
    "date": "2026-11-26",
    "growth": 0,
-   "other": 3,
+   "other": 6,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
   {
+   "run": 45749606081,
+   "started": "2026-11-26T03:32:47Z",
+   "issue": 1497,
+   "title": "QA follow-up: finder dark-half/avoid_tithi legend wording (PR #1496)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1503,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45739810063,
+   "started": "2026-11-26T02:03:05Z",
+   "issue": 1497,
+   "title": "QA follow-up: finder dark-half/avoid_tithi legend wording (PR #1496)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1503,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "backend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 45731449633,
+   "started": "2026-11-26T00:49:16Z",
+   "issue": 1344,
+   "title": "QA follow-up: #1342 couple-mode Top pick can be a 'mixed' verdict while a 'good-for-both' day of the same grade exists",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1499,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
    "run": 45721050663,
    "started": "2026-11-25T23:23:56Z",
    "issue": 1344,
    "title": "QA follow-up: #1342 couple-mode Top pick can be a 'mixed' verdict while a 'good-for-both' day of the same grade exists",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1499,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45694480094,
@@ -573,41 +606,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 45313429964,
-   "started": "2026-11-24T02:34:52Z",
-   "issue": 1361,
-   "title": "QA follow-up: natal erasure key-count bound says 20, /account/delete can pass 40 (PR #1360)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1425,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45308728971,
-   "started": "2026-11-24T01:56:39Z",
-   "issue": 1315,
-   "title": "QA follow-up: privacy page does not list the session-revocation record kept up to 90 days after account deletion (PR #1314)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1422,
-   "agents": null
-  },
-  {
-   "run": 45243851912,
-   "started": "2026-11-23T18:57:38Z",
-   "issue": 1376,
-   "title": "QA follow-up: matching.html still lists comparable severity among implemented cancellations; decision record misdescribes the gate split (PR #1375, #1369)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1418,
-   "agents": null
   }
  ],
  "goals": {
@@ -943,21 +941,21 @@
   "ga4_sessions_28d": 804,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.269,
-  "growth_share_month": 0.143
+  "growth_share_week": 0.255,
+  "growth_share_month": 0.142
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-26",
    "progress": 0.0,
-   "detail": "0 of 3 cycles on growth, target 60%",
+   "detail": "0 of 6 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.507,
+   "progress": 0.497,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -968,8 +966,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.269,
-     "progress": 0.532,
+     "current": 0.255,
+     "progress": 0.482,
      "basis": "growth_share_week"
     },
     {
@@ -1038,7 +1036,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.357,
+   "progress": 0.355,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1081,8 +1079,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.143,
-     "progress": 0.409,
+     "current": 0.142,
+     "progress": 0.403,
      "basis": "growth_share_month"
     }
    ]

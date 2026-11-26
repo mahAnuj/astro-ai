@@ -1,36 +1,34 @@
 {
-  "generated_at": "2026-11-19T00:00:00Z",
-  "window": ["2026-11-13", "2026-11-19"],
-  "n": 20,
-  "n_graded": 20,
-  "rules_only": 15,
+  "generated_at": "2026-11-26T00:00:00Z",
+  "window": ["2026-11-20", "2026-11-26"],
+  "n": 25,
+  "n_graded": 25,
+  "rules_only": 0,
   "pass": {
-    "grounded": 5,
-    "contract": 0,
-    "answers_question": 18,
-    "safety": 17,
-    "language": 17,
-    "chart_claims": 4
+    "grounded": 18,
+    "contract": 7,
+    "answers_question": 23,
+    "safety": 21,
+    "language": 21,
+    "chart_claims": 19
   },
   "by_category": {
-    "money": {"graded": 1, "pass_all": 0},
+    "spiritual": {"graded": 1, "pass_all": 0},
     "relationships": {"graded": 1, "pass_all": 0},
-    "marriage": {"graded": 3, "pass_all": 0},
     "education": {"graded": 1, "pass_all": 0},
-    "career": {"graded": 1, "pass_all": 0},
-    "general": {"graded": 13, "pass_all": 0}
+    "career": {"graded": 3, "pass_all": 1},
+    "marriage": {"graded": 4, "pass_all": 0},
+    "general": {"graded": 15, "pass_all": 4}
   },
-  "pass_all": 0,
-  "pass_all_share": 0.000,
+  "pass_all": 5,
+  "pass_all_share": 0.200,
   "defect_classes": [
-    {"class": "medical-advice-given", "rubric": "safety", "count": 2, "prompt_line": "ask.txt:47", "issue": null},
-    {"class": "unsupported-remedy-offered", "rubric": "safety", "count": 2, "prompt_line": "ask.txt:39", "issue": null},
-    {"class": "planet-or-house-named", "rubric": "contract", "count": 15, "prompt_line": "ask.txt:18", "issue": null},
-    {"class": "specific-date-or-promised-outcome", "rubric": "contract", "count": 5, "prompt_line": "ask.txt:6", "issue": null},
-    {"class": "ungrounded-partner-or-third-party-claim", "rubric": "grounded", "count": 5, "prompt_line": "ask.txt:30", "issue": null},
-    {"class": "format-headings-paragraphs-length", "rubric": "contract", "count": 4, "prompt_line": "ask.txt:37", "issue": null},
-    {"class": "first-sentence-not-the-answer", "rubric": "contract", "count": 2, "prompt_line": "ask.txt:4", "issue": null},
-    {"class": "hindi-garbled-small-model", "rubric": "language", "count": 3, "prompt_line": "ask.txt:11", "issue": null},
-    {"class": "dasha-sequence-misstated", "rubric": "chart_claims", "count": 1, "prompt_line": "ask.txt:38", "issue": null}
+    {"class": "planet-house-or-sign-named-in-answer", "rubric": "contract", "count": 15, "prompt_line": "src/astro_ai/prompts/ask.txt:18", "issue": null},
+    {"class": "chart-placement-or-dasha-misstated", "rubric": "chart_claims", "count": 6, "prompt_line": "src/astro_ai/prompts/ask.txt:27", "issue": null},
+    {"class": "headings-bullets-or-overlong-answer", "rubric": "contract", "count": 5, "prompt_line": "src/astro_ai/prompts/ask.txt:33", "issue": null},
+    {"class": "answer-language-wrong-or-garbled", "rubric": "language", "count": 4, "prompt_line": "src/astro_ai/prompts/ask.txt:11", "issue": null},
+    {"class": "unsupported-remedy-or-gemstone", "rubric": "safety", "count": 3, "prompt_line": "src/astro_ai/prompts/ask.txt:29", "issue": null},
+    {"class": "third-party-inner-state-or-traits-asserted", "rubric": "grounded", "count": 3, "prompt_line": "src/astro_ai/prompts/ask.txt:30", "issue": null},
+    {"class": "specific-month-date-in-timing-answer", "rubric": "contract", "count": 2, "prompt_line": "src/astro_ai/prompts/ask.txt:6", "issue": null}
   ]
 }

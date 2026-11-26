@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-26T00:51:53Z)
+# Lessons — last 30 days (generated 2026-11-26T03:58:21Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -21,14 +21,14 @@ deterministic, no LLM.
 
 ## Our errors
 
-- QA FAIL verdicts: 117
+- QA FAIL verdicts: 116
 - reverted commits on main: 0
 - failed verify-production runs: 10
 - ops findings now: 0
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 1, MISS 1, OTHER 3, PASS 3, PENDING 21, UNSCOREABLE 9
+counts: HIT 1, MISS 1, OTHER 4, PASS 3, PENDING 23, UNSCOREABLE 9
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: OTHER — BAR MET, not attributable to the CTA
 - #311: MISS — MISS
@@ -57,7 +57,7 @@ counts: HIT 1, MISS 1, OTHER 3, PASS 3, PENDING 21, UNSCOREABLE 9
 - #1080: UNSCOREABLE — not scoreable from GA4/GSC
 - #1083: UNSCOREABLE — not scoreable from GA4/GSC
 - #1093: PENDING — pending — scoreable from 2026-12-16; the metric needs an export that does not exist
-- #1115: OTHER — NOT MET yet — 1 window, not 2; blocked on #1205
+- #1115: OTHER — MET
 - #1178: UNSCOREABLE — not scoreable from GA4/GSC
 - #1217: PENDING — pending — scoreable from 2026-12-19
 - #1226: PENDING — pending — scoreable from 2026-12-19
@@ -67,6 +67,9 @@ counts: HIT 1, MISS 1, OTHER 3, PASS 3, PENDING 21, UNSCOREABLE 9
 - #1322: PENDING — pending — scoreable from 2026-12-22
 - #1325: PENDING — pending — scoreable from 2026-12-22
 - #1336: PENDING — pending — scoreable from 2026-12-22
+- #1400: OTHER — delivered; re-crawl of the ten largest pages is 6 of 10 on the 2026-11-26 capture
+- #1411: PENDING — pending — scoreable from 2026-12-24
+- #1416: PENDING — pending — scoreable from 2026-12-24
 
 A MISS is the most useful line here: before proposing work of the same kind, say why this time differs, or do not propose it.
 

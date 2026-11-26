@@ -1,29 +1,29 @@
 {
- "generated_at": "2026-11-19T02:20:24Z",
+ "generated_at": "2026-11-26T03:50:08Z",
  "window": [
-  "2026-11-13",
-  "2026-11-19"
+  "2026-11-20",
+  "2026-11-26"
  ],
  "window_days": 7,
- "total": 20,
- "fresh": 20,
+ "total": 25,
+ "fresh": 25,
  "cache_hits": 0,
- "with_chart": 5,
+ "with_chart": 25,
  "truncated": false,
  "by_category": {
-  "career": 1,
+  "career": 3,
   "education": 1,
-  "general": 13,
-  "marriage": 3,
-  "money": 1,
-  "relationships": 1
+  "general": 15,
+  "marriage": 4,
+  "relationships": 1,
+  "spiritual": 1
  },
  "by_lang": {
-  "en": 11,
-  "hi": 9
+  "en": 19,
+  "hi": 6
  },
  "by_context": {
-  "chart": 17,
-  "numerology": 3
+  "chart": 19,
+  "matching": 6
  }
 }
