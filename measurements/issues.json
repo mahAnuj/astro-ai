@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-26T05:22:17Z",
+  "generated_at": "2026-11-26T13:43:53Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 169,
+  "open": 168,
   "with_ask": 42,
   "by_area": {
     "UNCLASSIFIED": 78,
@@ -25,7 +25,6 @@
     "DESIGN": 2,
     "BUG": 2,
     "MEASURE": 1,
-    "HOME": 1,
     "MUHURAT": 1,
     "NOTIFY": 1,
     "UI": 1,
@@ -34,7 +33,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 59,
+    "bug": 58,
     "untyped": 39,
     "enhancement": 31,
     "chore": 26,
@@ -42,7 +41,7 @@
     "design": 5
   },
   "by_priority": {
-    "unset": 113,
+    "unset": 112,
     "medium": 26,
     "high": 19,
     "low": 11
@@ -58,10 +57,11 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "provenance:trusted"
       ],
       "created": "2026-11-26T05:21:37Z",
-      "updated": "2026-11-26T05:21:37Z",
+      "updated": "2026-11-26T12:10:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -107,25 +107,6 @@
       ],
       "created": "2026-11-26T03:35:54Z",
       "updated": "2026-11-26T03:42:59Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1501,
-      "title": "home: worry cards claim 'what the classical texts say' - Kaal Sarp, Manglik and Sade Sati lines are unsourced or contested",
-      "ask": "",
-      "area": "HOME",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-26T02:08:54Z",
-      "updated": "2026-11-26T05:21:34Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2772,9 +2753,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-26T05:22:17Z",
+    "generated_at": "2026-11-26T13:43:53Z",
     "window_days": 28,
-    "open_now": 169,
+    "open_now": 168,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3200,14 +3181,14 @@
       {
         "date": "2026-11-26",
         "opened": 5,
-        "closed": 2,
-        "net": 3,
-        "open_end": 169,
+        "closed": 3,
+        "net": 2,
+        "open_end": 168,
         "opened_by": {
           "loop": 5
         },
         "closed_by": {
-          "close-on-evidence": 2
+          "close-on-evidence": 3
         }
       }
     ],
@@ -4782,16 +4763,21 @@
         "number": 1497,
         "closed_at": "2026-11-26T03:49:23Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1501,
+        "closed_at": "2026-11-26T05:35:54Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 83,
-          "median_h": 0.7,
-          "p90_h": 6.3,
+          "merged": 79,
+          "median_h": 0.6,
+          "p90_h": 11.4,
           "max_h": 105.0,
           "slowest": [
             {
@@ -4901,7 +4887,7 @@
           ]
         },
         "28d": {
-          "merged": 363,
+          "merged": 364,
           "median_h": 0.6,
           "p90_h": 14.3,
           "max_h": 122.1,
@@ -5190,7 +5176,7 @@
         },
         {
           "date": "2026-11-26",
-          "merged": 3,
+          "merged": 4,
           "median_h": 0.3,
           "max_h": 1.3
         }
@@ -5199,34 +5185,34 @@
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 105.6,
+          "age_h": 114.0,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 14.0h gates red; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 22.4h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 14.0
+              "gates_red": 22.4
             },
             "qa_fails": 0,
             "pushes": 4
           }
         },
         {
-          "number": 1508,
-          "title": "home: worry cards attribute the site's own opinions and name the books we hold (#1501)",
-          "age_h": 0.1,
-          "waiting_on": "merge",
+          "number": 1511,
+          "title": "issue/1509 learn worry claims attribution",
+          "age_h": 0.0,
+          "waiting_on": "gates / QA",
           "why": {
-            "reason": "no single wait stood out",
+            "reason": "no single wait stood out; 16 pushes",
             "primary": "other",
             "hours": {
-              "no_gates": 0.1
+              "no_gates": 0.0
             },
             "qa_fails": 0,
-            "pushes": 1
+            "pushes": 16
           }
         }
       ]

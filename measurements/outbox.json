@@ -1,26 +1,25 @@
 {
- "generated_at": "2026-11-26T05:24:56Z",
+ "generated_at": "2026-11-26T13:47:02Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-19T05:24:56Z",
-  "end": "2026-11-26T05:24:56Z",
-  "loop_comments": 840,
-  "on_prs": 438,
-  "prs": 84,
-  "on_issues": 402,
-  "issues": 114,
-  "comments_per_pr": 5.21,
-  "comments_per_issue": 3.53,
+  "start": "2026-11-19T13:47:02Z",
+  "end": "2026-11-26T13:47:02Z",
+  "loop_comments": 818,
+  "on_prs": 420,
+  "prs": 80,
+  "on_issues": 398,
+  "issues": 112,
+  "comments_per_pr": 5.25,
+  "comments_per_issue": 3.55,
   "duplicates": 29,
   "duplicate_rate_pct": 3.5,
   "sent_by_kind": {
-   "growth-goals": 5,
-   "growth-goals-issue": 2,
-   "ops-finding": 14,
+   "growth-goals": 2,
+   "ops-finding": 15,
    "ops-finding-issue": 3
   },
-  "via_outbox": 24,
+  "via_outbox": 20,
   "top_threads": [
    {
     "on": "pr",
@@ -49,9 +48,9 @@
    }
   ],
   "owner_touched": {
-   "prs": 84,
-   "owner_commented": 4,
-   "pct": 5
+   "prs": 80,
+   "owner_commented": 3,
+   "pct": 4
   },
   "suppressed": {
    "deduped": 0,
@@ -60,22 +59,24 @@
   }
  },
  "previous": {
-  "start": "2026-11-12T05:24:56Z",
-  "end": "2026-11-19T05:24:56Z",
-  "loop_comments": 1251,
-  "on_prs": 733,
-  "prs": 126,
-  "on_issues": 518,
-  "issues": 153,
-  "comments_per_pr": 5.82,
-  "comments_per_issue": 3.39,
-  "duplicates": 63,
-  "duplicate_rate_pct": 5.0,
+  "start": "2026-11-12T13:47:02Z",
+  "end": "2026-11-19T13:47:02Z",
+  "loop_comments": 1260,
+  "on_prs": 739,
+  "prs": 128,
+  "on_issues": 521,
+  "issues": 155,
+  "comments_per_pr": 5.77,
+  "comments_per_issue": 3.36,
+  "duplicates": 64,
+  "duplicate_rate_pct": 5.1,
   "sent_by_kind": {
+   "growth-goals": 3,
+   "growth-goals-issue": 2,
    "ops-finding": 9,
    "ops-finding-issue": 1
   },
-  "via_outbox": 10,
+  "via_outbox": 15,
   "top_threads": [
    {
     "on": "pr",
@@ -104,8 +105,8 @@
    }
   ],
   "owner_touched": {
-   "prs": 126,
-   "owner_commented": 7,
+   "prs": 128,
+   "owner_commented": 8,
    "pct": 6
   }
  },

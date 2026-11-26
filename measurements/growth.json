@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-26T05:22:55Z",
+ "generated_at": "2026-11-26T13:44:47Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-26",
  "today": {
   "growth": 0,
-  "other": 7,
+  "other": 8,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 14,
-  "other": 42,
+  "other": 43,
   "exempt": 5,
-  "share": 0.25
+  "share": 0.246
  },
  "this_month": {
   "growth": 48,
-  "other": 292,
+  "other": 293,
   "exempt": 5,
   "share": 0.141
  },
@@ -117,27 +117,36 @@
   {
    "date": "2026-11-26",
    "growth": 0,
-   "other": 7,
+   "other": 8,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
   {
+   "run": 45816156706,
+   "started": "2026-11-26T12:03:48Z",
+   "issue": 1509,
+   "title": "learn pages repeat the home-page claims #1501 removed: 'most lives are better', 'actually aren't Manglik', 'over-diagnosed' - unsourced against the held books",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1511,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "backend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
    "run": 45757085806,
    "started": "2026-11-26T04:44:14Z",
    "issue": 1501,
    "title": "home: worry cards claim 'what the classical texts say' - Kaal Sarp, Manglik and Sade Sati lines are unsourced or contested",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1508,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45749606081,
@@ -597,16 +606,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 45324708773,
-   "started": "2026-11-24T04:12:03Z",
-   "issue": 1243,
-   "title": "knowledge: vedic_reference.md \u00a729.14 still says Magha/Mula first-pada exclusion is not implemented (after #1242)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1428,
-   "agents": null
   }
  ],
  "goals": {
@@ -942,7 +941,7 @@
   "ga4_sessions_28d": 820,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.25,
+  "growth_share_week": 0.246,
   "growth_share_month": 0.141
  },
  "meters": {
@@ -950,13 +949,13 @@
    "label": "Today: growth share of build cycles",
    "period": "2026-11-26",
    "progress": 0.0,
-   "detail": "0 of 7 cycles on growth, target 60%",
+   "detail": "0 of 8 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.574,
+   "progress": 0.571,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -967,8 +966,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.25,
-     "progress": 0.464,
+     "current": 0.246,
+     "progress": 0.45,
      "basis": "growth_share_week"
     },
     {
