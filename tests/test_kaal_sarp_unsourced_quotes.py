@@ -160,10 +160,16 @@ def test_kaal_sarp_result_page_has_no_banned_phrase(client, path):
 
 
 def test_kaal_sarp_article_says_what_section_3_2_holds(client):
+    # #1509: the learn page now follows Rao's Lessons (section 3.4: a yoga, "highly problematic")
+    # and no longer prints section 3.2's "20th-century innovation" / "no scriptural basis", which
+    # the auditor ruled UNSOURCED (the K.N. Rao work cited there is not held). Section 3.2 itself,
+    # and the i18n caveat that still carries it, are the open follow-up.
     t = _visible(client, "/learn/kaal-sarp-dosh/")
-    assert "20th-century innovation" in t
-    assert "Trimbakeshwar" in t
-    assert "no scriptural basis" in t
+    assert "20th-century innovation" not in t
+    assert "no scriptural basis" not in t
+    # Trimbakeshwar may be named only as popular association, never as the origin of the pattern.
+    assert "associated in popular accounts with the Trimbakeshwar" in t
+    assert "highly problematic" in t
     assert "Uttara Kalamrita" not in t
 
 

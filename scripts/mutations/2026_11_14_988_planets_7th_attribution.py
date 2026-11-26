@@ -53,7 +53,7 @@ MUTATIONS = [
      "test_no_per_planet_reading_is_attributed_to_classical_texts"),
     ("#988: the Manglik concern is 'the classical concern' again",
      _T,
-     "The concern the sources we work from name is marital friction, stress on the spouse's longevity, or delayed marriage.",
+     "The concern the sources we work from name is marital friction or stress on the spouse's longevity; delayed marriage is the usual online claim, which we have not found in a book we hold.",
      "The classical concern is early-marriage friction, health stress on the spouse, or delayed marriage.",
      "test_no_per_planet_reading_is_attributed_to_classical_texts"),
     ("#988: Mars 7th second-marriage risk is 'classically flagged' again with no source note",
