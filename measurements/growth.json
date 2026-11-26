@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-26T18:38:43Z",
+ "generated_at": "2026-11-26T19:07:35Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-27",
@@ -131,13 +131,7 @@
    "class": "other",
    "outcome": "pr open",
    "pr": 1519,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45833157375,
