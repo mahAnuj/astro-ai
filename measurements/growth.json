@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-25T21:04:09Z",
+ "generated_at": "2026-11-26T00:49:47Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-26",
  "today": {
   "growth": 0,
-  "other": 2,
+  "other": 3,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 14,
-  "other": 37,
+  "other": 38,
   "exempt": 5,
-  "share": 0.275
+  "share": 0.269
  },
  "this_month": {
   "growth": 48,
-  "other": 287,
+  "other": 288,
   "exempt": 5,
   "share": 0.143
  },
@@ -117,20 +117,20 @@
   {
    "date": "2026-11-26",
    "growth": 0,
-   "other": 2,
+   "other": 3,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
   {
-   "run": 45694480094,
-   "started": "2026-11-25T20:23:22Z",
-   "issue": 1355,
-   "title": "QA follow-up: dark-half tithi credit and mixed-status avoid_tithi are labelled unevenly across events (PR #1350)",
+   "run": 45721050663,
+   "started": "2026-11-25T23:23:56Z",
+   "issue": 1344,
+   "title": "QA follow-up: #1342 couple-mode Top pick can be a 'mixed' verdict while a 'good-for-both' day of the same grade exists",
    "class": "other",
    "outcome": "pr open",
-   "pr": 1496,
+   "pr": 1499,
    "agents": {
     "architect": 1,
     "astro-auditor": 1,
@@ -138,6 +138,16 @@
     "project-manager": 1,
     "qa": 1
    }
+  },
+  {
+   "run": 45694480094,
+   "started": "2026-11-25T20:23:22Z",
+   "issue": 1355,
+   "title": "QA follow-up: dark-half tithi credit and mixed-status avoid_tithi are labelled unevenly across events (PR #1350)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1496,
+   "agents": null
   },
   {
    "run": 45683260499,
@@ -598,18 +608,6 @@
    "outcome": "shipped",
    "pr": 1418,
    "agents": null
-  },
-  {
-   "run": 45212007413,
-   "started": "2026-11-23T16:02:46Z",
-   "issue": 1416,
-   "title": "analytics: tool_error marker on /matching error render (slice of #1070 row 8)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1417,
-   "agents": {
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -945,7 +943,7 @@
   "ga4_sessions_28d": 804,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.275,
+  "growth_share_week": 0.269,
   "growth_share_month": 0.143
  },
  "meters": {
@@ -953,13 +951,13 @@
    "label": "Today: growth share of build cycles",
    "period": "2026-11-26",
    "progress": 0.0,
-   "detail": "0 of 2 cycles on growth, target 60%",
+   "detail": "0 of 3 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.512,
+   "progress": 0.507,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -970,8 +968,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.275,
-     "progress": 0.554,
+     "current": 0.269,
+     "progress": 0.532,
      "basis": "growth_share_week"
     },
     {

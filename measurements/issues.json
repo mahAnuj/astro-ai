@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-25T21:03:05Z",
+  "generated_at": "2026-11-26T00:49:06Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 167,
+  "open": 166,
   "with_ask": 42,
   "by_area": {
-    "UNCLASSIFIED": 78,
+    "UNCLASSIFIED": 77,
     "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
@@ -32,7 +32,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 58,
+    "bug": 57,
     "untyped": 38,
     "enhancement": 31,
     "chore": 26,
@@ -40,7 +40,7 @@
     "design": 5
   },
   "by_priority": {
-    "unset": 111,
+    "unset": 110,
     "medium": 26,
     "high": 19,
     "low": 11
@@ -512,25 +512,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1355,
-      "title": "QA follow-up: dark-half tithi credit and mixed-status avoid_tithi are labelled unevenly across events (PR #1350)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-21T16:48:27Z",
-      "updated": "2026-11-25T21:02:21Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1354,
       "title": "QA follow-up: Abujha finder row says \"universally auspicious\" beside a disclosure that no book names it (PR #1350)",
       "ask": "",
@@ -622,10 +603,11 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa"
+        "qa",
+        "provenance:trusted"
       ],
       "created": "2026-11-21T09:23:25Z",
-      "updated": "2026-11-21T09:23:37Z",
+      "updated": "2026-11-26T00:16:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1444,7 +1426,7 @@
         "chore"
       ],
       "created": "2026-11-10T15:40:41Z",
-      "updated": "2026-11-25T14:11:49Z",
+      "updated": "2026-11-25T21:03:24Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2741,22 +2723,11 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-25T21:03:05Z",
+    "generated_at": "2026-11-26T00:49:06Z",
     "window_days": 28,
-    "open_now": 167,
+    "open_now": 166,
     "merged_open_hours": 24,
     "days": [
-      {
-        "date": "2026-10-29",
-        "opened": 5,
-        "closed": 0,
-        "net": 5,
-        "open_end": 139,
-        "opened_by": {
-          "loop": 5
-        },
-        "closed_by": {}
-      },
       {
         "date": "2026-10-30",
         "opened": 5,
@@ -3164,18 +3135,27 @@
       {
         "date": "2026-11-25",
         "opened": 19,
-        "closed": 19,
-        "net": 0,
-        "open_end": 167,
+        "closed": 20,
+        "net": -1,
+        "open_end": 166,
         "opened_by": {
           "loop": 19
         },
         "closed_by": {
-          "close-on-evidence": 14,
+          "close-on-evidence": 15,
           "main-red-report": 1,
           "owner": 3,
           "other": 1
         }
+      },
+      {
+        "date": "2026-11-26",
+        "opened": 0,
+        "closed": 0,
+        "net": 0,
+        "open_end": 166,
+        "opened_by": {},
+        "closed_by": {}
       }
     ],
     "merged_open": [],
@@ -4591,6 +4571,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1355,
+        "closed_at": "2026-11-25T21:17:54Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1359,
         "closed_at": "2026-11-22T03:16:51Z",
         "closer": "close-on-evidence"
@@ -4736,12 +4721,12 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 2,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 86,
+          "merged": 85,
           "median_h": 0.7,
           "p90_h": 11.4,
           "max_h": 105.0,
@@ -4853,7 +4838,7 @@
           ]
         },
         "28d": {
-          "merged": 359,
+          "merged": 360,
           "median_h": 0.6,
           "p90_h": 15.1,
           "max_h": 122.1,
@@ -4978,12 +4963,6 @@
         }
       },
       "days": [
-        {
-          "date": "2026-10-29",
-          "merged": 1,
-          "median_h": 13.8,
-          "max_h": 13.8
-        },
         {
           "date": "2026-10-30",
           "merged": 5,
@@ -5142,16 +5121,22 @@
         },
         {
           "date": "2026-11-25",
-          "merged": 18,
+          "merged": 19,
           "median_h": 1.8,
           "max_h": 105.0
+        },
+        {
+          "date": "2026-11-26",
+          "merged": 0,
+          "median_h": null,
+          "max_h": null
         }
       ],
       "open": [
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 97.3,
+          "age_h": 101.1,
           "waiting_on": "merge",
           "why": {
             "reason": "91.5h waiting for gates to start; 4 pushes",
@@ -5160,22 +5145,22 @@
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 5.7
+              "gates_red": 9.5
             },
             "qa_fails": 0,
             "pushes": 4
           }
         },
         {
-          "number": 1496,
-          "title": "muhurat: label dark-half good-tithi credit and avoid_tithi lists per astro-auditor ruling ",
-          "age_h": 0.1,
-          "waiting_on": "merge",
+          "number": 1499,
+          "title": "muhurat: couple mode ranks the combined verdict inside a tier (#1344)",
+          "age_h": 0.5,
+          "waiting_on": "gates / QA",
           "why": {
-            "reason": "no single wait stood out",
-            "primary": "other",
+            "reason": "0.5h waiting for gates to start",
+            "primary": "no_gates",
             "hours": {
-              "no_gates": 0.1
+              "no_gates": 0.5
             },
             "qa_fails": 0,
             "pushes": 1
