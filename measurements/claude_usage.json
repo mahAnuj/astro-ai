@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-26T03:57:11Z",
+ "generated_at": "2026-11-26T05:24:13Z",
  "window_hours": 48,
  "latest": {
   "workflow": "agent-work",
-  "run": 45750754984,
-  "at": "2026-11-26T03:43:47Z",
-  "five_hour": 0.18,
-  "seven_day": 0.84,
+  "run": 45757085806,
+  "at": "2026-11-26T04:44:14Z",
+  "five_hour": 0.07,
+  "seven_day": 0.86,
   "status": "allowed_warning",
   "resets": {
-   "five_hour": 1795668000,
+   "five_hour": 1795686000,
    "seven_day": 1795759200
   }
  },
- "peak_seven_day": 0.84,
+ "peak_seven_day": 0.86,
  "rejected_runs": [],
  "readings": [
   {
@@ -66,18 +66,6 @@
   },
   {
    "workflow": "agent-work",
-   "run": 45739810063,
-   "at": "2026-11-26T02:03:05Z",
-   "five_hour": 0.15,
-   "seven_day": 0.83,
-   "status": "allowed_warning",
-   "resets": {
-    "five_hour": 1795668000,
-    "seven_day": 1795759200
-   }
-  },
-  {
-   "workflow": "agent-work",
    "run": 45741405160,
    "at": "2026-11-26T02:17:19Z",
    "five_hour": 0.1,
@@ -109,6 +97,18 @@
    "status": "allowed_warning",
    "resets": {
     "five_hour": 1795668000,
+    "seven_day": 1795759200
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 45757085806,
+   "at": "2026-11-26T04:44:14Z",
+   "five_hour": 0.07,
+   "seven_day": 0.86,
+   "status": "allowed_warning",
+   "resets": {
+    "five_hour": 1795686000,
     "seven_day": 1795759200
    }
   }
