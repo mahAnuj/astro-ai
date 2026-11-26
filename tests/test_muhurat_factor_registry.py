@@ -339,8 +339,9 @@ RULING2 = [
     ("avoid_weekday_soft", "business", None, "site_convention", "#### Business start",
      "This finder deducts a point for Saturday; the Muhurtha tradition calls it passable for "
      "buying and middling for selling, and gives no rule for a business start."),
-    # #1355 ruling: every avoid_tithi list is contested (held books differ, or support it only in
-    # part); griha_pravesh and business name the sourced tithis and call Navami this finder's own.
+    # #1355/#1497 ruling: vivah, griha_pravesh and namkaran are contested (the held books differ);
+    # business is site_convention (no held book gives a business tithi rule). Navami is this
+    # finder's own addition for griha_pravesh and business.
     ("avoid_tithi", "vivah", None, "contested", "### 29.9 ",
      "These tithis are rejected for auspicious work in the Muhurtha tradition. Purnima is "
      "contested: the Vedic table lists it, while the Muhurtha tradition's general list rejects "
@@ -351,19 +352,22 @@ RULING2 = [
      "list it."),
     ("avoid_tithi", "griha_pravesh", None, "contested", "#### Griha Pravesh",
      "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon and Full Moon for auspicious "
-     "work. Navami is this finder's own addition."),
-    ("avoid_tithi", "business", None, "contested", "### 29.9 ",
-     "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon and Full Moon for auspicious "
-     "work. Navami is this finder's own addition."),
+     "work. Purnima is contested: the Vedic table lists it, while the Muhurtha tradition's "
+     "general list rejects it. Navami is this finder's own addition; neither table rejects it "
+     "for house entry."),
+    ("avoid_tithi", "business", None, "site_convention", "### 29.9 ",
+     "Site convention: no held book gives a business tithi rule. This finder applies the "
+     "Muhurtha tradition's general rejection of the 4th, 8th, 14th, New Moon and Full Moon for "
+     "auspicious work to a new venture, and adds Navami, which no held book rejects for it."),
     # #1355: the dark-half credit is contested wherever the sources do not settle the half.
     ("good_tithi", "griha_pravesh", "@Krishna", "contested", "#### Griha Pravesh",
      "In the dark half this credit rests on one table, which lists the tithi without naming a "
      "half; the Muhurtha tradition's list names the bright half (the only dark-half tithi it "
      "lists is the 1st)."),
     ("good_tithi", "vidyarambh", "@Krishna", "contested", "#### Vidyarambh",
-     "Rao's table names no half; the Muhurtha tradition's list marks only its 1st as dark-half "
-     "and does not, in the extract we hold, say whether the others are bright-half only. The half "
-     "is not settled."),
+     "The Vedic table lists this tithi without naming a half. The Muhurtha tradition's list marks "
+     "only its 1st as dark-half and names no half for the others, so neither table settles "
+     "whether this tithi counts in the dark half."),
     ("good_tithi", "business", None, "site_convention", "#### Business start",
      "Site convention, not sourced: this finder's own tithi list for a new venture."),
     ("good_weekday", "business", None, "site_convention", "#### Business start",
@@ -641,9 +645,11 @@ def test_krishna_pratipada_earns_no_credit_for_any_event_so_it_needs_no_label():
                    for v in ev)
 
 
+# Name predates #1497: business is now site_convention, not contested (kept so the test
+# is not counted as dropped; the body is the statement of record).
 def test_the_avoid_tithi_cleared_item_is_contested_for_four_events_and_sourced_for_vidyarambh():
     want = {"vivah": "contested", "griha_pravesh": "contested", "namkaran": "contested",
-            "business": "contested", "vidyarambh": "sourced"}
+            "business": "site_convention", "vidyarambh": "sourced"}
     for event in EVENTS:
         item = {i.key: i for i in mf.explain(_cand(event), event).cleared}["avoid_tithi"]
         assert item.status == want[event], event

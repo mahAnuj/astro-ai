@@ -115,10 +115,11 @@ REGISTRY: dict[str, dict[str, Any]] = {
             "vidyarambh": {"Dwadashi": _vr(C, "The Vedic tables list this tithi for learning the "
                                               "alphabet, but the Muhurtha tradition's general list "
                                               "rejects it, so the two differ.", _VD),
-                           "@Krishna": _vr(C, "Rao's table names no half; the Muhurtha tradition's "
-                                              "list marks only its 1st as dark-half and does not, "
-                                              "in the extract we hold, say whether the others are "
-                                              "bright-half only. The half is not settled.", _VD)},
+                           "@Krishna": _vr(C, "The Vedic table lists this tithi without naming a "
+                                              "half. The Muhurtha tradition's list marks only its "
+                                              "1st as dark-half and names no half for the others, "
+                                              "so neither table settles whether this tithi counts "
+                                              "in the dark half.", _VD)},
         },
     },
     "good_nakshatra": {
@@ -319,25 +320,33 @@ REGISTRY: dict[str, dict[str, Any]] = {
         "default": _vr(S, "B.V. Raman's Muhurtha rejects the first quarter of Makha and Moola for "
                           "a wedding; the rest of those stars stays good.", _H914),
     },
-    # Each event's note names the tithi the ruling marks contested or unsourced; worded here.
+    # Each event's note names the tithi the ruling marks contested or this finder's own; worded
+    # here. The status is the disagreement kind, so the badge is honest per event (#1497).
     "avoid_tithi": {
         "label": "Not an avoided tithi",
         "default": _r(S, "These tithis are rejected for auspicious work in the Muhurtha "
                          "tradition."),
         "events": {
-            # #1355 ruling: S -> C. Held books differ, or support the list only in part.
+            # #1355 ruling: S -> C, refined by #1497. vivah and griha_pravesh stay contested
+            # (the held books differ over Purnima); business is site_convention, because no held
+            # book gives a business tithi rule at all.
             "vivah": _vr(C, "These tithis are rejected for auspicious work in the Muhurtha "
                             "tradition. Purnima is contested: the Vedic table lists it, while "
                             "the Muhurtha tradition's general list rejects it.", _H97),
             "griha_pravesh": _vr(C, "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon "
-                                    "and Full Moon for auspicious work. Navami is this finder's "
-                                    "own addition.", "#### Griha Pravesh"),
+                                    "and Full Moon for auspicious work. Purnima is contested: "
+                                    "the Vedic table lists it, while the Muhurtha tradition's "
+                                    "general list rejects it. Navami is this finder's own "
+                                    "addition; neither table rejects it for house entry.",
+                                 "#### Griha Pravesh"),
             "namkaran": _vr(C, "These tithis are rejected for auspicious work in the Muhurtha "
                                "tradition. Navami is contested: the figure for it in the Muhurtha "
                                "text is unclear, and the Vedic table does not list it.", _NAK),
-            "business": _vr(C, "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon "
-                               "and Full Moon for auspicious work. Navami is this finder's "
-                               "own addition.", _H97),
+            "business": _vr(SC, "Site convention: no held book gives a business tithi rule. "
+                                "This finder applies the Muhurtha tradition's general rejection "
+                                "of the 4th, 8th, 14th, New Moon and Full Moon for auspicious "
+                                "work to a new venture, and adds Navami, which no held book "
+                                "rejects for it.", _H97),
         },
     },
     "avoid_krishna_tithi": {
