@@ -661,6 +661,32 @@ scholars (including KN Rao) explicitly state it has no scriptural basis.
 - Honest framing: "Your chart shows the Kaal Sarp pattern — all planets on one side of the Rahu-Ketu axis. This is a modern classification not found in classical texts like BPHS or Phaladeepika, so treat it with measured caution. The pattern can indicate periods of focus or struggle in the houses Rahu/Ketu occupy, but does NOT guarantee misfortune."
 - Avoid alarmist framing or prescribing the Trimbakeshwar puja as the only solution.
 
+### 3.4 What the held books say — Rao *Lessons* names Kala Sarpa Yoga (Research 2026-11-26)
+
+**Books present this run: 4 of 10** (Raman *Muhurtha* 1948, Rao textbook, Rao *Lessons* Vol. I,
+Vasudev). Not present: Raman *AfB*, Johari, Cheiro, Kumar, Goodwin, the Chaldean compilation,
+*Muhurta Chintamani*. Lines are **plain `pdftotext`** for Rao; the search was a regex
+(`kaa?la? ?sa?rpa?|kalasarpa`, case-insensitive), because the spelling "Kaal Sarp" returns 0
+everywhere and is a false negative.
+
+- **Rao, *Lessons* Vol. I, `book1-for-CD.pdf` L5086-5102**, yoga no. 25, "Kala Sarpa Yoga and
+  Kala Amrita Yoga": it occurs "when all the planets are helmed between Ra and Ke"; Kala Sarpa
+  is "highly problematic", and the native "may become like Ra"; when either is present "the
+  other yogas may not function"; whether the ascendant counts "some people consider ... and
+  others don't"; it "usually" functions to about 40 years. **Direction matters in Rao:** Ketu
+  first, planets, Rahu last is Kala Sarpa; Rahu first, planets, Ketu last is Kala Amrita
+  (L5100-5102), which he calls saintly. Count in the four books: Rao *Lessons* **5**, Rao
+  textbook **0**, Raman *Muhurtha* **0**, Vasudev **0**.
+- **So §3.2's "not in any classical text" has no source we hold.** It cites KN Rao and "several
+  contemporary critiques", none held. What the held corpus supports is narrower: PVR Rao teaches
+  it as a yoga (not a dosha, and with a benefic mirror), and calls it problematic. "Over-diagnosed"
+  and "not a sentence to fear" are in no held book: **UNSOURCED**.
+- **§3.1's symmetric definition is CONTESTED against Rao:** he splits the pattern by the order
+  of Rahu and Ketu, which the page's "all planets on one side" does not.
+- `SOURCES.md`'s "no Kaal-Sarp doctrine at all" holds for Rao's **textbook** (0) only.
+- Not verified: whether Rao's direction rule is Rahu-to-Ketu in zodiacal order; the passage
+  does not say.
+
 ---
 
 ## 4. Yogas — classical planetary combinations
