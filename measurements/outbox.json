@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-26T13:47:02Z",
+ "generated_at": "2026-11-26T18:40:47Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-19T13:47:02Z",
-  "end": "2026-11-26T13:47:02Z",
-  "loop_comments": 818,
-  "on_prs": 420,
-  "prs": 80,
-  "on_issues": 398,
-  "issues": 112,
-  "comments_per_pr": 5.25,
-  "comments_per_issue": 3.55,
-  "duplicates": 29,
-  "duplicate_rate_pct": 3.5,
+  "start": "2026-11-19T18:40:47Z",
+  "end": "2026-11-26T18:40:47Z",
+  "loop_comments": 828,
+  "on_prs": 426,
+  "prs": 83,
+  "on_issues": 402,
+  "issues": 114,
+  "comments_per_pr": 5.13,
+  "comments_per_issue": 3.53,
+  "duplicates": 28,
+  "duplicate_rate_pct": 3.4,
   "sent_by_kind": {
    "growth-goals": 2,
    "ops-finding": 15,
@@ -25,11 +25,6 @@
     "on": "pr",
     "number": 1375,
     "comments": 20
-   },
-   {
-    "on": "pr",
-    "number": 1262,
-    "comments": 13
    },
    {
     "on": "issue",
@@ -45,10 +40,15 @@
     "on": "pr",
     "number": 1405,
     "comments": 12
+   },
+   {
+    "on": "pr",
+    "number": 1357,
+    "comments": 11
    }
   ],
   "owner_touched": {
-   "prs": 80,
+   "prs": 83,
    "owner_commented": 3,
    "pct": 4
   },
@@ -59,17 +59,17 @@
   }
  },
  "previous": {
-  "start": "2026-11-12T13:47:02Z",
-  "end": "2026-11-19T13:47:02Z",
-  "loop_comments": 1260,
-  "on_prs": 739,
-  "prs": 128,
-  "on_issues": 521,
-  "issues": 155,
-  "comments_per_pr": 5.77,
-  "comments_per_issue": 3.36,
+  "start": "2026-11-12T18:40:47Z",
+  "end": "2026-11-19T18:40:47Z",
+  "loop_comments": 1237,
+  "on_prs": 724,
+  "prs": 125,
+  "on_issues": 513,
+  "issues": 152,
+  "comments_per_pr": 5.79,
+  "comments_per_issue": 3.38,
   "duplicates": 64,
-  "duplicate_rate_pct": 5.1,
+  "duplicate_rate_pct": 5.2,
   "sent_by_kind": {
    "growth-goals": 3,
    "growth-goals-issue": 2,
@@ -105,7 +105,7 @@
    }
   ],
   "owner_touched": {
-   "prs": 128,
+   "prs": 125,
    "owner_commented": 8,
    "pct": 6
   }

@@ -1,35 +1,28 @@
 {
- "generated_at": "2026-11-26T13:44:47Z",
+ "generated_at": "2026-11-26T18:38:43Z",
  "target": 0.6,
  "week": "2026-W48",
- "today_date": "2026-11-26",
+ "today_date": "2026-11-27",
  "today": {
   "growth": 0,
-  "other": 8,
+  "other": 0,
   "exempt": 0,
-  "share": 0.0
+  "share": null
  },
  "this_week": {
   "growth": 14,
-  "other": 43,
+  "other": 45,
   "exempt": 5,
-  "share": 0.246
+  "share": 0.237
  },
  "this_month": {
   "growth": 48,
-  "other": 293,
+  "other": 295,
   "exempt": 5,
-  "share": 0.141
+  "share": 0.14
  },
  "must_pick_growth": true,
  "days": [
-  {
-   "date": "2026-11-13",
-   "growth": 1,
-   "other": 6,
-   "exempt": 0,
-   "share": 0.143
-  },
   {
    "date": "2026-11-14",
    "growth": 0,
@@ -117,26 +110,57 @@
   {
    "date": "2026-11-26",
    "growth": 0,
-   "other": 8,
+   "other": 10,
    "exempt": 0,
    "share": 0.0
+  },
+  {
+   "date": "2026-11-27",
+   "growth": 0,
+   "other": 0,
+   "exempt": 0,
+   "share": null
   }
  ],
  "cycles": [
+  {
+   "run": 45868328170,
+   "started": "2026-11-26T17:30:38Z",
+   "issue": 1514,
+   "title": "QA follow-up: /kaal-sarp-check caveat (i18n ksy_caveat) contradicts the #1511 Kaal Sarp article on what the held books say",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1519,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45833157375,
+   "started": "2026-11-26T13:51:06Z",
+   "issue": 1509,
+   "title": "learn pages repeat the home-page claims #1501 removed: 'most lives are better', 'actually aren't Manglik', 'over-diagnosed' - unsourced against the held books",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1511,
+   "agents": {
+    "frontend-engineer": 1,
+    "qa": 2
+   }
+  },
   {
    "run": 45816156706,
    "started": "2026-11-26T12:03:48Z",
    "issue": 1509,
    "title": "learn pages repeat the home-page claims #1501 removed: 'most lives are better', 'actually aren't Manglik', 'over-diagnosed' - unsourced against the held books",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1511,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "project-manager": 1
-   }
+   "agents": null
   },
   {
    "run": 45757085806,
@@ -581,31 +605,6 @@
    "outcome": "shipped",
    "pr": 1440,
    "agents": null
-  },
-  {
-   "run": 45333086586,
-   "started": "2026-11-24T05:24:23Z",
-   "issue": 1436,
-   "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1438,
-   "agents": null
-  },
-  {
-   "run": 45326457147,
-   "started": "2026-11-24T04:26:53Z",
-   "issue": 1372,
-   "title": "QA follow-up: chain_cycle quota_reason crashes (AttributeError) on a non-string latest.at / generated_at (PR #1367)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1433,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -940,22 +939,21 @@
   "ga4_new_users_28d": 672,
   "ga4_sessions_28d": 820,
   "objective_top5": 1,
-  "growth_share_today": 0.0,
-  "growth_share_week": 0.246,
-  "growth_share_month": 0.141
+  "growth_share_week": 0.237,
+  "growth_share_month": 0.14
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
-   "period": "2026-11-26",
-   "progress": 0.0,
-   "detail": "0 of 8 cycles on growth, target 60%",
+   "period": "2026-11-27",
+   "progress": null,
+   "detail": "0 of 0 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.571,
+   "progress": 0.564,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -966,8 +964,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.246,
-     "progress": 0.45,
+     "current": 0.237,
+     "progress": 0.418,
      "basis": "growth_share_week"
     },
     {
@@ -1036,7 +1034,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.429,
+   "progress": 0.427,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1079,8 +1077,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.141,
-     "progress": 0.398,
+     "current": 0.14,
+     "progress": 0.392,
      "basis": "growth_share_month"
     }
    ]

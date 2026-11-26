@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-26T13:43:53Z",
+  "generated_at": "2026-11-26T18:37:50Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 168,
+  "open": 167,
   "with_ask": 42,
   "by_area": {
-    "UNCLASSIFIED": 78,
+    "UNCLASSIFIED": 77,
     "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
@@ -33,7 +33,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 58,
+    "bug": 57,
     "untyped": 39,
     "enhancement": 31,
     "chore": 26,
@@ -41,27 +41,79 @@
     "design": 5
   },
   "by_priority": {
-    "unset": 112,
-    "medium": 26,
-    "high": 19,
-    "low": 11
+    "unset": 94,
+    "medium": 37,
+    "high": 23,
+    "low": 13
   },
   "blocked": 6,
   "rows": [
     {
-      "number": 1509,
-      "title": "learn pages repeat the home-page claims #1501 removed: 'most lives are better', 'actually aren't Manglik', 'over-diagnosed' - unsourced against the held books",
+      "number": 1518,
+      "title": "QA follow-up: minor items from PR #1515",
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "low",
       "labels": [
         "bug",
-        "astrology-correctness",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-26T17:29:51Z",
+      "updated": "2026-11-26T17:30:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1517,
+      "title": "QA follow-up: qa-on-green per-branch group lets a verify-build event cancel a pending PR-gates dispatch",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa"
+      ],
+      "created": "2026-11-26T17:29:43Z",
+      "updated": "2026-11-26T17:29:58Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1514,
+      "title": "QA follow-up: /kaal-sarp-check caveat (i18n ksy_caveat) contradicts the #1511 Kaal Sarp article on what the held books say",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "qa",
         "provenance:trusted"
       ],
-      "created": "2026-11-26T05:21:37Z",
-      "updated": "2026-11-26T12:10:21Z",
+      "created": "2026-11-26T13:59:16Z",
+      "updated": "2026-11-26T18:08:19Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1513,
+      "title": "QA follow-up: #1511 left the worry-claim families on rahu-remedies, mars-remedies, kundali-matching, shani-saturn and a Venus-8th FAQ",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "qa"
+      ],
+      "created": "2026-11-26T13:59:14Z",
+      "updated": "2026-11-26T17:07:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -84,13 +136,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "low",
       "labels": [
         "bug",
+        "priority:low",
         "qa"
       ],
       "created": "2026-11-26T03:37:26Z",
-      "updated": "2026-11-26T03:38:48Z",
+      "updated": "2026-11-26T17:08:22Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -116,13 +169,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "medium",
       "labels": [
         "bug",
+        "priority:medium",
         "qa"
       ],
       "created": "2026-11-25T17:37:07Z",
-      "updated": "2026-11-25T17:37:07Z",
+      "updated": "2026-11-26T17:07:55Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -132,13 +186,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "low",
       "labels": [
         "bug",
+        "priority:low",
         "qa"
       ],
       "created": "2026-11-25T17:37:05Z",
-      "updated": "2026-11-25T17:37:05Z",
+      "updated": "2026-11-26T17:08:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -148,13 +203,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "low",
       "labels": [
         "bug",
+        "priority:low",
         "qa"
       ],
       "created": "2026-11-25T17:37:04Z",
-      "updated": "2026-11-25T17:37:04Z",
+      "updated": "2026-11-26T17:08:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -212,13 +268,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "low",
       "labels": [
         "bug",
+        "priority:low",
         "qa"
       ],
       "created": "2026-11-25T14:59:03Z",
-      "updated": "2026-11-25T14:59:03Z",
+      "updated": "2026-11-26T17:08:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -228,29 +285,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "low",
       "labels": [
         "bug",
+        "priority:low",
         "qa"
       ],
       "created": "2026-11-25T14:59:02Z",
-      "updated": "2026-11-25T14:59:02Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1479,
-      "title": "QA follow-up: pre_qa_check crashes with a traceback on a syntactically invalid mutation file (PR #1475)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa"
-      ],
-      "created": "2026-11-25T13:48:16Z",
-      "updated": "2026-11-25T13:48:16Z",
+      "updated": "2026-11-26T17:08:29Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -260,13 +302,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "medium",
       "labels": [
         "bug",
+        "priority:medium",
         "qa"
       ],
       "created": "2026-11-25T13:48:14Z",
-      "updated": "2026-11-25T13:48:14Z",
+      "updated": "2026-11-26T17:07:59Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -276,13 +319,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "medium",
       "labels": [
         "bug",
+        "priority:medium",
         "qa"
       ],
       "created": "2026-11-25T13:48:13Z",
-      "updated": "2026-11-25T13:48:13Z",
+      "updated": "2026-11-26T17:07:57Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -338,13 +382,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "low",
       "labels": [
         "bug",
+        "priority:low",
         "qa"
       ],
       "created": "2026-11-25T03:09:43Z",
-      "updated": "2026-11-25T03:09:49Z",
+      "updated": "2026-11-26T17:08:19Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -360,23 +405,6 @@
       ],
       "created": "2026-11-24T14:00:03Z",
       "updated": "2026-11-24T18:26:26Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1444,
-      "title": "QA follow-up: PR #1440 empty-7th section asserts 'does not mean no marriage' with no corpus line, and the test requires it",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-24T08:30:14Z",
-      "updated": "2026-11-24T10:12:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -418,13 +446,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "medium",
       "labels": [
         "bug",
+        "priority:medium",
         "qa"
       ],
       "created": "2026-11-24T03:31:03Z",
-      "updated": "2026-11-24T03:31:10Z",
+      "updated": "2026-11-26T17:08:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -434,29 +463,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "high",
       "labels": [
         "bug",
+        "priority:high",
         "qa"
       ],
       "created": "2026-11-24T02:32:54Z",
-      "updated": "2026-11-24T02:32:54Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1419,
-      "title": "QA follow-up: vedic_reference.md rule 20 still calls comparable severity classical (PR #1418, #1376)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa"
-      ],
-      "created": "2026-11-23T19:30:41Z",
-      "updated": "2026-11-23T19:30:49Z",
+      "updated": "2026-11-26T17:07:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -489,23 +503,6 @@
       ],
       "created": "2026-11-23T14:39:25Z",
       "updated": "2026-11-23T14:39:25Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1396,
-      "title": "QA follow-up: result.html:564 says classical texts require comparable severity for Manglik mutual cancellation (PR #1394, #1377)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-22T22:59:19Z",
-      "updated": "2026-11-25T02:28:36Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -564,14 +561,15 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "high",
       "labels": [
         "bug",
+        "priority:high",
         "qa",
         "provenance:trusted"
       ],
       "created": "2026-11-21T16:48:26Z",
-      "updated": "2026-11-21T18:10:58Z",
+      "updated": "2026-11-26T17:07:51Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -647,13 +645,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "unset",
+      "priority": "low",
       "labels": [
         "bug",
+        "priority:low",
         "qa"
       ],
       "created": "2026-11-21T09:23:15Z",
-      "updated": "2026-11-21T09:23:35Z",
+      "updated": "2026-11-26T17:08:31Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -729,14 +728,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "low",
+      "priority": "medium",
       "labels": [
         "bug",
-        "priority:low",
+        "priority:medium",
         "qa"
       ],
       "created": "2026-11-20T16:03:16Z",
-      "updated": "2026-11-20T16:03:16Z",
+      "updated": "2026-11-26T17:08:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -746,14 +745,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "low",
+      "priority": "medium",
       "labels": [
         "bug",
-        "priority:low",
+        "priority:medium",
         "qa"
       ],
       "created": "2026-11-20T16:03:15Z",
-      "updated": "2026-11-20T16:03:15Z",
+      "updated": "2026-11-26T17:08:06Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -763,14 +762,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "low",
+      "priority": "medium",
       "labels": [
         "bug",
-        "priority:low",
+        "priority:medium",
         "qa"
       ],
       "created": "2026-11-20T16:03:14Z",
-      "updated": "2026-11-20T16:03:14Z",
+      "updated": "2026-11-26T17:08:09Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -797,14 +796,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "low",
+      "priority": "medium",
       "labels": [
         "bug",
-        "priority:low",
+        "priority:medium",
         "qa"
       ],
       "created": "2026-11-20T16:03:09Z",
-      "updated": "2026-11-20T16:03:09Z",
+      "updated": "2026-11-26T17:08:12Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -814,14 +813,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "low",
+      "priority": "medium",
       "labels": [
         "bug",
-        "priority:low",
+        "priority:medium",
         "qa"
       ],
       "created": "2026-11-20T16:03:08Z",
-      "updated": "2026-11-20T16:03:08Z",
+      "updated": "2026-11-26T17:08:15Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -831,14 +830,14 @@
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
-      "priority": "low",
+      "priority": "medium",
       "labels": [
         "bug",
-        "priority:low",
+        "priority:medium",
         "qa"
       ],
       "created": "2026-11-20T16:03:07Z",
-      "updated": "2026-11-20T16:03:07Z",
+      "updated": "2026-11-26T17:08:17Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1350,7 +1349,7 @@
         "chore"
       ],
       "created": "2026-11-13T03:30:48Z",
-      "updated": "2026-11-20T16:04:22Z",
+      "updated": "2026-11-26T13:43:59Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2753,9 +2752,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-26T13:43:53Z",
+    "generated_at": "2026-11-26T18:37:50Z",
     "window_days": 28,
-    "open_now": 168,
+    "open_now": 167,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3180,15 +3179,16 @@
       },
       {
         "date": "2026-11-26",
-        "opened": 5,
-        "closed": 3,
-        "net": 2,
-        "open_end": 168,
+        "opened": 9,
+        "closed": 8,
+        "net": 1,
+        "open_end": 167,
         "opened_by": {
-          "loop": 5
+          "loop": 9
         },
         "closed_by": {
-          "close-on-evidence": 3
+          "close-on-evidence": 7,
+          "owner": 1
         }
       }
     ],
@@ -4675,6 +4675,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1396,
+        "closed_at": "2026-11-26T17:07:32Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1400,
         "closed_at": "2026-11-23T04:43:08Z",
         "closer": "close-on-evidence"
@@ -4705,6 +4710,11 @@
         "closer": "other"
       },
       {
+        "number": 1419,
+        "closed_at": "2026-11-26T17:07:35Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1430,
         "closed_at": "2026-11-24T10:19:45Z",
         "closer": "close-on-evidence"
@@ -4730,6 +4740,11 @@
         "closer": "other"
       },
       {
+        "number": 1444,
+        "closed_at": "2026-11-26T17:07:29Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1450,
         "closed_at": "2026-11-25T00:19:32Z",
         "closer": "close-on-evidence"
@@ -4750,6 +4765,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1479,
+        "closed_at": "2026-11-26T17:07:38Z",
+        "closer": "owner"
+      },
+      {
         "number": 1481,
         "closed_at": "2026-11-25T14:51:04Z",
         "closer": "main-red-report"
@@ -4768,14 +4788,19 @@
         "number": 1501,
         "closed_at": "2026-11-26T05:35:54Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1509,
+        "closed_at": "2026-11-26T14:31:37Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 5,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 79,
+          "merged": 80,
           "median_h": 0.6,
           "p90_h": 11.4,
           "max_h": 105.0,
@@ -4887,8 +4912,8 @@
           ]
         },
         "28d": {
-          "merged": 364,
-          "median_h": 0.6,
+          "merged": 365,
+          "median_h": 0.5,
           "p90_h": 14.3,
           "max_h": 122.1,
           "slowest": [
@@ -5176,7 +5201,7 @@
         },
         {
           "date": "2026-11-26",
-          "merged": 4,
+          "merged": 6,
           "median_h": 0.3,
           "max_h": 1.3
         }
@@ -5185,35 +5210,43 @@
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 114.0,
+          "age_h": 118.9,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 22.4h gates red; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 27.3h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 22.4
+              "gates_red": 27.3
             },
             "qa_fails": 0,
             "pushes": 4
           }
         },
         {
-          "number": 1511,
-          "title": "issue/1509 learn worry claims attribution",
-          "age_h": 0.0,
-          "waiting_on": "gates / QA",
+          "number": 1515,
+          "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
+          "age_h": 1.5,
+          "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "no single wait stood out; 16 pushes",
-            "primary": "other",
+            "reason": "1.1h waiting for a fix after QA failed (1 QA FAIL)",
+            "primary": "qa_fail",
             "hours": {
-              "no_gates": 0.0
+              "no_gates": 0.4,
+              "qa_fail": 1.1
             },
-            "qa_fails": 0,
-            "pushes": 16
+            "qa_fails": 1,
+            "pushes": 3
           }
+        },
+        {
+          "number": 1519,
+          "title": "The Kaal Sarp checker caveat says what the held books say (#1514)",
+          "age_h": 0.5,
+          "waiting_on": "gates / QA",
+          "why": null
         }
       ]
     }
