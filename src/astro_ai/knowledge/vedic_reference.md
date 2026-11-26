@@ -648,18 +648,15 @@ Mahapadma, Takshak, Karkotaka, Shankhachuda, Ghatak, Vishdhar, Sheshnag).
 
 ### 3.2 Classical status — important
 
-**Kaal Sarp Dosh is NOT in BPHS, Phaladeepika, Saravali, Jataka Parijata,
-or Brihat Jataka.** It is a **20th-century innovation**, popularized
-heavily by Trimbakeshwar temple priests in Maharashtra. Many classical
-scholars (including KN Rao) explicitly state it has no scriptural basis.
-
-> Source: KN Rao, "Predicting Through Jaimini's Chara Dasha", and several
-> contemporary critiques.
+No source we hold supports the claim that Kaal Sarp is absent from BPHS,
+Phaladeepika, Saravali, Jataka Parijata or Brihat Jataka, or that it is a
+20th-century innovation. Those five are not held. The cited KN Rao work and
+the contemporary critiques are not held either. See §3.4.
 
 ### 3.3 How to phrase Kaal Sarp Dosh in a reading
 
-- Honest framing: "Your chart shows the Kaal Sarp pattern — all planets on one side of the Rahu-Ketu axis. This is a modern classification not found in classical texts like BPHS or Phaladeepika, so treat it with measured caution. The pattern can indicate periods of focus or struggle in the houses Rahu/Ketu occupy, but does NOT guarantee misfortune."
-- Avoid alarmist framing or prescribing the Trimbakeshwar puja as the only solution.
+- Honest framing: "Your chart shows the Kaal Sarp pattern — all planets on one side of the Rahu-Ketu axis. We cannot say whether the classical Sanskrit texts name it; a book we hold, Rao's *Lessons on Vedic Astrology*, teaches it as a yoga and calls it highly problematic (§3.4), so treat it with measured caution. In the site's own view the pattern can indicate periods of focus or struggle in the houses Rahu/Ketu occupy (site's own view, no held book says it), but it does NOT guarantee misfortune."
+- Avoid alarmist framing or prescribing the Trimbakeshwar puja as the only solution. We hold no source for the removal pujas sold around Kaal Sarp.
 
 ### 3.4 What the held books say — Rao *Lessons* names Kala Sarpa Yoga (Research 2026-11-26)
 
@@ -1299,7 +1296,7 @@ When generating predictions about a specific topic, the most accurate read often
 | Sade Sati | Strong (Phaladeepika, classical) | Explain phases, avoid alarm |
 | Ashtama Shani | Classical transit literature | Mention if active |
 | Pitru Dosh | Mentioned in some classical compilations | Cite cautiously — popular but less systematic in classical canon |
-| Kaal Sarp Dosh | **NOT in classical texts** | Note as modern classification |
+| Kaal Sarp Dosh | No source we hold for its classical status; a held book (Rao, *Lessons*) teaches it as a yoga (§3.4) | Say we cannot say whether the classical texts name it; show it as a pattern to note, not a verdict |
 | Guru Chandala (Jupiter-Rahu conjunction) | Classical | Real, worth explaining |
 | Shrapit Dosh (Saturn-Rahu conjunction) | Mentioned in modern compilations, weak classical basis | Cite carefully |
 | Grahan Dosh (Sun/Moon-Rahu/Ketu conjunction) | Classical eclipse-related | Real, but often over-dramatized |
@@ -1413,7 +1410,7 @@ Strengthened with P.V.R. Narasimha Rao's principles from Chapter 33
 
 - **Tentative language, never deterministic.** "Tends to…", "often shows up as…", "the chart suggests…", "the likelihood is elevated…" — never "you WILL…" or "this MEANS…" or "you are destined to…"
 - **Cite source when stating a classical rule.** "Per Mansagari…", "BPHS describes this as…", "Mantreshwara in Phaladeepika notes…", "Per P.V.R. Narasimha Rao's compilation…"
-- **Distinguish classical from folk.** Banana-tree marriage, age-28 Manglik cancellation, Trimbakeshwar puja, "Kaal Sarp = guaranteed misfortune" — name these as folk practice, never as scripture.
+- **Distinguish classical from folk.** Banana-tree marriage, age-28 Manglik cancellation and "Kaal Sarp = guaranteed misfortune" — name these as folk practice, never as scripture. We hold no source for the removal pujas sold around Kaal Sarp (Trimbakeshwar included); do not present them as scripture.
 - **Refuse to do harm.** Never tell a seeker "your marriage will fail", "you'll lose a parent", "you will die in [year]", "this disease is certain". Translate dosha findings into preparation, not prophecy.
 - **Respect agency.** Sade Sati / Manglik / Saturn dasha challenges are TRAINING phases, not punishments. Frame them as such.
 
