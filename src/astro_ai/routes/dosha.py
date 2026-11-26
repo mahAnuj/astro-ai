@@ -261,21 +261,22 @@ async def sade_sati_check_result(
 async def kaal_sarp_check_form(request: Request) -> HTMLResponse:
     """Standalone Kaal Sarp geometry check (Issue #111).
 
-    Framing rewritten 2026-08-04 after classical-source review:
-    Kaal Sarp Yoga is not defined in BPHS / Brihat Jataka / Saravali /
-    Phaladeepika / Jataka Parijata — it is a 20th-century Indian
-    classification (knowledge/vedic_reference.md §3.2). The form and
-    result page are now honest about this; see _ksy_caveat.html for the
-    top-of-page caveat.
+    Framing rewritten 2026-08-04 after classical-source review, and again
+    in #1514: we hold none of BPHS / Brihat Jataka / Saravali /
+    Phaladeepika / Jataka Parijata, so we cannot say whether they name Kaal
+    Sarp; a book we hold (Rao, Lessons) teaches it as a yoga
+    (knowledge/vedic_reference.md §3.4). The old "20th-century Indian
+    classification" claim is not held. The form and result page say only
+    that; see _ksy_caveat.html for the top-of-page caveat.
     """
     return templates.TemplateResponse(
         request, "dosha_check_form.html",
         _dosha_form_ctx(
             page_title="Kaal Sarp geometry check — honest, classical-source-checked",
-            page_lead="Detect the Kaal Sarp geometry in your chart (all seven non-shadow planets on one side of the Rahu-Ketu axis) with a transparent note about where this classification actually comes from — it is not defined in the classical Sanskrit Jyotish texts we cite elsewhere on this site.",
+            page_lead="Detect the Kaal Sarp geometry in your chart (all seven non-shadow planets on one side of the Rahu-Ketu axis) with a plain note on what we can and cannot say about it: we do not hold the classical Sanskrit texts, so we cannot say whether they name Kaal Sarp.",
             form_action="/kaal-sarp-check",
             submit_label="Check the geometry →",
-            meta_desc="Honest Kaal Sarp Yoga check: we detect the geometric pattern, and are upfront that it is a 20th-century Indian classification, not in the classical texts.",
+            meta_desc="Honest Kaal Sarp check: we detect the geometric pattern, and are upfront that we cannot say whether the classical Sanskrit texts name Kaal Sarp.",
             prefill=_prefill_from_cookie(request),
             show_ksy_caveat=True,
         ),
@@ -299,7 +300,7 @@ async def kaal_sarp_check_result(
             request, "dosha_check_form.html",
             _dosha_form_ctx(
                 page_title="Kaal Sarp geometry check — honest, classical-source-checked",
-                page_lead="Detect the Kaal Sarp geometry in your chart (all seven non-shadow planets on one side of the Rahu-Ketu axis) with a transparent note about where this classification actually comes from — it is not defined in the classical Sanskrit Jyotish texts we cite elsewhere on this site.",
+                page_lead="Detect the Kaal Sarp geometry in your chart (all seven non-shadow planets on one side of the Rahu-Ketu axis) with a plain note on what we can and cannot say about it: we do not hold the classical Sanskrit texts, so we cannot say whether they name Kaal Sarp.",
                 form_action="/kaal-sarp-check",
                 submit_label="Check the geometry →",
                 meta_desc="Honest Kaal Sarp Yoga check with classical-source transparency.",

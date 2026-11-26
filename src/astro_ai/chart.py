@@ -4831,34 +4831,34 @@ def _parse_local_datetime(date_str: str, time_str: str, tz_name: str) -> datetim
 # Kaal Sarp Yoga — for the standalone /kaal-sarp-check tool (Issue #111)
 # ---------------------------------------------------------------------------
 #
-# HONEST NOTE ON PROVENANCE (added 2026-08-04 after Shyamasundara Dasa
-# audit + independent classical-source review):
+# HONEST NOTE ON PROVENANCE (added 2026-08-04, rewritten for #1514):
 #
-# Kaal Sarp Yoga does NOT appear in the classical Sanskrit Jyotish canon —
-# not in Brihat Parashara Hora Shastra, Brihat Jataka, Saravali,
-# Phaladeepika or Jataka Parijata. It is a 20th-century innovation
-# popularised by Trimbakeshwar priests, and many classical scholars
-# (including K.N. Rao) state it has no scriptural basis — all of it
-# knowledge/vedic_reference.md §3.2. This comment used to carry verbatim
+# We hold none of Brihat Parashara Hora Shastra, Brihat Jataka, Saravali,
+# Phaladeepika or Jataka Parijata, so we cannot say whether they name Kaal
+# Sarp. A book we hold, P.V.R. Narasimha Rao's Lessons on Vedic Astrology,
+# names it and teaches it as a yoga (Kala Sarpa), calls it highly problematic,
+# and distinguishes the two node orders (knowledge/vedic_reference.md §3.4).
+# This comment used to say the pattern is a "20th-century innovation" that
+# K.N. Rao says has "no scriptural basis" (§3.2); §3.4 records that the work
+# cited there is not held, so the claim is unsourced. It also carried verbatim
 # quotations from K.N. Rao and B.V. Raman, an Astrological Magazine print
 # history and a Three Hundred Important Combinations appendix claim; none
 # is in knowledge/, so they were removed with the page copy (#959).
 #
-# We keep the geometric detection because users search for it — but the
-# 12 named variants (Anant, Kulik, Vasuki, ...) are unattributed folk
-# taxonomy stabilised in mid-20th-c. Hindi almanac/pandit literature, not
-# classical shastra. The previous per-variant "effects" text on this list
-# was editorial invention repeated across every Kaal-Sarp site; we have
-# replaced it with neutral geometry-only descriptions. Serious readings
-# of Rahu-Ketu should judge them by the houses/lords they conjoin, not
-# by axis-based blanket yogas.
+# We keep the geometric detection because users search for it. The 12 named
+# variants (Anant, Kulik, Vasuki, ...) are popular labels the site's
+# reference gives no source for; the previous per-variant "effects" text on
+# this list was editorial invention repeated across every Kaal-Sarp site, so
+# we replaced it with neutral geometry-only descriptions. In our view, the
+# houses and lords Rahu and Ketu conjoin matter more than the axis pattern
+# alone.
 #
-# Classical geometric rule: when ALL 7 non-shadow planets (Sun, Moon,
+# Geometric rule (ours): when ALL 7 non-shadow planets (Sun, Moon,
 # Mars, Mercury, Jupiter, Venus, Saturn) fall on ONE SIDE of the
 # Rahu-Ketu axis, the chart matches the Kaal Sarp geometry. The
 # Rahu-Ketu axis divides the zodiac into two 180° semicircles.
 #
-# Traditional Naga labels for each Rahu-house position, with geometry-
+# Popular Naga labels for each Rahu-house position, with geometry-
 # only descriptions (no unsourced per-variant "effects" prediction):
 
 _KAAL_SARP_TYPES: dict[int, tuple[str, str]] = {
@@ -4901,28 +4901,14 @@ def compute_kaal_sarp(chart: Chart) -> KaalSarpDetails:
     An earlier version of this docstring read "strict binary per classical
     Vedic tradition" and said "Classical sources (Brihat Parashara Hora
     Shastra, Phaladeepika, Saravali) treat Kaal Sarp Dosh as BINARY... No
-    'partial' concept exists in the classical texts."
+    'partial' concept exists in the classical texts." None of those three
+    books is in `data/` (see #216), so nothing here can say what they hold;
+    the sentence lent a design choice the authority of books nobody here can
+    open. The module comment above records what we can and cannot say.
 
-    That contradicted the module comment 64 lines above it, which records
-    that Kaal Sarp Yoga "does NOT appear in the classical Sanskrit Jyotish
-    canon -- not in Brihat Parashara Hora Shastra, Brihat Jataka, Saravali,
-    Phaladeepika or Jataka Parijata" (the print history that sentence once
-    carried was unsourced and was removed, #959).
-    Both cannot be true: a text that does not contain the concept cannot
-    treat it as binary. The comment above is the researched one, so this is
-    the sentence that was wrong -- and it was wrong in the direction that
-    lends a modern construct the authority of books nobody here can open.
-    None of the three named books is in `data/`; see #216.
-
-    The binary rule is still right, and the reasons below are the real ones:
-    there is no agreed threshold, a partial diagnosis manufactures anxiety,
-    and reputable practitioners do not make it. Those stand on their own.
-    They do not need, and never had, a classical citation.
-
-    Modern practitioners have introduced "Anshik/Partial KSD" for near-axis
-    cases, but (a) there's no agreed threshold across schools, (b) it
-    generates false-positive anxiety, and (c) most reputable classical
-    astrologers do NOT diagnose it. We follow the classical binary rule.
+    The binary rule is our own design, and the reasons are ours: we hold no
+    source for an agreed threshold for a "partial" (Anshik) diagnosis, and a
+    partial diagnosis manufactures anxiety. We do not diagnose it.
 
     Algorithm:
       1. Find Rahu's absolute longitude L_R (0..360°); Ketu is L_R + 180°.
@@ -4936,7 +4922,7 @@ def compute_kaal_sarp(chart: Chart) -> KaalSarpDetails:
     Removed the previous "partial" straddle logic (2026-07-30) after a
     user reported false positive that no astrologer had confirmed. If
     Anshik/Partial diagnosis is genuinely needed in the future, add it
-    as an explicit opt-in with a documented threshold + classical source.
+    as an explicit opt-in with a documented threshold + a source we hold.
     """
     rahu = next((p for p in chart.planets if p.name == "Rahu"), None)
     ketu = next((p for p in chart.planets if p.name == "Ketu"), None)
@@ -4954,7 +4940,7 @@ def compute_kaal_sarp(chart: Chart) -> KaalSarpDetails:
     for p in non_shadow:
         abs_long = _rashi_index(p.rashi) * 30.0 + p.longitude
         delta = (abs_long - rahu_abs) % 360.0
-        # Strict classical: any planet exactly on the axis (delta 0 or 180)
+        # Strict (our rule): any planet exactly on the axis (delta 0 or 180)
         # is a measurement-boundary edge case, not a "partial" trigger.
         # Assign to whichever side is closer.
         if delta < 180.0:
@@ -4980,7 +4966,7 @@ def compute_kaal_sarp(chart: Chart) -> KaalSarpDetails:
     type_name, type_meaning = _KAAL_SARP_TYPES.get(rahu_house, ("", ""))
     return KaalSarpDetails(
         is_kaal_sarp=True,
-        is_partial=False,              # never set True — classical binary
+        is_partial=False,              # never set True — our strict binary
         type_name=type_name,
         type_meaning=type_meaning,
         rahu_house=rahu_house,
@@ -5137,8 +5123,8 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
     if flags.kantaka_shani:
         _add(-3, "bs_kantaka_shani")
 
-    # ─── Kaal Sarp — geometric pattern (not classical shastra — the
-    #     20th-c. modern classification per our /kaal-sarp-check review).
+    # ─── Kaal Sarp — geometric pattern (we cannot say whether the classical
+    #     texts name it; a held book teaches it as a yoga — #1514).
     #     Keep in the score but treat as a prompt, not a verdict.
     ksd = compute_kaal_sarp(chart)
     if ksd.is_kaal_sarp:

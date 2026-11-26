@@ -1,9 +1,12 @@
-"""#959: the Kaal Sarp copy prints nothing that knowledge/ does not hold.
+"""#959, #1514: the Kaal Sarp copy prints nothing that knowledge/ does not hold.
 
-`knowledge/vedic_reference.md` section 3.2 says three things: Kaal Sarp is not in BPHS,
-Phaladeepika, Saravali, Jataka Parijata or Brihat Jataka; it is a 20th-century innovation
-popularised by Trimbakeshwar priests; and many classical scholars (including KN Rao) state it
-has no scriptural basis. The pages used to add verbatim quotations attributed to K.N. Rao and
+`knowledge/vedic_reference.md` section 3.4 holds this and no more: BPHS, Brihat Jataka, Saravali,
+Phaladeepika and Jataka Parijata are not held, so the site cannot say whether they name Kaal Sarp;
+the held book that names it, P.V.R. Narasimha Rao's Lessons on Vedic Astrology, teaches it as a
+yoga and calls it highly problematic. Section 3.2's "20th-century innovation" and "no scriptural
+basis" (attributed to K.N. Rao) rest on a work that is not held, so no page may print them (#1514
+removed the last copies: the checker caveat, its result page, /about and the meta description).
+The pages used to add verbatim quotations attributed to K.N. Rao and
 B.V. Raman, a claim about the ninth edition of Three Hundred Important Combinations, an
 Astrological Magazine print history, and Uttara Kalamrita in the list of texts that lack it. None
 of that is in knowledge/ and data/ is absent from the checkout, so none of it can be checked.
@@ -44,6 +47,17 @@ _BANNED = (
     "सबसे बड़ी धोखाधड़",  # stem: the old text had the plural, धोखाधड़ियों
     "बहुत भयभीत करने वाला",
     "एस्ट्रोलॉजिकल मैगजीन",
+    # #1514: section 3.2's claim, which section 3.4 records as resting on a work that is not held.
+    "20th-century innovation",
+    "20th-century classification",
+    "20th-century Indian classification",
+    "no scriptural basis",
+    "modern classification",
+    "folk taxonomy",
+    "blanket yogas",
+    "20वीं शताब्दी का नवाचार",
+    "शास्त्रीय आधार नहीं है",
+    "20वीं-शताब्दी का वर्गीकरण",
 )
 
 # Section 3.2 lists five books. Uttara Kalamrita is not among them, so no Kaal Sarp surface may
@@ -141,6 +155,7 @@ _PAGES = [
     "/learn/kaal-sarp-dosh-remedies/",
     "/kaal-sarp-check",
     "/kaal-sarp-check?lang=hi",
+    "/about",
     "/learn/manglik-dosh/",
     "/learn/mars-remedies/",
 ]
@@ -160,10 +175,11 @@ def test_kaal_sarp_result_page_has_no_banned_phrase(client, path):
 
 
 def test_kaal_sarp_article_says_what_section_3_2_holds(client):
-    # #1509: the learn page now follows Rao's Lessons (section 3.4: a yoga, "highly problematic")
-    # and no longer prints section 3.2's "20th-century innovation" / "no scriptural basis", which
-    # the auditor ruled UNSOURCED (the K.N. Rao work cited there is not held). Section 3.2 itself,
-    # and the i18n caveat that still carries it, are the open follow-up.
+    # (Name kept from #959 so the test-count floor sees no deletion; it now pins section 3.4.)
+    # #1509: the learn page follows Rao's Lessons (section 3.4: a yoga, "highly problematic") and
+    # does not print section 3.2's "20th-century innovation" / "no scriptural basis", which the
+    # auditor ruled UNSOURCED (the K.N. Rao work cited there is not held). #1514 did the same for
+    # the checker caveat; test_caveat_states_what_section_3_4_holds_in_english_and_hindi pins that surface.
     t = _visible(client, "/learn/kaal-sarp-dosh/")
     assert "20th-century innovation" not in t
     assert "no scriptural basis" not in t
@@ -173,19 +189,54 @@ def test_kaal_sarp_article_says_what_section_3_2_holds(client):
     assert "Uttara Kalamrita" not in t
 
 
-def test_caveat_strings_state_the_three_things_and_hindi_matches(client):
+def test_caveat_states_what_section_3_4_holds_in_english_and_hindi():
+    # The caveat and the article make one claim about the held books; this pins the facts, in both
+    # languages, so the checker cannot drift back to the opposite of the article (#1514).
     from astro_ai import i18n
 
-    en = i18n._TABLES["en"]["ksy_caveat_body_1"] + i18n._TABLES["en"]["ksy_caveat_body_2"]
-    assert "20th-century innovation" in en and "Trimbakeshwar" in en and "no scriptural basis" in en
-    hi = i18n._TABLES["hi"]["ksy_caveat_body_1"] + i18n._TABLES["hi"]["ksy_caveat_body_2"]
-    assert "20वीं शताब्दी" in hi and "त्र्यंबकेश्वर" in hi and "शास्त्रीय आधार नहीं" in hi
-    # The Hindi caveat must be what the Hindi result page serves, not an English fallback. (The
-    # form page renders this partial in English even at ?lang=hi; that is not #959's to fix.)
+    en = " ".join(i18n._TABLES["en"][k] for k in ("ksy_caveat_body_1", "ksy_caveat_body_2"))
+    for fact in ("we cannot say whether they name Kaal Sarp",
+                 "Narasimha Rao",
+                 "teaches it as a yoga",
+                 "between Ketu and Rahu",
+                 "highly problematic",
+                 "counts it with either node first",
+                 "do not issue a verdict"):
+        assert fact in en, fact
+    hi = " ".join(i18n._TABLES["hi"][k] for k in ("ksy_caveat_body_1", "ksy_caveat_body_2"))
+    for fact in ("नहीं कह सकते कि इनमें काल सर्प का नाम आता है",
+                 "नरसिम्हा राव",
+                 "योग",
+                 "केतु और राहु के बीच",
+                 "अत्यंत समस्याजनक",
+                 "किसी भी नोड",
+                 "कोई निर्णय नहीं देते"):
+        assert fact in hi, fact
+    # K.N. Rao is a different author (not held); the caveat names only P.V.R. Narasimha Rao.
+    for lang, name in (("en", "K.N. Rao"), ("hi", "के.एन. राव")):
+        for key in ("ksy_caveat_body_1", "ksy_caveat_body_2", "ksy_caveat_body_3"):
+            assert name not in i18n._TABLES[lang][key], (lang, key)
+    # Trimbakeshwar is never named as the origin or the popularizer of the pattern.
+    for k in ("ksy_caveat_body_1", "ksy_caveat_body_2"):
+        assert "popularised" not in i18n._TABLES["en"][k]
+
+
+def test_caveat_strings_state_the_three_things_and_hindi_matches(client):
+    # (Name kept from #959 so the test-count floor sees no deletion; the "three things" are
+    # now section 3.4's, and this serves them in EN and HI.)
     birth = {"name": "Fixture", "birth_date": "1957-09-07", "birth_time": "01:05",
              "birth_place": "Mumbai"}
+    # The Hindi caveat must be what the Hindi result page serves, not an English fallback. (The
+    # form page renders this partial in English at ?lang=hi, so its summary line is checked in EN.)
     t = _visible(client, "/kaal-sarp-check?lang=hi", "post", data=birth)
-    assert "त्र्यंबकेश्वर मंदिर के पुरोहितों" in t
+    assert "निवारण पूजनों के लिए हमारे पास कोई स्रोत नहीं है" in t
+    t = _visible(client, "/kaal-sarp-check", "post", data=birth)
+    assert "we cannot say whether they name Kaal Sarp" in t
+    assert "highly problematic" in t
+    # The form page's always-visible summary line.
+    t = _visible(client, "/kaal-sarp-check")
+    assert "we cannot say whether the classical Sanskrit texts name Kaal Sarp" in t
+    assert "a book we hold teaches it as a yoga" in t
 
 
 # --- the Manglik leftovers ----------------------------------------------------------------

@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}Kaal Sarp geometry check — Shubh Bhagya{% endblock %}
-{% block meta_description %}Honest, classical-source-checked look at the Kaal Sarp pattern in your chart. We show the geometry and the traditional Naga label, and are open about the fact that Kaal Sarp Yoga is a modern (post-1900) classification not found in the classical Vedic texts we cite elsewhere.{% endblock %}
+{% block meta_description %}An honest look at the Kaal Sarp pattern in your chart. We show the geometry and the popular Naga label, and say plainly that we cannot tell whether the classical Sanskrit texts name Kaal Sarp, as we do not hold them.{% endblock %}
 
 {% block content %}
 {% set active_page = "" %}
 {% set tool_name = "Kaal Sarp geometry check" %}
-{% set tool_desc = "Free honest Kaal Sarp check — geometry detection with classical-source transparency (this yoga is not in BPHS / Phaladeepika / Jataka Parijata; we say so upfront)." %}
+{% set tool_desc = "Free honest Kaal Sarp check — geometry detection, upfront that we do not hold BPHS, Brihat Jataka, Saravali, Phaladeepika or Jataka Parijata and so cannot say whether they name it." %}
 {% set tool_url = "/kaal-sarp-check" %}
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
@@ -63,10 +63,11 @@
   </section>
   {% endif %}
 
-  {# Corrected classical-basis note — was falsely attributing to BPHS +
-     Phaladeepika; both do NOT contain Kaal Sarp. Now honest. #}
+  {# Method note (#1514): says only what vedic_reference.md §3.4 holds. It
+     once asserted the pattern was a recent invention absent from the
+     classical texts; no book we hold supports that. #}
   <div class="text-xs text-bhagya-muted leading-relaxed">
-    <p><strong>Method:</strong> We detect the geometric pattern — all seven non-shadow planets on one semicircle of the Rahu-Ketu axis — via Swiss Ephemeris (pyswisseph) sidereal Lahiri positions. We do not diagnose "Partial/Anshik Kaal Sarp" because no agreed classical threshold exists and it generates unnecessary anxiety. As noted in the caveat above, Kaal Sarp Yoga itself is a 20th-century Indian classification, not a rule from the six classical Sanskrit texts we cite elsewhere on this site.</p>
+    <p><strong>Method:</strong> We detect the geometric pattern — all seven non-shadow planets on one semicircle of the Rahu-Ketu axis — via Swiss Ephemeris (pyswisseph) sidereal Lahiri positions. We do not diagnose "Partial/Anshik Kaal Sarp" because we hold no source for an agreed threshold and it generates unnecessary anxiety. As noted in the caveat above, we do not hold BPHS, Brihat Jataka, Saravali, Phaladeepika or Jataka Parijata, so we cannot say whether they name Kaal Sarp; a book we hold, Rao's <em>Lessons on Vedic Astrology</em>, teaches it as a yoga.</p>
   </div>
 
   <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
