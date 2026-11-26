@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-26T19:06:48Z",
+  "generated_at": "2026-11-26T21:22:06Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 167,
@@ -43,11 +43,28 @@
   "by_priority": {
     "unset": 94,
     "medium": 37,
-    "high": 23,
-    "low": 13
+    "high": 22,
+    "low": 14
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 1522,
+      "title": "QA follow-up: minor items from PR #1519",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-26T19:29:52Z",
+      "updated": "2026-11-26T20:11:11Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1518,
       "title": "QA follow-up: minor items from PR #1515",
@@ -83,8 +100,8 @@
       "needs_evidence": false
     },
     {
-      "number": 1514,
-      "title": "QA follow-up: /kaal-sarp-check caveat (i18n ksy_caveat) contradicts the #1511 Kaal Sarp article on what the held books say",
+      "number": 1513,
+      "title": "QA follow-up: #1511 left the worry-claim families on rahu-remedies, mars-remedies, kundali-matching, shani-saturn and a Venus-8th FAQ",
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
@@ -95,25 +112,8 @@
         "qa",
         "provenance:trusted"
       ],
-      "created": "2026-11-26T13:59:16Z",
-      "updated": "2026-11-26T18:08:19Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1513,
-      "title": "QA follow-up: #1511 left the worry-claim families on rahu-remedies, mars-remedies, kundali-matching, shani-saturn and a Venus-8th FAQ",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "qa"
-      ],
       "created": "2026-11-26T13:59:14Z",
-      "updated": "2026-11-26T17:07:49Z",
+      "updated": "2026-11-26T20:05:05Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2752,7 +2752,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-26T19:06:48Z",
+    "generated_at": "2026-11-26T21:22:06Z",
     "window_days": 28,
     "open_now": 167,
     "merged_open_hours": 24,
@@ -3179,15 +3179,15 @@
       },
       {
         "date": "2026-11-26",
-        "opened": 9,
-        "closed": 8,
+        "opened": 10,
+        "closed": 9,
         "net": 1,
         "open_end": 167,
         "opened_by": {
-          "loop": 9
+          "loop": 10
         },
         "closed_by": {
-          "close-on-evidence": 7,
+          "close-on-evidence": 8,
           "owner": 1
         }
       }
@@ -4793,16 +4793,21 @@
         "number": 1509,
         "closed_at": "2026-11-26T14:31:37Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1514,
+        "closed_at": "2026-11-26T20:19:03Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 80,
+          "merged": 81,
           "median_h": 0.6,
-          "p90_h": 11.4,
+          "p90_h": 5.9,
           "max_h": 105.0,
           "slowest": [
             {
@@ -4912,8 +4917,8 @@
           ]
         },
         "28d": {
-          "merged": 365,
-          "median_h": 0.5,
+          "merged": 366,
+          "median_h": 0.6,
           "p90_h": 14.3,
           "max_h": 122.1,
           "slowest": [
@@ -5201,25 +5206,25 @@
         },
         {
           "date": "2026-11-26",
-          "merged": 6,
+          "merged": 7,
           "median_h": 0.3,
-          "max_h": 1.3
+          "max_h": 2.1
         }
       ],
       "open": [
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 119.4,
+          "age_h": 121.6,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 27.8h gates red; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 30.0h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 27.8
+              "gates_red": 30.0
             },
             "qa_fails": 0,
             "pushes": 4
@@ -5228,23 +5233,23 @@
         {
           "number": 1515,
           "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
-          "age_h": 2.0,
+          "age_h": 4.3,
           "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "1.6h waiting for a fix after QA failed (1 QA FAIL)",
+            "reason": "3.9h waiting for a fix after QA failed (1 QA FAIL)",
             "primary": "qa_fail",
             "hours": {
               "no_gates": 0.4,
-              "qa_fail": 1.6
+              "qa_fail": 3.9
             },
             "qa_fails": 1,
             "pushes": 3
           }
         },
         {
-          "number": 1519,
-          "title": "The Kaal Sarp checker caveat says what the held books say (#1514)",
-          "age_h": 1.0,
+          "number": 1523,
+          "title": "issue/1513 learn worry claims round2",
+          "age_h": 0.0,
           "waiting_on": "gates / QA",
           "why": null
         }
