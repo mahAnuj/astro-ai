@@ -19,15 +19,22 @@ MUTATIONS = [
      '"griha_pravesh": {"@Krishna_x": _vr(C, "In the dark half this credit rests on one table, "',
      _GATE),
     ("#1355: vidyarambh's half-wide dark-half credit is removed (only Dwadashi stays contested)",
-     _F, '                           "@Krishna": _vr(C, "Rao\'s table names no half;',
-     '                           "@Krishna_x": _vr(C, "Rao\'s table names no half;',
+     _F, '                           "@Krishna": _vr(C, "The Vedic table lists this tithi without naming a "',
+     '                           "@Krishna_x": _vr(C, "The Vedic table lists this tithi without naming a "',
      _GATE),
     ("#1355: griha_pravesh's avoid_tithi list goes back to sourced (the ruling made it contested)",
      _F, '"griha_pravesh": _vr(C, "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon "',
      '"griha_pravesh": _vr(S, "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon "',
      _RULING2),
-    ("#1355: business's avoid_tithi list goes back to sourced (the ruling made it contested)",
-     _F, '"business": _vr(C, "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon "',
-     '"business": _vr(S, "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon "',
+    ("#1497: business's avoid_tithi note is labelled contested again (the ruling made it site_convention)",
+     _F, '"business": _vr(SC, "Site convention: no held book gives a business tithi rule. "',
+     '"business": _vr(C, "Site convention: no held book gives a business tithi rule. "',
      "test_the_avoid_tithi_cleared_item_is_contested_for_four_events_and_sourced_for_vidyarambh"),
+    ("#1497: griha_pravesh's avoid_tithi note drops the Purnima disagreement (the ruling names it)",
+     _F, '"and Full Moon for auspicious work. Purnima is contested: "\n'
+         '                                    "the Vedic table lists it, while the Muhurtha tradition\'s "\n'
+         '                                    "general list rejects it. Navami is this finder\'s own "',
+     '"and Full Moon for auspicious work. "\n'
+     '                                    "Navami is this finder\'s own "',
+     _RULING2),
 ]
