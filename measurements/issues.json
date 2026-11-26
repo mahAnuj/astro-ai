@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-26T03:54:46Z",
+  "generated_at": "2026-11-26T05:22:17Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 168,
+  "open": 169,
   "with_ask": 42,
   "by_area": {
-    "UNCLASSIFIED": 77,
+    "UNCLASSIFIED": 78,
     "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
@@ -34,7 +34,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 58,
+    "bug": 59,
     "untyped": 39,
     "enhancement": 31,
     "chore": 26,
@@ -42,13 +42,29 @@
     "design": 5
   },
   "by_priority": {
-    "unset": 112,
+    "unset": 113,
     "medium": 26,
     "high": 19,
     "low": 11
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 1509,
+      "title": "learn pages repeat the home-page claims #1501 removed: 'most lives are better', 'actually aren't Manglik', 'over-diagnosed' - unsourced against the held books",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-26T05:21:37Z",
+      "updated": "2026-11-26T05:21:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1506,
       "title": "measure: no export carries HTTP 5xx per route; only LLM fallbacks are counted (analyst lever 3, third report in a row)",
@@ -103,10 +119,13 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-26T02:08:54Z",
-      "updated": "2026-11-26T02:08:54Z",
+      "updated": "2026-11-26T05:21:34Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2753,9 +2772,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-26T03:54:46Z",
+    "generated_at": "2026-11-26T05:22:17Z",
     "window_days": 28,
-    "open_now": 168,
+    "open_now": 169,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3180,12 +3199,12 @@
       },
       {
         "date": "2026-11-26",
-        "opened": 4,
+        "opened": 5,
         "closed": 2,
-        "net": 2,
-        "open_end": 168,
+        "net": 3,
+        "open_end": 169,
         "opened_by": {
-          "loop": 4
+          "loop": 5
         },
         "closed_by": {
           "close-on-evidence": 2
@@ -4765,12 +4784,12 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 2,
+    "timelines_read": 0,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 84,
+          "merged": 83,
           "median_h": 0.7,
           "p90_h": 6.3,
           "max_h": 105.0,
@@ -5180,19 +5199,34 @@
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 104.2,
+          "age_h": 105.6,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 12.6h gates red; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 14.0h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 12.6
+              "gates_red": 14.0
             },
             "qa_fails": 0,
             "pushes": 4
+          }
+        },
+        {
+          "number": 1508,
+          "title": "home: worry cards attribute the site's own opinions and name the books we hold (#1501)",
+          "age_h": 0.1,
+          "waiting_on": "merge",
+          "why": {
+            "reason": "no single wait stood out",
+            "primary": "other",
+            "hours": {
+              "no_gates": 0.1
+            },
+            "qa_fails": 0,
+            "pushes": 1
           }
         }
       ]
