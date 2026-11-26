@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-26T00:49:06Z",
+  "generated_at": "2026-11-26T03:54:46Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 166,
+  "open": 168,
   "with_ask": 42,
   "by_area": {
     "UNCLASSIFIED": 77,
@@ -24,6 +24,8 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "MEASURE": 1,
+    "HOME": 1,
     "MUHURAT": 1,
     "NOTIFY": 1,
     "UI": 1,
@@ -32,15 +34,15 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 57,
-    "untyped": 38,
+    "bug": 58,
+    "untyped": 39,
     "enhancement": 31,
     "chore": 26,
     "correctness": 9,
     "design": 5
   },
   "by_priority": {
-    "unset": 110,
+    "unset": 112,
     "medium": 26,
     "high": 19,
     "low": 11
@@ -48,8 +50,21 @@
   "blocked": 6,
   "rows": [
     {
-      "number": 1497,
-      "title": "QA follow-up: finder dark-half/avoid_tithi legend wording (PR #1496)",
+      "number": 1506,
+      "title": "measure: no export carries HTTP 5xx per route; only LLM fallbacks are counted (analyst lever 3, third report in a row)",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-26T03:47:47Z",
+      "updated": "2026-11-26T03:47:47Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1505,
+      "title": "QA follow-up: 'we hold' / 'held book' still in finder legend sentences, stale avoid_tithi test name, #1504 evidence block fails (PR #1503)",
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
@@ -58,8 +73,40 @@
         "bug",
         "qa"
       ],
-      "created": "2026-11-25T21:01:43Z",
-      "updated": "2026-11-25T21:01:43Z",
+      "created": "2026-11-26T03:37:26Z",
+      "updated": "2026-11-26T03:38:48Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1504,
+      "title": "Muhurat: Shashthi/Dwadashi absent from griha_pravesh and vivah avoid_tithis with no note (split from #1497)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "qa"
+      ],
+      "created": "2026-11-26T03:35:54Z",
+      "updated": "2026-11-26T03:42:59Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1501,
+      "title": "home: worry cards claim 'what the classical texts say' - Kaal Sarp, Manglik and Sade Sati lines are unsourced or contested",
+      "ask": "",
+      "area": "HOME",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "astrology-correctness"
+      ],
+      "created": "2026-11-26T02:08:54Z",
+      "updated": "2026-11-26T02:08:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -591,23 +638,6 @@
       ],
       "created": "2026-11-21T11:10:53Z",
       "updated": "2026-11-25T15:29:56Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1344,
-      "title": "QA follow-up: #1342 couple-mode Top pick can be a 'mixed' verdict while a 'good-for-both' day of the same grade exists",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-21T09:23:25Z",
-      "updated": "2026-11-26T00:16:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1223,7 +1253,7 @@
         "chore"
       ],
       "created": "2026-11-14T13:51:32Z",
-      "updated": "2026-11-19T01:05:04Z",
+      "updated": "2026-11-26T02:09:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1241,7 +1271,7 @@
         "chore"
       ],
       "created": "2026-11-14T13:51:31Z",
-      "updated": "2026-11-19T01:05:03Z",
+      "updated": "2026-11-26T02:09:00Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1397,7 +1427,7 @@
         "qa:independent"
       ],
       "created": "2026-11-12T01:26:53Z",
-      "updated": "2026-11-19T01:05:06Z",
+      "updated": "2026-11-26T02:09:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1948,7 +1978,7 @@
         "bug"
       ],
       "created": "2026-10-19T09:37:16Z",
-      "updated": "2026-11-19T01:05:07Z",
+      "updated": "2026-11-26T02:09:04Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2723,9 +2753,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-26T00:49:06Z",
+    "generated_at": "2026-11-26T03:54:46Z",
     "window_days": 28,
-    "open_now": 166,
+    "open_now": 168,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3150,12 +3180,16 @@
       },
       {
         "date": "2026-11-26",
-        "opened": 0,
-        "closed": 0,
-        "net": 0,
-        "open_end": 166,
-        "opened_by": {},
-        "closed_by": {}
+        "opened": 4,
+        "closed": 2,
+        "net": 2,
+        "open_end": 168,
+        "opened_by": {
+          "loop": 4
+        },
+        "closed_by": {
+          "close-on-evidence": 2
+        }
       }
     ],
     "merged_open": [],
@@ -4571,6 +4605,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1344,
+        "closed_at": "2026-11-26T01:40:47Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1355,
         "closed_at": "2026-11-25T21:17:54Z",
         "closer": "close-on-evidence"
@@ -4719,16 +4758,21 @@
         "number": 1483,
         "closed_at": "2026-11-25T19:34:04Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1497,
+        "closed_at": "2026-11-26T03:49:23Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 2,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 85,
+          "merged": 84,
           "median_h": 0.7,
-          "p90_h": 11.4,
+          "p90_h": 6.3,
           "max_h": 105.0,
           "slowest": [
             {
@@ -4838,9 +4882,9 @@
           ]
         },
         "28d": {
-          "merged": 360,
+          "merged": 363,
           "median_h": 0.6,
-          "p90_h": 15.1,
+          "p90_h": 14.3,
           "max_h": 122.1,
           "slowest": [
             {
@@ -5127,43 +5171,28 @@
         },
         {
           "date": "2026-11-26",
-          "merged": 0,
-          "median_h": null,
-          "max_h": null
+          "merged": 3,
+          "median_h": 0.3,
+          "max_h": 1.3
         }
       ],
       "open": [
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 101.1,
+          "age_h": 104.2,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 12.6h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 9.5
+              "gates_red": 12.6
             },
             "qa_fails": 0,
             "pushes": 4
-          }
-        },
-        {
-          "number": 1499,
-          "title": "muhurat: couple mode ranks the combined verdict inside a tier (#1344)",
-          "age_h": 0.5,
-          "waiting_on": "gates / QA",
-          "why": {
-            "reason": "0.5h waiting for gates to start",
-            "primary": "no_gates",
-            "hours": {
-              "no_gates": 0.5
-            },
-            "qa_fails": 0,
-            "pushes": 1
           }
         }
       ]

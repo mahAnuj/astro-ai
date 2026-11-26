@@ -1,24 +1,14 @@
 {
- "generated_at": "2026-11-26T00:51:53Z",
+ "generated_at": "2026-11-26T03:58:21Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
    {
-    "number": 556,
-    "at": "2026-10-27T02:32:25Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/556#issuecomment-6432293873",
-    "summary": "QA: FAIL \u2014 verified at `b96ef93a5c65acdb1e7e3e6cccf80a2979579900` QA round 1 FAIL at b96ef93. Prose, tokens (8 golden messages identical, worst case 6,757/8,000), pytest 1397 passed, mutation 2908/0 hold. D1 (blocking): gate misses a live copy of the retired claim \u2014 mars-remedies.html:139 'does not ",
+    "number": 562,
+    "at": "2026-10-27T16:46:13Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/562#issuecomment-6447897527",
+    "summary": "QA: FAIL \u2014 verified at `87e3bd4` QA round 1 FAIL, one defect: the count '4 of the 7 shortfalls ... PRs #481/#474/#471/#410' in ARCHITECTURE.md (2026-10-27 row) and the comment above KEYWORD_CLOSE_WINDOW is wrong -- the change excuses 5 of 7 (also #394 via PR #454, closed by mahAnuj 1s after the 2026",
     "themes": []
-   },
-   {
-    "number": 550,
-    "at": "2026-10-28T17:54:44Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/550#issuecomment-6476537145",
-    "summary": "QA: FAIL (independent round, provenance `independent`) \u2014 verified at `0b1ffc0f02a04e44c17774dc7c73296704bad721`  All three earlier findings are closed by execution. But the round-2 fix that made `success` reach the reporter introduced a new defect: a red `main` gets its sentinel closed by the next d",
-    "themes": [
-     "tests",
-     "copy"
-    ]
    },
    {
     "number": 544,
@@ -29,13 +19,6 @@
      "tests",
      "security"
     ]
-   },
-   {
-    "number": 562,
-    "at": "2026-10-27T16:46:13Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/562#issuecomment-6447897527",
-    "summary": "QA: FAIL \u2014 verified at `87e3bd4` QA round 1 FAIL, one defect: the count '4 of the 7 shortfalls ... PRs #481/#474/#471/#410' in ARCHITECTURE.md (2026-10-27 row) and the comment above KEYWORD_CLOSE_WINDOW is wrong -- the change excuses 5 of 7 (also #394 via PR #454, closed by mahAnuj 1s after the 2026",
-    "themes": []
    },
    {
     "number": 565,
@@ -65,6 +48,16 @@
     "themes": [
      "tokens",
      "i18n",
+     "copy"
+    ]
+   },
+   {
+    "number": 550,
+    "at": "2026-10-28T17:54:44Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/550#issuecomment-6476537145",
+    "summary": "QA: FAIL (independent round, provenance `independent`) \u2014 verified at `0b1ffc0f02a04e44c17774dc7c73296704bad721`  All three earlier findings are closed by execution. But the round-2 fix that made `success` reach the reporter introduced a new defect: a red `main` gets its sentinel closed by the next d",
+    "themes": [
+     "tests",
      "copy"
     ]
    },
@@ -1323,9 +1316,9 @@
   {
    "number": 1115,
    "verdict": "OTHER",
-   "headline": "NOT MET yet \u2014 1 window, not 2; blocked on #1205",
-   "at": "2026-11-20T02:04:19Z",
-   "url": "https://github.com/mahAnuj/astro-ai/issues/1115#issuecomment-7028068592"
+   "headline": "MET",
+   "at": "2026-11-26T03:47:12Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1115#issuecomment-7182022124"
   },
   {
    "number": 1178,
@@ -1389,14 +1382,35 @@
    "headline": "pending \u2014 scoreable from 2026-12-22",
    "at": "2026-11-22T00:56:10Z",
    "url": "https://github.com/mahAnuj/astro-ai/issues/1336#issuecomment-7071875487"
+  },
+  {
+   "number": 1400,
+   "verdict": "OTHER",
+   "headline": "delivered; re-crawl of the ten largest pages is 6 of 10 on the 2026-11-26 capture",
+   "at": "2026-11-26T03:47:23Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1400#issuecomment-7182024756"
+  },
+  {
+   "number": 1411,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-24",
+   "at": "2026-11-26T03:47:25Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1411#issuecomment-7182025394"
+  },
+  {
+   "number": 1416,
+   "verdict": "PENDING",
+   "headline": "pending \u2014 scoreable from 2026-12-24",
+   "at": "2026-11-26T03:47:24Z",
+   "url": "https://github.com/mahAnuj/astro-ai/issues/1416#issuecomment-7182025123"
   }
  ],
  "outcome_counts": {
   "MISS": 1,
-  "OTHER": 3,
+  "OTHER": 4,
   "UNSCOREABLE": 9,
   "PASS": 3,
-  "PENDING": 21,
+  "PENDING": 23,
   "HIT": 1
  },
  "competitor_patterns": [

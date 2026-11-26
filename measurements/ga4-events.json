@@ -2,75 +2,79 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-26",
-    "2026-11-22"
+    "2026-10-27",
+    "2026-11-23"
   ],
   "dimensions": [
     "eventName"
   ],
   "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
-  "row_count": 21,
+  "row_count": 23,
   "truncated": false,
   "rows": [
     {
       "event": "page_view",
-      "count": 1477
+      "count": 1518
     },
     {
       "event": "session_start",
-      "count": 802
+      "count": 818
     },
     {
       "event": "user_identified",
-      "count": 714
+      "count": 687
     },
     {
       "event": "feature_view",
-      "count": 704
+      "count": 679
     },
     {
       "event": "first_visit",
-      "count": 659
+      "count": 672
     },
     {
       "event": "user_engagement",
-      "count": 325
+      "count": 335
     },
     {
       "event": "scroll",
-      "count": 204
+      "count": 206
     },
     {
       "event": "ask_answered",
-      "count": 126
+      "count": 128
     },
     {
       "event": "form_start",
-      "count": 109
+      "count": 103
     },
     {
       "event": "kundli_generated",
-      "count": 52
+      "count": 51
     },
     {
       "event": "tool_submitted",
-      "count": 27
+      "count": 47
     },
     {
       "event": "cta_click",
-      "count": 21
+      "count": 23
     },
     {
       "event": "view_search_results",
       "count": 8
     },
     {
-      "event": "click",
-      "count": 4
+      "event": "muhurat_searched",
+      "count": 6
     },
     {
       "event": "matching_completed",
-      "count": 3
+      "count": 5
+    },
+    {
+      "event": "click",
+      "count": 4
     },
     {
       "event": "dasha_deep_dive_viewed",
@@ -89,6 +93,10 @@
       "count": 1
     },
     {
+      "event": "language_switched",
+      "count": 1
+    },
+    {
       "event": "share",
       "count": 1
     },
@@ -97,10 +105,10 @@
       "count": 1
     }
   ],
-  "events_total": 5244,
-  "coverage_note": "cta_click: 21 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history",
+  "events_total": 5300,
+  "coverage_note": "cta_click: 23 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history; journey_events: a count of 0 is a measurement over the window; partial_history true means the event began after the window start",
   "cta_click": {
-    "count": 21,
+    "count": 23,
     "split_available": true,
     "rows": [
       {
@@ -114,6 +122,11 @@
         "count": 3
       },
       {
+        "from_path": "/learn/krittika-nakshatra/",
+        "to_path": "/",
+        "count": 2
+      },
+      {
         "from_path": "/learn/sade-sati/",
         "to_path": "/kundli",
         "count": 2
@@ -124,11 +137,6 @@
         "count": 1
       },
       {
-        "from_path": "/learn/krittika-nakshatra/",
-        "to_path": "/",
-        "count": 1
-      },
-      {
         "from_path": "/learn/manglik-dosh/",
         "to_path": "/",
         "count": 1
@@ -136,6 +144,11 @@
       {
         "from_path": "/learn/name-numerology-explained/",
         "to_path": "/numerology",
+        "count": 1
+      },
+      {
+        "from_path": "/learn/panch-mahapurush-yoga/",
+        "to_path": "/kundli",
         "count": 1
       },
       {
@@ -159,5 +172,52 @@
         "count": 1
       }
     ]
+  },
+  "journey_events": {
+    "tool_submitted": {
+      "count": 47,
+      "since": null,
+      "partial_history": null
+    },
+    "kundli_generated": {
+      "count": 51,
+      "since": null,
+      "partial_history": null
+    },
+    "matching_completed": {
+      "count": 5,
+      "since": "2026-11-18",
+      "partial_history": true
+    },
+    "numerology_completed": {
+      "count": 0,
+      "since": "2026-11-18",
+      "partial_history": true
+    },
+    "muhurat_searched": {
+      "count": 6,
+      "since": "2026-11-18",
+      "partial_history": true
+    },
+    "dosha_check_completed": {
+      "count": 2,
+      "since": "2026-11-18",
+      "partial_history": true
+    },
+    "ask_answered": {
+      "count": 128,
+      "since": null,
+      "partial_history": null
+    },
+    "subscribe_completed": {
+      "count": 1,
+      "since": null,
+      "partial_history": null
+    },
+    "cta_click": {
+      "count": 23,
+      "since": "2026-11-03",
+      "partial_history": true
+    }
   }
 }
