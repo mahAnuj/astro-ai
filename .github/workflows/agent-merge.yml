@@ -171,7 +171,7 @@ jobs:
       # This used to be a BRANCH-NAME test (`case` on `issue/*`), and the name
       # turned out to carry none of the meaning it was asked to carry. Cycles
       # correctly moved to `partial/<n>-<slug>` whenever acceptance criteria
-      # remained that the loop could not do (agent-cycle.md Step 4), and every
+      # remained that the loop could not do (agent-cycle/build.md Step 4), and every
       # one of those PRs became unmergeable by this job -- not on a safety
       # judgment, but on its spelling. #480, #482 and #487 each carried
       # `qa-pass` from the cycle, went green on the gates, and were taken out

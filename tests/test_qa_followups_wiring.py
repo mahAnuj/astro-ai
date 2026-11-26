@@ -44,3 +44,16 @@ def test_an_unread_chief_ruling_keeps_the_label():
     assert '| length" 2>/dev/null || echo unreadable)' in run
     keep = run.index("keeping the hold and the label")
     assert run.index("exit 0", keep) < run.index('--remove-label "chief-cleared"')
+
+
+def test_the_ask_audit_prompt_names_both_refusals_it_cannot_fix_by_editing():
+    """#1384: an --issue refusal and the cap refusal were undescribed, so the agent retried them."""
+    text = (WF / "agent-measure.yml").read_text()
+    assert "REFUSED #<n> is not an issue this audit filed" in text
+    assert "REFUSED cap reached" in text
+
+
+def test_no_workflow_cites_the_moved_agent_cycle_step():
+    """#1303: Step 4 lives in .claude/commands/agent-cycle/build.md since #1257."""
+    for wf in ("agent-work.yml", "agent-merge.yml", "qa-on-green.yml"):
+        assert "agent-cycle.md Step" not in (WF / wf).read_text(), wf

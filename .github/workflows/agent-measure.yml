@@ -568,6 +568,11 @@ jobs:
               it. A comment needs the Evidence Block too, with this week's count. You have
               no other way to post. It also adds `provenance:outsider`, so the loop never
               builds from these issues as if they were its own.
+            - Two more refusals, and neither is fixed by editing the body (#1384):
+              `REFUSED #<n> is not an issue this audit filed` means the search found
+              someone else's issue: do not retry it, open a new issue for the class instead.
+              `REFUSED cap reached` means five audit issues were already filed in 24 h: do
+              not retry, fold the class into the report.
             - Titles are public too: no user text in them.
             - Labels: astrology-correctness, bug, layer:prompt.
             - The body carries the hidden line `<!-- ask-audit-class: <class> -->`, what the

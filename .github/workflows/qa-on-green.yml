@@ -294,7 +294,7 @@ jobs:
           # WHAT THE DISPATCH AIMS AT, and since 2026-11-01 it is two things.
           #
           # `issue/`, `partial/` and `fix/` carry an owning issue by
-          # construction (agent-cycle.md Step 4), and that is the richer aim:
+          # construction (agent-cycle/build.md Step 4), and that is the richer aim:
           # the cycle reads the issue, adopts the branch at Step 2.5, and can
           # finish work that is not built yet. `measurements/` carries no
           # number, and the obvious widening `^[a-z]+/(\d+)` would read run id
