@@ -42,7 +42,12 @@ learn_registry Article except `title` and `seo_title`), measured on the real rou
 | **Total** | **92** | **0** | **29** | **0** |
 
 (The rendered count includes the registry summary where the page shows it, so the two columns
-overlap.)
+overlap.) These are **phrase-test match counts, not a read of the pages**: "92 to 0" says the named
+families no longer match, not that every unsourced sentence is gone; `qa` and the auditor read the
+rest. The table was measured with the families as first written. A QA round then found outcome and
+prevalence sentences those families missed, and added `almost always`, `rarely`, `lots of people`,
+`better careers`, `most simple calculators`, `nobody mentions` and `many charts that look like`; the
+"after" column is 0 for them too, and their "before" counts were not measured.
 
 The decision: **an opinion the site holds itself is attributed to the site ("in our view", "our
 reading"), a claim that only the web repeats is labelled "repeated online", and a claim in no held

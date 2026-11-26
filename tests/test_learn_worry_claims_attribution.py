@@ -47,6 +47,10 @@ _BANNED = (
     r"psychological closure",
     r"folk-dramatis", r"rarely random", r"usually outperforms", r"most people'?s professional",
     r"steve jobs", r"₹\s?5,?000", r"most-cited", r"cited most",
+    # #1509 QA round: outcome and prevalence families the first pass left on career-during-sade-sati,
+    # sade-sati and marriage-delayed.
+    r"almost always", r"\brarely\b", r"lots of people", r"better careers?",
+    r"most simple calculators", r"nobody mentions", r"many charts that look like",
 )
 _BANNED_RE = [re.compile(p) for p in _BANNED]
 
