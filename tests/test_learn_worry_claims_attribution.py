@@ -155,7 +155,8 @@ def test_sade_sati_keeps_the_one_sourced_softening(client):
 def test_kaal_sarp_page_says_what_the_held_rao_says(client):
     n = _norm(_visible(client, "kaal-sarp-dosh"))
     assert "highly problematic" in n
-    assert "other yogas may not function" in n
+    # The body sentence, not the bare phrase: the FAQ below the article also says "other yogas may not function".
+    assert "rao says the opposite of an override" in n
     assert "counts either order" in n
     assert "we do not hold bphs" in n
 
@@ -181,5 +182,5 @@ def test_manglik_page_says_the_lists_differ_and_labels_online_rules(client):
 def test_manglik_cancellations_are_labelled_repeated_online(client, slug):
     n = _norm(_visible(client, slug))
     assert "repeated online" in n, slug
-    assert "excludes the person from manglik diagnosis entirely" not in n
+    assert "exclude the person from manglik diagnosis entirely" not in n
     assert "cancels manglik in most classical readings" not in n
