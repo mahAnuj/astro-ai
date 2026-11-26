@@ -1,25 +1,8 @@
 {
- "generated_at": "2026-11-26T13:47:23Z",
+ "generated_at": "2026-11-26T18:41:08Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
-   {
-    "number": 562,
-    "at": "2026-10-27T16:46:13Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/562#issuecomment-6447897527",
-    "summary": "QA: FAIL \u2014 verified at `87e3bd4` QA round 1 FAIL, one defect: the count '4 of the 7 shortfalls ... PRs #481/#474/#471/#410' in ARCHITECTURE.md (2026-10-27 row) and the comment above KEYWORD_CLOSE_WINDOW is wrong -- the change excuses 5 of 7 (also #394 via PR #454, closed by mahAnuj 1s after the 2026",
-    "themes": []
-   },
-   {
-    "number": 544,
-    "at": "2026-10-30T18:24:03Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6530377333",
-    "summary": "QA: FAIL \u2014 verified at `bf2b17df67f81ba5e8d5a1b283b8ec0fe22f78bb` (round 4, independent, dispatched by chief; I had no hand in this PR)  **One secret read remains, found by execution through the real pipeline. A fix that can be broken is a FAIL.**  ## BLOCKING: a glob that expands to a name equal to",
-    "themes": [
-     "tests",
-     "security"
-    ]
-   },
    {
     "number": 565,
     "at": "2026-10-27T18:41:28Z",
@@ -49,6 +32,16 @@
      "tokens",
      "i18n",
      "copy"
+    ]
+   },
+   {
+    "number": 544,
+    "at": "2026-10-30T18:24:03Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6530377333",
+    "summary": "QA: FAIL \u2014 verified at `bf2b17df67f81ba5e8d5a1b283b8ec0fe22f78bb` (round 4, independent, dispatched by chief; I had no hand in this PR)  **One secret read remains, found by execution through the real pipeline. A fix that can be broken is a FAIL.**  ## BLOCKING: a glob that expands to a name equal to",
+    "themes": [
+     "tests",
+     "security"
     ]
    },
    {
@@ -1039,6 +1032,22 @@
     "url": "https://github.com/mahAnuj/astro-ai/pull/1475#issuecomment-7164327212",
     "summary": "QA: FAIL \u2014 verified at `13ec65ebf3f9cc24dd7161c5eaf2f08729182084` DEFECT: pre_qa_check tests theme (check_mutation_rows_live -> _mutation_rows uses ast.literal_eval) raises CannotCompute on any mutation file whose rows use a module constant (_GA, _P, _T); 95 of 263 files in scripts/mutations/ (36%),",
     "themes": []
+   },
+   {
+    "number": 1511,
+    "at": "2026-11-26T13:59:50Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1511#issuecomment-7194127856",
+    "summary": "QA: FAIL \u2014 verified at `b64ae933bd4184b0fb70f35be6d1a34d632cb192` D1 career-during-sade-sati.html still carries outcome claims (L157 'lots of people... better careers', L58/L66 'almost always', L43 'rarely'); test _BANNED lacks those phrases. D2 planets-in-7th-house-marriage.html L74 says sources na",
+    "themes": [
+     "i18n"
+    ]
+   },
+   {
+    "number": 1515,
+    "at": "2026-11-26T17:30:20Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/1515#issuecomment-7199131162",
+    "summary": "QA: FAIL \u2014 verified at `240ad0ff233888a2f9e99e9f3d0ef100329bd902` QA FAIL, one blocker, comment-only. .github/workflows/qa-on-green.yml:54 header still says \"One at a time PER PR BRANCH AND GATE WORKFLOW\" but the group key at line 70 is now per branch only (#1290); qa.md names a comment asserting wh",
+    "themes": []
    }
   ],
   "reverts": [],
@@ -1098,7 +1107,7 @@
    {
     "kind": "claude-quota",
     "level": "amber",
-    "title": "Claude weekly quota 89% used",
+    "title": "Claude weekly quota 92% used",
     "detail": "Every agent shares one Claude Max subscription. 0 run(s) in the sample hit a limit. Levers, cheapest first: stop dispatching ranked (`/agent-cycle`) cycles that end in nothing; space out the weekly agent loops; keep QA rounds to one per head. Do not add a parallel build lane until it resets.",
     "where": "/admin/ops"
    }
@@ -1111,7 +1120,7 @@
   "tokens": 17,
   "copy": 16,
   "security": 14,
-  "i18n": 8,
+  "i18n": 9,
   "performance": 5
  },
  "repeated_themes": [
