@@ -64,7 +64,10 @@ on:
 # state, so they need not wait on each other; the per-head marker comment still
 # guards against a double dispatch on one PR.
 concurrency:
-  group: qa-on-green-${{ github.event.workflow_run.head_branch }}-${{ github.event.workflow_run.name }}
+  # Per branch only (#1290): keyed on the workflow name too, pr-gates and
+  # verify-build finishing together ran in two groups, both read "no marker
+  # yet", and both queued a round. One group serialises the marker per head.
+  group: qa-on-green-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: false
 
 permissions:

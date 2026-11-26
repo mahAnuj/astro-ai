@@ -259,15 +259,24 @@ jobs:
           local sha="$1" self runs rid meta path at keep
           self=${GITHUB_WORKFLOW_REF#*/*/}; self=${self%@*}
           runs=$(gh api "repos/$GH_REPO/commits/$sha/check-runs?per_page=100") || return 2
-          declare -A newest_at=() newest_id=()
+          # One page holds 100; past that the oldest would drop silently (#1413).
+          [ "$(printf '%s' "$runs" | jq '.total_count // 0')" -le 100 ] || return 2
+          declare -A newest_at=() newest_id=() newest_status=()
           for rid in $(printf '%s' "$runs" | jq -r '.check_runs[] | (.details_url // "") | capture("/actions/runs/(?<r>[0-9]+)/")? | .r' | sort -u); do
-            meta=$(gh api "repos/$GH_REPO/actions/runs/$rid" --jq '"\(.path) \(.created_at)"') || return 2
-            path=${meta% *}; at=${meta#* }
+            meta=$(gh api "repos/$GH_REPO/actions/runs/$rid" --jq '"\(.path) \(.created_at) \(.status)"') || return 2
+            read -r path at st <<< "$meta"
             [ "$path" = "$self" ] && continue
             if [ -z "${newest_at[$path]:-}" ] || [[ "$at" > "${newest_at[$path]}" ]] \
                || { [ "$at" = "${newest_at[$path]}" ] && [ "$rid" -gt "${newest_id[$path]}" ]; }; then
-              newest_at[$path]=$at; newest_id[$path]=$rid
+              newest_at[$path]=$at; newest_id[$path]=$rid; newest_status[$path]=$st
             fi
+          done
+          # A NEWEST RUN STILL IN FLIGHT IS PENDING (#1415). Its later jobs
+          # (pr-gates' `gates` needs the other four) are not listed until they
+          # start, so a red `gates` in an older same-SHA run would otherwise
+          # drop out and the head read green before its verdict existed.
+          for path in "${!newest_status[@]}"; do
+            [ "${newest_status[$path]}" = completed ] || echo "run:${path##*/}=${newest_status[$path]}:pending"
           done
           keep=$(IFS=,; printf '%s' "${newest_id[*]}")
           printf '%s' "$runs" | jq -r --arg keep "$keep" '
@@ -402,7 +411,9 @@ jobs:
                 # and blocks every green PR above it (#1335, 2026-11-21..23).
                 csha=$(gh pr view "$cand" --repo "$GH_REPO" --json headRefOid --jq .headRefOid 2>/dev/null || echo "")
                 clines=""
-                [ -n "$csha" ] && clines=$(head_checks "$csha" 2>/dev/null)
+                # `|| clines=""` (#1413): under bash -e a failed head_checks as
+                # the last command of an && list ended the whole walk.
+                [ -n "$csha" ] && { clines=$(head_checks "$csha" 2>/dev/null) || clines=""; }
                 cred=$(printf '%s\n' "$clines" | grep -v ":success$" | grep -v '^$' || true)
                 if [ -z "$clines" ] || [ -n "$cred" ]; then
                   echo "  skipping #$cand — checks not green: $(printf '%s' "${cred:-unreadable}" | tr '\n' ' ' | cut -c1-200)"
@@ -793,10 +804,16 @@ jobs:
               ruled=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json comments \
                         --jq "[.comments[]\
                                | select(.body | contains(\"chief-cleared at $PR_SHA\"))]\
-                              | length" 2>/dev/null || echo 0)
-              # Anything non-numeric counts as zero, so an API hiccup falls toward
-              # KEEPING the hold rather than releasing it.
-              case "$ruled" in ''|*[!0-9]*) ruled=0 ;; esac
+                              | length" 2>/dev/null || echo unreadable)
+              # AN UNREAD RULING IS NOT A MISSING ONE (#1286). Non-numeric used to
+              # count as zero, which kept the hold but then removed `chief-cleared`
+              # as stale, destroying a valid ruling on one API hiccup. Now an
+              # unreadable answer keeps the hold AND the label; the next run asks again.
+              case "$ruled" in
+                ''|*[!0-9]*)
+                  echo "::warning::could not read chief's ruling for $PR_SHA — keeping the hold and the label; the next run asks again"
+                  exit 0 ;;
+              esac
               if [ "$ruled" -gt 0 ]; then
                 echo "::notice::chief ruled on $PR_SHA and cleared the boundary hold"
                 sed 's/^/  cleared: /' /tmp/pr-protected.txt
@@ -1043,7 +1060,11 @@ jobs:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
           # The time BEFORE the dispatch, so the reporter can find this run (#1221).
-          after=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          # GITHUB'S clock, not the runner's (#1487): the reporter compares it
+          # with the run's server-side created_at. The Date header of a cheap
+          # API call; the runner clock only if that cannot be read.
+          hdr=$(gh api -i rate_limit 2>/dev/null | tr -d '\r' | sed -n 's/^[Dd]ate: //p' | head -1)
+          after=$( [ -n "$hdr" ] && date -u -d "$hdr" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)
           if gh workflow run pr-gates.yml --repo "$GH_REPO" --ref main; then
             echo "::notice::merged #$PR_NUMBER; dispatched pr-gates on main so the merge result is gated"
             # GitHub almost never delivers this run's completion to

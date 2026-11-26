@@ -215,7 +215,10 @@ jobs:
           fi
           base="${{ github.event.pull_request.base.sha }}"
           [ -n "$base" ] || base=$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)
-          changed=$(git diff --name-only "$base" HEAD || echo "")
+          # --no-renames (#1283): with rename detection a move from src/ into
+          # measurements/ lists only the NEW path, reads as measurements-only,
+          # and the gates skip while the merge deletes a shipped file.
+          changed=$(git diff --name-only --no-renames "$base" HEAD || echo "")
           echo "changed files:"; echo "$changed" | sed 's/^/  /'
           # Everything the suite, the gates or the build actually read.
           # .github/workflows counts: the behaviour suite reads

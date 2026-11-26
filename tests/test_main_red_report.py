@@ -245,6 +245,8 @@ elif argv[0] == "api" and "/jobs" in argv[1]:
     steps = [{"name": "Verification gates", "conclusion": "success"}]
     if state != "absent":
         steps.append({"name": "GATES ASSERTED", "conclusion": state})
+    if fixture.get("never_started"):     # a pending run GitHub replaced (#1284)
+        steps = []
     if "--jq" in argv:
         payload = {"jobs": [{"steps": steps}]}
         expr = argv[argv.index("--jq") + 1]
@@ -726,3 +728,13 @@ def test_the_reporter_is_serialised():
         "cancel-in-progress must be false for agent-merge's reason: "
         f"cancelling the thing that reports a kill is the worst outcome; got {conc}"
     )
+
+
+def test_a_cancelled_run_that_never_started_is_not_a_red_main(tmp_path):
+    """#1284: a pending run a newer push replaced concludes `cancelled` with no step run;
+    #1146, #1191, #1249 and #1274 were each filed on one."""
+    proc, done = _run_reporter(tmp_path, {"open_issues": [], "comments": {}, "never_started": True},
+                               sha="abcdef1234567", conclusion="cancelled")
+    assert proc.returncode == 0, proc.stderr
+    assert done == [], f"a never-started run was reported: {done!r}"
+    assert "cancelled before any step ran" in proc.stdout

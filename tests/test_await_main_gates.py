@@ -28,10 +28,15 @@ def run(rid, created, status="completed", conclusion="success"):
 
 
 class Gh:
-    def __init__(self, seq):
+    def __init__(self, seq, steps=None):
         self.seq = list(seq)        # one runs list per poll; the last repeats
+        self.steps = steps or {}    # run id -> list of steps in its one job (default: one step ran)
 
     def __call__(self, args):
+        url = next(a for a in args if a.startswith("repos/"))
+        if "/jobs" in url:
+            rid = int(url.split("/runs/")[1].split("/")[0])
+            return json.dumps({"jobs": [{"steps": self.steps.get(rid, [{"name": "Set up job"}])}]})
         runs = self.seq.pop(0) if len(self.seq) > 1 else self.seq[0]
         return json.dumps({"workflow_runs": runs})
 
@@ -53,15 +58,29 @@ def test_a_replaced_pending_run_is_not_a_red_main():
     """#1284's shape: a later merge's dispatch replaced the pending run, which concluded
     cancelled having run nothing."""
     gh = Gh([[run(5, "2026-11-25T14:06:03Z", conclusion="cancelled"),
-              run(6, "2026-11-25T14:09:00Z", "in_progress", None)]])
+              run(6, "2026-11-25T14:09:00Z", "in_progress", None)]], steps={5: []})
     rc, r, why = amg.await_run(gh, "o/r", AFTER, sleep=lambda s: None)
-    assert rc == 0 and r is None and "replaced by run 6" in why
+    assert rc == 0 and r is None and "before any step ran" in why
 
 
-def test_a_cancelled_run_with_nothing_behind_it_is_still_reported():
-    gh = Gh([[run(5, "2026-11-25T14:06:03Z", conclusion="cancelled")]])
+def test_a_timed_out_run_with_a_newer_run_behind_it_is_still_reported():
+    """#1486: the old 'a newer run exists' test swallowed a run that TIMED OUT with the next
+    merge's run queued behind it -- exactly the case #461 exists for. It ran steps."""
+    gh = Gh([[run(5, "2026-11-25T14:06:03Z", conclusion="cancelled"),
+              run(6, "2026-11-25T14:09:00Z", "in_progress", None)]])
     rc, r, _ = amg.await_run(gh, "o/r", AFTER, sleep=lambda s: None)
-    assert rc == 0 and r["conclusion"] == "cancelled"
+    assert rc == 0 and r["id"] == 5 and r["conclusion"] == "cancelled"
+
+
+def test_an_unreadable_job_list_reports_rather_than_swallows():
+    class Broken(Gh):
+        def __call__(self, args):
+            if any("/jobs" in a for a in args):
+                raise RuntimeError("HTTP 502")
+            return super().__call__(args)
+    rc, r, _ = amg.await_run(Broken([[run(5, "2026-11-25T14:06:03Z", conclusion="cancelled")]]),
+                             "o/r", AFTER, sleep=lambda s: None)
+    assert rc == 0 and r["id"] == 5
 
 
 def test_a_run_that_never_completes_times_out_loudly():
@@ -92,7 +111,9 @@ def test_agent_merge_dispatches_the_reporter_with_the_time_before_the_gates_disp
     step = next(s for s in _doc("agent-merge.yml")["jobs"]["merge"]["steps"]
                 if s.get("name") == "Gate the merge result on main")
     run_ = step["run"]
-    assert run_.index("after=$(date -u") < run_.index("gh workflow run pr-gates.yml")
+    assert run_.index("after=$(") < run_.index("gh workflow run pr-gates.yml")
+    # #1487: GitHub's clock (the Date header of an API call), the runner's only as a fallback.
+    assert run_.index("gh api -i rate_limit") < run_.index("after=$(")
     assert 'gh workflow run main-red-report.yml --repo "$GH_REPO" --ref main -f after="$after"' in run_
 
 

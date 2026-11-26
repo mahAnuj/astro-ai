@@ -176,6 +176,21 @@ jobs:
                      2>/dev/null || echo "unreadable")
           echo "GATES ASSERTED step: $asserted"
 
+          # A RUN THAT NEVER STARTED IS NOT A RED MAIN (#1284). GitHub keeps one
+          # pending run per concurrency group and cancels the older when a newer
+          # push queues; that run concludes `cancelled` with no step executed.
+          # #1146, #1191, #1249 and #1274 were each filed on one. A run that
+          # timed out or was cancelled mid-flight has steps and still reports
+          # (#461); an unreadable job list falls through and reports.
+          if [ "$CONCLUSION" = cancelled ]; then
+            ran=$(gh api "repos/$GH_REPO/actions/runs/$RUN_ID/jobs" \
+                    --jq '[.jobs[].steps[]] | length' 2>/dev/null || echo unreadable)
+            if [ "$ran" = "0" ]; then
+              echo "::notice::run $RUN_ID was cancelled before any step ran — a pending run a newer one replaced; not a red main"
+              exit 0
+            fi
+          fi
+
           # THE MARKER ONLY DISAMBIGUATES A *GREEN* RUN (#461 round 5).
           #
           # The first version of this check gated BOTH paths on the marker and
