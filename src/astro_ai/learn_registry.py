@@ -990,7 +990,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="jupiter-remedies",
         title="Jupiter Remedies: Guru Blessings, Wisdom Practices, Yellow Sapphire Guide",
-        summary="Jupiter (Guru / Brihaspati) is Vedic astrology's great blessing — karaka of wisdom, wealth, children, marriage, and dharma. His remedies are among the safest and most effective. This guide covers mantras, good deeds, deity worship, and honest guidance on yellow sapphire without vendor manipulation.",
+        summary="Jupiter (Guru / Brihaspati) is Vedic astrology's great blessing — karaka of wisdom, wealth, children, marriage, and dharma. His remedies are among the safest and most effective. This guide covers mantras, good deeds, deity worship, and guidance to consult a chart before any yellow sapphire.",
         seo_description="Jupiter (Guru / Brihaspati) remedies: mantras, good deeds, deity worship, and honest guidance on yellow sapphire without vendor manipulation.",
         category="Remedies",
         hero_image="/static/learn/jupiter-remedies/hero.svg",
@@ -1019,7 +1019,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Should I do expensive Guru puja packages?",
-                "a": "Almost never. Genuine Jupiter puja is inexpensive — a simple havan with yellow flowers, ghee, and chick peas offered to Vishnu costs almost nothing. Any priest demanding tens of thousands is selling anxiety, not tradition. Mantras + Chalisa + Vishnu worship + genuine wisdom-seeking cost almost nothing; expensive rituals done without devotion are not what the tradition asks for. The core teaching: remedies are devotional acts, not transactional payments.",
+                "a": "Be cautious of a very large quote for a Jupiter puja package: we hold no source for what a fair price is, so ask what it covers. A simple havan with yellow flowers, ghee, and chick peas offered to Vishnu, mantras, the Chalisa, Vishnu worship and genuine wisdom-seeking are practice, not a held book, and none of them depends on buying a package. In our reading, remedies are devotional acts, not transactional payments.",
             },
         ),
         llm_summary=(
@@ -1036,7 +1036,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="mercury-remedies",
         title="Mercury Remedies: Working with Budha's Intellect Through Vishnu Worship",
-        summary="Mercury (Budha) is Vedic astrology's kumara — karaka of intellect, speech, commerce, and the youthful learning mind. Mercury remedies are among the gentlest in the tradition, grounded in respect for scholars, service to students, disciplined speech, and Vishnu worship. This guide covers mantras, good deeds, deity worship, and honest guidance on emerald without vendor manipulation.",
+        summary="Mercury (Budha) is Vedic astrology's kumara — karaka of intellect, speech, commerce, and the youthful learning mind. Mercury remedies are among the gentlest in the tradition, grounded in respect for scholars, service to students, disciplined speech, and Vishnu worship. This guide covers mantras, good deeds, deity worship, and guidance to consult a chart before any emerald.",
         seo_title="Mercury Remedies: Vishnu Worship & Emerald Guide",
         seo_description="Classical Mercury (Budha) remedies — bija mantra, Vishnu worship, Wednesday practices, emerald safety per Ascendant. Honest, no vendor manipulation.",
         category="Remedies",
@@ -1083,7 +1083,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="venus-remedies",
         title="Venus Remedies: Working with Shukra's Grace Through Lakshmi Worship",
-        summary="Venus (Shukra) is Vedic astrology's classical bhogakaraka — karaka of marriage, love, beauty, comfort, and the feminine principle. Venus remedies are among the gentlest in the tradition, grounded in respect for the feminine, aesthetic devotion, and Lakshmi worship. This guide covers mantras, good deeds, deity worship, and honest guidance on diamond without vendor manipulation.",
+        summary="Venus (Shukra) is Vedic astrology's classical bhogakaraka — karaka of marriage, love, beauty, comfort, and the feminine principle. Venus remedies are among the gentlest in the tradition, grounded in respect for the feminine, aesthetic devotion, and Lakshmi worship. This guide covers mantras, good deeds, deity worship, and guidance to consult a chart before any diamond.",
         seo_title="Venus Remedies: Lakshmi Worship & Diamond Guide",
         seo_description="Classical Venus (Shukra) remedies — bija mantra, Lakshmi worship, Friday practices, diamond safety per Ascendant. Honest, no vendor manipulation.",
         category="Remedies",
@@ -1175,7 +1175,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="saturn-remedies",
         title="Saturn Remedies: The Classical Vedic Approach to Working with Shani",
-        summary="Saturn is Vedic astrology's most-feared planet and the most misunderstood. This guide walks through the genuine classical remedies from Rao's Ch. 34 — mantras, good deeds, deity worship, and the critical warnings about blue sapphire — without the vendor manipulation that dominates online content.",
+        summary="Saturn is Vedic astrology's most-feared planet and the most misunderstood. This guide walks through the genuine classical remedies from Rao's Ch. 34 — mantras, good deeds, deity worship, and the critical warnings about blue sapphire.",
         seo_description="Genuine classical Saturn remedies — mantras, good deeds, deity worship, and the critical warnings about blue sapphire — without the vendor manipulation.",
         category="Remedies",
         hero_image="/static/learn/saturn-remedies/hero.svg",
@@ -1200,7 +1200,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Are expensive Shani puja packages worth it?",
-                "a": "Almost never. Any priest demanding tens of thousands of rupees for a Shani nivaran puja is selling anxiety, not tradition. Genuine remedies are inexpensive — mantras + Chalisa + Vishnu worship + service to elderly costs almost nothing; expensive rituals done without devotion are not what the tradition asks for. The classical framing from Rao: 'Remedies are devotional acts, not transactional payments.' Anyone treating them as 'paying to make the problem go away' misunderstands the tradition and often makes the underlying pattern worse.",
+                "a": "Be cautious of a very large quote for a Shani nivaran puja package: we hold no source for what a fair price is, so ask what it covers. Mantras + Chalisa + Vishnu worship + service to elderly do not depend on buying a package. In our reading, remedies are devotional acts, not transactional payments, so they are not a way to 'pay to make the problem go away'.",
             },
             {
                 "q": "Can Saturn remedies remove my career problems?",
@@ -1247,7 +1247,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Should I do expensive puja for marriage delay?",
-                "a": "Almost never. Any priest asking for tens of thousands of rupees for a 'marriage nivaran puja' is selling anxiety, not tradition. Genuine classical remedies are simple: Venus/Jupiter mantras, appropriate weekday fasting (Friday for Venus, Thursday for Jupiter), offering appropriate coloured flowers, worship of Shiva-Parvati as archetypal marriage. If Manglik-specific, matching with another Manglik partner is the remedy one held antidote list gives — not a puja; that list names no severity condition, and the comparable-strength condition we apply on top is Shubh Bhagya's own, not scripture. Gemstones should never be worn without proper chart consultation.",
+                "a": "Be cautious of a very large quote for a 'marriage nivaran puja': we hold no source for what a fair price is, so ask what it covers. Simple practices people use (practice, not a held book) are Venus/Jupiter mantras, appropriate weekday fasting (Friday for Venus, Thursday for Jupiter), offering appropriate coloured flowers, worship of Shiva-Parvati as archetypal marriage. If Manglik-specific, matching with another Manglik partner is the remedy one held antidote list gives — not a puja; that list names no severity condition, and the comparable-strength condition we apply on top is Shubh Bhagya's own, not scripture. Gemstones should never be worn without proper chart consultation.",
             },
             {
                 "q": "What is Navamsha (D-9) and why does it matter for marriage?",
@@ -1972,11 +1972,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Should I do an expensive Santan Prapti puja to fix children delay?",
-                "a": "Almost never. The vendor market around fertility-related pujas is one of the most exploitative corners of modern astrology. Any priest asking for tens of thousands of rupees for a 'santan nivaran' ceremony is trading on emotional urgency, not classical tradition. Genuine classical remedies are simple and inexpensive: Santan Gopala mantra recitation, Jupiter propitiation (Thursday fasting, yellow flowers, feeding brahmins), Krishna Balgopala worship, and worship of the deity ruling your 5th lord. If a Pitru pattern is also present, honouring ancestors through Shraddha helps. None of this should cost lakhs.",
+                "a": "Be cautious of a very large quote for a 'santan nivaran' ceremony: we hold no source for what a fair price is, so ask what it covers. Simple practices people use (practice, not a held book) include Santan Gopala mantra recitation, Jupiter propitiation (Thursday fasting, yellow flowers, feeding brahmins), Krishna Balgopala worship, and worship of the deity ruling your 5th lord. If a Pitru pattern is also present, honouring ancestors through Shraddha helps.",
             },
             {
                 "q": "Can Vedic remedies replace IVF or fertility treatment?",
-                "a": "No — and any practitioner who tells you otherwise is not a classical astrologer. Classical Vedic tradition places astrology alongside, not instead of, appropriate medicine. Modern fertility diagnostics identify treatable causes (hormonal, tubal, sperm quality, ovulation timing) that no chart reading can substitute for. The couples we see with the best outcomes usually do both: they work with a good doctor AND they engage classical practices for the 5th house and Jupiter. The two lenses together produce the best results — the doctor reads biology, the chart reads karmic weather, and both matter.",
+                "a": "No — be cautious of any practitioner who tells you otherwise. Astrology sits alongside (our view), not instead of, appropriate medicine. Modern fertility diagnostics identify treatable causes (hormonal, tubal, sperm quality, ovulation timing) that no chart reading can substitute for. The couples we see with the best outcomes usually do both: they work with a good doctor AND they engage classical practices for the 5th house and Jupiter. The two lenses together produce the best results — the doctor reads biology, the chart reads karmic weather, and both matter.",
             },
         ),
         llm_summary=(
@@ -2035,7 +2035,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Kundli suggests SUSCEPTIBILITY — does not diagnose disease; always consult a doctor\n'
             '• Timing: chronic conditions often flare in Sade Sati peak, Saturn/Rahu Mahadashas, or Antardasha of afflicted 6th/8th lord\n'
             '• Safe remedies: strengthen Lagna lord + Sun/Moon; genuine karmic-cleansing practices; NEVER replace medical care with astrology\n'
-            "• Warning: this is heavily exploited — avoid 'cure your disease' astrologers charging large fees"
+            "• Caution: be cautious of anyone promising a cure"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2148,7 +2148,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the classical remedies for Pitru Dosh?",
-                "a": "The core classical remedies focus on acknowledgment and offering rather than payment: (1) Pitru Paksha shraaddha during the annual 16-day fortnight (typically September-October); (2) Tarpana (water offerings) on Amavasya days, especially Mahalaya Amavasya; (3) Feeding the poor, cows, or crows in ancestors' names; (4) Visits to Gaya, Prayag, or Haridwar for pinda-daan; (5) Family memorials or dedicating charitable work to ancestors. Any priest demanding tens of thousands for 'Pitru Dosh nivaran puja' is selling anxiety, not tradition — genuine Pitri offerings are simple.",
+                "a": "The core classical remedies focus on acknowledgment and offering rather than payment: (1) Pitru Paksha shraaddha during the annual 16-day fortnight (typically September-October); (2) Tarpana (water offerings) on Amavasya days, especially Mahalaya Amavasya; (3) Feeding the poor, cows, or crows in ancestors' names; (4) Visits to Gaya, Prayag, or Haridwar for pinda-daan; (5) Family memorials or dedicating charitable work to ancestors. Be cautious of a very large quote for a 'Pitru Dosh nivaran puja': we hold no source for what a fair price is, so ask what it covers.",
             },
             {
                 "q": "Does Pitru Dosh mean I cannot have children or succeed?",
@@ -2171,7 +2171,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Genuine remedy = actual ancestor honoring, not fear-based puja packages\n'
             "• Safe practices: Amavasya (new moon) tarpan, feeding brahmins/needy in ancestors' names, Gaya Shraddha (once in lifetime)\n"
             '• Every chart with 9th-house affliction is NOT Pitru Dosh — check family history + Dasha context\n'
-            '• Warning: this is heavily exploited by paid astrologers — be cautious of ₹5,000+ puja packages'
+            '• Caution: we hold no source for what a fair price is; be cautious of a very large puja quote'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2964,13 +2964,13 @@ ARTICLES: tuple[Article, ...] = (
         category="Doshas", hero_image="/static/learn/pitru-dosh-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
         related=("pitru-dosh", "kaal-sarp-dosh", "sade-sati", "chandra-moon-remedies"),
         faqs=(
-            {"q": "How much does Pitru Dosh puja actually cost?", "a": "All classical remedies in this guide can be done for under ₹500 (except Gaya pilgrimage which costs travel + ₹5-15K for tri-pindi shraddha from Gayawal priests). Be cautious of anyone quoting a very large sum for a 'Pitru Shanti Yagna' or a Kaal Sarp puja."},
+            {"q": "How much does Pitru Dosh puja actually cost?", "a": "We hold no source for what a Pitru Dosh puja should cost, so we give no figure. Be cautious of anyone quoting a very large sum for a 'Pitru Shanti Yagna' or a Kaal Sarp puja, and remember the Gaya pilgrimage adds travel."},
             {"q": "What is Pitru Paksha and when is it?", "a": "The 15-day period preceding Sharad Navratri (typically September). Dedicated to ancestor offerings. Peak remedial window for Pitru Dosh. Minimum practice: daily tarpan facing south with sesame water, feed a Brahmin+cow+crow at least once, avoid celebrations."},
             {"q": "Do I need to go to Gaya?", "a": "Only for serious Pitru Dosh — chronic career/marriage/children obstacles, repeated pattern across generations. Alternatives if Gaya is not accessible: Trimbakeshwar (Nagbali + Narayan Bali), Kurukshetra during eclipses, Rameshwaram for South Indian traditions. Consistent annual Pitru Paksha observance is often sufficient."},
             {"q": "How do I know if I really have Pitru Dosh?", "a": "Classical signatures: Sun heavily afflicted by Rahu/Saturn, 9th/12th house lords afflicted, Rahu-Ketu on 9th-3rd or 12th-6th axis. Life patterns: repeated obstacles despite competence, children delayed, money slips through fingers, frequent ancestor-related dreams. Verify with proper chart reading before investing in remedies."},
         ),
         llm_summary=(
-            'Keypoints:\n• Pitru Dosh = ancestral karmic debt (Sun+Rahu/Saturn affliction, 9th/12th house issues)\n• 6 classical remedies: (1) Pitru Paksha 15-day observance (tarpan, feed Brahmin/cow/crow), (2) annual death anniversary tarpan (Barsi), (3) monthly Amavasya practice, (4) Gaya tri-pindi shraddha for serious cases, (5) Ganesha + Vishnu worship (Ekadashi vrat), (6) serving living elders\n• ALL remedies < ₹500; Gaya adds travel + ₹5-15K\n• Cost: no held source prices a remedy; be cautious of a very large quote'
+            'Keypoints:\n• Pitru Dosh = ancestral karmic debt (Sun+Rahu/Saturn affliction, 9th/12th house issues)\n• 6 classical remedies: (1) Pitru Paksha 15-day observance (tarpan, feed Brahmin/cow/crow), (2) annual death anniversary tarpan (Barsi), (3) monthly Amavasya practice, (4) Gaya tri-pindi shraddha for serious cases, (5) Ganesha + Vishnu worship (Ekadashi vrat), (6) serving living elders\n• Cost: no held source prices a remedy; be cautious of a very large quote; Gaya adds travel'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),

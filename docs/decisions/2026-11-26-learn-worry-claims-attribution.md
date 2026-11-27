@@ -150,3 +150,108 @@ same family.
 The "selling anxiety / tens of thousands" family on about ten more surfaces: templates
 `venus-remedies`, `mercury-remedies`, `jupiter-remedies`, `santan-prapti`, `10th-lord-in-6th`; registry
 lines near 1022, 1203, 1250, 1975, 2038, 2079 and 2174 (grep before editing; the numbers move).
+**Done in #1525, see the addendum below.** Checked there: `10th-lord-in-6th` has no "selling anxiety"
+line, but it did carry "exploiting the placement's discomfort", which the same family names.
+
+## Addendum 2026-11-26 (#1525): the price-and-motive family
+
+Same three-way rule (attribute to the site, label as practice, or delete); no new astrological claim.
+The family is a remedy **price band** ("tens of thousands", "under ₹500", "₹5-15K", "costs almost
+nothing"), a **motive** stated as fact ("selling anxiety", "exploiting fear", "trading on fear",
+"exploitative", "heavily exploited") and a **prevalence** claim about vendors ("the vendor manipulation
+that dominates online content", "the vendor-scam version is rampant"). Thirteen templates
+(`financial-struggles`, `marriage-delayed`, `mercury-remedies`, `venus-remedies`, `jupiter-remedies`,
+`saturn-remedies`, `pitru-dosh`, `rahu-mahadasha-career-problems`, `10th-lord-in-6th-house-career`,
+`saturn-in-10th-house-career`, `chronic-health-issues-kundli`, `santan-prapti-children-in-kundli`,
+`pitru-dosh-remedies`) and seven registry entries (`jupiter-remedies`, `saturn-remedies`,
+`marriage-delayed`, `santan-prapti-children-in-kundli`, `chronic-health-issues-kundli`, `pitru-dosh`,
+`pitru-dosh-remedies`). Each puja-package bullet now says what the live #1513 pages say: *be cautious of
+a very large quote for "<X>": we hold no source for what a fair price is, so ask what it covers*. The
+positive content of the bullet (mantras, Vishnu worship, a havan) stays, labelled practice where it
+had been called "genuine".
+
+Safety lines were kept, not traded away with the claim: skip no medical care (`chronic-health`,
+`santan-prapti`, and the registry never-replace-medical-care line), consult a chart before blue
+sapphire (`saturn-remedies`), before hessonite (`rahu-mahadasha`), before gemstones at all (the
+`marriage-delayed` FAQ). The test pins each, so a rewrite that deletes the caution instead of the claim
+goes red.
+
+**Evidence base: `data/` was ABSENT on the build runner; books present: none.** Nothing here asserts
+absence from a book. The pages say "we hold no source", the same wording #1513 used, and the one
+sentence this change cannot source either way (whether Rao, *Lessons*, ch. 34 says anything about cost)
+is not claimed.
+
+### Corrections to the issue
+
+- `knowledge/vedic_reference.md` section 3.4 is the Kala Sarpa entry (Rao, *Lessons*), not a record
+  that "no held book prices a remedy". The nearest held statements are section 3.3 ("we hold no source
+  for the removal pujas sold around Kaal Sarp"), the site's own #1513 wording and `remedies.md` 1.2 /
+  1.4 (what is held: Rao on belief, and on gemstones).
+- 13 templates, not 12: the issue's count missed `10th-lord-in-6th-house-career` ("exploiting the
+  placement's discomfort") and `pitru-dosh-remedies`, whose page said "every remedy below can be done
+  for under ₹500" beside the FAQ the issue did name; changing the FAQ alone would have left the page
+  and its own FAQ JSON-LD disagreeing. The registry also had a price band the issue missed (the
+  `pitru-dosh-remedies` FAQ and `llm_summary`: "under ₹500 ... ₹5-15K"; #1509's gate missed it because
+  `5-15K` is not `5-25K`).
+- **A quotation that was not Rao's.** The `saturn-remedies` FAQ said *The classical framing from Rao:
+  'Remedies are devotional acts, not transactional payments.'* `remedies.md` 1.2 holds no such quote;
+  the sentence is this repo's own. It now reads "In our reading, remedies are devotional acts, ...".
+  Rao's held words there are "Those who have no belief in Vedic remedies may skip this chapter", which
+  the page keeps. The same FAQ's "often makes the underlying pattern worse" is `remedies.md` 1.2's own
+  gloss, not a Rao quote, and is cut.
+- "Almost never" opened four FAQ answers (Jupiter, Saturn, marriage and santan-prapti); it is an
+  outcome and prevalence claim of the `almost always` / `rarely` family #1509 removed, so those
+  answers now open with the caution.
+
+### Phrase-match counts, before and after
+
+Counted with the gate's own patterns (`_BANNED_R3` on the registry, `_BANNED_R3` plus `_BANNED_R3_PAGE`
+on the rendered page body; a phrase count, not a read of the pages). "Before" is main at `f57cde5`.
+
+| surface | before | after |
+| --- | --- | --- |
+| 13 rendered pages (sum) | 56 | 0 |
+| 7 registry entries (sum; `summary`, `llm_summary`, `faqs`) | 27 | 0 |
+| issue repro `grep -rciE "selling anxiety\|tens of thousands\|exploiting fear"` over `templates/learn` + `learn_registry.py` | 11 templates + the registry (5 lines) | empty |
+| wider `selling anxiety\|tens of thousands\|exploiting fear\|heavily exploited\|exploitative\|trading on\|exploiting the\|emotional urgency\|not a classical astrologer\|misrepresenting\|rampant` over `templates` + `learn_registry.py` | 12 templates + the registry (8 lines) | empty |
+
+The gate adds a separate tuple (`_BANNED_R3`), not an addition to `_BANNED`: `_BANNED_R2` is sliced off
+the end of `_BANNED` (`_BANNED[-7:]`), so appending there would silently change which patterns round 2
+pins, and would run the broad "most people" and "K.N. Rao" families over pages this issue does not
+name. A one-line assert on `len(_BANNED_R2)` makes that edit loud.
+
+### The unresolved conflict with `knowledge/remedies.md` 1.3
+
+`remedies.md` 1.3 states a price band ("tens of thousands") and a motive ("selling anxiety, not
+tradition") as a rule, and says every remedy article "must explicitly warn". It cites no passage of
+Rao (1.2 quotes him on belief, 1.4 on gemstones, 1.3 quotes nothing), so it is the site's own
+editorial written into a knowledge file. It is **not edited here**: it is a trust-boundary file, it is
+not shown to readers, and the diff stays reviewable. Confirmed it cannot reintroduce the claim:
+`knowledge_lookup.py` reads only `remedies.md` 5.1 and 7.1 (`_read_remedies`), and its one caller is
+`llm.py` (about line 293); no route or prompt file loads 1.3. The articles still *warn*, in the live
+wording, which satisfies "must warn" without asserting a price or a motive as fact. An auditor reading
+1.3 may nonetheless flag the pages as missing the warning it describes; this paragraph is the answer.
+
+**Follow-up to file:** reword `knowledge/remedies.md` 1.3 to a caution, then check
+`scripts/verify_natal_prompt.py` / `scripts/mutate_natal_prompt_gate.py` fixtures if they quote it
+(both use "selling anxiety" only as a seeded bad string and a comment, so neither needs the live copy to
+contain it). Related: `prompts/natal.txt` line 68 ("never suggest paying a large sum for a puja") is an
+instruction to the model, not a reader-facing assertion; left as is, since prompts are a trust boundary.
+
+### Out of scope here
+
+- `seo_description` and `<title>` / `seo_title` are untouched (#311 scored a title change a miss;
+  description risk is unmeasured). Still saying "without vendor manipulation": the `seo_description` of
+  `jupiter-remedies`, `mercury-remedies`, `venus-remedies`, `mars-remedies` and `saturn-remedies`; the
+  `pitru-dosh-remedies` `seo_description` still says "every remedy under ₹500". The gate skips
+  `seo_description` for these seven entries for that reason.
+- The same family on surfaces the issue did not name and this change did not touch:
+  `mars-remedies` (intro, and the registry `summary`, "without the vendor manipulation that dominates
+  online content"), `career-during-sade-sati` (page and registry FAQ: "the vendor manipulation around
+  Sade Sati is enormous", "A ₹50,000 puja"), `foreign-career-yoga-kundli` ("one of the most heavily
+  scammed areas"). Not gated; file them.
+- The `rahu-remedies` and `mars-remedies` "Do not overpay for ..." headings stay on purpose: neutral
+  caution, already live from #1513. `saturn-remedies` registry "at no cost" (a lone, mild price claim)
+  and the other "most people" prose #1523 named are also left.
+- `tests/test_learn_worry_claims_attribution.py` is a phrase test. It catches what it names; `qa` and
+  `astro-auditor` read the rest.
