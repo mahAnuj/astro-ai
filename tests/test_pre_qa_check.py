@@ -297,6 +297,39 @@ def test_a_corpus_line_or_a_knowledge_change_or_an_unrelated_diff_passes_groundi
     assert pqc.check_grounding_proxy(D(["src/astro_ai/main.py", "scripts/x.py"])) == []
 
 
+CHART = "src/astro_ai/chart.py"
+
+
+def test_a_citation_in_an_added_decision_file_line_passes_grounding():
+    # 6906d32 (#1478): the decision file cited knowledge/grahas.md, no commit had `corpus:`
+    cites = {"docs/decisions/x.md": ["source: knowledge/grahas.md section 12.5"]}
+    assert pqc.check_grounding_proxy(D([CHART, "docs/decisions/x.md"], added=cites, commits=["x"])) == []
+    na = {"docs/decisions/x.md": ["corpus: n/a -- no astrological rule changed"]}
+    assert pqc.check_grounding_proxy(D([CHART, "docs/decisions/x.md"], added=na, commits=["x"])) == []
+
+
+def test_a_decision_file_that_cites_nothing_still_fails_grounding():
+    ctx = D([CHART, "docs/decisions/x.md"], commits=["x"],
+            added={"docs/decisions/x.md": ["# a decision", "Why: it was slow"]})
+    assert len(pqc.check_grounding_proxy(ctx)) == 1
+    assert len(pqc.check_grounding_proxy(D([CHART, "docs/decisions/x.md"], commits=["x"]))) == 1
+
+
+def test_a_citation_outside_an_added_decision_line_does_not_pass_grounding():
+    line = ["source: knowledge/grahas.md section 12.5"]
+    for path in ("docs/decisions/README.md", "docs/other.md", "knowledge/x.mdx",
+                 "docs/decisions/sub/x.md"):
+        ctx = D([CHART, path], added={path: line}, commits=["x"])
+        assert len(pqc.check_grounding_proxy(ctx)) == 1, path
+    removed = D([CHART, "docs/decisions/x.md"], removed={"docs/decisions/x.md": line}, commits=["x"])
+    assert len(pqc.check_grounding_proxy(removed)) == 1
+
+
+def test_the_grounding_failure_names_both_places_a_citation_can_go():
+    [msg] = pqc.check_grounding_proxy(D([CHART], commits=["x"]))
+    assert "docs/decisions" in msg and "`corpus:`" in msg
+
+
 def test_main_prints_one_themes_line_and_a_failing_theme_exits_one(fake_root, monkeypatch, capsys):
     monkeypatch.setattr(pqc, "changed_files", lambda: ["src/astro_ai/chart.py"])
     monkeypatch.setattr(pqc, "tests_for", lambda changed: [])
