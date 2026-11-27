@@ -249,9 +249,71 @@ instruction to the model, not a reader-facing assertion; left as is, since promp
   `mars-remedies` (intro, and the registry `summary`, "without the vendor manipulation that dominates
   online content"), `career-during-sade-sati` (page and registry FAQ: "the vendor manipulation around
   Sade Sati is enormous", "A ₹50,000 puja"), `foreign-career-yoga-kundli` ("one of the most heavily
-  scammed areas"). Not gated; file them.
+  scammed areas"). Not gated; file them. (`career-during-sade-sati` and `foreign-career-yoga-kundli`
+  were done in #1528, below; `mars-remedies` is still open.)
 - The `rahu-remedies` and `mars-remedies` "Do not overpay for ..." headings stay on purpose: neutral
   caution, already live from #1513. `saturn-remedies` registry "at no cost" (a lone, mild price claim)
   and the other "most people" prose #1523 named are also left.
 - `tests/test_learn_worry_claims_attribution.py` is a phrase test. It catches what it names; `qa` and
   `astro-auditor` read the rest.
+
+## Addendum 2026-11-27 (#1528): the price-and-motive family, round 4
+
+The QA round on PR #1526 found the same family on four pages #1525 did not name. Same three-way rule
+(attribute to the site, label as practice, or delete); no new astrological claim. Pattern wording is
+#1526's: *be cautious of a very large quote for "<X>": we hold no source for what a fair price is, so
+ask what it covers.* The page and its registry FAQ were changed together, because the registry feeds
+the FAQPage JSON-LD.
+
+Families: a rupee **price band** ("A ₹50,000 puja", "₹2,000-10,000", "₹500-2000", "₹2K-10K",
+"₹500-2K"), a **vendor motive and prevalence** claim ("the vendor manipulation around Sade Sati is
+enormous", "one of the most heavily scammed areas", "scams are common"), a **price claim about a stone**
+("always overpriced", "inflated prices") and a **provider-quality** label ("from legitimate priests").
+Four slugs: `career-during-sade-sati` (page and FAQ), `foreign-career-yoga-kundli` (page and FAQ),
+`manglik-remedies` (page, FAQ), `kaal-sarp-dosh-remedies` (page, `llm_summary`). Safety lines are kept
+and pinned: blue sapphire "never without proper chart consultation ... walk away" (career page and FAQ),
+and the foreign page's "anyone who guarantees visa approval" and "MUST wear a specific gemstone" cautions.
+The foreign page now also says we hold no source that a puja or a gemstone is required to activate the
+yoga; the old "Classical Vedic tradition does not support any of these claims" asserted what no held
+book was checked for. `title`, `seo_title` and `seo_description` are untouched.
+
+**Evidence base: `data/` was ABSENT on the build runner; books present: none.** No corpus-absence
+claim is made; the pages say "we hold no source".
+
+### Corrections to the issue
+
+- `knowledge/vedic_reference.md` section 3.4 is the Kala Sarpa entry, not a record that no held book
+  prices a remedy (the same correction #1526 recorded above). The nearest held statement is section 3.3.
+- The issue's `₹500-2K` (registry about line 2991) is on `kaal-sarp-dosh-remedies`, not
+  `manglik-remedies`; the issue's list put it under the wrong slug.
+- A fourth page: `kaal-sarp-dosh-remedies` also said "Cost: ₹500-2000 for the silver pair" and "mostly
+  inexpensive". The issue's repro grep misses it, because `₹500-2000` is not `₹500-2K`. It also said
+  "we give no figure" at line 23 and gave one at line 65, so the page contradicted itself.
+- `grep -rnE "₹ ?[0-9]" src/astro_ai/templates/learn`: 3 lines before (career, kaal-sarp, manglik), not
+  4; 0 after. The foreign page's price claim has no rupee sign ("always overpriced").
+
+### Phrase-match counts, before and after
+
+Counted with the gate's own patterns (`_BANNED_R3` plus `_BANNED_R4` on the registry fields `summary`,
+`llm_summary` and `faqs`; plus `_BANNED_R3_PAGE` on the rendered page body). "Before" is main at
+`7b0ee2f`.
+
+| surface | before | after |
+| --- | --- | --- |
+| 4 rendered pages (sum of patterns that fire) | 14 | 0 |
+| 4 registry entries (sum) | 6 | 0 |
+| issue repro grep (5 phrases) over `templates/learn` + `learn_registry.py` | 6 lines | 0 |
+| `grep -rnE "₹ ?[0-9]" templates/learn` | 3 lines | 0 |
+| `grep -n "₹" learn_registry.py` | 3 lines | 1 (deferred, below) |
+
+The gate is a separate tuple (`_BANNED_R4`), again not appended to `_BANNED` (`_BANNED_R2` slices its end).
+Bare `expensive` is not banned: the kept cautions ("a very large quote", "costly Kaal Sarp offers") are not
+claims about a price.
+
+### Left alone on purpose
+
+- `pitru-dosh-remedies` registry `seo_description` ("Every remedy under ₹500"), and the
+  `seo_description` of `kaal-sarp-dosh-remedies`: search snippets are deferred (#311). The registry scan
+  skips `seo_description`, so the one remaining `₹` in `learn_registry.py` is the `pitru-dosh-remedies` line.
+- `kaal-sarp-dosh-remedies` line 7, "expensive remedy offer ... be cautious": a caution, kept in #1526.
+- `mars-remedies`: the leftovers named under #1525 are still open.

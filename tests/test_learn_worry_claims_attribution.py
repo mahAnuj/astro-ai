@@ -365,3 +365,84 @@ def test_saturn_registry_does_not_put_a_paraphrase_in_raos_mouth():
     # The sentence may stay, but only as the site's own reading.
     assert n.count("devotional acts, not transactional payments") == n.count(
         "in our reading, remedies are devotional acts, not transactional payments")
+
+
+# #1528: the same price-and-motive family on four pages #1525 did not name (the QA round on #1526 found
+# them: a rupee band, "vendor manipulation is enormous", "always overpriced", "legitimate priests"). Another
+# separate tuple: _BANNED_R2 slices the end of _BANNED, and bare "expensive" is not banned because the
+# kept cautions ("a very large quote", "costly Kaal Sarp offers") are not claims about a price.
+_BANNED_R4 = (
+    r"overpriced", r"inflated prices?", r"heavily scammed", r"scams? (are|is) common", r"₹\s?\d",
+    r"from legitimate priests", r"(avoid|skip) (the )?expensive", r"sell expensive",
+)
+# The parametrize lists below are literal tuples on purpose: verify_test_floor counts literal cases only
+# (a module-level name is not followed, #446). The four slugs are the same for pages and registry.
+_BANNED_RE_R4 = [re.compile(p) for p in _BANNED_R3 + _BANNED_R4]
+# The page scan also carries the R3 page-only patterns (the registry scan skips seo_description, where
+# kaal-sarp-dosh-remedies and pitru-dosh-remedies keep a deferred snippet).
+_BANNED_RE_R4_PAGE = [re.compile(p) for p in _BANNED_R3 + _BANNED_R3_PAGE + _BANNED_R4]
+
+_MARKER4 = {
+    "career-during-sade-sati": 'very large quote for "shani nivaran puja" packages',
+    "foreign-career-yoga-kundli": "we hold no source for what a fair price is",
+    "manglik-remedies": "we hold no source for what a fair price is, so we give no figure",
+    # "cost: " pins the list item, not the callout above it, which says the same thing in other words.
+    "kaal-sarp-dosh-remedies": "cost: we hold no source for what a fair price is, so we give no figure",
+}
+_REGISTRY_MARKER4 = {
+    "career-during-sade-sati": "very large quote for a shani nivaran puja package",
+    "foreign-career-yoga-kundli": "no reading can promise one",
+    "manglik-remedies": "we hold no source for what it should cost",
+    "kaal-sarp-dosh-remedies": "no held source prices a remedy",
+}
+
+
+@pytest.mark.parametrize(
+    "slug",
+    ("career-during-sade-sati", "foreign-career-yoga-kundli", "manglik-remedies", "kaal-sarp-dosh-remedies"),
+)
+def test_rendered_round4_page_carries_no_price_or_motive_claim(client, slug):
+    assert _hits(_visible(client, slug), _BANNED_RE_R4_PAGE) == [], slug
+
+
+@pytest.mark.parametrize(
+    "slug",
+    ("career-during-sade-sati", "foreign-career-yoga-kundli", "manglik-remedies", "kaal-sarp-dosh-remedies"),
+)
+def test_registry_round4_entry_carries_no_price_or_motive_claim(slug):
+    assert _hits(_registry_text(slug, _R3_FIELDS), _BANNED_RE_R4) == [], slug
+
+
+@pytest.mark.parametrize(
+    "slug",
+    ("career-during-sade-sati", "foreign-career-yoga-kundli", "manglik-remedies", "kaal-sarp-dosh-remedies"),
+)
+def test_round4_page_says_what_we_hold_about_price(client, slug):
+    assert _MARKER4[slug] in _norm(_visible(client, slug)), slug
+
+
+@pytest.mark.parametrize(
+    "slug",
+    ("career-during-sade-sati", "foreign-career-yoga-kundli", "manglik-remedies", "kaal-sarp-dosh-remedies"),
+)
+def test_round4_registry_entry_keeps_its_caution(slug):
+    assert _REGISTRY_MARKER4[slug] in _norm(_registry_text(slug, _R3_FIELDS)), slug
+
+
+# Safety messages the rewrite must keep (red if a rewrite deletes the caution instead of the claim).
+def test_career_sade_sati_page_keeps_the_blue_sapphire_caution(client):
+    n = _norm(_visible(client, "career-during-sade-sati"))
+    assert "never without proper chart consultation" in n
+    assert "walk away" in n
+
+
+def test_foreign_yoga_page_keeps_the_guarantee_and_gemstone_cautions(client):
+    n = _norm(_visible(client, "foreign-career-yoga-kundli"))
+    assert "anyone who guarantees visa approval" in n
+    assert "must wear a specific gemstone" in n
+    assert "chart consultation" in n
+
+
+def test_career_sade_sati_registry_keeps_the_blue_sapphire_caution():
+    n = _norm(_registry_text("career-during-sade-sati", _R3_FIELDS))
+    assert "never wear blue sapphire without a proper chart consultation" in n
