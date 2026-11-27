@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-27T05:12:43Z",
+ "generated_at": "2026-11-27T12:48:54Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-27",
  "today": {
   "growth": 0,
-  "other": 7,
+  "other": 13,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 14,
-  "other": 52,
+  "other": 58,
   "exempt": 5,
-  "share": 0.212
+  "share": 0.194
  },
  "this_month": {
   "growth": 48,
-  "other": 302,
+  "other": 308,
   "exempt": 5,
-  "share": 0.137
+  "share": 0.135
  },
  "must_pick_growth": true,
  "days": [
@@ -117,26 +117,108 @@
   {
    "date": "2026-11-27",
    "growth": 0,
-   "other": 7,
+   "other": 13,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
   {
-   "run": 45942315479,
-   "started": "2026-11-27T04:51:03Z",
-   "issue": 1477,
-   "title": "QA follow-up: reentry stand-down can drop a QA-FAIL fix entry after an unrelated claude[bot] comment (PR #1475)",
+   "run": 45994211785,
+   "started": "2026-11-27T11:54:04Z",
+   "issue": 1542,
+   "title": "QA follow-up: a non-object loop.json (e.g. [1]) still 500s every /admin/ops tab (PR #1541)",
    "class": "other",
    "outcome": "pr open",
-   "pr": 1536,
+   "pr": 1544,
    "agents": {
     "architect": 1,
     "backend-engineer": 1,
     "project-manager": 1,
     "qa": 1
    }
+  },
+  {
+   "run": 45980226354,
+   "started": "2026-11-27T10:13:11Z",
+   "issue": 1478,
+   "title": "QA follow-up: pre_qa_check grounding proxy fails grounded commits whose message has no corpus: line (PR #1475)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1543,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45977808103,
+   "started": "2026-11-27T09:56:00Z",
+   "issue": 1492,
+   "title": "QA follow-up: one malformed loop.json row 500s every /admin/ops tab before ops_kpis can skip it (PR #1489)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1541,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45968422735,
+   "started": "2026-11-27T08:47:37Z",
+   "issue": 1492,
+   "title": "QA follow-up: one malformed loop.json row 500s every /admin/ops tab before ops_kpis can skip it (PR #1489)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1541,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45966592131,
+   "started": "2026-11-27T08:33:28Z",
+   "issue": 1529,
+   "title": "[UI] /matching 375px: two nested bordered cards cost ~28px of input width; test flattening the inner card on mobile",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1540,
+   "agents": {
+    "architect": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45960101667,
+   "started": "2026-11-27T07:40:36Z",
+   "issue": 1530,
+   "title": "[UI] Bottom nav 'Ask' icon is fullwidth '\uff1f' (U+FF1F): renders as an empty box without a CJK font fallback",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1539,
+   "agents": {
+    "architect": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45942315479,
+   "started": "2026-11-27T04:51:03Z",
+   "issue": 1477,
+   "title": "QA follow-up: reentry stand-down can drop a QA-FAIL fix entry after an unrelated claude[bot] comment (PR #1475)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1536,
+   "agents": null
   },
   {
    "run": 45925955952,
@@ -524,72 +606,6 @@
    "outcome": "shipped",
    "pr": 1458,
    "agents": null
-  },
-  {
-   "run": 45498131461,
-   "started": "2026-11-24T22:09:02Z",
-   "issue": 1026,
-   "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1455,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45486601069,
-   "started": "2026-11-24T21:00:17Z",
-   "issue": 1026,
-   "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1455,
-   "agents": null
-  },
-  {
-   "run": 45461507691,
-   "started": "2026-11-24T18:37:19Z",
-   "issue": 1436,
-   "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1438,
-   "agents": null
-  },
-  {
-   "run": 45403353522,
-   "started": "2026-11-24T13:25:53Z",
-   "issue": 1237,
-   "title": "analytics: no export carries GA4 page_location \u2014 #1066 and #1093 cannot be scored (3 reports in a row)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1449,
-   "agents": null
-  },
-  {
-   "run": 45396211064,
-   "started": "2026-11-24T12:43:04Z",
-   "issue": 1295,
-   "title": "QA follow-up: the Hindi rashifal suffix asks for Sanskrit terms while the prompt asks for everyday, non-Sanskrit-heavy Hindi",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1447,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45394566362,
-   "started": "2026-11-24T12:32:54Z",
-   "issue": 1070,
-   "title": "analytics: instrument the core funnels",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1446,
-   "agents": {
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -925,21 +941,21 @@
   "ga4_sessions_28d": 838,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.212,
-  "growth_share_month": 0.137
+  "growth_share_week": 0.194,
+  "growth_share_month": 0.135
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-27",
    "progress": 0.0,
-   "detail": "0 of 7 cycles on growth, target 60%",
+   "detail": "0 of 13 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.566,
+   "progress": 0.553,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -950,8 +966,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.212,
-     "progress": 0.329,
+     "current": 0.194,
+     "progress": 0.264,
      "basis": "growth_share_week"
     },
     {
@@ -1020,7 +1036,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.509,
+   "progress": 0.505,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1063,8 +1079,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.137,
-     "progress": 0.376,
+     "current": 0.135,
+     "progress": 0.365,
      "basis": "growth_share_month"
     }
    ]

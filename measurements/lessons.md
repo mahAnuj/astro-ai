@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-27T05:14:37Z)
+# Lessons — last 30 days (generated 2026-11-27T12:51:51Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -24,8 +24,7 @@ deterministic, no LLM.
 - QA FAIL verdicts: 116
 - reverted commits on main: 0
 - failed verify-production runs: 10
-- ops findings now: 1
-  - [amber] claude-quota: Claude weekly quota 94% used
+- ops findings now: 0
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
