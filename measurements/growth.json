@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-27T19:04:24Z",
+ "generated_at": "2026-11-27T20:40:12Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-28",
  "today": {
   "growth": 0,
-  "other": 0,
-  "exempt": 0,
-  "share": null
+  "other": 2,
+  "exempt": 1,
+  "share": 0.0
  },
  "this_week": {
   "growth": 15,
-  "other": 62,
-  "exempt": 5,
-  "share": 0.195
+  "other": 64,
+  "exempt": 7,
+  "share": 0.19
  },
  "this_month": {
   "growth": 49,
-  "other": 312,
-  "exempt": 5,
-  "share": 0.136
+  "other": 314,
+  "exempt": 7,
+  "share": 0.135
  },
  "must_pick_growth": true,
  "days": [
@@ -111,33 +111,81 @@
    "date": "2026-11-27",
    "growth": 1,
    "other": 17,
-   "exempt": 0,
+   "exempt": 1,
    "share": 0.056
   },
   {
    "date": "2026-11-28",
    "growth": 0,
-   "other": 0,
-   "exempt": 0,
-   "share": null
+   "other": 2,
+   "exempt": 1,
+   "share": 0.0
   }
  ],
  "cycles": [
+  {
+   "run": 46059427967,
+   "started": "2026-11-27T19:49:57Z",
+   "issue": 1553,
+   "title": "QA follow-up: Analytics tab 500s when gsc-daily.json is absent or empty (PR #1552)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1556,
+   "agents": {
+    "architect": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 46058481865,
+   "started": "2026-11-27T19:41:40Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "shipped",
+   "pr": 1552,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 46055368753,
+   "started": "2026-11-27T19:15:12Z",
+   "issue": 1504,
+   "title": "Muhurat: Shashthi/Dwadashi absent from griha_pravesh and vivah avoid_tithis with no note (split from #1497)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1550,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 46040045737,
+   "started": "2026-11-27T17:13:00Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "shipped",
+   "pr": 1552,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1
+   }
+  },
   {
    "run": 46032569034,
    "started": "2026-11-27T16:19:03Z",
    "issue": 1504,
    "title": "Muhurat: Shashthi/Dwadashi absent from griha_pravesh and vivah avoid_tithis with no note (split from #1497)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1550,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 46028473636,
@@ -560,58 +608,6 @@
    "outcome": "shipped",
    "pr": 1475,
    "agents": null
-  },
-  {
-   "run": 45593061168,
-   "started": "2026-11-25T10:14:29Z",
-   "issue": 1133,
-   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
-   "class": "exempt",
-   "outcome": "shipped",
-   "pr": 1474,
-   "agents": null
-  },
-  {
-   "run": 45550122168,
-   "started": "2026-11-25T04:56:15Z",
-   "issue": 1469,
-   "title": "analytics: muhurat_searched is absent from GA4 in every report \u2014 cannot tell broken from unused (half of #1336's metric)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1472,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45547131994,
-   "started": "2026-11-25T04:29:33Z",
-   "issue": 1466,
-   "title": "tokens: code-index generator and the look-up-before-you-read agent rule (part of #1256)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1470,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45536453385,
-   "started": "2026-11-25T02:56:20Z",
-   "issue": 1466,
-   "title": "tokens: code-index generator and the look-up-before-you-read agent rule (part of #1256)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1470,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 2,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -946,21 +942,22 @@
   "ga4_new_users_28d": 684,
   "ga4_sessions_28d": 838,
   "objective_top5": 1,
-  "growth_share_week": 0.195,
-  "growth_share_month": 0.136
+  "growth_share_today": 0.0,
+  "growth_share_week": 0.19,
+  "growth_share_month": 0.135
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-28",
-   "progress": null,
-   "detail": "0 of 0 cycles on growth, target 60%",
+   "progress": 0.0,
+   "detail": "0 of 2 cycles on growth, target 60%, 1 exempt",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.554,
+   "progress": 0.55,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -971,8 +968,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.195,
-     "progress": 0.268,
+     "current": 0.19,
+     "progress": 0.25,
      "basis": "growth_share_week"
     },
     {
@@ -1041,7 +1038,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.507,
+   "progress": 0.505,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1084,8 +1081,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.136,
-     "progress": 0.37,
+     "current": 0.135,
+     "progress": 0.365,
      "basis": "growth_share_month"
     }
    ]
