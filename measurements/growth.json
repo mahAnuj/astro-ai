@@ -1,35 +1,28 @@
 {
- "generated_at": "2026-11-27T12:48:54Z",
+ "generated_at": "2026-11-27T19:04:24Z",
  "target": 0.6,
  "week": "2026-W48",
- "today_date": "2026-11-27",
+ "today_date": "2026-11-28",
  "today": {
   "growth": 0,
-  "other": 13,
+  "other": 0,
   "exempt": 0,
-  "share": 0.0
+  "share": null
  },
  "this_week": {
-  "growth": 14,
-  "other": 58,
+  "growth": 15,
+  "other": 62,
   "exempt": 5,
-  "share": 0.194
+  "share": 0.195
  },
  "this_month": {
-  "growth": 48,
-  "other": 308,
+  "growth": 49,
+  "other": 312,
   "exempt": 5,
-  "share": 0.135
+  "share": 0.136
  },
  "must_pick_growth": true,
  "days": [
-  {
-   "date": "2026-11-14",
-   "growth": 0,
-   "other": 26,
-   "exempt": 0,
-   "share": 0.0
-  },
   {
    "date": "2026-11-15",
    "growth": 0,
@@ -116,27 +109,102 @@
   },
   {
    "date": "2026-11-27",
-   "growth": 0,
-   "other": 13,
+   "growth": 1,
+   "other": 17,
    "exempt": 0,
-   "share": 0.0
+   "share": 0.056
+  },
+  {
+   "date": "2026-11-28",
+   "growth": 0,
+   "other": 0,
+   "exempt": 0,
+   "share": null
   }
  ],
  "cycles": [
   {
-   "run": 45994211785,
-   "started": "2026-11-27T11:54:04Z",
-   "issue": 1542,
-   "title": "QA follow-up: a non-object loop.json (e.g. [1]) still 500s every /admin/ops tab (PR #1541)",
+   "run": 46032569034,
+   "started": "2026-11-27T16:19:03Z",
+   "issue": 1504,
+   "title": "Muhurat: Shashthi/Dwadashi absent from griha_pravesh and vivah avoid_tithis with no note (split from #1497)",
    "class": "other",
    "outcome": "pr open",
-   "pr": 1544,
+   "pr": 1550,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 46028473636,
+   "started": "2026-11-27T15:50:40Z",
+   "issue": 1506,
+   "title": "measure: no export carries HTTP 5xx per route; only LLM fallbacks are counted (analyst lever 3, third report in a row)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1549,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 46016945872,
+   "started": "2026-11-27T14:33:07Z",
+   "issue": 1506,
+   "title": "measure: no export carries HTTP 5xx per route; only LLM fallbacks are counted (analyst lever 3, third report in a row)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1549,
    "agents": {
     "architect": 1,
     "backend-engineer": 1,
     "project-manager": 1,
     "qa": 1
    }
+  },
+  {
+   "run": 46010351359,
+   "started": "2026-11-27T13:48:56Z",
+   "issue": 1289,
+   "title": "QA follow-up: dispatch_cycle.sh reads LOOP_PAUSED case-sensitively, so 'True' pauses the jobs but still dispatches",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1548,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 46001606476,
+   "started": "2026-11-27T12:47:32Z",
+   "issue": 1546,
+   "title": "seo: footer and body CTAs still link four 303 URLs on every page (#1107 residual, extends #1177)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1547,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45994211785,
+   "started": "2026-11-27T11:54:04Z",
+   "issue": 1542,
+   "title": "QA follow-up: a non-object loop.json (e.g. [1]) still 500s every /admin/ops tab (PR #1541)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1544,
+   "agents": null
   },
   {
    "run": 45980226354,
@@ -544,68 +612,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 45532549739,
-   "started": "2026-11-25T02:23:06Z",
-   "issue": 1457,
-   "title": "QA follow-up: Vivah lagna legend renders with no row blocks when the window computation fails (PR #1455)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1465,
-   "agents": null
-  },
-  {
-   "run": 45526898284,
-   "started": "2026-11-25T01:35:45Z",
-   "issue": 1451,
-   "title": "QA follow-up: PR #1449 page-locations headline states lower-bound counts as exact; encoded names unpinned",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1462,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45523919175,
-   "started": "2026-11-25T01:11:51Z",
-   "issue": 1387,
-   "title": "detect_stalls: mergeable-but-open PRs starved by a ruled blocked-on-owner workflow defect still oblige an action, waking chief every steward run",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1460,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45515523924,
-   "started": "2026-11-25T00:07:05Z",
-   "issue": 1387,
-   "title": "detect_stalls: mergeable-but-open PRs starved by a ruled blocked-on-owner workflow defect still oblige an action, waking chief every steward run",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1460,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45511968192,
-   "started": "2026-11-24T23:40:41Z",
-   "issue": 1450,
-   "title": "QA follow-up: PR #1449 fold_location emits bare-token names, double-encoded path addresses and /r/<id> snapshot ids",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1458,
-   "agents": null
   }
  ],
  "goals": {
@@ -940,22 +946,21 @@
   "ga4_new_users_28d": 684,
   "ga4_sessions_28d": 838,
   "objective_top5": 1,
-  "growth_share_today": 0.0,
-  "growth_share_week": 0.194,
-  "growth_share_month": 0.135
+  "growth_share_week": 0.195,
+  "growth_share_month": 0.136
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
-   "period": "2026-11-27",
-   "progress": 0.0,
-   "detail": "0 of 13 cycles on growth, target 60%",
+   "period": "2026-11-28",
+   "progress": null,
+   "detail": "0 of 0 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.553,
+   "progress": 0.554,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -966,8 +971,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.194,
-     "progress": 0.264,
+     "current": 0.195,
+     "progress": 0.268,
      "basis": "growth_share_week"
     },
     {
@@ -1036,7 +1041,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.505,
+   "progress": 0.507,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1079,8 +1084,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.135,
-     "progress": 0.365,
+     "current": 0.136,
+     "progress": 0.37,
      "basis": "growth_share_month"
     }
    ]
