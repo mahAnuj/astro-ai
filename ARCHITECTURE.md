@@ -777,8 +777,9 @@ the fast gates, then `THEME_CHECKS` (regression, grounding, tests: the three the
 most, `measurements/lessons.json`) and prints one `themes: ...` line; grounding is a proxy (a
 claim-bearing file changed with no `corpus:` line), never a judgement that a claim is true. And
 `cycle_queue.stale_reason` stands an `issue` queue entry down, through `scripts/reentry.py`, when a
-`claude[bot]` cycle comment is newer than the entry and no commit, QA verdict or main-merge need has
-come since; it fails open on any read error and can reach at most ~16% of the repeat-cycle tokens
+`claude[bot]` agent-cycle trace (recognised by its first-line opener, `reentry.CYCLE_OPENER`, never
+a steward, chief, analyst or architect comment, #1477) is newer than the entry and no commit, QA
+verdict or main-merge need has come since; it fails open on any read error or unrecognised opener and can reach at most ~16% of the repeat-cycle tokens
 (`docs/decisions/2026-11-25-1255-reentry-stand-down.md`).
 
 ---

@@ -20,8 +20,8 @@ MUTATIONS = [
 
     ("re-entry: a QA verdict after the last cycle no longer counts as new",
      "scripts/reentry.py",
-     "if any(v and when > t_last for _who, when, v, _qa in comments):",
-     "if any(False and when > t_last for _who, when, v, _qa in comments):",
+     "if any(v and when > t_last for _who, when, v, _c in comments):",
+     "if any(False and when > t_last for _who, when, v, _c in comments):",
      "test_a_QA_verdict_after_the_last_cycle_is_new"),
 
     ("re-entry: a PR that needs main merged in is dropped like a settled one",
@@ -38,15 +38,21 @@ MUTATIONS = [
 
     ("re-entry: any author's comment is a cycle trace, so an outsider can make the loop skip an issue",
      "scripts/reentry.py",
-     "if who == TRACE_BOT and not qa]",
-     "if not qa]",
+     "if who == TRACE_BOT and cyc]",
+     "if cyc]",
      "test_only_claude_bot_can_write_the_trace"),
 
-    ("re-entry: a `QA:` comment from claude[bot] counts as a cycle trace",
+    ("re-entry: any claude[bot] comment counts as a trace, so a `QA:` comment stands the entry down",
      "scripts/reentry.py",
-     "if who == TRACE_BOT and not qa]",
+     "if who == TRACE_BOT and cyc]",
      "if who == TRACE_BOT]",
      "test_a_QA_comment_from_claude_bot_is_not_a_cycle_trace"),
+
+    ("re-entry (#1477): the cycle opener matches every body, so a steward or chief comment is a trace and a QA-FAIL fix entry is dropped",
+     "scripts/reentry.py",
+     "CYCLE_OPENER = '^[*# ]*(/?agent-cycle|Cycle [0-9-]+ [(]agent-cycle)'\n",
+     "CYCLE_OPENER = ''\n",
+     "test_an_unrelated_claude_bot_comment_is_not_a_cycle_trace"),
 
     ("re-entry: two owned PRs are resolved by guessing the first",
      "scripts/reentry.py",
