@@ -21,7 +21,7 @@ MUTATIONS = [
      "src/astro_ai/ops_data.py",
      "    except Exception as exc:  # noqa: BLE001 -- a monitoring page must not 500",
      "    except KeyError as exc:  # noqa: BLE001 -- a monitoring page must not 500",
-     "test_a_garbage_file_never_raises"),
+     "test_an_error_the_view_did_not_foresee_degrades_instead_of_raising"),
     ("ops: the index panel stops capping the request-indexing list at ten",
      "src/astro_ai/ops_data.py",
      "            if len(items) == INDEX_LIST_MAX:",

@@ -309,6 +309,9 @@ def _build_unsafe(ops: dict, days: int) -> dict:
         return _unavailable("unavailable: loop.json not read", error=False, days=days)
     cur_dates, prev_dates = windows(ops["today_ist"], days)
     rows, skipped = _clean(loop["rows"])
+    # Rows `_loop_view` dropped before this module saw them (#1492); they are no
+    # longer in loop["rows"], so none is counted twice.
+    skipped += int(loop.get("skipped_rows") or 0)
     first, why = _first_verdicts(ops)
     first_date = min((r["date"] for r in rows), default=None)
     predates = first_date if first_date and prev_dates[0] < first_date else None

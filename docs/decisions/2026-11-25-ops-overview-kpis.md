@@ -89,3 +89,7 @@ global range picker and a 30-day delta need `loop.json` to be older than they ar
   and cannot be windowed.
 - **Disabling an unavailable card's button.** `.tile[disabled]` is 55% opacity, which fails
   4.5:1 on its own text; the drill opens an empty sheet instead.
+
+## Malformed `loop.json` rows (#1492)
+
+`_loop_view` drops any row that is not a dict with a string `outcome` and reports the count as `skipped_rows`; `ops_kpis` adds it to its own skipped count so the Overview footer says how many rows were left out. An outcome-less row is dropped rather than tallied as `unknown`, because `unknown` is a measured verdict and a truncated row has none.

@@ -107,14 +107,27 @@ def test_the_panel_says_not_collected_when_the_file_is_absent(mdir):
 
 @pytest.mark.parametrize("raw", ["not json {", "[]", '"x"', "null", "{}",
                                  '{"counts": 3}', '{"counts": {}, "request_indexing": 7}',
-                                 # Right shape, wrong type: `_age` raises TypeError on it, which
-                                 # only the view's own outer guard stands between and a 500.
+                                 # Right shape, wrong type. `_age` used to raise TypeError on it;
+                                 # `_ist` now returns None (#1492), so it degrades to "age
+                                 # unknown" -- the next test is what reaches the outer guard.
                                  '{"counts": {}, "generated_at": 12345}'])
 def test_a_garbage_file_never_raises(mdir, raw):
     _put(mdir, raw=raw)
     v = ops_data._index_view(NOW)
     assert isinstance(v, dict) and "ok" in v
     assert v["pages"] == []
+
+
+def test_an_error_the_view_did_not_foresee_degrades_instead_of_raising(mdir, monkeypatch):
+    """Every known wrong type is now handled where it arises, so none reaches the view's outer
+    guard. Force one through it: the guard is what a type nobody has thought of lands on."""
+    _put(mdir, _collected_doc())
+
+    def boom(*_a, **_k):
+        raise TypeError("a shape nobody foresaw")
+    monkeypatch.setattr(ops_data, "_age", boom)
+    v = ops_data._index_view(NOW)
+    assert v["ok"] is False and v["message"] == "unreadable" and v["pages"] == []
 
 
 def test_a_collected_file_passes_through_with_its_counts_and_the_collectors_order(mdir):
