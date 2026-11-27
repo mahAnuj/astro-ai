@@ -1,17 +1,17 @@
 {
- "generated_at": "2026-11-27T02:54:12Z",
+ "generated_at": "2026-11-27T03:59:49Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-20T02:54:12Z",
-  "end": "2026-11-27T02:54:12Z",
-  "loop_comments": 831,
-  "on_prs": 432,
+  "start": "2026-11-20T03:59:49Z",
+  "end": "2026-11-27T03:59:49Z",
+  "loop_comments": 834,
+  "on_prs": 433,
   "prs": 84,
-  "on_issues": 399,
+  "on_issues": 401,
   "issues": 115,
-  "comments_per_pr": 5.14,
-  "comments_per_issue": 3.47,
+  "comments_per_pr": 5.15,
+  "comments_per_issue": 3.49,
   "duplicates": 28,
   "duplicate_rate_pct": 3.4,
   "sent_by_kind": {
@@ -42,8 +42,8 @@
     "comments": 12
    },
    {
-    "on": "pr",
-    "number": 1357,
+    "on": "issue",
+    "number": 1070,
     "comments": 11
    }
   ],
@@ -59,15 +59,15 @@
   }
  },
  "previous": {
-  "start": "2026-11-13T02:54:12Z",
-  "end": "2026-11-20T02:54:12Z",
-  "loop_comments": 1246,
-  "on_prs": 725,
-  "prs": 124,
-  "on_issues": 521,
-  "issues": 152,
-  "comments_per_pr": 5.85,
-  "comments_per_issue": 3.43,
+  "start": "2026-11-13T03:59:49Z",
+  "end": "2026-11-20T03:59:49Z",
+  "loop_comments": 1242,
+  "on_prs": 723,
+  "prs": 123,
+  "on_issues": 519,
+  "issues": 151,
+  "comments_per_pr": 5.88,
+  "comments_per_issue": 3.44,
   "duplicates": 63,
   "duplicate_rate_pct": 5.1,
   "sent_by_kind": {
@@ -105,9 +105,9 @@
    }
   ],
   "owner_touched": {
-   "prs": 124,
+   "prs": 123,
    "owner_commented": 8,
-   "pct": 6
+   "pct": 7
   }
  },
  "kinds": {

@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-27",
-    "2026-11-23"
+    "2026-10-28",
+    "2026-11-24"
   ],
   "dimensions": [
     "eventName"
@@ -14,39 +14,39 @@
   "rows": [
     {
       "event": "page_view",
-      "count": 1518
+      "count": 1534
     },
     {
       "event": "session_start",
-      "count": 818
-    },
-    {
-      "event": "user_identified",
-      "count": 687
-    },
-    {
-      "event": "feature_view",
-      "count": 679
+      "count": 835
     },
     {
       "event": "first_visit",
-      "count": 672
+      "count": 684
+    },
+    {
+      "event": "user_identified",
+      "count": 660
+    },
+    {
+      "event": "feature_view",
+      "count": 652
     },
     {
       "event": "user_engagement",
-      "count": 335
+      "count": 346
     },
     {
       "event": "scroll",
-      "count": 206
+      "count": 205
     },
     {
       "event": "ask_answered",
-      "count": 128
+      "count": 124
     },
     {
       "event": "form_start",
-      "count": 103
+      "count": 98
     },
     {
       "event": "kundli_generated",
@@ -54,15 +54,15 @@
     },
     {
       "event": "tool_submitted",
-      "count": 47
+      "count": 49
     },
     {
       "event": "cta_click",
-      "count": 23
+      "count": 25
     },
     {
       "event": "view_search_results",
-      "count": 8
+      "count": 9
     },
     {
       "event": "muhurat_searched",
@@ -77,15 +77,19 @@
       "count": 4
     },
     {
+      "event": "dosha_check_completed",
+      "count": 3
+    },
+    {
       "event": "dasha_deep_dive_viewed",
       "count": 2
     },
     {
-      "event": "dosha_check_completed",
+      "event": "feedback_sent",
       "count": 2
     },
     {
-      "event": "feedback_sent",
+      "event": "share",
       "count": 2
     },
     {
@@ -97,18 +101,14 @@
       "count": 1
     },
     {
-      "event": "share",
-      "count": 1
-    },
-    {
       "event": "subscribe_completed",
       "count": 1
     }
   ],
-  "events_total": 5300,
-  "coverage_note": "cta_click: 23 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history; journey_events: a count of 0 is a measurement over the window; partial_history true means the event began after the window start",
+  "events_total": 5299,
+  "coverage_note": "cta_click: 25 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history; journey_events: a count of 0 is a measurement over the window; partial_history true means the event began after the window start",
   "cta_click": {
-    "count": 23,
+    "count": 25,
     "split_available": true,
     "rows": [
       {
@@ -129,6 +129,11 @@
       {
         "from_path": "/learn/sade-sati/",
         "to_path": "/kundli",
+        "count": 2
+      },
+      {
+        "from_path": "/learn/sade-sati/",
+        "to_path": "/sade-sati-check",
         "count": 2
       },
       {
@@ -162,12 +167,12 @@
         "count": 1
       },
       {
-        "from_path": "/learn/sade-sati/",
-        "to_path": "/sade-sati-check",
+        "from_path": "/learn/saturn-in-10th-house-career/",
+        "to_path": "/kundli",
         "count": 1
       },
       {
-        "from_path": "/learn/saturn-in-10th-house-career/",
+        "from_path": "/learn/sun-in-10th-house-career/",
         "to_path": "/kundli",
         "count": 1
       }
@@ -175,7 +180,7 @@
   },
   "journey_events": {
     "tool_submitted": {
-      "count": 47,
+      "count": 49,
       "since": null,
       "partial_history": null
     },
@@ -200,12 +205,12 @@
       "partial_history": true
     },
     "dosha_check_completed": {
-      "count": 2,
+      "count": 3,
       "since": "2026-11-18",
       "partial_history": true
     },
     "ask_answered": {
-      "count": 128,
+      "count": 124,
       "since": null,
       "partial_history": null
     },
@@ -215,7 +220,7 @@
       "partial_history": null
     },
     "cta_click": {
-      "count": 23,
+      "count": 25,
       "since": "2026-11-03",
       "partial_history": true
     }

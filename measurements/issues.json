@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27T02:51:55Z",
+  "generated_at": "2026-11-27T03:57:09Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 169,
   "with_ask": 42,
   "by_area": {
-    "UNCLASSIFIED": 77,
+    "UNCLASSIFIED": 76,
     "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
@@ -17,6 +17,7 @@
     "UI": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
+    "MEASURE": 2,
     "AGENT-MEASURE": 2,
     "AGENT-MERGE": 2,
     "PRIVACY": 2,
@@ -25,7 +26,6 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "MEASURE": 1,
     "MUHURAT": 1,
     "NOTIFY": 1,
     "ASK": 1,
@@ -33,8 +33,8 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 57,
-    "untyped": 39,
+    "bug": 56,
+    "untyped": 40,
     "enhancement": 31,
     "chore": 26,
     "correctness": 9,
@@ -42,13 +42,26 @@
     "ui": 2
   },
   "by_priority": {
-    "unset": 96,
+    "unset": 97,
     "medium": 37,
-    "high": 22,
+    "high": 21,
     "low": 14
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 1534,
+      "title": "measure: agent-measure never runs fetch_ga4.py --journeys, so no landing x event export exists and short-stay landings cannot be classed",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-11-27T03:54:15Z",
+      "updated": "2026-11-27T03:54:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1530,
       "title": "[UI] Bottom nav 'Ask' icon is fullwidth '？' (U+FF1F): renders as an empty box without a CJK font fallback",
@@ -78,26 +91,6 @@
       ],
       "created": "2026-11-27T02:33:49Z",
       "updated": "2026-11-27T02:33:49Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1528,
-      "title": "QA follow-up: price and motive claims remain on career-during-sade-sati, manglik-remedies, foreign-career-yoga (PR #1526)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-27T01:04:55Z",
-      "updated": "2026-11-27T02:51:14Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2787,7 +2780,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-27T02:51:55Z",
+    "generated_at": "2026-11-27T03:57:09Z",
     "window_days": 28,
     "open_now": 169,
     "merged_open_hours": 24,
@@ -3212,15 +3205,15 @@
       },
       {
         "date": "2026-11-27",
-        "opened": 3,
-        "closed": 1,
+        "opened": 4,
+        "closed": 2,
         "net": 2,
         "open_end": 169,
         "opened_by": {
-          "loop": 3
+          "loop": 4
         },
         "closed_by": {
-          "close-on-evidence": 1
+          "close-on-evidence": 2
         }
       }
     ],
@@ -4800,6 +4793,11 @@
         "number": 1525,
         "closed_at": "2026-11-27T01:12:19Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1528,
+        "closed_at": "2026-11-27T03:05:22Z",
+        "closer": "close-on-evidence"
       }
     ],
     "timelines_read": 1,
@@ -4807,7 +4805,7 @@
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 81,
+          "merged": 82,
           "median_h": 0.6,
           "p90_h": 5.9,
           "max_h": 105.0,
@@ -5208,7 +5206,7 @@
         },
         {
           "date": "2026-11-27",
-          "merged": 1,
+          "merged": 2,
           "median_h": 0.5,
           "max_h": 0.5
         }
@@ -5217,16 +5215,16 @@
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 127.1,
+          "age_h": 128.2,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 35.5h gates red; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 36.6h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 35.5
+              "gates_red": 36.6
             },
             "qa_fails": 0,
             "pushes": 4
@@ -5235,25 +5233,18 @@
         {
           "number": 1515,
           "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
-          "age_h": 9.8,
+          "age_h": 10.9,
           "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "9.4h waiting for a fix after QA failed (1 QA FAIL)",
+            "reason": "10.4h waiting for a fix after QA failed (1 QA FAIL)",
             "primary": "qa_fail",
             "hours": {
               "no_gates": 0.4,
-              "qa_fail": 9.4
+              "qa_fail": 10.4
             },
             "qa_fails": 1,
             "pushes": 3
           }
-        },
-        {
-          "number": 1532,
-          "title": "Remove remedy price bands and vendor-motive claims from four more /learn pages (#1528)",
-          "age_h": 0.2,
-          "waiting_on": "merge",
-          "why": null
         }
       ]
     }
