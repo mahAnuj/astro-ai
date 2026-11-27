@@ -1,18 +1,12 @@
 {
- "generated_at": "2026-11-26T03:21:21Z",
+ "generated_at": "2026-11-27T03:27:31Z",
  "window": {
-  "from": "2026-10-30",
-  "to": "2026-11-26"
+  "from": "2026-10-31",
+  "to": "2026-11-27"
  },
  "today_partial": true,
  "semantics": "Counts `form_kundli` events, written by GET /kundli (the render that follows the POST /reading 303) only on a FRESH, successful generation. It is NOT 1:1 with POST /reading 303 responses: it excludes cache hits (SQLite and durable GCS), re-views, failed generations and the snapshot route (#967). It includes verify-production probes (X-Bhagya-Probe) unless `probe` is non-null. `totals.probe` and `totals.non_probe` cover ONLY the days listed in `totals.non_probe_dates` (days whose events all carry the probe marker); `totals.fresh_generations` covers every known day, so never put one beside the other. Compare to GA4 `kundli_generated` only over days inside `non_probe_dates`; those two totals are null (not 0) when the listed days sum to 0 and some other day is unknown, so use the sum of `days[].non_probe` over `non_probe_dates`. Days are UTC. null = unknown, never 0 (no events of any type that day, or the day hit the per-day event cap, or the events predate the probe marker).",
  "days": [
-  {
-   "date": "2026-10-30",
-   "fresh_generations": 0,
-   "probe": 0,
-   "non_probe": 0
-  },
   {
    "date": "2026-10-31",
    "fresh_generations": 3,
@@ -171,21 +165,27 @@
   },
   {
    "date": "2026-11-26",
+   "fresh_generations": 1,
+   "probe": 0,
+   "non_probe": 1
+  },
+  {
+   "date": "2026-11-27",
    "fresh_generations": null,
    "probe": null,
    "non_probe": null
   }
  ],
  "totals": {
-  "fresh_generations": 40,
+  "fresh_generations": 41,
   "probe": null,
-  "non_probe": 3,
+  "non_probe": 4,
   "non_probe_dates": [
-   "2026-10-30",
    "2026-11-03",
    "2026-11-08",
    "2026-11-24",
-   "2026-11-25"
+   "2026-11-25",
+   "2026-11-26"
   ],
   "days_unknown": 2,
   "probe_days_unknown": 23

@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T02:52:34Z",
+ "generated_at": "2026-11-27T03:57:52Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-27",
@@ -129,14 +129,9 @@
    "issue": 1528,
    "title": "QA follow-up: price and motive claims remain on career-during-sade-sati, manglik-remedies, foreign-career-yoga (PR #1526)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1532,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 45918129041,
