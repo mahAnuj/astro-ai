@@ -1,23 +1,23 @@
 {
- "generated_at": "2026-11-27T00:34:18Z",
+ "generated_at": "2026-11-27T02:52:34Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-27",
  "today": {
   "growth": 0,
-  "other": 4,
+  "other": 6,
   "exempt": 0,
   "share": 0.0
  },
  "this_week": {
   "growth": 14,
-  "other": 49,
+  "other": 51,
   "exempt": 5,
-  "share": 0.222
+  "share": 0.215
  },
  "this_month": {
   "growth": 48,
-  "other": 299,
+  "other": 301,
   "exempt": 5,
   "share": 0.138
  },
@@ -117,25 +117,48 @@
   {
    "date": "2026-11-27",
    "growth": 0,
-   "other": 4,
+   "other": 6,
    "exempt": 0,
    "share": 0.0
   }
  ],
  "cycles": [
   {
+   "run": 45925955952,
+   "started": "2026-11-27T02:02:13Z",
+   "issue": 1528,
+   "title": "QA follow-up: price and motive claims remain on career-during-sade-sati, manglik-remedies, foreign-career-yoga (PR #1526)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1532,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45918129041,
+   "started": "2026-11-27T00:40:47Z",
+   "issue": 1525,
+   "title": "QA follow-up: 'selling anxiety / tens of thousands' price-and-motive claims remain on 12 /learn templates and the registry (PR #1523 deferred them)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1526,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
    "run": 45910705681,
    "started": "2026-11-26T23:23:56Z",
    "issue": 1525,
    "title": "QA follow-up: 'selling anxiety / tens of thousands' price-and-motive claims remain on 12 /learn templates and the registry (PR #1523 deferred them)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1526,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1
-   }
+   "agents": null
   },
   {
    "run": 45899139116,
@@ -572,35 +595,6 @@
     "project-manager": 1,
     "qa": 1
    }
-  },
-  {
-   "run": 45372767475,
-   "started": "2026-11-24T10:13:51Z",
-   "issue": 1070,
-   "title": "analytics: instrument the core funnels",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1446,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1
-   }
-  },
-  {
-   "run": 45363615784,
-   "started": "2026-11-24T09:16:24Z",
-   "issue": 1430,
-   "title": "seo: 7th-house pair (3,008 impr, pos 6.8-7.2, 27 clicks) \u2014 planets-in-7th has no answer for an empty 7th house or 'which planet'; body change, not a title test",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1440,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -936,7 +930,7 @@
   "ga4_sessions_28d": 820,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.222,
+  "growth_share_week": 0.215,
   "growth_share_month": 0.138
  },
  "meters": {
@@ -944,13 +938,13 @@
    "label": "Today: growth share of build cycles",
    "period": "2026-11-27",
    "progress": 0.0,
-   "detail": "0 of 4 cycles on growth, target 60%",
+   "detail": "0 of 6 cycles on growth, target 60%",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.554,
+   "progress": 0.549,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -961,8 +955,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.222,
-     "progress": 0.364,
+     "current": 0.215,
+     "progress": 0.339,
      "basis": "growth_share_week"
     },
     {

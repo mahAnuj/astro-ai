@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-27T00:33:40Z",
+  "generated_at": "2026-11-27T02:51:55Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 167,
+  "open": 169,
   "with_ask": 42,
   "by_area": {
     "UNCLASSIFIED": 77,
@@ -14,6 +14,7 @@
     "TOKENS": 5,
     "SEO": 4,
     "CORPUS": 4,
+    "UI": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "AGENT-MEASURE": 2,
@@ -27,7 +28,6 @@
     "MEASURE": 1,
     "MUHURAT": 1,
     "NOTIFY": 1,
-    "UI": 1,
     "ASK": 1,
     "TASK": 1,
     "BLOCKER": 1
@@ -38,10 +38,11 @@
     "enhancement": 31,
     "chore": 26,
     "correctness": 9,
-    "design": 5
+    "design": 5,
+    "ui": 2
   },
   "by_priority": {
-    "unset": 94,
+    "unset": 96,
     "medium": 37,
     "high": 22,
     "low": 14
@@ -49,8 +50,40 @@
   "blocked": 6,
   "rows": [
     {
-      "number": 1525,
-      "title": "QA follow-up: 'selling anxiety / tens of thousands' price-and-motive claims remain on 12 /learn templates and the registry (PR #1523 deferred them)",
+      "number": 1530,
+      "title": "[UI] Bottom nav 'Ask' icon is fullwidth '？' (U+FF1F): renders as an empty box without a CJK font fallback",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-11-27T02:33:51Z",
+      "updated": "2026-11-27T02:33:51Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1529,
+      "title": "[UI] /matching 375px: two nested bordered cards cost ~28px of input width; test flattening the inner card on mobile",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-11-27T02:33:49Z",
+      "updated": "2026-11-27T02:33:49Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1528,
+      "title": "QA follow-up: price and motive claims remain on career-during-sade-sati, manglik-remedies, foreign-career-yoga (PR #1526)",
       "ask": "",
       "area": "UNCLASSIFIED",
       "type": "bug",
@@ -59,10 +92,12 @@
         "bug",
         "priority:high",
         "qa",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
-      "created": "2026-11-26T22:00:23Z",
-      "updated": "2026-11-26T23:33:27Z",
+      "created": "2026-11-27T01:04:55Z",
+      "updated": "2026-11-27T02:51:14Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2752,9 +2787,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-27T00:33:40Z",
+    "generated_at": "2026-11-27T02:51:55Z",
     "window_days": 28,
-    "open_now": 167,
+    "open_now": 169,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3177,12 +3212,16 @@
       },
       {
         "date": "2026-11-27",
-        "opened": 0,
-        "closed": 0,
-        "net": 0,
-        "open_end": 167,
-        "opened_by": {},
-        "closed_by": {}
+        "opened": 3,
+        "closed": 1,
+        "net": 2,
+        "open_end": 169,
+        "opened_by": {
+          "loop": 3
+        },
+        "closed_by": {
+          "close-on-evidence": 1
+        }
       }
     ],
     "merged_open": [],
@@ -4756,6 +4795,11 @@
         "number": 1514,
         "closed_at": "2026-11-26T20:19:03Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1525,
+        "closed_at": "2026-11-27T01:12:19Z",
+        "closer": "close-on-evidence"
       }
     ],
     "timelines_read": 1,
@@ -4764,7 +4808,7 @@
       "windows": {
         "7d": {
           "merged": 81,
-          "median_h": 0.7,
+          "median_h": 0.6,
           "p90_h": 5.9,
           "max_h": 105.0,
           "slowest": [
@@ -4875,7 +4919,7 @@
           ]
         },
         "28d": {
-          "merged": 367,
+          "merged": 368,
           "median_h": 0.6,
           "p90_h": 14.3,
           "max_h": 122.1,
@@ -5164,25 +5208,25 @@
         },
         {
           "date": "2026-11-27",
-          "merged": 0,
-          "median_h": null,
-          "max_h": null
+          "merged": 1,
+          "median_h": 0.5,
+          "max_h": 0.5
         }
       ],
       "open": [
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 124.8,
+          "age_h": 127.1,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 33.2h gates red; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 35.5h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 33.2
+              "gates_red": 35.5
             },
             "qa_fails": 0,
             "pushes": 4
@@ -5191,24 +5235,24 @@
         {
           "number": 1515,
           "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
-          "age_h": 7.5,
+          "age_h": 9.8,
           "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "7.1h waiting for a fix after QA failed (1 QA FAIL)",
+            "reason": "9.4h waiting for a fix after QA failed (1 QA FAIL)",
             "primary": "qa_fail",
             "hours": {
               "no_gates": 0.4,
-              "qa_fail": 7.1
+              "qa_fail": 9.4
             },
             "qa_fails": 1,
             "pushes": 3
           }
         },
         {
-          "number": 1526,
-          "title": "Remove price-and-motive claims from /learn pages and registry (#1525)",
-          "age_h": 0.0,
-          "waiting_on": "gates / QA",
+          "number": 1532,
+          "title": "Remove remedy price bands and vendor-motive claims from four more /learn pages (#1528)",
+          "age_h": 0.2,
+          "waiting_on": "merge",
           "why": null
         }
       ]

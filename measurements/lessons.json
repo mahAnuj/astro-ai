@@ -1,8 +1,28 @@
 {
- "generated_at": "2026-11-27T00:36:12Z",
+ "generated_at": "2026-11-27T02:54:27Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
+   {
+    "number": 550,
+    "at": "2026-10-28T17:54:44Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/550#issuecomment-6476537145",
+    "summary": "QA: FAIL (independent round, provenance `independent`) \u2014 verified at `0b1ffc0f02a04e44c17774dc7c73296704bad721`  All three earlier findings are closed by execution. But the round-2 fix that made `success` reach the reporter introduced a new defect: a red `main` gets its sentinel closed by the next d",
+    "themes": [
+     "tests",
+     "copy"
+    ]
+   },
+   {
+    "number": 544,
+    "at": "2026-10-30T18:24:03Z",
+    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6530377333",
+    "summary": "QA: FAIL \u2014 verified at `bf2b17df67f81ba5e8d5a1b283b8ec0fe22f78bb` (round 4, independent, dispatched by chief; I had no hand in this PR)  **One secret read remains, found by execution through the real pipeline. A fix that can be broken is a FAIL.**  ## BLOCKING: a glob that expands to a name equal to",
+    "themes": [
+     "tests",
+     "security"
+    ]
+   },
    {
     "number": 564,
     "at": "2026-10-28T15:52:28Z",
@@ -22,26 +42,6 @@
     "themes": [
      "tokens",
      "i18n",
-     "copy"
-    ]
-   },
-   {
-    "number": 544,
-    "at": "2026-10-30T18:24:03Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/544#issuecomment-6530377333",
-    "summary": "QA: FAIL \u2014 verified at `bf2b17df67f81ba5e8d5a1b283b8ec0fe22f78bb` (round 4, independent, dispatched by chief; I had no hand in this PR)  **One secret read remains, found by execution through the real pipeline. A fix that can be broken is a FAIL.**  ## BLOCKING: a glob that expands to a name equal to",
-    "themes": [
-     "tests",
-     "security"
-    ]
-   },
-   {
-    "number": 550,
-    "at": "2026-10-28T17:54:44Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/550#issuecomment-6476537145",
-    "summary": "QA: FAIL (independent round, provenance `independent`) \u2014 verified at `0b1ffc0f02a04e44c17774dc7c73296704bad721`  All three earlier findings are closed by execution. But the round-2 fix that made `success` reach the reporter introduced a new defect: a red `main` gets its sentinel closed by the next d",
-    "themes": [
-     "tests",
      "copy"
     ]
    },
@@ -1098,7 +1098,7 @@
    {
     "kind": "claude-quota",
     "level": "amber",
-    "title": "Claude weekly quota 93% used",
+    "title": "Claude weekly quota 94% used",
     "detail": "Every agent shares one Claude Max subscription. 0 run(s) in the sample hit a limit. Levers, cheapest first: stop dispatching ranked (`/agent-cycle`) cycles that end in nothing; space out the weekly agent loops; keep QA rounds to one per head. Do not add a parallel build lane until it resets.",
     "where": "/admin/ops"
    }
