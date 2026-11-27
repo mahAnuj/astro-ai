@@ -25,7 +25,7 @@ KEYS = [k for k, _ in ops_tabs.TABS]
 # Every panel heading the page had before the tab shell, grouped by where each
 # now lives. The union is the set that must never lose a member.
 PANELS = {
-    "overview": ["Results", "PRs shipped", "Key metrics", "Goals and agent decisions",
+    "overview": ["Results", "The engineering loop", "Agent health", "System health", "PRs shipped", "Key metrics", "Goals and agent decisions",
                  "Where the loop's time went"],
     "agents": ["Agents right now"],
     "workflows": ["Team"],

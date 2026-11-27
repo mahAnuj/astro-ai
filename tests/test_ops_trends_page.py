@@ -536,15 +536,21 @@ def test_the_bars_do_not_use_day_btn_which_would_demand_cycles_in_overviews_blob
 
 # --- size ---------------------------------------------------------------------------
 
+# 2b's cap was 245,000; slice 2c (the loop ring, Agent health, System health) spent it and
+# the architect's plan for 2c raises it to 250,000. The issue's hard ceiling is 418,318.
+OVERVIEW_CAP = 250_000
+
+
 def test_overview_grows_by_at_most_18_kb_and_stays_under_245_kb(monkeypatch):
-    """Baseline is not pinned (the committed measurement files move it): the growth is
+    """The name keeps its history: renaming a test reads as a deletion to verify_test_floor.
+    The absolute cap is now OVERVIEW_CAP (250,000) after slice 2c. Baseline is not pinned (the committed measurement files move it): the growth is
     counted from the template's own parts, and the absolute cap is the architect's."""
     _serve(monkeypatch)
     h = _page().text
     grew = (len(_section(h, "prs-shipped")) + len(_section(h, "key-metrics"))
             + len(_css_block().encode()) + len(_js_added().encode()))
     assert grew <= 18_000, grew
-    assert len(h.encode()) <= 245_000
+    assert len(h.encode()) <= OVERVIEW_CAP
 
 
 def test_the_real_committed_data_stays_inside_the_same_caps():
@@ -552,7 +558,7 @@ def test_the_real_committed_data_stays_inside_the_same_caps():
     grew = (len(_section(h, "prs-shipped")) + len(_section(h, "key-metrics"))
             + len(_css_block().encode()) + len(_js_added().encode()))
     assert grew <= 18_000, grew
-    assert len(h.encode()) <= 245_000
+    assert len(h.encode()) <= OVERVIEW_CAP
 
 
 @pytest.mark.parametrize("tab", OTHER_TABS)
