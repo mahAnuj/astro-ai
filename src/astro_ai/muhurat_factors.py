@@ -329,15 +329,18 @@ REGISTRY: dict[str, dict[str, Any]] = {
         "events": {
             # #1355 ruling: S -> C, refined by #1497. vivah and griha_pravesh stay contested
             # (the held books differ over Purnima); business is site_convention, because no held
-            # book gives a business tithi rule at all.
+            # book gives a business tithi rule at all. #1504 adds the 6th (both) and the 12th
+            # (griha_pravesh) to the sets; the vivah 12th stays contested and is not in this note.
             "vivah": _vr(C, "These tithis are rejected for auspicious work in the Muhurtha "
-                            "tradition. Purnima is contested: the Vedic table lists it, while "
-                            "the Muhurtha tradition's general list rejects it.", _H97),
-            "griha_pravesh": _vr(C, "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon "
-                                    "and Full Moon for auspicious work. Purnima is contested: "
-                                    "the Vedic table lists it, while the Muhurtha tradition's "
-                                    "general list rejects it. Navami is this finder's own "
-                                    "addition; neither table rejects it for house entry.",
+                            "tradition, including the 6th for a wedding. Purnima is contested: "
+                            "the Vedic table lists it, while the Muhurtha tradition's general "
+                            "list rejects it.", _H97),
+            "griha_pravesh": _vr(C, "The Muhurtha tradition rejects the 4th, 6th, 8th, 12th, "
+                                    "14th, New Moon and Full Moon for auspicious work. Purnima "
+                                    "is contested: the Vedic table lists it, while the Muhurtha "
+                                    "tradition's general list rejects it. Navami is this "
+                                    "finder's own addition; neither table rejects it for house "
+                                    "entry.",
                                  "#### Griha Pravesh"),
             "namkaran": _vr(C, "These tithis are rejected for auspicious work in the Muhurtha "
                                "tradition. Navami is contested: the figure for it in the Muhurtha "

@@ -23,18 +23,18 @@ MUTATIONS = [
      '                           "@Krishna_x": _vr(C, "The Vedic table lists this tithi without naming a "',
      _GATE),
     ("#1355: griha_pravesh's avoid_tithi list goes back to sourced (the ruling made it contested)",
-     _F, '"griha_pravesh": _vr(C, "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon "',
-     '"griha_pravesh": _vr(S, "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon "',
+     _F, '"griha_pravesh": _vr(C, "The Muhurtha tradition rejects the 4th, 6th, 8th, 12th, "',
+     '"griha_pravesh": _vr(S, "The Muhurtha tradition rejects the 4th, 6th, 8th, 12th, "',
      _RULING2),
     ("#1497: business's avoid_tithi note is labelled contested again (the ruling made it site_convention)",
      _F, '"business": _vr(SC, "Site convention: no held book gives a business tithi rule. "',
      '"business": _vr(C, "Site convention: no held book gives a business tithi rule. "',
      "test_the_avoid_tithi_cleared_item_is_contested_for_four_events_and_sourced_for_vidyarambh"),
     ("#1497: griha_pravesh's avoid_tithi note drops the Purnima disagreement (the ruling names it)",
-     _F, '"and Full Moon for auspicious work. Purnima is contested: "\n'
-         '                                    "the Vedic table lists it, while the Muhurtha tradition\'s "\n'
-         '                                    "general list rejects it. Navami is this finder\'s own "',
-     '"and Full Moon for auspicious work. "\n'
-     '                                    "Navami is this finder\'s own "',
+     _F, '"14th, New Moon and Full Moon for auspicious work. Purnima "\n'
+         '                                    "is contested: the Vedic table lists it, while the Muhurtha "\n'
+         '                                    "tradition\'s general list rejects it. Navami is this "',
+     '"14th, New Moon and Full Moon for auspicious work. "\n'
+     '                                    "Navami is this "',
      _RULING2),
 ]

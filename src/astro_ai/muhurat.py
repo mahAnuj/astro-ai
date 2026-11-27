@@ -604,7 +604,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "rules_summary": [
             "Guru (Jupiter) uncombust — this finder's own convention, not in Raman's wedding criteria",
             "Shukra (Venus) uncombust — this finder's own convention, not in Raman's wedding criteria",
-            "Favourable tithi: 2, 3, 5, 7, 10, 11, 13 (avoid 4, 8, 9, 14, Amavasya, Purnima); the 11th-13th are excluded in the waning half, below",
+            "Favourable tithi: 2, 3, 5, 7, 10, 11, 13 (avoid 4, 6, 8, 9, 14, Amavasya, Purnima); the 11th-13th are excluded in the waning half, below",
             "Wedding dates on the 11th, 12th or 13th tithi of the waning (Krishna paksha) half are excluded, following B.V. Raman's Muhurtha, which rejects the dark-half 11th through New Moon for marriage",
             "The bright-half 12th is not credited: Rao's wedding guideline table lists it, Raman's rejects it, so the finder gives it no credit either way",
             "Favourable nakshatra: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati; but the first quarter (pada) of Magha and of Mula is excluded, following B.V. Raman's Muhurtha, which rejects it for marriage",
@@ -744,11 +744,15 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
 EVENT_RULES: dict[str, dict[str, Any]] = {
     "vivah": {
         "label": "Vivah (Wedding)",
-        # No Dwadashi (#1022): Rao's Table 79 Wedding row lists the 12th but Raman's marriage
-        # chapter rejects it, so it is contested and gets no credit (and no exclusion) here.
+        # No Dwadashi (#1022): contested. Rao's Table 79 Wedding row lists the 12th; Raman's
+        # marriage chapter rejects the 8th, 12th and 6th (knowledge/vedic_reference.md 29.9).
+        # So the bright-half 12th gets no credit and no exclusion here; the dark-half 12th is
+        # already excluded by avoid_krishna_tithis below. Shashti was missing from this set
+        # until #1504: Raman rejects the 6th for a wedding and Rao's row does not list it, so
+        # nothing contests it.
         "good_tithis": {"Dwitiya", "Tritiya", "Panchami", "Saptami", "Dashami",
                          "Ekadashi", "Trayodashi"},
-        "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",
+        "avoid_tithis": {"Chaturthi", "Shashti", "Ashtami", "Navami", "Chaturdashi",
                           "Amavasya", "Purnima"},
         # Krishna-paksha only (#1022): Raman's marriage chapter, as knowledge/vedic_reference.md
         # section 29.9 paraphrases it, rejects "the 11th of the dark half through New Moon"
@@ -784,8 +788,12 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "label": "Griha Pravesh (Housewarming)",
         "good_tithis": {"Dwitiya", "Tritiya", "Panchami", "Saptami", "Dashami",
                          "Ekadashi", "Trayodashi"},
-        "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",
-                          "Amavasya", "Purnima"},
+        # #1504, knowledge/vedic_reference.md 29.13 (Griha Pravesh row) and 29.9: Raman's general
+        # avoid list is the 4th, 6th, 8th, 12th, 14th and the two Moon days; Shashti and Dwadashi
+        # were missing here although neither book lists them as good for house entry. Navami is
+        # this finder's own addition: neither table rejects it for house entry.
+        "avoid_tithis": {"Chaturthi", "Shashti", "Ashtami", "Navami", "Dwadashi",
+                          "Chaturdashi", "Amavasya", "Purnima"},
         # Nakshatras (#1061), knowledge/vedic_reference.md 29.13: Raman's house-entry chapter
         # names Rohini, Mrigasira, Uttara Phalguni, Uttarashadha, Chitta and Uttarabhadra as the
         # best and Anuradha and Revati as permissible; Rao's Table 79 row lists the same

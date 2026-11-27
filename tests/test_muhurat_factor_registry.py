@@ -343,18 +343,18 @@ RULING2 = [
     # business is site_convention (no held book gives a business tithi rule). Navami is this
     # finder's own addition for griha_pravesh and business.
     ("avoid_tithi", "vivah", None, "contested", "### 29.9 ",
-     "These tithis are rejected for auspicious work in the Muhurtha tradition. Purnima is "
-     "contested: the Vedic table lists it, while the Muhurtha tradition's general list rejects "
-     "it."),
+     "These tithis are rejected for auspicious work in the Muhurtha tradition, including the 6th "
+     "for a wedding. Purnima is contested: the Vedic table lists it, while the Muhurtha "
+     "tradition's general list rejects it."),
     ("avoid_tithi", "namkaran", None, "contested", "#### Namkaran",
      "These tithis are rejected for auspicious work in the Muhurtha tradition. Navami is "
      "contested: the figure for it in the Muhurtha text is unclear, and the Vedic table does not "
      "list it."),
     ("avoid_tithi", "griha_pravesh", None, "contested", "#### Griha Pravesh",
-     "The Muhurtha tradition rejects the 4th, 8th, 14th, New Moon and Full Moon for auspicious "
-     "work. Purnima is contested: the Vedic table lists it, while the Muhurtha tradition's "
-     "general list rejects it. Navami is this finder's own addition; neither table rejects it "
-     "for house entry."),
+     "The Muhurtha tradition rejects the 4th, 6th, 8th, 12th, 14th, New Moon and Full Moon for "
+     "auspicious work. Purnima is contested: the Vedic table lists it, while the Muhurtha "
+     "tradition's general list rejects it. Navami is this finder's own addition; neither table "
+     "rejects it for house entry."),
     ("avoid_tithi", "business", None, "site_convention", "### 29.9 ",
      "Site convention: no held book gives a business tithi rule. This finder applies the "
      "Muhurtha tradition's general rejection of the 4th, 8th, 14th, New Moon and Full Moon for "
