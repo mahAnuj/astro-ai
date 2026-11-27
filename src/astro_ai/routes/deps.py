@@ -404,6 +404,31 @@ def _has_chart(request: Request) -> bool:
 
 templates.env.globals["has_chart"] = _has_chart
 
+# The four routes that 303 to `/?needs_chart=<key>` for a visitor with no saved
+# chart, keyed by path. A drift guard in tests/test_footer_cta_chart_gated_links.py
+# asserts each really still redirects there: a key added here for a route that does
+# not redirect would send every no-chart visitor to the homepage for nothing.
+_CHART_GATED = {"/today": "today", "/monthly": "monthly", "/yearly": "yearly", "/ask": "ask"}
+
+
+def _chart_href(request: Request, path: str) -> str:
+    """Template helper — the href to emit for a link to a chart-gated page. (#1546)
+
+    #1177 pointed the NAV at the redirect's destination for a no-chart visitor;
+    the footer, the homepage feature cards and the `/ask` CTAs in /learn still
+    linked the four 303 URLs, so a crawler met 3 to 7 redirecting links per page.
+    Same predicate as `has_chart` (no GCS read), so it adds only a cookie decode.
+    A path outside `_CHART_GATED` comes back unchanged. `_nav.html` and
+    `_tab_bar.html` keep their own inline rewrite (#1177): not refactored here.
+    """
+    key = _CHART_GATED.get(path)
+    if key is not None and not _has_chart(request):
+        return f"/?needs_chart={key}"
+    return path
+
+
+templates.env.globals["chart_href"] = _chart_href
+
 
 def _is_subscribed(email: str | None) -> bool:
     """Template helper — does this email have an active Rashifal subscription?

@@ -720,7 +720,7 @@
        thick frame around the whole block. The handoff calls this out and it is
        the one way this pattern goes wrong. #}
     {% macro feature_card(href, icon_svg, title, tag, body) %}
-    <a href="{{ href }}"
+    <a href="{{ chart_href(request, href) }}"
        class="group flex flex-col gap-3 bg-bhagya-cream hover:bg-white p-6 sm:p-7 sm:min-h-[186px] transition-colors">
       <div class="flex items-center justify-between text-bhagya-sindoor">
         <span class="w-6 h-6" aria-hidden="true">{{ icon_svg | safe }}</span>
