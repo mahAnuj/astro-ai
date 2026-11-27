@@ -370,13 +370,17 @@ def _live_today_locked(day_start: datetime, day: str) -> dict | None:
 
 
 def _ist(ts: str | None) -> datetime | None:
-    """Parse an ISO-8601 Z timestamp into IST. None stays None."""
+    """Parse an ISO-8601 Z timestamp into IST. None stays None.
+
+    TypeError too: a measurement file is read as found, and `started: 123`
+    raised out of `strptime` and took the whole control room with it (#1492).
+    """
     if not ts:
         return None
     try:
         return datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(
             tzinfo=timezone.utc).astimezone(IST)
-    except ValueError:
+    except (ValueError, TypeError):
         return None
 
 
@@ -585,7 +589,7 @@ def _loop_view(doc: dict | None, today_ist: str,
         return {"ok": False, "rows": [], "generated_at": None,
                 "outcomes": {}, "attribution": {}, "days": [], "latest": None,
                 "by_day": [], "by_day_chart": None,
-                "today": [],
+                "today": [], "skipped_rows": 0,
                 "today_live": live_today is not None,
                 "today_shipped": (live_today or {}).get("shipped", []),
                 "today_failed": (live_today or {}).get("failed", []),
@@ -593,12 +597,24 @@ def _loop_view(doc: dict | None, today_ist: str,
                 "shipped_truncated": bool((live_today or {}).get("shipped_truncated")),
                 "failed_truncated": bool((live_today or {}).get("failed_truncated")),
                 "fell_back": fell_back}
+    # A row is kept only if it is a dict with a string `outcome`. This function
+    # runs from `snapshot()` ("never raises") outside any try, so one truncated
+    # or null row in the file was a 500 on every tab (#1492). A row with no
+    # outcome is DROPPED, not tallied as "unknown": "unknown" is a measured
+    # verdict and a truncated row has none. The count travels in `skipped_rows`
+    # so the Overview footer can say how many were left out.
     rows = []
+    skipped_rows = 0
     for r in doc["rows"]:
+        if not isinstance(r, dict) or not isinstance(r.get("outcome"), str):
+            skipped_rows += 1
+            continue
         started = _ist(r.get("started"))
+        date = r.get("date")
         rows.append({
             **r,
-            "date_ist": started.strftime("%Y-%m-%d") if started else r.get("date"),
+            "date_ist": (started.strftime("%Y-%m-%d") if started
+                         else date if isinstance(date, str) else None),
             "time_ist": started.strftime("%H:%M") if started else "—",
             "started_ist_minutes": started.hour * 60 + started.minute if started else None,
         })
@@ -610,6 +626,7 @@ def _loop_view(doc: dict | None, today_ist: str,
         "outcomes": dict(Counter(r["outcome"] for r in rows).most_common()),
         "attribution": dict(Counter(r.get("attribution") for r in rows).most_common()),
         "today": today,
+        "skipped_rows": skipped_rows,
         # Live first, snapshot second. The snapshot numerators are kept as the
         # fallback and are NOT merged with the live ones -- two sources counting
         # different units into one tile is how a number stops meaning anything.
