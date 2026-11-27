@@ -93,3 +93,14 @@ global range picker and a 30-day delta need `loop.json` to be older than they ar
 ## Malformed `loop.json` rows (#1492)
 
 `_loop_view` drops any row that is not a dict with a string `outcome` and reports the count as `skipped_rows`; `ops_kpis` adds it to its own skipped count so the Overview footer says how many rows were left out. An outcome-less row is dropped rather than tallied as `unknown`, because `unknown` is a measured verdict and a truncated row has none.
+
+## Correction (#1491)
+
+The **Size** paragraph above measured Overview at "221,274 B to 229,793 B". That was not
+against `main`: measured against `main` the page went from 180,980 B to 230,155 B, so the cards
+cost 49,175 B, not 8,519 B. `kpi_rows` alone is 40,642 B of that (the blob key the drill
+reads), and the markup and CSS are the rest. The ceiling of 245,000 B still held, but the
+growth was about six times what this record says. The per-tab figures for the other six tabs
+(CSS and script only, about 3.1 KB) were measured against `main` and stand. Slice 2b
+(`2026-11-27-ops-pr-bars-key-metrics.md`) measures its own growth against the unchanged
+template at the same moment.

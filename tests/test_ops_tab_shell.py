@@ -25,7 +25,8 @@ KEYS = [k for k, _ in ops_tabs.TABS]
 # Every panel heading the page had before the tab shell, grouped by where each
 # now lives. The union is the set that must never lose a member.
 PANELS = {
-    "overview": ["Results", "Goals and agent decisions", "Where the loop's time went"],
+    "overview": ["Results", "PRs shipped", "Key metrics", "Goals and agent decisions",
+                 "Where the loop's time went"],
     "agents": ["Agents right now"],
     "workflows": ["Team"],
     "runs": ["The loop, day by day", "PR merge time"],
@@ -223,7 +224,8 @@ def test_every_drill_down_that_a_tab_renders_has_its_data_on_that_tab():
         for tile, need in (("today-shipped", "today_shipped"), ("today-filed", "filed_today"),
                            ("today-failed", "today_failed"), ("backlog", "issues"),
                            ("kpi-cycles", "kpi_rows"), ("kpi-prs", "kpi_rows"),
-                           ("kpi-qa", "kpi_rows"), ("kpi-cost", "kpi_rows")):
+                           ("kpi-qa", "kpi_rows"), ("kpi-cost", "kpi_rows"),
+                           ("kpi-prs-day", "kpi_rows")):
             if f'data-drill="{tile}"' in body:
                 assert need in b, f"{key}: tile {tile} but no {need}"
 
