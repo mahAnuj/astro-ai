@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27T19:03:24Z",
+  "generated_at": "2026-11-27T20:39:32Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 163,
+  "open": 165,
   "with_ask": 42,
   "by_area": {
-    "UNCLASSIFIED": 73,
+    "UNCLASSIFIED": 75,
     "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
@@ -33,7 +33,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 53,
+    "bug": 55,
     "untyped": 39,
     "enhancement": 31,
     "chore": 26,
@@ -41,13 +41,67 @@
     "design": 5
   },
   "by_priority": {
-    "unset": 94,
-    "medium": 33,
+    "unset": 93,
+    "medium": 35,
     "high": 21,
-    "low": 15
+    "low": 16
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 1555,
+      "title": "QA follow-up: minor items from PR #1552",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-27T20:01:01Z",
+      "updated": "2026-11-27T20:01:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1554,
+      "title": "QA follow-up: a malformed row in gsc-daily.json or issues.json 500s every /admin/ops tab (PR #1552)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa"
+      ],
+      "created": "2026-11-27T20:00:48Z",
+      "updated": "2026-11-27T20:00:48Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1553,
+      "title": "QA follow-up: Analytics tab 500s when gsc-daily.json is absent or empty (PR #1552)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-27T20:00:46Z",
+      "updated": "2026-11-27T20:38:55Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1537,
       "title": "QA follow-up: minor items from PR #1536",
@@ -143,23 +197,6 @@
       ],
       "created": "2026-11-26T03:37:26Z",
       "updated": "2026-11-26T17:08:22Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1504,
-      "title": "Muhurat: Shashthi/Dwadashi absent from griha_pravesh and vivah avoid_tithis with no note (split from #1497)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-26T03:35:54Z",
-      "updated": "2026-11-27T17:18:21Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1070,7 +1107,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-16T17:33:22Z",
-      "updated": "2026-11-27T18:16:19Z",
+      "updated": "2026-11-27T20:01:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2685,9 +2722,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-27T19:03:24Z",
+    "generated_at": "2026-11-27T20:39:32Z",
     "window_days": 28,
-    "open_now": 163,
+    "open_now": 165,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3110,15 +3147,15 @@
       },
       {
         "date": "2026-11-27",
-        "opened": 7,
-        "closed": 11,
-        "net": -4,
-        "open_end": 163,
+        "opened": 10,
+        "closed": 12,
+        "net": -2,
+        "open_end": 165,
         "opened_by": {
-          "loop": 7
+          "loop": 10
         },
         "closed_by": {
-          "close-on-evidence": 10,
+          "close-on-evidence": 11,
           "other": 1
         }
       }
@@ -4701,6 +4738,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1504,
+        "closed_at": "2026-11-27T19:52:50Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1506,
         "closed_at": "2026-11-27T16:32:37Z",
         "closer": "close-on-evidence"
@@ -4751,7 +4793,7 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 4,
+    "timelines_read": 1,
     "truncated": [],
     "pr_flow": {
       "windows": {
@@ -4868,7 +4910,7 @@
           ]
         },
         "28d": {
-          "merged": 373,
+          "merged": 375,
           "median_h": 0.5,
           "p90_h": 13.4,
           "max_h": 122.1,
@@ -5153,25 +5195,25 @@
         },
         {
           "date": "2026-11-27",
-          "merged": 11,
+          "merged": 13,
           "median_h": 0.3,
-          "max_h": 1.1
+          "max_h": 2.5
         }
       ],
       "open": [
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 143.3,
+          "age_h": 144.9,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 51.7h gates red; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 53.3h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 51.7
+              "gates_red": 53.3
             },
             "qa_fails": 0,
             "pushes": 4
@@ -5180,32 +5222,32 @@
         {
           "number": 1515,
           "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
-          "age_h": 26.0,
+          "age_h": 27.6,
           "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "25.6h waiting for a fix after QA failed (1 QA FAIL)",
+            "reason": "27.2h waiting for a fix after QA failed (1 QA FAIL)",
             "primary": "qa_fail",
             "hours": {
               "no_gates": 0.4,
-              "qa_fail": 25.6
+              "qa_fail": 27.2
             },
             "qa_fails": 1,
             "pushes": 3
           }
         },
         {
-          "number": 1550,
-          "title": "muhurat: Shashti and Dwadashi avoided for Griha Pravesh, Shashti for Vivah (#1504)",
-          "age_h": 1.8,
-          "waiting_on": "gates / QA",
+          "number": 1556,
+          "title": "ops: Analytics tab blanks a missing daily series instead of 500ing (#1553)",
+          "age_h": 0.3,
+          "waiting_on": "merge",
           "why": {
-            "reason": "1.8h waiting for gates to start",
-            "primary": "no_gates",
+            "reason": "no single wait stood out",
+            "primary": "other",
             "hours": {
-              "no_gates": 1.8
+              "no_gates": 0.3
             },
             "qa_fails": 0,
-            "pushes": 2
+            "pushes": 1
           }
         }
       ]
