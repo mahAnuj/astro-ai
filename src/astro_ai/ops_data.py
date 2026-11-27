@@ -148,8 +148,24 @@ def measurements_dir() -> Path | None:
     return None
 
 
-def _fetch(name: str) -> Any | None:
-    """One file, disk first then HTTPS. None on any failure, with a log line."""
+def _as_object(name: str, data: Any, where: str) -> dict | None:
+    """`data` if it is a JSON object, else None with a log line (#1542).
+
+    Every reader below calls `.get` on what `_fetch` returns, and `[1]`, `"x"` and
+    `5` all parse: a hand-edited or half-written file of the wrong top level type
+    was an AttributeError out of `snapshot()` and a 500 on every tab. Rejecting it
+    here, at the one choke point, covers the views nobody has checked yet. The log
+    names the file and the type, never the content.
+    """
+    if isinstance(data, dict):
+        return data
+    log.warning("ops_data: %s from %s is a %s, not a JSON object",
+                name, where, type(data).__name__)
+    return None
+
+
+def _fetch(name: str) -> dict | None:
+    """One file, disk first then HTTPS. A JSON object, or None on any failure, with a log line."""
     now = time.monotonic()
     hit = _cache.get(name)
     if hit and now - hit[0] < CACHE_TTL:
@@ -159,14 +175,14 @@ def _fetch(name: str) -> Any | None:
     local = measurements_dir()
     if local is not None and (local / name).is_file():
         try:
-            data = json.loads((local / name).read_text())
+            data = _as_object(name, json.loads((local / name).read_text()), "disk")
         except (OSError, ValueError) as exc:
             log.warning("ops_data: %s on disk is unreadable: %s", name, exc)
     if data is None:
         url = f"{RAW_BASE}/{name}"
         try:
             with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as resp:  # noqa: S310
-                data = json.loads(resp.read().decode("utf-8"))
+                data = _as_object(name, json.loads(resp.read().decode("utf-8")), "HTTPS")
         # DELIBERATELY BROAD, for the reason recorded on `_live_today`: the
         # four-type tuple read as exhaustive and was not.
         # `http.client.IncompleteRead` inherits from HTTPException and is none
