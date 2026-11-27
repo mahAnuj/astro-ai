@@ -1006,16 +1006,40 @@ def _agents_view() -> dict:
         return {"ok": False, "loops": []}
     rank = {"broken": 0, "dormant": 1, "missing-slots": 2, "reporting": 3,
             "ok": 4, "not-due-yet": 5, "on-demand": 6}
+    # A row is kept only if it is an object with a string `workflow` and `verdict`:
+    # the sort below, `_alerts` and the table read both on every row, and `snapshot()`
+    # ("never raises") calls this outside any try, so one null row, a row with no
+    # `verdict` or `verdict: []` was a 500 on all 7 tabs (the #1554 class). The text
+    # fields the table slices (`last_run`) or `_alerts` slices (`last_run`,
+    # `schedule_since`) are blanked when not a string rather than dropping the row,
+    # which still carries a real verdict. The count travels in `skipped_rows`.
+    rows = _dict_rows(doc["loops"])
+    skipped_rows = len(doc["loops"]) - len(rows)
+    clean = []
+    for r in rows:
+        if not isinstance(r.get("workflow"), str) or not isinstance(r.get("verdict"), str):
+            skipped_rows += 1
+            continue
+        r = dict(r)
+        for k in ("last_run", "last_conclusion", "last_run_health", "display",
+                  "schedule_since"):
+            if k in r and not isinstance(r[k], str):
+                r[k] = None
+        if "cadence" in r:
+            r["cadence"] = ([c for c in r["cadence"] if isinstance(c, str)]
+                            if isinstance(r["cadence"], list) else None)
+        clean.append(r)
     # Probe workflows are scaffolding, not part of the team (owner, 2026-11-17,
     # answer 7 on #1133: hidden from every count and list; 8 of the 27 loops in
     # agents.json were `zz-probe-*`, leaving 19).
-    shown = [r for r in doc["loops"]
+    shown = [r for r in clean
              if not str(r.get("workflow") or "").startswith(HIDDEN_WORKFLOW_PREFIXES)]
     loops = sorted(shown, key=lambda r: (rank.get(r["verdict"], 9), r["workflow"]))
     return {
         "ok": True,
         "generated_at": doc.get("generated_at"),
         "window_days": doc.get("window_days"),
+        "skipped_rows": skipped_rows,
         "loops": loops,
         "alerts": doc.get("alerts") or [],
         "scheduled": [r for r in loops if r["verdict"] != "on-demand"],
