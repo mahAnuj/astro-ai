@@ -17,10 +17,11 @@ THE RULE
 --------
 Stand down only when ALL of these were read successfully:
 
-  1. a `claude[bot]` comment that is not a `QA:` comment (T_last -- the trace a
-     cycle leaves) exists on the issue or its open PR and is NEWER than the entry:
-     a cycle ran after the entry was queued, so whatever the entry was queued for
-     has had its cycle;
+  1. a `claude[bot]` comment whose first line opens as an agent-cycle trace
+     (`CYCLE_OPENER`; `QA:`, steward, chief, analyst and architect comments never
+     match) -- T_last, the trace a cycle leaves -- exists on the issue or its open PR
+     and is NEWER than the entry: a cycle ran after the entry was queued, so
+     whatever the entry was queued for has had its cycle;
   2. exactly one open PR is owned by the issue (`_OWNED_BRANCH`);
   3. that PR's head commit is no newer than T_last: the cycle left no new commit;
   4. no `QA: PASS|FAIL` verdict is newer than T_last: no new ruling to act on;
@@ -39,8 +40,13 @@ untrusted input: nothing here reads a body beyond two regex booleans computed by
 `_OWNED_BRANCH` matched. A verdict from ANY author blocks the stand-down (the
 safe direction); only `claude[bot]` can be T_last.
 
-KNOWN LIMIT: `claude[bot]` is also the login of the steward, chief and
-project-manager, so their comments count as a "trace". `committer.date` is the
+KNOWN LIMIT: `claude[bot]` is also the login of the steward, chief, analyst and
+architect, which is why rule 1 reads the first line rather than the author alone
+(#1477: any claude[bot] comment used to count, so an unrelated comment landing after
+a QA FAIL stood the fix entry down). An unrecognised cycle opener never stands
+down: a miss fails OPEN and the cycle re-enters. Residual: a cycle that started
+before a FAIL and commented after the entry was queued still counts as having
+consumed it -- its start is not observable from comments. `committer.date` is the
 author's clock, not the push time, so a commit made before T_last and pushed after
 it reads as old. Both err toward a wasted stand-down at worst, never toward
 dropping a QA FAIL or red-gates entry (rule 1 and 4 still see those).
@@ -64,8 +70,15 @@ TRACE_BOT = "claude[bot]"
 NEEDS_MAIN = ("behind", "dirty", "unknown", "")
 
 _PRS_JQ = ".[] | {number, ref: .head.ref, sha: .head.sha}"
+# How a cycle opens its trace comment: the FIRST line starts with the cycle's name.
+# Measured, model-written convention, not a contract -- openers seen: '**/agent-cycle
+# (build) picked', '**agent-cycle (run on', '**/agent-cycle (2026-11-23)', 'Cycle
+# 2026-11-23 (agent-cycle'. A new phrasing misses, and a miss fails OPEN (the entry
+# re-enters). No backslashes: `\(` inside a jq string is interpolation.
+CYCLE_OPENER = '^[*# ]*(/?agent-cycle|Cycle [0-9-]+ [(]agent-cycle)'
+
 _COMMENTS_JQ = ('.[] | "\\(.user.login)\\t\\(.created_at)\\t'
-                '\\(.body | test("^QA: (PASS|FAIL)"))\\t\\(.body | startswith("QA:"))"')
+                '\\(.body | test("^QA: (PASS|FAIL)"))\\t\\(.body | test("' + CYCLE_OPENER + '"))"')
 
 
 def _ts(s: str) -> datetime:
@@ -73,26 +86,26 @@ def _ts(s: str) -> datetime:
 
 
 def parse_comments(raw: str) -> list[tuple[str, datetime, bool, bool]]:
-    """(login, created_at, is_verdict, is_qa) per line; raises ValueError on a bad line."""
+    """(login, created_at, is_verdict, is_cycle) per line; raises ValueError on a bad line."""
     out = []
     for line in raw.splitlines():
         if not line.strip():
             continue
-        login, when, verdict, qa = line.split("\t")
-        out.append((login, _ts(when), verdict == "true", qa == "true"))
+        login, when, verdict, cycle = line.split("\t")
+        out.append((login, _ts(when), verdict == "true", cycle == "true"))
     return out
 
 
 def decide(entry_created: datetime, comments: list[tuple[str, datetime, bool, bool]],
            head_date: datetime, state: str) -> tuple[str, datetime] | None:
     """The pure rule over facts already read: (why, T_last) to stand down, else None."""
-    traces = [when for who, when, _v, qa in comments if who == TRACE_BOT and not qa]
+    traces = [when for who, when, _v, cyc in comments if who == TRACE_BOT and cyc]
     if not traces:
         return None
     t_last = max(traces)
     if t_last <= entry_created:
         return None
-    if any(v and when > t_last for _who, when, v, _qa in comments):
+    if any(v and when > t_last for _who, when, v, _c in comments):
         return None
     if head_date > t_last:
         return None
