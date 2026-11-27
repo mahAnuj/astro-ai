@@ -775,7 +775,9 @@ instead of one — and were only caught by mutation-testing them.
 **Cheap checks before a QA round, and before a re-entry (#1255).** `scripts/pre_qa_check.py` runs
 the fast gates, then `THEME_CHECKS` (regression, grounding, tests: the three themes QA fails on
 most, `measurements/lessons.json`) and prints one `themes: ...` line; grounding is a proxy (a
-claim-bearing file changed with no `corpus:` line), never a judgement that a claim is true. And
+claim-bearing file changed with no `corpus:` line in a commit and no `corpus:` line or `knowledge/*.md`
+citation in an added line of this change's `docs/decisions/*.md`, #1478,
+`docs/decisions/2026-11-27-grounding-proxy-reads-decision-file.md`), never a judgement that a claim is true. And
 `cycle_queue.stale_reason` stands an `issue` queue entry down, through `scripts/reentry.py`, when a
 `claude[bot]` agent-cycle trace (recognised by its first-line opener, `reentry.CYCLE_OPENER`, never
 a steward, chief, analyst or architect comment, #1477) is newer than the entry and no commit, QA
