@@ -422,6 +422,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .chart{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:15px 16px 10px}
 .chart .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.chart .none{margin:0;font-family:Manrope,sans-serif;font-size:13px;color:var(--ink-mute)}
 .chart .big{font-family:Marcellus,Georgia,serif;font-size:27px;line-height:1;font-variant-numeric:tabular-nums}
 /* The plot is a grid: a fixed y-axis gutter, then the stretching SVG. Axis
    TEXT lives in HTML, never in the SVG — the path is drawn with
@@ -2124,13 +2125,28 @@ body{font-variant-numeric:tabular-nums}
       </div>
       {% endmacro %}
 
+      {# One series can be missing while the other renders (#1553): _series returns
+         {"ok": False} for an absent file or `rows: []`, and Jinja evaluates a macro's
+         ARGUMENTS before its body, so `T.impressions.total` (and the format() on it)
+         would raise. The guard therefore wraps the whole call, never the macro body. #}
+      {% macro nodata(label, fname) %}
+      <div class="chart">
+        <div class="hd"><span class="lbl">{{ label }}</span></div>
+        <p class="none">No data: <code>measurements/{{ fname }}</code> is missing or has no rows.</p>
+      </div>
+      {% endmacro %}
+
       <div class="charts">
+        {% if T.users.ok %}
         {{ chart(T.users, 'People · daily active users', T.users.total,
                  'peak ' ~ T.users.peak ~ '<br>last ' ~ T.users.last,
                  'var(--brand)', 'var(--wash-1)', 'users') }}
+        {% else %}{{ nodata('People · daily active users', 'ga4-daily.json') }}{% endif %}
+        {% if T.impressions.ok %}
         {{ chart(T.impressions, 'Search impressions · daily', '{:,}'.format(T.impressions.total),
                  'peak ' ~ T.impressions.peak ~ '<br>' ~ T.clicks_total ~ ' clicks',
                  'var(--shipped)', 'var(--wash-2)', 'impressions') }}
+        {% else %}{{ nodata('Search impressions · daily', 'gsc-daily.json') }}{% endif %}
       </div>
 
       {# A page row links to the live page. A QUERY row links nowhere: the
