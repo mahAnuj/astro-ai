@@ -1,18 +1,8 @@
 {
- "generated_at": "2026-11-27T12:51:51Z",
+ "generated_at": "2026-11-27T19:07:22Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
-   {
-    "number": 550,
-    "at": "2026-10-28T17:54:44Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/550#issuecomment-6476537145",
-    "summary": "QA: FAIL (independent round, provenance `independent`) \u2014 verified at `0b1ffc0f02a04e44c17774dc7c73296704bad721`  All three earlier findings are closed by execution. But the round-2 fix that made `success` reach the reporter introduced a new defect: a red `main` gets its sentinel closed by the next d",
-    "themes": [
-     "tests",
-     "copy"
-    ]
-   },
    {
     "number": 544,
     "at": "2026-10-30T18:24:03Z",
@@ -21,17 +11,6 @@
     "themes": [
      "tests",
      "security"
-    ]
-   },
-   {
-    "number": 564,
-    "at": "2026-10-28T15:52:28Z",
-    "url": "https://github.com/mahAnuj/astro-ai/pull/564#issuecomment-6473747270",
-    "summary": "## QA verdict: FAIL (round 1, independent) -- head `f0d3f736c4c14f6cae3395601b3f6e7b085609eb`  I had no hand in this PR and read it cold. This is a docs-only change (README +97, `docs/agent-cycle.html` +699), so there is no runtime code, no token budget and no latency claim to measure. Its stated pu",
-    "themes": [
-     "tokens",
-     "security",
-     "copy"
     ]
    },
    {
@@ -1099,10 +1078,10 @@
  "error_themes": {
   "grounding": 30,
   "regression": 30,
-  "tests": 25,
-  "tokens": 17,
-  "copy": 16,
-  "security": 14,
+  "tests": 24,
+  "tokens": 16,
+  "copy": 14,
+  "security": 13,
   "i18n": 9,
   "performance": 4
  },
