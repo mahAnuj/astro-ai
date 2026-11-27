@@ -294,6 +294,39 @@ def test_a_previous_window_that_starts_before_the_data_has_no_delta():
         assert c["state"] == "ok", "the current value is still shown"
 
 
+def test_a_refused_delta_never_prints_a_was_value():
+    """#1490: `was 0` beside 'unavailable: data starts ...' reads as a fact about a week
+    that is only partly covered by the data."""
+    rows = [r for r in base_rows() if r["date_ist"] >= "2026-11-12"]       # data starts 11-12
+    k = ops_kpis.build(ops(rows, RPI))
+    for c in k["cards"]:
+        assert c["delta"]["state"] == "unavailable" and c["delta"]["previous_text"] == "", c["key"]
+    # And an accepted delta still carries it.
+    full = ops_kpis.build(ops(base_rows(), RPI))
+    assert card(full, "prs")["delta"]["previous_text"] == "2"
+
+
+def test_pr_days_has_one_entry_per_window_day_oldest_first():
+    k = ops_kpis.build(ops(base_rows(), RPI))
+    assert [d["date"] for d in k["pr_days"]] == [
+        f"2026-11-{n}" for n in range(18, 25)]
+    by = {d["date"]: d for d in k["pr_days"]}
+    assert by["2026-11-18"] == {"date": "2026-11-18", "runs": 1, "prs": [101]}
+    # PR 101 shipped again on the 19th: counted on its first day only.
+    assert by["2026-11-19"]["prs"] == [] and by["2026-11-19"]["runs"] == 1
+    assert by["2026-11-24"]["prs"] == [103] and by["2026-11-24"]["runs"] == 2
+
+
+def test_pr_days_add_up_to_the_prs_merged_card():
+    k = ops_kpis.build(ops(base_rows(), RPI))
+    assert sum(len(d["prs"]) for d in k["pr_days"]) == card(k, "prs")["value"] == 3
+
+
+def test_an_unavailable_row_still_carries_an_empty_pr_days():
+    k = ops_kpis.build(ops([], loop_ok=False))
+    assert k["pr_days"] == []
+
+
 def test_a_previous_window_that_starts_exactly_on_the_first_row_is_comparable():
     rows = [r for r in base_rows() if r["date_ist"] >= "2026-11-11"]       # data starts 11-11
     k = ops_kpis.build(ops(rows, RPI))
@@ -523,6 +556,19 @@ def test_only_the_overview_tab_computes_the_cards(_offline, monkeypatch):
         assert _page(f"?tab={tab}").status_code == 200
     assert calls == []
     assert _page("?tab=overview").status_code == 200 and calls == [1]
+
+
+def test_the_overview_page_passes_trends_and_other_tabs_do_not_compute_them(_offline, monkeypatch):
+    from astro_ai import ops_trends
+    calls = []
+    real = ops_trends.build
+    monkeypatch.setattr(ops_trends, "build", lambda *a, **k: calls.append(a) or real(*a, **k))
+    for tab in ("agents", "workflows", "runs", "backlog", "analytics", "monitoring"):
+        assert _page(f"?tab={tab}").status_code == 200
+    assert calls == []
+    assert _page("?tab=overview").status_code == 200 and len(calls) == 1
+    ops_arg, kpis_arg, links_arg = calls[0]
+    assert "pr_days" in kpis_arg and [l["key"] for l in links_arg][0] == "overview"
 
 
 def test_the_overview_page_survives_the_cards_failing(_offline, monkeypatch):

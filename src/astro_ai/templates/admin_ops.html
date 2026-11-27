@@ -894,6 +894,44 @@ body{font-variant-numeric:tabular-nums}
   .quota .sub{order:4}
 }
 
+/* ── PRs shipped and Key metrics (#1133 slice 2b). Tokens only, no new one. A bar and
+   a sparkline are --brand: a fill and a stroke, never text. A bar's number is --ink, with a --panel halo for when the
+   tallest bar reaches the top of the axis and the number lands on it.
+   The hit rect's transparent stroke widens the target to the whole day without
+   padding any grid. The weekday line goes at 640px: two label lines will not fit. */
+.prs-w{max-width:760px;margin:0 auto}
+.dchart .pbar{fill:var(--brand)}
+.dchart .bv{fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
+.dchart.prs .hit{stroke:transparent;stroke-width:30px}
+.dchart.prs .dcol:hover .hit,.dchart.prs .dcol:focus-visible .hit{stroke:var(--panel-2)}
+@media (max-width:640px){.dchart .wd{display:none}.km-s:empty{display:none}}
+.pk .sub{margin:12px 0 0;max-width:78ch;font-size:13px;line-height:1.5;color:var(--ink-dim)}
+.pk>.sub{margin:0;max-width:none;padding:14px 20px 18px;border-top:1px solid var(--line-2)}
+.km-list{list-style:none;margin:0;padding:0}
+.km{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px 24px;padding:16px 20px;border-top:1px solid var(--line-2)}
+.km:first-child{border-top:0}
+.km-h,.km-v{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.km-h b{font-size:15px;font-weight:600}
+.km-s{flex:0 0 120px;min-height:32px}
+.km .num{font-size:32px;font-weight:700;letter-spacing:-.02em}
+.km .num.na{font-size:18px;font-weight:600;letter-spacing:0;color:var(--ink-dim)}
+.km .df,.km .nl{font-size:13px;line-height:1.45;color:var(--ink-dim)}
+.km .nl b{font-weight:600;color:var(--ink)}
+.km .nl.low{color:var(--open)}
+.km .nt{font-size:12px;font-weight:600;color:var(--ink)}
+.km .wl,.km .was,.km .src{font:400 12px/1.4 var(--mono);color:var(--ink-mute)}
+.km .dl{padding:3px 9px;border-radius:999px;background:var(--panel-3);font-size:12px;font-weight:600;
+  line-height:1.4;color:var(--ink-dim)}
+.km .dl.good{color:var(--shipped)}
+.km .dl.bad{color:var(--failed)}
+.km a{font-size:12px;font-weight:600}
+.spark{display:block;width:120px;height:32px;overflow:visible}
+.spark .gl{stroke:var(--line-2)}
+.spark .sa{fill:var(--brand);fill-opacity:.15}
+.spark .sl{fill:none;stroke:var(--brand);stroke-width:2;stroke-linejoin:round}
+.spark circle{fill:var(--brand);stroke:transparent;stroke-width:12px}
+.spark circle:hover{r:4}
+
 /* ── Results: the four KPI cards (#1133 slice 2a). Tokens only. A delta is an arrow
    and a word in its own text, so its colour is a second signal. The grid has no
    padding (the cells do) and wraps by width, so 375px is one column. .vh is the
@@ -1122,6 +1160,112 @@ body{font-variant-numeric:tabular-nums}
       <span class="age {{ 'stale' if kpis.as_of.stale }}">cycle data {{ kpis.as_of.text }}</span>
       Sources: <code>measurements/loop.json</code>, and <code>measurements/agents.json</code> for the QA verdicts.
       {% if kpis.skipped %}<b>{{ kpis.skipped }} row(s) in loop.json could not be read and are left out.</b>{% endif %}</p>
+  </section>
+  {% endif %}
+
+  {# ── PRs shipped and Key metrics (#1133 slice 2b). `trends` is ops_trends.build(),
+     computed by the route for this tab only: like Results, no arithmetic and no
+     literal number inside an expression here, every figure is printed as given.
+     The bar chart reuses .dchart/.dcol and the #dtip hover handler; each bar opens
+     that day's PRs (data-drill kpi-prs-day). Every chart has role="img", an
+     aria-label that lists its values, and a .vh table with the same numbers. A row
+     that cannot be computed says "unavailable: <why>", has class st-unavailable,
+     and prints no number and no sparkline. #}
+  {% if trends %}
+  {% set B = trends.bars %}
+  <section class="panel pk" id="prs-shipped" aria-labelledby="prs-h">
+    <h2 id="prs-h">PRs shipped <span class="lbl">IST days{% if B.window_text %} · {{ B.window_text }}{% endif %}</span></h2>
+    <div class="body">
+    {% if B.state == 'unavailable' %}
+      <p class="sub" role="status"><b>{{ B.reason }}.</b> The bars are unavailable, not zero.</p>
+    {% else %}
+      <div class="dchart-wrap prs-w">
+      <svg class="dchart prs" viewBox="0 0 {{ B.w }} {{ B.h }}" role="img"
+           aria-label="PRs shipped per IST day, {{ B.window_text }}, in PRs: {% for c in B.cols %}{{ c.weekday }} {{ c.date }} {{ c.value_text }}{{ '; ' if not loop.last }}{% endfor %}. The same numbers are in the table below.">
+        <line class="grid" x1="{{ B.left }}" x2="{{ B.right_x }}" y1="{{ B.plot_h }}" y2="{{ B.plot_h }}"/>
+        <line class="grid soft" x1="{{ B.left }}" x2="{{ B.right_x }}" y1="0.5" y2="0.5"/>
+        <text class="ax" x="{{ B.left }}" y="{{ B.plot_h }}" text-anchor="end" dx="-6" dy="0.32em">0</text>
+        <text class="ax" x="{{ B.left }}" y="1" text-anchor="end" dx="-6" dy="0.7em">{{ B.top }}</text>
+        {%- for c in B.cols %}
+        <g class="dcol" data-drill="kpi-prs-day" data-day="{{ c.date }}" data-prs="{{ c.prs }}"
+           data-tip="{{ c.tip }}" tabindex="0" role="button">
+          {#- one line per bar: this block ships once per day, so its whitespace is bytes -#}
+          <title>{{ c.tip }}</title><rect class="hit" x="{{ c.x }}" y="0" width="{{ c.w }}" height="{{ B.h }}"/>
+          {%- if c.state == 'ok' %}{% if c.h %}<rect class="pbar" x="{{ c.x }}" y="{{ c.y }}" width="{{ c.w }}" height="{{ c.h }}" rx="2"/>{% endif %}
+          <text class="ax bv" x="{{ c.cx }}" y="{{ c.value_y }}" text-anchor="middle">{{ c.value_text }}</text>
+          {%- else %}
+          <text class="ax nr" x="{{ c.cx }}" y="{{ B.plot_h }}" text-anchor="middle" dy="-1.6em">no</text><text class="ax nr" x="{{ c.cx }}" y="{{ B.plot_h }}" text-anchor="middle" dy="-0.4em">runs</text>
+          {%- endif %}
+          <text class="ax wd" x="{{ c.cx }}" y="{{ B.label_y }}" dy="-1.3em" text-anchor="middle">{{ c.weekday }}</text><text class="ax" x="{{ c.cx }}" y="{{ B.label_y }}" text-anchor="middle">{{ c.label }}</text>
+        </g>
+        {%- endfor %}
+      </svg>
+      <div class="dtip" id="dtip" hidden></div>
+      </div>
+      <div class="vh"><table>
+        <caption>PRs shipped per IST day, {{ B.window_text }}</caption>
+        <thead><tr><th scope="col">Day</th><th scope="col">PRs shipped</th><th scope="col">Loop runs</th><th scope="col">Which PRs</th></tr></thead>
+        <tbody>{% for t in B.table %}<tr><th scope="row">{{ t.weekday }} {{ t.date }}</th><td>{{ t.value_text }}</td><td>{{ t.runs }}</td><td>{{ t.prs }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+      <p class="sub"><b>{{ B.n_text }}.</b> The seven bars add up to <b>PRs merged</b> in Results above:
+        each PR is counted once, on the first IST day it shipped. A day with no loop runs
+        says "no runs", not 0. Click a bar to open that day's PRs.</p>
+      <p class="sub">Source: <code>measurements/loop.json</code>, the same rows as Results.</p>
+    {% endif %}
+    </div>
+  </section>
+
+  {% set UN = {'organic': 'clicks', 'issues': 'closed'} %}
+  {% set DAYS = {'organic': 'Search Console days', 'issues': 'UTC days'} %}
+  <section class="panel pk" id="key-metrics" aria-labelledby="km-h">
+    <h2 id="km-h">Key metrics <span class="lbl">each row names its own window</span></h2>
+    <ul class="km-list">
+    {% for m in trends.metrics %}
+      {%- set d = m.delta %}{% set s = m.spark %}
+      <li class="km st-{{ m.state }}" id="km-{{ m.key }}">
+        <div class="km-h"><b>{{ m.label }}</b>
+          <span class="df">{{ m.definition }}</span>
+          {%- if m.note %}
+          <span class="nt">{{ m.note }}</span>{% endif %}
+        </div>
+        <div class="km-s">
+        {%- if s and s.ok %}
+          <svg class="spark" viewBox="0 0 120 32" role="img"
+               aria-label="{{ m.label }}, {{ DAYS.get(m.key, '') }} {{ m.window_text }}, in {{ UN.get(m.key, 'count') }}: {% for b in s.bands %}{{ b.date }} {{ b.value }}{{ '; ' if not loop.last }}{% endfor %}. The same numbers are in the table.">
+            <line class="gl" x1="0" x2="120" y1="32" y2="32"/>
+            <polygon class="sa" points="{{ s.area }}"/>
+            <polyline class="sl" points="{{ s.line }}"/>
+            {% for b in s.bands %}<circle cx="{{ b.px }}" cy="{{ b.py }}" r="2.5"><title>{{ b.date }}: {{ b.value }} {{ UN.get(m.key, 'count') }}</title></circle>{% endfor %}
+          </svg>
+          <div class="vh"><table>
+            <caption>{{ m.label }} per day, {{ m.window_text }}</caption>
+            <thead><tr><th scope="col">Day</th><th scope="col">{{ UN.get(m.key, 'count') }}</th></tr></thead>
+            <tbody>{% for b in s.bands %}<tr><th scope="row">{{ b.date }}</th><td>{{ b.value }}</td></tr>{% endfor %}</tbody>
+          </table></div>
+        {%- endif -%}
+        </div>
+        <div class="km-v">
+          <span class="num{{ ' na' if m.state != 'ok' }}">{{ m.display }}</span>
+          <span class="nl{{ ' low' if m.low_n }}">{% if m.state == 'ok' %}<b>n={{ m.n }}</b> · {% endif %}{{ m.n_text }}</span>
+          {%- if m.window_text %}
+          <span class="wl">{{ DAYS.get(m.key, '') }} · {{ m.window_text }}</span>{% endif %}
+          {%- if m.state == 'ok' %}
+          <span class="dl{{ ' bad' if d.good is false }}{{ ' good' if d.good is true }}">{{ d.text|trim }}{% if d.state != 'ok' and d.previous_window %} · previous {{ d.previous_window }}{% endif %}</span>
+          {%- if d.previous_text %}
+          <span class="was">was {{ d.previous_text }}</span>{% endif %}
+          {%- endif %}
+          <span class="src">source: {{ m.source }}</span>
+          {%- if m.href %}
+          <a href="{{ m.href }}">{{ m.link_text }} &rarr;</a>{% endif %}
+        </div>
+      </li>
+    {% endfor %}
+    </ul>
+    <p class="sub"{% if trends.error %} role="status"{% endif %}>
+      {% if trends.error %}<b>A panel above could not be computed and says so.</b> {% endif %}
+      A window with a missing day shows no value and no change, never a sum over the gap.
+      The windows differ on purpose: Results uses IST days, Search Console trails the present by
+      about three days, and the issue trend counts UTC days.</p>
   </section>
   {% endif %}
 
@@ -2738,6 +2882,13 @@ body{font-variant-numeric:tabular-nums}
                           return (rank[a.priority] ?? 9) - (rank[b.priority] ?? 9) || b.number - a.number;
                         });
                       }, "issue"],
+    /* A PRs-shipped bar (#1133 slice 2b): the PRs that first shipped on that day.
+       Before "kpi-cycles" on purpose: the Results entries below must stay last. */
+    "kpi-prs-day":   ["PRs shipped", "PRs the loop shipped, each on the first IST day it shipped",
+                      function (el) {
+                        var want = (el.getAttribute("data-prs") || "").split(",");
+                        return kpiPrs().filter(function (r) { return want.indexOf(String(r.pr)) >= 0; });
+                      }, "cycle"],
     /* The four Results cards. Rows are the current KPI window's (the blob's
        kpi_rows, Overview only). One row per PR for the PR and QA cards, because that is
        the unit their numbers count. */
@@ -2757,7 +2908,9 @@ body{font-variant-numeric:tabular-nums}
   Array.prototype.forEach.call(document.querySelectorAll("[data-drill]"), function (el) {
     el.addEventListener("click", function () {
       var t = TILES[el.getAttribute("data-drill")];
-      if (t) open(t[0], t[1], t[2](), t[3]);
+      /* A bar names its day in the sheet title; a card has no data-day. */
+      var day = el.getAttribute("data-day");
+      if (t) open(t[0], day ? t[1] + ", " + day : t[1], t[2](el), t[3]);
     });
   });
 

@@ -27,7 +27,7 @@ import json
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from astro_ai import agent_status, cache, events, feedback, ops_data, ops_kpis, ops_tabs, subscribers, users
+from astro_ai import agent_status, cache, events, feedback, ops_data, ops_kpis, ops_tabs, ops_trends, subscribers, users
 from astro_ai.routes.deps import _lang, require_admin, templates
 
 router = APIRouter()
@@ -221,10 +221,16 @@ async def admin_ops(request: Request, window: str = "", day: str = "", tab: str 
     }
     # The KPI cards (#1133 slice 2a) are Overview's alone, so the other six tabs
     # do not pay for computing them. `build` never raises and reads nothing new.
-    kpis = None
+    # `tab_links` is built once: the rail uses it and so do the trend rows' links,
+    # so no raw query value reaches an href through either.
+    tab_links = ops_tabs.tab_links(tab, ops["app_days"], ops["app"]["day"])
+    kpis = trends = None
     if tab == "overview":
         kpis = ops_kpis.build(ops)
         full["kpi_rows"] = kpis["rows"]
+        # PRs-shipped bars and Key metrics (#1133 slice 2b): derived from `ops`
+        # and `kpis`, so 0 new reads.
+        trends = ops_trends.build(ops, kpis, tab_links)
     # Each tab ships only what its own drill-downs read (#1133): the whole blob
     # was 438,553 B on every tab. ops_tabs.BLOB_KEYS is the table.
     client = ops_tabs.blob_for(tab, full)
@@ -237,7 +243,8 @@ async def admin_ops(request: Request, window: str = "", day: str = "", tab: str 
             "tab": tab,
             "tab_label": ops_tabs.tab_label(tab),
             "kpis": kpis,
-            "tab_links": ops_tabs.tab_links(tab, ops["app_days"], ops["app"]["day"]),
+            "trends": trends,
+            "tab_links": tab_links,
             "tabs_health": ops_tabs.health(ops["alerts"], ops["reds"], ops["missing"]),
             # </script> inside a JSON string would end the block early.
             "ops_json": json.dumps(client).replace("</", "<\\/"),
