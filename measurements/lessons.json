@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T05:14:37Z",
+ "generated_at": "2026-11-27T12:51:51Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1094,15 +1094,7 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": [
-   {
-    "kind": "claude-quota",
-    "level": "amber",
-    "title": "Claude weekly quota 94% used",
-    "detail": "Every agent shares one Claude Max subscription. 0 run(s) in the sample hit a limit. Levers, cheapest first: stop dispatching ranked (`/agent-cycle`) cycles that end in nothing; space out the weekly agent loops; keep QA rounds to one per head. Do not add a parallel build lane until it resets.",
-    "where": "/admin/ops"
-   }
-  ]
+  "ops_findings": []
  },
  "error_themes": {
   "grounding": 30,

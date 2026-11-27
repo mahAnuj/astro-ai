@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27T05:12:05Z",
+  "generated_at": "2026-11-27T12:47:47Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 170,
+  "open": 166,
   "with_ask": 42,
   "by_area": {
-    "UNCLASSIFIED": 77,
+    "UNCLASSIFIED": 75,
     "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
@@ -14,7 +14,6 @@
     "TOKENS": 5,
     "SEO": 4,
     "CORPUS": 4,
-    "UI": 3,
     "RETRIEVAL": 3,
     "CHORE": 3,
     "MEASURE": 2,
@@ -28,27 +27,47 @@
     "BUG": 2,
     "MUHURAT": 1,
     "NOTIFY": 1,
+    "UI": 1,
     "ASK": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 57,
+    "bug": 55,
     "untyped": 40,
     "enhancement": 31,
     "chore": 26,
     "correctness": 9,
-    "design": 5,
-    "ui": 2
+    "design": 5
   },
   "by_priority": {
-    "unset": 97,
-    "medium": 37,
+    "unset": 95,
+    "medium": 35,
     "high": 21,
     "low": 15
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 1542,
+      "title": "QA follow-up: a non-object loop.json (e.g. [1]) still 500s every /admin/ops tab (PR #1541)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
+      ],
+      "created": "2026-11-27T10:11:29Z",
+      "updated": "2026-11-27T12:46:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1537,
       "title": "QA follow-up: minor items from PR #1536",
@@ -76,38 +95,6 @@
       "labels": [],
       "created": "2026-11-27T03:54:15Z",
       "updated": "2026-11-27T03:54:15Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1530,
-      "title": "[UI] Bottom nav 'Ask' icon is fullwidth '？' (U+FF1F): renders as an empty box without a CJK font fallback",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer"
-      ],
-      "created": "2026-11-27T02:33:51Z",
-      "updated": "2026-11-27T02:33:51Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1529,
-      "title": "[UI] /matching 375px: two nested bordered cards cost ~28px of input width; test flattening the inner card on mobile",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer"
-      ],
-      "created": "2026-11-27T02:33:49Z",
-      "updated": "2026-11-27T02:33:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -171,7 +158,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-11-26T03:47:47Z",
-      "updated": "2026-11-26T03:47:47Z",
+      "updated": "2026-11-27T08:05:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -205,23 +192,6 @@
       ],
       "created": "2026-11-26T03:35:54Z",
       "updated": "2026-11-26T03:42:59Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1492,
-      "title": "QA follow-up: one malformed loop.json row 500s every /admin/ops tab before ops_kpis can skip it (PR #1489)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa"
-      ],
-      "created": "2026-11-25T17:37:07Z",
-      "updated": "2026-11-26T17:07:55Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -338,43 +308,6 @@
       ],
       "created": "2026-11-25T14:59:02Z",
       "updated": "2026-11-26T17:08:29Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1478,
-      "title": "QA follow-up: pre_qa_check grounding proxy fails grounded commits whose message has no corpus: line (PR #1475)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa"
-      ],
-      "created": "2026-11-25T13:48:14Z",
-      "updated": "2026-11-26T17:07:59Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1477,
-      "title": "QA follow-up: reentry stand-down can drop a QA-FAIL fix entry after an unrelated claude[bot] comment (PR #1475)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-25T13:48:13Z",
-      "updated": "2026-11-27T05:11:29Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -683,7 +616,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-21T11:10:53Z",
-      "updated": "2026-11-25T15:29:56Z",
+      "updated": "2026-11-27T10:56:39Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -967,10 +900,11 @@
       "labels": [
         "ui",
         "design-proposal",
+        "provenance:trusted",
         "needs-evidence"
       ],
       "created": "2026-11-20T01:31:13Z",
-      "updated": "2026-11-25T06:48:01Z",
+      "updated": "2026-11-27T08:06:35Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -1026,7 +960,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-19T09:53:08Z",
-      "updated": "2026-11-25T06:48:00Z",
+      "updated": "2026-11-27T08:06:26Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -2800,9 +2734,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-27T05:12:05Z",
+    "generated_at": "2026-11-27T12:47:47Z",
     "window_days": 28,
-    "open_now": 170,
+    "open_now": 166,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3225,15 +3159,16 @@
       },
       {
         "date": "2026-11-27",
-        "opened": 5,
-        "closed": 2,
-        "net": 3,
-        "open_end": 170,
+        "opened": 6,
+        "closed": 7,
+        "net": -1,
+        "open_end": 166,
         "opened_by": {
-          "loop": 5
+          "loop": 6
         },
         "closed_by": {
-          "close-on-evidence": 2
+          "close-on-evidence": 6,
+          "other": 1
         }
       }
     ],
@@ -4770,6 +4705,16 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1477,
+        "closed_at": "2026-11-27T05:26:07Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1478,
+        "closed_at": "2026-11-27T11:00:35Z",
+        "closer": "close-on-evidence"
+      },
+      {
         "number": 1479,
         "closed_at": "2026-11-26T17:07:38Z",
         "closer": "owner"
@@ -4783,6 +4728,11 @@
         "number": 1483,
         "closed_at": "2026-11-25T19:34:04Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1492,
+        "closed_at": "2026-11-27T10:19:12Z",
+        "closer": "other"
       },
       {
         "number": 1497,
@@ -4818,16 +4768,26 @@
         "number": 1528,
         "closed_at": "2026-11-27T03:05:22Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1529,
+        "closed_at": "2026-11-27T09:00:19Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1530,
+        "closed_at": "2026-11-27T08:46:26Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 5,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 82,
+          "merged": 84,
           "median_h": 0.6,
-          "p90_h": 5.9,
+          "p90_h": 3.7,
           "max_h": 105.0,
           "slowest": [
             {
@@ -4937,9 +4897,9 @@
           ]
         },
         "28d": {
-          "merged": 368,
-          "median_h": 0.6,
-          "p90_h": 14.3,
+          "merged": 373,
+          "median_h": 0.5,
+          "p90_h": 13.9,
           "max_h": 122.1,
           "slowest": [
             {
@@ -5226,25 +5186,25 @@
         },
         {
           "date": "2026-11-27",
-          "merged": 2,
-          "median_h": 0.5,
-          "max_h": 0.5
+          "merged": 7,
+          "median_h": 0.3,
+          "max_h": 0.8
         }
       ],
       "open": [
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 129.5,
+          "age_h": 137.1,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 37.9h gates red; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 45.5h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 37.9
+              "gates_red": 45.5
             },
             "qa_fails": 0,
             "pushes": 4
@@ -5253,23 +5213,23 @@
         {
           "number": 1515,
           "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
-          "age_h": 12.1,
+          "age_h": 19.7,
           "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "11.7h waiting for a fix after QA failed (1 QA FAIL)",
+            "reason": "19.3h waiting for a fix after QA failed (1 QA FAIL)",
             "primary": "qa_fail",
             "hours": {
               "no_gates": 0.4,
-              "qa_fail": 11.7
+              "qa_fail": 19.3
             },
             "qa_fails": 1,
             "pushes": 3
           }
         },
         {
-          "number": 1536,
-          "title": "reentry: T_last is an agent-cycle trace, not any claude[bot] comment (#1477)",
-          "age_h": 0.1,
+          "number": 1544,
+          "title": "ops: a non-object measurements JSON degrades the panel instead of 500ing every tab (#1542)",
+          "age_h": 0.2,
           "waiting_on": "merge",
           "why": null
         }
