@@ -62,6 +62,27 @@ _BANNED = (
 _BANNED_R2 = (r"exploiting", r"preys? on", r"over-?diagnos") + _BANNED[-7:]
 _BANNED_RE = [re.compile(p) for p in _BANNED]
 _BANNED_RE_R2 = [re.compile(p) for p in _BANNED_R2]
+# _BANNED_R2 is sliced off the END of _BANNED, so a phrase appended to _BANNED silently changes which
+# patterns round 2 pins; this makes that edit loud.
+assert len(_BANNED_R2) == 10
+
+# #1525: the price-and-motive family (a price band, or why a priest quotes one, stated as fact) on
+# thirteen more pages and seven registry entries. A separate tuple, not an addition to _BANNED: appending
+# there would shift the _BANNED[-7:] slice above, and would run the broad "most people" / "K.N. Rao"
+# families over pages the issue does not name (the trap #1513 documented).
+_BANNED_R3 = (
+    r"selling anxiety", r"tens of thousands", r"exploiting fear", r"trading on (fear|emotional)",
+    r"exploitative", r"heavily exploited", r"emotional urgency", r"inexpensive", r"almost nothing",
+    r"cost lakhs", r"modest arrangements", r"extraordinary amounts", r"not a classical astrologer",
+    r"under ₹\s?500", r"<\s?₹\s?500", r"₹\s?5-?15\s?k", r"₹\s?5,?000", r"often manipulative",
+    r"misrepresenting the tradition", r"rampant", r"exploiting the", r"vendor manipulation",
+)
+# Page-only: the registry seo_description of five of these slugs says "without vendor manipulation"
+# (and pitru-dosh-remedies "under ₹500"); search snippets are deferred (#311 scored a title change a
+# miss), so the registry scan below skips seo_description and the page scan carries these too.
+_BANNED_R3_PAGE = (r"vendor[- ](manipulation|scam|market)", r"dominates online", r"manipulative [\"']?puja")
+_BANNED_RE_R3 = [re.compile(p) for p in _BANNED_R3]
+_BANNED_RE_R3_PAGE = [re.compile(p) for p in _BANNED_R3 + _BANNED_R3_PAGE]
 
 
 def _norm(s: str) -> str:
@@ -112,10 +133,10 @@ def _article(slug: str):
     return art
 
 
-def _registry_text(slug: str) -> str:
+def _registry_text(slug: str, fields=("summary", "seo_description", "llm_summary", "faqs")) -> str:
     art = _article(slug)
     parts = []
-    for field in ("summary", "seo_description", "llm_summary", "faqs"):
+    for field in fields:
         parts.extend(_strings(getattr(art, field)))
     return " \n ".join(parts)
 
@@ -236,3 +257,111 @@ def test_manglik_cancellations_are_labelled_repeated_online(client, slug):
     assert "repeated online" in n, slug
     assert "exclude the person from manglik diagnosis entirely" not in n
     assert "cancels manglik in most classical readings" not in n
+
+
+# #1525: the thirteen pages and seven registry entries that still said what a remedy costs and why a
+# priest quotes it (pitru-dosh-remedies joined at build time: its page said "under ₹500" beside a FAQ
+# the issue named).
+_R3_PAGES = (
+    "financial-struggles", "marriage-delayed", "mercury-remedies", "venus-remedies", "jupiter-remedies",
+    "saturn-remedies", "pitru-dosh", "rahu-mahadasha-career-problems", "10th-lord-in-6th-house-career",
+    "saturn-in-10th-house-career", "chronic-health-issues-kundli", "santan-prapti-children-in-kundli",
+    "pitru-dosh-remedies",
+)
+_R3_REGISTRY = (
+    "jupiter-remedies", "saturn-remedies", "marriage-delayed", "santan-prapti-children-in-kundli",
+    "chronic-health-issues-kundli", "pitru-dosh", "pitru-dosh-remedies",
+)
+# seo_description is deferred (see _BANNED_R3_PAGE), so it is not read here.
+_R3_FIELDS = ("summary", "llm_summary", "faqs")
+
+# One page-specific attribution clause per page, verbatim from the replacement text.
+_MARKER3 = {
+    "financial-struggles": 'very large quote for a "lakshmi puja" package',
+    "marriage-delayed": 'very large quote for "marriage puja packages"',
+    "mercury-remedies": 'very large quote for "budha dosha nivaran packages"',
+    "venus-remedies": 'very large quote for "shukra dosha nivaran packages"',
+    "jupiter-remedies": 'very large quote for "guru puja packages"',
+    "saturn-remedies": 'very large quote for "shani nivaran puja" packages',
+    "pitru-dosh": 'very large quote for a "pitru dosh nivaran puja"',
+    "rahu-mahadasha-career-problems": 'very large quote for "rahu shanti puja packages"',
+    "10th-lord-in-6th-house-career": 'there is no such thing as "10th lord in 6th nivaran puja"',
+    "saturn-in-10th-house-career": 'very large quote for "shani nivaran puja packages"',
+    "chronic-health-issues-kundli": 'very large quote for "health nivaran puja" packages',
+    "santan-prapti-children-in-kundli": 'very large quote for "santan prapti puja packages"',
+    "pitru-dosh-remedies": "we hold no source for what a fair price is, so we give no figure",
+}
+_REGISTRY_MARKER3 = {
+    "jupiter-remedies": "very large quote for a jupiter puja package",
+    "saturn-remedies": "very large quote for a shani nivaran puja package",
+    "marriage-delayed": "very large quote for a 'marriage nivaran puja'",
+    "santan-prapti-children-in-kundli": "very large quote for a 'santan nivaran' ceremony",
+    "chronic-health-issues-kundli": "be cautious of anyone promising a cure",
+    "pitru-dosh": "be cautious of a very large puja quote",
+    "pitru-dosh-remedies": "we hold no source for what a pitru dosh puja should cost",
+}
+
+
+@pytest.mark.parametrize("slug", _R3_PAGES)
+def test_rendered_round3_page_carries_no_price_or_motive_claim(client, slug):
+    assert _hits(_visible(client, slug), _BANNED_RE_R3_PAGE) == [], slug
+
+
+@pytest.mark.parametrize("slug", _R3_REGISTRY)
+def test_registry_round3_entry_carries_no_price_or_motive_claim(slug):
+    assert _hits(_registry_text(slug, _R3_FIELDS), _BANNED_RE_R3) == [], slug
+
+
+@pytest.mark.parametrize("slug", _R3_PAGES)
+def test_round3_page_says_what_we_hold_about_price(client, slug):
+    assert _MARKER3[slug] in _norm(_visible(client, slug)), slug
+
+
+@pytest.mark.parametrize("slug", _R3_REGISTRY)
+def test_round3_registry_entry_keeps_its_caution(slug):
+    assert _REGISTRY_MARKER3[slug] in _norm(_registry_text(slug, _R3_FIELDS)), slug
+
+
+# Safety messages the rewrite must keep. These turn red if a rewrite deletes the caution instead of
+# the price or motive claim.
+def test_chronic_health_page_keeps_the_medical_care_warning(client):
+    n = _norm(_visible(client, "chronic-health-issues-kundli"))
+    assert "neither is optional" in n
+    assert "do not skip medical care" in n
+    assert "skipping medical care is not something our guidance supports" in n
+
+
+def test_santan_prapti_page_keeps_the_medical_care_warning(client):
+    assert "do not skip medical care" in _norm(_visible(client, "santan-prapti-children-in-kundli"))
+
+
+def test_saturn_remedies_keeps_the_rao_quote_and_the_blue_sapphire_caution(client):
+    n = _norm(_visible(client, "saturn-remedies"))
+    assert "those who have no belief in vedic remedies may skip this chapter" in n
+    assert "blue sapphire without a proper chart consultation" in n
+
+
+def test_rahu_mahadasha_page_keeps_the_hessonite_caution(client):
+    n = _norm(_visible(client, "rahu-mahadasha-career-problems"))
+    assert "hessonite" in n
+    assert "without prior chart consultation" in n
+
+
+def test_chronic_health_registry_keeps_the_never_replace_medical_care_line():
+    n = _norm(_registry_text("chronic-health-issues-kundli", _R3_FIELDS))
+    assert "never replace medical care" in n
+
+
+def test_marriage_delayed_registry_keeps_the_gemstone_caution():
+    n = _norm(_registry_text("marriage-delayed", _R3_FIELDS))
+    assert "gemstones should never be worn without proper chart consultation" in n
+
+
+def test_saturn_registry_does_not_put_a_paraphrase_in_raos_mouth():
+    # remedies.md quotes Rao on belief only ("may skip this chapter"); "devotional acts, not
+    # transactional payments" was the repo's own sentence, printed in quotation marks and attributed.
+    n = _norm(_registry_text("saturn-remedies", _R3_FIELDS))
+    assert "from rao: '" not in n
+    # The sentence may stay, but only as the site's own reading.
+    assert n.count("devotional acts, not transactional payments") == n.count(
+        "in our reading, remedies are devotional acts, not transactional payments")
