@@ -895,6 +895,43 @@ body{font-variant-numeric:tabular-nums}
   .quota .sub{order:4}
 }
 
+/* ── The engineering loop, Agent health, System health (#1133 slice 2c). Tokens only,
+   no new one. A state is a dot (a fill) AND its word in text, a glyph in the ring;
+   the colour is never the only signal. The grids have no padding (the cells do).
+   Under 640px the ring drops its cadence lines and sets names at 20 user units
+   (about 12px), and the legend under it carries the cadence in text. */
+.lp-fig{margin:0;padding:16px 20px 0}
+.lp-fig figcaption{margin:8px auto 0;max-width:560px;font-size:13px;line-height:1.5;color:var(--ink-dim);text-align:center}
+.lpr{display:block;width:100%;max-width:560px;height:auto;margin:0 auto;overflow:visible}
+.lpr .ar{fill:none;stroke:var(--ink-mute);stroke-width:1.5}
+.lpr .ah{fill:var(--ink-mute)}
+.lpr circle{fill:var(--panel-2);stroke:var(--nothing-text);stroke-width:2.5}
+.lpr .st-ok circle{stroke:var(--shipped)}.lpr .st-watch circle{stroke:var(--open)}
+.lpr .st-bad circle{stroke:var(--failed)}.lpr .st-running circle{stroke:var(--st-running)}
+.lpr .st-unavailable circle{stroke-dasharray:4 3}
+.lpr .nn,.lpr .nm{fill:var(--ink);font:700 14px var(--ui)}
+.lpr .nm{font-weight:600}
+.lpr .nc{fill:var(--ink-dim);font:400 12px var(--mono)}
+.lpr .gl{fill:var(--nothing-text);font-size:1.15em;font-weight:700}
+.lpr .st-ok .gl{fill:var(--shipped)}.lpr .st-watch .gl{fill:var(--open)}
+.lpr .st-bad .gl{fill:var(--failed)}.lpr .st-running .gl{fill:var(--st-running)}
+@media (max-width:640px){.lpr .nc{display:none}.lpr .nn,.lpr .nm{font-size:20px}}
+.lp-leg,.lp-list{list-style:none;margin:0;padding:0}
+.lp-leg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));margin-top:16px}
+.lp-leg>li,.lp-list>li{display:flex;gap:10px;align-items:flex-start;min-width:0;padding:12px 20px;border-top:1px solid var(--line-2)}
+.lp-list>li:first-child{border-top:0}
+.ld{flex:none;box-sizing:border-box;width:9px;height:9px;margin-top:6px;border-radius:50%;background:var(--nothing-text)}
+.st-ok>.ld{background:var(--shipped)}.st-watch>.ld{background:var(--open)}.st-bad>.ld{background:var(--failed)}
+.st-running>.ld{background:var(--st-running)}.st-unavailable>.ld{background:transparent;border:2px solid var(--nothing-text)}
+.lp li>div{min-width:0;overflow-wrap:anywhere;font-size:13px;line-height:1.5}
+.lp .lw{font-weight:600;color:var(--ink)}
+.lp>p.sub{font-size:13px;line-height:1.5;color:var(--ink-dim)}
+.lp .lc{display:block;font-size:12px;line-height:1.5;color:var(--ink-dim)}
+.lp li a{font-weight:600}
+.lp-duo{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-bottom:24px}
+.lp-duo>.panel{margin-bottom:0;min-width:0}
+@media (min-width:768px){.lp-duo{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 /* ── PRs shipped and Key metrics (#1133 slice 2b). Tokens only, no new one. A bar and
    a sparkline are --brand: a fill and a stroke, never text. A bar's number is --ink, with a --panel halo for when the
    tallest bar reaches the top of the axis and the number lands on it.
@@ -1162,6 +1199,101 @@ body{font-variant-numeric:tabular-nums}
       Sources: <code>measurements/loop.json</code>, and <code>measurements/agents.json</code> for the QA verdicts.
       {% if kpis.skipped %}<b>{{ kpis.skipped }} row(s) in loop.json could not be read and are left out.</b>{% endif %}</p>
   </section>
+  {% endif %}
+
+  {# ── The engineering loop, Agent health and System health (#1133 slice 2c).
+     `loop_health` is ops_loop_health.build(), computed by the route for this tab
+     only and FULLY pre-computed: no arithmetic and no literal number inside an
+     expression here (the Results and PRs-shipped tests scan this span too). Every
+     state is a word in text beside a dot or glyph that is aria-hidden, so colour is
+     never the only signal. The ring is role="img" with an aria-label listing every
+     step; the legend <ol> under it is the keyboard and screen-reader path (the SVG
+     links are tabindex -1), and a .vh table repeats the last run and result. A panel
+     that cannot be computed says "unavailable: <why>", never a green and never 0.
+     No script, no drill-down, no Tailwind class. #}
+  {% if loop_health %}
+  {% set R = loop_health.ring %}{% set AH = loop_health.agents %}{% set SH = loop_health.system %}
+  {% set GL = {'ok': '✓', 'watch': '!', 'bad': '✕', 'running': '…', 'unavailable': '?'} %}
+  <section class="panel lp" id="loop-ring" aria-labelledby="loop-h">
+    <h2 id="loop-h">The engineering loop{% if R.as_of %} <span class="lbl"><span class="age {{ 'stale' if R.stale }}">{{ R.as_of }}</span></span>{% endif %}</h2>
+    {% if R.state == 'unavailable' %}
+    <p class="sub" role="status"><b>{{ R.reason }}.</b> The ring is unavailable, not green.</p>
+    {% else %}
+    <figure class="lp-fig">
+      <svg class="lpr" viewBox="0 0 {{ R.w }} {{ R.h }}" role="img" aria-label="{{ R.aria }}">
+        <defs><marker id="lp-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+        {%- for a in R.arrows %}
+        <path class="ar" d="{{ a.d }}" marker-end="url(#lp-ah)"/>
+        {%- endfor %}
+        {%- for n in R.nodes %}
+        <a{% if n.href %} href="{{ n.href }}"{% endif %} tabindex="-1"><g class="nd st-{{ n.state }}"><circle cx="{{ n.x }}" cy="{{ n.y }}" r="{{ n.r }}"/>
+          <text class="nn" x="{{ n.x }}" y="{{ n.y }}" dy="0.35em" text-anchor="middle">{{ n.n }}</text>
+          <text class="nm" x="{{ n.label_x }}" y="{{ n.name_y }}" text-anchor="{{ n.anchor }}">{{ n.name }}<tspan class="gl" dx="5">{{ GL[n.state] }}</tspan></text>
+          <text class="nc" x="{{ n.label_x }}" y="{{ n.caption_y }}" text-anchor="{{ n.anchor }}">{{ n.caption }}</text></g></a>
+        {%- endfor %}
+      </svg>
+      <figcaption>{{ R.caption }}. A circle shows the worst last run of its workflows.</figcaption>
+    </figure>
+    <div class="vh"><table>
+      <caption>The engineering loop, one row per step</caption>
+      <thead><tr><th scope="col">Step</th><th scope="col">Name</th><th scope="col">Last run</th><th scope="col">Result</th></tr></thead>
+      <tbody>{% for t in R.table %}<tr><th scope="row">{{ t.n }}</th><td>{{ t.name }}</td><td>{{ t.last }}</td><td>{{ t.result }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <ol class="lp-leg">
+    {%- for n in R.nodes %}
+      <li class="st-{{ n.state }}"><span class="ld" aria-hidden="true"></span><div><b>{% if n.href %}<a href="{{ n.href }}">{{ n.n }}. {{ n.name }}</a>{% else %}{{ n.n }}. {{ n.name }}{% endif %}</b> ·
+        <span class="lw">{{ n.word }}</span> · {{ n.caption }}
+        {%- for w in n.workflows %}
+        <span class="lc">{{ w.name }} · {{ w.cadence }} · last {{ w.last }} · {{ w.conclusion }}{% if not (loop.first and loop.last) %} · {{ w.word }}{% endif %}</span>
+        {%- endfor %}</div></li>
+    {%- endfor %}
+    </ol>
+    {% endif %}
+    <p class="sub">Read from <code>measurements/agents.json</code>, as of its last collection, not live.
+      <code>loop-outcomes</code> ends non-zero by design when it finds something: its amber is a finding.</p>
+  </section>
+
+  <div class="lp-duo">
+  <section class="panel lp" id="agent-health" aria-labelledby="ah-h">
+    <h2 id="ah-h">Agent health{% if AH.header %} <span class="lbl">{{ AH.header }}</span>{% endif %}</h2>
+    {% if AH.state == 'unavailable' %}
+    <p class="sub" role="status"><b>{{ AH.reason }}.</b> No counts are shown, not zeros.</p>
+    {% else %}
+    <ul class="lp-list">
+    {% for g in AH.groups %}
+      <li class="st-{{ g.state }}"><span class="ld" aria-hidden="true"></span>
+        <div><b>{{ g.label }}</b> · <span class="lw">{{ g.word }}</span>
+          <span class="lc">{{ g.n }} in the group: {{ g.counts_text }}</span></div>
+      </li>
+    {% endfor %}
+    </ul>
+    <p class="sub">{{ AH.note }} <span class="age">{{ AH.live_text }}</span>
+      {% if AH.href %}<a href="{{ AH.href }}">Agents &rarr;</a>{% endif %}</p>
+    {% if AH.skipped_text %}<p class="sub" role="status"><b>{{ AH.skipped_text }}.</b></p>{% endif %}
+    {% endif %}
+  </section>
+
+  <section class="panel lp" id="system-health" aria-labelledby="sh-h">
+    <h2 id="sh-h">System health</h2>
+    <ul class="lp-list">
+    {% for r in SH.rows %}
+      <li class="st-{{ r.state }}"><span class="ld" aria-hidden="true"></span>
+        <div><b>{{ r.name }}</b> · <span class="lw">{{ r.word }}</span>
+          {%- if r.detail %}
+          <span class="lc">{{ r.detail }}</span>{% endif %}
+          {%- if r.as_of and r.key != 'website' %}
+          <span class="lc">{{ r.as_of }}</span>{% endif %}
+          {%- if r.href %}
+          <a href="{{ r.href }}">{{ r.link_text }} &rarr;</a>{% endif %}</div>
+      </li>
+    {% endfor %}
+    </ul>
+    <p class="sub"{% if SH.error %} role="status"{% endif %}>
+      {% if SH.error %}<b>A row above could not be computed and says so.</b> {% endif %}
+      Each row says only what was checked. The website row is the last <code>verify-production</code>
+      run, not an uptime monitor.</p>
+  </section>
+  </div>
   {% endif %}
 
   {# ── PRs shipped and Key metrics (#1133 slice 2b). `trends` is ops_trends.build(),
