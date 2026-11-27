@@ -1,85 +1,54 @@
-# Design audit — shubhagya.com, 2026-11-20
+# Design audit: shubhagya.com, 2026-11-27
 
-**Live state:** `/health` ok, revision `bhagya-00809-rp8`, `build_sha` 0f450d2 (the current main commit).
+Live build `7b0ee2f` (/health `build_sha` matches HEAD). Stylesheet check: the live `app.css` hash `963961b6` equals the tree's, and the pages reference `?v=963961b6`. There is no stale-CSS repeat of #253.
 
-**Chief guidance:** `measurements/sync/chief-guidance.md` (2026-11-19) has no Design or UI row, so I had no role instruction to follow or to decline. Its Stop and Start lists are about the build lane and growth.
+**Chief guidance:** `measurements/sync/chief-guidance.md` (2026-11-25) has no Design row. There was no instruction to follow or refuse. Its growth bias (#1076, #1107, #1065, #1430) is SEO work, not design.
 
-**Method:**
-- Fetched each page with curl.
-- Took 375x667 screenshots with headless Chromium.
-- Checked the stylesheet against the repo.
-- Did not run a full contrast pass. `verify_contrast.py` covers that.
-- Did not test real touch devices.
+**Method limits:**
+- Screenshots came from headless Chromium at 375x667. I did not run desktop or tablet widths.
+- I did not measure contrast numerically; the `verify_contrast.py` gate covers templates only.
+- I filed no performance finding.
 
-**Working check:**
-- All five pages return 200 in about 0.7s. No 5xx, so there is nothing to route to Engineering.
-- `/learn` returns 308 to `/learn/`, which is fine.
+## Works-check (before any design claim)
+| Page | HTTP | Time |
+|---|---|---|
+| / | 200 | 0.60s |
+| /kundli | 200 | 0.78s |
+| /matching | 200 | 0.54s |
+| /numerology | 200 | 0.72s |
+| /learn | 308 to /learn/ (200) | 0.32s |
 
-**Stale-stylesheet check (#253):**
-- The page links `app.css?v=2f1656a2`.
-- The asset is served with `cache-control: public, max-age=31536000, immutable`, and the version is content-derived (`asset_v`).
-- The live `app.css` is byte-identical to the repo's.
-- Classes in the HTML but absent from `app.css` are the semantic ones (`nav-dropdown`, `learn-card`, `footer-group`, `chart-cast` and similar). `base.html` defines them in an inline `<style>` block, so this is not staleness.
+No 503s and no Engineering bugs to hand over. I did not submit the forms, so the Groq-backed result paths are untested. The /learn 308 is already in #1107.
 
-## `/` (home)
-- **Saw:**
-  - The panchang strip, then the birth-details form.
-  - At 375x667 the form fills the viewport and the H1 is below the fold.
-  - The Name input is autofocused.
-  - The bottom tab bar is clear and tap targets are generous.
-- **Filed:** #1269 (design-proposal). It tests dropping Name autofocus on touch widths, shared with `/matching`.
-- **Rejected:**
-  - Moving the H1 above the form. That would redesign a page that ranks, and I have no CTR or funnel number to beat (the #244 instinct).
-  - Adding tithi end times to the strip. Drik Panchang shows them (https://www.drikpanchang.com/), but that is a panchang-rule and data change, so it belongs to research and engineering, not UI.
+## /
+- **Saw:** the birth-details form is first, with the panchang strip above it. The H1 falls below the fold at 375x667. The Name field is autofocused.
+- **Filed:** nothing new. Autofocus is already #1269.
+- **Rejected:** moving the H1 above the form. I have no CTR or funnel number to beat, and the page leads with the form on purpose. This is the #244 trap.
 
-## `/kundli`
-- **Saw:**
-  - A clean single-card form with a wrapped H1.
-  - The H1 is fully visible, so #306's fix holds.
-  - There is no autofocus.
-  - The Name field and the Birth date label are visible in the first viewport.
+## /kundli
+- **Saw:** a clean single card, with labelled fields about 293px wide. The H1 is three lines but readable.
 - **Filed:** nothing.
-- **Rival:** AstroSage's form has 5 core fields plus 7 behind "Advanced Settings" (https://www.astrosage.com/). Ours is 4 fields with no advanced panel, so we are ahead on friction. Its primary CTA is "Chat with Astrologer", a paid-product pattern we should not copy.
-- **Rejected:** copying AstroSage's layout, because there is no evidence it converts better.
+- **Rival:** AstroSage (https://astrosage.com/kundli/, fetched; /free/kundli.asp returned 404) shows a long nav block first, a "Kundli" H1, then a form with Gender, a Day/Month/Year split, Hrs/Min/Sec, and hidden advanced settings (ayanamsa, chart style, KP number). Our form has four fields, a privacy line under the title, and a "free instantly" button. We already do better on friction. AstroSage's one edge is exposing ayanamsa and chart style. That is a product decision, not a design one, so I filed nothing.
 
-## `/matching`
-- **Saw:**
-  - A card inside a card, with a double border.
-  - Inputs about 257px wide of 375px.
-  - Autofocus on the Name field.
-- **Filed:**
-  - #1268 (ui-fixer). It drops the nested padding or border below `sm`.
-  - #1269 covers the autofocus.
-- **Rejected:** a stepped, wizard-style matching flow. It is a redesign with no funnel number.
+## /matching
+- **Saw:** two nested bordered cards, so the inputs are about 290px wide. Name is autofocused, which opens the keyboard over the form.
+- **Filed:** #1529 (`ui`, `skill:ui-fixer`). It flattens the inner card below `sm`. The metric is form-start to submit rate at 375px. I told it to wait for #1076, the position 4.2 to 7.8 drop, so the two are not confused.
+- **Rejected:** a wizard that splits Person 1 and Person 2. That is a redesign of a page whose ranking is already falling, with no baseline.
 
-## `/numerology`
-- **Saw:**
-  - A yellow tradition disclosure at the top, which is honest and good.
-  - A short mobile subtitle.
-  - A form that starts below the fold and is mostly hidden behind the tab bar.
+## /numerology
+- **Saw:** a yellow "modern Western tradition, not classical Jyotish" notice above the H1, then the form.
 - **Filed:** nothing.
-- **Rejected:**
-  - Moving the disclosure. It is a deliberate honesty cue.
-  - Calling the muted subtitle low-contrast from the screenshot alone. The palette is governed by `verify_contrast.py`, and I did not measure it.
+- **Rejected:** moving or shrinking the notice. It is an authenticity disclosure tied to the "100% true" objective. A conversion gain does not outweigh it.
+- **Noted, not measured:** the grey subtitle on cream looks light. I did not compute a ratio. Run `verify_contrast.py` before anyone files it.
 
-## `/learn/`
-- **Saw:**
-  - A dark hero followed by search and category chips, and 77 explainers.
-  - All 78 images have `alt` text and `loading="lazy"`.
-  - The HTML is 288 KB, with the hero SVGs lazy-loaded.
-  - The chips wrap in 2 to 3 rows and are tappable.
+## /learn
+- **Saw:** a dark hero, a search box, and category chips with counts (77 articles). Good. The mobile bottom nav overlaps the chip row at the fold, which is normal for a scrollable page.
 - **Filed:** nothing.
-- **Rejected:** a chip carousel, a pagination change and similar. No evidence they would move CTR.
+- **Rival:** Drik Panchang (https://www.drikpanchang.com/, fetched) leads with a live clock and today's panchang, and uses a grouped side menu for tools. Our home panchang strip does a smaller version of the same. Nothing to copy beyond what exists.
 
-## Not done
-- Rival fetches that failed:
-  - AstroSage `/free/free-kundli.asp`: 404.
-  - Astro-Seek: 403.
-  - I made no claims from either.
-- I did not review the post-submit result pages (chart, matching score, numerology result). They need form input, and a design finding there should come with a real session.
+## Site-wide
+- **Filed:** #1530 (`ui`, `skill:ui-fixer`). The bottom-nav "Ask" icon is a fullwidth "？" (U+FF1F). It renders as an empty box in headless Linux Chromium and depends on a CJK font fallback. Real-device impact is unknown, and the issue says so.
 
-## Issues filed
-| # | Type | Page | Summary |
-|---|---|---|---|
-| 1268 | `ui` + `skill:ui-fixer` | `/matching` | Card-in-card wastes mobile width. |
-| 1269 | `ui` + `design-proposal` | `/`, `/matching` | Test dropping mobile Name autofocus. It conflicts with the earlier decision in #67, so it needs a ruling. |
+## Not filed
+- No `design-proposal`: no finding needs a human eye without a CTR or funnel baseline.
+- Rival comparison covered two sites (Drik Panchang and AstroSage). I did not fetch others.
