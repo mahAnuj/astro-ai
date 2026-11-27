@@ -134,3 +134,38 @@ def test_vivah_rules_summary_line_lists_the_avoided_tithis_it_applies():
     numbered = {"Chaturthi": 4, "Shashti": 6, "Ashtami": 8, "Navami": 9, "Chaturdashi": 14}
     listed = {n for t, n in numbered.items() if t in m.EVENT_RULES["vivah"]["avoid_tithis"]}
     assert listed == {4, 6, 8, 9, 14}
+
+
+# ─── the page's cleared list says the bright-half 12th is contested, not "checked and clear" ───
+
+def _cleared_avoid_tithi(event, tithi, paksha="Shukla"):
+    from astro_ai import muhurat_factors as mf
+    cand = m.MuhuratCandidate(d=date(2027, 2, 18), weekday="Thursday", tithi=tithi,
+                              tithi_paksha=paksha, nakshatra="Hasta", rating="good", reason="",
+                              flags=())
+    return {i.key: i for i in mf.explain(cand, event).cleared}["avoid_tithi"]
+
+
+def test_vivah_shukla_dwadashi_row_carries_the_contested_note():
+    item = _cleared_avoid_tithi("vivah", "Dwadashi")
+    assert (item.qual, item.status) == ("Dwadashi", "contested")
+
+
+def test_a_vivah_row_on_another_tithi_carries_no_qualifier():
+    item = _cleared_avoid_tithi("vivah", "Dwitiya")
+    assert item.qual == ""
+
+
+def test_the_dwadashi_note_is_vivahs_alone():
+    # Griha Pravesh avoids Dwadashi, so it never reaches the cleared list; namkaran, business and
+    # vidyarambh have no entry. None may pick up vivah's qualifier.
+    for event in ("business", "vidyarambh", "namkaran"):
+        assert _cleared_avoid_tithi(event, "Dwadashi").qual == "", event
+
+
+def test_the_dwadashi_note_says_it_is_contested_and_names_both_sides():
+    from astro_ai import muhurat_factors as mf
+    status, _file, _heading, sentence = mf.resolve("avoid_tithi", "vivah", "Dwadashi")
+    assert status == "contested"
+    assert "Vedic table lists it" in sentence and "marriage rules reject it" in sentence
+    assert "neither credits nor excludes" in sentence

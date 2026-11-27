@@ -40,6 +40,12 @@ events; per-date diff of rating and flags):
 
 No other row changed. Vivah's Shukla Dwadashi rows (for example 2027-02-18, good) are unchanged.
 
+**What the page shows for the contested 12th.** A Vivah row on a Shukla Dwadashi lists "Not an
+avoided tithi" among its cleared checks, which would read as settled. `REGISTRY["avoid_tithi"]` now has a
+`when` entry for it (status contested, `knowledge/vedic_reference.md` 29.9), reached through
+`_cleared_qual` in `explain()`; it reuses the `when` mechanism `good_tithi` already uses. Ratings do not
+change. Other tithis and other events carry no qualifier.
+
 **Abujha.** The Abujha override (`find_candidates`) skips every exclusion, so 2027-11-10, a Shukla
 Dwadashi, stays "excellent" for Griha Pravesh and Vivah. That is today's behaviour, and #1357 changes
 it; it is not counted in the table above.

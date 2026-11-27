@@ -326,6 +326,15 @@ REGISTRY: dict[str, dict[str, Any]] = {
         "label": "Not an avoided tithi",
         "default": _r(S, "These tithis are rejected for auspicious work in the Muhurtha "
                          "tradition."),
+        # The bright-half 12th for a wedding (#1022, #1504): a vivah row that reaches the cleared
+        # list on Dwadashi is a Shukla one, because a Krishna Dwadashi is already excluded.
+        "when": {
+            "vivah": {"Dwadashi": _vr(C, "The 12th is contested: the Vedic table lists it for a "
+                                         "wedding, while the Muhurtha tradition's marriage rules "
+                                         "reject it, so this finder neither credits nor excludes it "
+                                         "in the bright half. In the dark half the separate "
+                                         "dark-half rule applies.", _H97)},
+        },
         "events": {
             # #1355 ruling: S -> C, refined by #1497. vivah and griha_pravesh stay contested
             # (the held books differ over Purnima); business is site_convention, because no held
@@ -459,6 +468,12 @@ def _qual(key: str, event: str, *values: str) -> str:
     return next((v for v in values if v in when), "")
 
 
+def _cleared_qual(key: str, event: str, tithi: str) -> str:
+    """The `when` qualifier for a cleared exclusion. Only `avoid_tithi` is keyed on the row's tithi;
+    every other cleared item takes none, so a tithi name can never match another key's entries."""
+    return _qual(key, event, tithi) if key == "avoid_tithi" else ""
+
+
 def _item(key: str, event: str, value: str = "", qual: str = "", against: bool = False) -> Item:
     label = REGISTRY[key]["label"]
     return Item(key, f"{label}: {value}" if value else label,
@@ -526,7 +541,8 @@ def explain(candidate, event_type: str) -> Explanation:
     for prefix, key in _BOOSTERS:
         if any(b.startswith(prefix) for b in candidate.boosters):
             scored.append(_item(key, event_type))
-    cleared = [_item(k, event_type) for k in _applied_hard(rules, candidate.nakshatra)]
+    cleared = [_item(k, event_type, qual=_cleared_qual(k, event_type, candidate.tithi))
+               for k in _applied_hard(rules, candidate.nakshatra)]
     return Explanation(scored=tuple(scored), cleared=tuple(cleared))
 
 
