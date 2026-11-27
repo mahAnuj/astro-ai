@@ -46,6 +46,7 @@ from __future__ import annotations
 import logging
 import math
 import re
+from collections import Counter
 from datetime import date, timedelta
 
 log = logging.getLogger(__name__)
@@ -197,6 +198,12 @@ def _stats(rows: list[dict], dates: list[str], first: dict[int, str] | None) -> 
     builds = [r for r in win if r["kind"] != "qa-round"]
     shipped_rows = [r for r in win if r["outcome"] == "shipped"]
     prs = {r["pr"] for r in shipped_rows if r["pr"]}
+    # PR -> the first date it shipped in THIS window. The bars under the cards
+    # (ops_trends) put each PR on this day only, so they add up to `prs` above.
+    pr_day: dict[int, str] = {}
+    for r in shipped_rows:
+        if r["pr"] and (r["pr"] not in pr_day or r["date"] < pr_day[r["pr"]]):
+            pr_day[r["pr"]] = r["date"]
     verdict = {pr: first[pr] for pr in prs if first and pr in first}
     measured = [r for r in win if r["measured"]]
     return {
@@ -205,6 +212,7 @@ def _stats(rows: list[dict], dates: list[str], first: dict[int, str] | None) -> 
         "shipped_cycles": sum(1 for r in builds if r["outcome"] == "shipped"),
         "shipped_rows": len(shipped_rows),
         "prs": len(prs),
+        "pr_day": pr_day,
         "verdicts": len(verdict),
         "passed": sum(1 for v in verdict.values() if v == "PASS"),
         "measured": len(measured),
@@ -228,7 +236,9 @@ def _delta(cur, prev, *, mode: str, good_when: str, prev_window: str, prev_n: in
             "amount": None, "previous_text": prev_text, "previous_n": prev_n,
             "previous_window": prev_window}
     if predates:
-        return {**base, "text": f"unavailable: data starts {predates}"}
+        # No "was N" beside a refusal (#1490): a previous window that starts
+        # before the data holds a partial week, and "was 0" would read as a fact.
+        return {**base, "previous_text": "", "text": f"unavailable: data starts {predates}"}
     if blocked:
         return {**base, "text": blocked}
     # A relative change against nothing is "n/a", not a division. `prev` is None
@@ -278,7 +288,7 @@ def _unavailable(reason: str, *, error: bool, days: int = WINDOW_DAYS) -> dict:
         "error": error, "reason": reason, "days": days,
         "window": {"text": "", "previous_text": "", "start": "", "end": ""},
         "as_of": {"text": "age unknown", "stale": True, "at_ist": None},
-        "caption": "", "skipped": 0, "rows": [],
+        "caption": "", "skipped": 0, "rows": [], "pr_days": [],
         "cards": [_card(k, "", state="unavailable", display="unavailable", n_text=reason)
                   for k in _ORDER],
     }
@@ -397,6 +407,14 @@ def _build_unsafe(ops: dict, days: int) -> dict:
                          prev_n=prev["prs"], prev_text=str(prev["prs"]), **common))
 
     by_key = {"cycles": cycles, "qa": qa, "cost": cost, "prs": prs}
+    # One entry per window day, oldest first: how many loop rows the day has and
+    # which PRs first shipped on it. `runs` is what tells "no runs" from a real 0.
+    runs_on = Counter(r["date"] for r in cur["rows"])
+    by_day: dict[str, list[int]] = {d: [] for d in cur_dates}
+    for pr, d in cur["pr_day"].items():
+        by_day[d].append(pr)
+    pr_days = [{"date": d, "runs": runs_on.get(d, 0), "prs": sorted(by_day[d])}
+               for d in cur_dates]
     ages = ops.get("ages") or {}
     age = ages.get("Delivery") if isinstance(ages.get("Delivery"), dict) else {}
     return {
@@ -409,6 +427,7 @@ def _build_unsafe(ops: dict, days: int) -> dict:
                     "Fixed: the range picker does not move these cards."),
         "skipped": skipped,
         "cards": [by_key[k] for k in _ORDER],
+        "pr_days": pr_days,
         "rows": [_slim(r, first) for r in cur["rows"]],
     }
 
