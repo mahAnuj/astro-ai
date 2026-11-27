@@ -2,7 +2,7 @@
 "there should be a pause/resume button for loop. If I want to save the tokens
 for claude").
 
-The switch is the repository variable LOOP_PAUSED ("true" = paused). These
+The switch is the repository variable LOOP_PAUSED ("true" = paused, any casing). These
 tests pin that every loop job running claude-code-action honours it, that a
 paused parent does not leave its persist job running on nothing, that the queue
 holds still, and that a dispatch made while paused is QUEUED, not lost.
@@ -13,6 +13,7 @@ import glob
 import importlib.util
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -80,16 +81,23 @@ def test_every_dispatch_call_is_told_whether_the_loop_is_paused():
                     assert step.get("env", {}).get("LOOP_PAUSED") == "${{ vars.LOOP_PAUSED }}", f
 
 
-def test_a_dispatch_while_paused_is_queued_not_dropped(tmp_path, monkeypatch):
-    monkeypatch.setenv("LOOP_PAUSED", "true")
+# The workflows' `vars.LOOP_PAUSED != 'true'` is case-insensitive (GitHub
+# expression string equality), so the shell must pause on every casing too, or a
+# `True` pauses the jobs while dispatches still go out (#1289).
+@pytest.mark.parametrize("value", ["true", "True", "TRUE"])
+def test_a_dispatch_while_paused_is_queued_not_dropped(tmp_path, monkeypatch, value):
+    monkeypatch.setenv("LOOP_PAUSED", value)
     r = dc._run(tmp_path, "issue=409", busy=0)          # lane free, but paused
     assert r.returncode == 0, r.stdout + r.stderr
     assert "QUEUED, not dropped" in r.stdout and "would queue" in r.stdout
     assert "would dispatch" not in r.stdout
 
 
-def test_an_unpaused_free_lane_still_dispatches(tmp_path, monkeypatch):
-    monkeypatch.setenv("LOOP_PAUSED", "false")
+# " true " is NOT trimmed: the expressions compare the untrimmed string, so the
+# shell must agree with them rather than be more forgiving (#1289).
+@pytest.mark.parametrize("value", ["false", "yes", "1", "", " true "])
+def test_an_unpaused_free_lane_still_dispatches(tmp_path, monkeypatch, value):
+    monkeypatch.setenv("LOOP_PAUSED", value)
     r = dc._run(tmp_path, "issue=409", busy=0)
     assert "would dispatch" in r.stdout
 

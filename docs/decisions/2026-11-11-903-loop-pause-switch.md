@@ -55,3 +55,5 @@ one-per-commit markers on runs that never happened.
 **Known limit.** `agent-merge` wakes `agent-steward` once per held head. If that wake lands while
 paused, the steward run is skipped and chief hears of the hold at the next steward run after
 resume.
+
+**Amended (#1289).** The match is case-insensitive in both layers: the expressions' `!= 'true'` already was, and `scripts/dispatch_cycle.sh` now matches `[Tt][Rr][Uu][Ee]`. Whitespace is not trimmed in either.
