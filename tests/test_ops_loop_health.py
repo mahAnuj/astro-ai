@@ -361,7 +361,8 @@ def test_monitoring_row_is_the_rail_block_unchanged():
 
 
 def test_monitoring_row_unavailable_when_health_is_garbage():
-    for h in (None, {}, {"state": "fine"}, {"state": "ok", "label": 3, "detail": "x"}):
+    for h in (None, {}, {"state": "fine"}, {"state": "ok", "label": 3, "detail": "x"},
+              {"state": "fine", "label": "Fine", "detail": "x"}):
         assert _sys(_build(health=h), "monitoring")["state"] == "unavailable"
 
 
