@@ -1,5 +1,5 @@
 """#1554: one malformed row in the daily series, the movers tables or issues.json `trend.days`
-degrades its own panel, never all 7 /admin/ops tabs. tests/test_ops_series_row_tolerance.py."""
+degrades its own panel, never all 7 /admin/ops tabs. #1559 adds the date-less row. tests/test_ops_series_row_tolerance.py."""
 
 _O = "src/astro_ai/ops_data.py"
 
@@ -25,4 +25,12 @@ MUTATIONS = [
      _O, "if isinstance(by, dict) else {})",
      "if True else {})",
      "test_a_bad_breakdown_is_ignored_not_fatal"),
+    ("#1559: the dated lists are not screened, so a row with no string date reaches the x-tick",
+     _O, '    gsc_dated = [r for r in gsc_rows if isinstance(r.get("date"), str)]\n',
+     "    gsc_dated = gsc_rows\n",
+     "test_a_dateless_daily_row_does_not_500_the_analytics_tab"),
+    ("#1559: the gsc series is drawn from raw rows while the totals use dated rows",
+     _O, '"impressions": _series(gsc_dated, "impressions"),',
+     '"impressions": _series(gsc_rows, "impressions"),',
+     "test_a_good_gsc_row_beside_a_dateless_one_keeps_the_good_one"),
 ]
