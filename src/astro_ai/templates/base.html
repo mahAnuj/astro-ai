@@ -1301,9 +1301,9 @@
           <ul class="space-y-2 text-sm">
             <li><a href="/"         class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Free Janma Kundli</a></li>
             <li><a href="/rashifal" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Daily Rashifal</a></li>
-            <li><a href="/today"    class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Today's Horoscope</a></li>
-            <li><a href="/monthly"  class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Monthly Horoscope</a></li>
-            <li><a href="/yearly"   class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Horoscope {{ current_year() }}</a></li>
+            <li><a href="{{ chart_href(request, '/today') }}"    class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Today's Horoscope</a></li>
+            <li><a href="{{ chart_href(request, '/monthly') }}"  class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Monthly Horoscope</a></li>
+            <li><a href="{{ chart_href(request, '/yearly') }}"   class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Horoscope {{ current_year() }}</a></li>
             <li><a href="/dasha"    class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Vimshottari Dasha</a></li>
             <li><a href="/matching" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Kundli Matching</a></li>
             <li class="pt-2 mt-2 border-t border-bhagya-gold/20"><a href="/learn/" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron font-semibold">Learning Hub &rarr;</a></li>

@@ -72,9 +72,12 @@ SLICE_5 = (
 ROUTED = [(slug, "/kundli") for slug in SLICE_3] + SLICE_4 + SLICE_5
 
 # The tool pages an in-body route may point at (the same set #518 counts).
+# `/ask` is also matched in its `chart_href` form (#1546): a no-chart visitor is sent to
+# /?needs_chart=ask, but the template source still names the /ask tool.
 TOOL_HREF = re.compile(
     r'href="/(kundli|matching|dasha|ask|rashifal|numerology|muhurat|panchang|'
     r'manglik-check|kaal-sarp-check|sade-sati-check)\b'
+    r'|href="\{\{ chart_href\(request, \'/ask\'\) \}\}"'
 )
 
 # A route that sits past this share of the article body is the "92% depth" defect.
