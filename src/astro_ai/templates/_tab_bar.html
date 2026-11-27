@@ -44,9 +44,11 @@
      emoji-presentation by default and Unicode defines NO text variation
      sequence for it, so unlike the zodiac glyphs a selector cannot pull it
      back — it rendered as a full-colour emoji on iOS and Android and put
-     Apple's red on a night bar. It is now U+FF1F, the fullwidth question
-     mark: an ordinary text character that takes the page font and the tab's
-     own colour.
+     Apple's red on a night bar. The fullwidth question mark (U+FF1F) was the
+     first replacement and is no good either: without a CJK fallback font it
+     renders as an empty box. The tab is now plain ASCII ? (U+003F), an
+     ordinary text character that takes the page font and the tab's own
+     colour (#1530).
 
      A Jinja comment cannot sit INSIDE the list literal below — `{#` mid-
      expression is a TemplateSyntaxError, and it took down every page on the
@@ -56,7 +58,7 @@
     ('/rashifal', 'Rashifal', '♈︎'),
     ('/panchang', 'Panchang', '☽'),
     ('/matching', 'Match',    '⚚'),
-    ('/ask',      'Ask',      '？'),
+    ('/ask',      'Ask',      '?'),
   ] %}
   {% for href, label, glyph in _tabs %}
   {% set _on = _path == href or _path.startswith(href ~ '/') %}
