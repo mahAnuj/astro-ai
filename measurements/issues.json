@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27T03:57:09Z",
+  "generated_at": "2026-11-27T05:12:05Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 169,
+  "open": 170,
   "with_ask": 42,
   "by_area": {
-    "UNCLASSIFIED": 76,
+    "UNCLASSIFIED": 77,
     "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
@@ -33,7 +33,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 56,
+    "bug": 57,
     "untyped": 40,
     "enhancement": 31,
     "chore": 26,
@@ -45,10 +45,27 @@
     "unset": 97,
     "medium": 37,
     "high": 21,
-    "low": 14
+    "low": 15
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 1537,
+      "title": "QA follow-up: minor items from PR #1536",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-27T05:10:54Z",
+      "updated": "2026-11-27T05:10:54Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1534,
       "title": "measure: agent-measure never runs fetch_ga4.py --journeys, so no landing x event export exists and short-stay landings cannot be classed",
@@ -351,10 +368,13 @@
       "labels": [
         "bug",
         "priority:medium",
-        "qa"
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-25T13:48:13Z",
-      "updated": "2026-11-26T17:07:57Z",
+      "updated": "2026-11-27T05:11:29Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2780,9 +2800,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-27T03:57:09Z",
+    "generated_at": "2026-11-27T05:12:05Z",
     "window_days": 28,
-    "open_now": 169,
+    "open_now": 170,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3205,12 +3225,12 @@
       },
       {
         "date": "2026-11-27",
-        "opened": 4,
+        "opened": 5,
         "closed": 2,
-        "net": 2,
-        "open_end": 169,
+        "net": 3,
+        "open_end": 170,
         "opened_by": {
-          "loop": 4
+          "loop": 5
         },
         "closed_by": {
           "close-on-evidence": 2
@@ -4800,7 +4820,7 @@
         "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 0,
     "truncated": [],
     "pr_flow": {
       "windows": {
@@ -5215,16 +5235,16 @@
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 128.2,
+          "age_h": 129.5,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 36.6h gates red; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 37.9h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 36.6
+              "gates_red": 37.9
             },
             "qa_fails": 0,
             "pushes": 4
@@ -5233,18 +5253,25 @@
         {
           "number": 1515,
           "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
-          "age_h": 10.9,
+          "age_h": 12.1,
           "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "10.4h waiting for a fix after QA failed (1 QA FAIL)",
+            "reason": "11.7h waiting for a fix after QA failed (1 QA FAIL)",
             "primary": "qa_fail",
             "hours": {
               "no_gates": 0.4,
-              "qa_fail": 10.4
+              "qa_fail": 11.7
             },
             "qa_fails": 1,
             "pushes": 3
           }
+        },
+        {
+          "number": 1536,
+          "title": "reentry: T_last is an agent-cycle trace, not any claude[bot] comment (#1477)",
+          "age_h": 0.1,
+          "waiting_on": "merge",
+          "why": null
         }
       ]
     }
