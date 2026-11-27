@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-27T00:35:56Z",
+ "generated_at": "2026-11-27T02:54:12Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-20T00:35:56Z",
-  "end": "2026-11-27T00:35:56Z",
-  "loop_comments": 837,
-  "on_prs": 433,
-  "prs": 83,
-  "on_issues": 404,
-  "issues": 117,
-  "comments_per_pr": 5.22,
-  "comments_per_issue": 3.45,
+  "start": "2026-11-20T02:54:12Z",
+  "end": "2026-11-27T02:54:12Z",
+  "loop_comments": 831,
+  "on_prs": 432,
+  "prs": 84,
+  "on_issues": 399,
+  "issues": 115,
+  "comments_per_pr": 5.14,
+  "comments_per_issue": 3.47,
   "duplicates": 28,
-  "duplicate_rate_pct": 3.3,
+  "duplicate_rate_pct": 3.4,
   "sent_by_kind": {
    "growth-goals": 2,
-   "ops-finding": 14,
+   "ops-finding": 13,
    "ops-finding-issue": 3
   },
-  "via_outbox": 19,
+  "via_outbox": 18,
   "top_threads": [
    {
     "on": "pr",
@@ -48,7 +48,7 @@
    }
   ],
   "owner_touched": {
-   "prs": 83,
+   "prs": 84,
    "owner_commented": 3,
    "pct": 4
   },
@@ -59,24 +59,24 @@
   }
  },
  "previous": {
-  "start": "2026-11-13T00:35:56Z",
-  "end": "2026-11-20T00:35:56Z",
-  "loop_comments": 1236,
-  "on_prs": 723,
+  "start": "2026-11-13T02:54:12Z",
+  "end": "2026-11-20T02:54:12Z",
+  "loop_comments": 1246,
+  "on_prs": 725,
   "prs": 124,
-  "on_issues": 513,
+  "on_issues": 521,
   "issues": 152,
-  "comments_per_pr": 5.83,
-  "comments_per_issue": 3.38,
+  "comments_per_pr": 5.85,
+  "comments_per_issue": 3.43,
   "duplicates": 63,
   "duplicate_rate_pct": 5.1,
   "sent_by_kind": {
    "growth-goals": 3,
    "growth-goals-issue": 2,
-   "ops-finding": 10,
+   "ops-finding": 11,
    "ops-finding-issue": 1
   },
-  "via_outbox": 16,
+  "via_outbox": 17,
   "top_threads": [
    {
     "on": "pr",
