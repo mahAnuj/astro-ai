@@ -10,6 +10,7 @@ from __future__ import annotations
 import contextlib
 import logging
 import os
+import threading
 import time
 from urllib.parse import unquote, urlsplit
 
@@ -20,6 +21,7 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.types import Scope
 from fastapi.staticfiles import StaticFiles
 
+from astro_ai import http_errors
 from astro_ai.routes.deps import STATIC_DIR, templates
 from astro_ai.routes.llm_support import _fire_error_alert
 
@@ -159,7 +161,14 @@ async def _lifespan(_app: FastAPI):
                 "refusing to start on Cloud Run: set a real value for " + ", ".join(bad)
             )
     _warm_process_globals()
+    # One boot marker per process (#1506), off the startup path: it is a bucket write and
+    # must not lengthen the cold start the warm-up above is guarding.
+    with contextlib.suppress(Exception):
+        threading.Thread(target=http_errors.mark_boot, daemon=True).start()
     yield
+    # SIGTERM gives ~10 s: write the tail of the 5xx interval so a deploy does not drop it.
+    with contextlib.suppress(Exception):
+        http_errors.flush_on_shutdown()
 
 
 app = FastAPI(title="astro-ai", version="0.0.1", lifespan=_lifespan)
@@ -214,6 +223,13 @@ class _RewriteHostFromForwardedMiddleware:
         await self.app(scope, receive, send)
 
 
+# Per-route 5xx counter (#1506). POSITION IS LOAD-BEARING: added BEFORE the host rewrite
+# below, so it is the INNERMOST user middleware. The router sets scope["route"] on the
+# scope dict it is handed, and the rewrite hands on a COPY whenever X-Forwarded-Host is
+# present (Firebase always sets it); anywhere outside it the route reads None in
+# production and every 5xx is labelled "unmatched". A handler-level hook would miss the
+# inline status_code=503 pages. tests/test_http_errors.py pins the order.
+app.add_middleware(http_errors.HttpErrorMiddleware)
 app.add_middleware(_RewriteHostFromForwardedMiddleware)
 
 
@@ -234,8 +250,8 @@ class _SlashRedirect308Middleware:
 
     ORDERING: `add_middleware` inserts at index 0, so the last added is the
     outermost. Chain, outermost first: GZip, RedirectLangParam, this,
-    _RewriteHostFromForwarded, router. It only has to sit OUTSIDE the router,
-    which the router's `send` reaches first; it reads the status and Location
+    _RewriteHostFromForwarded, HttpErrorMiddleware (#1506), router. It only has to
+    sit OUTSIDE the router, which the router's `send` reaches first; it reads the status and Location
     only, so GZip's position is irrelevant (headers are never compressed).
     """
 

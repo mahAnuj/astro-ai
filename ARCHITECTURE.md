@@ -168,6 +168,14 @@ src/astro_ai/
   providers.py     1,454  provider chain, quality gates, retry policy, per-model token bucket (#475)
   ratelimit_probe.py 252  cached-token accounting probe: reads Groq's x-ratelimit-remaining-tokens off
                         calls already made; measure-only, stdlib only (#475 Phase 1b)
+  http_errors.py     332  per-route HTTP 5xx count for the weekly measurement (#1506): a pure-ASGI
+                        middleware reads the status off `send` and books `"<METHOD> <route template>"`
+                        (never a raw path) in a locked in-process dict; `flush()` writes it to
+                        `http_errors/YYYY-MM-DD.json` at most once per 600 s per process and at shutdown;
+                        `range_summary()` is read by `scripts/collect_llm_usage.py` only. The middleware
+                        must stay the INNERMOST user middleware in main.py (the host rewrite copies the
+                        scope, after which `scope["route"]` is gone). See §4 "5xx recorder"
+                        (docs/decisions/2026-11-27-http-5xx-per-route.md)
   identity.py         65  keyed HMAC identity hash for events and alerts, from a subkey of
                         ASTRO_AI_COOKIE_SECRET (#255); unlike chart.fingerprint_chart it is a secret
   notify.py          382  Telegram alerts — diagnostics only for kundli/matching/dosha/numerology (#255)
@@ -476,6 +484,20 @@ Known limits, stated so nobody over-reads the panel:
   the app's own prediction (`/admin/ops`, "Cached-token accounting"); which limit the header reports
   is itself unverified (the panel prints `last_limit`; 8,000 would mean TPM), and it does not answer
   the daily limit. The verdict is PENDING.
+
+### 5xx recorder (#1506) — the write budget
+
+`astro_ai/http_errors.py` keeps its own per-day blob (`http_errors/YYYY-MM-DD.json`), not a key in
+`llm_stats/`, so a 5xx storm cannot contend on the CAS of the blob that carries the token-ceiling
+numbers. **0 reads and 0 writes on a request that is not a 5xx** (the request path is one locked dict
+increment, on a 5xx only). Writes are coalesced: the first 5xx of a process writes at once, later ones
+at most once per 600 s per instance, plus one at SIGTERM and one boot marker per cold start
+(`mark_boot`, so a day an instance started has a blob and "no 5xx" differs from "not recording").
+Worst case in a sustained all-day incident is 144 writes/day/instance, x5 (`maxScale`) = 720/day,
+against the 5,000 Class A/month allowance above; a healthy week is ~0 plus the boot markers, whose
+monthly cost is `cold_starts_per_day x 30` and was NOT measured here (no Cloud Run metrics): read it
+off the logs after a week and drop `mark_boot` if it is large. Reads: 7 `get_json` once a week from the
+collector. A SIGKILL or OOM loses an instance's unflushed tail: an undercount, never an invented one.
 
 ---
 
