@@ -8,6 +8,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -74,6 +75,42 @@ def test_this_run_and_unfinished_runs_do_not_count():
 def test_an_unreadable_api_answers_due():
     """Both steps are idempotent; a missed hour is the defect, a duplicate is not."""
     assert hd.decide(Api([], fail=True), REPO, "workflow_run", "9", NOW)[0] is True
+
+
+def _raw_api(runs_raw, jobs_raw=None):
+    """Replies as literal strings: `Api` always json.dumps well-formed dicts, so
+    it cannot express a list, null or scalar where the API promised an object."""
+    def gh(args):
+        if "/workflows/" in args[-1]:
+            return runs_raw
+        return jobs_raw if jobs_raw is not None else json.dumps(_jobs(None))
+    return gh
+
+
+def _assert_due_and_unreadable(gh):
+    due, why = hd.decide(gh, REPO, "workflow_run", "9", NOW)
+    # `due is True` alone also holds on the benign "no run fired them" path, so
+    # the reason is what proves the reply was caught rather than read.
+    assert due is True
+    assert why.startswith("could not read recent runs"), why
+
+
+@pytest.mark.parametrize("runs_raw", [
+    "[]", "null", "5", '"x"',
+    '{"workflow_runs":[1]}', '{"workflow_runs":{"a":1}}', '{"workflow_runs":"abc"}',
+])
+def test_a_runs_reply_of_the_wrong_shape_answers_due(runs_raw):
+    """A non-dict at any level raises AttributeError from .get, which once escaped
+    the handler and crashed the step, skipping timers and liveness (#1298)."""
+    _assert_due_and_unreadable(_raw_api(runs_raw))
+
+
+@pytest.mark.parametrize("jobs_raw", [
+    "[]", "null", '{"jobs":[1]}', '{"jobs":[{"steps":[1]}]}', '{"jobs":[{"steps":"x"}]}',
+])
+def test_a_jobs_reply_of_the_wrong_shape_answers_due(jobs_raw):
+    runs_raw = json.dumps({"workflow_runs": [_run(1, "2026-11-18T17:30:00Z")]})
+    _assert_due_and_unreadable(_raw_api(runs_raw, jobs_raw))
 
 
 def test_main_writes_the_output(tmp_path, monkeypatch):

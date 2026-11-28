@@ -83,7 +83,8 @@ def decide(gh: Runner, repo: str, event: str, this_run: str, now: datetime) -> t
                 for step in job.get("steps") or []:
                     if step.get("name") == TIMER_STEP and step.get("conclusion") == "success":
                         return False, f"run {r['id']} ran the hourly steps at {r.get('run_started_at')}"
-    except (RuntimeError, ValueError, KeyError, TypeError) as exc:
+    # AttributeError: a non-dict (list, null, scalar) at any level raises it from .get (#1298).
+    except (RuntimeError, ValueError, KeyError, TypeError, AttributeError) as exc:
         return True, f"could not read recent runs ({str(exc)[:100]}); running them, both steps are idempotent"
     return True, f"no run in the last {WINDOW_MIN} min ran the hourly steps"
 
