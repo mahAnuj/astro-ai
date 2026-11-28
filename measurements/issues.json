@@ -1,21 +1,21 @@
 {
-  "generated_at": "2026-11-28T05:50:50Z",
+  "generated_at": "2026-11-28T12:33:22Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 168,
-  "with_ask": 42,
+  "open": 165,
+  "with_ask": 43,
   "by_area": {
-    "UNCLASSIFIED": 77,
+    "UNCLASSIFIED": 76,
     "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
     "FEATURE": 7,
     "ANALYTICS": 5,
     "TOKENS": 5,
+    "CHORE": 4,
     "SEO": 4,
     "CORPUS": 4,
     "RETRIEVAL": 3,
-    "CHORE": 3,
     "AGENT-MEASURE": 2,
     "AGENT-MERGE": 2,
     "PRIVACY": 2,
@@ -24,60 +24,41 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
-    "MAIN-RED": 1,
     "MEASURE": 1,
-    "MUHURAT": 1,
-    "NOTIFY": 1,
     "UI": 1,
     "ASK": 1,
     "TASK": 1,
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 57,
-    "untyped": 40,
+    "bug": 54,
+    "untyped": 39,
     "enhancement": 31,
-    "chore": 26,
+    "chore": 27,
     "correctness": 9,
     "design": 5
   },
   "by_priority": {
-    "unset": 95,
+    "unset": 93,
     "medium": 33,
     "high": 21,
-    "low": 19
+    "low": 18
   },
   "blocked": 6,
   "rows": [
     {
-      "number": 1572,
-      "title": "[main-red] pr-gates did not pass on main at 78e0d65",
-      "ask": "",
-      "area": "MAIN-RED",
-      "type": "bug",
+      "number": 1575,
+      "title": "[CHORE] re-PASS at a new head with qa-pass already present emits no labeled edge; merge waits for the throttled sweep (#1357)",
+      "ask": "In qa_verdict.sh, on PASS when qa-pass is already present, remove then re-add it (a real labeled edge).",
+      "area": "CHORE",
+      "type": "chore",
       "priority": "unset",
       "labels": [
-        "bug"
+        "chore",
+        "provenance:trusted"
       ],
-      "created": "2026-11-28T03:35:53Z",
-      "updated": "2026-11-28T03:35:53Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1571,
-      "title": "index status: request_indexing ranks by current impressions, so the year-successor of the top page (gochar-2027, not indexed) can never be listed",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [
-        "seo",
-        "provenance:trusted",
-        "growth"
-      ],
-      "created": "2026-11-28T03:31:45Z",
-      "updated": "2026-11-28T05:47:53Z",
+      "created": "2026-11-28T05:52:31Z",
+      "updated": "2026-11-28T08:32:38Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -240,10 +221,13 @@
       "labels": [
         "bug",
         "priority:low",
-        "qa"
+        "qa",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-11-26T03:37:26Z",
-      "updated": "2026-11-26T17:08:22Z",
+      "updated": "2026-11-28T06:24:15Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -419,10 +403,11 @@
       "labels": [
         "bug",
         "priority:low",
-        "qa"
+        "qa",
+        "provenance:trusted"
       ],
       "created": "2026-11-25T03:09:43Z",
-      "updated": "2026-11-26T17:08:19Z",
+      "updated": "2026-11-28T11:19:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -654,25 +639,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1346,
-      "title": "muhurat: the Abujha override skips Panchak, tithi and nakshatra hard exclusions (vivah 2026-11-21 Revati rated excellent)",
-      "ask": "",
-      "area": "MUHURAT",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-21T11:10:53Z",
-      "updated": "2026-11-28T04:48:12Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1343,
       "title": "QA follow-up: #1342 leaves two comments and an ARCHITECTURE.md line count describing the pre-#1341 in-tier order",
       "ask": "",
@@ -682,26 +648,11 @@
       "labels": [
         "bug",
         "priority:low",
-        "qa"
+        "qa",
+        "provenance:trusted"
       ],
       "created": "2026-11-21T09:23:15Z",
-      "updated": "2026-11-26T17:08:31Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1324,
-      "title": "notify: muhurat_computed says 'N auspicious of M days' with the non-avoid count, which now over-counts versus the finder page (follow-up to #1322)",
-      "ask": "",
-      "area": "NOTIFY",
-      "type": "bug",
-      "priority": "low",
-      "labels": [
-        "bug",
-        "priority:low"
-      ],
-      "created": "2026-11-21T01:18:50Z",
-      "updated": "2026-11-21T03:58:21Z",
+      "updated": "2026-11-28T11:19:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -939,7 +890,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-20T01:31:13Z",
-      "updated": "2026-11-27T08:06:35Z",
+      "updated": "2026-11-28T08:32:48Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -995,7 +946,7 @@
         "needs-evidence"
       ],
       "created": "2026-11-19T09:53:08Z",
-      "updated": "2026-11-28T02:29:14Z",
+      "updated": "2026-11-28T08:32:49Z",
       "blocked": false,
       "needs_evidence": true
     },
@@ -1232,7 +1183,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-15T10:10:28Z",
-      "updated": "2026-11-25T17:52:55Z",
+      "updated": "2026-11-28T12:32:40Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2769,9 +2720,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-28T05:50:50Z",
+    "generated_at": "2026-11-28T12:33:22Z",
     "window_days": 28,
-    "open_now": 168,
+    "open_now": 165,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3191,16 +3142,17 @@
       },
       {
         "date": "2026-11-28",
-        "opened": 3,
-        "closed": 2,
-        "net": 1,
-        "open_end": 168,
+        "opened": 4,
+        "closed": 6,
+        "net": -2,
+        "open_end": 165,
         "opened_by": {
-          "loop": 3
+          "loop": 4
         },
         "closed_by": {
-          "close-on-evidence": 1,
-          "other": 1
+          "close-on-evidence": 3,
+          "main-red-report": 1,
+          "other": 2
         }
       }
     ],
@@ -4477,6 +4429,11 @@
         "closer": "close-on-evidence"
       },
       {
+        "number": 1324,
+        "closed_at": "2026-11-28T11:20:38Z",
+        "closer": "other"
+      },
+      {
         "number": 1325,
         "closed_at": "2026-11-21T05:02:17Z",
         "closer": "close-on-evidence"
@@ -4524,6 +4481,11 @@
       {
         "number": 1344,
         "closed_at": "2026-11-26T01:40:47Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1346,
+        "closed_at": "2026-11-28T06:29:40Z",
         "closer": "close-on-evidence"
       },
       {
@@ -4795,18 +4757,48 @@
         "number": 1562,
         "closed_at": "2026-11-28T03:10:22Z",
         "closer": "other"
+      },
+      {
+        "number": 1571,
+        "closed_at": "2026-11-28T06:36:26Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1572,
+        "closed_at": "2026-11-28T06:41:21Z",
+        "closer": "main-red-report"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 4,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 82,
+          "merged": 84,
           "median_h": 0.7,
-          "p90_h": 3.7,
-          "max_h": 105.0,
+          "p90_h": 5.9,
+          "max_h": 154.6,
           "slowest": [
+            {
+              "number": 1357,
+              "title": "issue/1346 abujha booster not bypass",
+              "author": "shubhagya-publisher[bot]",
+              "merged_at": "2026-11-28T06:22:21Z",
+              "hours": 154.6,
+              "why": {
+                "reason": "91.6h waiting for gates to start; 60.0h gates red; 5 pushes",
+                "primary": "no_gates",
+                "hours": {
+                  "no_gates": 91.6,
+                  "gates_running": 0.2,
+                  "awaiting_qa": 1.1,
+                  "gates_red": 60.0,
+                  "awaiting_merge": 1.7
+                },
+                "qa_fails": 0,
+                "pushes": 5
+              }
+            },
             {
               "number": 1335,
               "title": "manglik-check: remedies card stops calling the practices classical (#1320)",
@@ -4883,23 +4875,6 @@
                 "qa_fails": 0,
                 "pushes": 2
               }
-            },
-            {
-              "number": 1428,
-              "title": "knowledge: vedic_reference.md §29.14 records the Magha/Mula first-pada exclusion as implem",
-              "author": "claude[bot]",
-              "merged_at": "2026-11-25T14:33:44Z",
-              "hours": 34.2,
-              "why": {
-                "reason": "24.4h waiting for gates to start; 9.8h held for chief (trust boundary)",
-                "primary": "no_gates",
-                "hours": {
-                  "no_gates": 24.4,
-                  "held": 9.8
-                },
-                "qa_fails": 0,
-                "pushes": 1
-              }
             }
           ],
           "top_reasons": [
@@ -4914,11 +4889,31 @@
           ]
         },
         "28d": {
-          "merged": 378,
+          "merged": 379,
           "median_h": 0.5,
-          "p90_h": 13.4,
-          "max_h": 122.1,
+          "p90_h": 12.4,
+          "max_h": 154.6,
           "slowest": [
+            {
+              "number": 1357,
+              "title": "issue/1346 abujha booster not bypass",
+              "author": "shubhagya-publisher[bot]",
+              "merged_at": "2026-11-28T06:22:21Z",
+              "hours": 154.6,
+              "why": {
+                "reason": "91.6h waiting for gates to start; 60.0h gates red; 5 pushes",
+                "primary": "no_gates",
+                "hours": {
+                  "no_gates": 91.6,
+                  "gates_running": 0.2,
+                  "awaiting_qa": 1.1,
+                  "gates_red": 60.0,
+                  "awaiting_merge": 1.7
+                },
+                "qa_fails": 0,
+                "pushes": 5
+              }
+            },
             {
               "number": 550,
               "title": "Gate `main` itself, and make a red `main` reach a person",
@@ -4976,26 +4971,6 @@
               }
             },
             {
-              "number": 564,
-              "title": "docs: an explained DAG of the agent cycle, in the README and as a page",
-              "author": "mahAnuj",
-              "merged_at": "2026-10-31T08:25:41Z",
-              "hours": 86.4,
-              "why": {
-                "reason": "60.0h waiting for a fix after QA failed (5 QA FAILs); 22.0h waiting for gates to start; 7 pushes",
-                "primary": "qa_fail",
-                "hours": {
-                  "no_gates": 22.0,
-                  "qa_fail": 60.0,
-                  "gates_running": 0.7,
-                  "awaiting_qa": 3.7,
-                  "awaiting_merge": 0.0
-                },
-                "qa_fails": 5,
-                "pushes": 7
-              }
-            },
-            {
               "number": 1375,
               "title": "Comparable-severity Manglik cancellation is Shubh Bhagya's own, not classical (#1369)",
               "author": "claude[bot]",
@@ -5020,7 +4995,7 @@
           ],
           "top_reasons": [
             {
-              "reason": "waiting for a fix after QA failed",
+              "reason": "waiting for gates to start",
               "prs": 2
             },
             {
@@ -5028,7 +5003,7 @@
               "prs": 2
             },
             {
-              "reason": "waiting for gates to start",
+              "reason": "waiting for a fix after QA failed",
               "prs": 1
             }
           ]
@@ -5199,42 +5174,23 @@
         },
         {
           "date": "2026-11-28",
-          "merged": 2,
-          "median_h": 2.7,
-          "max_h": 2.7
+          "merged": 6,
+          "median_h": 1.4,
+          "max_h": 154.6
         }
       ],
       "open": [
         {
-          "number": 1357,
-          "title": "issue/1346 abujha booster not bypass",
-          "age_h": 154.1,
-          "waiting_on": "merge",
-          "why": {
-            "reason": "91.6h waiting for gates to start; 60.0h gates red; 5 pushes",
-            "primary": "no_gates",
-            "hours": {
-              "no_gates": 91.6,
-              "gates_running": 0.2,
-              "awaiting_qa": 1.1,
-              "gates_red": 60.0,
-              "awaiting_merge": 1.2
-            },
-            "qa_fails": 0,
-            "pushes": 5
-          }
-        },
-        {
           "number": 1515,
           "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
-          "age_h": 36.8,
+          "age_h": 43.5,
           "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "36.3h waiting for a fix after QA failed (1 QA FAIL)",
+            "reason": "43.1h waiting for a fix after QA failed (1 QA FAIL)",
             "primary": "qa_fail",
             "hours": {
               "no_gates": 0.4,
-              "qa_fail": 36.3
+              "qa_fail": 43.1
             },
             "qa_fails": 1,
             "pushes": 3
@@ -5243,24 +5199,32 @@
         {
           "number": 1568,
           "title": "ops: Overview ships the top 50 open issues, not all — main is red on the byte cap (#1562)",
-          "age_h": 3.2,
+          "age_h": 9.9,
           "waiting_on": "gates / QA",
           "why": {
-            "reason": "3.2h waiting for gates to start",
+            "reason": "9.9h waiting for gates to start",
             "primary": "no_gates",
             "hours": {
-              "no_gates": 3.2
+              "no_gates": 9.9
             },
             "qa_fails": 0,
             "pushes": 1
           }
         },
         {
-          "number": 1574,
-          "title": "index status: request_indexing lists a not-indexed next-year /learn page first (#1571)",
-          "age_h": 0.0,
+          "number": 1579,
+          "title": "muhurat lagna: the legend probe no longer re-logs the per-row skipped warning (refs #1464)",
+          "age_h": 0.1,
           "waiting_on": "gates / QA",
-          "why": null
+          "why": {
+            "reason": "no single wait stood out",
+            "primary": "other",
+            "hours": {
+              "no_gates": 0.1
+            },
+            "qa_fails": 0,
+            "pushes": 1
+          }
         }
       ]
     }
