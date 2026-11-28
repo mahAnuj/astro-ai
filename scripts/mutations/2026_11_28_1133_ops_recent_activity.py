@@ -16,7 +16,7 @@ MUTATIONS = [
      M,
      "top = heapq.nlargest(ROWS, cands, key=lambda c: c[0])",
      "top = heapq.nlargest(999, cands, key=lambda c: c[0])",
-     "test_each_view_is_exactly_eight_rows_from_thirty_inputs_newest_first"),
+     "test_each_builder_hands_back_at_most_eight_rows_so_a_big_source_builds_only_eight"),
     ("#1133 activity: All is no longer capped at eight rows",
      M,
      "heapq.nlargest(ROWS, pairs, key=lambda p: p[0])",

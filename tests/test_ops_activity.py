@@ -191,6 +191,13 @@ def test_titles_and_subtitles_are_cut_and_stripped_of_newlines_and_control_chara
                ["rows"][0]["subtitle"]) <= A.SUB_MAX
 
 
+def test_each_builder_hands_back_at_most_eight_rows_so_a_big_source_builds_only_eight():
+    o = _ops(cycles=[_cycle(n=i, pr=i + 1) for i in range(50)], wfs=[_wf(f"w{i}.yml", i) for i in range(50)],
+             issues=[_issue(i + 1, i) for i in range(50)])
+    for fn in (A._agent_rows, A._workflow_rows, A._issue_rows):
+        assert len(fn(o, NOW)[0]) == A.ROWS, fn.__name__
+
+
 # --- the live merges, the live failures, and the supersede rule -----------------------------
 
 def _merged(pr, n=1, by="loop", title=None):
