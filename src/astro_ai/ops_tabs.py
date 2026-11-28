@@ -33,7 +33,10 @@ DEFAULT = "overview"
 # `issues` 65,675 B of it -- while only the drill-downs read them. A key is
 # listed here only if a drill-down ON THAT TAB reads it:
 #   cycles  -> the `.day-btn` rows (Runs)
-#   issues  -> the Backlog tile (Overview) and the `#bars` buttons (Backlog)
+#   issues  -> the Backlog tile (Overview, the top OVERVIEW_ISSUE_ROWS only --
+#              the one term in the blob with no ceiling: 167 rows, ~64 KB, and
+#              the page was 252,049 B against its 250,000 cap, #1562) and the
+#              `#bars` buttons (Backlog, every row)
 #   today_*, filed_* -> the three "today" tiles (Overview)
 #   kpi_rows -> the four KPI cards' drill-downs (Overview, #1133 slice 2a)
 #   by_*    -> the `#bars` chart (Backlog)
@@ -52,6 +55,15 @@ BLOB_KEYS: dict[str, frozenset] = {
     "analytics": _BASE,
     "monitoring": _BASE,
 }
+
+# The Overview's Backlog tile drills into at most this many issues (#1562). The
+# Backlog tab ships all of them; the tile's title says "N of M" when it is cut.
+OVERVIEW_ISSUE_ROWS = 50
+
+# Priority order of the Backlog drill-down. admin_ops.html's `rank` literal in the
+# "backlog" TILES entry is the other copy; tests/test_ops_overview_issue_cap.py
+# fails if the two disagree, so the 50 kept here are the 50 the JS would put first.
+_ISSUE_RANK = {"high": 0, "medium": 1, "low": 2, "unset": 3}
 
 _KEYS = frozenset(k for k, _ in TABS)
 _LABELS = dict(TABS)
@@ -72,6 +84,23 @@ def blob_for(tab: str, full: dict) -> dict:
     """`full` cut down to the keys `tab` ships; an unknown tab gets Overview's."""
     keep = BLOB_KEYS.get(tab, BLOB_KEYS[DEFAULT])
     return {k: v for k, v in full.items() if k in keep}
+
+
+def top_issues(rows, n: int = OVERVIEW_ISSUE_ROWS) -> list:
+    """The first `n` rows in the Backlog drill-down's order: priority, then newest.
+
+    Never raises: an unknown priority sorts last (the JS's `?? 9`), a row whose
+    number is not an int sorts as 0 rather than breaking the sort, and a
+    non-dict row sorts last too. `rows` is not mutated.
+    """
+    def key(r):
+        if not isinstance(r, dict):
+            return (9, 0)
+        num = r.get("number")
+        num = num if isinstance(num, int) and not isinstance(num, bool) else 0
+        pri = r.get("priority")
+        return (_ISSUE_RANK.get(pri, 9) if isinstance(pri, str) else 9, -num)
+    return sorted(rows or [], key=key)[:max(int(n), 0)]
 
 
 def tab_label(key: str) -> str:

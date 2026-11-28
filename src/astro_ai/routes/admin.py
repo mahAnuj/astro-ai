@@ -229,6 +229,9 @@ async def admin_ops(request: Request, window: str = "", day: str = "", tab: str 
     if tab == "overview":
         kpis = ops_kpis.build(ops)
         full["kpi_rows"] = kpis["rows"]
+        # The one unbounded term in Overview's blob (#1562): the Backlog tile
+        # drills into the top rows only. The Backlog tab keeps all of them.
+        full["issues"] = ops_tabs.top_issues(I["rows"], ops_tabs.OVERVIEW_ISSUE_ROWS)
         # PRs-shipped bars and Key metrics (#1133 slice 2b): derived from `ops`
         # and `kpis`, so 0 new reads.
         trends = ops_trends.build(ops, kpis, tab_links)
