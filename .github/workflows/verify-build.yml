@@ -70,7 +70,8 @@ jobs:
         run: |
           git fetch --quiet origin main || true
           base=$(git merge-base origin/main HEAD 2>/dev/null || true)
-          changed=$( [ -n "$base" ] && git diff --name-only "$base" HEAD || true )
+          # --no-renames (#1283): both sides of a rename, so a move out of src/ builds.
+          changed=$( [ -n "$base" ] && git diff --name-only --no-renames "$base" HEAD || true )
           echo "changed files:"; printf '%s\n' "$changed" | sed 's/^/  /'
           if [ -n "$changed" ] && ! grep -qv '^measurements/' <<<"$changed"; then
             echo "build=false" >> "$GITHUB_OUTPUT"

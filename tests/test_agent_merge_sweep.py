@@ -220,7 +220,8 @@ def test_a_draft_is_never_a_candidate():
 
 # --- the walk: mergeability, and not stopping at the first (#374) ---
 
-def _walk(shortlist: str, mergeable: dict[int, str], red: tuple[int, ...] = ()) -> tuple[str, str]:
+def _walk(shortlist: str, mergeable: dict[int, str], red: tuple[int, ...] = (),
+          unreadable: tuple[int, ...] = ()) -> tuple[str, str]:
     """Run the workflow's own candidate loop. Returns (picked, stderr+stdout).
 
     The loop is lifted out of the `pr` step rather than reimplemented, and `gh`
@@ -260,10 +261,13 @@ def _walk(shortlist: str, mergeable: dict[int, str], red: tuple[int, ...] = ()) 
         # head_checks is the workflow's HEAD_CHECKS_FN (tested on its own in
         # test_agent_merge_head_checks.py); here a stub says which heads are red.
         reds = " ".join(f"sha-{r}" for r in red)
-        stub = ('head_checks() { case " ' + reds + ' " in *" $1 "*) echo "gates=completed:failure";; '
+        unread = " ".join(f"sha-{u}" for u in unreadable)
+        stub = ('head_checks() { case " ' + unread + ' " in *" $1 "*) return 2;; esac; '
+                'case " ' + reds + ' " in *" $1 "*) echo "gates=completed:failure";; '
                 '*) echo "gates=completed:success";; esac; }\n')
         script = f'candidates="{shortlist}"\nGH_REPO=x\n{stub}{loop}\nprintf "PICKED=%s" "$n"\n'
-        r = subprocess.run(["bash", "-c", script], capture_output=True, text=True,
+        # `bash -e`, as GitHub runs a step: #1413 was an errexit that only showed there.
+        r = subprocess.run(["bash", "-e", "-c", script], capture_output=True, text=True,
                            env={"PATH": f"{bin_dir}:/usr/bin:/bin", "MERGEABLE_WAIT": "0",
                                 "GH_COUNT": str(pathlib.Path(tmp) / "count")})
     out = r.stdout + r.stderr
@@ -350,3 +354,11 @@ def test_a_red_candidate_is_skipped_so_it_cannot_block_the_green_ones_above_it()
                         red=(1335,))
     assert picked == "1342", out
     assert "skipping #1335 — checks not green: gates=completed:failure" in out
+
+
+def test_an_unreadable_candidate_is_skipped_and_the_walk_goes_on():
+    """#1413: head_checks returning 2 was the last command of an && list, so under bash -e it
+    ended the whole step and every later candidate went untried."""
+    picked, out = _walk("1335 1342", {1335: "MERGEABLE", 1342: "MERGEABLE"}, unreadable=(1335,))
+    assert picked == "1342", out
+    assert "skipping #1335 — checks not green: unreadable" in out

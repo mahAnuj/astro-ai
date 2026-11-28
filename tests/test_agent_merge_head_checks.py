@@ -28,12 +28,17 @@ def cr(name, conclusion, run, started, status="completed", cid=None):
 
 
 def run_fn(checks, runs, fail_checks=False):
-    """runs: run id -> (workflow path, created_at)."""
+    """runs: run id -> (workflow path, created_at[, status])."""
+    return run_fn_raw({"check_runs": checks}, runs, fail_checks)
+
+
+def run_fn_raw(payload, runs, fail_checks=False):
     with tempfile.TemporaryDirectory() as tmp:
         d = Path(tmp)
-        (d / "checks.json").write_text(json.dumps({"check_runs": checks}))
-        for rid, (path, at) in runs.items():
-            (d / f"run-{rid}").write_text(f"{path} {at}")
+        (d / "checks.json").write_text(json.dumps(payload))
+        for rid, spec in runs.items():
+            path, at, *st = spec
+            (d / f"run-{rid}").write_text(f"{path} {at} {st[0] if st else 'completed'}")
         gh = d / "gh"
         gh.write_text(f"""#!/bin/bash
 url=""; for a in "$@"; do case "$a" in repos/*) url="$a";; esac; done
@@ -106,4 +111,21 @@ def test_unreadable_checks_or_runs_are_never_a_pass():
     assert rc == 2
     missing = {k: v for k, v in RUNS_1335.items() if k != "202"}
     _, rc, _ = run_fn(CHECKS_1335, missing)
+    assert rc == 2
+
+
+def test_a_newest_run_still_in_flight_reads_pending_not_green():
+    """#1415: the newest pr-gates run on the head has green early jobs but no `gates` job yet
+    (it needs the other four); the older run's red `gates` drops out, so the head must read
+    pending until the newest run completes."""
+    runs = {**RUNS_1335, "203": (GATES, "2026-11-21T06:00:00Z", "in_progress")}
+    checks = CHECKS_1335 + [cr("suite", "success", "203", "2026-11-21T06:00:05Z")]
+    lines, rc, _ = run_fn(checks, runs)
+    assert rc == 0 and "run:pr-gates.yml=in_progress:pending" in lines
+
+
+def test_more_than_one_page_of_check_runs_is_unreadable_not_truncated():
+    """#1413 (minor): past 100 check runs the oldest would drop silently and could fail open."""
+    big = {"check_runs": CHECKS_1335, "total_count": 101}
+    lines, rc, _ = run_fn_raw(big, RUNS_1335)
     assert rc == 2

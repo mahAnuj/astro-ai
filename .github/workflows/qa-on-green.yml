@@ -64,7 +64,10 @@ on:
 # state, so they need not wait on each other; the per-head marker comment still
 # guards against a double dispatch on one PR.
 concurrency:
-  group: qa-on-green-${{ github.event.workflow_run.head_branch }}-${{ github.event.workflow_run.name }}
+  # Per branch only (#1290): keyed on the workflow name too, pr-gates and
+  # verify-build finishing together ran in two groups, both read "no marker
+  # yet", and both queued a round. One group serialises the marker per head.
+  group: qa-on-green-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: false
 
 permissions:
@@ -291,7 +294,7 @@ jobs:
           # WHAT THE DISPATCH AIMS AT, and since 2026-11-01 it is two things.
           #
           # `issue/`, `partial/` and `fix/` carry an owning issue by
-          # construction (agent-cycle.md Step 4), and that is the richer aim:
+          # construction (agent-cycle/build.md Step 4), and that is the richer aim:
           # the cycle reads the issue, adopts the branch at Step 2.5, and can
           # finish work that is not built yet. `measurements/` carries no
           # number, and the obvious widening `^[a-z]+/(\d+)` would read run id

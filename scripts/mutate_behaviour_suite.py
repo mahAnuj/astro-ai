@@ -4277,8 +4277,9 @@ MUTATIONS = [
 
     ("#610: a non-numeric comment count falls toward RELEASING the hold",
      ".github/workflows/agent-merge.yml",
-     "case \"$ruled\" in ''|*[!0-9]*) ruled=0 ;; esac",
-     "case \"$ruled\" in ''|*[!0-9]*) ruled=1 ;; esac",
+     # Re-anchored 2026-11-26 (#1286): an unreadable count now exits keeping the hold AND the label.
+     "keeping the hold and the label; the next run asks again\"\n                  exit 0 ;;",
+     "keeping the hold and the label; the next run asks again\"\n                  ruled=1 ;;",
      "test_a_NON_NUMERIC_comment_count_keeps_the_hold"),
 
     ("#610: the label alone releases the hold, with no ruling comment",

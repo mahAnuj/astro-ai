@@ -463,7 +463,7 @@ def find_stalls(hours: float) -> list[dict]:
         # yields issue 40140256532, so a measurement PR open long enough to be
         # judged stalled would route a dispatch at an issue that does not
         # exist. The namespaces are enumerated because only these three carry
-        # an issue number by construction (agent-cycle.md Step 4).
+        # an issue number by construction (agent-cycle/build.md Step 4).
         m = re.match(r"^(?:issue|partial|fix)/(\d+)", pr["headRefName"] or "")
         issue = int(m.group(1)) if m else None
         labels = {l["name"] for l in pr["labels"]}

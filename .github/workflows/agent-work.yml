@@ -490,7 +490,7 @@ jobs:
           branch=$(git rev-parse --abbrev-ref HEAD)
           # ANY branch but `main` is work worth rescuing — it used to be
           # `issue/*` only, and that cost this net exactly the cases it was
-          # written for. agent-cycle.md Step 4 tells a cycle to name its branch
+          # written for. agent-cycle/build.md Step 4 tells a cycle to name its branch
           # `partial/<n>-<slug>` whenever acceptance criteria remain that the
           # loop cannot do, and on such a branch this step reported "Cycle
           # shipped nothing" and exited 0 WITHOUT PUSHING — discarding real

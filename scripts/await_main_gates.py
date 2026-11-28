@@ -23,9 +23,10 @@ GATES_CONCLUSION. The reporter's own step is unchanged.
 A RUN THAT WAS REPLACED IS NOT A RED MAIN. GitHub keeps one pending run per
 concurrency group; a second merge's dispatch replaces a pending first one, which
 concludes `cancelled` having run nothing (#1284 measured four false `[main-red]`
-issues of that shape). A `cancelled` run with a newer dispatched `main` run
-behind it is reported as superseded and nothing is written: the newer run has
-its own reporter.
+issues of that shape). A `cancelled` run in which NO STEP EVER RAN is reported
+as replaced and nothing is written. Until 2026-11-26 the test was "a newer run
+exists", which also swallowed a run that TIMED OUT with the next merge's run
+queued behind it -- the case #461 exists for (#1486). A timed-out run has steps.
 
 EXIT CODES: 0 described (or superseded / skipped, said why)   1 no run found, or
 it did not complete in time   2 bad input or environment
@@ -72,6 +73,16 @@ def main_runs(gh: Runner, repo: str, after: datetime) -> list[dict]:
     return sorted(runs, key=lambda r: (r["created_at"], r["id"]))
 
 
+def never_started(gh: Runner, repo: str, run_id: int) -> bool:
+    """True only when the run's job list was read and no step in it ever ran.
+    An unreadable list answers False, so the run is reported, never swallowed."""
+    try:
+        jobs = json.loads(gh(["api", f"repos/{repo}/actions/runs/{run_id}/jobs?per_page=100"]))
+    except (RuntimeError, ValueError):
+        return False
+    return not any(j.get("steps") for j in jobs.get("jobs") or [])
+
+
 def await_run(gh: Runner, repo: str, after: datetime, sleep: Callable[[float], None] = time.sleep,
               max_wait: float = MAX_WAIT_S, find_wait: float = FIND_WAIT_S) -> tuple[int, dict | None, str]:
     waited = 0.0
@@ -87,10 +98,9 @@ def await_run(gh: Runner, repo: str, after: datetime, sleep: Callable[[float], N
             mine = runs[0]["id"]
         cur = next((r for r in runs if r["id"] == mine), None)
         if cur and cur.get("status") == "completed":
-            newer = [r for r in runs if (r["created_at"], r["id"]) > (cur["created_at"], cur["id"])]
-            if cur.get("conclusion") == "cancelled" and newer:
-                return 0, None, (f"run {mine} was cancelled and replaced by run {newer[0]['id']}, "
-                                 "which has its own reporter -- not a red main")
+            if cur.get("conclusion") == "cancelled" and never_started(gh, repo, mine):
+                return 0, None, (f"run {mine} was cancelled before any step ran -- a pending run "
+                                 "a newer one replaced; not a red main")
             if cur.get("conclusion") == "skipped":
                 return 0, None, f"run {mine} concluded skipped -- nothing was asserted"
             return 0, cur, f"run {mine} completed: {cur.get('conclusion')}"

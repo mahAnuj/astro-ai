@@ -134,7 +134,12 @@ def test_it_is_serialised_so_two_pushes_do_not_race():
     group = DOC["concurrency"]["group"]
     assert group.startswith("qa-on-green-")
     assert "${{ github.event.workflow_run.head_branch }}" in group
-    assert "${{ github.event.workflow_run.name }}" in group
+    # PER BRANCH ONLY since 2026-11-26 (#1290). Keyed on the workflow name too,
+    # pr-gates and verify-build going green together on one head ran in two
+    # groups, both read "no marker yet" and both queued a round. Per branch, a
+    # pending run is cancelled only by a NEWER event for the same branch, and
+    # that event re-reads the head's state, so nothing current is lost.
+    assert "${{ github.event.workflow_run.name }}" not in group
     assert DOC["concurrency"]["cancel-in-progress"] is False
 
 

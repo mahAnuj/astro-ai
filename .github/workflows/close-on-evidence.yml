@@ -128,6 +128,12 @@ jobs:
           # Measured: #1056 (PR #1077, verify green 2026-11-15) never closed.
           if [ "$live" != "$SHA" ]; then
             rel=$(gh api "repos/$GH_REPO/compare/$SHA...$live" --jq .status 2>/dev/null || echo error)
+            # A FAILED compare is not "not contained" (#1299): exiting 0 with a
+            # notice left a shipped fix open and a green run. Red, so it shows.
+            if [ "$rel" = "error" ]; then
+              echo "::error::could not compare $SHA with the live commit $live — not closing; a re-run decides"
+              exit 1
+            fi
             if [ "$rel" != "ahead" ]; then
               echo "::notice::live commit $live does not contain $SHA (compare: $rel) — not closing"
               exit 0
