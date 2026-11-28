@@ -54,6 +54,8 @@
 # the FULL head when the --sha is a prefix of it: `agent-merge` matches the full
 # sha, so an abbreviation written verbatim would never bind (#1285). A FAIL
 # naming a commit that is not the head's prefix is written as given.
+# --sha is case-insensitive and lowercased before the prefix test, so the comment
+# always names lowercase hex, the only form detect_stalls.py's reader accepts (#1427).
 #
 # Usage:
 #   qa_verdict.sh --pr <n> --verdict PASS|FAIL [--issue <n>] [--sha <sha>]
@@ -187,6 +189,8 @@ esac
 # detect_stalls.py's verdict-line reader accepts). Anything shorter is a prefix of
 # nearly every head, so the prefix test below would pass and the comment would
 # then name a sha that binds nothing. The value also goes into a comment body.
+# Uppercase is accepted and lowercased AFTER the check: the case pattern below
+# still sees the raw value, so a newline injected into --sha is still rejected.
 case "$SHA" in
   '') ;;
   *[!0-9a-fA-F]*) echo "qa_verdict.sh: --sha must be 7-40 hex characters, got '$SHA'" >&2; exit 2 ;;
@@ -194,6 +198,9 @@ case "$SHA" in
        echo "qa_verdict.sh: --sha must be 7-40 hex characters, got '$SHA'" >&2; exit 2
      fi ;;
 esac
+# The prefix test against the (lowercase) head is case-sensitive; an uppercase sha
+# would miss it and a FAIL would be written uppercase, unreadable by detect_stalls.
+[ -z "$SHA" ] || SHA=$(printf '%s' "$SHA" | tr A-F a-f)
 
 BRANCH=$(gh pr view "$PR" --repo "$GH_REPO" --json headRefName --jq .headRefName)
 HEAD=$(gh pr view "$PR" --repo "$GH_REPO" --json headRefOid --jq .headRefOid)
