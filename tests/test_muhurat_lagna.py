@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import ast
 import importlib.util
+import logging
 import re
 import sys
 import time
@@ -299,6 +300,25 @@ def test_legend_needs_a_vivah_page_with_at_least_one_eligible_row():
     assert ml.legend(rows, "griha_pravesh", "Delhi") is None
     assert ml.legend([rows[1]], "vivah", "Delhi") is None
     assert ml.legend([], "vivah", "Delhi") is None
+
+
+def test_legend_probe_adds_no_warnings(monkeypatch, caplog):
+    """#1464: the legend only asks whether any row produced a block, so it must not log the
+    per-row "skipped" warning the row's own `lagna_view` logs. A failure still draws no legend."""
+    def explode(*a, **k):
+        raise RuntimeError("ephemeris went away")
+    monkeypatch.setattr(ml, "_windows_for", explode)
+    rows = [_row(date(2026, 11, 25) + timedelta(days=i)) for i in range(4)]
+
+    def skipped():
+        return [r for r in caplog.records if r.getMessage().startswith("lagna windows skipped")]
+
+    with caplog.at_level(logging.WARNING, logger=ml.log.name):
+        assert ml.legend(rows, "vivah", "Delhi") is None
+        assert skipped() == []
+        for r in rows:
+            assert ml.lagna_view(r, "vivah", "Delhi") is None
+    assert len(skipped()) == len(rows)
 
 
 # --- 8: Rahu Kaal is a note, never a filter ----------------------------------------------------

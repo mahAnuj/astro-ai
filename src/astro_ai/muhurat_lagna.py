@@ -325,6 +325,13 @@ def lagna_view(candidate, event_type: str, city: str) -> LagnaView | None:
     must never read as an empty window list, because the empty list renders NONE_TEXT, which is
     a claim about the sky. Failures log a warning and are not alerted: one per row would page
     the owner once per date."""
+    return _view(candidate, event_type, city, log_failure=True)
+
+
+def _view(candidate, event_type: str, city: str, *, log_failure: bool) -> LagnaView | None:
+    """`lagna_view`'s body. `log_failure` is False only for `legend()`'s probe: the row partial
+    computes the same rows and owns the warning, so a failing page logs once per date, not twice
+    (#1464). A failure returns None either way, never an empty window tuple."""
     if not _eligible(candidate, event_type):
         return None
     try:
@@ -340,7 +347,8 @@ def lagna_view(candidate, event_type: str, city: str) -> LagnaView | None:
                 rahu_note=_rahu_note(w, rahu, candidate.rahu_kaal))
             for w in windows))
     except Exception as err:   # noqa: BLE001 - see the docstring: render nothing, never a false "none"
-        log.warning("lagna windows skipped for %s: %s: %s", candidate.d, type(err).__name__, err)
+        if log_failure:
+            log.warning("lagna windows skipped for %s: %s: %s", candidate.d, type(err).__name__, err)
         return None
 
 
@@ -349,9 +357,10 @@ def legend(candidates, event_type: str, city: str) -> LagnaLegend | None:
 
     Keyed on a produced `lagna_view`, not on `_eligible` alone (#1457): eligibility is only the
     gate, and a page whose every row failed to compute would otherwise print a legend explaining
-    windows that are not there. It runs `lagna_view` per row, so it computes through the same
+    windows that are not there. It probes each row quietly (`log_failure=False`): the row
+    path owns the "skipped" warning, so the probe adds none (#1464). It computes through the same
     cached windows the row partials use (`_windows_for` is memoised) and costs no new
     astronomy; `city` is required, with no default, so a caller cannot ask without the place."""
-    if any(lagna_view(c, event_type, city) is not None for c in candidates):
+    if any(_view(c, event_type, city, log_failure=False) is not None for c in candidates):
         return LagnaLegend()
     return None

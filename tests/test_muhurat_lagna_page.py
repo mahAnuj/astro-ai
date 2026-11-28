@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import html
 import importlib.util
+import logging
 import re
 import sys
 from datetime import date
@@ -233,6 +234,25 @@ def test_the_legend_is_keyed_on_a_block_produced_not_on_row_eligibility(client, 
     pos = h.index("data-lagna-legend")
     assert pos > h.rindex("data-lagna>"), "below every block"
     assert pos > h.rindex("</table>", 0, pos)
+
+
+def test_a_failing_page_logs_one_skipped_warning_per_date_not_two(client, monkeypatch, caplog):
+    """#1464: the legend probes every row and the row partial renders every row, so a page whose
+    windows all fail used to log each date's warning twice. The probe is quiet; the row owns it."""
+    ml = _ml()
+
+    def boom(*a, **k):
+        raise RuntimeError("ephemeris unavailable")
+
+    monkeypatch.setattr(ml, "_windows_for", boom)
+    with caplog.at_level(logging.WARNING, logger=ml.log.name):
+        h = _post(client, "vivah", 120)
+    msgs = [r.getMessage() for r in caplog.records if r.getMessage().startswith("lagna windows skipped")]
+    dates = [re.search(r"skipped for (\S+):", m).group(1) for m in msgs]
+    assert msgs, "premise: the failing page logged its skipped dates"
+    assert len(dates) == len(set(dates)), f"a date logged more than once: {sorted(dates)}"
+    assert "data-lagna>" not in h and "data-lagna-legend" not in h
+    assert ml.NONE_TEXT not in html.unescape(h)
 
 
 def test_a_none_view_renders_nothing_through_the_partial():
