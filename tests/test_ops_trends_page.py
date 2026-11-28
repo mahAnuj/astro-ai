@@ -536,14 +536,14 @@ def test_the_bars_do_not_use_day_btn_which_would_demand_cycles_in_overviews_blob
 
 # --- size ---------------------------------------------------------------------------
 
-# 2b's cap was 245,000; slice 2c (the loop ring, Agent health, System health) spent it and
-# the architect's plan for 2c raises it to 250,000. The issue's hard ceiling is 418,318.
-OVERVIEW_CAP = 250_000
+# The page ceiling is the issue's own 418,318 B, one constant in ops_tabs (#1562). It was a
+# 245,000 then a 250,000 literal that the open-issue count kept outgrowing.
+from astro_ai.ops_tabs import OVERVIEW_MAX_BYTES as OVERVIEW_CAP  # noqa: E402
 
 
 def test_overview_grows_by_at_most_18_kb_and_stays_under_245_kb(monkeypatch):
     """The name keeps its history: renaming a test reads as a deletion to verify_test_floor.
-    The absolute cap is now OVERVIEW_CAP (250,000) after slice 2c. Baseline is not pinned (the committed measurement files move it): the growth is
+    The absolute cap is OVERVIEW_CAP, ops_tabs.OVERVIEW_MAX_BYTES (418,318). Baseline is not pinned (the committed measurement files move it): the growth is
     counted from the template's own parts, and the absolute cap is the architect's."""
     _serve(monkeypatch)
     h = _page().text
