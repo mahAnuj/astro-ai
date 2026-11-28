@@ -406,10 +406,11 @@ async def _finder_response(
     if not via_get:
         try:
             _u = load_user(request)
-            # Every non-avoid date, caution included. The page headline now counts only
-            # excellent/good/acceptable (#1322), so this deliberately differs from it: it keeps the
-            # #1218 baseline meaning rather than silently moving it.
-            _good_count = sum(1 for c in candidates if c.rating != "avoid")
+            # The alert's "N auspicious" uses the page headline's definition (#1324): only
+            # excellent/good/acceptable, since #1322 stopped counting caution there. It had kept the
+            # non-avoid count and so read higher than the page the person was looking at.
+            # `valid_count` in muhurat_searched below deliberately keeps the non-avoid count (#1218).
+            _good_count = sum(1 for c in candidates if c.rating in _muhurat.AUSPICIOUS_RATINGS)
             notify.muhurat_computed(
                 event_type=event_label, city=city, days_range=int(days),
                 good_count=_good_count,
