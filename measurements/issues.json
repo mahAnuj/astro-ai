@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-28T03:33:52Z",
+  "generated_at": "2026-11-28T05:50:50Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 167,
+  "open": 168,
   "with_ask": 42,
   "by_area": {
     "UNCLASSIFIED": 77,
@@ -24,6 +24,7 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "BUG": 2,
+    "MAIN-RED": 1,
     "MEASURE": 1,
     "MUHURAT": 1,
     "NOTIFY": 1,
@@ -33,7 +34,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 56,
+    "bug": 57,
     "untyped": 40,
     "enhancement": 31,
     "chore": 26,
@@ -41,13 +42,28 @@
     "design": 5
   },
   "by_priority": {
-    "unset": 94,
+    "unset": 95,
     "medium": 33,
     "high": 21,
     "low": 19
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 1572,
+      "title": "[main-red] pr-gates did not pass on main at 78e0d65",
+      "ask": "",
+      "area": "MAIN-RED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-11-28T03:35:53Z",
+      "updated": "2026-11-28T03:35:53Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1571,
       "title": "index status: request_indexing ranks by current impressions, so the year-successor of the top page (gochar-2027, not indexed) can never be listed",
@@ -57,10 +73,11 @@
       "priority": "unset",
       "labels": [
         "seo",
+        "provenance:trusted",
         "growth"
       ],
       "created": "2026-11-28T03:31:45Z",
-      "updated": "2026-11-28T03:31:45Z",
+      "updated": "2026-11-28T05:47:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -651,7 +668,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-21T11:10:53Z",
-      "updated": "2026-11-27T10:56:39Z",
+      "updated": "2026-11-28T04:48:12Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2752,9 +2769,9 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-28T03:33:52Z",
+    "generated_at": "2026-11-28T05:50:50Z",
     "window_days": 28,
-    "open_now": 167,
+    "open_now": 168,
     "merged_open_hours": 24,
     "days": [
       {
@@ -3174,12 +3191,12 @@
       },
       {
         "date": "2026-11-28",
-        "opened": 2,
+        "opened": 3,
         "closed": 2,
-        "net": 0,
-        "open_end": 167,
+        "net": 1,
+        "open_end": 168,
         "opened_by": {
-          "loop": 2
+          "loop": 3
         },
         "closed_by": {
           "close-on-evidence": 1,
@@ -4780,12 +4797,12 @@
         "closer": "other"
       }
     ],
-    "timelines_read": 2,
+    "timelines_read": 0,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 84,
+          "merged": 82,
           "median_h": 0.7,
           "p90_h": 3.7,
           "max_h": 105.0,
@@ -5191,7 +5208,7 @@
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 151.8,
+          "age_h": 154.1,
           "waiting_on": "merge",
           "why": {
             "reason": "91.6h waiting for gates to start; 60.0h gates red; 5 pushes",
@@ -5199,8 +5216,9 @@
             "hours": {
               "no_gates": 91.6,
               "gates_running": 0.2,
-              "awaiting_qa": 0.0,
-              "gates_red": 60.0
+              "awaiting_qa": 1.1,
+              "gates_red": 60.0,
+              "awaiting_merge": 1.2
             },
             "qa_fails": 0,
             "pushes": 5
@@ -5209,14 +5227,14 @@
         {
           "number": 1515,
           "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
-          "age_h": 34.5,
+          "age_h": 36.8,
           "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "34.1h waiting for a fix after QA failed (1 QA FAIL)",
+            "reason": "36.3h waiting for a fix after QA failed (1 QA FAIL)",
             "primary": "qa_fail",
             "hours": {
               "no_gates": 0.4,
-              "qa_fail": 34.1
+              "qa_fail": 36.3
             },
             "qa_fails": 1,
             "pushes": 3
@@ -5225,17 +5243,24 @@
         {
           "number": 1568,
           "title": "ops: Overview ships the top 50 open issues, not all — main is red on the byte cap (#1562)",
-          "age_h": 0.9,
+          "age_h": 3.2,
           "waiting_on": "gates / QA",
           "why": {
-            "reason": "0.9h waiting for gates to start",
+            "reason": "3.2h waiting for gates to start",
             "primary": "no_gates",
             "hours": {
-              "no_gates": 0.9
+              "no_gates": 3.2
             },
             "qa_fails": 0,
             "pushes": 1
           }
+        },
+        {
+          "number": 1574,
+          "title": "index status: request_indexing lists a not-indexed next-year /learn page first (#1571)",
+          "age_h": 0.0,
+          "waiting_on": "gates / QA",
+          "why": null
         }
       ]
     }

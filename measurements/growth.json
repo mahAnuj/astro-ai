@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-28T03:34:38Z",
+ "generated_at": "2026-11-28T05:51:41Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-28",
  "today": {
-  "growth": 0,
-  "other": 6,
+  "growth": 1,
+  "other": 7,
   "exempt": 5,
-  "share": 0.0
+  "share": 0.125
  },
  "this_week": {
-  "growth": 15,
-  "other": 68,
+  "growth": 16,
+  "other": 69,
   "exempt": 11,
-  "share": 0.181
+  "share": 0.188
  },
  "this_month": {
-  "growth": 49,
-  "other": 318,
+  "growth": 50,
+  "other": 319,
   "exempt": 11,
-  "share": 0.134
+  "share": 0.136
  },
  "must_pick_growth": true,
  "days": [
@@ -116,13 +116,42 @@
   },
   {
    "date": "2026-11-28",
-   "growth": 0,
-   "other": 6,
+   "growth": 1,
+   "other": 7,
    "exempt": 5,
-   "share": 0.0
+   "share": 0.125
   }
  ],
  "cycles": [
+  {
+   "run": 46108290928,
+   "started": "2026-11-28T04:35:53Z",
+   "issue": 1571,
+   "title": "index status: request_indexing ranks by current impressions, so the year-successor of the top page (gochar-2027, not indexed) can never be listed",
+   "class": "growth",
+   "outcome": "pr open",
+   "pr": 1574,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 46101661305,
+   "started": "2026-11-28T03:11:37Z",
+   "issue": 1346,
+   "title": "muhurat: the Abujha override skips Panchak, tithi and nakshatra hard exclusions (vivah 2026-11-21 Revati rated excellent)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1357,
+   "agents": {
+    "chief": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
   {
    "run": 46100895003,
    "started": "2026-11-28T03:02:04Z",
@@ -584,26 +613,6 @@
    "outcome": "shipped",
    "pr": 1499,
    "agents": null
-  },
-  {
-   "run": 45694480094,
-   "started": "2026-11-25T20:23:22Z",
-   "issue": 1355,
-   "title": "QA follow-up: dark-half tithi credit and mixed-status avoid_tithi are labelled unevenly across events (PR #1350)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1496,
-   "agents": null
-  },
-  {
-   "run": 45683260499,
-   "started": "2026-11-25T19:14:45Z",
-   "issue": 1483,
-   "title": "QA follow-up: matching.html and manglik-remedies status list still list comparable severity as a cancellation without saying it is ours (PR #1375)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1493,
-   "agents": null
   }
  ],
  "goals": {
@@ -932,28 +941,28 @@
   }
  },
  "metrics": {
-  "gsc_clicks_28d": 445,
-  "gsc_impressions_28d": 31891,
-  "ga4_users_28d": 737,
-  "ga4_new_users_28d": 684,
-  "ga4_sessions_28d": 838,
+  "gsc_clicks_28d": 454,
+  "gsc_impressions_28d": 32592,
+  "ga4_users_28d": 750,
+  "ga4_new_users_28d": 695,
+  "ga4_sessions_28d": 851,
   "objective_top5": 1,
-  "growth_share_today": 0.0,
-  "growth_share_week": 0.181,
-  "growth_share_month": 0.134
+  "growth_share_today": 0.125,
+  "growth_share_week": 0.188,
+  "growth_share_month": 0.136
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-28",
-   "progress": 0.0,
-   "detail": "0 of 6 cycles on growth, target 60%, 5 exempt",
+   "progress": 0.208,
+   "detail": "1 of 8 cycles on growth, target 60%, 5 exempt",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.544,
+   "progress": 0.549,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -964,8 +973,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.181,
-     "progress": 0.218,
+     "current": 0.188,
+     "progress": 0.243,
      "basis": "growth_share_week"
     },
     {
@@ -979,7 +988,7 @@
       1076,
       1107
      ],
-     "current": 445,
+     "current": 454,
      "progress": 1.0,
      "basis": "gsc_clicks_28d"
     },
@@ -994,7 +1003,7 @@
       1076,
       1107
      ],
-     "current": 31891,
+     "current": 32592,
      "progress": 1.0,
      "basis": "gsc_impressions_28d"
     },
@@ -1034,7 +1043,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.503,
+   "progress": 0.604,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1049,8 +1058,8 @@
       1107,
       1071
      ],
-     "current": 31891,
-     "progress": 0.728,
+     "current": 32592,
+     "progress": 0.9,
      "basis": "gsc_impressions_28d"
     },
     {
@@ -1065,8 +1074,8 @@
       1073,
       1075
      ],
-     "current": 737,
-     "progress": 0.422,
+     "current": 750,
+     "progress": 0.541,
      "basis": "ga4_users_28d"
     },
     {
@@ -1077,8 +1086,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.134,
-     "progress": 0.359,
+     "current": 0.136,
+     "progress": 0.37,
      "basis": "growth_share_month"
     }
    ]
@@ -1086,7 +1095,7 @@
   "quarterly": {
    "label": "Quarterly goals",
    "period": "2026-Q4",
-   "progress": 0.136,
+   "progress": 0.16,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1116,8 +1125,8 @@
       1071,
       1072
      ],
-     "current": 445,
-     "progress": 0.286,
+     "current": 454,
+     "progress": 0.327,
      "basis": "gsc_clicks_28d"
     },
     {
@@ -1128,8 +1137,8 @@
      "baseline": 640,
      "target": 1000,
      "issues": [],
-     "current": 684,
-     "progress": 0.122,
+     "current": 695,
+     "progress": 0.153,
      "basis": "ga4_new_users_28d"
     }
    ]
@@ -1142,53 +1151,53 @@
    "queries": [
     {
      "query": "rahu mahadasha ketu antardasha",
-     "impressions": 324,
+     "impressions": 309,
      "position": 6.4
     },
     {
      "query": "sun debilitated in which sign",
-     "impressions": 307,
-     "position": 7.1
-    },
-    {
-     "query": "sun is debilitated in which sign",
-     "impressions": 150,
-     "position": 6.1
+     "impressions": 296,
+     "position": 7.2
     },
     {
      "query": "jupiter in 10th house",
-     "impressions": 140,
-     "position": 10.2
+     "impressions": 162,
+     "position": 10.0
+    },
+    {
+     "query": "sun is debilitated in which sign",
+     "impressions": 144,
+     "position": 6.2
     },
     {
      "query": "yes",
-     "impressions": 125,
+     "impressions": 120,
      "position": 3.9
     },
     {
      "query": "guru in 10th house",
-     "impressions": 98,
-     "position": 8.7
-    },
-    {
-     "query": "10th lord in 6th house",
-     "impressions": 74,
-     "position": 8.7
+     "impressions": 93,
+     "position": 8.5
     },
     {
      "query": "which mahadasha is best for career",
-     "impressions": 68,
+     "impressions": 73,
      "position": 8.4
     },
     {
+     "query": "10th lord in 6th house",
+     "impressions": 71,
+     "position": 8.7
+    },
+    {
      "query": "sun debilitation degree",
-     "impressions": 60,
-     "position": 6.5
+     "impressions": 61,
+     "position": 6.4
     },
     {
      "query": "sun debilitated",
      "impressions": 59,
-     "position": 8.8
+     "position": 8.7
     }
    ],
    "goals": []
