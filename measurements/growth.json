@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-28T05:51:41Z",
+ "generated_at": "2026-11-28T12:34:04Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-28",
  "today": {
-  "growth": 1,
-  "other": 7,
+  "growth": 2,
+  "other": 10,
   "exempt": 5,
-  "share": 0.125
+  "share": 0.167
  },
  "this_week": {
-  "growth": 16,
-  "other": 69,
+  "growth": 17,
+  "other": 72,
   "exempt": 11,
-  "share": 0.188
+  "share": 0.191
  },
  "this_month": {
-  "growth": 50,
-  "other": 319,
+  "growth": 51,
+  "other": 322,
   "exempt": 11,
-  "share": 0.136
+  "share": 0.137
  },
  "must_pick_growth": true,
  "days": [
@@ -116,21 +116,35 @@
   },
   {
    "date": "2026-11-28",
-   "growth": 1,
-   "other": 7,
+   "growth": 2,
+   "other": 10,
    "exempt": 5,
-   "share": 0.125
+   "share": 0.167
   }
  ],
  "cycles": [
   {
-   "run": 46108290928,
-   "started": "2026-11-28T04:35:53Z",
-   "issue": 1571,
-   "title": "index status: request_indexing ranks by current impressions, so the year-successor of the top page (gochar-2027, not indexed) can never be listed",
-   "class": "growth",
+   "run": 46138862060,
+   "started": "2026-11-28T11:13:26Z",
+   "issue": 1464,
+   "title": "QA follow-up: Vivah lagna legend probe doubles the per-row 'lagna windows skipped' warning on a failing page (#1457)",
+   "class": "other",
    "outcome": "pr open",
-   "pr": 1574,
+   "pr": 1579,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 46135974460,
+   "started": "2026-11-28T10:36:24Z",
+   "issue": 1324,
+   "title": "notify: muhurat_computed says 'N auspicious of M days' with the non-avoid count, which now over-counts versus the finder page (follow-up to #1322)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1578,
    "agents": {
     "architect": 1,
     "backend-engineer": 1,
@@ -139,18 +153,51 @@
    }
   },
   {
+   "run": 46115902337,
+   "started": "2026-11-28T06:17:21Z",
+   "issue": 1571,
+   "title": "index status: request_indexing ranks by current impressions, so the year-successor of the top page (gochar-2027, not indexed) can never be listed",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1574,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 46113975897,
+   "started": "2026-11-28T05:51:27Z",
+   "issue": 1505,
+   "title": "QA follow-up: 'we hold' / 'held book' still in finder legend sentences, stale avoid_tithi test name, #1504 evidence block fails (PR #1503)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1577,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 46108290928,
+   "started": "2026-11-28T04:35:53Z",
+   "issue": 1571,
+   "title": "index status: request_indexing ranks by current impressions, so the year-successor of the top page (gochar-2027, not indexed) can never be listed",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1574,
+   "agents": null
+  },
+  {
    "run": 46101661305,
    "started": "2026-11-28T03:11:37Z",
    "issue": 1346,
    "title": "muhurat: the Abujha override skips Panchak, tithi and nakshatra hard exclusions (vivah 2026-11-21 Revati rated excellent)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1357,
-   "agents": {
-    "chief": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 46100895003,
@@ -564,55 +611,6 @@
    "outcome": "shipped",
    "pr": 1508,
    "agents": null
-  },
-  {
-   "run": 45749606081,
-   "started": "2026-11-26T03:32:47Z",
-   "issue": 1497,
-   "title": "QA follow-up: finder dark-half/avoid_tithi legend wording (PR #1496)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1503,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45739810063,
-   "started": "2026-11-26T02:03:05Z",
-   "issue": 1497,
-   "title": "QA follow-up: finder dark-half/avoid_tithi legend wording (PR #1496)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1503,
-   "agents": {
-    "architect": 1,
-    "astro-auditor": 1,
-    "backend-engineer": 1,
-    "project-manager": 1
-   }
-  },
-  {
-   "run": 45731449633,
-   "started": "2026-11-26T00:49:16Z",
-   "issue": 1344,
-   "title": "QA follow-up: #1342 couple-mode Top pick can be a 'mixed' verdict while a 'good-for-both' day of the same grade exists",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1499,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45721050663,
-   "started": "2026-11-25T23:23:56Z",
-   "issue": 1344,
-   "title": "QA follow-up: #1342 couple-mode Top pick can be a 'mixed' verdict while a 'good-for-both' day of the same grade exists",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1499,
-   "agents": null
   }
  ],
  "goals": {
@@ -947,22 +945,22 @@
   "ga4_new_users_28d": 695,
   "ga4_sessions_28d": 851,
   "objective_top5": 1,
-  "growth_share_today": 0.125,
-  "growth_share_week": 0.188,
-  "growth_share_month": 0.136
+  "growth_share_today": 0.167,
+  "growth_share_week": 0.191,
+  "growth_share_month": 0.137
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-28",
-   "progress": 0.208,
-   "detail": "1 of 8 cycles on growth, target 60%, 5 exempt",
+   "progress": 0.278,
+   "detail": "2 of 12 cycles on growth, target 60%, 5 exempt",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.549,
+   "progress": 0.551,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -973,8 +971,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.188,
-     "progress": 0.243,
+     "current": 0.191,
+     "progress": 0.254,
      "basis": "growth_share_week"
     },
     {
@@ -1043,7 +1041,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.604,
+   "progress": 0.606,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1086,8 +1084,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.136,
-     "progress": 0.37,
+     "current": 0.137,
+     "progress": 0.376,
      "basis": "growth_share_month"
     }
    ]
@@ -1209,7 +1207,6 @@
   1076,
   1107,
   1437,
-  1469,
-  1571
+  1469
  ]
 }

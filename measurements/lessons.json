@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-28T05:54:15Z",
+ "generated_at": "2026-11-28T12:36:15Z",
  "window_days": 30,
  "errors": {
   "qa_fail": [
@@ -1073,7 +1073,15 @@
     "sha": "b500fd9"
    }
   ],
-  "ops_findings": []
+  "ops_findings": [
+   {
+    "kind": "loop-starved",
+    "level": "amber",
+    "title": "2 of the last 4 build cycles built nothing",
+    "detail": "Empty cycles started 2026-11-28T06:22, 2026-11-28T11:29. Usually the ranker has only one or two items it may hand over because the rest fail scripts/verify_issue_evidence.py, which the cycle may not fix for itself. Lever: agent-prioritise.yml with mode=evidence (chain_cycle.py dispatches it once 3+ open issues fail the gate, at most once per 6h); check its last run, then scripts/evidence_backlog.py for what is left.",
+    "where": "/admin/ops"
+   }
+  ]
  },
  "error_themes": {
   "grounding": 30,
