@@ -895,6 +895,18 @@ body{font-variant-numeric:tabular-nums}
   .quota .sub{order:4}
 }
 
+/* ── Recent activity (#1133 slice 2d). Tokens only, no new one. Rows reuse 2c's
+   .lp-list/.ld/.lw/.lc; the chips are the Token budget window links (.winsel/.win),
+   so they need no rule. A state is a dot AND its word. The list has no padding (the
+   rows carry it). Under 640px the time wraps below the text, indented past the dot. */
+.ra-bar{padding:12px 20px 0}
+.ra-bar .winsel{margin-left:0}
+.ra-list{margin-top:12px}
+.ra-list>li>div{flex:1 1 200px}
+.ra-list>li>.chip{flex:none}
+.ra-t{flex:none;font:400 12px/1.5 var(--mono);color:var(--ink-mute);white-space:nowrap}
+@media (max-width:640px){.ra-list>li{flex-wrap:wrap}.ra-t{margin-left:19px}}
+
 /* ── The engineering loop, Agent health, System health (#1133 slice 2c). Tokens only,
    no new one. A state is a dot (a fill) AND its word in text, a glyph in the ring;
    the colour is never the only signal. The grids have no padding (the cells do).
@@ -1399,6 +1411,44 @@ body{font-variant-numeric:tabular-nums}
       A window with a missing day shows no value and no change, never a sum over the gap.
       The windows differ on purpose: Results uses IST days, Search Console trails the present by
       about three days, and the issue trend counts UTC days.</p>
+  </section>
+  {% endif %}
+
+  {# ── Recent activity (#1133 slice 2d). `activity` is ops_activity.build(), computed by
+     the route for this tab only and FULLY pre-computed: no arithmetic and no literal
+     number inside an expression here (the Results, PRs-shipped and loop-health tests
+     scan this span too). The chips are plain server links, the Token budget window's
+     own pattern (.winsel/.win, aria-current), so the filter is in the URL and works
+     with no script. Every state is a word in text beside a dot that is aria-hidden.
+     A source that cannot be read says so; it is never "no activity". One <li> per
+     line: this block ships on every Overview render, whitespace is bytes. No script,
+     no drill-down, no |safe, no Tailwind class. #}
+  {% if activity %}
+  <section class="panel lp ra" id="recent-activity" aria-labelledby="ra-h">
+    <h2 id="ra-h">Recent activity{% if activity.as_of %} <span class="lbl">{{ activity.as_of }}</span>{% endif %}</h2>
+    <div class="ra-bar"><span class="winsel" role="group" aria-label="Filter recent activity">
+      {%- for c in activity.chips %}
+      <a class="win{{ ' on' if c.current }}" href="{{ c.href }}"{% if c.current %} aria-current="true"{% endif %}>{{ c.label }}</a>
+      {%- endfor %}
+    </span></div>
+    {%- if activity.state == 'unavailable' %}
+    <p class="sub" role="status"><b>{{ activity.reason }}.</b> Nothing is shown, not "no activity".</p>
+    {% elif activity.state == 'empty' %}
+    <p class="sub" role="status">{{ activity.empty_text }}.</p>
+    {% else %}
+    <ul class="lp-list ra-list">
+    {%- for r in activity.rows %}
+      <li class="st-{{ r.state }}"><span class="ld" aria-hidden="true"></span><div><b>{% if r.href %}<a href="{{ r.href }}">{{ r.title }}</a>{% else %}{{ r.title }}{% endif %}</b> · <span class="lw">{{ r.word }}</span>{% if r.subtitle %}<span class="lc">{{ r.subtitle }}</span>{% endif %}</div><span class="chip">{{ r.type_label }}</span><time class="ra-t" datetime="{{ r.iso }}" title="{{ r.at_ist }} IST">{{ r.when }}</time></li>
+    {%- endfor %}
+    </ul>
+    {%- endif %}
+    {%- for n in activity.notes %}
+    <p class="sub" role="status">{{ n }}</p>
+    {%- endfor %}
+    {% if activity.skipped_text %}<p class="sub" role="status">{{ activity.skipped_text }}.</p>{% endif %}
+    {% if activity.error %}<p class="sub" role="status"><b>A source above could not be computed and says so.</b></p>{% endif %}
+    <p class="sub">{{ activity.live_text }} Closed issues are not listed: the issue file carries no title for them.
+      {% if activity.view_all.href %}<a href="{{ activity.view_all.href }}">View all &rarr;</a>{% endif %}</p>
   </section>
   {% endif %}
 
