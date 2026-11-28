@@ -1,24 +1,24 @@
 {
- "generated_at": "2026-11-28T02:52:25Z",
+ "generated_at": "2026-11-28T03:34:38Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-28",
  "today": {
   "growth": 0,
-  "other": 5,
-  "exempt": 4,
+  "other": 6,
+  "exempt": 5,
   "share": 0.0
  },
  "this_week": {
   "growth": 15,
-  "other": 67,
-  "exempt": 10,
-  "share": 0.183
+  "other": 68,
+  "exempt": 11,
+  "share": 0.181
  },
  "this_month": {
   "growth": 49,
-  "other": 317,
-  "exempt": 10,
+  "other": 318,
+  "exempt": 11,
   "share": 0.134
  },
  "must_pick_growth": true,
@@ -117,12 +117,36 @@
   {
    "date": "2026-11-28",
    "growth": 0,
-   "other": 5,
-   "exempt": 4,
+   "other": 6,
+   "exempt": 5,
    "share": 0.0
   }
  ],
  "cycles": [
+  {
+   "run": 46100895003,
+   "started": "2026-11-28T03:02:04Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "shipped",
+   "pr": 1567,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 46100122943,
+   "started": "2026-11-28T02:51:58Z",
+   "issue": 1559,
+   "title": "QA follow-up: Analytics tab 500s on a daily-series row with no string date (PR #1558)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1564,
+   "agents": {
+    "qa": 1
+   }
+  },
   {
    "run": 46094801323,
    "started": "2026-11-28T01:46:35Z",
@@ -131,12 +155,7 @@
    "class": "other",
    "outcome": "pr open",
    "pr": 1568,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 46087305460,
@@ -144,13 +163,9 @@
    "issue": 1133,
    "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
    "class": "exempt",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1567,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "frontend-engineer": 1
-   }
+   "agents": null
   },
   {
    "run": 46080282312,
@@ -158,7 +173,7 @@
    "issue": 1559,
    "title": "QA follow-up: Analytics tab 500s on a daily-series row with no string date (PR #1558)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1564,
    "agents": null
   },
@@ -589,28 +604,6 @@
    "outcome": "shipped",
    "pr": 1493,
    "agents": null
-  },
-  {
-   "run": 45668368241,
-   "started": "2026-11-25T17:47:04Z",
-   "issue": 1483,
-   "title": "QA follow-up: matching.html and manglik-remedies status list still list comparable severity as a cancellation without saying it is ours (PR #1375)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1493,
-   "agents": null
-  },
-  {
-   "run": 45657790798,
-   "started": "2026-11-25T16:47:48Z",
-   "issue": 1133,
-   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
-   "class": "exempt",
-   "outcome": "shipped",
-   "pr": 1489,
-   "agents": {
-    "qa": 1
-   }
   }
  ],
  "goals": {
@@ -946,7 +939,7 @@
   "ga4_sessions_28d": 838,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.183,
+  "growth_share_week": 0.181,
   "growth_share_month": 0.134
  },
  "meters": {
@@ -954,13 +947,13 @@
    "label": "Today: growth share of build cycles",
    "period": "2026-11-28",
    "progress": 0.0,
-   "detail": "0 of 5 cycles on growth, target 60%, 4 exempt",
+   "detail": "0 of 6 cycles on growth, target 60%, 5 exempt",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.545,
+   "progress": 0.544,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -971,8 +964,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.183,
-     "progress": 0.225,
+     "current": 0.181,
+     "progress": 0.218,
      "basis": "growth_share_week"
     },
     {
@@ -1207,6 +1200,7 @@
   1076,
   1107,
   1437,
-  1469
+  1469,
+  1571
  ]
 }

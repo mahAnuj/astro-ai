@@ -2,71 +2,71 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-28",
-    "2026-11-24"
+    "2026-10-29",
+    "2026-11-25"
   ],
   "dimensions": [
     "eventName"
   ],
   "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
-  "row_count": 23,
+  "row_count": 22,
   "truncated": false,
   "rows": [
     {
       "event": "page_view",
-      "count": 1534
+      "count": 1560
     },
     {
       "event": "session_start",
-      "count": 835
+      "count": 848
     },
     {
       "event": "first_visit",
-      "count": 684
+      "count": 695
     },
     {
       "event": "user_identified",
-      "count": 660
+      "count": 637
     },
     {
       "event": "feature_view",
-      "count": 652
+      "count": 630
     },
     {
       "event": "user_engagement",
-      "count": 346
+      "count": 358
     },
     {
       "event": "scroll",
-      "count": 205
+      "count": 211
     },
     {
       "event": "ask_answered",
-      "count": 124
+      "count": 123
     },
     {
       "event": "form_start",
-      "count": 98
-    },
-    {
-      "event": "kundli_generated",
-      "count": 51
+      "count": 94
     },
     {
       "event": "tool_submitted",
-      "count": 49
+      "count": 60
+    },
+    {
+      "event": "kundli_generated",
+      "count": 52
     },
     {
       "event": "cta_click",
-      "count": 25
+      "count": 26
     },
     {
       "event": "view_search_results",
-      "count": 9
+      "count": 11
     },
     {
       "event": "muhurat_searched",
-      "count": 6
+      "count": 9
     },
     {
       "event": "matching_completed",
@@ -78,6 +78,10 @@
     },
     {
       "event": "dosha_check_completed",
+      "count": 4
+    },
+    {
+      "event": "share",
       "count": 3
     },
     {
@@ -89,26 +93,18 @@
       "count": 2
     },
     {
-      "event": "share",
-      "count": 2
-    },
-    {
       "event": "form_submit",
       "count": 1
     },
     {
       "event": "language_switched",
       "count": 1
-    },
-    {
-      "event": "subscribe_completed",
-      "count": 1
     }
   ],
-  "events_total": 5299,
-  "coverage_note": "cta_click: 25 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history; journey_events: a count of 0 is a measurement over the window; partial_history true means the event began after the window start",
+  "events_total": 5336,
+  "coverage_note": "cta_click: 26 events recorded in the window; cta_click exists only from 2026-11-03 04:42Z (PR #688), so a window starting before 2026-12-01 holds partial history; journey_events: a count of 0 is a measurement over the window; partial_history true means the event began after the window start",
   "cta_click": {
-    "count": 25,
+    "count": 26,
     "split_available": true,
     "rows": [
       {
@@ -135,6 +131,11 @@
         "from_path": "/learn/sade-sati/",
         "to_path": "/sade-sati-check",
         "count": 2
+      },
+      {
+        "from_path": "/learn/career-during-sade-sati/",
+        "to_path": "/sade-sati-check",
+        "count": 1
       },
       {
         "from_path": "/learn/kaal-sarp-dosh/",
@@ -180,12 +181,12 @@
   },
   "journey_events": {
     "tool_submitted": {
-      "count": 49,
+      "count": 60,
       "since": null,
       "partial_history": null
     },
     "kundli_generated": {
-      "count": 51,
+      "count": 52,
       "since": null,
       "partial_history": null
     },
@@ -200,27 +201,27 @@
       "partial_history": true
     },
     "muhurat_searched": {
-      "count": 6,
+      "count": 9,
       "since": "2026-11-18",
       "partial_history": true
     },
     "dosha_check_completed": {
-      "count": 3,
+      "count": 4,
       "since": "2026-11-18",
       "partial_history": true
     },
     "ask_answered": {
-      "count": 124,
+      "count": 123,
       "since": null,
       "partial_history": null
     },
     "subscribe_completed": {
-      "count": 1,
+      "count": 0,
       "since": null,
       "partial_history": null
     },
     "cta_click": {
-      "count": 25,
+      "count": 26,
       "since": "2026-11-03",
       "partial_history": true
     }
