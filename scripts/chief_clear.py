@@ -31,9 +31,10 @@ The labels change only when ALL of these read true from the API now:
      run still refuses an earlier green one
   5. a `claude[bot]` comment contains `chief-cleared at <sha>`  (precondition 4:
      the ruling comes first, and agent-merge re-checks this same string)
-  6. a `claude[bot]` `QA: PASS` verdict whose first line names that sha  (the
-     labels cannot say which commit they are about -- #706 carried an
-     independent PASS from b9077f6 onto da2f7d3 after a merge of main)
+  6. a `QA: PASS` verdict from `claude[bot]` or the repo owner, as agent-merge
+     accepts, whose first line names that sha  (the labels cannot say which
+     commit they are about -- #706 carried an independent PASS from b9077f6
+     onto da2f7d3 after a merge of main)
 
 Precondition 3, that chief read the diff, cannot be checked by code; the
 ruling comment is chief's record of it. Any refusal leaves every label as it
@@ -79,6 +80,33 @@ def run_gh(args: list[str]) -> str:
     if p.returncode != 0:
         raise RuntimeError(f"gh {' '.join(args[:3])}: {p.stderr.strip()[:200]}")
     return p.stdout
+
+
+def qa_authors(repo: str) -> tuple[str, ...]:
+    """Who may author a `QA: PASS` verdict: the same set agent-merge accepts.
+
+    A top-level session records its verdict as the repo owner, so a PASS the
+    merge gate takes must not be refused here (#1287). The RULING stays
+    `claude[bot]` only. `main` rejects any repo that is not word characters,
+    dots and dashes either side of one slash before this runs, so the owner
+    is safe to interpolate into a jq filter.
+    """
+    return (RULER, repo.split("/")[0])
+
+
+def _count_matches(gh: Runner, repo: str, pr: int, who: str, body_filters: str) -> int:
+    """How many comments on PR #pr match `who` and `body_filters`.
+
+    `--paginate` runs `--jq` once PER PAGE, so a filter ending in `length`
+    prints one number per page and a match on page 2 reads as garbage or as
+    zero: on a PR with over 100 comments the ruling or verdict went missing
+    (#1287). Emit one id per match and count the lines, as agent-merge does.
+    Anything but a digit-only line is not counted, so odd output fails closed;
+    an API error still raises.
+    """
+    out = gh(["api", "--paginate", f"repos/{repo}/issues/{pr}/comments?per_page=100", "--jq",
+              f".[] | select({who}) | {body_filters} | .id"])
+    return sum(1 for line in out.splitlines() if line.strip().isdigit())
 
 
 def parse(text: str) -> tuple[list[tuple[int, str]], list[str]]:
@@ -156,27 +184,28 @@ def refusal(gh: Runner, repo: str, pr: int, sha: str) -> str | None:
                 if latest else "no run")
         return f"`gates` on {sha[:7]} is not green ({seen})"
     try:
-        ruled = gh(["api", f"repos/{repo}/issues/{pr}/comments?per_page=100", "--jq",
-                    f'[.[] | select(.user.login == "{RULER}")'
-                    f' | select(.body | contains("chief-cleared at {sha}"))] | length']).strip()
+        ruled = _count_matches(gh, repo, pr, f'.user.login == "{RULER}"',
+                               f'select(.body | contains("chief-cleared at {sha}"))')
     except RuntimeError as exc:
         return f"could not read the comments ({exc})"
-    if not ruled.isdigit() or int(ruled) == 0:
+    if ruled == 0:
         return f"no `{RULER}` comment contains `chief-cleared at {sha}`; the ruling comes first"
     # The QA labels cannot say which commit they are about. On #706 `main` was
     # merged in after an independent PASS at b9077f6, and the labels stayed on
     # the new head da2f7d3. The verdict COMMENT names its sha, so require one
     # for this head -- the same binding agent-merge applies to the ruling.
+    # Authors are the set agent-merge accepts (claude[bot] or the owner, #1287).
+    authors = qa_authors(repo)
     try:
-        passed = gh(["api", f"repos/{repo}/issues/{pr}/comments?per_page=100", "--jq",
-                     f'[.[] | select(.user.login == "{RULER}")'
-                     f' | select(.body | startswith("QA: PASS"))'
-                     f' | select(.body | split("\\n")[0] | contains("{sha}"))] | length']).strip()
+        passed = _count_matches(gh, repo, pr,
+                                " or ".join(f'.user.login == "{a}"' for a in authors),
+                                'select(.body | startswith("QA: PASS"))'
+                                ' | select(.body | split("\\n")[0] | contains("' + sha + '"))')
     except RuntimeError as exc:
         return f"could not read the QA verdicts ({exc})"
-    if not passed.isdigit() or int(passed) == 0:
-        return (f"no `{RULER}` `QA: PASS` verdict names {sha[:7]}; the QA labels may be left "
-                f"over from an earlier commit")
+    if passed == 0:
+        return (f"no `{authors[0]}` or `{authors[1]}` `QA: PASS` verdict names {sha[:7]}; "
+                f"the QA labels may be left over from an earlier commit")
     return None
 
 
