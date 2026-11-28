@@ -233,10 +233,13 @@ def test_sweep_reaches_a_lifted_day_somewhere(sweep):
 
 
 def test_an_abujha_day_carries_the_excellent_floor():
-    rows = muhurat.find_candidates("vivah", CITY, date(2027, 2, 10), 3)
+    # 2028-04-27 (Akshaya Tritiya) is an Abujha date that clears every hard exclusion for
+    # business, where Abujha lifts acceptable to excellent (#1346). Vivah on 2027-02-11 is now
+    # `avoid` (Panchak), so it no longer reaches the booster.
+    rows = muhurat.find_candidates("business", CITY, date(2028, 4, 26), 3)
     abujha = [c for c in rows if "abujha_muhurat" in c.flags]
-    assert abujha, "premise: 2027-02-11 is an Abujha date for vivah"
-    assert all(c.rating == "excellent" and c.score == _RATING_MIN_SCORE["excellent"] for c in abujha)
+    assert abujha, "premise: 2028-04-27 is an Abujha date business does not exclude"
+    assert all(c.rating == "excellent" and c.score >= _RATING_MIN_SCORE["excellent"] for c in abujha)
 
 
 # --- the Range select shows the searched days (#1339) -------------------------------------

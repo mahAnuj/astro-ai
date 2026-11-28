@@ -4,7 +4,8 @@ Each auspicious row carries a collapsed "Why this date" list: what counted, and 
 and not excluded at local noon, every item labelled `site convention` or `traditions differ`
 unless a held book states it. One legend below the table gives each factor's sentence once. An
 avoid row, a caution row and the restricted-dates table carry no list. An Abujha row carries its
-own disclosure and no cleared list (no exclusion check ran for it).
+own disclosure AND the cleared list: since #1346 the exclusions run first, so a date that fails one
+is an ordinary restricted row and one that passes has a true cleared list.
 
 The registry itself and its parity with the scorer are pinned in test_muhurat_factor_registry.py and
 test_muhurat_factor_parity.py; this file reads the RENDERED page. No network (geocoding is stubbed
@@ -25,6 +26,10 @@ TODAY = date(2026, 11, 21)
 CITY = "Delhi, India"
 SRC = Path(__file__).resolve().parent.parent / "src" / "astro_ai"
 ABUJHA_OPENING = "Listed as an Abujha date, a regional almanac custom this finder includes"
+# A real date the rule table computes (asserted below, never assumed) on which the Abujha lift
+# applies: it clears every business exclusion and goes acceptable -> excellent. It is outside the
+# page's usual 2026 window, which the route allows (no clamp on start_date).
+ABUJHA_PASS_DAY = date(2028, 4, 27)
 SCORED = "What counted for this date"
 CLEARED = "Checked and not excluded at local noon"
 LEGEND = "What these labels mean"
@@ -102,10 +107,8 @@ def test_every_auspicious_row_has_why_this_date_with_both_headings(client):
         t = _text(why[0])
         assert t.startswith("Why this date")
         assert SCORED in t
-        # An Abujha row is the one row with no cleared list (next test).
-        if ABUJHA_OPENING not in t:
-            assert CLEARED in t
-            assert t.index(SCORED) < t.index(CLEARED)
+        assert CLEARED in t
+        assert t.index(SCORED) < t.index(CLEARED)
 
 
 def test_the_why_list_sits_in_the_notes_cell_after_the_reason(client):
@@ -144,27 +147,55 @@ def test_caution_rows_have_no_list(client):
     assert _render_why(_first("vivah", rating="avoid"), "vivah").strip() == ""
 
 
-def test_an_abujha_row_shows_the_disclosure_and_no_cleared_list(client):
-    h = _page(client, "vivah", 180)
-    row = next(r for r in _rows(_tables(h)[0]) if "Nov 21, 2026" in r)
-    why = _text(_whys(row)[0])
-    assert ABUJHA_OPENING in why
-    assert "The usual exclusion checks were not run for this date" in why
-    assert CLEARED not in why and "Not in Adhik Maas" not in why
-    assert "universally auspicious" not in why
-    assert "Abujha date" in why and "site convention" in why
-
-
-def test_an_abujha_row_with_boosters_shows_no_booster_item():
+def _abujha_pass_row(client) -> str:
     from astro_ai import muhurat
 
-    ab = next(c for c in muhurat.find_candidates("vivah", CITY, TODAY, 60)
-              if "abujha_muhurat" in c.flags)
+    assert ABUJHA_PASS_DAY in muhurat._abujha_days(2028), "premise: the rule table names this date"
+    h = _page(client, "business", 1, start=ABUJHA_PASS_DAY)
+    rows = _rows(_tables(h)[0])
+    assert len(rows) == 1 and "Apr 27, 2028" in rows[0], "premise: the one row is the Abujha date"
+    return rows[0]
+
+
+def test_an_abujha_row_shows_the_disclosure_and_the_cleared_list(client):
+    row = _abujha_pass_row(client)
+    why = _text(_whys(row)[0])
+    assert ABUJHA_OPENING in why
+    assert "The finder's usual exclusion checks were run for this date and none excluded it" in why
+    assert "were not run" not in why and "universally auspicious" not in why
+    assert SCORED in why and CLEARED in why and why.index(SCORED) < why.index(CLEARED)
+    # Abujha is the first scored item, then the soft points that really counted
+    assert why.index("Abujha date") < why.index("Good tithi")
+    assert "site convention" in why
+    # the cleared list names the checks business runs, so it is the scorer's list, not a blank
+    assert "Not a Tuesday" in why and "Budh not combust" in why and "Not in Adhik Maas" in why
+
+
+def test_an_abujha_row_with_a_real_booster_shows_it_after_the_abujha_item():
+    from astro_ai import muhurat
+
+    [ab] = muhurat.find_candidates("business", CITY, ABUJHA_PASS_DAY, 1)
+    assert "abujha_muhurat" in ab.flags, "premise: the date passes and carries the flag"
     c = dataclasses.replace(ab, boosters=["Amrit Siddhi (Wed + Hasta)", "Ravi Yoga"])
-    t = _text(_render_why(c, "vivah"))
-    assert ABUJHA_OPENING in t
-    assert "Siddhi present" not in t and "Ravi Yoga present" not in t
-    assert CLEARED not in t
+    t = _text(_render_why(c, "business"))
+    assert ABUJHA_OPENING in t and CLEARED in t
+    assert t.index("Abujha date") < t.index("Amrit Siddhi present") < t.index("Ravi Yoga present")
+
+
+def test_an_abujha_date_that_fails_an_exclusion_is_an_ordinary_restricted_row(client):
+    """2026-11-21 (Tulsi Vivah, Moon in Revati = Panchak) used to be rated excellent (#1346). It is
+    now an `avoid` row in the restricted table with the Panchak reason plus the finder's sentence
+    that it does not waive the exclusion, and it has no 'Why this date' block."""
+    h = _page(client, "vivah", 180)
+    restricted = re.search(r"<details class=\"mt-4 rounded[^>]*>\s*<summary[^>]*>\s*Show \d+ "
+                           r"restricted dates.*?</details>", h, flags=re.S).group(0)
+    row = next(r for r in _rows(restricted) if "Nov 21, 2026" in r)
+    t = _text(row)
+    assert "Panchak day (Revati) — inauspicious." in t
+    assert ("Tulsi Vivah is listed as an Abujha date, a regional almanac custom; this finder "
+            "does not waive this exclusion for it.") in t
+    assert "Why this date" not in row and ABUJHA_OPENING not in t
+    assert not any("Nov 21, 2026" in r for r in _rows(_tables(h)[0])), "not in the auspicious table"
 
 
 def test_a_site_convention_item_carries_the_visible_words_site_convention():

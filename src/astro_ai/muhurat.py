@@ -13,8 +13,9 @@ consumes those rules + Panchang data + combustion flags and returns a rating.
 Common checks (Panchak, Chaturmas, Guru/Shukra combustion, Mercury combustion
 for business) are gated by per-event boolean flags in the rule table.
 
-Abujha Muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya etc.) override
-normal scoring — these classical "self-perfected" days need no calculation.
+Abujha Muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya etc.) are a
+BOOSTER inside score_event, applied after the hard exclusions (#1346): a regional
+almanac custom lifts a day that passed them and never waives one.
 
 Sources: none of the tables below is traced to a book in this repo's corpus
 unless its own comment says so. Before #716 this line named three classical
@@ -346,8 +347,11 @@ def _chaturmas_window(year: int) -> tuple[date, date] | None:
 
 
 # ─── Abujha Muhurats (self-auspicious days) ──────────────────────────
-# Classical "swayam-siddha" / "abujha" days — universally auspicious without
-# reference to the day's Panchang, so they override normal scoring.
+# Regional almanac "swayam-siddha" / "abujha" days. No book this site holds names
+# them (knowledge/vedic_reference.md 29.14, UNSOURCED), so they are a booster
+# applied after the sourced hard exclusions in `score_event`, never an override:
+# until #1346 an Abujha day skipped every exclusion and a Panchak Revati day was
+# rated excellent for marriage.
 #
 # WHAT IS COMPUTED AND WHAT IS POLICY: the DATES below are computed from the
 # ephemeris (lunar month + shukla tithi, via `lunar_dates.shukla_tithi_date`).
@@ -467,9 +471,9 @@ def _adhik_maas_flag(d: date) -> tuple[bool, str]:
 
 
 # ─── Amrit Siddhi Yoga — universal-auspicious BOOSTERS ───────────────
-# Classical nakshatra+weekday pairings that make a day auto-excellent
-# regardless of other factors (comparable to Abujha muhurats but rule-based
-# rather than fixed-date). Not traced to the text it was credited to before
+# Classical nakshatra+weekday pairings that make a day excellent
+# regardless of its soft score (comparable to the Abujha booster but rule-based
+# rather than fixed-date; neither waives a hard exclusion). Not traced to the text it was credited to before
 # #716, which is not held. knowledge/vedic_reference.md 29.9 finds the concept
 # in Raman Ch. VI under the name Siddha Yoga: six of seven weekdays below
 # match it; Monday does not (code: Mrigashira, Raman: Shravana). CONTESTED,
@@ -598,7 +602,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "seo_title": "Vivah Muhurat Finder — Wedding Dates with Bride+Groom Pair Scoring",
         "seo_desc": "Free Vivah Muhurat finder: tithi, nakshatra, Panchak, Chaturmas, Kharmas, Bhadra Karana, Nitya Yogas, Guru+Shukra combustion. Bride+groom two-chart scoring.",
         "intro_paragraphs": [
-            "A Vivah Muhurat is not merely an 'auspicious day' from a calendar. This tool checks that the tithi and nakshatra are favourable and that the day is clear of Panchak, a rule B.V. Raman's Muhurtha records. It also applies widely followed conventions that are this finder's own choices, not rules from the books this site holds: that Guru (Jupiter) and Shukra (Venus) are not combust (Raman's wedding criteria do not list combustion), no Chaturmas (Devshayani → Devuthani Ekadashi), no Kharmas (Sun in Sagittarius or Pisces), no Dagdha tithi-weekday combinations and no eclipse days. It calls out Abujha muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya), another convention of this finder, that override normal scoring.",
+            "A Vivah Muhurat is not merely an 'auspicious day' from a calendar. This tool checks that the tithi and nakshatra are favourable and that the day is clear of Panchak, a rule B.V. Raman's Muhurtha records. It also applies widely followed conventions that are this finder's own choices, not rules from the books this site holds: that Guru (Jupiter) and Shukra (Venus) are not combust (Raman's wedding criteria do not list combustion), no Chaturmas (Devshayani → Devuthani Ekadashi), no Kharmas (Sun in Sagittarius or Pisces), no Dagdha tithi-weekday combinations and no eclipse days. It calls out Abujha muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya), another convention of this finder, which lift a date that has cleared those checks and never waive one.",
             "For a fully personalised recommendation, sign in first — the tool will then overlay Tara Bala (star strength between your natal Moon nakshatra and the transit day) and Chandra Bala (Moon-strength from your natal Moon) on every candidate, plus surface chart-level cautions from Sade Sati phase or active Rahu/Ketu Mahadasha.",
         ],
         "rules_summary": [
@@ -687,7 +691,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "seo_title": "Vidyarambh Muhurat Finder — Aksharabhyasa / Study-Start Calculator",
         "seo_desc": "Free Vidyarambh (education-start) Muhurat finder: Thursday peak-day, Jupiter uncombust, soft nakshatras, Choghadiya windows. Aksharabhyasa timing.",
         "intro_paragraphs": [
-            "Vidyarambh (starting education / Aksharabhyasa) is one of the classical samskaras — the child's first formal introduction to letters and learning. Jupiter (Guru) is the karaka of knowledge, so this muhurat centres on Jupiter: his day (Thursday) is peak, his uncombust visibility is required, and Vasant Panchami (Saraswati puja day) is the annual universal Abujha muhurat.",
+            "Vidyarambh (starting education / Aksharabhyasa) is one of the classical samskaras — the child's first formal introduction to letters and learning. Jupiter (Guru) is the karaka of knowledge, so this muhurat centres on Jupiter: his day (Thursday) is peak, his uncombust visibility is required, and Vasant Panchami (Saraswati puja day) is the annual Abujha muhurat, a widely followed convention this finder lifts a cleared date for.",
             "Peak days: Thursday (Jupiter's day, +1 bonus in scoring), Wednesday (Mercury — intellect), Friday (Venus — arts). Soft nakshatras favoured. Chaturmas doesn't block Vidyarambh (education is ongoing), but Jupiter combustion does (karaka must be visible).",
         ],
         "rules_summary": [
@@ -698,7 +702,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
             "No Panchak",
             "No Dagdha yoga — widely followed convention this finder applies",
             "No eclipse days — widely followed convention this finder applies",
-            "Basant Panchami (Vasant Panchami / Saraswati Puja) auto-excellent — Abujha Muhurat — widely followed convention this finder applies",
+            "Basant Panchami (Vasant Panchami / Saraswati Puja) — Abujha Muhurat, lifts a date that has cleared the checks — widely followed convention this finder applies",
         ],
         "related_articles": [
             ("/learn/guru-jupiter-brihaspati-in-vedic-astrology/", "Guru (Jupiter) — the karaka of learning"),
@@ -716,7 +720,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
         "seo_desc": "Free business start Muhurat finder: Wednesday peak-day, Mercury uncombust, Kharmas exclusion, wealth-favourable tithis, Choghadiya opening windows.",
         "intro_paragraphs": [
             "Starting a business, opening a shop, or launching a venture is treated here like any shubh karya: the day must align with tithi, nakshatra and weekday, and clear this finder's no-eclipse convention. Mercury (Budha) is the karaka of commerce and communication, so his day (Wednesday) is peak and his uncombust visibility is required.",
-            "Peak days: Wednesday (Mercury's day, +1 bonus), Thursday (Jupiter — wisdom in decisions), Friday (Venus — wealth), Sunday (Sun — authority) acceptable. Kharmas blocks new ventures here (Sun in Sagittarius or Pisces = periods of turning inward, not launching), and Abujha muhurats like Devuthani Ekadashi and Akshaya Tritiya are auto-excellent for business; both are widely followed conventions this finder applies, not rules from the books this site holds.",
+            "Peak days: Wednesday (Mercury's day, +1 bonus), Thursday (Jupiter — wisdom in decisions), Friday (Venus — wealth), Sunday (Sun — authority) acceptable. Kharmas blocks new ventures here (Sun in Sagittarius or Pisces = periods of turning inward, not launching), and Abujha muhurats like Devuthani Ekadashi and Akshaya Tritiya lift a business date that has cleared those checks; both are widely followed conventions this finder applies, not rules from the books this site holds.",
         ],
         "rules_summary": [
             "Wednesday peak-day (Budha's day + extra bonus)",
@@ -727,7 +731,7 @@ EVENT_LANDING: dict[str, dict[str, Any]] = {
             "No Kharmas (no new ventures during Sun in Sagittarius/Pisces) — widely followed convention this finder applies",
             "No Dagdha yoga — widely followed convention this finder applies",
             "No eclipse days — widely followed convention this finder applies",
-            "Devuthani Ekadashi, Akshaya Tritiya, Basant Panchami auto-excellent — widely followed convention this finder applies",
+            "Devuthani Ekadashi, Akshaya Tritiya, Basant Panchami lift a date that has cleared the checks — widely followed convention this finder applies",
         ],
         "related_articles": [
             ("/learn/budha-mercury-in-vedic-astrology/", "Budha (Mercury) — karaka of commerce"),
@@ -934,6 +938,16 @@ def _abujha_for(d: date, event_type: str) -> str:
         return ""
     except Exception:
         return ""
+
+
+# What a row says about an Abujha date (#1346). The pass prefix is inserted by `score_event` when the
+# day cleared every hard exclusion; the avoid suffix is appended by `find_candidates` when it did not.
+# Both say it is a regional almanac custom, because no book this site holds names it (#1354: the old
+# "universally auspicious" label beside that disclosure contradicted it).
+_ABUJHA_PASS_REASON = ("Abujha date, {name}: a regional almanac custom this finder includes; "
+                       "no book it holds names it")
+_ABUJHA_AVOID_SUFFIX = ("{name} is listed as an Abujha date, a regional almanac custom; this finder "
+                        "does not waive this exclusion for it.")
 
 
 def _in_chaturmas(d: date) -> bool:
@@ -1712,7 +1726,8 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
                 adhik_reason: str = "",
                 nitya_yoga: str = "", nitya_blocks: bool = False,
                 boosters: tuple[str, ...] = (),
-                moon_pada: int = 0) -> tuple[str, str, tuple[str, ...]]:
+                moon_pada: int = 0,
+                abujha_name: str = "") -> tuple[str, str, tuple[str, ...]]:
     """Return (rating, reason, flags) for the given event type.
 
     HARD exclusions (return 'avoid'), in priority order:
@@ -1726,10 +1741,13 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
          (Vivah, #1022)
       7. Tuesday (_HARD_AVOID_WEEKDAYS) — Raman, see the constant
 
-    UNIVERSAL BOOSTERS override caution/acceptable → excellent:
-      - Amrit Siddhi Yoga (nakshatra+weekday)
-      - Sarvartha Siddhi Yoga (nakshatra+weekday)
-      - Ravi Yoga (Sun-based)
+    BOOSTERS lift the rating after the exclusions above (they never waive one):
+      - Amrit Siddhi Yoga (nakshatra+weekday): always excellent
+      - Sarvartha Siddhi Yoga (nakshatra+weekday), Ravi Yoga (Sun-based) and an Abujha date
+        (`abujha_name`, #1346): caution → good, acceptable/good → excellent, never lower.
+        They share ONE lift, so a day with two of them is lifted once.
+    An Abujha day that fails an exclusion returns that exclusion's own verdict here, with no
+    Abujha flag; the caller discloses the Abujha name on the avoid row (`_ABUJHA_AVOID_SUFFIX`).
 
     SOFT scoring: +2 favourable tithi, +2 favourable nakshatra, +1 favourable
     weekday. Peak-day (e.g. Thu for Vidyarambh) adds an extra +1. A Saturday
@@ -1813,12 +1831,14 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
 
     rating = next((r for r, floor in _RATING_MIN_SCORE.items() if score >= floor), "caution")
 
-    # ─── Universal boosters override caution/acceptable → excellent ─
-    # Amrit Siddhi, Sarvartha Siddhi, Ravi Yoga are classical universal-
-    # auspicious combinations that lift the day regardless of soft-score
-    # (they cannot override hard exclusions above, only lift the rating).
-    if boosters:
+    # ─── Boosters lift the rating (caution → good, acceptable/good → excellent) ─
+    # Amrit Siddhi, Sarvartha Siddhi, Ravi Yoga and an Abujha date lift the day regardless of
+    # soft-score. They cannot override hard exclusions above, only lift the rating, and the
+    # Abujha flag is set only here, after those exclusions, so it never sits on a row that failed one.
+    if boosters or abujha_name:
         flags.extend(f.lower().replace(" ", "_") for f in ("Amrit Siddhi", "Sarvartha Siddhi", "Ravi Yoga") if any(b.startswith(f) for b in boosters))
+        if abujha_name:
+            flags.append("abujha_muhurat")
         booster_names = "; ".join(boosters)
         # Amrit Siddhi is the strongest — always lifts to excellent.
         # Sarvartha Siddhi / Ravi Yoga lift to excellent if not already above.
@@ -1828,7 +1848,10 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
         elif rating in ("caution", "acceptable", "good"):
             # Lift only if not already excellent — don't downgrade.
             rating = "excellent" if rating != "caution" else "good"
-            reasons.insert(0, booster_names)
+            if booster_names:
+                reasons.insert(0, booster_names)
+        if abujha_name:
+            reasons.insert(0, _ABUJHA_PASS_REASON.format(name=abujha_name))
 
     return rating, "; ".join(reasons) or "neutral factors", tuple(flags)
 
@@ -2001,24 +2024,9 @@ def find_candidates(event_type: str, city: str, start: date,
                 combined_verdict=_couple_verdict(bride_f, groom_f),
             )
 
-        # Abujha override — universally auspicious days for this event type.
+        # An Abujha day is scored like any other: a booster inside score_event, after the hard
+        # exclusions (#1346), never a branch that skips them.
         abujha_name = _abujha_for(d, event_type)
-        if abujha_name:
-            candidates.append(MuhuratCandidate(
-                d=d, weekday=p.weekday,
-                tithi=t_name, tithi_paksha=t_paksha,
-                nakshatra=nakshatra,
-                rating="excellent",
-                score=_RATING_MIN_SCORE["excellent"],
-                reason=f"Abujha Muhurat — {abujha_name} (universally auspicious)",
-                flags=("abujha_muhurat",),
-                personal=personal, couple=couple,
-                rahu_kaal=rk_str, abhijit_muhurta=ab_str, sunrise=sunrise_str,
-                nitya_yoga=nitya_yoga, boosters=boosters,
-                bhadra_window=bhadra_window, choghadiya=choghadiya,
-                abhijit_overlaps=abhijit_overlaps,
-            ))
-            continue
 
         rating, reason, flags = score_event(
             event_type, at_instant, p.weekday, nakshatra,
@@ -2026,7 +2034,12 @@ def find_candidates(event_type: str, city: str, start: date,
             adhik_reason=adhik_reason,
             nitya_yoga=nitya_yoga, nitya_blocks=nitya_blocks,
             boosters=boosters, moon_pada=moon_pada,
+            abujha_name=abujha_name,
         )
+        if abujha_name and rating == "avoid":
+            # The day is on the almanac list but failed a sourced exclusion: say so beside the
+            # exclusion's own reason. Several reasons end in a full stop and the Panchak one does not.
+            reason = reason.rstrip(" .") + ". " + _ABUJHA_AVOID_SUFFIX.format(name=abujha_name)
         # The soft points behind the rating. A lifted day (booster) never scores below its tier's
         # floor; an avoid day scores 0 (an unknown event has no rules to read either).
         score = 0 if rating == "avoid" else max(

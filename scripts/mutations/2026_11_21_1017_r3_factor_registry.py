@@ -20,12 +20,13 @@ MUTATIONS = [
      _F, '"dagdha": rules.get("check_dagdha"),',
      '"dagdha": False,',
      "test_the_cleared_list_equals_the_auditors_table_for_every_event"),
-    ("#1017 R3: the Abujha override refills the cleared list (claims checks that never ran)",
-     _F, '        return Explanation(scored=(_item("abujha_muhurat", event_type),), cleared=(),',
-     '        return Explanation(scored=(_item("abujha_muhurat", event_type),),\n'
-     '                           cleared=tuple(_item(k, event_type) for k in\n'
-     '                                         _applied_hard(rules, candidate.nakshatra)),',
-     "test_an_abujha_row_scores_only_itself_clears_nothing_and_has_no_boosters"),
+    ("#1017 R3: an Abujha row loses its cleared list again (#1346: its checks DID run)",
+     _F, '    cleared = [_item(k, event_type, qual=_cleared_qual(k, event_type, candidate.tithi))\n'
+     '               for k in _applied_hard(rules, candidate.nakshatra)]\n',
+     '    cleared = [] if "abujha_muhurat" in candidate.flags else [\n'
+     '        _item(k, event_type, qual=_cleared_qual(k, event_type, candidate.tithi))\n'
+     '        for k in _applied_hard(rules, candidate.nakshatra)]\n',
+     "test_an_abujha_row_lists_abujha_first_then_a_real_cleared_list_and_the_real_boosters"),
     ("#1017 R3: the flag-to-key split swaps Tuesday and Saturday (hard and soft weekday)",
      _F, 'if flag == "avoid_weekday" and weekday not in _HARD_AVOID_WEEKDAYS:',
      'if flag == "avoid_weekday" and weekday in _HARD_AVOID_WEEKDAYS:',

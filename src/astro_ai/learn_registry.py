@@ -3054,7 +3054,7 @@ ARTICLES: tuple[Article, ...] = (
         summary="A Vivah Muhurat is not just a 'good day' — it's a specific window where eight criteria align: Guru + Shukra visibility, no Malamas (Adhik Maas), no Kharmas, no Chaturmas, favourable nakshatra, favourable tithi with no Dagdha yoga, no Panchak, no eclipse. Panchak and the tithi rule are checked against B.V. Raman's Muhurtha; the others are widely followed conventions our finder applies, labelled as such. This guide walks the 2027 rules, seasonal patterns, personal chart intersections, and honest guidance beyond the calendar.",
         seo_title="Vivah Muhurat 2027 — Rules for Wedding Dates",
         seo_description="Vivah Muhurat 2027 — 8 criteria for wedding dates, sourced rules marked apart from convention. Windows: Jan-Feb, mid-Apr to Jun, mid-Nov onwards.",
-        category="Life Questions", hero_image="/static/learn/vivah-muhurat-2027/hero.svg", read_time="8 min", last_updated="2026-07",
+        category="Life Questions", hero_image="/static/learn/vivah-muhurat-2027/hero.svg", read_time="8 min", last_updated="2026-11",
         related=("marriage-timing-kundli", "kundali-matching-ashtakoot-guna-milan", "manglik-dosh", "griha-pravesh-muhurat-2026-2027"),
         faqs=(
             {"q": "Which months in 2027 are best for marriage?", "a": "Jan-Feb 2027 (winter window), mid-Apr to Jun 2027 (spring/summer, most popular — Kharmas/Meenmas runs mid-March to mid-April, so the spring window opens mid-April), and mid-Nov 2027 onwards (post-Chaturmas resumption). Chaturmas (mid-Jul to mid-Nov) is traditionally weddings-restricted. There is no Adhik Maas in 2027, so no intercalary-month blackout applies."},
@@ -3073,7 +3073,7 @@ ARTICLES: tuple[Article, ...] = (
         summary="Griha Pravesh (house-warming) marks entry into a new home. Three kinds of entry are commonly distinguished (Apoorva, Sapoorva, Dwandwa), and this guide uses nine criteria for auspicious dates, labelling which are widely followed conventions rather than rules from the books this site holds. Dates cluster around Nov 2026 (post-Diwali) through May 2027 (pre-Chaturmas). Personal chart matters — this guide walks the criteria, personal factors, and honest guidance on modern practical constraints like builder handover dates.",
         seo_title="Griha Pravesh Muhurat 2026-27 — Auspicious House-Warming Dates",
         seo_description="Griha Pravesh Muhurat 2026-27 — 9 criteria, three types (Apoorva/Sapoorva/Dwandwa), personal factors, guidance on developer handover conflicts.",
-        category="Life Questions", hero_image="/static/learn/griha-pravesh-muhurat-2026-2027/hero.svg", read_time="7 min", last_updated="2026-07",
+        category="Life Questions", hero_image="/static/learn/griha-pravesh-muhurat-2026-2027/hero.svg", read_time="7 min", last_updated="2026-11",
         related=("vivah-muhurat-2027", "gochar-2026-planetary-transits", "kaal-sarp-dosh", "sade-sati"),
         faqs=(
             {"q": "What is the best month for Griha Pravesh in 2027?", "a": "Given the 9 criteria, prime windows are late Nov 2026 (Dev Uthani onwards, peak season), Dec 2026-Feb 2027 (winter window, minus the Kharmas break from mid-December to mid-January), and mid-Apr to Jun 2027 (spring/summer — Kharmas/Meenmas runs mid-March to mid-April, so the spring window opens mid-April). Chaturmas (mid-Jul to mid-Nov) is traditionally avoided. There is no Adhik Maas in 2027, so no intercalary-month blackout applies."},

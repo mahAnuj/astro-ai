@@ -129,7 +129,9 @@ def test_the_page_says_when_each_verdict_is_read_and_names_the_overlap():
     assert page.status_code == 200
     body = html.unescape(page.text)
     assert "One verdict, one moment" in body and "are all read at 12:00 local time on the date, so" in body
-    assert "Abhijit and Rahu Kaal overlap 11:45-12:06" in body
+    # 2026-11-20 (the issue's 11:45-12:06) is an avoid row since #1346 and the page prints no Abhijit
+    # cell for an avoid row; 2026-11-25 is the first listed date that carries a Rahu Kaal overlap.
+    assert "Abhijit and Rahu Kaal overlap 12:07-12:29" in body
     assert 'read at 12:00 local time on the date">Tithi</th>' in body
 
 
@@ -189,7 +191,7 @@ def test_abhijit_carries_a_tick_only_where_it_clears_rahu_kaal_and_bhadra():
         marks[mark] += 1
         assert (mark == "~") in states[window.replace("–", "-")], (mark, window)
     assert marks["~"] and marks["✓"], marks
-    assert '<span class="text-amber-800">~</span> Abhijit 11:45' in body  # 2026-11-20, the issue's repro
+    assert '<span class="text-amber-800">~</span> Abhijit 11:46' in body  # 2026-11-25, Rahu Kaal overlap (11-20 is avoid, #1346)
 
 
 def test_the_finder_no_longer_calls_abhijit_the_most_auspicious_window():

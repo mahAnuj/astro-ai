@@ -51,10 +51,10 @@
 <h3>Late November 2026 — the season opens</h3>
 
 <ul>
-  {# lunar_dates.shukla_tithi_date(2026, "Kartika", 11) -> date(2026, 11, 20); find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-20 Friday, rating "excellent", Uttara Bhadrapada, flag abujha_muhurat #}
-  <li><strong>Devuthani Ekadashi — Friday, 20 Nov 2026</strong> — Vishnu wakes, Chaturmas ends, and the housewarming season opens. Our finder rates it excellent.</li>
+  {# lunar_dates.shukla_tithi_date(2026, "Kartika", 11) -> date(2026, 11, 20); find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-20 Friday, rating "avoid", Uttara Bhadrapada, flags ('panchak',), reason "Panchak day (Uttara Bhadrapada) — inauspicious. Devuthani Ekadashi is listed as an Abujha date, a regional almanac custom; this finder does not waive this exclusion for it." (re-measured 2026-11-21 on #1346) #}
+  <li><strong>Devuthani Ekadashi — Friday, 20 Nov 2026</strong> — Vishnu wakes and Chaturmas ends, so the restriction lifts. Many families begin the housewarming season on this day by custom, but it falls inside Panchak (Uttara Bhadrapada), and our finder rates it <strong>avoid</strong>; see the note below the list.</li>
   {# #713: Panchak opens at the third quarter of Dhanishta (Raman, Muhurtha ch. IV, p. 26, Nakshatra Panchaka). Engine, Delhi, Moon minute-by-minute 2026-11-17 IST: Dhanishta pada 2 -> pada 3 at 15:31, still pada 4 at 23:59; and Revati pada 4 -> Ashwini 1 at 05:55 on 2026-11-22. The finder samples the noon Moon, so find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-17 Dhanishta (pada 2 at noon), rating "avoid", flag chaturmas and NOT panchak #}
-  {# find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-21 Revati, rating "avoid", flag panchak (last Panchak day at noon); 2026-11-18 Shatabhisha and 2026-11-19 Purva Bhadrapada also flagged panchak; 2026-11-20 Uttara Bhadrapada carries abujha_muhurat, which returns before the Panchak check #}
+  {# find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-21 Revati, rating "avoid", flag panchak (last Panchak day at noon); 2026-11-18 Shatabhisha and 2026-11-19 Purva Bhadrapada also flagged panchak; 2026-11-20 Uttara Bhadrapada is also flagged panchak and rated avoid — the finder lists Devuthani as an Abujha date but applies the hard exclusions first and does not waive Panchak for it (#1346) #}
   {# festival registry, Tulsi Vivah 2026 = 2026-11-21 (verified); muhurat._abujha_days(2026)[date(2026,11,21)] -> (("Tulsi Vivah", ("vivah",)),) — Devuthani + 1, so the run's last day is Tulsi Vivah #}
   <li><strong>Panchak</strong> runs 17–21 Nov 2026. It opens in the afternoon of the 17th, when the Moon enters the third quarter of Dhanishta rather than at the start of the nakshatra, and holds until the Moon leaves Revati in the early morning of the 22nd — its last full day is <strong>Tulsi Vivah, Saturday, 21 Nov 2026</strong>.</li>
   {# find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-25 Wednesday, rating "excellent", Rohini, Krishna Pratipada, Sarvartha Siddhi Yoga #}
@@ -63,7 +63,7 @@
   <li>The second is the Thursday immediately behind it — Mrigashira nakshatra, Krishna Dwitiya: also excellent. Run the finder linked below for the exact days in your city.</li>
 </ul>
 
-<p>Notice that Devuthani sits <em>inside</em> that Panchak run and is still the strongest date of the month. That is not an oversight. Devuthani Ekadashi is an <strong>abujha</strong> (self-auspicious, "no reckoning needed") muhurat — one of the swayam-siddha days that tradition treats as auspicious in its own right, without a tithi-nakshatra calculation and without being cancelled by Panchak. Do not "correct" this by pushing the ceremony past Panchak: the abujha status is the override, and it is why families across North India begin the season on that day. The ordinary rules resume immediately after, which is why the next clean dates only appear once Revati has passed.</p>
+<p>Notice that Devuthani sits <em>inside</em> that Panchak run, so our finder rates it avoid like the days around it. Many North Indian families still start the season on Devuthani Ekadashi, and some almanacs call it an <strong>Abujha</strong> day, one that needs no separate muhurat calculation. That is a regional almanac custom: no book this site holds names it, so we cannot source it, and our finder does not waive Panchak for it. If your family keeps the custom, that is a decision for your family priest, who will say whether and how to enter during Panchak; we will not tell you the date is clear. The finder's first clean dates come only once Revati has passed.</p>
 
 <h3>December 2026 — until Kharmas closes it</h3>
 
@@ -99,11 +99,11 @@
 
 <p><strong>Which convention this page uses.</strong> The Sun crosses into Aries after midday on Mesha Sankranti. Our muhurat finder samples the Sun's sign at midday of each date, so it reads that whole day as still Meenmas and clears the restriction from the following day. A panchang that fixes the sankranti at the instant of ingress will call that same afternoon clear; one that fixes it by the next sunrise agrees with us. All three are defensible readings of the same event, and this page follows the midday-sampling convention throughout, because that is what the finder linked below actually applies. If your family priest reckons by the ingress instant, expect a one-day difference on exactly these turn days — and follow your priest.</p>
 
-<h3>November 2027 — the next annual peak</h3>
+<h3>November 2027 — Chaturmas closes again</h3>
 
 <ul>
-  {# lunar_dates.shukla_tithi_date(2027, "Kartika", 11) -> date(2027, 11, 10); find_candidates("griha_pravesh", "Delhi", date(2027,11,8), 4) -> 2027-11-10 Wednesday, rating "excellent", Uttara Bhadrapada, flag abujha_muhurat #}
-  <li><strong>Devuthani Ekadashi — Wednesday, 10 Nov 2027</strong> — Chaturmas closes again and the cycle restarts. Abujha, as in the previous year, and again inside a Panchak run.</li>
+  {# lunar_dates.shukla_tithi_date(2027, "Kartika", 11) -> date(2027, 11, 10); find_candidates("griha_pravesh", "Delhi", date(2027,11,8), 4) -> 2027-11-10 Wednesday, rating "avoid", Uttara Bhadrapada, Shukla Dwadashi at the noon reading, flags ('panchak',) (re-measured 2026-11-21 on #1346) #}
+  <li><strong>Devuthani Ekadashi — Wednesday, 10 Nov 2027</strong> — Chaturmas closes again and the cycle restarts, but the day falls under Uttara Bhadrapada inside Panchak, and our finder rates it avoid, as it does the Revati day after. The date is the start of the season by calendar, not a clean housewarming date.</li>
 </ul>
 
 <h2>Blackout periods to plan around</h2>
@@ -112,7 +112,7 @@
   {# lunar_dates.shukla_tithi_date(2027, "Ashadha", 11) -> date(2027, 7, 14); muhurat._in_chaturmas: date(2027,7,13) -> False, date(2027,7,14) -> True #}
   <li><strong>Devshayani Ekadashi — 14 Jul 2027</strong> opens Chaturmas, Vishnu's four-month sleep, and the spring window ends here.</li>
   {# lunar_dates.shukla_tithi_date(2027, "Kartika", 11) -> date(2027, 11, 10); muhurat._in_chaturmas: date(2027,11,9) -> True, date(2027,11,10) -> False — restriction is end-exclusive #}
-  <li><strong>Devuthani Ekadashi — 10 Nov 2027</strong> closes Chaturmas. The restriction is end-exclusive, so the day before is the last restricted one and Devuthani itself is clear.</li>
+  <li><strong>Devuthani Ekadashi — 10 Nov 2027</strong> closes Chaturmas. The restriction is end-exclusive, so the day before is the last restricted one and Devuthani itself is clear of the Chaturmas restriction (it is still under Panchak, see above).</li>
   {# Drik Panchang, Dhanu Sankranti 2026 = 2026-12-16, ingress 10:25 IST (read 2026-08-08) #}
   <li><strong>Dhanu Sankranti — 16 Dec 2026</strong> starts the winter Kharmas.</li>
   {# festival registry, Makar Sankranti 2027 = 2027-01-15 (verified); muhurat._kharmas_flag(date(2027,1,15)) -> (False, "") #}
@@ -152,7 +152,7 @@
 <ul>
   <li><strong>Choosing the developer's handover date without astrological check</strong> — the most common modern error</li>
   <li><strong>Doing Griha Pravesh during Chaturmas</strong> without a compensating ritual</li>
-  <li><strong>Missing Panchak</strong> — even if all other rules align, Panchak nullifies an ordinary date (an abujha day such as Devuthani Ekadashi is the standing exception)</li>
+  <li><strong>Missing Panchak</strong> — even if all other rules align, Panchak rules a date out, and our finder does not waive it for any day, including Devuthani Ekadashi; if your family keeps a custom of entering during Panchak, ask your priest</li>
   <li><strong>Doing it on an eclipse-adjacent day</strong></li>
   <li><strong>Not doing personal chart check</strong> — universally-good date can be personally difficult</li>
 </ul>

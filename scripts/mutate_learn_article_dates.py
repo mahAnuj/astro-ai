@@ -45,7 +45,7 @@ MUTATIONS = [
     # plans around, and both sit in a string that reached no gate at all until
     # Gate 4 — they are the reason it exists, and the reason it must stay.
     ("vivah: Chaturmas opens two days later, on the WRONG day",
-     VIVAH, 101, "on Jul 14", "on Jul 16",
+     VIVAH, 99, "on Jul 14", "on Jul 16",
      "Gate 4 — bare `Jul 14` must corroborate the Jul 14 2027 Devshayani claim"),
 
     ("diwali: Shukla Pratipada reaches sunrise on the WRONG day (#143's date)",

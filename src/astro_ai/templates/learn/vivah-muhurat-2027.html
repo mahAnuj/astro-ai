@@ -88,22 +88,19 @@
 
 <p>Custom treats solar and lunar eclipses as wedding blockers, and our finder extends the restriction to the day before and the day after. This is a widely followed convention that our finder applies; we have not found an eclipse-day rule or the one-day margin in the books this site holds.</p>
 
-<h2>Abujha Muhurats — universally auspicious days that override calculation</h2>
+<h2>Abujha dates — a regional almanac custom, not a wedding rule</h2>
 
-<p>Certain "swayam-siddha" (self-perfected) days are traditionally treated as universally auspicious for weddings regardless of tithi/nakshatra/weekday — no muhurat calculation needed. For 2027:</p>
+<p>Some regional almanacs list "swayam-siddha" (self-perfected) days, called Abujha Muhurats, that families in parts of North and West India treat as auspicious for beginning something without a separate muhurat calculation. This is a regional custom: no book this site holds names it, so we cannot source it, and our finder does not waive any exclusion for it. Two of the 2027 dates are kept below as calendar observances only:</p>
 
 <ul>
-  {# festival_registry vasant-panchami 2027 = 2027-02-11 (madhyahna); verify_muhurat_tables.DRIK_MUHURAT[2027]["vasant_panchami"] (drikpanchang New Delhi, read 2026-08-07) #}
-  <li><strong>Basant Panchami</strong> — Thursday, Feb 11, 2027 (Magha Shukla Panchami, Saraswati Puja day)</li>
-  {# festival_registry akshaya-tritiya 2027 = 2027-05-09 (madhyahna); verify_muhurat_tables.DRIK_MUHURAT[2027]["akshaya_tritiya"] (drikpanchang New Delhi, read 2026-08-07) #}
+  {# festival_registry akshaya-tritiya 2027 = 2027-05-09 (madhyahna); verify_muhurat_tables.DRIK_MUHURAT[2027]["akshaya_tritiya"] (drikpanchang New Delhi, read 2026-08-07); find_candidates("vivah", "Delhi", date(2027,5,9), 1) -> rating "avoid", flag avoid_tithi (Chaturthi at the finder's noon reading) #}
   <li><strong>Akshaya Tritiya</strong> — Sunday, May 9, 2027 (Vaishakha Shukla Tritiya, "eternal" day)</li>
-  {# lunar_dates.shukla_tithi_date(2027,"Ashadha",9,"sunrise") -> 2027-07-12 — COMPUTED ONLY, no published almanac date obtainable; see muhurat.py "BHADLI NAVAMI SHIPS UNVERIFIED" note #}
-  <li><strong>Bhadli Navami</strong> — Monday, Jul 12, 2027 (Ashadha Shukla Navami; kept in Gujarat, Rajasthan and MP, and the last wedding day of the summer — Chaturmas opens two days later, on Jul 14)</li>
-  {# festival_registry devuthani-ekadashi 2027 = 2027-11-10; verify_muhurat_tables.DRIK_MUHURAT[2027]["devutthana"] (drikpanchang New Delhi, read 2026-08-07) #}
-  <li><strong>Devuthani Ekadashi</strong> — Wednesday, Nov 10, 2027 (Kartika Shukla Ekadashi, Vishnu awakens from Chaturmas)</li>
-  {# festival_registry tulsi-vivah 2027 = 2027-11-11; verify_muhurat_tables.DRIK_MUHURAT[2027]["tulsi_vivah"] (drikpanchang New Delhi, read 2026-08-07) #}
-  <li><strong>Tulsi Vivah</strong> — Thursday, Nov 11, 2027 (ceremonial marriage of Tulsi to Shaligram; extremely auspicious)</li>
+  {# lunar_dates.shukla_tithi_date(2027,"Ashadha",9,"sunrise") -> 2027-07-12 — COMPUTED ONLY, no published almanac date obtainable; see muhurat.py "BHADLI NAVAMI SHIPS UNVERIFIED" note; find_candidates("vivah", "Delhi", date(2027,7,12), 1) -> rating "avoid", flag venus_combust #}
+  <li><strong>Bhadli Navami</strong> — Monday, Jul 12, 2027 (Ashadha Shukla Navami; kept in Gujarat, Rajasthan and MP; Chaturmas opens two days later, on Jul 14)</li>
 </ul>
+
+{# find_candidates("vivah", "Delhi", d, 1) 2026-11-21 run: Basant Panchami 2027-02-11 -> avoid, panchak (Revati); Akshaya Tritiya 2027-05-09 -> avoid, avoid_tithi; Bhadli Navami 2027-07-12 -> avoid, venus_combust; Devuthani Ekadashi 2027-11-10 -> avoid, panchak (Uttara Bhadrapada); Tulsi Vivah 2027-11-11 -> avoid, panchak (Revati) #}
+<p>For New Delhi, our finder marks all five 2027 Abujha dates (the two above, plus Basant Panchami, Devuthani Ekadashi and Tulsi Vivah) as <strong>avoid</strong>: Panchak covers Basant Panchami, Devuthani Ekadashi and Tulsi Vivah, the finder's noon reading puts Akshaya Tritiya on an avoid tithi, and Venus is combust on Bhadli Navami. Take any of these to your family priest before you build a wedding around it.</p>
 
 <p>One honest caveat on Bhadli Navami: we compute that date from its tithi rule rather than reading it off a published almanac. It is a regional Gujarati/Rajasthani observance, and Drik Panchang's New Delhi calendar carries no Bhadli (also Bhadali, Kandarpa) Navami in any year we have fetched — so treat Jul 12 as our computation and not as an almanac-confirmed date, and check it with your family priest before you build a wedding around it. Every other date on this page is confirmed against a published almanac.</p>
 
