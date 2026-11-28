@@ -1,24 +1,24 @@
 {
- "generated_at": "2026-11-28T00:20:34Z",
+ "generated_at": "2026-11-28T02:52:25Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-28",
  "today": {
   "growth": 0,
-  "other": 4,
-  "exempt": 3,
+  "other": 5,
+  "exempt": 4,
   "share": 0.0
  },
  "this_week": {
   "growth": 15,
-  "other": 66,
-  "exempt": 9,
-  "share": 0.185
+  "other": 67,
+  "exempt": 10,
+  "share": 0.183
  },
  "this_month": {
   "growth": 49,
-  "other": 316,
-  "exempt": 9,
+  "other": 317,
+  "exempt": 10,
   "share": 0.134
  },
  "must_pick_growth": true,
@@ -117,12 +117,41 @@
   {
    "date": "2026-11-28",
    "growth": 0,
-   "other": 4,
-   "exempt": 3,
+   "other": 5,
+   "exempt": 4,
    "share": 0.0
   }
  ],
  "cycles": [
+  {
+   "run": 46094801323,
+   "started": "2026-11-28T01:46:35Z",
+   "issue": 1562,
+   "title": "QA follow-up: Overview is 836 B under its 250,000 B cap and growing ~600 B/day (PR #1561)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1568,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 46087305460,
+   "started": "2026-11-28T00:19:58Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "pr open",
+   "pr": 1567,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "frontend-engineer": 1
+   }
+  },
   {
    "run": 46080282312,
    "started": "2026-11-27T23:03:27Z",
@@ -131,11 +160,7 @@
    "class": "other",
    "outcome": "pr open",
    "pr": 1564,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1
-   }
+   "agents": null
   },
   {
    "run": 46078923409,
@@ -586,31 +611,6 @@
    "agents": {
     "qa": 1
    }
-  },
-  {
-   "run": 45646019134,
-   "started": "2026-11-25T15:30:57Z",
-   "issue": 1133,
-   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
-   "class": "exempt",
-   "outcome": "shipped",
-   "pr": 1489,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "frontend-engineer": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45640425832,
-   "started": "2026-11-25T15:01:16Z",
-   "issue": 1346,
-   "title": "muhurat: the Abujha override skips Panchak, tithi and nakshatra hard exclusions (vivah 2026-11-21 Revati rated excellent)",
-   "class": "other",
-   "outcome": "pr open",
-   "pr": 1357,
-   "agents": null
   }
  ],
  "goals": {
@@ -946,7 +946,7 @@
   "ga4_sessions_28d": 838,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.185,
+  "growth_share_week": 0.183,
   "growth_share_month": 0.134
  },
  "meters": {
@@ -954,13 +954,13 @@
    "label": "Today: growth share of build cycles",
    "period": "2026-11-28",
    "progress": 0.0,
-   "detail": "0 of 4 cycles on growth, target 60%, 3 exempt",
+   "detail": "0 of 5 cycles on growth, target 60%, 4 exempt",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.546,
+   "progress": 0.545,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -971,8 +971,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.185,
-     "progress": 0.232,
+     "current": 0.183,
+     "progress": 0.225,
      "basis": "growth_share_week"
     },
     {
