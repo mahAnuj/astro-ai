@@ -18,6 +18,8 @@ that render it, and flags:
   canonical_mismatch  googleCanonical differs from userCanonical
 
 and precomputes `request_indexing`, the top 10 worth asking Google to recrawl.
+A not-indexed /learn page whose slug names NEXT year (#1571) is listed first, at most
+five of the ten: it has no impressions yet, so impressions alone would never surface it.
 Google has no API to REQUEST indexing for ordinary pages (the Indexing API covers
 JobPosting and BroadcastEvent only), so the last click is the owner's: GSC ->
 URL Inspection -> Request indexing, about 10 a day.
@@ -347,20 +349,39 @@ def _is_inspected(r: dict) -> bool:
     return r["status"] == "inspected"
 
 
-def rank_requests(rows: list[dict], limit: int = 10) -> list[dict]:
+def _names_year(url: str, year: int) -> bool:
+    """A /learn article whose slug names `year` as a whole number (not 12027, not a /panchang date)."""
+    parts = [p for p in urllib.parse.urlsplit(url).path.split("/") if p]
+    if parts[:1] == ["hi"]:
+        parts = parts[1:]
+    return len(parts) == 2 and parts[0] == "learn" and re.search(rf"(?<!\d){year}(?!\d)", parts[1]) is not None
+
+
+def rank_requests(rows: list[dict], limit: int = 10, today=None) -> list[dict]:
+    # The next-year successor of a year-bound article (#1571) has no impressions
+    # to rank by, so it sank below the stale pages and was never asked for.
+    year = (today or datetime.now(timezone.utc).date()).year + 1
     picked = []
     for r in rows:
         if not _is_inspected(r) or r.get("blocked") or r.get("canonical_mismatch") is True:
             continue
         reasons = []
+        ask_first = False
         if r.get("stale_in_index") is True:
             reasons.append("changed after Google's last crawl")
         if r.get("not_indexed") is True:
             reasons.append(f"not indexed: {r.get('coverageState') or r.get('verdict')}")
+            if _names_year(r["url"], year):
+                reasons.append(f"names {year}: ask before it has impressions")
+                ask_first = True
         if reasons:
-            picked.append((r, reasons))
+            picked.append((r, reasons, ask_first))
     picked.sort(key=lambda p: (-(p[0].get("impressions") or 0),
                                -(p[0].get("sitemap_priority") or 0), p[0]["url"]))
+    # Capped at half the list so a year-end batch of new pages cannot hide every stale page.
+    first = [p for p in picked if p[2]][:limit // 2]
+    rest = [p for p in picked if p not in first]
+    picked = [(r, why) for r, why, _ in first + rest]
     return [{"url": r["url"], "reasons": why, "impressions": r.get("impressions"),
              "changed_at": r.get("changed_at"), "lastCrawlTime": r.get("lastCrawlTime")}
             for r, why in picked[:limit]]

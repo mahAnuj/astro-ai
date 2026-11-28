@@ -17,6 +17,7 @@ import json
 import os
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -357,6 +358,37 @@ def test_request_indexing_leaves_out_what_requesting_cannot_fix():
     assert got[0]["reasons"] == ["changed after Google's last crawl"]
     assert fis.rank_requests([_row("n", 1, not_indexed=True)])[0]["reasons"] == [
         "not indexed: Crawled - currently not indexed"]
+
+
+def test_request_indexing_asks_for_a_not_indexed_next_year_learn_page_before_stale_pages():
+    rows = [_row(f"{BASE}/learn/stale-{i:02d}/", 500 + i, stale=True) for i in range(12)]
+    g27 = f"{BASE}/learn/gochar-2027-planetary-transits/"
+    rows += [_row(g27, 0, not_indexed=True),
+             _row(f"{BASE}/hi/learn/vivah-muhurat-2027/", 0, not_indexed=True),   # /hi/ form counts
+             _row(f"{BASE}/learn/gochar-2026-planetary-transits/", 0, not_indexed=True),  # this year
+             _row(f"{BASE}/panchang/2027-01-05", 0, not_indexed=True),            # a date page, not a successor
+             _row(f"{BASE}/learn/pad-12027-x/", 0, not_indexed=True),             # digit boundary
+             _row(f"{BASE}/learn/griha-2027-blocked/", 0, not_indexed=True, blocked=True),
+             _row(f"{BASE}/learn/griha-2027-unreached/", 0, not_indexed=True, status="not_inspected"),
+             _row(f"{BASE}/learn/stale-2027-only/", 0, stale=True, not_indexed=False)]
+    today = date(2026, 11, 28)
+    got = fis.rank_requests(rows, today=today)
+    urls = [g["url"] for g in got]
+    assert set(urls[:2]) == {g27, f"{BASE}/hi/learn/vivah-muhurat-2027/"}   # tied on 0 imp: order is by URL
+    assert all("names 2027: ask before it has impressions" in g["reasons"] and g["reasons"][0].startswith("not indexed") for g in got[:2])
+    # exactly the two successors carry the reason: a decoy ranked third or lower would hide behind urls[:2]
+    assert {g["url"] for g in got if any(r.startswith("names 2027") for r in g["reasons"])} == set(urls[:2])
+    for decoy in ("gochar-2026", "panchang/2027", "pad-12027", "2027-blocked", "2027-unreached", "stale-2027-only"):
+        assert not any(decoy in u for u in urls[:2])
+    assert not any(("2027-blocked" in u or "2027-unreached" in u) for u in urls)
+    # the cap: five ask-first rows leave five slots for stale pages
+    many = [_row(f"{BASE}/learn/next-2027-{i}/", 0, not_indexed=True) for i in range(8)]
+    got = fis.rank_requests(rows[:12] + many, today=today)
+    assert sum("2027" in g["url"] for g in got) == 5 and len(got) == 10
+    # the year follows the date: in 2027 the 2027 page is an ordinary 0-impression row, below the cap line
+    assert g27 not in [g["url"] for g in fis.rank_requests(rows, today=date(2027, 3, 1))]
+    # a shallow capture (stale unknown) still lists it
+    assert fis.rank_requests([_row(g27, 0, not_indexed=True, stale=None)], today=today)[0]["url"] == g27
 
 
 def test_counts_partition_the_rows_and_indexed_means_an_inspected_pass():
