@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27T20:39:32Z",
+  "generated_at": "2026-11-28T00:19:50Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
-  "open": 165,
+  "open": 167,
   "with_ask": 42,
   "by_area": {
-    "UNCLASSIFIED": 75,
+    "UNCLASSIFIED": 77,
     "INFRA": 15,
     "OPS": 11,
     "REDESIGN": 10,
@@ -33,7 +33,7 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 55,
+    "bug": 57,
     "untyped": 39,
     "enhancement": 31,
     "chore": 26,
@@ -44,10 +44,79 @@
     "unset": 93,
     "medium": 35,
     "high": 21,
-    "low": 16
+    "low": 18
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 1563,
+      "title": "QA follow-up: minor items from PR #1561",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-27T23:16:12Z",
+      "updated": "2026-11-27T23:16:12Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1562,
+      "title": "QA follow-up: Overview is 836 B under its 250,000 B cap and growing ~600 B/day (PR #1561)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa"
+      ],
+      "created": "2026-11-27T23:16:10Z",
+      "updated": "2026-11-27T23:16:10Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1560,
+      "title": "QA follow-up: minor items from PR #1558",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-27T21:16:35Z",
+      "updated": "2026-11-27T21:16:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1559,
+      "title": "QA follow-up: Analytics tab 500s on a daily-series row with no string date (PR #1558)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium",
+        "qa",
+        "provenance:trusted"
+      ],
+      "created": "2026-11-27T21:16:34Z",
+      "updated": "2026-11-27T23:23:48Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1555,
       "title": "QA follow-up: minor items from PR #1552",
@@ -62,43 +131,6 @@
       ],
       "created": "2026-11-27T20:01:01Z",
       "updated": "2026-11-27T20:01:01Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1554,
-      "title": "QA follow-up: a malformed row in gsc-daily.json or issues.json 500s every /admin/ops tab (PR #1552)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa"
-      ],
-      "created": "2026-11-27T20:00:48Z",
-      "updated": "2026-11-27T20:00:48Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1553,
-      "title": "QA follow-up: Analytics tab 500s when gsc-daily.json is absent or empty (PR #1552)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-11-27T20:00:46Z",
-      "updated": "2026-11-27T20:38:55Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -328,7 +360,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-25T03:58:08Z",
-      "updated": "2026-11-25T12:27:57Z",
+      "updated": "2026-11-27T21:24:15Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1107,7 +1139,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-16T17:33:22Z",
-      "updated": "2026-11-27T20:01:58Z",
+      "updated": "2026-11-27T23:24:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2722,28 +2754,11 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-27T20:39:32Z",
+    "generated_at": "2026-11-28T00:19:50Z",
     "window_days": 28,
-    "open_now": 165,
+    "open_now": 167,
     "merged_open_hours": 24,
     "days": [
-      {
-        "date": "2026-10-31",
-        "opened": 4,
-        "closed": 12,
-        "net": -8,
-        "open_end": 128,
-        "opened_by": {
-          "audit": 3,
-          "loop": 1
-        },
-        "closed_by": {
-          "close-on-evidence": 2,
-          "prioritise": 7,
-          "cannot-reproduce": 1,
-          "owner": 2
-        }
-      },
       {
         "date": "2026-11-01",
         "opened": 8,
@@ -3147,26 +3162,30 @@
       },
       {
         "date": "2026-11-27",
-        "opened": 10,
-        "closed": 12,
-        "net": -2,
-        "open_end": 165,
+        "opened": 14,
+        "closed": 14,
+        "net": 0,
+        "open_end": 167,
         "opened_by": {
-          "loop": 10
+          "loop": 14
         },
         "closed_by": {
-          "close-on-evidence": 11,
+          "close-on-evidence": 13,
           "other": 1
         }
+      },
+      {
+        "date": "2026-11-28",
+        "opened": 0,
+        "closed": 0,
+        "net": 0,
+        "open_end": 167,
+        "opened_by": {},
+        "closed_by": {}
       }
     ],
     "merged_open": [],
     "closed_rows": [
-      {
-        "number": 163,
-        "closed_at": "2026-10-31T19:42:06Z",
-        "closer": "prioritise"
-      },
       {
         "number": 177,
         "closed_at": "2026-11-07T00:58:52Z",
@@ -3193,18 +3212,8 @@
         "closer": "other"
       },
       {
-        "number": 230,
-        "closed_at": "2026-10-31T19:41:19Z",
-        "closer": "prioritise"
-      },
-      {
         "number": 231,
         "closed_at": "2026-11-06T06:14:50Z",
-        "closer": "prioritise"
-      },
-      {
-        "number": 232,
-        "closed_at": "2026-10-31T19:41:24Z",
         "closer": "prioritise"
       },
       {
@@ -3258,16 +3267,6 @@
         "closer": "prioritise"
       },
       {
-        "number": 357,
-        "closed_at": "2026-10-31T19:41:36Z",
-        "closer": "prioritise"
-      },
-      {
-        "number": 358,
-        "closed_at": "2026-10-31T19:41:39Z",
-        "closer": "prioritise"
-      },
-      {
         "number": 361,
         "closed_at": "2026-11-06T06:14:55Z",
         "closer": "prioritise"
@@ -3308,23 +3307,8 @@
         "closer": "prioritise"
       },
       {
-        "number": 398,
-        "closed_at": "2026-10-31T07:23:32Z",
-        "closer": "owner"
-      },
-      {
         "number": 399,
         "closed_at": "2026-11-06T06:30:37Z",
-        "closer": "prioritise"
-      },
-      {
-        "number": 406,
-        "closed_at": "2026-10-31T19:41:59Z",
-        "closer": "prioritise"
-      },
-      {
-        "number": 407,
-        "closed_at": "2026-10-31T19:42:02Z",
         "closer": "prioritise"
       },
       {
@@ -3358,19 +3342,9 @@
         "closer": "close-on-evidence"
       },
       {
-        "number": 450,
-        "closed_at": "2026-10-31T02:43:22Z",
-        "closer": "close-on-evidence"
-      },
-      {
         "number": 457,
         "closed_at": "2026-11-13T20:58:50Z",
         "closer": "close-on-evidence"
-      },
-      {
-        "number": 461,
-        "closed_at": "2026-10-31T19:39:02Z",
-        "closer": "owner"
       },
       {
         "number": 463,
@@ -3431,11 +3405,6 @@
         "number": 528,
         "closed_at": "2026-11-09T12:10:47Z",
         "closer": "prioritise"
-      },
-      {
-        "number": 543,
-        "closed_at": "2026-10-31T20:18:11Z",
-        "closer": "cannot-reproduce"
       },
       {
         "number": 553,
@@ -3531,11 +3500,6 @@
         "number": 618,
         "closed_at": "2026-11-06T06:13:51Z",
         "closer": "prioritise"
-      },
-      {
-        "number": 621,
-        "closed_at": "2026-10-31T08:32:45Z",
-        "closer": "close-on-evidence"
       },
       {
         "number": 628,
@@ -4791,14 +4755,24 @@
         "number": 1546,
         "closed_at": "2026-11-27T14:02:16Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1553,
+        "closed_at": "2026-11-27T20:53:27Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1554,
+        "closed_at": "2026-11-27T21:31:35Z",
+        "closer": "close-on-evidence"
       }
     ],
-    "timelines_read": 1,
+    "timelines_read": 2,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 84,
+          "merged": 85,
           "median_h": 0.6,
           "p90_h": 3.7,
           "max_h": 105.0,
@@ -4910,7 +4884,7 @@
           ]
         },
         "28d": {
-          "merged": 375,
+          "merged": 378,
           "median_h": 0.5,
           "p90_h": 13.4,
           "max_h": 122.1,
@@ -5031,12 +5005,6 @@
         }
       },
       "days": [
-        {
-          "date": "2026-10-31",
-          "merged": 9,
-          "median_h": 6.0,
-          "max_h": 122.1
-        },
         {
           "date": "2026-11-01",
           "merged": 15,
@@ -5195,25 +5163,31 @@
         },
         {
           "date": "2026-11-27",
-          "merged": 13,
+          "merged": 16,
           "median_h": 0.3,
           "max_h": 2.5
+        },
+        {
+          "date": "2026-11-28",
+          "merged": 0,
+          "median_h": null,
+          "max_h": null
         }
       ],
       "open": [
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 144.9,
+          "age_h": 148.6,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 53.3h gates red; 4 pushes",
+            "reason": "91.5h waiting for gates to start; 57.0h gates red; 4 pushes",
             "primary": "no_gates",
             "hours": {
               "no_gates": 91.5,
               "gates_running": 0.1,
               "awaiting_qa": 0.0,
-              "gates_red": 53.3
+              "gates_red": 57.0
             },
             "qa_fails": 0,
             "pushes": 4
@@ -5222,29 +5196,29 @@
         {
           "number": 1515,
           "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
-          "age_h": 27.6,
+          "age_h": 31.2,
           "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "27.2h waiting for a fix after QA failed (1 QA FAIL)",
+            "reason": "30.8h waiting for a fix after QA failed (1 QA FAIL)",
             "primary": "qa_fail",
             "hours": {
               "no_gates": 0.4,
-              "qa_fail": 27.2
+              "qa_fail": 30.8
             },
             "qa_fails": 1,
             "pushes": 3
           }
         },
         {
-          "number": 1556,
-          "title": "ops: Analytics tab blanks a missing daily series instead of 500ing (#1553)",
-          "age_h": 0.3,
-          "waiting_on": "merge",
+          "number": 1564,
+          "title": "admin/ops analytics: a date-less daily-series row is dropped from its series, not a 500 (#",
+          "age_h": 0.0,
+          "waiting_on": "gates / QA",
           "why": {
             "reason": "no single wait stood out",
             "primary": "other",
             "hours": {
-              "no_gates": 0.3
+              "no_gates": 0.0
             },
             "qa_fails": 0,
             "pushes": 1
