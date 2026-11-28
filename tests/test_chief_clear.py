@@ -22,6 +22,7 @@ sys.modules["chief_clear"] = cc
 _spec.loader.exec_module(cc)
 
 REPO = "o/r"
+OWNER = "o"
 SHA = "b9077f6b65a881a5b4108cc4df1f33210c0affc9"
 OTHER = "a" * 40
 T1, T2 = "2026-11-24T04:25:30Z", "2026-11-24T04:33:27Z"
@@ -31,7 +32,7 @@ class FakeGh:
     def __init__(self, *, state="open", head=SHA,
                  labels="needs-human-review,qa-pass,qa:independent",
                  gates=((1, "2026-11-24T04:00:00Z", "completed", "success"),),
-                 comments=None, fail=None):
+                 comments=None, comments_raw=None, fail=None):
         self.state, self.head, self.labels = state, head, labels
         # (id, started_at, status, conclusion) per `gates` run, or the raw
         # text itself when a test wants unreadable output
@@ -41,6 +42,9 @@ class FakeGh:
         self.comments = comments if comments is not None else [
             (cc.RULER, f"QA: PASS — independent round, verified at {SHA}\nbody"),
             (cc.RULER, f"**chief ruling**\n\nchief-cleared at {SHA}")]
+        # the raw reply text itself, when a test wants unreadable comment output
+        self.comments_raw = comments_raw
+        self.comment_calls: list[list[str]] = []
         self.fail = fail or set()
         self.writes: list[list[str]] = []
         self.dispatches: list[list[str]] = []
@@ -66,18 +70,36 @@ class FakeGh:
                 return self.gates
             return "".join(json.dumps({"id": i, "started_at": at, "status": st, "conclusion": c})
                            + "\n" for i, at, st, c in self.gates)
-        if "/comments" in url and 'startswith("QA: PASS")' in args[-1]:
-            want = re.search(r'contains\("([0-9a-f]{40})"\)', args[-1]).group(1)
-            m = re.search(r'login (==|!=) "([^"]+)"', args[-1])   # read the script's OWN filter
-            ok = (lambda l: l == m.group(2)) if m.group(1) == "==" else (lambda l: l != m.group(2))
-            return str(sum(1 for l, b in self.comments if ok(l) and b.startswith("QA: PASS")
-                           and want in b.split("\n")[0])) + "\n"
         if "/comments" in url:
-            want = re.search(r'contains\("chief-cleared at ([0-9a-f]+)"\)', args[-1]).group(1)
-            m = re.search(r'login (==|!=) "([^"]+)"', args[-1])
-            ok = (lambda l: l == m.group(2)) if m.group(1) == "==" else (lambda l: l != m.group(2))
-            return str(sum(1 for l, b in self.comments if ok(l) and f"chief-cleared at {want}" in b)) + "\n"
+            self.comment_calls.append(args)
+            if self.comments_raw is not None:
+                return self.comments_raw
+            return self._comments(args)
         raise AssertionError(args)
+
+
+    def _comments(self, args):
+        """What `gh api [--paginate] .../comments --jq F` prints: F is run once
+        per page of 100, each match prints its id, one per line. Without
+        --paginate only page 1 is fetched, so an unpaginated read misses
+        anything past the 100th comment."""
+        jq = args[-1]
+        assert args[-2] == "--jq"
+        # read the script's OWN filter: who may author, and what the body must say
+        logins = re.findall(r'login == "([^"]+)"', jq)
+        anyone = '!= "nobody"' in jq
+        if 'startswith("QA: PASS")' in jq:
+            want = re.search(r'contains\("([0-9a-f]{40})"\)', jq).group(1)
+            body_ok = lambda b: b.startswith("QA: PASS") and want in b.split("\n")[0]
+        else:
+            want = re.search(r'contains\("(chief-cleared at [0-9a-f]+)"\)', jq).group(1)
+            body_ok = lambda b: want in b
+        numbered = [(n, l, b) for n, (l, b) in enumerate(self.comments, 1)]
+        pages = [numbered[i:i + 100] for i in range(0, len(numbered), 100)] or [[]]
+        if "--paginate" not in args:
+            pages = pages[:1]
+        return "".join(f"{n}\n" for page in pages for n, l, b in page
+                       if (anyone or l in logins) and body_ok(b))
 
 
 def run(tmp_path, monkeypatch, gh, text=f"pr=706 sha={SHA}\n"):
@@ -299,3 +321,57 @@ def test_the_carrier_job_holds_actions_write_and_the_script_labels_nothing_new()
     src = (ROOT / "scripts" / "chief_clear.py").read_text()
     assert "qa-pass" not in src.split("def apply")[1].split("def dispatch_sweep")[0], \
         "the carrier must never write a QA label"
+
+
+def test_an_owner_authored_QA_PASS_is_accepted(tmp_path, monkeypatch):
+    """#1287: agent-merge takes a PASS from the owner (a top-level session
+    records its verdict as the owner); chief_clear refused it."""
+    gh = FakeGh(comments=[(OWNER, f"QA: PASS — verified at {SHA}"),
+                          (cc.RULER, f"chief-cleared at {SHA}")])
+    assert run(tmp_path, monkeypatch, gh) == 0
+    assert len(gh.writes) == 2
+
+
+def test_a_strangers_QA_PASS_is_still_refused(tmp_path, monkeypatch, capsys):
+    gh = FakeGh(comments=[("someone", f"QA: PASS — verified at {SHA}"),
+                          (cc.RULER, f"chief-cleared at {SHA}")])
+    assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
+    assert f"no `claude[bot]` or `{OWNER}` `QA: PASS` verdict" in capsys.readouterr().out
+
+
+def test_a_ruling_by_the_owner_is_still_refused(tmp_path, monkeypatch, capsys):
+    """Only the PASS author set widened; the ruling stays chief's (claude[bot])."""
+    gh = FakeGh(comments=[(cc.RULER, f"QA: PASS — verified at {SHA}"),
+                          (OWNER, f"chief-cleared at {SHA}")])
+    assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
+    assert "the ruling comes first" in capsys.readouterr().out
+
+
+def test_a_ruling_and_verdict_on_page_two_of_over_100_comments_are_found(tmp_path, monkeypatch):
+    """#1287: the reads had no --paginate, so on a PR with more than 100
+    comments the ruling or verdict past the 100th read as missing."""
+    gh = FakeGh(comments=[("someone", "chatter")] * 120
+                + [(cc.RULER, f"chief-cleared at {SHA}"),
+                   (cc.RULER, f"QA: PASS — verified at {SHA}")])
+    assert run(tmp_path, monkeypatch, gh) == 0 and len(gh.writes) == 2
+    assert gh.comment_calls and all("--paginate" in c for c in gh.comment_calls)
+
+
+def test_matches_on_two_pages_are_counted_not_parsed_as_one_number(tmp_path, monkeypatch):
+    """--paginate runs --jq once per page, so two matching pages print two
+    lines. A reader that treats the output as one number sees garbage."""
+    gh = FakeGh(comments=[(cc.RULER, f"QA: PASS — verified at {SHA}")]
+                + [("someone", "chatter")] * 120
+                + [(OWNER, f"QA: PASS — verified again at {SHA}"),
+                   (cc.RULER, f"chief-cleared at {SHA}")])
+    assert run(tmp_path, monkeypatch, gh) == 0 and len(gh.writes) == 2
+
+
+def test_qa_authors_are_claude_bot_and_the_repo_owner():
+    assert cc.qa_authors("o/r") == ("claude[bot]", "o")
+    assert cc.RULER == "claude[bot]"
+
+
+def test_unreadable_comment_output_counts_as_no_match(tmp_path, monkeypatch):
+    gh = FakeGh(comments_raw="oops\n")
+    assert run(tmp_path, monkeypatch, gh) == 1 and gh.writes == []
