@@ -141,8 +141,10 @@ def _landing_upcoming(event_key: str, today: date) -> dict | None:
 
     The five EARLIEST auspicious dates, printed in date order. `find_candidates` returns its rows
     best-tier-first, so reading "the finder's order" literally would list the five best-rated dates
-    of the window, possibly 80 days out; this page is headed "next", so it sorts by date, which is
-    the finder's own tie-break inside a tier (#1325).
+    of the window, possibly 80 days out; this page is headed "next", so it sorts by date
+    explicitly (the `sorted(..., key=lambda c: c.d)` below). Date is only the LAST key of
+    muhurat.rank_key (tier, couple verdict, -score, date; #1341), so dropping this sort would
+    list the best-scoring dates of the window instead of the earliest.
     """
     from astro_ai import muhurat as _muhurat
     from astro_ai.muhurat import AUSPICIOUS_RATINGS

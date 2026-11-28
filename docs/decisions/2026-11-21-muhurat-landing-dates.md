@@ -19,6 +19,8 @@ the finder-order first five differ from the earliest five, and
 `tests/test_muhurat_landing_dates.py` asserts that so the decision cannot silently stop
 mattering. Reversible by one line if the literal reading is wanted.
 
+Amended 2026-11-28 (#1343): since #1341 date is the last key of `rank_key`, not a tie-break the finder gives for free. The explicit date sort is what makes the page chronological.
+
 **One definition of "auspicious".** #1322 defined it only as a Jinja literal in the finder
 template. `muhurat.AUSPICIOUS_RATINGS` now names it (excellent, good, acceptable; caution is
 not), read by the landing in Python and by the finder template through the lazy global
