@@ -33,4 +33,7 @@ MUTATIONS = [
     ("#1285 qa_verdict: a non-hex --sha is accepted",
      _S, '  *[!0-9a-fA-F]*) echo', '  *[!0-9a-fA-F]x*) echo',
      "test_a_too_short_or_non_hex_sha_is_bad_usage_and_writes_nothing"),
+    ("#1427 qa_verdict: an uppercase --sha is not lowercased",
+     _S, """SHA=$(printf '%s' "$SHA" | tr A-F a-f)""", """SHA=$(printf '%s' "$SHA")""",
+     "test_an_uppercase_fail_sha_binds_to_the_full_head"),
 ]

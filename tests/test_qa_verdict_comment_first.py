@@ -232,3 +232,33 @@ def test_the_removal_paragraph_does_not_name_issue_none(tmp_path):
     assert r.returncode == 0, r.stdout + r.stderr
     assert "qa-fail" in body and "none" not in body, body
 
+
+# --------------------------------------------------- an uppercase --sha (#1427)
+
+def test_an_uppercase_abbreviated_sha_is_written_as_the_full_lowercase_head(tmp_path):
+    r, _, body = _run(tmp_path, "--sha", HEAD[:7].upper())
+    assert r.returncode == 0, r.stdout + r.stderr
+    first = body.splitlines()[0]
+    assert first == f"QA: PASS — verified at `{HEAD}`", first
+    m = _VERDICT_LINE.match(first)
+    assert m and m.group(2) == HEAD, first
+
+
+def test_an_uppercase_fail_sha_binds_to_the_full_head(tmp_path):
+    r, _, body = _run(tmp_path, "--sha", HEAD[:12].upper(), verdict="FAIL")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert body.splitlines()[0] == f"QA: FAIL — verified at `{HEAD}`"
+
+
+def test_an_uppercase_sha_naming_another_commit_is_written_lowercase(tmp_path):
+    # OLDER[10:20] holds letters (OLDER[:10] is all digits, so upper() would be a
+    # no-op) and is not a prefix of HEAD.
+    other = OLDER[10:20]
+    assert other != other.upper() and not HEAD.startswith(other)
+    r, _, body = _run(tmp_path, "--sha", other.upper(), verdict="FAIL")
+    assert r.returncode == 0, r.stdout + r.stderr
+    first = body.splitlines()[0]
+    assert first == f"QA: FAIL — verified at `{other}`", first
+    m = _VERDICT_LINE.match(first)
+    assert m and m.group(2) == other, first
+    assert HEAD not in body
