@@ -3,42 +3,42 @@
   "property": "543505751",
   "mode": "trend",
   "window": [
-    "2026-10-28",
-    "2026-11-24"
+    "2026-10-29",
+    "2026-11-25"
   ],
   "window_prev": [
-    "2026-09-30",
-    "2026-10-27"
+    "2026-10-01",
+    "2026-10-28"
   ],
   "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
   "totals": {
     "current": {
-      "sessions": 834,
-      "active_users": 692,
-      "new_users": 684,
-      "engaged_sessions": 359,
-      "engagement_seconds": 101451
+      "sessions": 848,
+      "active_users": 703,
+      "new_users": 695,
+      "engaged_sessions": 374,
+      "engagement_seconds": 100171
     },
     "previous": {
-      "sessions": 438,
-      "active_users": 336,
-      "new_users": 325,
-      "engaged_sessions": 196,
-      "engagement_seconds": 36818
+      "sessions": 456,
+      "active_users": 349,
+      "new_users": 340,
+      "engaged_sessions": 197,
+      "engagement_seconds": 40768
     },
     "delta": {
-      "sessions": 396,
-      "active_users": 356,
-      "new_users": 359,
-      "engaged_sessions": 163,
-      "engagement_seconds": 64633
+      "sessions": 392,
+      "active_users": 354,
+      "new_users": 355,
+      "engaged_sessions": 177,
+      "engagement_seconds": 59403
     },
     "delta_pct": {
-      "sessions": 90.4,
-      "active_users": 106.0,
-      "new_users": 110.5,
-      "engaged_sessions": 83.2,
-      "engagement_seconds": 175.5
+      "sessions": 86.0,
+      "active_users": 101.4,
+      "new_users": 104.4,
+      "engaged_sessions": 89.8,
+      "engagement_seconds": 145.7
     }
   },
   "channels_now": 4,
@@ -48,32 +48,32 @@
     {
       "channel": "Organic Search",
       "current": {
-        "sessions": 542,
-        "active_users": 440,
-        "new_users": 434,
-        "engaged_sessions": 304,
-        "engagement_seconds": 83180
+        "sessions": 555,
+        "active_users": 449,
+        "new_users": 443,
+        "engaged_sessions": 318,
+        "engagement_seconds": 82527
       },
       "previous": {
-        "sessions": 210,
-        "active_users": 175,
-        "new_users": 170,
+        "sessions": 224,
+        "active_users": 185,
+        "new_users": 182,
         "engaged_sessions": 113,
-        "engagement_seconds": 22005
+        "engagement_seconds": 25504
       },
       "delta": {
-        "sessions": 332,
-        "active_users": 265,
-        "new_users": 264,
-        "engaged_sessions": 191,
-        "engagement_seconds": 61175
+        "sessions": 331,
+        "active_users": 264,
+        "new_users": 261,
+        "engaged_sessions": 205,
+        "engagement_seconds": 57023
       },
       "delta_pct": {
-        "sessions": 158.1,
-        "active_users": 151.4,
-        "new_users": 155.3,
-        "engaged_sessions": 169.0,
-        "engagement_seconds": 278.0
+        "sessions": 147.8,
+        "active_users": 142.7,
+        "new_users": 143.4,
+        "engaged_sessions": 181.4,
+        "engagement_seconds": 223.6
       },
       "is_new": false,
       "is_gone": false
@@ -81,32 +81,32 @@
     {
       "channel": "Direct",
       "current": {
-        "sessions": 287,
-        "active_users": 247,
-        "new_users": 245,
-        "engaged_sessions": 54,
-        "engagement_seconds": 17604
+        "sessions": 288,
+        "active_users": 249,
+        "new_users": 247,
+        "engaged_sessions": 55,
+        "engagement_seconds": 17455
       },
       "previous": {
-        "sessions": 203,
-        "active_users": 139,
-        "new_users": 138,
+        "sessions": 206,
+        "active_users": 141,
+        "new_users": 140,
         "engaged_sessions": 71,
-        "engagement_seconds": 12790
+        "engagement_seconds": 12761
       },
       "delta": {
-        "sessions": 84,
+        "sessions": 82,
         "active_users": 108,
         "new_users": 107,
-        "engaged_sessions": -17,
-        "engagement_seconds": 4814
+        "engaged_sessions": -16,
+        "engagement_seconds": 4694
       },
       "delta_pct": {
-        "sessions": 41.4,
-        "active_users": 77.7,
-        "new_users": 77.5,
-        "engaged_sessions": -23.9,
-        "engagement_seconds": 37.6
+        "sessions": 39.8,
+        "active_users": 76.6,
+        "new_users": 76.4,
+        "engaged_sessions": -22.5,
+        "engagement_seconds": 36.8
       },
       "is_new": false,
       "is_gone": false
@@ -117,29 +117,29 @@
         "sessions": 5,
         "active_users": 5,
         "new_users": 5,
-        "engaged_sessions": 1,
-        "engagement_seconds": 481
+        "engaged_sessions": 0,
+        "engagement_seconds": 3
       },
       "previous": {
-        "sessions": 19,
-        "active_users": 16,
-        "new_users": 14,
-        "engaged_sessions": 11,
-        "engagement_seconds": 1660
+        "sessions": 20,
+        "active_users": 17,
+        "new_users": 15,
+        "engaged_sessions": 12,
+        "engagement_seconds": 2140
       },
       "delta": {
-        "sessions": -14,
-        "active_users": -11,
-        "new_users": -9,
-        "engaged_sessions": -10,
-        "engagement_seconds": -1179
+        "sessions": -15,
+        "active_users": -12,
+        "new_users": -10,
+        "engaged_sessions": -12,
+        "engagement_seconds": -2137
       },
       "delta_pct": {
-        "sessions": -73.7,
-        "active_users": -68.8,
-        "new_users": -64.3,
-        "engaged_sessions": -90.9,
-        "engagement_seconds": -71.0
+        "sessions": -75.0,
+        "active_users": -70.6,
+        "new_users": -66.7,
+        "engaged_sessions": -100.0,
+        "engagement_seconds": -99.9
       },
       "is_new": false,
       "is_gone": false

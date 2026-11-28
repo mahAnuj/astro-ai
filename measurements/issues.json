@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-28T02:51:47Z",
+  "generated_at": "2026-11-28T03:33:52Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "The owner's objective, in their words (2026-11-06): \"increase the user base for shubhagya.com while ensuring fully grounded astrology on rules\" — \"keep astrology 100% true\".",
   "open": 167,
@@ -33,21 +33,54 @@
     "BLOCKER": 1
   },
   "by_type": {
-    "bug": 57,
-    "untyped": 39,
+    "bug": 56,
+    "untyped": 40,
     "enhancement": 31,
     "chore": 26,
     "correctness": 9,
     "design": 5
   },
   "by_priority": {
-    "unset": 93,
-    "medium": 35,
+    "unset": 94,
+    "medium": 33,
     "high": 21,
-    "low": 18
+    "low": 19
   },
   "blocked": 6,
   "rows": [
+    {
+      "number": 1571,
+      "title": "index status: request_indexing ranks by current impressions, so the year-successor of the top page (gochar-2027, not indexed) can never be listed",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [
+        "seo",
+        "growth"
+      ],
+      "created": "2026-11-28T03:31:45Z",
+      "updated": "2026-11-28T03:31:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 1570,
+      "title": "QA follow-up: minor items from PR #1567",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "priority:low",
+        "qa"
+      ],
+      "created": "2026-11-28T03:09:29Z",
+      "updated": "2026-11-28T03:09:29Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 1563,
       "title": "QA follow-up: minor items from PR #1561",
@@ -66,24 +99,6 @@
       "needs_evidence": false
     },
     {
-      "number": 1562,
-      "title": "QA follow-up: Overview is 836 B under its 250,000 B cap and growing ~600 B/day (PR #1561)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-27T23:16:10Z",
-      "updated": "2026-11-28T02:38:40Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 1560,
       "title": "QA follow-up: minor items from PR #1558",
       "ask": "",
@@ -97,24 +112,6 @@
       ],
       "created": "2026-11-27T21:16:35Z",
       "updated": "2026-11-27T21:16:35Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 1559,
-      "title": "QA follow-up: Analytics tab 500s on a daily-series row with no string date (PR #1558)",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "priority:medium",
-        "qa",
-        "provenance:trusted"
-      ],
-      "created": "2026-11-27T21:16:34Z",
-      "updated": "2026-11-27T23:23:48Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -361,7 +358,7 @@
         "provenance:trusted"
       ],
       "created": "2026-11-25T03:58:08Z",
-      "updated": "2026-11-27T21:24:15Z",
+      "updated": "2026-11-28T03:30:45Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1140,7 +1137,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-11-16T17:33:22Z",
-      "updated": "2026-11-28T00:31:24Z",
+      "updated": "2026-11-28T03:10:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -2755,7 +2752,7 @@
     }
   ],
   "trend": {
-    "generated_at": "2026-11-28T02:51:47Z",
+    "generated_at": "2026-11-28T03:33:52Z",
     "window_days": 28,
     "open_now": 167,
     "merged_open_hours": 24,
@@ -3177,12 +3174,17 @@
       },
       {
         "date": "2026-11-28",
-        "opened": 0,
-        "closed": 0,
+        "opened": 2,
+        "closed": 2,
         "net": 0,
         "open_end": 167,
-        "opened_by": {},
-        "closed_by": {}
+        "opened_by": {
+          "loop": 2
+        },
+        "closed_by": {
+          "close-on-evidence": 1,
+          "other": 1
+        }
       }
     ],
     "merged_open": [],
@@ -4766,14 +4768,24 @@
         "number": 1554,
         "closed_at": "2026-11-27T21:31:35Z",
         "closer": "close-on-evidence"
+      },
+      {
+        "number": 1559,
+        "closed_at": "2026-11-28T03:07:53Z",
+        "closer": "close-on-evidence"
+      },
+      {
+        "number": 1562,
+        "closed_at": "2026-11-28T03:10:22Z",
+        "closer": "other"
       }
     ],
-    "timelines_read": 0,
+    "timelines_read": 2,
     "truncated": [],
     "pr_flow": {
       "windows": {
         "7d": {
-          "merged": 83,
+          "merged": 84,
           "median_h": 0.7,
           "p90_h": 3.7,
           "max_h": 105.0,
@@ -4885,7 +4897,7 @@
           ]
         },
         "28d": {
-          "merged": 376,
+          "merged": 378,
           "median_h": 0.5,
           "p90_h": 13.4,
           "max_h": 122.1,
@@ -5170,74 +5182,60 @@
         },
         {
           "date": "2026-11-28",
-          "merged": 0,
-          "median_h": null,
-          "max_h": null
+          "merged": 2,
+          "median_h": 2.7,
+          "max_h": 2.7
         }
       ],
       "open": [
         {
           "number": 1357,
           "title": "issue/1346 abujha booster not bypass",
-          "age_h": 151.1,
+          "age_h": 151.8,
           "waiting_on": "merge",
           "why": {
-            "reason": "91.5h waiting for gates to start; 59.5h gates red; 4 pushes",
+            "reason": "91.6h waiting for gates to start; 60.0h gates red; 5 pushes",
             "primary": "no_gates",
             "hours": {
-              "no_gates": 91.5,
-              "gates_running": 0.1,
+              "no_gates": 91.6,
+              "gates_running": 0.2,
               "awaiting_qa": 0.0,
-              "gates_red": 59.5
+              "gates_red": 60.0
             },
             "qa_fails": 0,
-            "pushes": 4
+            "pushes": 5
           }
         },
         {
           "number": 1515,
           "title": "Workflow halves of 12 QA follow-ups: rename-safe scope diff, no false main-red, safer merg",
-          "age_h": 33.8,
+          "age_h": 34.5,
           "waiting_on": "a fix after QA failed",
           "why": {
-            "reason": "33.4h waiting for a fix after QA failed (1 QA FAIL)",
+            "reason": "34.1h waiting for a fix after QA failed (1 QA FAIL)",
             "primary": "qa_fail",
             "hours": {
               "no_gates": 0.4,
-              "qa_fail": 33.4
+              "qa_fail": 34.1
             },
             "qa_fails": 1,
             "pushes": 3
           }
         },
         {
-          "number": 1564,
-          "title": "admin/ops analytics: a date-less daily-series row is dropped from its series, not a 500 (#",
-          "age_h": 2.5,
+          "number": 1568,
+          "title": "ops: Overview ships the top 50 open issues, not all — main is red on the byte cap (#1562)",
+          "age_h": 0.9,
           "waiting_on": "gates / QA",
           "why": {
-            "reason": "2.5h waiting for gates to start",
+            "reason": "0.9h waiting for gates to start",
             "primary": "no_gates",
             "hours": {
-              "no_gates": 2.5
+              "no_gates": 0.9
             },
             "qa_fails": 0,
             "pushes": 1
           }
-        },
-        {
-          "number": 1567,
-          "title": "partial/1133 ops recent activity",
-          "age_h": 1.1,
-          "waiting_on": "gates / QA",
-          "why": null
-        },
-        {
-          "number": 1568,
-          "title": "ops: Overview ships the top 50 open issues, not all — main is red on the byte cap (#1562)",
-          "age_h": 0.2,
-          "waiting_on": "gates / QA",
-          "why": null
         }
       ]
     }
