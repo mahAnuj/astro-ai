@@ -53,6 +53,13 @@ BLOB_KEYS: dict[str, frozenset] = {
     "monitoring": _BASE,
 }
 
+#: The issue's acceptance criterion for slice 2: Overview is no larger than the old whole
+#: page, 418,318 B in the measured render (2026-11-17). One constant, so the page-size tests
+#: cannot disagree (they carried 245,000 and 250,000 literals that the open-issue count,
+#: not the code, kept breaking: #1562). Trigger to slim the `issues` rows `blob_for`
+#: ships: real Overview past 380,000 B.
+OVERVIEW_MAX_BYTES = 418_318
+
 _KEYS = frozenset(k for k, _ in TABS)
 _LABELS = dict(TABS)
 

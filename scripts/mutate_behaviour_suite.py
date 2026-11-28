@@ -1733,8 +1733,8 @@ MUTATIONS = [
 
     ("#ops-window: ?window=abc 422s the whole control room",
      "src/astro_ai/routes/admin.py",
-     "async def admin_ops(request: Request, window: str = \"\", day: str = \"\", tab: str = \"\") -> HTMLResponse:",
-     "async def admin_ops(request: Request, window: int = 0, day: str = \"\", tab: str = \"\") -> HTMLResponse:",
+     "async def admin_ops(request: Request, window: str = \"\", day: str = \"\", tab: str = \"\", activity: str = \"\") -> HTMLResponse:",
+     "async def admin_ops(request: Request, window: int = 0, day: str = \"\", tab: str = \"\", activity: str = \"\") -> HTMLResponse:",
      "test_a_mistyped_window_renders_the_default_page_not_an_error"),
 
     ("#ops-trend: features are ranked per day, so a bar changes colour daily",
