@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-11-28T03:36:31Z",
+ "generated_at": "2026-11-28T05:53:55Z",
  "window_days": 7,
  "truncated": [],
  "current": {
-  "start": "2026-11-21T03:36:31Z",
-  "end": "2026-11-28T03:36:31Z",
-  "loop_comments": 827,
-  "on_prs": 419,
-  "prs": 87,
-  "on_issues": 408,
+  "start": "2026-11-21T05:53:55Z",
+  "end": "2026-11-28T05:53:55Z",
+  "loop_comments": 823,
+  "on_prs": 418,
+  "prs": 85,
+  "on_issues": 405,
   "issues": 117,
-  "comments_per_pr": 4.82,
-  "comments_per_issue": 3.49,
-  "duplicates": 30,
-  "duplicate_rate_pct": 3.6,
+  "comments_per_pr": 4.92,
+  "comments_per_issue": 3.46,
+  "duplicates": 33,
+  "duplicate_rate_pct": 4.0,
   "sent_by_kind": {
    "growth-goals": 2,
    "ops-finding": 13,
@@ -21,6 +21,11 @@
   },
   "via_outbox": 18,
   "top_threads": [
+   {
+    "on": "pr",
+    "number": 1357,
+    "comments": 21
+   },
    {
     "on": "pr",
     "number": 1375,
@@ -32,23 +37,18 @@
     "comments": 17
    },
    {
-    "on": "pr",
-    "number": 1357,
+    "on": "issue",
+    "number": 1346,
     "comments": 13
    },
    {
     "on": "issue",
     "number": 1017,
     "comments": 12
-   },
-   {
-    "on": "pr",
-    "number": 1342,
-    "comments": 12
    }
   ],
   "owner_touched": {
-   "prs": 87,
+   "prs": 85,
    "owner_commented": 1,
    "pct": 1
   },
@@ -59,17 +59,17 @@
   }
  },
  "previous": {
-  "start": "2026-11-14T03:36:31Z",
-  "end": "2026-11-21T03:36:31Z",
-  "loop_comments": 1206,
-  "on_prs": 712,
-  "prs": 119,
-  "on_issues": 494,
-  "issues": 141,
-  "comments_per_pr": 5.98,
+  "start": "2026-11-14T05:53:55Z",
+  "end": "2026-11-21T05:53:55Z",
+  "loop_comments": 1167,
+  "on_prs": 684,
+  "prs": 117,
+  "on_issues": 483,
+  "issues": 138,
+  "comments_per_pr": 5.85,
   "comments_per_issue": 3.5,
-  "duplicates": 62,
-  "duplicate_rate_pct": 5.1,
+  "duplicates": 61,
+  "duplicate_rate_pct": 5.2,
   "sent_by_kind": {
    "growth-goals": 3,
    "growth-goals-issue": 2,
@@ -105,9 +105,9 @@
    }
   ],
   "owner_touched": {
-   "prs": 119,
+   "prs": 117,
    "owner_commented": 10,
-   "pct": 8
+   "pct": 9
   }
  },
  "kinds": {
