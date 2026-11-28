@@ -3023,7 +3023,11 @@ body{font-variant-numeric:tabular-nums}
                                    : "Agent-work cycles that did not deliver today",
                       function () { return D.today_failed || []; },
                       D.today_live ? "run" : "cycle"],
-    "backlog":       ["backlog", "Every open issue, highest priority first",
+    /* Overview ships only the top ops_tabs.OVERVIEW_ISSUE_ROWS issues (#1562), so the
+       title says so when the list is cut. {{ I.open }} is the live count. */
+    "backlog":       ["backlog", ISSUES.length === {{ I.open|int }}
+                        ? "Every open issue, highest priority first"
+                        : "Highest priority first: " + ISSUES.length + " of {{ I.open|int }} open (the Backlog tab lists all)",
                       function () {
                         var rank = { high: 0, medium: 1, low: 2, unset: 3 };
                         return ISSUES.slice().sort(function (a, b) {
