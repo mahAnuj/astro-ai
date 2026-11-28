@@ -9,8 +9,9 @@ listed date, <date>: HH:MM." -- and on a date with no ordinary sunrise (#228) it
 so instead of printing a time.
 
 Not changed, and pinned by tests/test_analytics_tool_completion_events.py: the
-`muhurat_searched.valid_count` and `notify` good_count keep counting every non-avoid
-date, so the #1218 baseline keeps its meaning.
+`muhurat_searched.valid_count` keeps counting every non-avoid date, so the #1218 baseline
+keeps its meaning. The owner's Telegram alert is different: since #1324 its "N auspicious"
+uses the headline's definition (test_alert_count_equals_the_headline_count_...).
 
 No network (geocoding is stubbed per test) and no LLM. Mutation rows:
 scripts/mutations/2026_11_21_1322_honest_count.py.
@@ -177,3 +178,29 @@ def test_the_zone_line_is_absent_when_no_zone_was_resolved(monkeypatch):
                              "app": None}), **extra)
         assert "Times are local to" not in html and "Sunrise on" not in html
         assert 'data-label="Windows"' in html
+
+
+def test_alert_count_equals_the_headline_count_with_a_caution_date(client, monkeypatch):
+    # #1324: the owner's Telegram alert said "N auspicious" with caution dates counted, while the
+    # page headline did not. The real formatter runs; only the send is captured.
+    from astro_ai import muhurat, notify
+
+    _stub(monkeypatch, **{"Delhi, India": DELHI})
+    real = muhurat.find_candidates("griha_pravesh", "Delhi, India", START, 60)
+    auspicious = [c for c in real if c.rating in AUSPICIOUS][:2]
+    caution = next((c for c in real if c.rating == "caution"), None)
+    avoid = next((c for c in real if c.rating == "avoid"), None)
+    assert len(auspicious) == 2 and caution and avoid, "premise: two auspicious, a caution, an avoid"
+    monkeypatch.setattr(muhurat, "find_candidates",
+                        lambda *a, **k: [auspicious[0], auspicious[1], caution, avoid])
+    texts: list[str] = []
+    monkeypatch.setattr(notify, "notify", lambda text, **kw: texts.append(text))
+
+    r = _post(client, "Delhi, India")
+    assert r.status_code == 200
+    sent = [t for t in texts if "Muhurat search" in t]
+    assert len(sent) == 1, texts
+    alert = re.search(r"📊 (\d+) auspicious of", sent[0])
+    headline = re.search(r"(\d+) auspicious dates? found in", _text(r.text))
+    assert alert and headline, (sent[0], "headline missing")
+    assert int(alert.group(1)) == int(headline.group(1)) == 2
