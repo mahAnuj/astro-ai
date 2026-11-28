@@ -896,6 +896,11 @@ def _traffic_view() -> dict:
 
     ga4_rows = _dict_rows(ga4.get("rows"))
     gsc_rows = _dict_rows(gsc.get("rows"))
+    # A series row is plotted only if it can be placed on the axis: the x-tick prints
+    # `date[5:]`, so a dict with no string date was a 500 on the Analytics tab (#1559).
+    # The raw lists stay in "ga4_rows"/"gsc_rows": ops_trends counts its own skipped rows.
+    ga4_dated = [r for r in ga4_rows if isinstance(r.get("date"), str)]
+    gsc_dated = [r for r in gsc_rows if isinstance(r.get("date"), str)]
 
     def movers(doc: dict, dim: str) -> dict:
         # A mover row is kept only if it can be shown: a dict, a numeric delta (the
@@ -918,12 +923,12 @@ def _traffic_view() -> dict:
         }
 
     return {
-        "ok": bool(ga4_rows or gsc_rows),
+        "ok": bool(ga4_dated or gsc_dated),
         "window": ga4.get("window") or gsc.get("window"),
-        "users": _series(ga4_rows, "active_users"),
-        "sessions_total": sum(_num(r.get("sessions")) for r in ga4_rows),
-        "impressions": _series(gsc_rows, "impressions"),
-        "clicks_total": sum(_num(r.get("clicks")) for r in gsc_rows),
+        "users": _series(ga4_dated, "active_users"),
+        "sessions_total": sum(_num(r.get("sessions")) for r in ga4_dated),
+        "impressions": _series(gsc_dated, "impressions"),
+        "clicks_total": sum(_num(r.get("clicks")) for r in gsc_dated),
         "ga4_rows": ga4_rows,
         "gsc_rows": gsc_rows,
         "pages": movers(pages, "page"),

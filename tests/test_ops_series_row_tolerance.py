@@ -210,3 +210,88 @@ def test_a_clean_file_is_unchanged(tmp_path):
     assert t["impressions"]["n"] == 2
     for key in KEYS:
         assert _page(key).status_code == 200
+
+
+# --- #1559: a row with no string date is dropped from its series, not a 500 ----------------
+
+_DATELESS = [{"impressions": 1, "clicks": 1},
+             {"date": 5, "impressions": 1, "clicks": 1},
+             {"date": None, "impressions": 1, "clicks": 1}]
+_DAILY = [("gsc-daily.json", "impressions"), ("ga4-daily.json", "active_users")]
+
+
+def _daily_doc(name, rows):
+    return _gsc(rows) if name == "gsc-daily.json" else {"rows": rows}
+
+
+@pytest.mark.parametrize("bad", _DATELESS)
+@pytest.mark.parametrize("name,metric", _DAILY)
+def test_a_dateless_daily_row_does_not_500_the_analytics_tab(tmp_path, name, metric, bad):
+    _write(tmp_path, name, _daily_doc(name, [{**bad, metric: bad.get(metric, 1)}]))
+    assert _page("analytics").status_code == 200
+
+
+def test_a_dateless_daily_row_does_not_500_any_tab(tmp_path):
+    _write(tmp_path, "gsc-daily.json", _gsc(list(_DATELESS)))
+    _write(tmp_path, "ga4-daily.json", {"rows": [{"active_users": 1}, {"date": 5}]})
+    assert [(k, _page(k).status_code) for k in KEYS] == [(k, 200) for k in KEYS]
+
+
+def test_a_good_gsc_row_beside_a_dateless_one_keeps_the_good_one(tmp_path):
+    good = {"date": "2026-11-01", "impressions": 1, "clicks": 1}
+    _write(tmp_path, "gsc-daily.json",
+           _gsc([{"impressions": 100, "clicks": 50}, good, {"date": 5, "impressions": 7}]))
+    t = _traffic()
+    assert t["impressions"]["ok"] is True
+    assert t["impressions"]["n"] == 1 and t["impressions"]["total"] == 1
+    assert t["clicks_total"] == 1
+
+
+def test_a_good_ga4_row_beside_a_dateless_one_keeps_the_good_one(tmp_path):
+    good = {"date": "2026-11-01", "active_users": 4, "sessions": 6}
+    _write(tmp_path, "ga4-daily.json",
+           {"rows": [{"active_users": 100, "sessions": 50}, good, {"date": None, "sessions": 9}]})
+    t = _traffic()
+    assert t["users"]["n"] == 1 and t["users"]["total"] == 4
+    assert t["sessions_total"] == 6
+
+
+def test_the_raw_row_lists_still_count_a_dateless_row(tmp_path):
+    # ops_trends reports "N row(s) skipped" from this list, so it must not be screened here.
+    _write(tmp_path, "gsc-daily.json", _gsc(_good_gsc() + [{"impressions": 1}]))
+    assert len(_traffic()["gsc_rows"]) == 3
+
+
+def test_ops_trends_still_reports_a_dateless_row_as_skipped(tmp_path):
+    from astro_ai import ops_kpis, ops_trends
+    from datetime import date, timedelta
+    rows = [{"date": (date(2026, 11, 24) - timedelta(days=i)).isoformat(),
+             "impressions": 5, "clicks": 10} for i in range(14)]
+    _write(tmp_path, "gsc-daily.json", _gsc(rows + [{"impressions": 1, "clicks": 1}]))
+    o = {"today_ist": "2026-11-25", "loop": {"ok": False}, "agents": {"ok": True, "agents": {}},
+         "traffic": {"gsc_rows": _traffic()["gsc_rows"], "window": ["2026-10-28", "2026-11-26"]},
+         "issue_flow": {"days": [], "age": {"text": "2h ago"}}, "ages": {}}
+    t = ops_trends.build(o, ops_kpis.build(o), ops_tabs.tab_links("overview", 7, ""))
+    organic = next(m for m in t["metrics"] if m["key"] == "organic")
+    assert "1 row(s) skipped" in organic["n_text"]
+
+
+def test_the_page_plots_a_dated_row_and_a_dateless_rows_value_appears_nowhere(tmp_path):
+    rows = [{"date": "2026-11-01", "impressions": 10, "clicks": 1},
+            {"impressions": 987654, "clicks": 1},
+            {"date": "2026-11-02", "impressions": 20, "clicks": 2}]
+    _write(tmp_path, "gsc-daily.json", _gsc(rows))
+    r = _page("analytics")
+    assert r.status_code == 200
+    assert "11-01" in r.text and "11-02" in r.text
+    assert "987654" not in r.text and "987,654" not in r.text
+
+
+def test_when_only_dateless_rows_exist_the_series_says_no_data(tmp_path):
+    # ga4 is readable, so the Traffic panel renders and the gsc chart must fall to its note.
+    _write(tmp_path, "ga4-daily.json", {"rows": [{"date": "2026-11-01", "active_users": 3}]})
+    _write(tmp_path, "gsc-daily.json", _gsc([{"impressions": 987654}]))
+    assert _traffic()["impressions"] == {"ok": False}
+    r = _page("analytics")
+    assert r.status_code == 200 and "987654" not in r.text
+    assert "measurements/gsc-daily.json</code> is missing or has no rows" in r.text
