@@ -45,6 +45,16 @@ on:
   workflow_run:
     workflows: ["PR gates"]
     types: [completed]
+  # A DISPATCHED pr-gates run on main is reported through this (#1221). GitHub
+  # delivered `workflow_run` for 1 of 20 of the runs agent-merge dispatches after
+  # a merge (the chain is past its three-level limit), so agent-merge now also
+  # dispatches this with the time it dispatched pr-gates, and
+  # scripts/await_main_gates.py waits for that run and describes it.
+  workflow_dispatch:
+    inputs:
+      after:
+        description: "UTC time agent-merge dispatched pr-gates on main (YYYY-MM-DDTHH:MM:SSZ)"
+        required: true
 
 # SERIALISED REPO-WIDE (#461 round 4). The sentinel lookup is read-then-write
 # with no lock: two reporters that both read "no sentinel open" both file one.
@@ -103,19 +113,38 @@ jobs:
     # green path is a ~10s no-op when no sentinel is open, which is the common
     # case.
     if: >-
+      github.event_name == 'workflow_dispatch' || (
       contains(fromJSON('["push", "schedule", "workflow_dispatch"]'), github.event.workflow_run.event) &&
       github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.conclusion != 'skipped'
+      github.event.workflow_run.conclusion != 'skipped')
     runs-on: ubuntu-latest
+    # The dispatched leg waits for a pr-gates run (~17 min, at most 55).
+    timeout-minutes: 70
     steps:
-      - name: File, append to, or close the main-red sentinel
+      - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch'
+
+      # Writes GATES_SHA / GATES_URL / GATES_RUN_ID / GATES_CONCLUSION, the four
+      # facts the workflow_run payload carries on the other leg. Writes nothing
+      # for a run a later merge's dispatch replaced (#1284's false-red shape) or
+      # one that was skipped, and the step below then does not run.
+      - name: Wait for the dispatched pr-gates run on main
+        if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          SHA: ${{ github.event.workflow_run.head_sha }}
-          RUN_URL: ${{ github.event.workflow_run.html_url }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          AFTER: ${{ inputs.after }}
+        run: python3 scripts/await_main_gates.py
+
+      - name: File, append to, or close the main-red sentinel
+        if: github.event_name == 'workflow_run' || env.GATES_RUN_ID != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha || env.GATES_SHA }}
+          RUN_URL: ${{ github.event.workflow_run.html_url || env.GATES_URL }}
+          RUN_ID: ${{ github.event.workflow_run.id || env.GATES_RUN_ID }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion || env.GATES_CONCLUSION }}
         run: |
           set -euo pipefail
           short=$(printf '%s' "$SHA" | cut -c1-7)

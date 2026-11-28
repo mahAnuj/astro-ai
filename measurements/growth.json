@@ -1,49 +1,28 @@
 {
- "generated_at": "2026-11-25T12:29:54Z",
+ "generated_at": "2026-11-28T02:52:25Z",
  "target": 0.6,
  "week": "2026-W48",
- "today_date": "2026-11-25",
+ "today_date": "2026-11-28",
  "today": {
-  "growth": 2,
-  "other": 10,
-  "exempt": 1,
-  "share": 0.167
+  "growth": 0,
+  "other": 5,
+  "exempt": 4,
+  "share": 0.0
  },
  "this_week": {
-  "growth": 14,
-  "other": 32,
-  "exempt": 1,
-  "share": 0.304
+  "growth": 15,
+  "other": 67,
+  "exempt": 10,
+  "share": 0.183
  },
  "this_month": {
-  "growth": 48,
-  "other": 282,
-  "exempt": 1,
-  "share": 0.145
+  "growth": 49,
+  "other": 317,
+  "exempt": 10,
+  "share": 0.134
  },
  "must_pick_growth": true,
  "days": [
-  {
-   "date": "2026-11-12",
-   "growth": 0,
-   "other": 6,
-   "exempt": 0,
-   "share": 0.0
-  },
-  {
-   "date": "2026-11-13",
-   "growth": 1,
-   "other": 6,
-   "exempt": 0,
-   "share": 0.143
-  },
-  {
-   "date": "2026-11-14",
-   "growth": 0,
-   "other": 26,
-   "exempt": 0,
-   "share": 0.0
-  },
   {
    "date": "2026-11-15",
    "growth": 0,
@@ -117,507 +96,519 @@
   {
    "date": "2026-11-25",
    "growth": 2,
+   "other": 13,
+   "exempt": 5,
+   "share": 0.133
+  },
+  {
+   "date": "2026-11-26",
+   "growth": 0,
    "other": 10,
+   "exempt": 0,
+   "share": 0.0
+  },
+  {
+   "date": "2026-11-27",
+   "growth": 1,
+   "other": 17,
    "exempt": 1,
-   "share": 0.167
+   "share": 0.056
+  },
+  {
+   "date": "2026-11-28",
+   "growth": 0,
+   "other": 5,
+   "exempt": 4,
+   "share": 0.0
   }
  ],
  "cycles": [
   {
-   "run": 45603269707,
-   "started": "2026-11-25T11:18:51Z",
-   "issue": 1255,
-   "title": "tokens: 26 of 123 build cycles in 7 days re-entered an issue already in progress \u2014 cut the rework, not the fix rounds",
+   "run": 46094801323,
+   "started": "2026-11-28T01:46:35Z",
+   "issue": 1562,
+   "title": "QA follow-up: Overview is 836 B under its 250,000 B cap and growing ~600 B/day (PR #1561)",
    "class": "other",
    "outcome": "pr open",
-   "pr": 1475,
+   "pr": 1568,
    "agents": {
     "architect": 1,
     "backend-engineer": 1,
-    "project-manager": 1
+    "project-manager": 1,
+    "qa": 1
    }
   },
   {
-   "run": 45593061168,
-   "started": "2026-11-25T10:14:29Z",
+   "run": 46087305460,
+   "started": "2026-11-28T00:19:58Z",
    "issue": 1133,
    "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
    "class": "exempt",
    "outcome": "pr open",
-   "pr": 1474,
+   "pr": 1567,
    "agents": {
     "architect": 1,
+    "backend-engineer": 1,
+    "frontend-engineer": 1
+   }
+  },
+  {
+   "run": 46080282312,
+   "started": "2026-11-27T23:03:27Z",
+   "issue": 1559,
+   "title": "QA follow-up: Analytics tab 500s on a daily-series row with no string date (PR #1558)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1564,
+   "agents": null
+  },
+  {
+   "run": 46078923409,
+   "started": "2026-11-27T22:49:16Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "shipped",
+   "pr": 1561,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 46069395399,
+   "started": "2026-11-27T21:18:09Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "shipped",
+   "pr": 1561,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 46065178319,
+   "started": "2026-11-27T20:40:03Z",
+   "issue": 1554,
+   "title": "QA follow-up: a malformed row in gsc-daily.json or issues.json 500s every /admin/ops tab (PR #1552)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1558,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 46059427967,
+   "started": "2026-11-27T19:49:57Z",
+   "issue": 1553,
+   "title": "QA follow-up: Analytics tab 500s when gsc-daily.json is absent or empty (PR #1552)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1556,
+   "agents": null
+  },
+  {
+   "run": 46058481865,
+   "started": "2026-11-27T19:41:40Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "shipped",
+   "pr": 1552,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 46055368753,
+   "started": "2026-11-27T19:15:12Z",
+   "issue": 1504,
+   "title": "Muhurat: Shashthi/Dwadashi absent from griha_pravesh and vivah avoid_tithis with no note (split from #1497)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1550,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 46040045737,
+   "started": "2026-11-27T17:13:00Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "shipped",
+   "pr": 1552,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 46032569034,
+   "started": "2026-11-27T16:19:03Z",
+   "issue": 1504,
+   "title": "Muhurat: Shashthi/Dwadashi absent from griha_pravesh and vivah avoid_tithis with no note (split from #1497)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1550,
+   "agents": null
+  },
+  {
+   "run": 46028473636,
+   "started": "2026-11-27T15:50:40Z",
+   "issue": 1506,
+   "title": "measure: no export carries HTTP 5xx per route; only LLM fallbacks are counted (analyst lever 3, third report in a row)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1549,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 46016945872,
+   "started": "2026-11-27T14:33:07Z",
+   "issue": 1506,
+   "title": "measure: no export carries HTTP 5xx per route; only LLM fallbacks are counted (analyst lever 3, third report in a row)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1549,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 46010351359,
+   "started": "2026-11-27T13:48:56Z",
+   "issue": 1289,
+   "title": "QA follow-up: dispatch_cycle.sh reads LOOP_PAUSED case-sensitively, so 'True' pauses the jobs but still dispatches",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1548,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 46001606476,
+   "started": "2026-11-27T12:47:32Z",
+   "issue": 1546,
+   "title": "seo: footer and body CTAs still link four 303 URLs on every page (#1107 residual, extends #1177)",
+   "class": "growth",
+   "outcome": "shipped",
+   "pr": 1547,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45994211785,
+   "started": "2026-11-27T11:54:04Z",
+   "issue": 1542,
+   "title": "QA follow-up: a non-object loop.json (e.g. [1]) still 500s every /admin/ops tab (PR #1541)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1544,
+   "agents": null
+  },
+  {
+   "run": 45980226354,
+   "started": "2026-11-27T10:13:11Z",
+   "issue": 1478,
+   "title": "QA follow-up: pre_qa_check grounding proxy fails grounded commits whose message has no corpus: line (PR #1475)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1543,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45977808103,
+   "started": "2026-11-27T09:56:00Z",
+   "issue": 1492,
+   "title": "QA follow-up: one malformed loop.json row 500s every /admin/ops tab before ops_kpis can skip it (PR #1489)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1541,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45968422735,
+   "started": "2026-11-27T08:47:37Z",
+   "issue": 1492,
+   "title": "QA follow-up: one malformed loop.json row 500s every /admin/ops tab before ops_kpis can skip it (PR #1489)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1541,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45966592131,
+   "started": "2026-11-27T08:33:28Z",
+   "issue": 1529,
+   "title": "[UI] /matching 375px: two nested bordered cards cost ~28px of input width; test flattening the inner card on mobile",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1540,
+   "agents": {
+    "architect": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45960101667,
+   "started": "2026-11-27T07:40:36Z",
+   "issue": 1530,
+   "title": "[UI] Bottom nav 'Ask' icon is fullwidth '\uff1f' (U+FF1F): renders as an empty box without a CJK font fallback",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1539,
+   "agents": {
+    "architect": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
+  {
+   "run": 45942315479,
+   "started": "2026-11-27T04:51:03Z",
+   "issue": 1477,
+   "title": "QA follow-up: reentry stand-down can drop a QA-FAIL fix entry after an unrelated claude[bot] comment (PR #1475)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1536,
+   "agents": null
+  },
+  {
+   "run": 45925955952,
+   "started": "2026-11-27T02:02:13Z",
+   "issue": 1528,
+   "title": "QA follow-up: price and motive claims remain on career-during-sade-sati, manglik-remedies, foreign-career-yoga (PR #1526)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1532,
+   "agents": null
+  },
+  {
+   "run": 45918129041,
+   "started": "2026-11-27T00:40:47Z",
+   "issue": 1525,
+   "title": "QA follow-up: 'selling anxiety / tens of thousands' price-and-motive claims remain on 12 /learn templates and the registry (PR #1523 deferred them)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1526,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45910705681,
+   "started": "2026-11-26T23:23:56Z",
+   "issue": 1525,
+   "title": "QA follow-up: 'selling anxiety / tens of thousands' price-and-motive claims remain on 12 /learn templates and the registry (PR #1523 deferred them)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1526,
+   "agents": null
+  },
+  {
+   "run": 45899139116,
+   "started": "2026-11-26T21:35:05Z",
+   "issue": 1513,
+   "title": "QA follow-up: #1511 left the worry-claim families on rahu-remedies, mars-remedies, kundali-matching, shani-saturn and a Venus-8th FAQ",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1523,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45887790272,
+   "started": "2026-11-26T20:00:15Z",
+   "issue": 1513,
+   "title": "QA follow-up: #1511 left the worry-claim families on rahu-remedies, mars-remedies, kundali-matching, shani-saturn and a Venus-8th FAQ",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1523,
+   "agents": null
+  },
+  {
+   "run": 45877472519,
+   "started": "2026-11-26T18:37:55Z",
+   "issue": 1514,
+   "title": "QA follow-up: /kaal-sarp-check caveat (i18n ksy_caveat) contradicts the #1511 Kaal Sarp article on what the held books say",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1519,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45868328170,
+   "started": "2026-11-26T17:30:38Z",
+   "issue": 1514,
+   "title": "QA follow-up: /kaal-sarp-check caveat (i18n ksy_caveat) contradicts the #1511 Kaal Sarp article on what the held books say",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1519,
+   "agents": null
+  },
+  {
+   "run": 45833157375,
+   "started": "2026-11-26T13:51:06Z",
+   "issue": 1509,
+   "title": "learn pages repeat the home-page claims #1501 removed: 'most lives are better', 'actually aren't Manglik', 'over-diagnosed' - unsourced against the held books",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1511,
+   "agents": {
+    "frontend-engineer": 1,
+    "qa": 2
+   }
+  },
+  {
+   "run": 45816156706,
+   "started": "2026-11-26T12:03:48Z",
+   "issue": 1509,
+   "title": "learn pages repeat the home-page claims #1501 removed: 'most lives are better', 'actually aren't Manglik', 'over-diagnosed' - unsourced against the held books",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1511,
+   "agents": null
+  },
+  {
+   "run": 45757085806,
+   "started": "2026-11-26T04:44:14Z",
+   "issue": 1501,
+   "title": "home: worry cards claim 'what the classical texts say' - Kaal Sarp, Manglik and Sade Sati lines are unsourced or contested",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1508,
+   "agents": null
+  },
+  {
+   "run": 45749606081,
+   "started": "2026-11-26T03:32:47Z",
+   "issue": 1497,
+   "title": "QA follow-up: finder dark-half/avoid_tithi legend wording (PR #1496)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1503,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 45739810063,
+   "started": "2026-11-26T02:03:05Z",
+   "issue": 1497,
+   "title": "QA follow-up: finder dark-half/avoid_tithi legend wording (PR #1496)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1503,
+   "agents": {
+    "architect": 1,
+    "astro-auditor": 1,
     "backend-engineer": 1,
     "project-manager": 1
    }
   },
   {
-   "run": 45550122168,
-   "started": "2026-11-25T04:56:15Z",
-   "issue": 1469,
-   "title": "analytics: muhurat_searched is absent from GA4 in every report \u2014 cannot tell broken from unused (half of #1336's metric)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1472,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45547131994,
-   "started": "2026-11-25T04:29:33Z",
-   "issue": 1466,
-   "title": "tokens: code-index generator and the look-up-before-you-read agent rule (part of #1256)",
+   "run": 45731449633,
+   "started": "2026-11-26T00:49:16Z",
+   "issue": 1344,
+   "title": "QA follow-up: #1342 couple-mode Top pick can be a 'mixed' verdict while a 'good-for-both' day of the same grade exists",
    "class": "other",
    "outcome": "shipped",
-   "pr": 1470,
+   "pr": 1499,
    "agents": {
     "qa": 1
    }
   },
   {
-   "run": 45536453385,
-   "started": "2026-11-25T02:56:20Z",
-   "issue": 1466,
-   "title": "tokens: code-index generator and the look-up-before-you-read agent rule (part of #1256)",
+   "run": 45721050663,
+   "started": "2026-11-25T23:23:56Z",
+   "issue": 1344,
+   "title": "QA follow-up: #1342 couple-mode Top pick can be a 'mixed' verdict while a 'good-for-both' day of the same grade exists",
    "class": "other",
    "outcome": "shipped",
-   "pr": 1470,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 2,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45532549739,
-   "started": "2026-11-25T02:23:06Z",
-   "issue": 1457,
-   "title": "QA follow-up: Vivah lagna legend renders with no row blocks when the window computation fails (PR #1455)",
-   "class": "other",
-   "outcome": "pr open",
-   "pr": 1465,
+   "pr": 1499,
    "agents": null
   },
   {
-   "run": 45526898284,
-   "started": "2026-11-25T01:35:45Z",
-   "issue": 1451,
-   "title": "QA follow-up: PR #1449 page-locations headline states lower-bound counts as exact; encoded names unpinned",
+   "run": 45694480094,
+   "started": "2026-11-25T20:23:22Z",
+   "issue": 1355,
+   "title": "QA follow-up: dark-half tithi credit and mixed-status avoid_tithi are labelled unevenly across events (PR #1350)",
    "class": "other",
    "outcome": "shipped",
-   "pr": 1462,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45523919175,
-   "started": "2026-11-25T01:11:51Z",
-   "issue": 1387,
-   "title": "detect_stalls: mergeable-but-open PRs starved by a ruled blocked-on-owner workflow defect still oblige an action, waking chief every steward run",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1460,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45515523924,
-   "started": "2026-11-25T00:07:05Z",
-   "issue": 1387,
-   "title": "detect_stalls: mergeable-but-open PRs starved by a ruled blocked-on-owner workflow defect still oblige an action, waking chief every steward run",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1460,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45511968192,
-   "started": "2026-11-24T23:40:41Z",
-   "issue": 1450,
-   "title": "QA follow-up: PR #1449 fold_location emits bare-token names, double-encoded path addresses and /r/<id> snapshot ids",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1458,
+   "pr": 1496,
    "agents": null
   },
   {
-   "run": 45498131461,
-   "started": "2026-11-24T22:09:02Z",
-   "issue": 1026,
-   "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
+   "run": 45683260499,
+   "started": "2026-11-25T19:14:45Z",
+   "issue": 1483,
+   "title": "QA follow-up: matching.html and manglik-remedies status list still list comparable severity as a cancellation without saying it is ours (PR #1375)",
    "class": "other",
    "outcome": "shipped",
-   "pr": 1455,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45486601069,
-   "started": "2026-11-24T21:00:17Z",
-   "issue": 1026,
-   "title": "muhurat Vivah: apply Rao's Table 79 wedding lagna condition (benefic-owned lagna, clean 7th) as time windows",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1455,
+   "pr": 1493,
    "agents": null
   },
   {
-   "run": 45461507691,
-   "started": "2026-11-24T18:37:19Z",
-   "issue": 1436,
-   "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
-   "class": "growth",
-   "outcome": "pr open",
-   "pr": 1438,
+   "run": 45668368241,
+   "started": "2026-11-25T17:47:04Z",
+   "issue": 1483,
+   "title": "QA follow-up: matching.html and manglik-remedies status list still list comparable severity as a cancellation without saying it is ours (PR #1375)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1493,
    "agents": null
   },
   {
-   "run": 45403353522,
-   "started": "2026-11-24T13:25:53Z",
-   "issue": 1237,
-   "title": "analytics: no export carries GA4 page_location \u2014 #1066 and #1093 cannot be scored (3 reports in a row)",
-   "class": "other",
+   "run": 45657790798,
+   "started": "2026-11-25T16:47:48Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
    "outcome": "shipped",
-   "pr": 1449,
-   "agents": null
-  },
-  {
-   "run": 45396211064,
-   "started": "2026-11-24T12:43:04Z",
-   "issue": 1295,
-   "title": "QA follow-up: the Hindi rashifal suffix asks for Sanskrit terms while the prompt asks for everyday, non-Sanskrit-heavy Hindi",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1447,
+   "pr": 1489,
    "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45394566362,
-   "started": "2026-11-24T12:32:54Z",
-   "issue": 1070,
-   "title": "analytics: instrument the core funnels",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1446,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45384585225,
-   "started": "2026-11-24T11:29:06Z",
-   "issue": 1295,
-   "title": "QA follow-up: the Hindi rashifal suffix asks for Sanskrit terms while the prompt asks for everyday, non-Sanskrit-heavy Hindi",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1447,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45372767475,
-   "started": "2026-11-24T10:13:51Z",
-   "issue": 1070,
-   "title": "analytics: instrument the core funnels",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1446,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1
-   }
-  },
-  {
-   "run": 45363615784,
-   "started": "2026-11-24T09:16:24Z",
-   "issue": 1430,
-   "title": "seo: 7th-house pair (3,008 impr, pos 6.8-7.2, 27 clicks) \u2014 planets-in-7th has no answer for an empty 7th house or 'which planet'; body change, not a title test",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1440,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45356939483,
-   "started": "2026-11-24T08:31:59Z",
-   "issue": 1442,
-   "title": "chief_clear.py counts a superseded failed `gates` run, so a ruled and green PR (#1428) stays held",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1445,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45351443241,
-   "started": "2026-11-24T07:53:06Z",
-   "issue": 1430,
-   "title": "seo: 7th-house pair (3,008 impr, pos 6.8-7.2, 27 clicks) \u2014 planets-in-7th has no answer for an empty 7th house or 'which planet'; body change, not a title test",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1440,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45343346544,
-   "started": "2026-11-24T06:49:41Z",
-   "issue": 1439,
-   "title": "QA follow-up: test_the_panel_renders_the_evals is date-bombed (fixed NOW vs real clock), red on main since 2026-11-24",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1441,
-   "agents": null
-  },
-  {
-   "run": 45340369099,
-   "started": "2026-11-24T06:25:39Z",
-   "issue": 1430,
-   "title": "seo: 7th-house pair (3,008 impr, pos 6.8-7.2, 27 clicks) \u2014 planets-in-7th has no answer for an empty 7th house or 'which planet'; body change, not a title test",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1440,
-   "agents": null
-  },
-  {
-   "run": 45333086586,
-   "started": "2026-11-24T05:24:23Z",
-   "issue": 1436,
-   "title": "fetch_gsc.py --by query-page: query x page export with coverage_pct (script half of #1432)",
-   "class": "growth",
-   "outcome": "pr open",
-   "pr": 1438,
-   "agents": null
-  },
-  {
-   "run": 45326457147,
-   "started": "2026-11-24T04:26:53Z",
-   "issue": 1372,
-   "title": "QA follow-up: chain_cycle quota_reason crashes (AttributeError) on a non-string latest.at / generated_at (PR #1367)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1433,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45324708773,
-   "started": "2026-11-24T04:12:03Z",
-   "issue": 1243,
-   "title": "knowledge: vedic_reference.md \u00a729.14 still says Magha/Mula first-pada exclusion is not implemented (after #1242)",
-   "class": "other",
-   "outcome": "pr open",
-   "pr": 1428,
-   "agents": null
-  },
-  {
-   "run": 45315956148,
-   "started": "2026-11-24T02:56:17Z",
-   "issue": 1285,
-   "title": "QA follow-up: qa_verdict.sh labels before it comments, and accepts an abbreviated --sha that then does not bind",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1426,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45313429964,
-   "started": "2026-11-24T02:34:52Z",
-   "issue": 1361,
-   "title": "QA follow-up: natal erasure key-count bound says 20, /account/delete can pass 40 (PR #1360)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1425,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45308728971,
-   "started": "2026-11-24T01:56:39Z",
-   "issue": 1315,
-   "title": "QA follow-up: privacy page does not list the session-revocation record kept up to 90 days after account deletion (PR #1314)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1422,
-   "agents": null
-  },
-  {
-   "run": 45243851912,
-   "started": "2026-11-23T18:57:38Z",
-   "issue": 1376,
-   "title": "QA follow-up: matching.html still lists comparable severity among implemented cancellations; decision record misdescribes the gate split (PR #1375, #1369)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1418,
-   "agents": null
-  },
-  {
-   "run": 45212007413,
-   "started": "2026-11-23T16:02:46Z",
-   "issue": 1416,
-   "title": "analytics: tool_error marker on /matching error render (slice of #1070 row 8)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1417,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45199625786,
-   "started": "2026-11-23T14:56:31Z",
-   "issue": 1416,
-   "title": "analytics: tool_error marker on /matching error render (slice of #1070 row 8)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1417,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45197422578,
-   "started": "2026-11-23T14:44:25Z",
-   "issue": 1411,
-   "title": "analytics: tool_error marker on dosha_check_form.html (slice of #1070 row 8)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1412,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45196244694,
-   "started": "2026-11-23T14:37:43Z",
-   "issue": 1408,
-   "title": "QA follow-up: kundli-submissions totals.non_probe covers fewer days than fresh_generations (PR #1407)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1410,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45170093706,
-   "started": "2026-11-23T11:59:32Z",
-   "issue": 1411,
-   "title": "analytics: tool_error marker on dosha_check_form.html (slice of #1070 row 8)",
-   "class": "growth",
-   "outcome": "shipped",
-   "pr": 1412,
-   "agents": null
-  },
-  {
-   "run": 45166220020,
-   "started": "2026-11-23T11:33:07Z",
-   "issue": 1408,
-   "title": "QA follow-up: kundli-submissions totals.non_probe covers fewer days than fresh_generations (PR #1407)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1410,
-   "agents": null
-  },
-  {
-   "run": 45164212084,
-   "started": "2026-11-23T11:19:50Z",
-   "issue": 1272,
-   "title": "analytics: no export carries the server-side kundli submission count \u2014 #1068 cannot be scored (3 reports in a row)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1407,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45154869917,
-   "started": "2026-11-23T10:18:23Z",
-   "issue": 1272,
-   "title": "analytics: no export carries the server-side kundli submission count \u2014 #1068 cannot be scored (3 reports in a row)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1407,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45152309796,
-   "started": "2026-11-23T10:01:39Z",
-   "issue": 1330,
-   "title": "QA follow-up: a one-day typo repeated in registry and expected JSON passes every festival gate for non-Purnima/Ekadashi rows (PR #1329)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1406,
-   "agents": {
-    "qa": 1
-   }
-  },
-  {
-   "run": 45140675179,
-   "started": "2026-11-23T08:41:33Z",
-   "issue": 1330,
-   "title": "QA follow-up: a one-day typo repeated in registry and expected JSON passes every festival gate for non-Purnima/Ekadashi rows (PR #1329)",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1406,
-   "agents": {
-    "architect": 1,
-    "backend-engineer": 1,
-    "project-manager": 1,
     "qa": 1
    }
   }
@@ -948,28 +939,28 @@
   }
  },
  "metrics": {
-  "gsc_clicks_28d": 416,
-  "gsc_impressions_28d": 31021,
-  "ga4_users_28d": 707,
-  "ga4_new_users_28d": 659,
-  "ga4_sessions_28d": 804,
+  "gsc_clicks_28d": 445,
+  "gsc_impressions_28d": 31891,
+  "ga4_users_28d": 737,
+  "ga4_new_users_28d": 684,
+  "ga4_sessions_28d": 838,
   "objective_top5": 1,
-  "growth_share_today": 0.167,
-  "growth_share_week": 0.304,
-  "growth_share_month": 0.145
+  "growth_share_today": 0.0,
+  "growth_share_week": 0.183,
+  "growth_share_month": 0.134
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
-   "period": "2026-11-25",
-   "progress": 0.278,
-   "detail": "2 of 12 cycles on growth, target 60%, 1 exempt",
+   "period": "2026-11-28",
+   "progress": 0.0,
+   "detail": "0 of 5 cycles on growth, target 60%, 4 exempt",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.432,
+   "progress": 0.545,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -980,8 +971,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.304,
-     "progress": 0.657,
+     "current": 0.183,
+     "progress": 0.225,
      "basis": "growth_share_week"
     },
     {
@@ -995,8 +986,8 @@
       1076,
       1107
      ],
-     "current": 416,
-     "progress": 0.81,
+     "current": 445,
+     "progress": 1.0,
      "basis": "gsc_clicks_28d"
     },
     {
@@ -1010,8 +1001,8 @@
       1076,
       1107
      ],
-     "current": 31021,
-     "progress": 0.695,
+     "current": 31891,
+     "progress": 1.0,
      "basis": "gsc_impressions_28d"
     },
     {
@@ -1041,8 +1032,8 @@
       1017,
       1341
      ],
-     "current": "0/2 issues closed",
-     "progress": 0.0,
+     "current": "1/2 issues closed",
+     "progress": 0.5,
      "basis": "issues"
     }
    ]
@@ -1050,7 +1041,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.361,
+   "progress": 0.503,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1065,8 +1056,8 @@
       1107,
       1071
      ],
-     "current": 31021,
-     "progress": 0.515,
+     "current": 31891,
+     "progress": 0.728,
      "basis": "gsc_impressions_28d"
     },
     {
@@ -1081,8 +1072,8 @@
       1073,
       1075
      ],
-     "current": 707,
-     "progress": 0.147,
+     "current": 737,
+     "progress": 0.422,
      "basis": "ga4_users_28d"
     },
     {
@@ -1093,8 +1084,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.145,
-     "progress": 0.42,
+     "current": 0.134,
+     "progress": 0.359,
      "basis": "growth_share_month"
     }
    ]
@@ -1102,7 +1093,7 @@
   "quarterly": {
    "label": "Quarterly goals",
    "period": "2026-Q4",
-   "progress": 0.068,
+   "progress": 0.136,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1132,8 +1123,8 @@
       1071,
       1072
      ],
-     "current": 416,
-     "progress": 0.152,
+     "current": 445,
+     "progress": 0.286,
      "basis": "gsc_clicks_28d"
     },
     {
@@ -1144,8 +1135,8 @@
      "baseline": 640,
      "target": 1000,
      "issues": [],
-     "current": 659,
-     "progress": 0.053,
+     "current": 684,
+     "progress": 0.122,
      "basis": "ga4_new_users_28d"
     }
    ]
@@ -1158,53 +1149,53 @@
    "queries": [
     {
      "query": "rahu mahadasha ketu antardasha",
-     "impressions": 350,
-     "position": 6.3
+     "impressions": 324,
+     "position": 6.4
     },
     {
      "query": "sun debilitated in which sign",
-     "impressions": 332,
-     "position": 7.2
+     "impressions": 307,
+     "position": 7.1
     },
     {
      "query": "sun is debilitated in which sign",
-     "impressions": 153,
-     "position": 6.0
+     "impressions": 150,
+     "position": 6.1
     },
     {
      "query": "jupiter in 10th house",
-     "impressions": 123,
-     "position": 10.9
+     "impressions": 140,
+     "position": 10.2
     },
     {
      "query": "yes",
-     "impressions": 121,
-     "position": 3.8
+     "impressions": 125,
+     "position": 3.9
     },
     {
      "query": "guru in 10th house",
-     "impressions": 94,
+     "impressions": 98,
      "position": 8.7
     },
     {
      "query": "10th lord in 6th house",
-     "impressions": 89,
+     "impressions": 74,
      "position": 8.7
     },
     {
-     "query": "sun debilitated sign",
-     "impressions": 70,
-     "position": 5.8
+     "query": "which mahadasha is best for career",
+     "impressions": 68,
+     "position": 8.4
+    },
+    {
+     "query": "sun debilitation degree",
+     "impressions": 60,
+     "position": 6.5
     },
     {
      "query": "sun debilitated",
-     "impressions": 68,
+     "impressions": 59,
      "position": 8.8
-    },
-    {
-     "query": "which mahadasha is best for career",
-     "impressions": 65,
-     "position": 8.4
     }
    ],
    "goals": []
@@ -1215,8 +1206,6 @@
   1065,
   1076,
   1107,
-  1341,
-  1436,
   1437,
   1469
  ]

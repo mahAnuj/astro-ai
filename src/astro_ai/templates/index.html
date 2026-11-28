@@ -623,7 +623,7 @@
         <h2 class="font-marcellus text-[29px] sm:text-4xl lg:text-[44px] leading-[1.08] text-bhagya-cream">Don&rsquo;t fear your Kundali.</h2>
       </div>
       <p class="text-bhagya-cream/[.55] max-w-[330px] mt-3 sm:mt-0 leading-relaxed">
-        The three things people are most afraid to look up &mdash; and what the classical texts actually say about them.
+        The three things people are most afraid to look up &mdash; and what the books we hold actually say about them.
       </p>
     </div>
 
@@ -642,15 +642,15 @@
     <div class="grid sm:grid-cols-3 gap-4 sm:gap-6">
       {{ worry_card("/learn/sade-sati/", "&#9796;", "Sade Sati",
          "&ldquo;Seven and a half bad years.&rdquo;",
-         "It&rsquo;s a transit, not a curse &mdash; a structured course in maturity, and most lives are better on the other side of it.") }}
+         "It&rsquo;s a transit, not a curse &mdash; we read it as a course in maturity, and how hard it feels depends on your chart.") }}
 
       {{ worry_card("/learn/manglik-dosh/", "&#9794;", "Manglik dosha",
          "&ldquo;It will ruin the marriage.&rdquo;",
-         "The tradition repeats many cancellation rules &mdash; a lot of people labelled Manglik actually aren&rsquo;t.") }}
+         "Sources disagree &mdash; one lists cancellation rules, one rejects them &mdash; but both say don&rsquo;t over-weight the dosha.") }}
 
       {{ worry_card("/learn/kaal-sarp-dosh/", "&#9738;", "Kaal Sarp",
          "&ldquo;Every planet trapped.&rdquo;",
-         "One of the most over-diagnosed conditions in modern astrology &mdash; a structure for understanding a pattern, not a sentence to fear.") }}
+         "Online checkers over-flag it, in our view &mdash; a pattern to understand, not a sentence to fear.") }}
     </div>
   </div>
 </section>
@@ -720,7 +720,7 @@
        thick frame around the whole block. The handoff calls this out and it is
        the one way this pattern goes wrong. #}
     {% macro feature_card(href, icon_svg, title, tag, body) %}
-    <a href="{{ href }}"
+    <a href="{{ chart_href(request, href) }}"
        class="group flex flex-col gap-3 bg-bhagya-cream hover:bg-white p-6 sm:p-7 sm:min-h-[186px] transition-colors">
       <div class="flex items-center justify-between text-bhagya-sindoor">
         <span class="w-6 h-6" aria-hidden="true">{{ icon_svg | safe }}</span>

@@ -73,9 +73,12 @@
        the middle via distinct accent borders (astro-purple for groom,
        rose for bride) and a central heart connector on desktop. Also
        addresses part of Issue #72: clearer Person A / Person B grouping.
-       On mobile the two cards stack; the heart appears between them. #}
+       On mobile the two cards stack; the heart appears between them.
+       Below `sm` the cards are flat (no border, fill or padding of their own,
+       the outer form already pads and borders) and the <h2> plus the heart
+       divider carry the Person A / Person B grouping. #}
     <div class="relative grid md:grid-cols-2 gap-6 md:gap-10">
-      <div class="border sm:border-2 border-bhagya-line bg-bhagya-cream-2/30 p-3 sm:p-5">
+      <div class="sm:border-2 sm:border-bhagya-line sm:bg-bhagya-cream-2/30 sm:p-5">
         {{ person_form("g_", "matching_groom", "e.g. Mumbai, India", collection) }}
       </div>
 
@@ -95,7 +98,7 @@
         <div class="flex-1 h-px bg-bhagya-border"></div>
       </div>
 
-      <div class="border sm:border-2 border-rose-200 bg-rose-50/30 p-3 sm:p-5">
+      <div class="sm:border-2 sm:border-rose-200 sm:bg-rose-50/30 sm:p-5">
         {{ person_form("b_", "matching_bride", "e.g. Delhi, India",  collection) }}
       </div>
 

@@ -100,7 +100,10 @@ def test_grid_the_soft_factors_equal_what_score_event_counted():
                         continue
                     compared += 1
                     fired[event] |= _compare(event, tithi, paksha, nak, wd, rating, reason, False)
-    assert compared > 10_000, "the grid stopped scoring rows"
+    # 10,496 rows scored before #1504 added Shashti and Dwadashi to avoid_tithis (griha_pravesh) and
+    # Shashti (vivah): those rows now return "avoid" and are skipped above, leaving 9,916. The floor
+    # tracks that, still far above a grid that stopped scoring.
+    assert compared > 9_500, "the grid stopped scoring rows"
     # every soft key fires somewhere it is registered for, and nowhere it is not
     for event in EVENTS:
         want = {"good_tithi", "good_nakshatra", "good_weekday", "avoid_weekday_soft"}

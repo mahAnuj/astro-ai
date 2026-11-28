@@ -27,7 +27,7 @@ import json
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from astro_ai import agent_status, cache, events, feedback, ops_data, ops_tabs, subscribers, users
+from astro_ai import agent_status, cache, events, feedback, ops_activity, ops_data, ops_kpis, ops_loop_health, ops_tabs, ops_trends, subscribers, users
 from astro_ai.routes.deps import _lang, require_admin, templates
 
 router = APIRouter()
@@ -152,7 +152,7 @@ async def admin_insights(request: Request, days: int = 30,
 
 @router.get("/admin/ops", response_class=HTMLResponse,
             dependencies=[Depends(require_admin)])
-async def admin_ops(request: Request, window: str = "", day: str = "", tab: str = "") -> HTMLResponse:
+async def admin_ops(request: Request, window: str = "", day: str = "", tab: str = "", activity: str = "") -> HTMLResponse:
     """The agent team's control room — what the loop did, costs, and the backlog.
 
     Mostly the committed `measurements/*.json` files via `ops_data`, which
@@ -173,6 +173,9 @@ async def admin_ops(request: Request, window: str = "", day: str = "", tab: str 
     The same snapshot is serialised into the page as JSON so the drill-downs
     filter data already rendered — a drill-down cannot disagree with the
     headline it was opened from.
+
+    `?activity=` picks the Recent activity chip on Overview (All, Agents, Workflows,
+    Issues); an unknown value shows All.
     """
     # `window` is the Token budget / App health span in days. Validated inside
     # `snapshot`, against an explicit set: an unknown value falls back to the
@@ -219,6 +222,25 @@ async def admin_ops(request: Request, window: str = "", day: str = "", tab: str 
         "by_area": I.get("by_area", {}),
         "by_type": I.get("by_type", {}),
     }
+    # The KPI cards (#1133 slice 2a) are Overview's alone, so the other six tabs
+    # do not pay for computing them. `build` never raises and reads nothing new.
+    # `tab_links` is built once: the rail uses it and so do the trend rows' links,
+    # so no raw query value reaches an href through either.
+    tab_links = ops_tabs.tab_links(tab, ops["app_days"], ops["app"]["day"])
+    kpis = trends = loop_health = recent = None
+    tabs_health = ops_tabs.health(ops["alerts"], ops["reds"], ops["missing"])
+    if tab == "overview":
+        kpis = ops_kpis.build(ops)
+        full["kpi_rows"] = kpis["rows"]
+        # PRs-shipped bars and Key metrics (#1133 slice 2b): derived from `ops`
+        # and `kpis`, so 0 new reads.
+        trends = ops_trends.build(ops, kpis, tab_links)
+        # The loop ring, Agent health and System health (#1133 slice 2c): `ops`,
+        # the cards already fetched above and the rail's health block, so 0 reads.
+        loop_health = ops_loop_health.build(ops, agents_now, tabs_health, tab_links)
+        # Recent activity (#1133 slice 2d): the same `ops`, 0 new reads. `activity` is a
+        # string for the `tab` reason: membership-tested in pick_filter, never echoed.
+        recent = ops_activity.build(ops, tab_links, ops_activity.pick_filter(activity))
     # Each tab ships only what its own drill-downs read (#1133): the whole blob
     # was 438,553 B on every tab. ops_tabs.BLOB_KEYS is the table.
     client = ops_tabs.blob_for(tab, full)
@@ -230,8 +252,12 @@ async def admin_ops(request: Request, window: str = "", day: str = "", tab: str 
             "agents_now": agents_now,
             "tab": tab,
             "tab_label": ops_tabs.tab_label(tab),
-            "tab_links": ops_tabs.tab_links(tab, ops["app_days"], ops["app"]["day"]),
-            "tabs_health": ops_tabs.health(ops["alerts"], ops["reds"], ops["missing"]),
+            "kpis": kpis,
+            "trends": trends,
+            "loop_health": loop_health,
+            "activity": recent,
+            "tab_links": tab_links,
+            "tabs_health": tabs_health,
             # </script> inside a JSON string would end the block early.
             "ops_json": json.dumps(client).replace("</", "<\\/"),
         },

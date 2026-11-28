@@ -60,14 +60,15 @@ def test_headline_counts_only_excellent_good_acceptable(client, monkeypatch):
     auspicious = [c for c in rows if c.rating in AUSPICIOUS]
     # 10 non-avoid and 1 caution at 3bbfffc. It was 11 and 2 when #1017 was written; #1232
     # (Magha/Mula first pada) moved one date; then #1346 (an Abujha day is a booster, not a bypass)
-    # turned 2026-11-20, Devuthani Ekadashi on a Panchak Moon, from excellent to avoid: 9 and 8. A
+    # turned 2026-11-20, Devuthani Ekadashi on a Panchak Moon, from excellent to avoid; #1504
+    # (Dwadashi now avoided for house entry) moved another. Merged with main: 8 non-avoid, 1 caution, 7 auspicious. A
     # legitimate rule change updates THESE numbers -- it does not loosen the assertions below.
-    assert (len(non_avoid), len(cautions), len(auspicious)) == (9, 1, 8)
+    assert (len(non_avoid), len(cautions), len(auspicious)) == (8, 1, 7)
 
     r = _post(client, "Delhi, India")
     assert r.status_code == 200
     text = _text(r.text)
-    assert f"{len(auspicious)} auspicious dates" in text and "8 auspicious dates" in text
+    assert f"{len(auspicious)} auspicious dates" in text and "7 auspicious dates" in text
     assert "9 auspicious dates" not in text
     assert f"{len(cautions)} use with caution" in text
     assert "Use with caution" in r.text

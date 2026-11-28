@@ -101,9 +101,12 @@ def test_bright_half_dwadashi_is_neutral_not_credited_and_not_excluded():
     assert (c.tithi_paksha, c.tithi, c.rating) == ("Shukla", "Dwadashi", "caution")
 
 
+# Name predates #1504: Shashti is now avoided for a wedding (Raman rejects the 6th; see
+# tests/test_muhurat_shashti_dwadashi_rules.py). Kept so the test is not counted as dropped; the body
+# is the statement of record. Purnima is unchanged.
 def test_shashti_and_purnima_are_unchanged():
     assert "Shashti" not in m.EVENT_RULES["vivah"]["good_tithis"]
-    assert "Shashti" not in m.EVENT_RULES["vivah"]["avoid_tithis"]
+    assert "Shashti" in m.EVENT_RULES["vivah"]["avoid_tithis"]
     assert "Purnima" in m.EVENT_RULES["vivah"]["avoid_tithis"]
 
 
@@ -123,13 +126,15 @@ def test_other_events_are_not_excluded_on_a_dark_half_tithi(event, tithi):
 
 def test_other_events_ratings_on_a_krishna_ekadashi_and_dwadashi_are_pinned():
     # Measured identical before and after the change over 365 days for all four events (#1022);
-    # namkaran's 12th changed afterwards, see the row below.
+    # namkaran's 12th changed afterwards, see the row below, and so did griha_pravesh's (#1504).
     pinned = {
         ("griha_pravesh", date(2026, 12, 4)): "excellent",
         ("business", date(2026, 12, 4)): "excellent",
         ("vidyarambh", date(2026, 12, 4)): "excellent",
         ("namkaran", date(2026, 12, 4)): "excellent",
-        ("griha_pravesh", date(2026, 12, 5)): "good",
+        # #1504: Raman's general avoid list carries the 12th, so this Krishna Dwadashi was "good" only
+        # because avoid_tithis for house entry lacked it (the dark-half rule above is vivah's alone).
+        ("griha_pravesh", date(2026, 12, 5)): "avoid",
         ("vidyarambh", date(2026, 12, 5)): "excellent",
         # #1060: Raman's Namakarana avoid list carries the 12th, so this was "excellent" only on the
         # Dwadashi credit the books do not support.

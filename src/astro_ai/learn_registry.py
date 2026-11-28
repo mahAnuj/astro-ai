@@ -668,7 +668,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="sade-sati",
         title="Sade Sati: The 7.5-Year Saturn Lesson, Without the Fear",
-        summary="Saturn's transit across your Janma Rashi over 7.5 years — the most-feared transit in Vedic astrology and the most misunderstood. The three phases, what each really teaches, remedies, and why most lives are better on the other side.",
+        summary="Saturn's transit across your Janma Rashi over 7.5 years — the most-feared transit in Vedic astrology and the most misunderstood. The three phases, what each is read to teach, the remedies, and how this site reads the period.",
         # #685, written 2026-11-03: these two strings name the signs in Sade Sati AT THIS
         # MOMENT, so unlike the evergreen pair they replaced they have a shelf life. They
         # become FALSE when Saturn enters Aries on 2027-06-03 (sidereal/Lahiri, per FAQ #1
@@ -692,11 +692,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the three phases of Sade Sati?",
-                "a": "Arambha (Rising) — Saturn in 12th from Moon, ~2.5 years. Madhya (Peak) — Saturn in your Moon sign, ~2.5 years and most intense. Uttara (Setting) — Saturn in 2nd from Moon, ~2.5 years of integration. Each phase teaches different lessons; the Madhya phase is the hardest.",
+                "a": "Arambha (Rising) — Saturn in 12th from Moon, ~2.5 years. Madhya (Peak) — Saturn in your Moon sign, ~2.5 years. Uttara (Setting) — Saturn in 2nd from Moon, ~2.5 years of integration. Each phase is read to teach different lessons.",
             },
             {
                 "q": "Is Sade Sati always bad?",
-                "a": "No. The classical tradition singles out one case: if Saturn is the lagna lord (Capricorn or Aquarius rising) or the yogakaraka (Taurus or Libra rising) in your chart, it is said to hardly trouble the person even during a Sade Sati, and many people in that position experience it as a period of achievement — slow and hard-won, but real. How willingly you accept Saturn's discipline matters too.",
+                "a": "No. The classical tradition singles out one case: if Saturn is the lagna lord (Capricorn or Aquarius rising) or the yogakaraka (Taurus or Libra rising) in your chart, it is said to hardly trouble the person even during a Sade Sati. How willingly you accept Saturn's discipline matters too.",
             },
             {
                 "q": "How many times does Sade Sati happen in a lifetime?",
@@ -722,8 +722,8 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="kaal-sarp-dosh",
         title="Kaal Sarp Dosh: What It Really Is, What It Isn't, and Healthy Scepticism",
-        summary="When all seven planets sit between Rahu and Ketu in your chart. The most over-diagnosed and over-feared condition in modern Vedic astrology — and the cancellation rules the &quot;dosha removal&quot; industry doesn't want you to know.",
-        seo_description="When all seven planets sit between Rahu and Ketu in your chart. The most over-diagnosed condition in modern Vedic astrology — and the cancellation rules.",
+        summary="When all seven planets sit between Rahu and Ketu in your chart. What the books we hold say about it, the cancellation rules, and why this site checks it strictly and gives no removal-puja advice.",
+        seo_description="All seven planets between Rahu and Ketu: what the books we hold say about Kaal Sarp Dosh, the cancellation rules, and scepticism about costly pujas.",
         category="Doshas",
         hero_image="/static/learn/kaal-sarp-dosh/hero.svg",
         read_time="8 min",
@@ -731,32 +731,31 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is Kaal Sarp Dosh in the classical Vedic texts?",
-                "a": "No — Kaal Sarp Dosh is NOT mentioned in any major classical text (Brihat Parashara, Phaladeepika, Brihat Jataka, Saravali, Jataka Parijata). It is a 20th-century innovation, popularised heavily by priests at Trimbakeshwar in Maharashtra, and many classical scholars state it has no scriptural basis. This doesn't make it fake, but the dramatic claims about it are folk wisdom rather than scriptural fact.",
+                "a": "We do not hold Brihat Parashara, Phaladeepika, Brihat Jataka, Saravali or Jataka Parijata, so we cannot say whether they name it. Rao's Lessons on Vedic Astrology, which we do hold, teaches Kala Sarpa as a yoga, calls it highly problematic, and says it usually works up to about age 40. The remedy industry around it is associated in popular accounts with Trimbakeshwar in Maharashtra; we have not traced that to a book we hold.",
             },
             {
                 "q": "How is Kaal Sarp Dosh formed?",
-                "a": "When all seven traditional planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn) fall on one side of the Rahu-Ketu axis in your chart — none on the opposite side — Kaal Sarp Dosh is said to form. Full Kaal Sarp requires strict containment; partial Kaal Sarp (one planet straddling the line) is much milder and far more common.",
+                "a": "When all seven traditional planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn) fall on one side of the Rahu-Ketu axis in your chart — none on the opposite side — Kaal Sarp Dosh is said to form. Full Kaal Sarp requires strict containment. Some modern astrologers also speak of 'partial' Kaal Sarp; no book we hold defines it and we do not diagnose it.",
             },
             {
                 "q": "Are online Kaal Sarp checkers accurate?",
-                "a": "Most aren't. The vast majority just check house numbers without verifying the precise degree of Rahu/Ketu, which means many charts get incorrectly flagged. A proper check considers Rahu's exact degree within its house. Shubh Bhagya's free Kundli uses degree-precise calculation.",
+                "a": "It depends on the method. A checker that counts house numbers without Rahu's and Ketu's exact degrees can flag a chart that is not all on one side; ours uses the degree-precise rule. Shubh Bhagya's free Kundli uses degree-precise calculation.",
             },
             {
-                "q": "What are real cancellation factors for Kaal Sarp?",
-                "a": "Strong Lagna lord, Jupiter in a kendra (1st/4th/7th/10th) or trine (5th/9th), Rahu and Ketu in signs ruled by their traditional friends (Venus, Saturn), exalted planets, presence of Raja or Dhana yogas, and natural softening after age 40-45 all reduce or cancel the dosha's effects. Most charts have at least one of these.",
+                "q": "What softening factors are repeated for Kaal Sarp?",
+                "a": "No book we hold gives a Kaal Sarp cancellation list. Popular practice names a strong Lagna lord, Jupiter in a kendra or trine, and softening after age 40-45. Rao, whom we hold, says the pattern usually works to about age 40, and that other yogas may not function while it is present, so do not assume a Raja yoga cancels it.",
             },
             {
                 "q": "Are expensive Kaal Sarp removal pujas necessary?",
-                "a": "Usually not. The &quot;Kaal Sarp Shanti puja&quot; industry charges ₹5,000-50,000+ and preys on fear. For most charts, simple personal remedies (Mahamrityunjaya mantra, worship of Durga and Ganesha, Saturday donations) are sufficient. Before paying for an elaborate ceremony, get a clear assessment of whether the dosha applies and what cancellation factors are present.",
+                "a": "Our view is to be cautious: no book we hold prescribes an expensive removal rite. Get a degree-precise check first, then choose simple practice (Mahamrityunjaya mantra, worship of Durga and Ganesha, Saturday donations).",
             },
         ),
         llm_summary=(
             'Keypoints:\n'
             '• Kaal Sarp = ALL 7 non-nodal planets between Rahu-Ketu axis (on one side)\n'
             '• 12 sub-types named by which house Rahu occupies (Ananta, Kulika, Vasuki, etc.)\n'
-            '• Classical scriptures (BPHS, Phaladeepika) do NOT list Kaal Sarp as a named yoga — it is a modern (~20th century) construct\n'
+            '• Rao (Lessons, held) teaches Kala Sarpa as a yoga, calls it highly problematic, and says it usually works to about age 40; BPHS, Phaladeepika etc. are not held, so their silence is unverified\n'
             '• Modern astrologers report themes: obstacles despite effort, career struggles, ancestral karmic burden\n'
-            '• Many charts are misdiagnosed — even one planet OUTSIDE the axis breaks the yoga classically\n'
             '• Healthy scepticism recommended — do not accept an expensive puja on the strength of Kaal Sarp alone\n'
             '• Safe remedies (if you feel it applies): Kaal Bhairava worship, Nag Panchami observance, ancestral tarpan'
         ),
@@ -774,7 +773,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Why is Saturn considered the most-feared planet?",
-                "a": "Because Saturn delays gratification, demands discipline, and tests effort over decades. To a culture optimised for quick wins, Saturn feels punitive. Classical Vedic astrology actually treats Saturn as the great teacher — the parent who says no when you want candy. The fear is misplaced; people who respect Saturn don't suffer at his hands.",
+                "a": "Because Saturn delays gratification, demands discipline, and tests effort over decades. To a culture optimised for quick wins, Saturn feels punitive. This site reads Saturn as a teacher — the parent who says no when you want candy — and in our view the fear is out of proportion; that is our reading, not a classical claim.",
             },
             {
                 "q": "What is Shasha Yoga?",
@@ -851,7 +850,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="manglik-dosh",
         title="Manglik Dosh: What It Really Means, How to Check, and Remedies",
-        summary="A clear, honest guide to Manglik Dosh — what it actually is, the houses that cause it, the cancellation rules most websites skip, and the remedies classical texts recommend.",
+        summary="A clear, honest guide to Manglik Dosh — what it actually is, the houses that cause it, the cancellation rules a plain house-count leaves out, and the remedies usually followed.",
         seo_title="Manglik Dosh: Is It Real? Cancellation Rules Most Skip",
         seo_description="Is Manglik Dosh real? Mars in five houses (the 1st optional), the cancellation rules online calculators ignore, and the remedies classical texts recommend.",
         category="Doshas",
@@ -866,7 +865,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is Manglik Dosh real, or is it just superstition?",
-                "a": "It's a real concept in Vedic astrology — Mars in the 1st, 2nd, 4th, 7th, 8th, or 12th house, counted from Lagna, Moon, or Venus (the sources we work from list five and treat the 1st as an optional addition, which Shubh Bhagya counts), is how the rule is usually stated, though one of the sources we work from notes that it \"is not to be found in the standard astrological texts\". Whether its effects play out depends heavily on Mars's strength, conjunctions, and aspects in your specific chart. Many seemingly Manglik people live happily married lives because of cancellation rules most online calculators ignore.",
+                "a": "It's a real concept in Vedic astrology — Mars in the 1st, 2nd, 4th, 7th, 8th, or 12th house, counted from Lagna, Moon, or Venus (the sources we work from list five and treat the 1st as an optional addition, which Shubh Bhagya counts), is how the rule is usually stated, though one of the sources we work from notes that it \"is not to be found in the standard astrological texts\". Whether its effects play out depends heavily on Mars's strength, conjunctions, and aspects in your specific chart. Whether a chart is flagged depends on which list of cancellation rules you follow, and the lists differ.",
             },
             {
                 "q": "Does Cancer or Leo rising exclude me from Manglik?",
@@ -991,7 +990,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="jupiter-remedies",
         title="Jupiter Remedies: Guru Blessings, Wisdom Practices, Yellow Sapphire Guide",
-        summary="Jupiter (Guru / Brihaspati) is Vedic astrology's great blessing — karaka of wisdom, wealth, children, marriage, and dharma. His remedies are among the safest and most effective. This guide covers mantras, good deeds, deity worship, and honest guidance on yellow sapphire without vendor manipulation.",
+        summary="Jupiter (Guru / Brihaspati) is Vedic astrology's great blessing — karaka of wisdom, wealth, children, marriage, and dharma. His remedies are among the safest and most effective. This guide covers mantras, good deeds, deity worship, and guidance to consult a chart before any yellow sapphire.",
         seo_description="Jupiter (Guru / Brihaspati) remedies: mantras, good deeds, deity worship, and honest guidance on yellow sapphire without vendor manipulation.",
         category="Remedies",
         hero_image="/static/learn/jupiter-remedies/hero.svg",
@@ -1020,7 +1019,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Should I do expensive Guru puja packages?",
-                "a": "Almost never. Genuine Jupiter puja is inexpensive — a simple havan with yellow flowers, ghee, and chick peas offered to Vishnu costs almost nothing. Any priest demanding tens of thousands is selling anxiety, not tradition. Mantras + Chalisa + Vishnu worship + genuine wisdom-seeking cost almost nothing; expensive rituals done without devotion are not what the tradition asks for. The core teaching: remedies are devotional acts, not transactional payments.",
+                "a": "Be cautious of a very large quote for a Jupiter puja package: we hold no source for what a fair price is, so ask what it covers. A simple havan with yellow flowers, ghee, and chick peas offered to Vishnu, mantras, the Chalisa, Vishnu worship and genuine wisdom-seeking are practice, not a held book, and none of them depends on buying a package. In our reading, remedies are devotional acts, not transactional payments.",
             },
         ),
         llm_summary=(
@@ -1037,7 +1036,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="mercury-remedies",
         title="Mercury Remedies: Working with Budha's Intellect Through Vishnu Worship",
-        summary="Mercury (Budha) is Vedic astrology's kumara — karaka of intellect, speech, commerce, and the youthful learning mind. Mercury remedies are among the gentlest in the tradition, grounded in respect for scholars, service to students, disciplined speech, and Vishnu worship. This guide covers mantras, good deeds, deity worship, and honest guidance on emerald without vendor manipulation.",
+        summary="Mercury (Budha) is Vedic astrology's kumara — karaka of intellect, speech, commerce, and the youthful learning mind. Mercury remedies are among the gentlest in the tradition, grounded in respect for scholars, service to students, disciplined speech, and Vishnu worship. This guide covers mantras, good deeds, deity worship, and guidance to consult a chart before any emerald.",
         seo_title="Mercury Remedies: Vishnu Worship & Emerald Guide",
         seo_description="Classical Mercury (Budha) remedies — bija mantra, Vishnu worship, Wednesday practices, emerald safety per Ascendant. Honest, no vendor manipulation.",
         category="Remedies",
@@ -1084,7 +1083,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="venus-remedies",
         title="Venus Remedies: Working with Shukra's Grace Through Lakshmi Worship",
-        summary="Venus (Shukra) is Vedic astrology's classical bhogakaraka — karaka of marriage, love, beauty, comfort, and the feminine principle. Venus remedies are among the gentlest in the tradition, grounded in respect for the feminine, aesthetic devotion, and Lakshmi worship. This guide covers mantras, good deeds, deity worship, and honest guidance on diamond without vendor manipulation.",
+        summary="Venus (Shukra) is Vedic astrology's classical bhogakaraka — karaka of marriage, love, beauty, comfort, and the feminine principle. Venus remedies are among the gentlest in the tradition, grounded in respect for the feminine, aesthetic devotion, and Lakshmi worship. This guide covers mantras, good deeds, deity worship, and guidance to consult a chart before any diamond.",
         seo_title="Venus Remedies: Lakshmi Worship & Diamond Guide",
         seo_description="Classical Venus (Shukra) remedies — bija mantra, Lakshmi worship, Friday practices, diamond safety per Ascendant. Honest, no vendor manipulation.",
         category="Remedies",
@@ -1156,7 +1155,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Do Mars remedies remove Manglik Dosh?",
-                "a": "They mitigate the difficult expressions of Manglik, but don't literally remove the astrological pattern. First check whether your Manglik is genuine or cancelled — many so-called Manglik charts have classical cancellations most calculators ignore (Cancer/Leo Ascendant, Mars in own sign or exalted, Jupiter aspect). See our Manglik Dosh article. If Manglik is genuinely present, the classical remedies are: weekly Hanuman Chalisa, matching with another Manglik partner (one held antidote list cancels the dosha when both carry it; the comparable-strength condition we apply on top is Shubh Bhagya's own, not scripture), Tuesday fasting, donating red items on Tuesdays. Expensive 'Mangal nivaran' packages are selling anxiety, not tradition.",
+                "a": "They mitigate the difficult expressions of Manglik, but don't literally remove the astrological pattern. First check whether your Manglik is genuine or cancelled — a chart flagged by a house-count may be cancelled under some lists (the lists differ; Cancer/Leo Ascendant, Mars in own sign or exalted and a Jupiter aspect are repeated online, not in the one antidote list we hold). See our Manglik Dosh article. If Manglik is genuinely present, the remedies usually followed are: weekly Hanuman Chalisa, matching with another Manglik partner (one held antidote list cancels the dosha when both carry it; the comparable-strength condition we apply on top is Shubh Bhagya's own, not scripture), Tuesday fasting, donating red items on Tuesdays. No book we hold prescribes expensive 'Mangal nivaran' packages.",
             },
             {
                 "q": "Why does my Mars keep causing anger issues?",
@@ -1176,7 +1175,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="saturn-remedies",
         title="Saturn Remedies: The Classical Vedic Approach to Working with Shani",
-        summary="Saturn is Vedic astrology's most-feared planet and the most misunderstood. This guide walks through the genuine classical remedies from Rao's Ch. 34 — mantras, good deeds, deity worship, and the critical warnings about blue sapphire — without the vendor manipulation that dominates online content.",
+        summary="Saturn is Vedic astrology's most-feared planet and the most misunderstood. This guide walks through the genuine classical remedies from Rao's Ch. 34 — mantras, good deeds, deity worship, and the critical warnings about blue sapphire.",
         seo_description="Genuine classical Saturn remedies — mantras, good deeds, deity worship, and the critical warnings about blue sapphire — without the vendor manipulation.",
         category="Remedies",
         hero_image="/static/learn/saturn-remedies/hero.svg",
@@ -1197,11 +1196,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Is Sade Sati really as bad as people say?",
-                "a": "Sade Sati is genuinely difficult but not the catastrophe online content portrays. It's Saturn's 7.5-year transit around your natal Moon sign — a period of restructuring, testing, and eventual maturation. Remedies during Sade Sati: daily Vishnu worship, Saturday partial fasting (skip one meal), donations of mustard oil/black sesame/iron, service to elderly, avoiding major new commitments in the middle phase. Most people who work with Sade Sati's lessons emerge stronger. Most people who fight it find the difficulty extended.",
+                "a": "Sade Sati is Saturn's 7.5-year transit around your natal Moon sign. The reason the books we hold give for care is that the Moon signifies the mind, so Saturn in the signs around it can trouble the mind; Rao adds that Saturn as lagna lord or yogakaraka hardly troubles the person. This site reads the period as one of restructuring and testing, and suggests daily Vishnu worship, Saturday partial fasting (skip one meal), donations of mustard oil/black sesame/iron, service to elderly, avoiding major new commitments in the middle phase.",
             },
             {
                 "q": "Are expensive Shani puja packages worth it?",
-                "a": "Almost never. Any priest demanding tens of thousands of rupees for a Shani nivaran puja is selling anxiety, not tradition. Genuine remedies are inexpensive — mantras + Chalisa + Vishnu worship + service to elderly costs almost nothing; expensive rituals done without devotion are not what the tradition asks for. The classical framing from Rao: 'Remedies are devotional acts, not transactional payments.' Anyone treating them as 'paying to make the problem go away' misunderstands the tradition and often makes the underlying pattern worse.",
+                "a": "Be cautious of a very large quote for a Shani nivaran puja package: we hold no source for what a fair price is, so ask what it covers. Mantras + Chalisa + Vishnu worship + service to elderly do not depend on buying a package. In our reading, remedies are devotional acts, not transactional payments, so they are not a way to 'pay to make the problem go away'.",
             },
             {
                 "q": "Can Saturn remedies remove my career problems?",
@@ -1223,7 +1222,7 @@ ARTICLES: tuple[Article, ...] = (
     Article(
         slug="marriage-delayed",
         title="Why Is My Marriage Delayed? 7 Chart Signals from Your Kundali",
-        summary="Marriage delay is one of the most common Vedic astrology questions — and one where classical analysis differs sharply from fear-based online content. This guide walks the 7 chart signals (7th house, Venus/Jupiter, Manglik, current Dasha, Navamsha, Kundli matching, karmic dispositor) with honest classical framing.",
+        summary="Marriage delay is one of the most common Vedic astrology questions — and this guide tries to avoid fear-based framing. It walks the 7 chart signals (7th house, Venus/Jupiter, Manglik, current Dasha, Navamsha, Kundli matching, karmic dispositor).",
         seo_description="Marriage delay, read classically: 7 chart signals — 7th house, Venus/Jupiter, Manglik, current Dasha, Navamsha, Kundli matching, dispositor.",
         category="Life Questions",
         hero_image="/static/learn/marriage-delayed/hero.svg",
@@ -1240,7 +1239,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Manglik Dosh really block marriage?",
-                "a": "Not automatically. Manglik Dosh is present when Mars is in the 1st, 2nd, 4th, 7th, 8th, or 12th house counted from Lagna, Moon, or Venus (the sources we work from list the 2nd, 4th, 7th, 8th and 12th and treat the 1st as an optional addition, which Shubh Bhagya counts) — but classical texts include several cancellation conditions most calculators ignore: Cancer or Leo Ascendant (Mars is Yogakaraka), Mars in own sign (Aries/Scorpio) or exalted (Capricorn), Jupiter aspecting or conjunct Mars, and mutual Manglik matching (one held antidote list cancels the dosha when both partners carry it and names no severity condition; comparable strength is Shubh Bhagya's own condition, not scripture). See our dedicated Manglik Dosh article for complete details. Uncancelled Manglik tends to delay marriage but does NOT mean unmarriageable.",
+                "a": "Not automatically. Manglik Dosh is present when Mars is in the 1st, 2nd, 4th, 7th, 8th, or 12th house counted from Lagna, Moon, or Venus (the sources we work from list the 2nd, 4th, 7th, 8th and 12th and treat the 1st as an optional addition, which Shubh Bhagya counts) — but the lists differ. The antidote list we hold gives both partners Manglik, per-house sign exceptions, and Mars with Jupiter or the Moon. Repeated online, and not in it, are: Cancer or Leo Ascendant (Mars is Yogakaraka), Mars in own sign (Aries/Scorpio) or exalted (Capricorn), and Jupiter aspecting Mars. Mutual Manglik matching is in the held list (it cancels the dosha when both partners carry it and names no severity condition; comparable strength is Shubh Bhagya's own condition, not scripture). See our dedicated Manglik Dosh article for details. Manglik does not by itself mean unmarriageable; we have found no book we hold that says a person cannot marry.",
             },
             {
                 "q": "How does the current Dasha affect marriage timing?",
@@ -1248,7 +1247,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Should I do expensive puja for marriage delay?",
-                "a": "Almost never. Any priest asking for tens of thousands of rupees for a 'marriage nivaran puja' is selling anxiety, not tradition. Genuine classical remedies are simple: Venus/Jupiter mantras, appropriate weekday fasting (Friday for Venus, Thursday for Jupiter), offering appropriate coloured flowers, worship of Shiva-Parvati as archetypal marriage. If Manglik-specific, matching with another Manglik partner is the remedy one held antidote list gives — not a puja; that list names no severity condition, and the comparable-strength condition we apply on top is Shubh Bhagya's own, not scripture. Gemstones should never be worn without proper chart consultation.",
+                "a": "Be cautious of a very large quote for a 'marriage nivaran puja': we hold no source for what a fair price is, so ask what it covers. Simple practices people use (practice, not a held book) are Venus/Jupiter mantras, appropriate weekday fasting (Friday for Venus, Thursday for Jupiter), offering appropriate coloured flowers, worship of Shiva-Parvati as archetypal marriage. If Manglik-specific, matching with another Manglik partner is the remedy one held antidote list gives — not a puja; that list names no severity condition, and the comparable-strength condition we apply on top is Shubh Bhagya's own, not scripture. Gemstones should never be worn without proper chart consultation.",
             },
             {
                 "q": "What is Navamsha (D-9) and why does it matter for marriage?",
@@ -1440,11 +1439,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Which phase of Sade Sati is worst for career?",
-                "a": "Madhya (Peak), the middle 2.5 years when Saturn transits directly on the natal Moon, is the most consequential and typically the hardest for career. This is when forced pivots, layoffs, business restructuring, and health-driven role changes cluster. Arambha (Rising) is quieter — more the sense of losing an internal sponsor, invisible support drying up, isolation from the inner circle at work. Uttara (Setting) is the rebuild — quieter career, family and career negotiating, savings discipline forced, but the acute pressure of Madhya has passed. The rank order for career difficulty is generally Madhya > Arambha > Uttara.",
+                "a": "Madhya (Peak), the middle 2.5 years when Saturn transits directly on the natal Moon, is described in practice as the most consequential window for career. This is when forced pivots, layoffs, business restructuring, and health-driven role changes cluster. Arambha (Rising) is quieter — more the sense of losing an internal sponsor, invisible support drying up, isolation from the inner circle at work. Uttara (Setting) is the rebuild — quieter career, family and career negotiating, savings discipline forced, but the acute pressure of Madhya has passed. That ordering is practice, not a rule from a book we hold.",
             },
             {
                 "q": "What remedies help career during Sade Sati?",
-                "a": "Universal Saturn practices apply, with a career emphasis. Worship Vishnu daily (especially on Saturdays) — Vishnu, with Brahma, is Saturn's classical deity. Serve elders in your professional environment (Saturn rules seniority; being genuinely useful to older colleagues is direct Saturn karma). Work harder, not less — Saturn rewards effort, not escapism. Donate on Saturdays (black sesame, mustard oil, dark cloth, iron, footwear for the elderly poor). Avoid expensive Shani nivaran puja packages — the vendor manipulation around Sade Sati is enormous and largely ineffective. And never wear blue sapphire without a proper chart consultation — it is Saturn's most powerful gem and, when wrong for the chart, the fastest way to destabilise a difficult transit further.",
+                "a": "Universal Saturn practices apply, with a career emphasis. Worship Vishnu daily (especially on Saturdays) — Vishnu, with Brahma, is Saturn's classical deity. Serve elders in your professional environment (Saturn rules seniority; being genuinely useful to older colleagues is direct Saturn karma). Work harder, not less — Saturn rewards effort, not escapism. Donate on Saturdays (black sesame, mustard oil, dark cloth, iron, footwear for the elderly poor). Be cautious of a very large quote for a Shani nivaran puja package; we hold no source for what a fair price is. And never wear blue sapphire without a proper chart consultation — it is Saturn's most powerful gem and, when wrong for the chart, the fastest way to destabilise a difficult transit further.",
             },
         ),
         llm_summary=(
@@ -1640,7 +1639,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Can Kundali predict visa approval?",
-                "a": "No — this is one of the most important honest limits. What the Kundali shows is whether your natal chart carries a foreign-life signature strong enough to matter, which type of foreign life the signature favours, and which Dasha windows classically activate the yoga. It cannot predict specific visa outcomes — the immigration system is governed by policy, timing, administrative variables, and case-specific factors that no astrological reading accesses. Astrologers who guarantee visa approval or promise a specific country result from a single chart reading are overreaching what classical Vedic tradition actually supports. Foreign-yoga scams are common in this space — be careful with anyone selling certainty on visa outcomes specifically.",
+                "a": "No — this is one of the most important honest limits. What the Kundali shows is whether your natal chart carries a foreign-life signature strong enough to matter, which type of foreign life the signature favours, and which Dasha windows classically activate the yoga. It cannot predict specific visa outcomes — the immigration system is governed by policy, timing, administrative variables, and case-specific factors that no astrological reading accesses. Astrologers who guarantee visa approval or promise a specific country result from a single chart reading are overreaching what classical Vedic tradition actually supports. Be careful with anyone selling certainty on visa outcomes specifically; no reading can promise one.",
             },
             {
                 "q": "Which type of foreign work does my chart show?",
@@ -1973,11 +1972,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Should I do an expensive Santan Prapti puja to fix children delay?",
-                "a": "Almost never. The vendor market around fertility-related pujas is one of the most exploitative corners of modern astrology. Any priest asking for tens of thousands of rupees for a 'santan nivaran' ceremony is trading on emotional urgency, not classical tradition. Genuine classical remedies are simple and inexpensive: Santan Gopala mantra recitation, Jupiter propitiation (Thursday fasting, yellow flowers, feeding brahmins), Krishna Balgopala worship, and worship of the deity ruling your 5th lord. If a Pitru pattern is also present, honouring ancestors through Shraddha helps. None of this should cost lakhs.",
+                "a": "Be cautious of a very large quote for a 'santan nivaran' ceremony: we hold no source for what a fair price is, so ask what it covers. Simple practices people use (practice, not a held book) include Santan Gopala mantra recitation, Jupiter propitiation (Thursday fasting, yellow flowers, feeding brahmins), Krishna Balgopala worship, and worship of the deity ruling your 5th lord. If a Pitru pattern is also present, honouring ancestors through Shraddha helps.",
             },
             {
                 "q": "Can Vedic remedies replace IVF or fertility treatment?",
-                "a": "No — and any practitioner who tells you otherwise is not a classical astrologer. Classical Vedic tradition places astrology alongside, not instead of, appropriate medicine. Modern fertility diagnostics identify treatable causes (hormonal, tubal, sperm quality, ovulation timing) that no chart reading can substitute for. The couples we see with the best outcomes usually do both: they work with a good doctor AND they engage classical practices for the 5th house and Jupiter. The two lenses together produce the best results — the doctor reads biology, the chart reads karmic weather, and both matter.",
+                "a": "No — be cautious of any practitioner who tells you otherwise. Astrology sits alongside (our view), not instead of, appropriate medicine. Modern fertility diagnostics identify treatable causes (hormonal, tubal, sperm quality, ovulation timing) that no chart reading can substitute for. The couples we see with the best outcomes usually do both: they work with a good doctor AND they engage classical practices for the 5th house and Jupiter. The two lenses together produce the best results — the doctor reads biology, the chart reads karmic weather, and both matter.",
             },
         ),
         llm_summary=(
@@ -2036,7 +2035,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Kundli suggests SUSCEPTIBILITY — does not diagnose disease; always consult a doctor\n'
             '• Timing: chronic conditions often flare in Sade Sati peak, Saturn/Rahu Mahadashas, or Antardasha of afflicted 6th/8th lord\n'
             '• Safe remedies: strengthen Lagna lord + Sun/Moon; genuine karmic-cleansing practices; NEVER replace medical care with astrology\n'
-            "• Warning: this is heavily exploited — avoid 'cure your disease' astrologers charging large fees"
+            "• Caution: be cautious of anyone promising a cure"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2149,7 +2148,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the classical remedies for Pitru Dosh?",
-                "a": "The core classical remedies focus on acknowledgment and offering rather than payment: (1) Pitru Paksha shraaddha during the annual 16-day fortnight (typically September-October); (2) Tarpana (water offerings) on Amavasya days, especially Mahalaya Amavasya; (3) Feeding the poor, cows, or crows in ancestors' names; (4) Visits to Gaya, Prayag, or Haridwar for pinda-daan; (5) Family memorials or dedicating charitable work to ancestors. Any priest demanding tens of thousands for 'Pitru Dosh nivaran puja' is selling anxiety, not tradition — genuine Pitri offerings are simple.",
+                "a": "The core classical remedies focus on acknowledgment and offering rather than payment: (1) Pitru Paksha shraaddha during the annual 16-day fortnight (typically September-October); (2) Tarpana (water offerings) on Amavasya days, especially Mahalaya Amavasya; (3) Feeding the poor, cows, or crows in ancestors' names; (4) Visits to Gaya, Prayag, or Haridwar for pinda-daan; (5) Family memorials or dedicating charitable work to ancestors. Be cautious of a very large quote for a 'Pitru Dosh nivaran puja': we hold no source for what a fair price is, so ask what it covers.",
             },
             {
                 "q": "Does Pitru Dosh mean I cannot have children or succeed?",
@@ -2172,7 +2171,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Genuine remedy = actual ancestor honoring, not fear-based puja packages\n'
             "• Safe practices: Amavasya (new moon) tarpan, feeding brahmins/needy in ancestors' names, Gaya Shraddha (once in lifetime)\n"
             '• Every chart with 9th-house affliction is NOT Pitru Dosh — check family history + Dasha context\n'
-            '• Warning: this is heavily exploited by paid astrologers — be cautious of ₹5,000+ puja packages'
+            '• Caution: we hold no source for what a fair price is; be cautious of a very large puja quote'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2757,7 +2756,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Mars in 7th house always cause Manglik dosha?",
-                "a": "Mars in the 7th is one of the six Manglik-triggering houses (1, 2, 4, 7, 8, 12; the sources we work from list five and treat the 1st as an optional addition, which Shubh Bhagya counts), but 'Manglik' does not equal 'bad marriage'. Cancellation rules apply and are often ignored by simple online calculators — Cancer or Leo Ascendant excludes Mars from Manglik reading regardless of placement (Mars becomes Yogakaraka), Mars in own sign (Aries, Scorpio) or exalted (Capricorn) softens the dosha significantly, Jupiter aspecting or conjunct Mars cancels much of it, and Manglik-with-Manglik matching cancels the dosha between partners (one held antidote list gives this, with no severity condition). Many retellings add that the two doshas should be of comparable strength, but we have not found that condition in a book we hold, so Shubh Bhagya sets one and names it as ours rather than as scripture: equal or adjacent grades on low, moderate and high count as comparable, and a low does not cancel a high. Read our full Manglik Dosh guide for the complete cancellation logic — the label without the cancellation check is over-diagnosed.",
+                "a": "Mars in the 7th is one of the six Manglik-triggering houses (1, 2, 4, 7, 8, 12; the sources we work from list five and treat the 1st as an optional addition, which Shubh Bhagya counts), but 'Manglik' does not equal 'bad marriage'. Cancellation rules apply and the lists differ. Repeated online, and not in the one antidote list we hold: Cancer or Leo Ascendant excludes Mars from Manglik reading regardless of placement (Mars becomes Yogakaraka), Mars in own sign (Aries, Scorpio) or exalted (Capricorn) softens the dosha significantly, and Jupiter aspecting Mars cancels much of it. In the held list, Mars with Jupiter, and Manglik-with-Manglik matching cancels the dosha between partners (one held antidote list gives this, with no severity condition). Many retellings add that the two doshas should be of comparable strength, but we have not found that condition in a book we hold, so Shubh Bhagya sets one and names it as ours rather than as scripture: equal or adjacent grades on low, moderate and high count as comparable, and a low does not cancel a high. Read our full Manglik Dosh guide for the cancellation logic — check cancellation before reading the label.",
             },
             {
                 "q": "What if I have two or more planets in the 7th house?",
@@ -2853,7 +2852,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Venus in 8th house always mean second marriage?",
-                "a": "No — this is one of the most over-diagnosed placements in commercial astrology. Venus in the 8th in a male chart is a tendency signature (Venus is the karaka of marriage; 8th is the transformation house — the karaka in a transformative house increases probability of marriage transitions). But 'tendency' is not 'certainty'. Many male charts with Venus in the 8th spend their lives in first marriages, particularly when Venus is well-aspected (Jupiter's aspect is strongly protective), in own sign (Taurus or Libra), or when the 7th house itself is otherwise clean. The signature matters when it converges with other signatures (7th lord in 8th, malefics in 7th, weak Jupiter). Alone, it is a probability shift, not a prediction.",
+                "a": "No — a placement alone does not decide it. Venus in the 8th in a male chart is a tendency signature (Venus is the karaka of marriage; 8th is the transformation house — the karaka in a transformative house increases probability of marriage transitions). But 'tendency' is not 'certainty'. Practitioners commonly read it as softer when Venus is well-aspected (Jupiter's aspect), in own sign (Taurus or Libra), or when the 7th house itself is otherwise clean; that is interpretive practice, and the sources we hold say nothing about second marriage. The signature matters when it converges with other signatures (7th lord in 8th, malefics in 7th, weak Jupiter). Alone, it is a probability shift, not a prediction.",
             },
             {
                 "q": "Can Kundli predict divorce?",
@@ -2895,11 +2894,11 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Which is the strongest remedy for Rahu?", "a": "Consistency across multiple practices > intensity of any single one. The classical primary pairing: daily Rahu Beej mantra (108x) + weekly Durga Chalisa on Saturdays + a research donation or pilgrimage when you can. Trimbakeshwar Nagbali is the deepest single ritual but only for severe cases with proper chart confirmation."},
             {"q": "Can I do Rahu remedies without a gemstone?", "a": "Yes — and it's actually recommended. Rahu's classical gemstone (hessonite) can backfire when Rahu is a functional malefic for your Ascendant. All the practices in this guide (mantra, supporting research or a pilgrimage, charity, Durga worship, Ganesha, Trimbakeshwar) are safe universal remedies that don't require chart analysis."},
             {"q": "How long do Rahu remedies take to show effect?", "a": "Weeks 1-4: mostly building the habit; internal shifts (quieter mind). Months 2-6: perceptible shifts — situations that used to trigger panic feel manageable. Months 6-12: structural shifts — old patterns dissolve. Year 2+: Rahu's underlying karma unfolds; remedies compound. Faster than medication, slower than instant relief."},
-            {"q": "Do I need to visit Trimbakeshwar for Kaal Sarp remedy?", "a": "Only for serious cases: full Kaal Sarp Dosh + active Rahu Mahadasha + repeated life shocks. For most Rahu afflictions, daily mantra + weekly Durga + supporting research or a pilgrimage is sufficient. Trimbakeshwar priests are officially registered — beware of touts; legitimate costs are ₹5,000-25,000 range, anyone quoting lakhs is exploiting."},
+            {"q": "Do I need to visit Trimbakeshwar for Kaal Sarp remedy?", "a": "Only for serious cases: full Kaal Sarp Dosh + active Rahu Mahadasha + repeated life shocks. For most Rahu afflictions, daily mantra + weekly Durga + supporting research or a pilgrimage is sufficient. Be wary of touts, and be cautious of anyone quoting a very large sum; we hold no source for what a fair price is."},
             {"q": "Can Rahu remedies fix my addiction?", "a": "Remedies are a support layer, not a substitute for professional care. Rahu-driven addictions (substances, phone/gaming, compulsive behaviours) need therapy + medical support if severe. Remedies help by reducing the underlying restless craving over time."},
         ),
         llm_summary=(
-            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhraam Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) pilgrimage or research donation, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black gram/urad daal, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Anti-exploitation: legitimate Trimbakeshwar Nagbali ₹5-25K; anything quoted in lakhs is scam'
+            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhraam Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) pilgrimage or research donation, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black gram/urad daal, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Cost: no held source prices a remedy; be cautious of a very large quote'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2959,37 +2958,37 @@ ARTICLES: tuple[Article, ...] = (
     ),
     Article(
         slug="pitru-dosh-remedies", title="Pitru Dosh Remedies: Classical Rituals to Clear Ancestral Karma",
-        summary="Pitru Dosh — ancestral karmic debt — is one of the most misdiagnosed categories in Indian astrology commerce. Genuine remedies are simple: Pitru Paksha shraddha, tarpan (water offering), feeding a Brahmin+cow+crow on death anniversaries, monthly Amavasya practice, and Gaya tri-pindi shraddha for serious cases. This guide walks the classical remedies with strong guardrails against exploitation.",
+        summary="Pitru Dosh — ancestral karmic debt — is a popular astrology idea; no book we hold defines it. The traditional remedies are simple: Pitru Paksha shraddha, tarpan (water offering), feeding a Brahmin+cow+crow on death anniversaries, monthly Amavasya practice, and Gaya tri-pindi shraddha for serious cases. This guide walks the traditional remedies and says where to be cautious.",
         seo_title="Pitru Dosh Remedies: Shraddha, Tarpan, Gaya Pilgrimage",
         seo_description="Classical Pitru Dosh remedies — Pitru Paksha shraddha, tarpan, Ganesha worship, Gaya pilgrimage. Every remedy under ₹500 (except optional Gaya trip).",
         category="Doshas", hero_image="/static/learn/pitru-dosh-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
         related=("pitru-dosh", "kaal-sarp-dosh", "sade-sati", "chandra-moon-remedies"),
         faqs=(
-            {"q": "How much does Pitru Dosh puja actually cost?", "a": "All classical remedies in this guide can be done for under ₹500 (except Gaya pilgrimage which costs travel + ₹5-15K for tri-pindi shraddha from Gayawal priests). Anyone quoting ₹50,000+ for 'Pitru Shanti Yagna' or lakhs for Kaal Sarp is exploiting anxiety."},
+            {"q": "How much does Pitru Dosh puja actually cost?", "a": "We hold no source for what a Pitru Dosh puja should cost, so we give no figure. Be cautious of anyone quoting a very large sum for a 'Pitru Shanti Yagna' or a Kaal Sarp puja, and remember the Gaya pilgrimage adds travel."},
             {"q": "What is Pitru Paksha and when is it?", "a": "The 15-day period preceding Sharad Navratri (typically September). Dedicated to ancestor offerings. Peak remedial window for Pitru Dosh. Minimum practice: daily tarpan facing south with sesame water, feed a Brahmin+cow+crow at least once, avoid celebrations."},
             {"q": "Do I need to go to Gaya?", "a": "Only for serious Pitru Dosh — chronic career/marriage/children obstacles, repeated pattern across generations. Alternatives if Gaya is not accessible: Trimbakeshwar (Nagbali + Narayan Bali), Kurukshetra during eclipses, Rameshwaram for South Indian traditions. Consistent annual Pitru Paksha observance is often sufficient."},
             {"q": "How do I know if I really have Pitru Dosh?", "a": "Classical signatures: Sun heavily afflicted by Rahu/Saturn, 9th/12th house lords afflicted, Rahu-Ketu on 9th-3rd or 12th-6th axis. Life patterns: repeated obstacles despite competence, children delayed, money slips through fingers, frequent ancestor-related dreams. Verify with proper chart reading before investing in remedies."},
         ),
         llm_summary=(
-            'Keypoints:\n• Pitru Dosh = ancestral karmic debt (Sun+Rahu/Saturn affliction, 9th/12th house issues)\n• MOST OVER-EXPLOITED category in Indian astrology commerce\n• 6 classical remedies: (1) Pitru Paksha 15-day observance (tarpan, feed Brahmin/cow/crow), (2) annual death anniversary tarpan (Barsi), (3) monthly Amavasya practice, (4) Gaya tri-pindi shraddha for serious cases, (5) Ganesha + Vishnu worship (Ekadashi vrat), (6) serving living elders\n• ALL remedies < ₹500; Gaya adds travel + ₹5-15K\n• Anti-exploitation: anyone quoting ₹50K+ for Pitru Shanti is scamming'
+            'Keypoints:\n• Pitru Dosh = ancestral karmic debt (Sun+Rahu/Saturn affliction, 9th/12th house issues)\n• 6 classical remedies: (1) Pitru Paksha 15-day observance (tarpan, feed Brahmin/cow/crow), (2) annual death anniversary tarpan (Barsi), (3) monthly Amavasya practice, (4) Gaya tri-pindi shraddha for serious cases, (5) Ganesha + Vishnu worship (Ekadashi vrat), (6) serving living elders\n• Cost: no held source prices a remedy; be cautious of a very large quote; Gaya adds travel'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="kaal-sarp-dosh-remedies", title="Kaal Sarp Dosh Remedies: Classical Practices That Actually Work",
-        summary="Kaal Sarp Dosh — all 7 non-shadow planets on one side of the Rahu-Ketu axis — is the most exploited category in Indian astrology commerce. Real remedies are simple: worship of Rahu's and Ketu's own deities (Durga or Narasimha, Ganesha), the combined Rahu+Ketu Beej mantras, and traditional practices such as Nag Panchami observance, Shiva worship on Mondays and the silver serpent offering, with Trimbakeshwar Nagbali for severe cases. This guide walks seven remedies, says which are classical and which are tradition, and keeps strong guardrails against exploitation.",
+        summary="Kaal Sarp Dosh — all 7 non-shadow planets on one side of the Rahu-Ketu axis. Remedies: worship of Rahu's and Ketu's own deities (Durga or Narasimha, Ganesha), the combined Rahu+Ketu Beej mantras, and traditional practices such as Nag Panchami observance, Shiva worship on Mondays and the silver serpent offering, with Trimbakeshwar Nagbali for severe cases. This guide walks seven remedies, says which are classical and which are tradition, and keeps strong guardrails against exploitation.",
         seo_title="Kaal Sarp Dosh Remedies: Shiva Puja, Nag Panchami, Trimbakeshwar",
         seo_description="Kaal Sarp Dosh remedies — Rahu and Ketu's deities, Nag Panchami, silver serpent offering, Trimbakeshwar Nagbali. Anti-exploitation guide with cost checks.",
         category="Doshas", hero_image="/static/learn/kaal-sarp-dosh-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
         related=("kaal-sarp-dosh", "rahu-remedies", "ketu-remedies", "pitru-dosh-remedies"),
         faqs=(
-            {"q": "How much does Trimbakeshwar Kaal Sarp Puja cost?", "a": "Legitimate registered priests at Trimbakeshwar charge ₹5,000-25,000 depending on scope + family size. Anyone quoting ₹50,000+ is overcharging; anyone quoting lakhs is exploiting anxiety. Go through the temple trust, not touts approaching at the town."},
-            {"q": "Is Kaal Sarp Dosh really that serious?", "a": "It's real when all 7 planets are truly between Rahu and Ketu on one semicircle. But it's over-diagnosed — check your chart with our free /kaal-sarp-check tool first. Even genuine KSD is not a curse; it's a specific karmic pattern with named 12 types (Anant, Kulik, Padma, etc.) each with distinct life themes."},
+            {"q": "How much does Trimbakeshwar Kaal Sarp Puja cost?", "a": "We hold no source for what a Trimbakeshwar puja should cost, so we give no figure. In our view an urgent demand for a large sum is a reason for caution. Go through the temple trust, not touts approaching at the town."},
+            {"q": "Is Kaal Sarp Dosh really that serious?", "a": "It's real when all 7 planets are truly between Rahu and Ketu on one semicircle. Check your chart with our free /kaal-sarp-check tool first. Rao, whom we hold, calls the pattern highly problematic and says it usually works to about age 40; it is a specific pattern with named 12 types (Anant, Kulik, Padma, etc.) each with distinct life themes."},
             {"q": "When is Nag Panchami?", "a": "5th day of the bright half of Shravana month (typically August). Traditional annual serpent-worship day, widely kept for KSD. Fast during the day, offer milk to serpent images at temple, perform Nag Devata puja."},
             {"q": "Can I do KSD remedy at home instead of Trimbakeshwar?", "a": "Yes. Regular worship of Rahu's and Ketu's deities (Durga or Narasimha, Ganesha), Nag Panchami observance, silver serpent offering, and Rahu+Ketu Beej mantras done consistently at home are the accessible starting point; Monday Shiva visits are a devotional tradition you may add. Save the Trimbakeshwar pilgrimage for when you're certain of the diagnosis and have the time to do it well."},
         ),
         llm_summary=(
-            'Keypoints:\n• Kaal Sarp Dosh = all 7 non-shadow planets on one semicircle of Rahu-Ketu axis\n• MOST EXPLOITED category in astrology commerce; real remedies are cheap\n• 7 remedies; only (1) the deities of Rahu and Ketu and (4) the Beej mantras are classical, the rest is tradition: (1) Rahu: Durga or Narasimha, Ketu: Ganesha (Monday Shiva worship + Om Namah Shivaya 108x is a devotional tradition, not the deity of either node), (2) Nag Panchami annual observance (fast + serpent milk offering), (3) silver serpent offering at Shiva temple or river (₹500-2K, once), (4) Rahu+Ketu Beej mantras combined 108x each, (5) Trimbakeshwar Nagbali Puja ₹5-25K for severe cases, (6) symbolic serpent-serving (donate to reptile rescues), (7) year-long weekly practice\n• Cost sanity: anyone quoting lakhs for KSD Shanti is scamming; ₹15-25K is the ceiling for legitimate Trimbakeshwar puja'
+            'Keypoints:\n• Kaal Sarp Dosh = all 7 non-shadow planets on one semicircle of Rahu-Ketu axis\n• 7 remedies; only (1) the deities of Rahu and Ketu and (4) the Beej mantras are classical, the rest is tradition: (1) Rahu: Durga or Narasimha, Ketu: Ganesha (Monday Shiva worship + Om Namah Shivaya 108x is a devotional tradition, not the deity of either node), (2) Nag Panchami annual observance (fast + serpent milk offering), (3) silver serpent offering at Shiva temple or river (once), (4) Rahu+Ketu Beej mantras combined 108x each, (5) Trimbakeshwar Nagbali Puja for severe cases, (6) symbolic serpent-serving (donate to reptile rescues), (7) year-long weekly practice\n• Cost: no held source prices a remedy; be cautious of a very large quote'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -3001,7 +3000,7 @@ ARTICLES: tuple[Article, ...] = (
         category="Doshas", hero_image="/static/learn/manglik-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
         related=("manglik-dosh", "mangal-mars-in-vedic-astrology", "mars-remedies", "kundali-matching-ashtakoot-guna-milan"),
         faqs=(
-            {"q": "Is Kumbh Vivah remedy legitimate?", "a": "It is a folk-remedial practice, not a classical one (we have found no classical source for it), offered for severe uncancelled Manglik before marriage — marriage to a clay pot (kumbh) or peepal tree that 'consumes' the first Manglik-marriage karma. Cost ₹2K-10K from legitimate priests. Not universally accepted by modern astrologers; some question efficacy. Often more valuable as psychological closure than ritual mechanic."},
+            {"q": "Is Kumbh Vivah remedy legitimate?", "a": "It is a folk-remedial practice, not a classical one (we have found no classical source for it), offered for severe uncancelled Manglik before marriage — marriage to a clay pot (kumbh) or peepal tree that 'consumes' the first Manglik-marriage karma. We hold no source for what it should cost, so we give no figure. Not universally accepted by modern astrologers; some question efficacy."},
             {"q": "Do I need to check Manglik cancellation before doing remedies?", "a": "YES — this is the most important first step. Use our /manglik-check tool, which checks the commonly listed cancellations it implements (Cancer/Leo Lagna Yogakaraka, Jupiter aspect, own-sign Mars, etc.) and shows which applied. Some charts are cancelled by the commonly listed rules, and one author says much importance need not be given to the dosha."},
             {"q": "Can red coral (Moonga) cancel Manglik?", "a": "Red Coral is Mars's gemstone in Rao's table but can backfire when Mars is a functional malefic for your Ascendant. NEVER wear coral without proper chart analysis. Hanuman worship + Tuesday practices are safe universal remedies that don't need chart verification."},
             {"q": "What if I'm Manglik and my partner is not?", "a": "One held antidote list says that when both partners are Manglik the dosha is cancelled; it names no severity condition. Many retellings add that the two doshas should be of comparable strength, but we have not found that condition in a book we hold, so we treat it as ours: Shubh Bhagya grades Manglik low, moderate or high, counts equal or adjacent grades as comparable, and will not cancel a low against a high. That band is our convention, not scripture. If mismatch: soften with Hanuman practices (or Narasimha, Kartikeya or Rudra, Mars's other deities) + Kumbh Vivah before marriage. Also: many 'mismatch' cases are actually cancelled Manglik in one or both charts — verify with our /manglik-check tool first."},

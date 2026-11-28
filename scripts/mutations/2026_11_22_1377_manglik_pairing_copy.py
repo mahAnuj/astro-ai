@@ -8,7 +8,7 @@ MUTATIONS = [
      "test_trivia_drops_the_inverted_cancellation_claim"),
     ("#1377: marriage-delayed calls matching another Manglik the classical remedy again",
      "src/astro_ai/templates/learn/marriage-delayed.html",
-     "(2) a match that is read against the cancellation rules (one held antidote list says the dosha is cancelled when both partners are Manglik);",
-     "(2) preference for matching with another Manglik partner (this is the classical remedy, not the anxiety-driving one online vendors push);",
+     "A match is also read against the cancellation rules (one held antidote list says the dosha is cancelled when both partners are Manglik).",
+     "A preference for matching with another Manglik partner (this is the classical remedy, not the anxiety-driving one online vendors push).",
      "test_marriage_delayed_does_not_call_manglik_pairing_the_classical_remedy"),
 ]

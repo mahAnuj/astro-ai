@@ -1,4 +1,4 @@
-# Lessons — last 30 days (generated 2026-11-25T12:33:07Z)
+# Lessons — last 30 days (generated 2026-11-28T02:54:33Z)
 
 Read this before planning, specifying or ranking. It is the loop's memory of what
 failed, what moved nothing, and what rivals do. Built by `scripts/collect_lessons.py`;
@@ -10,26 +10,25 @@ deterministic, no LLM.
 
 ## Repeated error themes: act on these
 
-- **copy** — 17 QA FAIL(s): #544, #550, #564, #649, #654, #675, #691, #815, #833, #841, #884, #960, #1000, #1077
+- **copy** — 14 QA FAIL(s): #564, #649, #654, #675, #691, #815, #833, #841, #884, #960, #1000, #1077
 - **grounding** — 30 QA FAIL(s): #635, #701, #706, #713, #747, #772, #815, #833, #841, #845, #859, #875, #1011, #1027, #1057, #1058, #1063, #1077, #1086, #1132, #1150, #1167, #1169, #1345, #1375
-- **i18n** — 8 QA FAIL(s): #564, #737, #815, #875, #1057, #1150
-- **performance** — 5 QA FAIL(s): #565, #675, #747, #815
-- **regression** — 31 QA FAIL(s): #544, #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747, #815, #841, #884, #1000, #1002, #1128, #1167, #1169, #1212, #1241, #1262
-- **security** — 15 QA FAIL(s): #544, #564, #636, #712, #747, #841, #846, #1000, #1150, #1162, #1167, #1169
-- **tests** — 26 QA FAIL(s): #544, #550, #701, #713, #747, #754, #801, #804, #833, #841, #846, #913, #999, #1027, #1058, #1105, #1167, #1169, #1173, #1212
-- **tokens** — 17 QA FAIL(s): #564, #649, #654, #660, #675, #747, #815, #841, #846, #913, #1000, #1105, #1173, #1210
+- **i18n** — 9 QA FAIL(s): #564, #737, #815, #875, #1057, #1150, #1511
+- **performance** — 4 QA FAIL(s): #675, #747, #815
+- **regression** — 30 QA FAIL(s): #636, #649, #654, #660, #675, #691, #704, #712, #737, #745, #747, #815, #841, #884, #1000, #1002, #1128, #1167, #1169, #1212, #1241, #1262
+- **security** — 13 QA FAIL(s): #544, #636, #712, #747, #841, #846, #1000, #1150, #1162, #1167, #1169
+- **tests** — 24 QA FAIL(s): #544, #701, #713, #747, #754, #801, #804, #833, #841, #846, #913, #999, #1027, #1058, #1105, #1167, #1169, #1173, #1212
+- **tokens** — 16 QA FAIL(s): #564, #649, #654, #660, #675, #747, #815, #841, #846, #913, #1000, #1105, #1173, #1210
 
 ## Our errors
 
-- QA FAIL verdicts: 119
+- QA FAIL verdicts: 114
 - reverted commits on main: 0
-- failed verify-production runs: 9
-- ops findings now: 1
-  - [amber] loop-starved: 2 of the last 4 build cycles built nothing
+- failed verify-production runs: 10
+- ops findings now: 0
 
 ## Our outcomes (analyst verdicts, latest per issue)
 
-counts: HIT 1, MISS 1, OTHER 3, PASS 3, PENDING 21, UNSCOREABLE 9
+counts: HIT 1, MISS 1, OTHER 4, PASS 3, PENDING 24, UNSCOREABLE 9
 - #272: PASS — PASS on shape; the query-level half is NOT MET
 - #276: OTHER — BAR MET, not attributable to the CTA
 - #311: MISS — MISS
@@ -52,13 +51,14 @@ counts: HIT 1, MISS 1, OTHER 3, PASS 3, PENDING 21, UNSCOREABLE 9
 - #843: UNSCOREABLE — not scoreable from GA4/GSC
 - #1066: PENDING — pending — scoreable from 2026-12-16; the metric needs an export that does not exist
 - #1069: PENDING — pending — scoreable from 2026-12-20
+- #1070: PENDING — pending — scoreable from 2026-12-25; blocked on a file nothing writes
 - #1073: PENDING — pending — scoreable from 2026-12-17
 - #1074: PENDING — pending — scoreable from 2026-12-17; floor at risk
 - #1075: PENDING — pending — scoreable from 2026-12-17
 - #1080: UNSCOREABLE — not scoreable from GA4/GSC
 - #1083: UNSCOREABLE — not scoreable from GA4/GSC
 - #1093: PENDING — pending — scoreable from 2026-12-16; the metric needs an export that does not exist
-- #1115: OTHER — NOT MET yet — 1 window, not 2; blocked on #1205
+- #1115: OTHER — MET
 - #1178: UNSCOREABLE — not scoreable from GA4/GSC
 - #1217: PENDING — pending — scoreable from 2026-12-19
 - #1226: PENDING — pending — scoreable from 2026-12-19
@@ -68,6 +68,9 @@ counts: HIT 1, MISS 1, OTHER 3, PASS 3, PENDING 21, UNSCOREABLE 9
 - #1322: PENDING — pending — scoreable from 2026-12-22
 - #1325: PENDING — pending — scoreable from 2026-12-22
 - #1336: PENDING — pending — scoreable from 2026-12-22
+- #1400: OTHER — delivered; re-crawl of the ten largest pages is 6 of 10 on the 2026-11-26 capture
+- #1411: PENDING — pending — scoreable from 2026-12-24
+- #1416: PENDING — pending — scoreable from 2026-12-24
 
 A MISS is the most useful line here: before proposing work of the same kind, say why this time differs, or do not propose it.
 

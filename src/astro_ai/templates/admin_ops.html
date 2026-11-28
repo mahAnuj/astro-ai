@@ -422,6 +422,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .chart{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:15px 16px 10px}
 .chart .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.chart .none{margin:0;font-family:Manrope,sans-serif;font-size:13px;color:var(--ink-mute)}
 .chart .big{font-family:Marcellus,Georgia,serif;font-size:27px;line-height:1;font-variant-numeric:tabular-nums}
 /* The plot is a grid: a fixed y-axis gutter, then the stretching SVG. Axis
    TEXT lives in HTML, never in the SVG — the path is drawn with
@@ -893,6 +894,123 @@ body{font-variant-numeric:tabular-nums}
   .quota .meter{grid-column:1/-1;order:3}
   .quota .sub{order:4}
 }
+
+/* ── Recent activity (#1133 slice 2d). Tokens only, no new one. Rows reuse 2c's
+   .lp-list/.ld/.lw/.lc; the chips are the Token budget window links (.winsel/.win),
+   so they need no rule. A state is a dot AND its word. The list has no padding (the
+   rows carry it). Under 640px the time wraps below the text, indented past the dot. */
+.ra-bar{padding:12px 20px 0}
+.ra-bar .winsel{margin-left:0}
+.ra-list{margin-top:12px}
+.ra-list>li>div{flex:1 1 200px}
+.ra-list>li>.chip{flex:none}
+.ra-t{flex:none;font:400 12px/1.5 var(--mono);color:var(--ink-mute);white-space:nowrap}
+@media (max-width:640px){.ra-list>li{flex-wrap:wrap}.ra-t{margin-left:19px}}
+
+/* ── The engineering loop, Agent health, System health (#1133 slice 2c). Tokens only,
+   no new one. A state is a dot (a fill) AND its word in text, a glyph in the ring;
+   the colour is never the only signal. The grids have no padding (the cells do).
+   Under 640px the ring drops its cadence lines and sets names at 20 user units
+   (about 12px), and the legend under it carries the cadence in text. */
+.lp-fig{margin:0;padding:16px 20px 0}
+.lp-fig figcaption{margin:8px auto 0;max-width:560px;font-size:13px;line-height:1.5;color:var(--ink-dim);text-align:center}
+.lpr{display:block;width:100%;max-width:560px;height:auto;margin:0 auto;overflow:visible}
+.lpr .ar{fill:none;stroke:var(--ink-mute);stroke-width:1.5}
+.lpr .ah{fill:var(--ink-mute)}
+.lpr circle{fill:var(--panel-2);stroke:var(--nothing-text);stroke-width:2.5}
+.lpr .st-ok circle{stroke:var(--shipped)}.lpr .st-watch circle{stroke:var(--open)}
+.lpr .st-bad circle{stroke:var(--failed)}.lpr .st-running circle{stroke:var(--st-running)}
+.lpr .st-unavailable circle{stroke-dasharray:4 3}
+.lpr .nn,.lpr .nm{fill:var(--ink);font:700 14px var(--ui)}
+.lpr .nm{font-weight:600}
+.lpr .nc{fill:var(--ink-dim);font:400 12px var(--mono)}
+.lpr .gl{fill:var(--nothing-text);font-size:1.15em;font-weight:700}
+.lpr .st-ok .gl{fill:var(--shipped)}.lpr .st-watch .gl{fill:var(--open)}
+.lpr .st-bad .gl{fill:var(--failed)}.lpr .st-running .gl{fill:var(--st-running)}
+@media (max-width:640px){.lpr .nc{display:none}.lpr .nn,.lpr .nm{font-size:20px}}
+.lp-leg,.lp-list{list-style:none;margin:0;padding:0}
+.lp-leg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));margin-top:16px}
+.lp-leg>li,.lp-list>li{display:flex;gap:10px;align-items:flex-start;min-width:0;padding:12px 20px;border-top:1px solid var(--line-2)}
+.lp-list>li:first-child{border-top:0}
+.ld{flex:none;box-sizing:border-box;width:9px;height:9px;margin-top:6px;border-radius:50%;background:var(--nothing-text)}
+.st-ok>.ld{background:var(--shipped)}.st-watch>.ld{background:var(--open)}.st-bad>.ld{background:var(--failed)}
+.st-running>.ld{background:var(--st-running)}.st-unavailable>.ld{background:transparent;border:2px solid var(--nothing-text)}
+.lp li>div{min-width:0;overflow-wrap:anywhere;font-size:13px;line-height:1.5}
+.lp .lw{font-weight:600;color:var(--ink)}
+.lp>p.sub{font-size:13px;line-height:1.5;color:var(--ink-dim)}
+.lp .lc{display:block;font-size:12px;line-height:1.5;color:var(--ink-dim)}
+.lp li a{font-weight:600}
+.lp-duo{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-bottom:24px}
+.lp-duo>.panel{margin-bottom:0;min-width:0}
+@media (min-width:768px){.lp-duo{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ── PRs shipped and Key metrics (#1133 slice 2b). Tokens only, no new one. A bar and
+   a sparkline are --brand: a fill and a stroke, never text. A bar's number is --ink, with a --panel halo for when the
+   tallest bar reaches the top of the axis and the number lands on it.
+   The hit rect's transparent stroke widens the target to the whole day without
+   padding any grid. The weekday line goes at 640px: two label lines will not fit. */
+.prs-w{max-width:760px;margin:0 auto}
+.dchart .pbar{fill:var(--brand)}
+.dchart .bv{fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
+.dchart.prs .hit{stroke:transparent;stroke-width:30px}
+.dchart.prs .dcol:hover .hit,.dchart.prs .dcol:focus-visible .hit{stroke:var(--panel-2)}
+@media (max-width:640px){.dchart .wd{display:none}.km-s:empty{display:none}}
+.pk .sub{margin:12px 0 0;max-width:78ch;font-size:13px;line-height:1.5;color:var(--ink-dim)}
+.pk>.sub{margin:0;max-width:none;padding:14px 20px 18px;border-top:1px solid var(--line-2)}
+.km-list{list-style:none;margin:0;padding:0}
+.km{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px 24px;padding:16px 20px;border-top:1px solid var(--line-2)}
+.km:first-child{border-top:0}
+.km-h,.km-v{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.km-h b{font-size:15px;font-weight:600}
+.km-s{flex:0 0 120px;min-height:32px}
+.km .num{font-size:32px;font-weight:700;letter-spacing:-.02em}
+.km .num.na{font-size:18px;font-weight:600;letter-spacing:0;color:var(--ink-dim)}
+.km .df,.km .nl{font-size:13px;line-height:1.45;color:var(--ink-dim)}
+.km .nl b{font-weight:600;color:var(--ink)}
+.km .nl.low{color:var(--open)}
+.km .nt{font-size:12px;font-weight:600;color:var(--ink)}
+.km .wl,.km .was,.km .src{font:400 12px/1.4 var(--mono);color:var(--ink-mute)}
+.km .dl{padding:3px 9px;border-radius:999px;background:var(--panel-3);font-size:12px;font-weight:600;
+  line-height:1.4;color:var(--ink-dim)}
+.km .dl.good{color:var(--shipped)}
+.km .dl.bad{color:var(--failed)}
+.km a{font-size:12px;font-weight:600}
+.spark{display:block;width:120px;height:32px;overflow:visible}
+.spark .gl{stroke:var(--line-2)}
+.spark .sa{fill:var(--brand);fill-opacity:.15}
+.spark .sl{fill:none;stroke:var(--brand);stroke-width:2;stroke-linejoin:round}
+.spark circle{fill:var(--brand);stroke:transparent;stroke-width:12px}
+.spark circle:hover{r:4}
+
+/* ── Results: the four KPI cards (#1133 slice 2a). Tokens only. A delta is an arrow
+   and a word in its own text, so its colour is a second signal. The grid has no
+   padding (the cells do) and wraps by width, so 375px is one column. .vh is the
+   page's visually-hidden text, for slice 2b. */
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:16px 20px 0}
+.kpis>p.sub{margin:12px 20px 0;max-width:none}
+.kpis>p.sub:last-child{margin-bottom:20px}
+.tile.kpi{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;
+  padding:16px;border-radius:var(--r-inner)!important;overflow-wrap:anywhere}
+.kpi>span{display:block;max-width:100%}
+.kpi .caret{position:absolute;top:14px;right:14px;max-width:none}
+.kpi .lbl{padding-right:20px}
+.kpi .v{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin:0}
+.kpi .v .num{font-size:32px;font-weight:700;letter-spacing:-.02em}
+.kpi .v .num.na{font-size:18px;font-weight:600;letter-spacing:0;color:var(--ink-dim)}
+.kpi .u{font-size:12px;font-weight:600;color:var(--ink-dim)}
+.kpi .nl{font-size:13px;line-height:1.45;color:var(--ink-dim)}
+.kpi .nl b{font-weight:600;color:var(--ink)}
+.kpi .nl.low{color:var(--open)}
+.kpi .wl{font:400 12px/1.4 var(--mono);color:var(--ink-mute)}
+.kpi .dl{display:inline-block;width:auto;padding:3px 9px;border-radius:999px;background:var(--panel-3);
+  font-size:12px;font-weight:600;line-height:1.4;color:var(--ink-dim)}
+.kpi .dl.good{color:var(--shipped)}
+.kpi .dl.bad{color:var(--failed)}
+.kpi .was,.kpi .src{font-size:12px;line-height:1.4;color:var(--ink-mute)}
+.kpi .df{font-size:12px;line-height:1.5;color:var(--ink-dim)}
+.kpi .src{margin-top:auto;padding-top:4px;font-family:var(--mono)}
 </style>
 </head>
 <body>
@@ -1050,6 +1168,289 @@ body{font-variant-numeric:tabular-nums}
       independently. <code>chief</code> owns it.</p>
     {% endif %}
   </section>
+
+  {# ── Results: the four KPI cards (#1133 slice 2a). `kpis` is ops_kpis.build(ops),
+     computed by the route for this tab only, so there is NO arithmetic and no
+     literal number in this block: every figure, window and caption is printed as
+     given. A card that cannot be computed says "unavailable: <why>" (its n_text)
+     and never shows a 0. Each card is a button that opens the rows behind it
+     (data-drill kpi-*, fed by D.kpi_rows). A delta is an arrow and a direction
+     word in its own text, so colour is never the only signal. #}
+  {% if kpis %}
+  {% set UNIT = {'cycles': 'build cycles shipped', 'qa': 'passed first time',
+                 'cost': 'list price per PR, not spend', 'prs': 'shipped by loop cycles'} %}
+  <section class="panel kpis" id="results" aria-labelledby="kpi-h">
+    <h2 id="kpi-h">Results <span class="lbl">IST days{% if kpis.window.text %} · {{ kpis.window.text }}{% endif %}</span></h2>
+    <div class="kpi-grid">
+    {% for c in kpis.cards %}
+      {%- set d = c.delta %}
+      {%- set summary -%}
+        {{ c.label }}: {{ c.display }}; {{ c.n_text }};{% if c.window_text %} {{ c.window_text }};{% endif %} {{ d.text }}
+      {%- endset %}
+      <button type="button" class="tile kpi k-{{ c.key }} st-{{ c.state }}" data-drill="{{ c.drill }}"
+              title="{{ summary|trim }}" aria-label="{{ summary|trim }}. Opens the rows behind it.">
+        <span class="caret" aria-hidden="true">▸</span><span class="lbl">{{ c.label }}</span>
+        <span class="v"><span class="num{{ ' na' if c.state != 'ok' }}">{{ c.display }}</span>
+          {%- if c.state == 'ok' %}<span class="u">{{ UNIT[c.key] }}{{ ', a floor' if c.floor }}</span>{% endif %}</span>
+        <span class="nl{{ ' low' if c.low_n }}">{% if c.state == 'ok' %}<b>n={{ c.n }}</b> · {% endif %}{{ c.n_text }}</span>
+        {%- if c.window_text %}
+        <span class="wl">{{ c.window_text }}</span>{% endif %}
+        <span class="dl{{ ' good' if d.good is true }}{{ ' bad' if d.good is false }}">{{ d.text }}{% if d.state != 'ok' and d.previous_window %} · previous {{ d.previous_window }}{% endif %}</span>
+        {%- if d.previous_text %}
+        <span class="was">was {{ d.previous_text }}</span>{% endif %}
+        <span class="df">{{ c.definition }}</span>
+        <span class="src">source: {{ c.source }}</span>
+      </button>
+    {% endfor %}
+    </div>
+    <p class="sub">{{ kpis.caption }} <b>Where the loop's time went</b>, further down, counts a rolling
+      week up to the moment its data was collected, so its cycle and PR counts differ from these.</p>
+    <p class="sub"{% if kpis.reason %} role="status"{% endif %}>
+      {% if kpis.reason %}<b>{{ kpis.reason }}.</b> The four cards are unavailable, not zero.{% endif %}
+      <span class="age {{ 'stale' if kpis.as_of.stale }}">cycle data {{ kpis.as_of.text }}</span>
+      Sources: <code>measurements/loop.json</code>, and <code>measurements/agents.json</code> for the QA verdicts.
+      {% if kpis.skipped %}<b>{{ kpis.skipped }} row(s) in loop.json could not be read and are left out.</b>{% endif %}</p>
+  </section>
+  {% endif %}
+
+  {# ── The engineering loop, Agent health and System health (#1133 slice 2c).
+     `loop_health` is ops_loop_health.build(), computed by the route for this tab
+     only and FULLY pre-computed: no arithmetic and no literal number inside an
+     expression here (the Results and PRs-shipped tests scan this span too). Every
+     state is a word in text beside a dot or glyph that is aria-hidden, so colour is
+     never the only signal. The ring is role="img" with an aria-label listing every
+     step; the legend <ol> under it is the keyboard and screen-reader path (the SVG
+     links are tabindex -1), and a .vh table repeats the last run and result. A panel
+     that cannot be computed says "unavailable: <why>", never a green and never 0.
+     No script, no drill-down, no Tailwind class. #}
+  {% if loop_health %}
+  {% set R = loop_health.ring %}{% set AH = loop_health.agents %}{% set SH = loop_health.system %}
+  {% set GL = {'ok': '✓', 'watch': '!', 'bad': '✕', 'running': '…', 'unavailable': '?'} %}
+  <section class="panel lp" id="loop-ring" aria-labelledby="loop-h">
+    <h2 id="loop-h">The engineering loop{% if R.as_of %} <span class="lbl"><span class="age {{ 'stale' if R.stale }}">{{ R.as_of }}</span></span>{% endif %}</h2>
+    {% if R.state == 'unavailable' %}
+    <p class="sub" role="status"><b>{{ R.reason }}.</b> The ring is unavailable, not green.</p>
+    {% else %}
+    <figure class="lp-fig">
+      <svg class="lpr" viewBox="0 0 {{ R.w }} {{ R.h }}" role="img" aria-label="{{ R.aria }}">
+        <defs><marker id="lp-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+        {%- for a in R.arrows %}
+        <path class="ar" d="{{ a.d }}" marker-end="url(#lp-ah)"/>
+        {%- endfor %}
+        {%- for n in R.nodes %}
+        <a{% if n.href %} href="{{ n.href }}"{% endif %} tabindex="-1"><g class="nd st-{{ n.state }}"><circle cx="{{ n.x }}" cy="{{ n.y }}" r="{{ n.r }}"/>
+          <text class="nn" x="{{ n.x }}" y="{{ n.y }}" dy="0.35em" text-anchor="middle">{{ n.n }}</text>
+          <text class="nm" x="{{ n.label_x }}" y="{{ n.name_y }}" text-anchor="{{ n.anchor }}">{{ n.name }}<tspan class="gl" dx="5">{{ GL[n.state] }}</tspan></text>
+          <text class="nc" x="{{ n.label_x }}" y="{{ n.caption_y }}" text-anchor="{{ n.anchor }}">{{ n.caption }}</text></g></a>
+        {%- endfor %}
+      </svg>
+      <figcaption>{{ R.caption }}. A circle shows the worst last run of its workflows.</figcaption>
+    </figure>
+    <div class="vh"><table>
+      <caption>The engineering loop, one row per step</caption>
+      <thead><tr><th scope="col">Step</th><th scope="col">Name</th><th scope="col">Last run</th><th scope="col">Result</th></tr></thead>
+      <tbody>{% for t in R.table %}<tr><th scope="row">{{ t.n }}</th><td>{{ t.name }}</td><td>{{ t.last }}</td><td>{{ t.result }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <ol class="lp-leg">
+    {%- for n in R.nodes %}
+      <li class="st-{{ n.state }}"><span class="ld" aria-hidden="true"></span><div><b>{% if n.href %}<a href="{{ n.href }}">{{ n.n }}. {{ n.name }}</a>{% else %}{{ n.n }}. {{ n.name }}{% endif %}</b> ·
+        <span class="lw">{{ n.word }}</span> · {{ n.caption }}
+        {%- for w in n.workflows %}
+        <span class="lc">{{ w.name }} · {{ w.cadence }} · last {{ w.last }} · {{ w.conclusion }}{% if not (loop.first and loop.last) %} · {{ w.word }}{% endif %}</span>
+        {%- endfor %}</div></li>
+    {%- endfor %}
+    </ol>
+    {% endif %}
+    <p class="sub">Read from <code>measurements/agents.json</code>, as of its last collection, not live.
+      <code>loop-outcomes</code> ends non-zero by design when it finds something: its amber is a finding.</p>
+  </section>
+
+  <div class="lp-duo">
+  <section class="panel lp" id="agent-health" aria-labelledby="ah-h">
+    <h2 id="ah-h">Agent health{% if AH.header %} <span class="lbl">{{ AH.header }}</span>{% endif %}</h2>
+    {% if AH.state == 'unavailable' %}
+    <p class="sub" role="status"><b>{{ AH.reason }}.</b> No counts are shown, not zeros.</p>
+    {% else %}
+    <ul class="lp-list">
+    {% for g in AH.groups %}
+      <li class="st-{{ g.state }}"><span class="ld" aria-hidden="true"></span>
+        <div><b>{{ g.label }}</b> · <span class="lw">{{ g.word }}</span>
+          <span class="lc">{{ g.n }} in the group: {{ g.counts_text }}</span></div>
+      </li>
+    {% endfor %}
+    </ul>
+    <p class="sub">{{ AH.note }} <span class="age">{{ AH.live_text }}</span>
+      {% if AH.href %}<a href="{{ AH.href }}">Agents &rarr;</a>{% endif %}</p>
+    {% if AH.skipped_text %}<p class="sub" role="status"><b>{{ AH.skipped_text }}.</b></p>{% endif %}
+    {% endif %}
+  </section>
+
+  <section class="panel lp" id="system-health" aria-labelledby="sh-h">
+    <h2 id="sh-h">System health</h2>
+    <ul class="lp-list">
+    {% for r in SH.rows %}
+      <li class="st-{{ r.state }}"><span class="ld" aria-hidden="true"></span>
+        <div><b>{{ r.name }}</b> · <span class="lw">{{ r.word }}</span>
+          {%- if r.detail %}
+          <span class="lc">{{ r.detail }}</span>{% endif %}
+          {%- if r.as_of and r.key != 'website' %}
+          <span class="lc">{{ r.as_of }}</span>{% endif %}
+          {%- if r.href %}
+          <a href="{{ r.href }}">{{ r.link_text }} &rarr;</a>{% endif %}</div>
+      </li>
+    {% endfor %}
+    </ul>
+    <p class="sub"{% if SH.error %} role="status"{% endif %}>
+      {% if SH.error %}<b>A row above could not be computed and says so.</b> {% endif %}
+      Each row says only what was checked. The website row is the last <code>verify-production</code>
+      run, not an uptime monitor.</p>
+  </section>
+  </div>
+  {% endif %}
+
+  {# ── PRs shipped and Key metrics (#1133 slice 2b). `trends` is ops_trends.build(),
+     computed by the route for this tab only: like Results, no arithmetic and no
+     literal number inside an expression here, every figure is printed as given.
+     The bar chart reuses .dchart/.dcol and the #dtip hover handler; each bar opens
+     that day's PRs (data-drill kpi-prs-day). Every chart has role="img", an
+     aria-label that lists its values, and a .vh table with the same numbers. A row
+     that cannot be computed says "unavailable: <why>", has class st-unavailable,
+     and prints no number and no sparkline. #}
+  {% if trends %}
+  {% set B = trends.bars %}
+  <section class="panel pk" id="prs-shipped" aria-labelledby="prs-h">
+    <h2 id="prs-h">PRs shipped <span class="lbl">IST days{% if B.window_text %} · {{ B.window_text }}{% endif %}</span></h2>
+    <div class="body">
+    {% if B.state == 'unavailable' %}
+      <p class="sub" role="status"><b>{{ B.reason }}.</b> The bars are unavailable, not zero.</p>
+    {% else %}
+      <div class="dchart-wrap prs-w">
+      <svg class="dchart prs" viewBox="0 0 {{ B.w }} {{ B.h }}" role="img"
+           aria-label="PRs shipped per IST day, {{ B.window_text }}, in PRs: {% for c in B.cols %}{{ c.weekday }} {{ c.date }} {{ c.value_text }}{{ '; ' if not loop.last }}{% endfor %}. The same numbers are in the table below.">
+        <line class="grid" x1="{{ B.left }}" x2="{{ B.right_x }}" y1="{{ B.plot_h }}" y2="{{ B.plot_h }}"/>
+        <line class="grid soft" x1="{{ B.left }}" x2="{{ B.right_x }}" y1="0.5" y2="0.5"/>
+        <text class="ax" x="{{ B.left }}" y="{{ B.plot_h }}" text-anchor="end" dx="-6" dy="0.32em">0</text>
+        <text class="ax" x="{{ B.left }}" y="1" text-anchor="end" dx="-6" dy="0.7em">{{ B.top }}</text>
+        {%- for c in B.cols %}
+        <g class="dcol" data-drill="kpi-prs-day" data-day="{{ c.date }}" data-prs="{{ c.prs }}"
+           data-tip="{{ c.tip }}" tabindex="0" role="button">
+          {#- one line per bar: this block ships once per day, so its whitespace is bytes -#}
+          <title>{{ c.tip }}</title><rect class="hit" x="{{ c.x }}" y="0" width="{{ c.w }}" height="{{ B.h }}"/>
+          {%- if c.state == 'ok' %}{% if c.h %}<rect class="pbar" x="{{ c.x }}" y="{{ c.y }}" width="{{ c.w }}" height="{{ c.h }}" rx="2"/>{% endif %}
+          <text class="ax bv" x="{{ c.cx }}" y="{{ c.value_y }}" text-anchor="middle">{{ c.value_text }}</text>
+          {%- else %}
+          <text class="ax nr" x="{{ c.cx }}" y="{{ B.plot_h }}" text-anchor="middle" dy="-1.6em">no</text><text class="ax nr" x="{{ c.cx }}" y="{{ B.plot_h }}" text-anchor="middle" dy="-0.4em">runs</text>
+          {%- endif %}
+          <text class="ax wd" x="{{ c.cx }}" y="{{ B.label_y }}" dy="-1.3em" text-anchor="middle">{{ c.weekday }}</text><text class="ax" x="{{ c.cx }}" y="{{ B.label_y }}" text-anchor="middle">{{ c.label }}</text>
+        </g>
+        {%- endfor %}
+      </svg>
+      <div class="dtip" id="dtip" hidden></div>
+      </div>
+      <div class="vh"><table>
+        <caption>PRs shipped per IST day, {{ B.window_text }}</caption>
+        <thead><tr><th scope="col">Day</th><th scope="col">PRs shipped</th><th scope="col">Loop runs</th><th scope="col">Which PRs</th></tr></thead>
+        <tbody>{% for t in B.table %}<tr><th scope="row">{{ t.weekday }} {{ t.date }}</th><td>{{ t.value_text }}</td><td>{{ t.runs }}</td><td>{{ t.prs }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+      <p class="sub"><b>{{ B.n_text }}.</b> The seven bars add up to <b>PRs merged</b> in Results above:
+        each PR is counted once, on the first IST day it shipped. A day with no loop runs
+        says "no runs", not 0. Click a bar to open that day's PRs.</p>
+      <p class="sub">Source: <code>measurements/loop.json</code>, the same rows as Results.</p>
+    {% endif %}
+    </div>
+  </section>
+
+  {% set UN = {'organic': 'clicks', 'issues': 'closed'} %}
+  {% set DAYS = {'organic': 'Search Console days', 'issues': 'UTC days'} %}
+  <section class="panel pk" id="key-metrics" aria-labelledby="km-h">
+    <h2 id="km-h">Key metrics <span class="lbl">each row names its own window</span></h2>
+    <ul class="km-list">
+    {% for m in trends.metrics %}
+      {%- set d = m.delta %}{% set s = m.spark %}
+      <li class="km st-{{ m.state }}" id="km-{{ m.key }}">
+        <div class="km-h"><b>{{ m.label }}</b>
+          <span class="df">{{ m.definition }}</span>
+          {%- if m.note %}
+          <span class="nt">{{ m.note }}</span>{% endif %}
+        </div>
+        <div class="km-s">
+        {%- if s and s.ok %}
+          <svg class="spark" viewBox="0 0 120 32" role="img"
+               aria-label="{{ m.label }}, {{ DAYS.get(m.key, '') }} {{ m.window_text }}, in {{ UN.get(m.key, 'count') }}: {% for b in s.bands %}{{ b.date }} {{ b.value }}{{ '; ' if not loop.last }}{% endfor %}. The same numbers are in the table.">
+            <line class="gl" x1="0" x2="120" y1="32" y2="32"/>
+            <polygon class="sa" points="{{ s.area }}"/>
+            <polyline class="sl" points="{{ s.line }}"/>
+            {% for b in s.bands %}<circle cx="{{ b.px }}" cy="{{ b.py }}" r="2.5"><title>{{ b.date }}: {{ b.value }} {{ UN.get(m.key, 'count') }}</title></circle>{% endfor %}
+          </svg>
+          <div class="vh"><table>
+            <caption>{{ m.label }} per day, {{ m.window_text }}</caption>
+            <thead><tr><th scope="col">Day</th><th scope="col">{{ UN.get(m.key, 'count') }}</th></tr></thead>
+            <tbody>{% for b in s.bands %}<tr><th scope="row">{{ b.date }}</th><td>{{ b.value }}</td></tr>{% endfor %}</tbody>
+          </table></div>
+        {%- endif -%}
+        </div>
+        <div class="km-v">
+          <span class="num{{ ' na' if m.state != 'ok' }}">{{ m.display }}</span>
+          <span class="nl{{ ' low' if m.low_n }}">{% if m.state == 'ok' %}<b>n={{ m.n }}</b> · {% endif %}{{ m.n_text }}</span>
+          {%- if m.window_text %}
+          <span class="wl">{{ DAYS.get(m.key, '') }} · {{ m.window_text }}</span>{% endif %}
+          {%- if m.state == 'ok' %}
+          <span class="dl{{ ' bad' if d.good is false }}{{ ' good' if d.good is true }}">{{ d.text|trim }}{% if d.state != 'ok' and d.previous_window %} · previous {{ d.previous_window }}{% endif %}</span>
+          {%- if d.previous_text %}
+          <span class="was">was {{ d.previous_text }}</span>{% endif %}
+          {%- endif %}
+          <span class="src">source: {{ m.source }}</span>
+          {%- if m.href %}
+          <a href="{{ m.href }}">{{ m.link_text }} &rarr;</a>{% endif %}
+        </div>
+      </li>
+    {% endfor %}
+    </ul>
+    <p class="sub"{% if trends.error %} role="status"{% endif %}>
+      {% if trends.error %}<b>A panel above could not be computed and says so.</b> {% endif %}
+      A window with a missing day shows no value and no change, never a sum over the gap.
+      The windows differ on purpose: Results uses IST days, Search Console trails the present by
+      about three days, and the issue trend counts UTC days.</p>
+  </section>
+  {% endif %}
+
+  {# ── Recent activity (#1133 slice 2d). `activity` is ops_activity.build(), computed by
+     the route for this tab only and FULLY pre-computed: no arithmetic and no literal
+     number inside an expression here (the Results, PRs-shipped and loop-health tests
+     scan this span too). The chips are plain server links, the Token budget window's
+     own pattern (.winsel/.win, aria-current), so the filter is in the URL and works
+     with no script. Every state is a word in text beside a dot that is aria-hidden.
+     A source that cannot be read says so; it is never "no activity". One <li> per
+     line: this block ships on every Overview render, whitespace is bytes. No script,
+     no drill-down, no |safe, no Tailwind class. #}
+  {% if activity %}
+  <section class="panel lp ra" id="recent-activity" aria-labelledby="ra-h">
+    <h2 id="ra-h">Recent activity{% if activity.as_of %} <span class="lbl">{{ activity.as_of }}</span>{% endif %}</h2>
+    <div class="ra-bar"><span class="winsel" role="group" aria-label="Filter recent activity">
+      {%- for c in activity.chips %}
+      <a class="win{{ ' on' if c.current }}" href="{{ c.href }}"{% if c.current %} aria-current="true"{% endif %}>{{ c.label }}</a>
+      {%- endfor %}
+    </span></div>
+    {%- if activity.state == 'unavailable' %}
+    <p class="sub" role="status"><b>{{ activity.reason }}.</b> Nothing is shown, not "no activity".</p>
+    {% elif activity.state == 'empty' %}
+    <p class="sub" role="status">{{ activity.empty_text }}.</p>
+    {% else %}
+    <ul class="lp-list ra-list">
+    {%- for r in activity.rows %}
+      <li class="st-{{ r.state }}"><span class="ld" aria-hidden="true"></span><div><b>{% if r.href %}<a href="{{ r.href }}">{{ r.title }}</a>{% else %}{{ r.title }}{% endif %}</b> · <span class="lw">{{ r.word }}</span>{% if r.subtitle %}<span class="lc">{{ r.subtitle }}</span>{% endif %}</div><span class="chip">{{ r.type_label }}</span><time class="ra-t" datetime="{{ r.iso }}" title="{{ r.at_ist }} IST">{{ r.when }}</time></li>
+    {%- endfor %}
+    </ul>
+    {%- endif %}
+    {%- for n in activity.notes %}
+    <p class="sub" role="status">{{ n }}</p>
+    {%- endfor %}
+    {% if activity.skipped_text %}<p class="sub" role="status">{{ activity.skipped_text }}.</p>{% endif %}
+    {% if activity.error %}<p class="sub" role="status"><b>A source above could not be computed and says so.</b></p>{% endif %}
+    <p class="sub">{{ activity.live_text }} Closed issues are not listed: the issue file carries no title for them.
+      {% if activity.view_all.href %}<a href="{{ activity.view_all.href }}">View all &rarr;</a>{% endif %}</p>
+  </section>
+  {% endif %}
 
   {# ── Goals and agent decisions (owner, 2026-11-19). growth.json, scripts/growth_split.py. ── #}
   {% set GR = ops.growth %}
@@ -2050,13 +2451,28 @@ body{font-variant-numeric:tabular-nums}
       </div>
       {% endmacro %}
 
+      {# One series can be missing while the other renders (#1553): _series returns
+         {"ok": False} for an absent file or `rows: []`, and Jinja evaluates a macro's
+         ARGUMENTS before its body, so `T.impressions.total` (and the format() on it)
+         would raise. The guard therefore wraps the whole call, never the macro body. #}
+      {% macro nodata(label, fname) %}
+      <div class="chart">
+        <div class="hd"><span class="lbl">{{ label }}</span></div>
+        <p class="none">No data: <code>measurements/{{ fname }}</code> is missing or has no rows.</p>
+      </div>
+      {% endmacro %}
+
       <div class="charts">
+        {% if T.users.ok %}
         {{ chart(T.users, 'People · daily active users', T.users.total,
                  'peak ' ~ T.users.peak ~ '<br>last ' ~ T.users.last,
                  'var(--brand)', 'var(--wash-1)', 'users') }}
+        {% else %}{{ nodata('People · daily active users', 'ga4-daily.json') }}{% endif %}
+        {% if T.impressions.ok %}
         {{ chart(T.impressions, 'Search impressions · daily', '{:,}'.format(T.impressions.total),
                  'peak ' ~ T.impressions.peak ~ '<br>' ~ T.clicks_total ~ ' clicks',
                  'var(--shipped)', 'var(--wash-2)', 'impressions') }}
+        {% else %}{{ nodata('Search impressions · daily', 'gsc-daily.json') }}{% endif %}
       </div>
 
       {# A page row links to the live page. A QUERY row links nowhere: the
@@ -2528,6 +2944,7 @@ body{font-variant-numeric:tabular-nums}
      is only wired where its elements exist, but a missing key must be an empty
      drill-down and never a TypeError that stops the rest of this script. */
   var CYCLES = D.cycles || [], ISSUES = D.issues || [];
+  var KPI_ROWS = D.kpi_rows || [];
   var sheet = document.getElementById("sheet"),
       scrim = document.getElementById("scrim"),
       list  = document.getElementById("sheet-list"),
@@ -2565,6 +2982,8 @@ body{font-variant-numeric:tabular-nums}
       if (kind === "cycle") {
         var bits = [r.time_ist + " IST", r.date_ist, r.minutes + " min", r.trigger];
         if (r.attribution === "unattributed") bits.push("unattributable");
+        if (r.qa1 && r.kind !== "qa-round") bits.push("first QA " + r.qa1);
+        if (r.usd != null) bits.push("$" + r.usd.toFixed(2) + " list");
         var ls = [link(REPO + "/actions/runs/" + r.run, "run log &rarr;")];
         /* The agents' own account of the work, which is the "why". */
         if (r.issue) ls.push(link(REPO + "/issues/" + r.issue, "what the agents said &rarr;"));
@@ -2660,12 +3079,36 @@ body{font-variant-numeric:tabular-nums}
                         return ISSUES.slice().sort(function (a, b) {
                           return (rank[a.priority] ?? 9) - (rank[b.priority] ?? 9) || b.number - a.number;
                         });
-                      }, "issue"]
+                      }, "issue"],
+    /* A PRs-shipped bar (#1133 slice 2b): the PRs that first shipped on that day.
+       Before "kpi-cycles" on purpose: the Results entries below must stay last. */
+    "kpi-prs-day":   ["PRs shipped", "PRs the loop shipped, each on the first IST day it shipped",
+                      function (el) {
+                        var want = (el.getAttribute("data-prs") || "").split(",");
+                        return kpiPrs().filter(function (r) { return want.indexOf(String(r.pr)) >= 0; });
+                      }, "cycle"],
+    /* The four Results cards. Rows are the current KPI window's (the blob's
+       kpi_rows, Overview only). One row per PR for the PR and QA cards, because that is
+       the unit their numbers count. */
+    "kpi-cycles":    ["cycles shipped", "Build cycles that shipped, last complete IST days",
+                      function () { return KPI_ROWS.filter(function (r) { return r.outcome === "shipped" && r.kind !== "qa-round"; }); }, "cycle"],
+    "kpi-prs":       ["PRs merged", "Distinct PRs the loop shipped, last complete IST days", kpiPrs, "cycle"],
+    "kpi-qa":        ["first-pass QA", "PRs the loop shipped, with the first QA verdict where one is recorded", kpiPrs, "cycle"],
+    "kpi-cost":      ["cost, list price", "Every run in the window, with its list-price cost", function () { return KPI_ROWS; }, "cycle"]
   };
+  function kpiPrs() {
+    var seen = {};
+    return KPI_ROWS.filter(function (r) {
+      if (r.outcome !== "shipped" || !r.pr || seen[r.pr]) return false;
+      return (seen[r.pr] = true);
+    });
+  }
   Array.prototype.forEach.call(document.querySelectorAll("[data-drill]"), function (el) {
     el.addEventListener("click", function () {
       var t = TILES[el.getAttribute("data-drill")];
-      if (t) open(t[0], t[1], t[2](), t[3]);
+      /* A bar names its day in the sheet title; a card has no data-day. */
+      var day = el.getAttribute("data-day");
+      if (t) open(t[0], day ? t[1] + ", " + day : t[1], t[2](el), t[3]);
     });
   });
 

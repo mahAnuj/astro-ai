@@ -889,6 +889,20 @@ jobs:
           gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body-file /tmp/pr-comment.md
           gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-label "needs-human-review"
 
+          # SWEEP AGAIN AFTER A NEW HOLD (2026-11-25). Only a run that MERGED
+          # re-dispatched the sweep, so a sweep that picked a boundary PR held it
+          # and ended the chain with green PRs still behind it: 14:10Z that day it
+          # held #1375 and left #1428, #1438 and #1465 (green, qa-pass) waiting
+          # for a cron GitHub had not fired since 04:00Z. The label just added
+          # takes this PR out of the sweep filter, and this point is reached
+          # only when the label was NOT already there (the exit above), so each
+          # re-dispatch needs a newly held PR and the chain still ends.
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            gh workflow run agent-merge.yml --repo "$GH_REPO" --ref main \
+              && echo "::notice::held #$PR_NUMBER; dispatched another sweep for the PRs behind it" \
+              || echo "::warning::held #$PR_NUMBER but could not dispatch the next sweep"
+          fi
+
       # A DRAFT CANNOT MERGE, and this job used to fetch `isDraft` and never
       # read it. So a readied-by-nobody PR reached `gh pr merge` and failed
       # with "Pull request is in draft state" — after every condition that
@@ -1028,8 +1042,15 @@ jobs:
         env:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
+          # The time BEFORE the dispatch, so the reporter can find this run (#1221).
+          after=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           if gh workflow run pr-gates.yml --repo "$GH_REPO" --ref main; then
             echo "::notice::merged #$PR_NUMBER; dispatched pr-gates on main so the merge result is gated"
+            # GitHub almost never delivers this run's completion to
+            # main-red-report by workflow_run (1 of 20, #1221), so dispatch the
+            # reporter too; it waits for the run and reports it.
+            gh workflow run main-red-report.yml --repo "$GH_REPO" --ref main -f after="$after" \
+              || echo "::warning::could not dispatch main-red-report for #$PR_NUMBER's gates run"
           else
             echo "::warning::merged #$PR_NUMBER but could not dispatch pr-gates on main; the daily scheduled run will gate it"
           fi

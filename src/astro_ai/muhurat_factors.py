@@ -106,9 +106,23 @@ REGISTRY: dict[str, dict[str, Any]] = {
                                          "lists the tithi without naming a half; the Muhurtha "
                                          "tradition's best list is for the bright half.", _H97)},
             # Ruling: "Vd Dwadashi is contested (L2960)"; sentence worded here from that row.
+            # Auditor ruling (#1355): the Krishna-paksha credit for house entry rests on one
+            # paksha-less table; the Muhurtha list names the bright half.
+            "griha_pravesh": {"@Krishna": _vr(C, "In the dark half this credit rests on one table, "
+                                                 "which lists the tithi without naming a half; the "
+                                                 "Muhurtha tradition's list names the bright half "
+                                                 "(the only dark-half tithi it lists is the 1st).",
+                                              "#### Griha Pravesh")},
+            # "Dwadashi" is listed first so it beats "@Krishna" (see _soft_items); the half-wide
+            # entry covers the other vidyarambh tithis, whose half the held texts do not settle.
             "vidyarambh": {"Dwadashi": _vr(C, "The Vedic tables list this tithi for learning the "
                                               "alphabet, but the Muhurtha tradition's general list "
-                                              "rejects it, so the two differ.", "#### Vidyarambh")},
+                                              "rejects it, so the two differ.", _VD),
+                           "@Krishna": _vr(C, "The Vedic table lists this tithi without naming a "
+                                              "half. The Muhurtha tradition's list marks only its "
+                                              "1st as dark-half and names no half for the others, "
+                                              "so neither table settles whether this tithi counts "
+                                              "in the dark half.", _VD)},
         },
     },
     "good_nakshatra": {
@@ -309,23 +323,45 @@ REGISTRY: dict[str, dict[str, Any]] = {
         "default": _vr(S, "B.V. Raman's Muhurtha rejects the first quarter of Makha and Moola for "
                           "a wedding; the rest of those stars stays good.", _H914),
     },
-    # Each event's note names the tithi the ruling marks contested or unsourced; worded here.
+    # Each event's note names the tithi the ruling marks contested or this finder's own; worded
+    # here. The status is the disagreement kind, so the badge is honest per event (#1497).
     "avoid_tithi": {
         "label": "Not an avoided tithi",
         "default": _r(S, "These tithis are rejected for auspicious work in the Muhurtha "
                          "tradition."),
+        # The bright-half 12th for a wedding (#1022, #1504): a vivah row that reaches the cleared
+        # list on Dwadashi is a Shukla one, because a Krishna Dwadashi is already excluded.
+        "when": {
+            "vivah": {"Dwadashi": _vr(C, "The 12th is contested: the Vedic table lists it for a "
+                                         "wedding, while the Muhurtha tradition's marriage rules "
+                                         "reject it, so this finder neither credits nor excludes it "
+                                         "in the bright half. In the dark half the separate "
+                                         "dark-half rule applies.", _H97)},
+        },
         "events": {
-            "vivah": _vr(S, "These tithis are rejected for auspicious work in the Muhurtha "
-                            "tradition. Purnima is contested: the Vedic table lists it, while "
-                            "the Muhurtha tradition's general list rejects it.", _H97),
-            "griha_pravesh": _vr(S, "These tithis are rejected for auspicious work in the "
-                                    "Muhurtha tradition. Navami is this finder's own addition.",
+            # #1355 ruling: S -> C, refined by #1497. vivah and griha_pravesh stay contested
+            # (the held books differ over Purnima); business is site_convention, because no held
+            # book gives a business tithi rule at all. #1504 adds the 6th (both) and the 12th
+            # (griha_pravesh) to the sets; the vivah 12th stays contested and is not in this note.
+            "vivah": _vr(C, "These tithis are rejected for auspicious work in the Muhurtha "
+                            "tradition, including the 6th for a wedding. Purnima is contested: "
+                            "the Vedic table lists it, while the Muhurtha tradition's general "
+                            "list rejects it.", _H97),
+            "griha_pravesh": _vr(C, "The Muhurtha tradition rejects the 4th, 6th, 8th, 12th, "
+                                    "14th, New Moon and Full Moon for auspicious work. Purnima "
+                                    "is contested: the Vedic table lists it, while the Muhurtha "
+                                    "tradition's general list rejects it. Navami is this "
+                                    "finder's own addition; neither table rejects it for house "
+                                    "entry.",
                                  "#### Griha Pravesh"),
-            "namkaran": _vr(S, "These tithis are rejected for auspicious work in the Muhurtha "
+            "namkaran": _vr(C, "These tithis are rejected for auspicious work in the Muhurtha "
                                "tradition. Navami is contested: the figure for it in the Muhurtha "
                                "text is unclear, and the Vedic table does not list it.", _NAK),
-            "business": _vr(S, "These tithis are rejected for auspicious work in the Muhurtha "
-                               "tradition. Navami is this finder's own addition.", _H97),
+            "business": _vr(SC, "Site convention: no held book gives a business tithi rule. "
+                                "This finder applies the Muhurtha tradition's general rejection "
+                                "of the 4th, 8th, 14th, New Moon and Full Moon for auspicious "
+                                "work to a new venture, and adds Navami, which no held book "
+                                "rejects for it.", _H97),
         },
     },
     "avoid_krishna_tithi": {
@@ -435,6 +471,12 @@ def _qual(key: str, event: str, *values: str) -> str:
     return next((v for v in values if v in when), "")
 
 
+def _cleared_qual(key: str, event: str, tithi: str) -> str:
+    """The `when` qualifier for a cleared exclusion. Only `avoid_tithi` is keyed on the row's tithi;
+    every other cleared item takes none, so a tithi name can never match another key's entries."""
+    return _qual(key, event, tithi) if key == "avoid_tithi" else ""
+
+
 def _item(key: str, event: str, value: str = "", qual: str = "", against: bool = False) -> Item:
     label = REGISTRY[key]["label"]
     return Item(key, f"{label}: {value}" if value else label,
@@ -447,8 +489,9 @@ def _soft_items(event: str, rules: dict, tithi: str, paksha: str, nakshatra: str
     out: list[Item] = []
     if tithi in rules["good_tithis"]:
         out.append(_item("good_tithi", event, tithi,
-                         _qual("good_tithi", event, "@Krishna" if paksha == "Krishna" else "",
-                               tithi)))
+                         # tithi first: an entry for this very tithi beats the half-wide one.
+                         _qual("good_tithi", event, tithi,
+                               "@Krishna" if paksha == "Krishna" else "")))
     if nakshatra in rules["good_nakshatras"]:
         out.append(_item("good_nakshatra", event, nakshatra,
                          _qual("good_nakshatra", event, nakshatra)))
@@ -501,7 +544,8 @@ def explain(candidate, event_type: str) -> Explanation:
     for prefix, key in _BOOSTERS:
         if any(b.startswith(prefix) for b in candidate.boosters):
             scored.append(_item(key, event_type))
-    cleared = [_item(k, event_type) for k in _applied_hard(rules, candidate.nakshatra)]
+    cleared = [_item(k, event_type, qual=_cleared_qual(k, event_type, candidate.tithi))
+               for k in _applied_hard(rules, candidate.nakshatra)]
     note = resolve("abujha_muhurat", event_type)[3] if "abujha_muhurat" in candidate.flags else ""
     return Explanation(scored=tuple(scored), cleared=tuple(cleared), note=note)
 

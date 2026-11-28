@@ -37,8 +37,9 @@ the checks that can see that class of defect in a diff in seconds, so a round is
 spent finding it. They run after the gates and before pytest and print one line,
 `themes: regression PASS grounding PASS tests PASS`. They are narrow on purpose: a
 check that cried wolf would be waived by habit. GROUNDING IS A PROXY -- it can see
-that a claim-bearing file changed with no `corpus:` line, never whether the claim is
-true; `qa`, `astro-auditor` and `verify_rule_citations` judge that.
+that a claim-bearing file changed with no `corpus:` line in a commit and no citation in
+this change's docs/decisions file, never whether the claim is true; `qa`, `astro-auditor`
+and `verify_rule_citations` judge that.
 
 EXIT CODES
   0  every fast gate passed and the diff's tests passed
@@ -384,22 +385,35 @@ def check_removed_names_unreferenced(ctx: DiffContext) -> list[str]:
 
 _CLAIM_DIRS = ("src/astro_ai/knowledge/", "src/astro_ai/prompts/", "src/astro_ai/templates/learn/")
 _CLAIM_FILES = re.compile(r"^src/astro_ai/(?:chart|matching|muhurat\w*)\.py$")
+# #1478: a squash merge drops commit-message lines, so the decision file is the other
+# place a change records where a claim came from. README.md is the format guide, not a decision.
+_DECISION = re.compile(r"^docs/decisions/(?!README\.md$)[^/]+\.md$")
+_CITES = re.compile(r"(?i)^\s*corpus:|\bknowledge/[A-Za-z0-9_.-]+\.md\b")
 
 
 def check_grounding_proxy(ctx: DiffContext) -> list[str]:
     """PROXY. A claim-bearing path changed, no commit since the merge base carries a
     `corpus:` line, and no knowledge/*.md changed. It cannot tell whether a claim is
     TRUE -- `qa`, `astro-auditor` and verify_rule_citations do that -- only that nobody
-    wrote down where it came from."""
+    wrote down where it came from. Where it may be written down (#1478): a `corpus:` line in
+    a commit, or an ADDED line of a changed docs/decisions/*.md that has a `corpus:` line or
+    names a knowledge/*.md file. The file merely existing never passes, and a negative
+    mention of knowledge/x.md passes too -- the proxy cannot see negation."""
     touched = [p for p in ctx.changed if p.startswith(_CLAIM_DIRS) or _CLAIM_FILES.match(p)]
     if not touched:
         return []
     if any(p.startswith("src/astro_ai/knowledge/") and p.endswith(".md") for p in ctx.changed):
         return []
+    if any(_CITES.search(line)
+           for p in ctx.changed if _DECISION.match(p)
+           for line in ctx.added.get(p, ())):
+        return []
     if any(re.search(r"(?im)^\s*corpus:", m) for m in ctx.commits):
         return []
     return [f"{p} can carry an astrological claim; no commit since the merge base has a "
-            f"`corpus:` line and no knowledge/*.md changed (commit with one, or `corpus: n/a -- why`)"
+            f"`corpus:` line, no knowledge/*.md changed and no added line of this change's "
+            f"docs/decisions/*.md cites one (put a `corpus:` line in a commit, or cite "
+            f"`knowledge/<file>.md`, or `corpus: n/a -- why`, in the decision file)"
             for p in sorted(touched)[:5]]
 
 

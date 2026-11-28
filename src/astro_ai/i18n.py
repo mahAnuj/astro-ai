@@ -392,25 +392,27 @@ _EN: Final[dict[str, str]] = {
     "manglik_caveat_heading":  "Manglik is not the whole marriage story",
     "manglik_caveat_body":     "Mars-related dosha is one of several factors classical astrology weighs for marriage. A person with a well-placed Mars can still face marital difficulty if the 7th house lord, Venus, Upapada, or Dasha timing carry other afflictions. A Manglik chart with strong protective yogas can equally have a harmonious married life. Treat this as one data point among many — a full 7th-house reading with a trained astrologer is worth the time if marriage is your central question.",
 
-    # Kaal Sarp caveat — sourced to knowledge/vedic_reference.md §3.2 and nothing
-    # else: not in BPHS, Brihat Jataka, Saravali, Phaladeepika or Jataka Parijata;
-    # a 20th-century innovation popularised by Trimbakeshwar priests; many
-    # classical scholars (including K.N. Rao) state it has no scriptural basis.
-    # Until #959 this block also printed verbatim quotations attributed to K.N. Rao
+    # Kaal Sarp caveat — sourced to knowledge/vedic_reference.md §3.4 and nothing
+    # else (#1514): the site holds none of BPHS, Brihat Jataka, Saravali, Phaladeepika or
+    # Jataka Parijata, so it cannot say whether they name Kaal Sarp; a book it does hold,
+    # P.V.R. Narasimha Rao's Lessons on Vedic Astrology, names it, teaches Kala Sarpa
+    # as a yoga and calls it highly problematic. Until #1514 this block asserted §3.2's
+    # "20th-century innovation" / "no scriptural basis" (attributed to K.N. Rao), which
+    # §3.4 records as not held, and which contradicted /learn/kaal-sarp-dosh.
+    # Until #959 it also printed verbatim quotations attributed to K.N. Rao
     # and B.V. Raman, a Three Hundred Important Combinations appendix claim and an
-    # Astrological Magazine print history, none of which is in knowledge/ (data/ is
-    # absent from the checkout), and listed Uttara Kalamrita among the texts that
-    # lack it, which §3.2 does not. tests/test_kaal_sarp_unsourced_quotes.py bans
-    # them. Shown at TOP of /kaal-sarp-check.
-    "ksy_caveat_heading":      "A note before you read this: Kaal Sarp is a modern classification",
-    "ksy_caveat_body_1":       "Unlike the yogas and doshas we analyse elsewhere on this site, Kaal Sarp Yoga is not defined in the classical Sanskrit Jyotish texts we cite as sources — not in Brihat Parashara Hora Shastra, Brihat Jataka, Saravali, Phaladeepika or Jataka Parijata. It is a 20th-century innovation, popularised heavily by the priests of the Trimbakeshwar temple in Maharashtra.",
-    "ksy_caveat_body_2":       "Many classical scholars, K.N. Rao among them, state outright that Kaal Sarp Dosha has no scriptural basis. That is why we show it as a chart pattern to note, not as a verdict.",
-    "ksy_caveat_body_3":       "We show the geometry here because it is a real chart pattern users ask about — but treat any single Kaal Sarp reading, especially one urging expensive remedies at Trimbakeshwar or elsewhere, with healthy skepticism. Serious readings of Rahu and Ketu judge them by the houses and lords they conjoin, not by axis-based blanket yogas.",
+    # Astrological Magazine print history, none of which is in knowledge/, and listed
+    # Uttara Kalamrita among the texts that lack it. tests/test_kaal_sarp_unsourced_quotes.py
+    # bans them. Shown at TOP of /kaal-sarp-check.
+    "ksy_caveat_heading":      "A note before you read this: Kaal Sarp is a chart pattern to note, not a verdict",
+    "ksy_caveat_body_1":       "We do not hold Brihat Parashara Hora Shastra, Brihat Jataka, Saravali, Phaladeepika or Jataka Parijata, so we cannot say whether they name Kaal Sarp. We hold no source for the removal pujas sold around it.",
+    "ksy_caveat_body_2":       "A book we hold, P.V.R. Narasimha Rao's Lessons on Vedic Astrology, names it and teaches it as a yoga (Kala Sarpa) when all planets lie between Ketu and Rahu, and calls it highly problematic. Shubh Bhagya counts it with either node first. In our own approach we show it as a chart pattern to note and do not issue a verdict on it.",
+    "ksy_caveat_body_3":       "We show the geometry here because it is a real chart pattern users ask about — but treat any single Kaal Sarp reading, especially one urging expensive remedies at Trimbakeshwar or elsewhere, with healthy skepticism. In our view, the houses and lords Rahu and Ketu conjoin matter more than the axis pattern alone.",
     "ksy_present_heading":     "Kaal Sarp geometry — present",
     "ksy_present_subtitle":    "All seven non-shadow planets sit on one side of the Rahu-Ketu axis",
     "ksy_absent_heading":      "Kaal Sarp geometry — not present",
     "ksy_absent_body":         "The seven non-shadow planets are distributed on both sides of the Rahu-Ketu axis in your chart, so the Kaal Sarp pattern does not apply.",
-    "ksy_variant_note":        "Traditional Naga label for this Rahu-house position. These twelve names are folk taxonomy from mid-20th-century Hindi almanac literature, not classical shastra — so we describe the geometry rather than assigning per-variant predictions.",
+    "ksy_variant_note":        "Popular label for this Rahu-house position. This site's reference gives no source for these twelve names, so we describe the geometry, not per-variant predictions.",
 
     # Numerology caveat — sourced from classical-source research (2026-08-04):
     # not in BPHS / Brihat Jataka / Saravali / Phaladeepika / Jataka Parijata /
@@ -543,7 +545,7 @@ _EN: Final[dict[str, str]] = {
     "bs_sade_sati_inactive":   "Sade Sati is not active",
     "bs_ashtama_shani":        "Ashtama Shani transit (Saturn in 8th from natal Moon)",
     "bs_kantaka_shani":        "Kantaka Shani transit (Saturn in 4th from natal Moon)",
-    "bs_kaal_sarp":            "Kaal Sarp pattern ({variant}) — 20th-century classification, treat as prompt not verdict",
+    "bs_kaal_sarp":            "Kaal Sarp pattern ({variant}) — treat as a prompt, not a verdict",
     "bs_exalted":              "{n} planet{plural} exalted ({names})",
     "bs_debilitated":          "{n} planet{plural} debilitated ({names})",
     "bs_maha_benefic":         "Current Mahadasha: {lord} — a natural benefic period",
@@ -970,15 +972,15 @@ _HI: Final[dict[str, str]] = {
     "manglik_caveat_heading":  "मंगल दोष विवाह की पूरी कहानी नहीं है",
     "manglik_caveat_body":     "मंगल-सम्बन्धी दोष शास्त्रीय ज्योतिष के विवाह-मूल्यांकन में कई कारकों में से एक है। अच्छी स्थिति वाले मंगल के बावजूद भी यदि सप्तमेश, शुक्र, उपपद, या वर्तमान दशा में अन्य दोष हों तो वैवाहिक कठिनाई सम्भव है। इसी प्रकार, मजबूत रक्षक योगों वाली मंगली कुंडली में सुखी विवाह भी हो सकता है। इसे कई डेटा-बिन्दुओं में से एक मानें — यदि विवाह आपका मुख्य प्रश्न है तो किसी अनुभवी ज्योतिषी से सप्तम भाव का पूर्ण अध्ययन करवाना उचित है।",
 
-    "ksy_caveat_heading":      "पढ़ने से पहले जानें: काल सर्प एक आधुनिक वर्गीकरण है",
-    "ksy_caveat_body_1":       "इस साइट पर विश्लेषण किए जाने वाले अन्य योगों और दोषों के विपरीत, काल सर्प योग शास्त्रीय संस्कृत ज्योतिष ग्रंथों में परिभाषित नहीं है — न बृहत् पराशर होरा शास्त्र में, न बृहज्जातक में, न सारावली में, न फलदीपिका या जातक पारिजात में। यह 20वीं शताब्दी का नवाचार है, जिसे महाराष्ट्र के त्र्यंबकेश्वर मंदिर के पुरोहितों ने बड़े पैमाने पर लोकप्रिय बनाया।",
-    "ksy_caveat_body_2":       "अनेक शास्त्रीय विद्वान, जिनमें के.एन. राव भी शामिल हैं, स्पष्ट रूप से कहते हैं कि काल सर्प दोष का कोई शास्त्रीय आधार नहीं है। इसीलिए हम इसे निर्णय नहीं, बल्कि एक कुंडली-पैटर्न के रूप में दिखाते हैं जिस पर ध्यान दिया जाए।",
-    "ksy_caveat_body_3":       "हम यहाँ ज्यामिति दिखाते हैं क्योंकि यह एक वास्तविक कुंडली-पैटर्न है जिसके बारे में उपयोगकर्ता पूछते हैं — किंतु किसी भी एकल काल सर्प पठन को, विशेषकर त्र्यंबकेश्वर या अन्यत्र महँगे उपायों की सलाह देने वाले पठन को, स्वस्थ संदेह के साथ लें। राहु और केतु का गम्भीर पठन उनके साथ युत ग्रहों और भावेशों को देखकर होता है, न कि अक्षीय व्यापक योगों से।",
+    "ksy_caveat_heading":      "पढ़ने से पहले जानें: काल सर्प ध्यान देने योग्य कुंडली-पैटर्न है, निर्णय नहीं",
+    "ksy_caveat_body_1":       "हमारे पास बृहत् पराशर होरा शास्त्र, बृहज्जातक, सारावली, फलदीपिका और जातक पारिजात उपलब्ध नहीं हैं, इसलिए हम यह नहीं कह सकते कि इनमें काल सर्प का नाम आता है या नहीं। इसके आसपास बेचे जाने वाले निवारण पूजनों के लिए हमारे पास कोई स्रोत नहीं है।",
+    "ksy_caveat_body_2":       "हमारे पास उपलब्ध एक पुस्तक, पी.वी.आर. नरसिम्हा राव की लेसन्स ऑन वैदिक एस्ट्रोलॉजी, इसका नाम लेती है और जब सभी ग्रह केतु और राहु के बीच हों तब इसे एक योग (काल सर्प) के रूप में सिखाती है, और इसे अत्यंत समस्याजनक कहती है। शुभ भाग्य इसे किसी भी नोड से शुरू करके गिनता है। अपने तरीके में हम इसे ध्यान देने योग्य कुंडली-पैटर्न के रूप में दिखाते हैं और इस पर कोई निर्णय नहीं देते।",
+    "ksy_caveat_body_3":       "हम यहाँ ज्यामिति दिखाते हैं क्योंकि यह एक वास्तविक कुंडली-पैटर्न है जिसके बारे में उपयोगकर्ता पूछते हैं — किंतु किसी भी एकल काल सर्प पठन को, विशेषकर त्र्यंबकेश्वर या अन्यत्र महँगे उपायों की सलाह देने वाले पठन को, स्वस्थ संदेह के साथ लें। हमारे मत में, राहु और केतु के साथ युत ग्रह और भावेश अकेले अक्ष-पैटर्न से अधिक महत्त्व रखते हैं।",
     "ksy_present_heading":     "काल सर्प ज्यामिति — उपस्थित",
     "ksy_present_subtitle":    "सातों गैर-छाया ग्रह राहु-केतु अक्ष के एक ओर स्थित हैं",
     "ksy_absent_heading":      "काल सर्प ज्यामिति — अनुपस्थित",
     "ksy_absent_body":         "आपकी कुंडली में सातों गैर-छाया ग्रह राहु-केतु अक्ष के दोनों ओर वितरित हैं, इसलिए काल सर्प पैटर्न लागू नहीं होता।",
-    "ksy_variant_note":        "इस राहु-भाव स्थिति के लिए पारंपरिक नाग नाम। ये बारह नाम मध्य-20वीं शताब्दी के हिंदी पंचांग साहित्य से लोक-वर्गीकरण हैं, शास्त्रीय शास्त्र नहीं — इसलिए हम ज्यामिति का वर्णन करते हैं, प्रति-प्रकार भविष्यवाणी नहीं देते।",
+    "ksy_variant_note":        "इस राहु-भाव स्थिति का लोकप्रिय नाम। इस साइट के संदर्भ में इन बारह नामों का कोई स्रोत नहीं मिलता, इसलिए हम ज्यामिति का वर्णन करते हैं, प्रति-प्रकार भविष्यवाणी नहीं देते।",
 
     "num_caveat_heading":      "इस टूल के बारे में — परम्परा को लेकर ईमानदारी",
     "num_caveat_body_1":       "इस पृष्ठ पर दिखाई गई अंक-प्रणालियाँ — कालडियन (चीरो) और लो शू ग्रिड — 19वीं और 20वीं शताब्दी की पश्चिमी तथा प्राचीन चीनी जड़ों वाली आधुनिक परम्पराएँ हैं, शास्त्रीय वैदिक ज्योतिष की शाखाएँ नहीं। मूलभूत संस्कृत ज्योतिष ग्रंथ (बृहत् पराशर होरा शास्त्र, बृहज्जातक, सारावली, फलदीपिका, जातक पारिजात, उत्तर कालामृत) जन्मतिथि-न्यूनीकरण या अंग्रेजी-वर्णमाला नाम-अंकशास्त्र का वर्णन नहीं करते।",
@@ -1072,7 +1074,7 @@ _HI: Final[dict[str, str]] = {
     "bs_sade_sati_inactive":   "साढ़े साती सक्रिय नहीं",
     "bs_ashtama_shani":        "अष्टम शनि गोचर (चंद्रमा से 8वें भाव में शनि)",
     "bs_kantaka_shani":        "कण्टक शनि गोचर (चंद्रमा से 4थे भाव में शनि)",
-    "bs_kaal_sarp":            "काल सर्प पैटर्न ({variant}) — 20वीं-शताब्दी का वर्गीकरण, इसे संकेत मानें, अंतिम निर्णय नहीं",
+    "bs_kaal_sarp":            "काल सर्प पैटर्न ({variant}) — इसे संकेत मानें, अंतिम निर्णय नहीं",
     "bs_exalted":              "{n} ग्रह उच्च राशि में ({names})",
     "bs_debilitated":          "{n} ग्रह नीच राशि में ({names})",
     "bs_maha_benefic":         "वर्तमान महादशा: {lord} — एक स्वाभाविक शुभ काल",
@@ -1182,8 +1184,8 @@ _PLANET_NAMES_HI: Final[dict[str, str]] = {
 }
 
 # 12 Kaal Sarp Naga variant labels encoded in chart.py _KAAL_SARP_TYPES.
-# These are traditional Naga names in mid-20th-c. Hindi almanac literature
-# (see chart.py provenance comment on classical status). Roman-Sanskrit
+# These are popular Naga labels; the site's reference gives no source for the
+# twelve names (see chart.py provenance comment). Roman-Sanskrit
 # in the compute layer → Devanagari for Hindi UI.
 _KAAL_SARP_HI: Final[dict[str, str]] = {
     "Anant":     "अनंत",

@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 import threading
 import time
@@ -148,8 +149,24 @@ def measurements_dir() -> Path | None:
     return None
 
 
-def _fetch(name: str) -> Any | None:
-    """One file, disk first then HTTPS. None on any failure, with a log line."""
+def _as_object(name: str, data: Any, where: str) -> dict | None:
+    """`data` if it is a JSON object, else None with a log line (#1542).
+
+    Every reader below calls `.get` on what `_fetch` returns, and `[1]`, `"x"` and
+    `5` all parse: a hand-edited or half-written file of the wrong top level type
+    was an AttributeError out of `snapshot()` and a 500 on every tab. Rejecting it
+    here, at the one choke point, covers the views nobody has checked yet. The log
+    names the file and the type, never the content.
+    """
+    if isinstance(data, dict):
+        return data
+    log.warning("ops_data: %s from %s is a %s, not a JSON object",
+                name, where, type(data).__name__)
+    return None
+
+
+def _fetch(name: str) -> dict | None:
+    """One file, disk first then HTTPS. A JSON object, or None on any failure, with a log line."""
     now = time.monotonic()
     hit = _cache.get(name)
     if hit and now - hit[0] < CACHE_TTL:
@@ -159,14 +176,14 @@ def _fetch(name: str) -> Any | None:
     local = measurements_dir()
     if local is not None and (local / name).is_file():
         try:
-            data = json.loads((local / name).read_text())
+            data = _as_object(name, json.loads((local / name).read_text()), "disk")
         except (OSError, ValueError) as exc:
             log.warning("ops_data: %s on disk is unreadable: %s", name, exc)
     if data is None:
         url = f"{RAW_BASE}/{name}"
         try:
             with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as resp:  # noqa: S310
-                data = json.loads(resp.read().decode("utf-8"))
+                data = _as_object(name, json.loads(resp.read().decode("utf-8")), "HTTPS")
         # DELIBERATELY BROAD, for the reason recorded on `_live_today`: the
         # four-type tuple read as exhaustive and was not.
         # `http.client.IncompleteRead` inherits from HTTPException and is none
@@ -370,13 +387,17 @@ def _live_today_locked(day_start: datetime, day: str) -> dict | None:
 
 
 def _ist(ts: str | None) -> datetime | None:
-    """Parse an ISO-8601 Z timestamp into IST. None stays None."""
+    """Parse an ISO-8601 Z timestamp into IST. None stays None.
+
+    TypeError too: a measurement file is read as found, and `started: 123`
+    raised out of `strptime` and took the whole control room with it (#1492).
+    """
     if not ts:
         return None
     try:
         return datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(
             tzinfo=timezone.utc).astimezone(IST)
-    except ValueError:
+    except (ValueError, TypeError):
         return None
 
 
@@ -585,7 +606,7 @@ def _loop_view(doc: dict | None, today_ist: str,
         return {"ok": False, "rows": [], "generated_at": None,
                 "outcomes": {}, "attribution": {}, "days": [], "latest": None,
                 "by_day": [], "by_day_chart": None,
-                "today": [],
+                "today": [], "skipped_rows": 0,
                 "today_live": live_today is not None,
                 "today_shipped": (live_today or {}).get("shipped", []),
                 "today_failed": (live_today or {}).get("failed", []),
@@ -593,12 +614,24 @@ def _loop_view(doc: dict | None, today_ist: str,
                 "shipped_truncated": bool((live_today or {}).get("shipped_truncated")),
                 "failed_truncated": bool((live_today or {}).get("failed_truncated")),
                 "fell_back": fell_back}
+    # A row is kept only if it is a dict with a string `outcome`. This function
+    # runs from `snapshot()` ("never raises") outside any try, so one truncated
+    # or null row in the file was a 500 on every tab (#1492). A row with no
+    # outcome is DROPPED, not tallied as "unknown": "unknown" is a measured
+    # verdict and a truncated row has none. The count travels in `skipped_rows`
+    # so the Overview footer can say how many were left out.
     rows = []
+    skipped_rows = 0
     for r in doc["rows"]:
+        if not isinstance(r, dict) or not isinstance(r.get("outcome"), str):
+            skipped_rows += 1
+            continue
         started = _ist(r.get("started"))
+        date = r.get("date")
         rows.append({
             **r,
-            "date_ist": started.strftime("%Y-%m-%d") if started else r.get("date"),
+            "date_ist": (started.strftime("%Y-%m-%d") if started
+                         else date if isinstance(date, str) else None),
             "time_ist": started.strftime("%H:%M") if started else "—",
             "started_ist_minutes": started.hour * 60 + started.minute if started else None,
         })
@@ -610,6 +643,7 @@ def _loop_view(doc: dict | None, today_ist: str,
         "outcomes": dict(Counter(r["outcome"] for r in rows).most_common()),
         "attribution": dict(Counter(r.get("attribution") for r in rows).most_common()),
         "today": today,
+        "skipped_rows": skipped_rows,
         # Live first, snapshot second. The snapshot numerators are kept as the
         # fallback and are NOT merged with the live ones -- two sources counting
         # different units into one tile is how a number stops meaning anything.
@@ -764,6 +798,21 @@ def _nice_top(v: int) -> int:
     return int(10 * mag)
 
 
+def _dict_rows(x: Any) -> list[dict]:
+    """The dict items of a JSON list, else []. A row that is not an object (null, a
+    number, a string) has no `.get`, and these series run from `snapshot()` ("never
+    raises") outside any try, so one such row was a 500 on every tab (#1554)."""
+    return [r for r in x if isinstance(r, dict)] if isinstance(x, list) else []
+
+
+def _num(v: Any) -> int | float:
+    """`v` if it is a finite int or float, else 0. `True` is not a count, and a string,
+    a null or NaN would raise in `sum`/`max` or draw a NaN into the SVG (#1554)."""
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return 0
+    return v if math.isfinite(v) else 0
+
+
 def _series(rows: list[dict], key: str, *, width: float = 100.0, height: float = 100.0) -> dict:
     """Turn a daily series into an SVG path plus the labels an axis needs.
 
@@ -781,7 +830,7 @@ def _series(rows: list[dict], key: str, *, width: float = 100.0, height: float =
     The labels are returned as plain values for the template to place in HTML
     beside the plot, where they stay legible at any width.
     """
-    vals = [r.get(key) or 0 for r in rows]
+    vals = [_num(r.get(key)) for r in rows]
     if not vals:
         return {"ok": False}
     peak = max(vals)
@@ -845,11 +894,21 @@ def _traffic_view() -> dict:
     pages = _fetch("gsc-trend-page.json") or {}
     queries = _fetch("gsc-trend-query.json") or {}
 
-    ga4_rows = ga4.get("rows") or []
-    gsc_rows = gsc.get("rows") or []
+    ga4_rows = _dict_rows(ga4.get("rows"))
+    gsc_rows = _dict_rows(gsc.get("rows"))
+    # A series row is plotted only if it can be placed on the axis: the x-tick prints
+    # `date[5:]`, so a dict with no string date was a 500 on the Analytics tab (#1559).
+    # The raw lists stay in "ga4_rows"/"gsc_rows": ops_trends counts its own skipped rows.
+    ga4_dated = [r for r in ga4_rows if isinstance(r.get("date"), str)]
+    gsc_dated = [r for r in gsc_rows if isinstance(r.get("date"), str)]
 
     def movers(doc: dict, dim: str) -> dict:
-        rows = doc.get("rows") or []
+        # A mover row is kept only if it can be shown: a dict, a numeric delta (the
+        # split below compares it) and a string name (the table prints it). One
+        # truncated row was a 500 on every tab (#1554).
+        rows = [r for r in _dict_rows(doc.get("rows"))
+                if isinstance(r.get("delta"), (int, float)) and not isinstance(r.get("delta"), bool)
+                and isinstance(r.get(dim), str)]
         # Already sorted by |delta| in the fetcher; split rather than re-sort so
         # the page and the file can never disagree about what moved most.
         return {
@@ -864,12 +923,12 @@ def _traffic_view() -> dict:
         }
 
     return {
-        "ok": bool(ga4_rows or gsc_rows),
+        "ok": bool(ga4_dated or gsc_dated),
         "window": ga4.get("window") or gsc.get("window"),
-        "users": _series(ga4_rows, "active_users"),
-        "sessions_total": sum(r.get("sessions") or 0 for r in ga4_rows),
-        "impressions": _series(gsc_rows, "impressions"),
-        "clicks_total": sum(r.get("clicks") or 0 for r in gsc_rows),
+        "users": _series(ga4_dated, "active_users"),
+        "sessions_total": sum(_num(r.get("sessions")) for r in ga4_dated),
+        "impressions": _series(gsc_dated, "impressions"),
+        "clicks_total": sum(_num(r.get("clicks")) for r in gsc_dated),
         "ga4_rows": ga4_rows,
         "gsc_rows": gsc_rows,
         "pages": movers(pages, "page"),
@@ -932,6 +991,10 @@ def _last_run_failed(lp: dict) -> bool:
             and lp.get("last_run_health") == "red")
 
 
+#: Workflow filename prefixes `_agents_view` leaves out of every count and list.
+HIDDEN_WORKFLOW_PREFIXES = ("zz-probe-",)
+
+
 def _agents_view() -> dict:
     """Loop liveness, delivery yield and per-agent activity (#345).
 
@@ -939,18 +1002,49 @@ def _agents_view() -> dict:
     verdict, and re-deriving one here would let the page and the file disagree
     about whether a loop is dormant. The only thing added is the ordering the
     table renders in — alerts first, because a page that puts a broken loop
-    eleventh is a page nobody reads to row eleven.
+    eleventh is a page nobody reads to row eleven — and the removal of probe
+    workflows (`HIDDEN_WORKFLOW_PREFIXES`), which are not verdicts re-derived
+    but rows not shown.
     """
     doc = _fetch("agents.json")
     if not doc or not isinstance(doc.get("loops"), list):
         return {"ok": False, "loops": []}
     rank = {"broken": 0, "dormant": 1, "missing-slots": 2, "reporting": 3,
             "ok": 4, "not-due-yet": 5, "on-demand": 6}
-    loops = sorted(doc["loops"], key=lambda r: (rank.get(r["verdict"], 9), r["workflow"]))
+    # A row is kept only if it is an object with a string `workflow` and `verdict`:
+    # the sort below, `_alerts` and the table read both on every row, and `snapshot()`
+    # ("never raises") calls this outside any try, so one null row, a row with no
+    # `verdict` or `verdict: []` was a 500 on all 7 tabs (the #1554 class). The text
+    # fields the table slices (`last_run`) or `_alerts` slices (`last_run`,
+    # `schedule_since`) are blanked when not a string rather than dropping the row,
+    # which still carries a real verdict. The count travels in `skipped_rows`.
+    rows = _dict_rows(doc["loops"])
+    skipped_rows = len(doc["loops"]) - len(rows)
+    clean = []
+    for r in rows:
+        if not isinstance(r.get("workflow"), str) or not isinstance(r.get("verdict"), str):
+            skipped_rows += 1
+            continue
+        r = dict(r)
+        for k in ("last_run", "last_conclusion", "last_run_health", "display",
+                  "schedule_since"):
+            if k in r and not isinstance(r[k], str):
+                r[k] = None
+        if "cadence" in r:
+            r["cadence"] = ([c for c in r["cadence"] if isinstance(c, str)]
+                            if isinstance(r["cadence"], list) else None)
+        clean.append(r)
+    # Probe workflows are scaffolding, not part of the team (owner, 2026-11-17,
+    # answer 7 on #1133: hidden from every count and list; 8 of the 27 loops in
+    # agents.json were `zz-probe-*`, leaving 19).
+    shown = [r for r in clean
+             if not str(r.get("workflow") or "").startswith(HIDDEN_WORKFLOW_PREFIXES)]
+    loops = sorted(shown, key=lambda r: (rank.get(r["verdict"], 9), r["workflow"]))
     return {
         "ok": True,
         "generated_at": doc.get("generated_at"),
         "window_days": doc.get("window_days"),
+        "skipped_rows": skipped_rows,
         "loops": loops,
         "alerts": doc.get("alerts") or [],
         "scheduled": [r for r in loops if r["verdict"] != "on-demand"],
@@ -2294,6 +2388,35 @@ def _pr_flow_view(t: dict | None) -> dict | None:
         return None
 
 
+def _is_int(v: Any) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _clean_flow_days(days: list) -> tuple[list[dict], int]:
+    """The trend days that can be drawn and summed, and how many were left out (#1554).
+
+    A day is kept only if it is a dict with a string `date` and integer `opened`, `closed`,
+    `open_end` and `net` (`_flow_chart` and the week sums do arithmetic on all four). This
+    runs from `snapshot()` ("never raises") outside any try, so one null day or a
+    `closed: "x"` was a 500 on every tab. A day that fails is DROPPED, not zeroed: a zero
+    is a measured count and a truncated row has none. The breakdowns are cosmetic, so a
+    bad one is emptied rather than costing the day. The count travels in `skipped_days`,
+    the `_loop_view` `skipped_rows` pattern (#1492)."""
+    kept, skipped = [], 0
+    for d in days:
+        if (not isinstance(d, dict) or not isinstance(d.get("date"), str)
+                or not all(_is_int(d.get(k)) for k in ("opened", "closed", "open_end", "net"))):
+            skipped += 1
+            continue
+        clean = dict(d)
+        for k in ("opened_by", "closed_by"):
+            if k in d:   # a file that never had the key keeps not having it
+                by = d[k]
+                clean[k] = ({n: c for n, c in by.items() if _is_int(c)} if isinstance(by, dict) else {})
+        kept.append(clean)
+    return kept, skipped
+
+
 def _issue_flow_view(doc: dict | None, now: datetime) -> dict | None:
     """issues.json `trend` (scripts/issue_flow.py, 2026-11-18): opened against
     closed, who did each, and the fixes that shipped without closing their issue.
@@ -2309,7 +2432,12 @@ def _issue_flow_view(doc: dict | None, now: datetime) -> dict | None:
     if t.get("error") or not isinstance(t.get("days"), list) or not t["days"]:
         return {"error": t.get("error") or "the trend block has no days",
                 "age": _age(t.get("generated_at") or (doc or {}).get("generated_at"), now)}
-    days = t["days"]
+    # Cleaned BEFORE the week/before slicing: `days[-8]["open_end"]` and `week[0]["net"]`
+    # below are only safe on days that passed `_clean_flow_days`.
+    days, skipped = _clean_flow_days(t["days"])
+    if not days:
+        return {"error": "the trend block has no readable days",
+                "age": _age(t.get("generated_at") or (doc or {}).get("generated_at"), now)}
     week, before = days[-7:], days[-8] if len(days) >= 8 else None
     opened = sum(d.get("opened", 0) for d in week)
     closed = sum(d.get("closed", 0) for d in week)
@@ -2320,7 +2448,7 @@ def _issue_flow_view(doc: dict | None, now: datetime) -> dict | None:
     # Open at the end of the day before the week, so "rose N" is the week's own change.
     start_open = before["open_end"] if before else week[0]["open_end"] - week[0]["net"]
     delta = week[-1]["open_end"] - start_open
-    mo = t.get("merged_open") or []
+    mo = t.get("merged_open") if isinstance(t.get("merged_open"), list) else []
 
     def top(counter, names):
         # Largest bucket; a tie goes to the first in the table's own order, so
@@ -2341,7 +2469,7 @@ def _issue_flow_view(doc: dict | None, now: datetime) -> dict | None:
         reading += "Issues are closing at least as fast as they are being added."
     return {
         "age": _age(t.get("generated_at"), now),
-        "days": days, "window_days": t.get("window_days") or len(days),
+        "days": days, "skipped_days": skipped, "window_days": t.get("window_days") or len(days),
         "empty": not any(d.get("opened") or d.get("closed") for d in days),
         "chart": _flow_chart(days),
         "opened": opened, "closed": closed, "delta": delta,

@@ -23,8 +23,8 @@ is out of scope here (edits to it were refused in #1207, #1364 and #1469).
 ### 1. `scripts/reentry.py`, called from `cycle_queue.stale_reason`
 
 An `issue` entry is stood down only when ALL of these are read successfully: a `claude[bot]`
-comment that is not a `QA:` comment (the cycle's trace, T_last) on the issue or its owned PR is
-newer than the entry; exactly one open PR is owned by the issue; its head commit is no newer than
+comment whose first line opens as an agent-cycle trace (`CYCLE_OPENER`; the cycle's trace,
+T_last, amended 2026-11-27, #1477) on the issue or its owned PR is newer than the entry; exactly one open PR is owned by the issue; its head commit is no newer than
 T_last; no `QA: PASS|FAIL` comment is newer than T_last; and the PR is not `behind`, `dirty` or
 `unknown`. Anything else, or any read error, re-enters. It runs after the existing
 waiting-to-merge check, so it contradicts nothing; it is #1207's unimplemented repair 2, made
@@ -41,9 +41,10 @@ precise.
   comment, never a body, and the only text taken from a branch name is the issue number
   `_OWNED_BRANCH` matched. Only `claude[bot]` can be T_last; a verdict from any author blocks the
   stand-down (the safe direction).
-- **Known limits.** `claude[bot]` is also the steward's and chief's login, so their comments count
-  as a trace; `committer.date` is the author's clock, not the push time. Both err toward a wasted
-  stand-down, never toward dropping a QA FAIL.
+- **Known limits.** `committer.date` is the author's clock, not the push time, so a commit made
+  before T_last and pushed after it reads as old. That errs toward a wasted stand-down, never
+  toward dropping a QA FAIL. (The first version also counted every non-`QA:` `claude[bot]`
+  comment as a trace; see the amendment below.)
 - **Cost:** about four extra `gh api` reads per drained `issue` entry, against a 1,000/hour
   `GITHUB_TOKEN` budget. The reason is written to the run summary and, by `drain`, into the
   dropped entry ("nothing new since the last cycle"), so the count of stand-downs is searchable.
@@ -67,6 +68,28 @@ cannot compute exits 2, never PASS.
   `chart.py`, `muhurat*.py`, `matching.py`) changed with no `corpus:` line in any commit since the
   merge base and no `knowledge/*.md` change. It cannot judge whether a claim is TRUE; `qa`,
   `astro-auditor` and `verify_rule_citations` do that.
+
+## Amendment 2026-11-27 (#1477)
+
+**Defect:** T_last was the newest non-`QA:` comment by `claude[bot]`, but the steward, chief,
+analyst and architect all post as `claude[bot]`. A fix entry queued at 10:01 right after a
+`QA: FAIL` at 10:00 was stood down as "nothing new" when an unrelated `claude[bot]` comment
+landed at 10:30 and the head was older, so the QA-FAIL fix never ran.
+
+**Fix:** T_last is the newest `claude[bot]` comment whose FIRST LINE opens as an agent-cycle
+trace, a regex boolean computed in `jq` (bodies still never enter Python):
+`CYCLE_OPENER = '^[*# ]*(/?agent-cycle|Cycle [0-9-]+ [(]agent-cycle)'`. Openers measured on
+cycle comments: `**/agent-cycle (build) picked`, `**agent-cycle (run on`,
+`**/agent-cycle (2026-11-23)`, `Cycle 2026-11-23 (agent-cycle`. Steward, chief, analyst and
+architect first lines (`**steward**`, `**chief**`, `## Analyst score`, `Architect plan`) do not
+match, and a later line cannot match (no multiline flag).
+
+- **Fail open.** The opener is a model-written convention, not a contract. A new phrasing
+  misses, no trace is found, and the entry re-enters at the cost of one wasted cycle, never a
+  dropped fix.
+- **Residual, stated.** A cycle that started before a FAIL and commented after the entry was
+  queued still counts as having consumed that entry: when a cycle started is not observable from
+  comments. This is the same direction as before but now the only way a fix entry is dropped.
 
 ## Rejected
 

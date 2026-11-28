@@ -1,115 +1,115 @@
 {
- "generated_at": "2026-11-25T12:31:45Z",
+ "generated_at": "2026-11-28T02:53:38Z",
  "window_hours": 48,
  "latest": {
-  "workflow": "agent-work",
-  "run": 45612886971,
-  "at": "2026-11-25T12:20:56Z",
-  "five_hour": 0.25,
-  "seven_day": 0.7,
+  "workflow": "agent-prioritise",
+  "run": 46098123819,
+  "at": "2026-11-28T02:27:01Z",
+  "five_hour": 0.15,
+  "seven_day": 0.08,
   "status": "allowed",
   "resets": {
-   "five_hour": 1795614000,
-   "seven_day": 1795759200
+   "five_hour": 1795837200,
+   "seven_day": 1796364000
   }
  },
- "peak_seven_day": 0.7,
+ "peak_seven_day": 0.08,
  "rejected_runs": [],
  "readings": [
   {
    "workflow": "agent-prioritise",
-   "run": 45391338211,
-   "at": "2026-11-24T12:12:51Z",
+   "run": 45962606163,
+   "at": "2026-11-27T08:02:13Z",
    "five_hour": 0.01,
-   "seven_day": 0.57,
+   "seven_day": 0,
    "status": "allowed",
    "resets": {
-    "five_hour": 1795539000,
-    "seven_day": 1795759200
+    "five_hour": 1795783200,
+    "seven_day": 1796364000
    }
   },
   {
    "workflow": "agent-prioritise",
-   "run": 45459177733,
-   "at": "2026-11-24T18:24:22Z",
-   "five_hour": 0.01,
-   "seven_day": 0.58,
+   "run": 46013510516,
+   "at": "2026-11-27T14:10:26Z",
+   "five_hour": 0.07,
+   "seven_day": 0.02,
    "status": "allowed",
    "resets": {
-    "five_hour": 1795560000,
-    "seven_day": 1795759200
+    "five_hour": 1795801200,
+    "seven_day": 1796364000
    }
   },
   {
    "workflow": "agent-prioritise",
-   "run": 45518749046,
-   "at": "2026-11-25T00:31:40Z",
+   "run": 46063400235,
+   "at": "2026-11-27T20:24:18Z",
+   "five_hour": 0.1,
+   "seven_day": 0.05,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1795819200,
+    "seven_day": 1796364000
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 46078923409,
+   "at": "2026-11-27T22:49:16Z",
    "five_hour": 0.05,
-   "seven_day": 0.6,
+   "seven_day": 0.07,
    "status": "allowed",
    "resets": {
-    "five_hour": 1795578000,
-    "seven_day": 1795759200
+    "five_hour": 1795837200,
+    "seven_day": 1796364000
    }
   },
   {
    "workflow": "agent-work",
-   "run": 45557446799,
-   "at": "2026-11-25T06:00:26Z",
-   "five_hour": 0.09,
-   "seven_day": 0.62,
+   "run": 46080282312,
+   "at": "2026-11-27T23:03:27Z",
+   "five_hour": 0.07,
+   "seven_day": 0.07,
    "status": "allowed",
    "resets": {
-    "five_hour": 1795596000,
-    "seven_day": 1795759200
+    "five_hour": 1795837200,
+    "seven_day": 1796364000
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 46087305460,
+   "at": "2026-11-28T00:19:58Z",
+   "five_hour": 0.13,
+   "seven_day": 0.08,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1795837200,
+    "seven_day": 1796364000
+   }
+  },
+  {
+   "workflow": "agent-work",
+   "run": 46094801323,
+   "at": "2026-11-28T01:46:35Z",
+   "five_hour": 0.16,
+   "seven_day": 0.08,
+   "status": "allowed",
+   "resets": {
+    "five_hour": 1795837200,
+    "seven_day": 1796364000
    }
   },
   {
    "workflow": "agent-prioritise",
-   "run": 45562999438,
-   "at": "2026-11-25T06:45:41Z",
-   "five_hour": 0.27,
-   "seven_day": 0.64,
+   "run": 46098123819,
+   "at": "2026-11-28T02:27:01Z",
+   "five_hour": 0.15,
+   "seven_day": 0.08,
    "status": "allowed",
    "resets": {
-    "five_hour": 1795596000,
-    "seven_day": 1795759200
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 45593061168,
-   "at": "2026-11-25T10:14:29Z",
-   "five_hour": 0.2,
-   "seven_day": 0.69,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1795614000,
-    "seven_day": 1795759200
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 45603269707,
-   "at": "2026-11-25T11:18:51Z",
-   "five_hour": 0.24,
-   "seven_day": 0.7,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1795614000,
-    "seven_day": 1795759200
-   }
-  },
-  {
-   "workflow": "agent-work",
-   "run": 45612886971,
-   "at": "2026-11-25T12:20:56Z",
-   "five_hour": 0.25,
-   "seven_day": 0.7,
-   "status": "allowed",
-   "resets": {
-    "five_hour": 1795614000,
-    "seven_day": 1795759200
+    "five_hour": 1795837200,
+    "seven_day": 1796364000
    }
   }
  ]

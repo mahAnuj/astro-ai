@@ -52,7 +52,11 @@ jobs:
       # agent runs at all — which killed the first agent-prioritise dispatch.
       id-token: write
     steps:
+      # FULL HISTORY (#974). At depth 1 the sync's "merged this week" read one
+      # commit for a week of ~48 merged PRs, and three syncs in a row named it.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: false

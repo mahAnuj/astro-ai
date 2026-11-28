@@ -169,7 +169,8 @@ def test_manglik_content_keeps_its_sourced_citations(client):
     assert "one of the six Manglik-triggering houses (the sources we work from list five and treat the 1st as an optional addition" in t
     assert "that is a modern folk claim with no classical text behind it, and we do not rely on it" in t
     assert "(Cancer/Leo Ascendant Yogakaraka rule, Mars in own sign, Jupiter aspect, matching with a similar chart)" in t
-    assert "the remedy the sources we work from cite most" in t
+    assert "the one remedy the antidote list we hold names" in t
+    assert "cite most" not in t  # #1509: the held list names one remedy; "cite most" ranked it unsourced
 
 
 def test_d9_note_cites_the_sources_and_marks_the_rest_as_practice(client):

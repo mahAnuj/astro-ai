@@ -215,9 +215,14 @@ busy=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 20 \
 # Claude-spending loop job is skipped, so a dispatch now would start a run that
 # does nothing while spending the caller's one-per-commit marker. Queue it
 # instead: agent-queue drains it after the owner resumes the loop.
-if [ "${LOOP_PAUSED:-}" = "true" ]; then
-  busy="paused"
-fi
+# Case-insensitive, because the jobs' `vars.LOOP_PAUSED != 'true'` is: `True`
+# pauses them, so it must pause this too (#1289). Whitespace is NOT trimmed --
+# the expressions do not trim, and the shell must agree with them, not exceed them.
+case "${LOOP_PAUSED:-}" in
+  [Tt][Rr][Uu][Ee])
+    busy="paused"
+    ;;
+esac
 #
 # BUSY MEANS QUEUED, NOT DROPPED -- since 2026-11-02. This used to print "it
 # waits for the next run" and exit, and nothing ever came back for the ruling:

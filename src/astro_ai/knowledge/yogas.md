@@ -712,4 +712,4 @@ pin copied from a pin verifies nothing.
 
 ---
 
-*Extracted: 2026-07-24 from P.V.R. Narasimha Rao "Vedic Astrology: An Integrated Approach" Ch. 11 §§11.1–11.10. Cross-verified with the yoga content already in vedic_reference.md §4 which was sourced from Raman. Where Rao and vedic_reference.md overlap (Pancha Mahapurusha, Nabhasa, Vipareeta Raja, Sun/Moon yogas), this file cross-links rather than duplicating. Guru Chandala, Kaal Sarp, and other doshas are treated in vedic_reference.md as doshas rather than as yogas.*
+*Extracted: 2026-07-24 from P.V.R. Narasimha Rao "Vedic Astrology: An Integrated Approach" Ch. 11 §§11.1–11.10. Cross-verified with the yoga content already in vedic_reference.md §4 which was sourced from Raman. Where Rao and vedic_reference.md overlap (Pancha Mahapurusha, Nabhasa, Vipareeta Raja, Sun/Moon yogas), this file cross-links rather than duplicating. Guru Chandala and other doshas are treated in vedic_reference.md as doshas rather than as yogas. Kaal Sarp is different: Rao's *Lessons* teaches it as a yoga (Kala Sarpa, yoga no. 25), see vedic_reference.md §3.4.*

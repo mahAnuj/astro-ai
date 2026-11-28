@@ -32,6 +32,16 @@ sum(fallback_reasons.values()) <= fallbacks. A shortfall is a gap in the record,
 not a defect: days before #355 carry a count and no reasons, so fallbacks > 0 with
 {} is a real state, and fallbacks 0 with {} is a legitimate quiet window (not None).
 
+HTTP 5XX (#1506). `http_5xx_by_route` is the per-route count of responses with status
+500-599 over the window, labelled "<METHOD> <route template>" (never a raw path), top 20,
+from the `http_errors/` day blobs written by `astro_ai.http_errors`. Four keys, all `null`
+when unknown, never 0 (same rule as FALLBACKS): `http_5xx_total`, `http_5xx_by_route`,
+`http_5xx_window` (stated UTC from/to, inclusive), `http_5xx_days_recorded`. A day with no
+blob is no evidence, not a zero, so read `http_5xx_days_recorded` BESIDE the total: a total
+of 0 with 5 of 7 days recorded means "none seen on those 5 days". `days_recorded == 0` makes
+total and by_route null; `days_recorded >= 1` with no errors is a real 0 and `[]`. The read
+is its own failure domain: if it fails the four keys are null and the LLM snapshot still lands.
+
 EXIT CODES: 0 written   1 could not read usage (nothing written)   2 bad args
 """
 
@@ -51,6 +61,7 @@ DAYS = 7
 # cannot bloat a file the commit job copies into measurements/.
 _REASON_KEY_MAX = 80
 _REASON_MAX_ENTRIES = 20
+_HTTP_5XX_MAX_ROUTES = 20     # top-N 5xx routes kept (#1506); labels reuse _REASON_KEY_MAX
 
 
 def _measured_by_feature(usage: dict) -> dict[str, dict[str, int]]:
@@ -92,6 +103,37 @@ def _fallbacks(usage: dict) -> tuple[int | None, dict[str, int] | None]:
     return max(agg["fallbacks"], 0), dict(top)
 
 
+def _http_5xx(usage: dict) -> dict:
+    """The four `http_5xx_*` keys from `usage["http_errors"]` (http_errors.range_summary), all
+    None when it is absent or malformed. See HTTP 5XX in the module docstring."""
+    unknown = {"http_5xx_total": None, "http_5xx_by_route": None,
+               "http_5xx_window": None, "http_5xx_days_recorded": None}
+    he = usage.get("http_errors")
+    if not isinstance(he, dict):
+        return unknown
+    recorded, days = he.get("days_recorded"), he.get("days")
+    if (not _is_count(recorded) or recorded < 0 or not _is_count(days) or days < 1
+            or not isinstance(he.get("from"), str) or not isinstance(he.get("to"), str)):
+        return unknown
+    window = {"from": he["from"], "to": he["to"], "days": days}
+    if recorded == 0:                         # the recorder wrote nothing: unknown, not zero
+        return {**unknown, "http_5xx_window": window, "http_5xx_days_recorded": 0}
+    rows = []
+    raw = he.get("by_route")
+    for label, v in (raw.items() if isinstance(raw, dict) else ()):
+        if not isinstance(v, dict) or not _is_count(v.get("total")) or v["total"] < 0:
+            continue
+        by_status = {str(s): n for s, n in (v.get("by_status") or {}).items()
+                     if _is_count(n) and n >= 0} if isinstance(v.get("by_status"), dict) else {}
+        rows.append({"route": str(label)[:_REASON_KEY_MAX], "count": v["total"],
+                     "by_status": by_status})
+    rows.sort(key=lambda r: (-r["count"], r["route"]))
+    total = he.get("total")
+    return {"http_5xx_total": max(total, 0) if _is_count(total) else sum(r["count"] for r in rows),
+            "http_5xx_by_route": rows[:_HTTP_5XX_MAX_ROUTES],
+            "http_5xx_window": window, "http_5xx_days_recorded": recorded}
+
+
 def slim(usage: dict, now: datetime) -> dict:
     """Only what a budget reader needs.
 
@@ -131,6 +173,7 @@ def slim(usage: dict, now: datetime) -> dict:
         "peak_day_measured": usage.get("peak_day_measured") if peak_meas else None,
         "fallbacks": fallbacks,
         "fallback_reasons": fallback_reasons,
+        **_http_5xx(usage),
         "by_route": sorted(routes, key=lambda r: -r["calls"]),
     }
 
@@ -141,7 +184,21 @@ def _summary(days: int) -> dict:
     # usage_summary() has no fallbacks; range_summary()'s aggregate does (#1208).
     # Raising here fails the whole collect, as a usage_summary failure does.
     usage["aggregate"] = llm_stats.range_summary(days)["aggregate"]
+    usage["http_errors"] = _http_errors(days)
     return usage
+
+
+def _http_errors(days: int) -> dict | None:
+    """http_errors.range_summary(days), or None when it cannot be read (#1506). Unlike the
+    fallbacks line above this must NOT raise: an unreadable 5xx record yields unknown (None)
+    and the LLM snapshot still lands."""
+    try:
+        from astro_ai import http_errors  # noqa: PLC0415 -- needs src/ on the path
+        return http_errors.range_summary(days)
+    except Exception as exc:  # noqa: BLE001
+        print(f"::warning::HTTP 5xx record not read ({exc.__class__.__name__}: {str(exc)[:160]}); "
+              f"http_5xx_* are null")
+        return None
 
 
 def main(argv: list[str], summary: Callable[[int], dict] = _summary,
@@ -169,7 +226,10 @@ def main(argv: list[str], summary: Callable[[int], dict] = _summary,
     print(f"llm usage: {doc['total_calls']} calls, hit rate {doc['hit_rate_pct']}%, "
           f"input tokens {doc['total_input_tokens'] if doc['total_input_tokens'] is not None else 'unknown'}, "
           f"peak day {peak} tokens ({doc['peak_day_measured'] or doc['peak_day']}), "
-          f"fallbacks {doc['fallbacks'] if doc['fallbacks'] is not None else 'unknown'}")
+          f"fallbacks {doc['fallbacks'] if doc['fallbacks'] is not None else 'unknown'}, "
+          f"5xx {doc['http_5xx_total'] if doc['http_5xx_total'] is not None else 'unknown'} "
+          f"({doc['http_5xx_days_recorded'] if doc['http_5xx_days_recorded'] is not None else '?'}"
+          f"/{doc['days']} days)")
     return 0
 
 

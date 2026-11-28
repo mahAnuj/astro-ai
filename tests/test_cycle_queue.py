@@ -15,6 +15,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -28,6 +29,8 @@ _spec = importlib.util.spec_from_file_location("cycle_queue", ROOT / "scripts" /
 cq = importlib.util.module_from_spec(_spec)
 sys.modules["cycle_queue"] = cq
 _spec.loader.exec_module(cq)
+sys.path.insert(0, str(ROOT / "scripts"))
+import reentry  # noqa: E402  (its CYCLE_OPENER is what the fake's is-cycle column applies)
 
 REPO = "owner/repo"
 
@@ -63,14 +66,14 @@ class FakeGh:
             return "\n".join(json.dumps({k: c[k] for k in ("id", "body", "created_at", "login")})
                              for c in self.comments)
         if args[:2] == ["api", "--paginate"] and "user.login" in args[-1] and "created_at" in args[-1]:
-            # reentry's read (#1255): login, time, is-verdict, is-QA per comment -- never a body.
+            # reentry's read (#1255): login, time, is-verdict, is-cycle per comment -- never a body.
             n = int(args[2].split("/issues/")[1].split("/")[0])
             if self.comments_error:
                 raise RuntimeError("gh api failed")
             return "\n".join(
                 f"{c['login']}\t{c['created_at']}\t"
                 f"{'true' if c['body'].startswith(('QA: PASS', 'QA: FAIL')) else 'false'}\t"
-                f"{'true' if c['body'].startswith('QA:') else 'false'}"
+                f"{'true' if re.match(reentry.CYCLE_OPENER, c['body']) else 'false'}"
                 for c in self.comments if c["on"] == n)
         if args[:2] == ["api", "--paginate"] and "user.login" in args[-1]:   # PASS verdicts + author
             n = int(args[2].split("/issues/")[1].split("/")[0])
@@ -449,7 +452,7 @@ def _reentered_431(trace_at="2026-11-02T11:00:00Z", commit_at="2026-11-02T10:30:
     gh = FakeGh(labels={431: "bug"}, heads={694: HEAD_694},
                 open_prs={694: ("issue/431-fix", "", "true")}, commit_dates={HEAD_694: commit_at})
     gh.add(entry(kind, 431))
-    gh.add("Cycle: nothing to change, stood down.", login="claude[bot]", on=431, created_at=trace_at)
+    gh.add("**/agent-cycle (build) picked #431** — nothing to change.", login="claude[bot]", on=431, created_at=trace_at)
     return gh
 
 

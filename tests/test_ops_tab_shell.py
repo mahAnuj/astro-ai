@@ -25,7 +25,8 @@ KEYS = [k for k, _ in ops_tabs.TABS]
 # Every panel heading the page had before the tab shell, grouped by where each
 # now lives. The union is the set that must never lose a member.
 PANELS = {
-    "overview": ["Goals and agent decisions", "Where the loop's time went"],
+    "overview": ["Results", "The engineering loop", "Agent health", "System health", "PRs shipped", "Key metrics", "Recent activity", "Goals and agent decisions",
+                 "Where the loop's time went"],
     "agents": ["Agents right now"],
     "workflows": ["Team"],
     "runs": ["The loop, day by day", "PR merge time"],
@@ -169,7 +170,7 @@ def test_the_backlog_bars_are_only_drawn_where_they_exist():
 
 WANT_BLOB = {
     "overview": {"repo", "issues", "today_shipped", "today_failed", "today_live",
-                 "filed_live", "filed_today"},
+                 "filed_live", "filed_today", "kpi_rows"},
     "agents": {"repo"},
     "workflows": {"repo"},
     "runs": {"repo", "cycles"},
@@ -221,7 +222,10 @@ def test_every_drill_down_that_a_tab_renders_has_its_data_on_that_tab():
         if 'id="bars"' in body:
             assert "issues" in b and {"by_priority", "by_area", "by_type"} <= set(b), key
         for tile, need in (("today-shipped", "today_shipped"), ("today-filed", "filed_today"),
-                           ("today-failed", "today_failed"), ("backlog", "issues")):
+                           ("today-failed", "today_failed"), ("backlog", "issues"),
+                           ("kpi-cycles", "kpi_rows"), ("kpi-prs", "kpi_rows"),
+                           ("kpi-qa", "kpi_rows"), ("kpi-cost", "kpi_rows"),
+                           ("kpi-prs-day", "kpi_rows")):
             if f'data-drill="{tile}"' in body:
                 assert need in b, f"{key}: tile {tile} but no {need}"
 
@@ -230,13 +234,15 @@ def test_the_runs_tab_has_day_rows_and_the_backlog_tab_has_bars_so_the_check_abo
     assert "day-btn" in _body(_page("?tab=runs").text)
     assert 'id="bars"' in _body(_page("?tab=backlog").text)
     assert 'data-drill="backlog"' in _body(_page("?tab=overview").text)
+    assert 'data-drill="kpi-cost"' in _body(_page("?tab=overview").text)
 
 
 def test_the_script_guards_every_blob_key_that_a_tab_may_omit():
     script = TPL[TPL.index("var D = JSON.parse"): TPL.index("function esc(s)")]
     assert "D.cycles || []" in script and "D.issues || []" in script
+    assert "D.kpi_rows || []" in script
     tail = TPL[TPL.index("function esc(s)"): TPL.index("Agents right now: re-read")]
-    unguarded = re.findall(r"\bD\.(?:cycles|issues|today_shipped|today_failed|filed_today)\b(?!\s*\|\|)", tail)
+    unguarded = re.findall(r"\bD\.(?:cycles|issues|today_shipped|today_failed|filed_today|kpi_rows)\b(?!\s*\|\|)", tail)
     assert not unguarded, f"unguarded read of an omittable key: {unguarded}"
     assert "D[GROUPS[group]] || {}" in tail
 
@@ -244,10 +250,12 @@ def test_the_script_guards_every_blob_key_that_a_tab_may_omit():
 def test_blob_for_cuts_a_full_dict_and_unknown_falls_back_to_overview():
     full = {k: 1 for k in ("repo", "cycles", "issues", "today_shipped", "today_failed",
                            "today_live", "filed_live", "filed_today", "by_priority",
-                           "by_area", "by_type")}
+                           "by_area", "by_type", "kpi_rows")}
     assert set(ops_tabs.blob_for("runs", full)) == {"repo", "cycles"}
     assert set(ops_tabs.blob_for("nope", full)) == set(ops_tabs.blob_for("overview", full))
     assert "cycles" not in ops_tabs.blob_for("overview", full)
+    assert "kpi_rows" in ops_tabs.blob_for("overview", full)
+    assert all("kpi_rows" not in ops_tabs.blob_for(k, full) for k in KEYS if k != "overview")
 
 
 # --- CSS tokens --------------------------------------------------------------------

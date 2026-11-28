@@ -42,3 +42,15 @@ def test_a_dispatched_run_sweeps():
     """The re-dispatch is useless unless workflow_dispatch enters sweep mode."""
     run = _step("Find the pull request")["run"]
     assert '[ "$EVENT_NAME" = "workflow_dispatch" ]' in run
+
+
+def test_a_sweep_that_newly_holds_a_pr_sweeps_again():
+    """2026-11-25 14:10Z: the sweep held #1375 for chief and the chain ended with #1428,
+    #1438 and #1465 green behind it. Re-dispatch only after a NEW label, so it ends."""
+    steps = yaml.safe_load(WF.read_text())["jobs"]["merge"]["steps"]
+    run = next(s for s in steps if s.get("id") == "boundary")["run"]
+    already = run.index('already labelled needs-human-review')
+    label = run.index('--add-label "needs-human-review"')
+    again = run.index("gh workflow run agent-merge.yml", label)
+    assert already < label < again, "the re-sweep must follow a NEW label, after the already-labelled exit"
+    assert '"$EVENT_NAME" = "workflow_dispatch"' in run[label:again + 200]

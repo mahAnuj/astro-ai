@@ -21,9 +21,11 @@ MUTATIONS = [
      '"dagdha": False,',
      "test_the_cleared_list_equals_the_auditors_table_for_every_event"),
     ("#1017 R3: an Abujha row loses its cleared list again (#1346: its checks DID run)",
-     _F, '    cleared = [_item(k, event_type) for k in _applied_hard(rules, candidate.nakshatra)]\n',
+     _F, '    cleared = [_item(k, event_type, qual=_cleared_qual(k, event_type, candidate.tithi))\n'
+     '               for k in _applied_hard(rules, candidate.nakshatra)]\n',
      '    cleared = [] if "abujha_muhurat" in candidate.flags else [\n'
-     '        _item(k, event_type) for k in _applied_hard(rules, candidate.nakshatra)]\n',
+     '        _item(k, event_type, qual=_cleared_qual(k, event_type, candidate.tithi))\n'
+     '        for k in _applied_hard(rules, candidate.nakshatra)]\n',
      "test_an_abujha_row_lists_abujha_first_then_a_real_cleared_list_and_the_real_boosters"),
     ("#1017 R3: the flag-to-key split swaps Tuesday and Saturday (hard and soft weekday)",
      _F, 'if flag == "avoid_weekday" and weekday not in _HARD_AVOID_WEEKDAYS:',
@@ -91,8 +93,8 @@ MUTATIONS = [
      'says "',
      _RULING2),
     ("#1017 R3 pass 2: Vivah Purnima reads 'is the exception' again (can read as allowed)",
-     _F, '"tradition. Purnima is contested: the Vedic table lists it, while "',
-     '"tradition. Purnima is the exception: the Vedic table lists it, while "',
+     _F, '"tradition, including the 6th for a wedding. Purnima is contested: "',
+     '"tradition, including the 6th for a wedding. Purnima is the exception: "',
      _RULING2),
     ("#1017 R3 pass 2: the business convention opener goes back to lowercase",
      _F, '_BIZ_LIST = "Site convention, not sourced:',

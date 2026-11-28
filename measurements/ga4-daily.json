@@ -2,8 +2,8 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-10-26",
-    "2026-11-22"
+    "2026-10-28",
+    "2026-11-24"
   ],
   "dimensions": [
     "date"
@@ -13,29 +13,13 @@
   "days_with_traffic": 28,
   "returning": {
     "status": "ok",
-    "user_days": 88,
-    "share_pct": 12.4,
+    "user_days": 91,
+    "share_pct": 12.3,
     "note": "User-days, not unique people: a person active on three days counts three times, so the share is of daily active users who were returning, not of visitors. Rows whose newVsReturning is (not set) are excluded."
   },
   "admin_status": "ok",
   "admin_note": "admin_sessions counts sessions landing on /admin*. #735 stopped analytics on /admin/* on 2026-11-12, so a nonzero day from then on is internal traffic leaking into the property.",
   "rows": [
-    {
-      "date": "2026-10-26",
-      "active_users": 22,
-      "sessions": 26,
-      "new_users": 21,
-      "returning_users": 3,
-      "admin_sessions": 2
-    },
-    {
-      "date": "2026-10-27",
-      "active_users": 23,
-      "sessions": 27,
-      "new_users": 22,
-      "returning_users": 5,
-      "admin_sessions": 0
-    },
     {
       "date": "2026-10-28",
       "active_users": 19,
@@ -241,6 +225,22 @@
       "active_users": 20,
       "sessions": 22,
       "new_users": 18,
+      "returning_users": 4,
+      "admin_sessions": 0
+    },
+    {
+      "date": "2026-11-23",
+      "active_users": 38,
+      "sessions": 42,
+      "new_users": 34,
+      "returning_users": 7,
+      "admin_sessions": 0
+    },
+    {
+      "date": "2026-11-24",
+      "active_users": 37,
+      "sessions": 45,
+      "new_users": 34,
       "returning_users": 4,
       "admin_sessions": 0
     }

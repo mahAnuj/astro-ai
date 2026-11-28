@@ -218,27 +218,46 @@ See CLAUDE.md's token-budget section for the full picture.
 - **Every claim you could NOT check, and why.** This is not a footnote; an unstated gap reads
   as coverage, and that is how a "verified" change ships broken.
 - For a FAIL: the smallest reproduction you found
-- **Every non-blocking finding, with the issue number you filed for it** (below)
+- **Every non-blocking finding, with the issue number you filed for it**: material ones one each, minor ones batched into one issue for the PR (below)
 
-## A non-blocking finding is filed, not just written down (2026-11-20)
+## A non-blocking finding is filed, not just written down (2026-11-20, tightened 2026-11-26)
 
 A finding that does not stop this PR is still a defect someone has to fix, and a merged PR's
 comment is read by nobody. Measured: #749's first PASS listed *"(2) quota staleness measured
 from generated_at with 36h tolerance, not latest.at"* as non-blocking. Nobody filed it. On
 2026-11-20 that exact gap stopped the loop for hours, with 96% of the weekly Claude window unused.
 
-So, **before you post the verdict**, for each finding you rate non-blocking (a weakness, an
-untested branch, a fail-open edge, a mis-pointed mutation row) that is real on the head you
+**Tightened 2026-11-26, also measured.** "File every one" produced 73 `QA follow-up:` issues in
+seven days, about 10 a day against about 5 fixed. Each fix PR's own round filed one to three
+more, mostly wording, comments, decision records and log noise. 25 of the 37 open carried no
+priority, so the ranker could not tell the deploy-without-gates finding (#1283) from a
+doubled word. So findings now go two ways.
+
+**Before you post the verdict**, for each non-blocking finding that is real on the head you
 examined:
 
 1. **Search first**: `gh issue list --repo "$GH_REPO" --state all --search "<keywords>"`. If an
    issue already covers it, cite that number instead of filing again.
-2. **File it.** It gets labels `qa` and `bug`, a title starting `QA follow-up:`, the PR number,
-   the file and line, and **the failure it would cause in one sentence**: who sees what, when.
-   It also needs an Evidence Block that `scripts/verify_issue_evidence.py <n>` passes, or the
-   build loop refuses it (`corpus:` n/a with the reason, `tokens:` 0 with the reason, `thesis:`,
-   `metric:` with a number, and a `repro:` command).
-3. **Cite the number** in the verdict next to the finding: `(2) … — filed #NNN`.
+2. **A MATERIAL finding gets its own issue, with a priority label.** Material means it would:
+   - cause an outage, stall the loop, or let a change deploy without its gates;
+   - show a wrong number to users or on the owner's dashboards;
+   - ship an astrological claim with no `knowledge/*.md` source;
+   - touch user data, privacy or security;
+   - or leave a guard that fails open.
+
+   Label `priority:high` when users see it, or it is about an astrological claim, user data or a
+   deploy without gates. Label `priority:medium` for loop or ops behaviour that costs runs or
+   hides a signal.
+3. **Everything else goes into ONE issue per PR**, labelled `priority:low`, titled
+   `QA follow-up: minor items from PR #<n>`, one line per item. That covers wording, comments,
+   docs, decision records, test names, log noise and cosmetic layout. Never file these one per
+   issue. Leave out an item a later commit on this PR already fixed.
+4. **Every issue you file** gets labels `qa` and `bug`, a title starting `QA follow-up:`, the PR
+   number, the file and line, and **the failure in one sentence**: who sees what, when. It also
+   needs an Evidence Block that `scripts/verify_issue_evidence.py <n>` passes, or the build loop
+   refuses it (`corpus:` n/a with the reason, `tokens:` 0 with the reason, `thesis:`, `metric:`
+   with a number, and a `repro:` command).
+5. **Cite the number** in the verdict next to each finding: `(2) … — filed #NNN`.
 
 A verdict that lists a non-blocking finding without an issue number is incomplete. A "NOT
 VERIFIED" item about a live path you could not exercise is a gap you state, not a finding to

@@ -25,20 +25,20 @@ MUTATIONS = [
     ("#1022: Dwadashi is back in Vivah's good_tithis",
      "src/astro_ai/muhurat.py",
      '                         "Ekadashi", "Trayodashi"},\n'
-     '        "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",\n'
+     '        "avoid_tithis": {"Chaturthi", "Shashti", "Ashtami", "Navami", "Chaturdashi",\n'
      '                          "Amavasya", "Purnima"},\n'
      '        # Krishna-paksha only (#1022)',
      '                         "Ekadashi", "Dwadashi", "Trayodashi"},\n'
-     '        "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",\n'
+     '        "avoid_tithis": {"Chaturthi", "Shashti", "Ashtami", "Navami", "Chaturdashi",\n'
      '                          "Amavasya", "Purnima"},\n'
      '        # Krishna-paksha only (#1022)',
      "test_bright_half_dwadashi_is_neutral_not_credited_and_not_excluded"),
     ("#1022: the bright-half Dwadashi is made an avoid tithi instead of neutral",
      "src/astro_ai/muhurat.py",
-     '        "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",\n'
+     '        "avoid_tithis": {"Chaturthi", "Shashti", "Ashtami", "Navami", "Chaturdashi",\n'
      '                          "Amavasya", "Purnima"},\n'
      '        # Krishna-paksha only (#1022)',
-     '        "avoid_tithis": {"Chaturthi", "Ashtami", "Navami", "Chaturdashi",\n'
+     '        "avoid_tithis": {"Chaturthi", "Shashti", "Ashtami", "Navami", "Chaturdashi",\n'
      '                          "Amavasya", "Purnima", "Dwadashi"},\n'
      '        # Krishna-paksha only (#1022)',
      "test_bright_half_dwadashi_is_neutral_not_credited_and_not_excluded"),
@@ -64,8 +64,8 @@ MUTATIONS = [
      "test_the_rules_summary_carries_both_disclosures_and_never_says_classical_there"),
     ("#1022: the favourable-tithi line claims the 12th again",
      "src/astro_ai/muhurat.py",
-     '"Favourable tithi: 2, 3, 5, 7, 10, 11, 13 (avoid 4, 8, 9, 14, Amavasya, Purnima); the 11th-13th',
-     '"Favourable tithi: 2, 3, 5, 7, 10, 11, 12, 13 (avoid 4, 8, 9, 14, Amavasya, Purnima); the 11th-13th',
+     '"Favourable tithi: 2, 3, 5, 7, 10, 11, 13 (avoid 4, 6, 8, 9, 14, Amavasya, Purnima); the 11th-13th',
+     '"Favourable tithi: 2, 3, 5, 7, 10, 11, 12, 13 (avoid 4, 6, 8, 9, 14, Amavasya, Purnima); the 11th-13th',
      "test_the_favourable_tithi_line_no_longer_claims_the_12th"),
     ("#1022: the /learn Vivah guide drops the Raman disclosure",
      "src/astro_ai/templates/learn/vivah-muhurat-2027.html",
