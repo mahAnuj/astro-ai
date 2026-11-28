@@ -27,8 +27,8 @@ MUTATIONS = [
      '"griha_pravesh": _vr(S, "The Muhurtha tradition rejects the 4th, 6th, 8th, 12th, "',
      _RULING2),
     ("#1497: business's avoid_tithi note is labelled contested again (the ruling made it site_convention)",
-     _F, '"business": _vr(SC, "Site convention: no held book gives a business tithi rule. "',
-     '"business": _vr(C, "Site convention: no held book gives a business tithi rule. "',
+     _F, '"business": _vr(SC, "Site convention: no classical text gives a business tithi rule. "',
+     '"business": _vr(C, "Site convention: no classical text gives a business tithi rule. "',
      "test_the_avoid_tithi_cleared_item_is_contested_for_four_events_and_sourced_for_vidyarambh"),
     ("#1497: griha_pravesh's avoid_tithi note drops the Purnima disagreement (the ruling names it)",
      _F, '"14th, New Moon and Full Moon for auspicious work. Purnima "\n'

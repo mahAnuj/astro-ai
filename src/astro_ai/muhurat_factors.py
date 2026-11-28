@@ -170,14 +170,14 @@ REGISTRY: dict[str, dict[str, Any]] = {
             # Worded here: the ruling's convention label plus the Sunday/Friday facts of the
             # `#### Business start` section.
             "business": _vr(SC, "Site convention, not sourced: this finder's own weekday list for "
-                                "a new venture; the books we hold give Sunday no support and call "
-                                "Friday unpropitious for selling.", _BIZ),
+                                "a new venture; the classical texts name no support for Sunday and "
+                                "call Friday unpropitious for selling.", _BIZ),
         },
     },
     "peak_day": {
         "label": "Peak day for this event",
-        "default": _vr(SC, "This finder's own bonus: Budh governs trade; no held text ranks "
-                           "Wednesday for a business start.", _BIZ),
+        "default": _vr(SC, "This finder's own bonus: Budh governs trade; the classical texts do "
+                           "not rank Wednesday for a business start.", _BIZ),
         "events": {
             "vidyarambh": _vr(SC, "This finder's own bonus for Guru's day; the Muhurtha tradition "
                                   "names Wednesday morning as best for beginning study.",
@@ -260,12 +260,12 @@ REGISTRY: dict[str, dict[str, Any]] = {
     },
     "chaturmas": {
         "label": "Not in Chaturmas",
-        "default": _vr(SC, "Chaturmas (Devshayani to Devuthani) is avoided by custom; the books we "
-                           "hold give month rules per event and do not match this window — this "
+        "default": _vr(SC, "Chaturmas (Devshayani to Devuthani) is avoided by custom; the texts "
+                           "give month rules per event and none matches this window — this "
                            "finder's own convention.", _H914),
         "events": {
-            "vivah": _vr(C, "Chaturmas (Devshayani to Devuthani) is avoided by custom; the books "
-                            "we hold give month rules per event and do not match this window — "
+            "vivah": _vr(C, "Chaturmas (Devshayani to Devuthani) is avoided by custom; the texts "
+                            "give month rules per event and none matches this window — "
                             "this finder's own convention.", _H914),
         },
     },
@@ -276,8 +276,8 @@ REGISTRY: dict[str, dict[str, Any]] = {
     },
     "dagdha": {
         "label": "Not a Dagdha tithi-weekday pair",
-        "default": _vr(SC, "Burnt tithi–weekday pairs are an almanac convention; no held text "
-                           "states them.", _H914),
+        "default": _vr(SC, "Burnt tithi–weekday pairs are an almanac convention; the classical "
+                           "texts do not state them.", _H914),
     },
     "jupiter_combust": {
         "label": "Guru not combust",
@@ -354,10 +354,10 @@ REGISTRY: dict[str, dict[str, Any]] = {
             "namkaran": _vr(C, "These tithis are rejected for auspicious work in the Muhurtha "
                                "tradition. Navami is contested: the figure for it in the Muhurtha "
                                "text is unclear, and the Vedic table does not list it.", _NAK),
-            "business": _vr(SC, "Site convention: no held book gives a business tithi rule. "
+            "business": _vr(SC, "Site convention: no classical text gives a business tithi rule. "
                                 "This finder applies the Muhurtha tradition's general rejection "
                                 "of the 4th, 8th, 14th, New Moon and Full Moon for auspicious "
-                                "work to a new venture, and adds Navami, which no held book "
+                                "work to a new venture, and adds Navami, which no classical text "
                                 "rejects for it.", _H97),
         },
     },

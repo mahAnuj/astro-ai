@@ -340,7 +340,7 @@ RULING2 = [
      "This finder deducts a point for Saturday; the Muhurtha tradition calls it passable for "
      "buying and middling for selling, and gives no rule for a business start."),
     # #1355/#1497 ruling: vivah, griha_pravesh and namkaran are contested (the held books differ);
-    # business is site_convention (no held book gives a business tithi rule). Navami is this
+    # business is site_convention (no classical text gives a business tithi rule). Navami is this
     # finder's own addition for griha_pravesh and business.
     ("avoid_tithi", "vivah", None, "contested", "### 29.9 ",
      "These tithis are rejected for auspicious work in the Muhurtha tradition, including the 6th "
@@ -356,9 +356,9 @@ RULING2 = [
      "tradition's general list rejects it. Navami is this finder's own addition; neither table "
      "rejects it for house entry."),
     ("avoid_tithi", "business", None, "site_convention", "### 29.9 ",
-     "Site convention: no held book gives a business tithi rule. This finder applies the "
+     "Site convention: no classical text gives a business tithi rule. This finder applies the "
      "Muhurtha tradition's general rejection of the 4th, 8th, 14th, New Moon and Full Moon for "
-     "auspicious work to a new venture, and adds Navami, which no held book rejects for it."),
+     "auspicious work to a new venture, and adds Navami, which no classical text rejects for it."),
     # #1355: the dark-half credit is contested wherever the sources do not settle the half.
     ("good_tithi", "griha_pravesh", "@Krishna", "contested", "#### Griha Pravesh",
      "In the dark half this credit rests on one table, which lists the tithi without naming a "
@@ -371,8 +371,8 @@ RULING2 = [
     ("good_tithi", "business", None, "site_convention", "#### Business start",
      "Site convention, not sourced: this finder's own tithi list for a new venture."),
     ("good_weekday", "business", None, "site_convention", "#### Business start",
-     "Site convention, not sourced: this finder's own weekday list for a new venture; the books we "
-     "hold give Sunday no support and call Friday unpropitious for selling."),
+     "Site convention, not sourced: this finder's own weekday list for a new venture; the classical "
+     "texts name no support for Sunday and call Friday unpropitious for selling."),
     ("jupiter_combust", "vivah", None, "site_convention", "### 12.5 ",
      "Guru within 11\u00b0 of the Sun counts as combust (orb from the Muhurtha tradition). "
      "Treating that as a veto for {event} is this finder's own convention. The two wedding "
