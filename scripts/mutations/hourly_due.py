@@ -43,4 +43,9 @@ MUTATIONS = [
      "      - name: Fire due timers into the queue\n        if: steps.hourly.outputs.due == 'true'",
      "      - name: Fire due timers into the queue\n        if: github.event_name == 'schedule'",
      "test_timers_and_liveness_do_not_depend_on_cron_alone"),
+    ("hourly-due: a wrong-shaped API reply crashes instead of answering due",
+     "scripts/hourly_due.py",
+     "ValueError, KeyError, TypeError, AttributeError)",
+     "ValueError, KeyError, TypeError)",
+     "test_a_runs_reply_of_the_wrong_shape_answers_due"),
 ]
