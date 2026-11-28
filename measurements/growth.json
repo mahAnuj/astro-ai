@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-27T20:40:12Z",
+ "generated_at": "2026-11-28T00:20:34Z",
  "target": 0.6,
  "week": "2026-W48",
  "today_date": "2026-11-28",
  "today": {
   "growth": 0,
-  "other": 2,
-  "exempt": 1,
+  "other": 4,
+  "exempt": 3,
   "share": 0.0
  },
  "this_week": {
   "growth": 15,
-  "other": 64,
-  "exempt": 7,
-  "share": 0.19
+  "other": 66,
+  "exempt": 9,
+  "share": 0.185
  },
  "this_month": {
   "growth": 49,
-  "other": 314,
-  "exempt": 7,
-  "share": 0.135
+  "other": 316,
+  "exempt": 9,
+  "share": 0.134
  },
  "must_pick_growth": true,
  "days": [
@@ -117,26 +117,77 @@
   {
    "date": "2026-11-28",
    "growth": 0,
-   "other": 2,
-   "exempt": 1,
+   "other": 4,
+   "exempt": 3,
    "share": 0.0
   }
  ],
  "cycles": [
+  {
+   "run": 46080282312,
+   "started": "2026-11-27T23:03:27Z",
+   "issue": 1559,
+   "title": "QA follow-up: Analytics tab 500s on a daily-series row with no string date (PR #1558)",
+   "class": "other",
+   "outcome": "pr open",
+   "pr": 1564,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 46078923409,
+   "started": "2026-11-27T22:49:16Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "shipped",
+   "pr": 1561,
+   "agents": {
+    "qa": 1
+   }
+  },
+  {
+   "run": 46069395399,
+   "started": "2026-11-27T21:18:09Z",
+   "issue": 1133,
+   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
+   "class": "exempt",
+   "outcome": "shipped",
+   "pr": 1561,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "frontend-engineer": 1,
+    "project-manager": 1
+   }
+  },
+  {
+   "run": 46065178319,
+   "started": "2026-11-27T20:40:03Z",
+   "issue": 1554,
+   "title": "QA follow-up: a malformed row in gsc-daily.json or issues.json 500s every /admin/ops tab (PR #1552)",
+   "class": "other",
+   "outcome": "shipped",
+   "pr": 1558,
+   "agents": {
+    "architect": 1,
+    "backend-engineer": 1,
+    "project-manager": 1,
+    "qa": 1
+   }
+  },
   {
    "run": 46059427967,
    "started": "2026-11-27T19:49:57Z",
    "issue": 1553,
    "title": "QA follow-up: Analytics tab 500s when gsc-daily.json is absent or empty (PR #1552)",
    "class": "other",
-   "outcome": "pr open",
+   "outcome": "shipped",
    "pr": 1556,
-   "agents": {
-    "architect": 1,
-    "frontend-engineer": 1,
-    "project-manager": 1,
-    "qa": 1
-   }
+   "agents": null
   },
   {
    "run": 46058481865,
@@ -560,54 +611,6 @@
    "outcome": "pr open",
    "pr": 1357,
    "agents": null
-  },
-  {
-   "run": 45630474309,
-   "started": "2026-11-25T14:06:34Z",
-   "issue": 1133,
-   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
-   "class": "exempt",
-   "outcome": "shipped",
-   "pr": 1474,
-   "agents": {
-    "backend-engineer": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45624813100,
-   "started": "2026-11-25T13:33:31Z",
-   "issue": 1255,
-   "title": "tokens: 26 of 123 build cycles in 7 days re-entered an issue already in progress \u2014 cut the rework, not the fix rounds",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1475,
-   "agents": {
-    "qa": 2
-   }
-  },
-  {
-   "run": 45614140500,
-   "started": "2026-11-25T12:28:49Z",
-   "issue": 1133,
-   "title": "[OPS] Upgrade /admin/ops into a side-rail, tabbed control plane with charts (owner blueprint, 2026-11-16) \u2014 umbrella",
-   "class": "exempt",
-   "outcome": "shipped",
-   "pr": 1474,
-   "agents": {
-    "frontend-engineer": 1,
-    "qa": 1
-   }
-  },
-  {
-   "run": 45603269707,
-   "started": "2026-11-25T11:18:51Z",
-   "issue": 1255,
-   "title": "tokens: 26 of 123 build cycles in 7 days re-entered an issue already in progress \u2014 cut the rework, not the fix rounds",
-   "class": "other",
-   "outcome": "shipped",
-   "pr": 1475,
-   "agents": null
   }
  ],
  "goals": {
@@ -943,21 +946,21 @@
   "ga4_sessions_28d": 838,
   "objective_top5": 1,
   "growth_share_today": 0.0,
-  "growth_share_week": 0.19,
-  "growth_share_month": 0.135
+  "growth_share_week": 0.185,
+  "growth_share_month": 0.134
  },
  "meters": {
   "daily": {
    "label": "Today: growth share of build cycles",
    "period": "2026-11-28",
    "progress": 0.0,
-   "detail": "0 of 2 cycles on growth, target 60%, 1 exempt",
+   "detail": "0 of 4 cycles on growth, target 60%, 3 exempt",
    "goals": []
   },
   "weekly": {
    "label": "Weekly goals",
    "period": "2026-W48",
-   "progress": 0.55,
+   "progress": 0.546,
    "detail": "5 goals, 5 measurable",
    "goals": [
     {
@@ -968,8 +971,8 @@
      "baseline": 0.12,
      "target": 0.4,
      "issues": [],
-     "current": 0.19,
-     "progress": 0.25,
+     "current": 0.185,
+     "progress": 0.232,
      "basis": "growth_share_week"
     },
     {
@@ -1038,7 +1041,7 @@
   "monthly": {
    "label": "Monthly goals",
    "period": "2026-11",
-   "progress": 0.505,
+   "progress": 0.503,
    "detail": "3 goals, 3 measurable",
    "goals": [
     {
@@ -1081,8 +1084,8 @@
      "baseline": 0.069,
      "target": 0.25,
      "issues": [],
-     "current": 0.135,
-     "progress": 0.365,
+     "current": 0.134,
+     "progress": 0.359,
      "basis": "growth_share_month"
     }
    ]
