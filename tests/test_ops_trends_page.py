@@ -538,7 +538,9 @@ def test_the_bars_do_not_use_day_btn_which_would_demand_cycles_in_overviews_blob
 
 # The page ceiling is the issue's own 418,318 B, one constant in ops_tabs (#1562). It was a
 # 245,000 then a 250,000 literal that the open-issue count kept outgrowing.
-from astro_ai.ops_tabs import OVERVIEW_MAX_BYTES as OVERVIEW_CAP  # noqa: E402
+from astro_ai.ops_tabs import OVERVIEW_MAX_BYTES  # noqa: E402
+
+OVERVIEW_CAP = OVERVIEW_MAX_BYTES  # one ceiling, ops_tabs.OVERVIEW_MAX_BYTES (#1562)
 
 
 def test_overview_grows_by_at_most_18_kb_and_stays_under_245_kb(monkeypatch):

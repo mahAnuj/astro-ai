@@ -27,7 +27,9 @@ import pytest
 
 from astro_ai import agent_status, ops_data, ops_loop_health, ops_tabs
 # One page ceiling for every slice's test (#1562): the issue's own 418,318 B, in ops_tabs.
-from astro_ai.ops_tabs import OVERVIEW_MAX_BYTES as OVERVIEW_CAP
+from astro_ai.ops_tabs import OVERVIEW_MAX_BYTES
+
+OVERVIEW_CAP = OVERVIEW_MAX_BYTES  # one ceiling, ops_tabs.OVERVIEW_MAX_BYTES (#1562)
 
 TPL = (Path(__file__).resolve().parents[1] / "src/astro_ai/templates/admin_ops.html").read_text()
 OTHER_TABS = [k for k, _ in ops_tabs.TABS if k != "overview"]
