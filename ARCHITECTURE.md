@@ -137,7 +137,7 @@ src/astro_ai/
   learn_registry.py 3,107  /learn article metadata
   numerology.py    1,910  Chaldean + Lo Shu calculators
   festival_registry.py 1,678
-  muhurat.py       1,966  electional scoring; shares angas with panchang
+  muhurat.py       2,067  electional scoring; shares angas with panchang
   muhurat_factors.py 541  why a finder row rated as it did: REGISTRY of factor/exclusion keys, each
                         sourced | contested | site_convention with a knowledge heading and a page sentence;
                         explain() and legend() are pure functions (0 tokens, 0 I/O) behind the Jinja globals

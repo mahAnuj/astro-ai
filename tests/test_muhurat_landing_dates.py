@@ -10,7 +10,8 @@ page that still renders when the computation or the geocode fails.
 ORDER (the one judgement call): `find_candidates` returns best-tier-first, so the issue's
 "same order" read literally would list the five best-RATED dates of the window, possibly
 80 days out. The landing is headed "Next N", so it lists the five EARLIEST auspicious dates
-in date order (the finder's own tie-break inside a tier). `test_landing_lists_exactly_the_
+in date order (date is only the last key of `muhurat.rank_key`, after tier, couple verdict
+and score, so the sort is the landing's own and must stay). `test_landing_lists_exactly_the_
 five_earliest...` pins that and asserts its own premise: that the two orders differ.
 
 No network (geocoding is stubbed to New Delhi) and no LLM. Mutation rows:
